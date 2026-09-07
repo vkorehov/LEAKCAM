@@ -1,0 +1,80 @@
+{
+    "unit": {
+        "value": 2,
+        "$type": "LengthUnit"
+    },
+    "layer": [
+        {
+            "name": "0",
+            "use_file": "0",
+            "thickness": 0.12236426857143012,
+            "color": {
+                "red": 0.8,
+                "green": 0.8,
+                "blue": 0.8,
+                "alpha": 1,
+                "$type": "Color"
+            },
+            "material": "PEC",
+            "type": {
+                "value": 0,
+                "$type": "LayerType"
+            },
+            "$type": "Layer"
+        }
+    ],
+    "layerinput": {
+        "0": {
+            "filename": "0.art",
+            "positive": true,
+            "settings": null,
+            "$type": "LayerInput"
+        }
+    },
+    "drill": [],
+    "materials": {
+        "PEC": {
+            "mattype": {
+                "value": 1,
+                "$type": "MatType"
+            },
+            "matname": "PEC",
+            "sigma": 1000000000.0,
+            "eps": 1.0,
+            "mu": 1.0,
+            "$type": "Material"
+        }
+    },
+    "testpoint_file": null,
+    "version": 2,
+    "cst": {
+        "unit": "mm",
+        "graphical_input_files": {
+            "0": {
+                "filename": "0.art",
+                "positive": true,
+                "settings": null
+            }
+        },
+        "layers": [
+            {
+                "name": "0",
+                "use_file": "0",
+                "mat_type": "METAL"
+            }
+        ],
+        "drills": [],
+        "testpoint_file": null,
+        "pycmds": [
+            "m = pcb.create_conductor_material(\"PEC\", rename_unique=False)",
+            "m.sigma = 1000000000.0",
+            "m.epsilon = 1.0",
+            "m.mu = 1.0",
+            "layer = pcb.layer(\"0\")",
+            "layer.thickness = 0.12236426857143012",
+            "layer.material = pcb.material(\"PEC\")",
+            "layer.color = (204, 204, 204)"
+        ]
+    },
+    "$type": "MultiLayerSetup"
+}
