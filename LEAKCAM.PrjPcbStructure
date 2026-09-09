@@ -1,2 +1,8 @@
-Record=TopLevelDocument|FileName=LEAKCAM.SchDoc|SheetNumber=1
-Record=NoMainPathDocument|SourceDocument=LEAKCAM.SchDoc|FileName=POWER.SchDoc|SheetNumber=2
+Record=TopLevelDocument|FileName=CAM.SchDoc|SheetNumber=5
+Record=NoMainPathDocument|SourceDocument=CAM.SchDoc|FileName=DBG.SchDoc|SheetNumber=4
+Record=NoMainPathDocument|SourceDocument=CAM.SchDoc|FileName=FLASH.SchDoc|SheetNumber=3
+Record=NoMainPathDocument|SourceDocument=CAM.SchDoc|FileName=LEAKCAM.SchDoc|SheetNumber=1
+Record=NoMainPathDocument|SourceDocument=CAM.SchDoc|FileName=LEDS.SchDoc|SheetNumber=7
+Record=NoMainPathDocument|SourceDocument=CAM.SchDoc|FileName=POWER.SchDoc|SheetNumber=2
+Record=NoMainPathDocument|SourceDocument=CAM.SchDoc|FileName=SENS.SchDoc|SheetNumber=8
+Record=NoMainPathDocument|SourceDocument=CAM.SchDoc|FileName=WIFI.SchDoc|SheetNumber=6
