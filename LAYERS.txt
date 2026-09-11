@@ -1,0 +1,109 @@
+LEAKCAM - PCB LAYER STACK AND GERBER ORDER
+==========================================
+Board:    MIFA.PcbDoc
+Stackup:  JLCPCB JLC06161H-3313, 6 layer, 1.6 mm finished, FR-4
+Copper:   1 oz outer (35 um), 0.5 oz inner (15.2 um)
+Source:   stack.stackup (import into Altium Layer Stack Manager)
+
+
+1. PHYSICAL STACK, TOP TO BOTTOM
+--------------------------------
+  #   Element              Material        Thickness            Dk     Df
+  --  -------------------  --------------  -------------------  -----  -----
+      Top solder mask      Solder Resist    1.2 mil / 0.030 mm   3.80  0.025
+  L1  Top Layer            Copper 1 oz      1.378 mil / 35 um      -      -
+      Dielectric 1         PP-3313          3.9134 mil / 0.0994 mm  3.95  0.022
+  L2  Mid-Layer 1          Copper 0.5 oz    0.5984 mil / 15.2 um    -      -
+      Dielectric 2         Core-055        21.6535 mil / 0.550 mm  4.40  0.022
+  L3  Mid-Layer 2          Copper 0.5 oz    0.5984 mil / 15.2 um    -      -
+      Dielectric 3         PP-2116          4.2835 mil / 0.1088 mm  4.00  0.022
+  L4  Mid-Layer 3          Copper 0.5 oz    0.5984 mil / 15.2 um    -      -
+      Dielectric 4         Core-055        21.6535 mil / 0.550 mm  4.40  0.022
+  L5  Mid-Layer 4          Copper 0.5 oz    0.5984 mil / 15.2 um    -      -
+      Dielectric 5         PP-3313          3.9134 mil / 0.0994 mm  3.95  0.022
+  L6  Bottom Layer         Copper 1 oz      1.378 mil / 35 um      -      -
+      Bottom solder mask   Solder Resist    1.2 mil / 0.030 mm   3.80  0.025
+
+  Dk and Df are values for 2.4 GHz, used for the MIFA antenna simulation.
+  JLCPCB's own catalogue figures are low-frequency: core 4.6, 3313 4.1,
+  2116 4.16, mask 3.8. Batch spread is about +/-0.15, so sweep the antenna
+  model over that range rather than trusting a single number.
+
+  Thin dielectrics (0.1 mm):  L1-L2, L3-L4, L5-L6
+  Thick cores    (0.55 mm):   L2-L3, L4-L5
+  Put ground planes on the thin side of any layer that carries signals.
+
+
+2. COPPER LAYER ASSIGNMENT
+--------------------------
+  L1  Top      POWER + components + short signal routing.  221 of 235 parts.
+  L2  Mid-1    GROUND, solid plane. Reference for all L1 routing (0.0994 mm).
+  L3  Mid-2    Signal.
+  L4  Mid-3    POWER planes (0V8, 1V1, 1V8, 3V3, 3V3_SLEEP, VBAT regions).
+  L5  Mid-4    Signal.
+  L6  Bottom   GROUND, solid plane. 14 parts on this side, see note below.
+
+  Rules that follow from this:
+    - No tracks on L2 or L6 other than what is unavoidable under bottom-side
+      parts. Anything routed there splits the plane.
+    - Bottom-side components (U5, U6, U7, PR1, J4, D2, D4 and their passives)
+      cut the L6 ground plane. Keep their escape routing on L5 and stitch
+      ground around each part.
+    - Signals on L3 and L5 must not cross a split in the plane they reference.
+    - Every power rail crossing layers needs a group of vias, not one.
+      A 0.3 mm via carries roughly 0.5 to 1 A.
+
+
+3. GERBER FILES, IN PHYSICAL ORDER
+----------------------------------
+  Order matters: the fab stacks the inner layers in the order given below.
+  G1 is the layer immediately under the top copper, G4 immediately above the
+  bottom copper. Altium Mid-Layer 1..4 map to G1..G4 in that order.
+
+  Physical   Altium layer          Gerber file                  JLCPCB name
+  ---------  --------------------  ---------------------------  ---------------
+  L1         Top Layer             LEAKCAM.GTL                  Top layer
+  L2         Mid-Layer 1           LEAKCAM.G1                   Inner layer 1
+  L3         Mid-Layer 2           LEAKCAM.G2                   Inner layer 2
+  L4         Mid-Layer 3           LEAKCAM.G3                   Inner layer 3
+  L5         Mid-Layer 4           LEAKCAM.G4                   Inner layer 4
+  L6         Bottom Layer          LEAKCAM.GBL                  Bottom layer
+
+  Non-copper:
+             Top Solder            LEAKCAM.GTS                  Top solder mask
+             Bottom Solder         LEAKCAM.GBS                  Bottom solder mask
+             Top Overlay           LEAKCAM.GTO                  Top silkscreen
+             Bottom Overlay        LEAKCAM.GBO                  Bottom silkscreen
+             Top Paste             LEAKCAM.GTP                  Top paste (stencil)
+             Bottom Paste          LEAKCAM.GBP                  Bottom paste (stencil)
+             Mechanical 1          LEAKCAM.GM1 / .GKO           Board outline
+             NC Drill              LEAKCAM.TXT / .DRL           Drill file
+
+  Altium output settings:
+    Gerber X2 or RS-274X, 2:4 format, inches, leading zeros omitted,
+    absolute coordinates, "Embedded apertures (RS274X)".
+    NC Drill: 2:4 inches, suppress leading zeros, plated and non-plated
+    in separate files if the board has any non-plated holes.
+    Zip all files flat, no sub-directories, and name the archive after the
+    project so the fab's parser finds the outline.
+
+
+4. FAB NOTES
+------------
+  Minimum via:      0.3 mm hole / 0.5 mm pad (standard tier).
+                    Keep to ONE drill size for vias; mixed drills cost extra.
+  Impedance:        Not ordered as controlled impedance. If it is ordered
+                    later, state the stackup name JLC06161H-3313 so JLCPCB
+                    picks the trace widths from their own model.
+  Copper weight:    1 oz outer, 0.5 oz inner. Inner traces carry roughly a
+                    third of the current of the same width outside; a 20 mil
+                    inner trace is good for about 0.4 A at a 10 C rise.
+  Antenna:          Keep-out under ANT1 on ALL SIX layers, including the
+                    bottom ground plane and any connector on the far side.
+
+
+5. CHANGE LOG
+-------------
+  2026-09-11  Created. Stack matches JLC06161H-3313 after correcting the
+              2116 prepreg to 0.1088 mm and the solder mask to Dk 3.8.
+              Core Dk kept at 4.4 (2.4 GHz value) by decision.
