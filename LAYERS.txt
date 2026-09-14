@@ -83,22 +83,29 @@ Source:   stack.stackup (import into Altium Layer Stack Manager)
 
   Physical   Altium layer          Gerber file                  JLCPCB name
   ---------  --------------------  ---------------------------  ---------------
-  L1         Top Layer             LEAKCAM.GTL                  Top layer
-  L2         Mid-Layer 1           LEAKCAM.G1                   Inner layer 1
-  L3         Mid-Layer 2           LEAKCAM.G2                   Inner layer 2
-  L4         Mid-Layer 3           LEAKCAM.G3                   Inner layer 3
-  L5         Mid-Layer 4           LEAKCAM.G4                   Inner layer 4
-  L6         Bottom Layer          LEAKCAM.GBL                  Bottom layer
+  L1         Top Layer             MIFA.GTL                     Top layer
+  L2         Mid-Layer 1           MIFA.G1                      Inner layer 1
+  L3         Mid-Layer 2           MIFA.G2                      Inner layer 2
+  L4         Mid-Layer 3           MIFA.G3                      Inner layer 3
+  L5         Mid-Layer 4           MIFA.G4                      Inner layer 4
+  L6         Bottom Layer          MIFA.GBL                     Bottom layer
 
-  Non-copper:
-             Top Solder            LEAKCAM.GTS                  Top solder mask
-             Bottom Solder         LEAKCAM.GBS                  Bottom solder mask
-             Top Overlay           LEAKCAM.GTO                  Top silkscreen
-             Bottom Overlay        LEAKCAM.GBO                  Bottom silkscreen
-             Top Paste             LEAKCAM.GTP                  Top paste (stencil)
-             Bottom Paste          LEAKCAM.GBP                  Bottom paste (stencil)
-             Mechanical 1          LEAKCAM.GM1 / .GKO           Board outline
-             NC Drill              LEAKCAM.TXT / .DRL           Drill file
+  Non-copper (as generated 2026-09-14, Altium 26):
+             Top Solder            MIFA.GTS                     Top solder mask
+             Bottom Solder         MIFA.GBS                     Bottom solder mask
+             Top Overlay           MIFA.GTO                     Top silkscreen
+             Bottom Overlay        MIFA.GBO                     Bottom silkscreen
+             Top Paste             MIFA.GTP                     Top paste (stencil)
+             Bottom Paste          MIFA.GBP                     Bottom paste (stencil)
+             Mechanical            MIFA.GM, MIFA.GM2            Board outline is on
+                                                                one of these; confirm
+                                                                in the JLCPCB viewer,
+                                                                rename to .GKO if it
+                                                                is not picked up
+             NC Drill              MIFA-RoundHoles.TXT          Plated holes + vias
+                                   MIFA-SlotHoles.TXT           USB-C 0.8 mm slots
+             ODB++                 MIFA.tgz                     Not needed by the fab,
+                                                                used for review
 
   Altium output settings:
     Gerber X2 or RS-274X, 2:4 format, inches, leading zeros omitted,
@@ -125,6 +132,8 @@ Source:   stack.stackup (import into Altium Layer Stack Manager)
 
 5. CHANGE LOG
 -------------
+  2026-09-14  Section 3 file names updated to what Altium 26 actually emits
+              (MIFA.*, GM/GM2, RoundHoles/SlotHoles).
   2026-09-14  Section 2 rewritten from the ODB++ export of commit 07cc720:
               power pours are on L3 (not L4), L5 is the signal layer, L4 holds
               only the 1V8/1V1 pours under the K230D. 93 parts top, 134 bottom.
