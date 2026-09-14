@@ -1,0 +1,13 @@
+Output: NC Drill Files
+Type  : NC Drill
+From  : Project [LEAKCAM.PrjPcb]
+   Generated File[MIFA-RoundHoles.TXT]
+   Generated File[MIFA-SlotHoles.TXT]
+   Generated File[MIFA.LDP]
+   Generated File[MIFA.DRR]
+
+
+Files Generated   : 4
+Documents Printed : 0
+
+Finished Output Generation At 9:53:09 PM On 9/14/2026
