@@ -2,5 +2,8 @@ Project Logs for LEAKCAM
 !Project\ Outputs\ for\ LEAKCAM/
 Project\ Outputs\ for\ LEAKCAM/*
 !Project\ Outputs\ for\ LEAKCAM/MIFA.tgz
+!Project\ Outputs\ for\ LEAKCAM/*.G*
+!Project\ Outputs\ for\ LEAKCAM/*.TXT
 __Previews
 History
+*.CAM
