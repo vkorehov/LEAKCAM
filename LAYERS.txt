@@ -34,24 +34,45 @@ Source:   stack.stackup (import into Altium Layer Stack Manager)
   Put ground planes on the thin side of any layer that carries signals.
 
 
-2. COPPER LAYER ASSIGNMENT
+2. COPPER LAYER ASSIGNMENT (as routed, MIFA.PcbDoc commit 07cc720, 2026-09-14)
 --------------------------
-  L1  Top      POWER + components + short signal routing.  221 of 235 parts.
-  L2  Mid-1    GROUND, solid plane. Reference for all L1 routing (0.0994 mm).
-  L3  Mid-2    Signal.
-  L4  Mid-3    POWER planes (0V8, 1V1, 1V8, 3V3, 3V3_SLEEP, VBAT regions).
-  L5  Mid-4    Signal.
-  L6  Bottom   GROUND, solid plane. 14 parts on this side, see note below.
+  L1  Top      POWER tracks + 93 components + short signal escapes.
+               VBAT, BAT, 3V3, 3V3_SLEEP trunks run here as tracks (no pour).
+  L2  Mid-1    GROUND, solid plane, no tracks. Reference for all L1 routing
+               (0.0994 mm). Plane ends at y = 94.2 mm; the antenna ground
+               edge above it is the L1 strip + L6 plane.
+  L3  Mid-2    POWER pours: 0V8 (194 mm2), 3V3 (156), 1V1 (115), 1V8 (69),
+               0V8_MIPI (38), 1V8_DDR (9), 1V8_MIPI (7). Plus 30 short signal
+               segments (52 mm total: SPI_IO1/2, BOOT1, USBP_D_P, feedback
+               nets) that could not escape the BGA any other way.
+  L4  Mid-3    Sparse POWER: 1V8 pour (56 mm2) and 1V1 pour (27 mm2) under
+               the K230D only. Otherwise empty.
+  L5  Mid-4    SIGNAL. Main routing layer (550 segments, 836 mm). Also the
+               3V3_SLEEP feed to the module (40/20 mil).
+  L6  Bottom   GROUND plane (1937 mm2) + 134 components: all K230D decoupling
+               caps, regulators U5 U6 U7 U8 U10 U14 U15, U17, PR1, J4, D1 D2
+               D4, S1 S2 S3. About 270 mm of local tracks (3V3 34 mm,
+               3V3_SLEEP 15 mm, CAM2 I2C, LED_CTL) cut the plane locally.
+
+  Note: the original plan had signal on L3 and power on L4. Routing ended up
+  the other way round. This is fine electrically: L5 signals reference the
+  L6 ground plane through 0.1 mm, the L3 pours reference L2 ground through
+  the 0.55 mm core, and the L3/L4 pours face each other across 0.1 mm.
+  Do not "fix" it back; update this file if it changes again.
 
   Rules that follow from this:
-    - No tracks on L2 or L6 other than what is unavoidable under bottom-side
-      parts. Anything routed there splits the plane.
-    - Bottom-side components (U5, U6, U7, PR1, J4, D2, D4 and their passives)
-      cut the L6 ground plane. Keep their escape routing on L5 and stitch
-      ground around each part.
-    - Signals on L3 and L5 must not cross a split in the plane they reference.
+    - No tracks on L2. On L6 only what is unavoidable under bottom-side
+      parts; anything longer splits the plane.
+    - Bottom-side components cut the L6 ground plane. Keep their escape
+      routing on L5 and stitch ground around each part.
+    - Signals on L5 must not cross a gap in the L6 plane (component pad
+      fields under U3, the regulators and J4).
     - Every power rail crossing layers needs a group of vias, not one.
-      A 0.3 mm via carries roughly 0.5 to 1 A.
+      A 0.3 mm via carries roughly 0.5 to 1 A. Regulator switch nodes to
+      the top-side inductors are the usual single-via spots.
+    - Regulator ICs sit on L6 with their inductors and input caps on L1,
+      directly behind them (inductors shielded between battery and L2
+      ground). Every such cap pad needs its own via pair.
 
 
 3. GERBER FILES, IN PHYSICAL ORDER
@@ -104,6 +125,9 @@ Source:   stack.stackup (import into Altium Layer Stack Manager)
 
 5. CHANGE LOG
 -------------
+  2026-09-14  Section 2 rewritten from the ODB++ export of commit 07cc720:
+              power pours are on L3 (not L4), L5 is the signal layer, L4 holds
+              only the 1V8/1V1 pours under the K230D. 93 parts top, 134 bottom.
   2026-09-11  Created. Stack matches JLC06161H-3313 after correcting the
               2116 prepreg to 0.1088 mm and the solder mask to Dk 3.8.
               Core Dk kept at 4.4 (2.4 GHz value) by decision.
