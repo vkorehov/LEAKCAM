@@ -11,8 +11,7 @@ LEAKCAM - LCSC order list, 1 board (prices USD, JLCPCB/LCSC parts search 2026-09
 1    15p                          https://www.lcsc.com/product-detail/C696887.html   TCC0402COG150K500AT
 4    20p                          https://www.lcsc.com/product-detail/C696863.html   TCC0402COG200K500AT
 2    220n                         https://www.lcsc.com/product-detail/C36911358.html CGA0402X5R224K500GT
-1    1uF 1206 50V                 https://www.lcsc.com/product-detail/C597503.html   12065C105JAT2A
-1    1uF 50V 1206                 https://www.lcsc.com/product-detail/C597503.html   12065C105JAT2A
+2    1uF 50V 1206                 https://www.lcsc.com/product-detail/C597503.html   12065C105JAT2A
 2    ABS07-32.768KHZ-T            https://www.lcsc.com/product-detail/C130253.html   ABS07-32.768KHZ-T   ## generic 3215 12.5pF alternative: C22386770 SXTF321532768A20F ~0.13 USD
 1    BLM15AG102SN1D               https://www.lcsc.com/product-detail/C76883.html    BLM15AG102SN1D
 3    BLM18AG121SN1D               https://www.lcsc.com/product-detail/C76892.html    BLM18AG121SN1D
@@ -20,8 +19,7 @@ LEAKCAM - LCSC order list, 1 board (prices USD, JLCPCB/LCSC parts search 2026-09
 2    DFE252012F-100M=P2           https://www.lcsc.com/product-detail/C703141.html   DFE252012F-100M=P2
 3    TPS63802DLAR                 https://www.lcsc.com/product-detail/C2845237.html  TPS63802DLAR
 2    TPS62823DLCR                 https://www.lcsc.com/product-detail/C2693497.html  TPS62823DLCR
-1    10uF 0603                    https://www.lcsc.com/product-detail/C5137565.html  FCC0603X106K100CT
-12   10uF GRM188R61A106ME69D      https://www.lcsc.com/product-detail/C5137565.html  FCC0603X106K100CT
+13   10uF GRM188R61A106ME69D      https://www.lcsc.com/product-detail/C5137565.html  FCC0603X106K100CT
 1    1uF 0603                     https://www.lcsc.com/product-detail/C5189828.html  CS1608X7R105K100NRB
 6    22uF GRM188R60J226MEA0J      https://www.lcsc.com/product-detail/C6119880.html  CGA0603X5R226M6R3JT
 3    DSK24                        https://www.lcsc.com/product-detail/C51898076.html DSK24
