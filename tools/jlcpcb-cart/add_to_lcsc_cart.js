@@ -16,6 +16,8 @@
 // LCSC's own product facts (MPN, MOQ, price ladder, reel flag, stock) come from the product
 // page's embedded __NEXT_DATA__ JSON; lcsc.com has no open search API (payloads are encrypted).
 //
+// isReel is ALWAYS false: the product data's isReel means "tape & reel packaging", but in the cart it
+// selects LCSC's continuous-reel service at reelPrice (3 USD) PER LINE (45 lines = 135 USD, 2026-09-15).
 // Quantities are rounded UP to a multiple of the offer's minBuyNumber.  For every line the
 // LCSC own line and each other-supplier offer are costed at their own MOQ-adjusted quantity;
 // an offer wins when it is at least THIRD_WIN cheaper in total (or LCSC has no sellable
@@ -101,7 +103,7 @@ function choose(ownP, offers, wanted) {
 
 function payload(pick, code) {
   const { p, c } = pick;
-  if (pick.kind === 'own') return { quantity: c.qty, productMpn: p.productModel, customerTag: '', cartSource: 'product_detail', price: String(c.price), isReel: !!p.isReel, productSource: null, productSourcePartId: null, productCode: code, searchZone: '' };
+  if (pick.kind === 'own') return { quantity: c.qty, productMpn: p.productModel, customerTag: '', cartSource: 'product_detail', price: String(c.price), isReel: false, productSource: null, productSourcePartId: null, productCode: code, searchZone: '' };
   return { quantity: c.qty, productMpn: p.productModel, cartSource: 'product_list', price: String(c.price), productSource: p.productSource, productSourcePartId: null, productType: p.supplyChannelType || 'lc_order', productModel: p.productCodeManufacturer, vendorCode: p.vendorCode, searchZone: '' };
 }
 
