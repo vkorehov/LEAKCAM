@@ -1,68 +1,65 @@
-LEAKCAM - LCSC order list, 1 board (prices USD, JLCPCB/LCSC parts search 2026-09-15)
+LCSC order list, 1 board(s), prices USD
 
-1    aht30                        https://www.lcsc.com/product-detail/C45354925.html AHT30
-1    ai-m62-cbs(blifn4)           https://www.lcsc.com/product-detail/C41368035.html Ai-M62-CBS(BLIFN4)
-2    1uF 0805                     https://www.lcsc.com/product-detail/C366879.html   0805B105K100CT   ## no voltage rating in schematic, assumed 10V
-53   100n 0201                    https://www.lcsc.com/product-detail/C2903663.html  TCC0201X5R104K160ZT
-12   100n                         https://www.lcsc.com/product-detail/C6600400.html  MSASU105SB7104KFNB25
-1    100pf                        https://www.lcsc.com/product-detail/C235727.html   FN15N101J500PNG
-1    120pf                        https://www.lcsc.com/product-detail/C7507400.html  C0402C0G121K500NTB
-2    12p                          https://www.lcsc.com/product-detail/C696905.html   TCC0402COG120K500AT
-1    15p                          https://www.lcsc.com/product-detail/C696887.html   TCC0402COG150K500AT
-4    20p                          https://www.lcsc.com/product-detail/C696863.html   TCC0402COG200K500AT
-2    220n                         https://www.lcsc.com/product-detail/C36911358.html CGA0402X5R224K500GT
-2    1uF 50V 1206                 https://www.lcsc.com/product-detail/C597503.html   12065C105JAT2A
-2    ABS07-32.768KHZ-T            https://www.lcsc.com/product-detail/C130253.html   ABS07-32.768KHZ-T   ## generic 3215 12.5pF alternative: C22386770 SXTF321532768A20F ~0.13 USD
-1    BLM15AG102SN1D               https://www.lcsc.com/product-detail/C76883.html    BLM15AG102SN1D
-3    BLM18AG121SN1D               https://www.lcsc.com/product-detail/C76892.html    BLM18AG121SN1D
-5    DFE201612E-R47M=P2           https://www.lcsc.com/product-detail/C668312.html   DFE201612E-R47M=P2
-2    DFE252012F-100M=P2           https://www.lcsc.com/product-detail/C703141.html   DFE252012F-100M=P2
-3    TPS63802DLAR                 https://www.lcsc.com/product-detail/C2845237.html  TPS63802DLAR
-2    TPS62823DLCR                 https://www.lcsc.com/product-detail/C2693497.html  TPS62823DLCR
-13   10uF GRM188R61A106ME69D      https://www.lcsc.com/product-detail/C5137565.html  FCC0603X106K100CT
-1    1uF 0603                     https://www.lcsc.com/product-detail/C5189828.html  CS1608X7R105K100NRB
-6    22uF GRM188R60J226MEA0J      https://www.lcsc.com/product-detail/C6119880.html  CGA0603X5R226M6R3JT
-3    DSK24                        https://www.lcsc.com/product-detail/C51898076.html DSK24
-1    YLED0402B                    https://www.lcsc.com/product-detail/C25503856.html XL-1005UYC   ## yellow 0402 LED 590nm, replaces generic YLED0402B
-1    SM05B-NSHSS-TB(LF)(SN)       https://www.lcsc.com/product-detail/C268096.html   SM05B-NSHSS-TB(LF)(SN)
-1    DMG2301LK-7                  https://www.lcsc.com/product-detail/C53283193.html DMG2301L-GK
-2    DMG2302UK-7                  https://www.lcsc.com/product-detail/C53283194.html DMG2302UK-GK   ## clone brands accepted; Diodes original is C460977
-3    PRTR5V0U2F,115               https://www.lcsc.com/product-detail/C478118.html   PRTR5V0U2F,115
-1    10R                          https://www.lcsc.com/product-detail/C103222.html   RTT0310R0FTP
-1    4R                           https://www.lcsc.com/product-detail/C158913.html   RTT034R02FTP   ## 4R is not an E-series value; 4.02 ohm E96 used
-1    XL7EL89CKI-111YLC-24M        https://www.lcsc.com/product-detail/C2965580.html  XL7EL89CKI-111YLC-24M
-3    S2B-PH-K-S(LF)(SN)           https://www.lcsc.com/product-detail/C173752.html   S2B-PH-K-S(LF)(SN)
-1    k230d                        https://www.lcsc.com/product-detail/C42414902.html K230D
-2    54548-2271                   https://www.lcsc.com/product-detail/C22459552.html 05B20L22P   ## Molex 54548-2271 DISCONTINUED (LCSC: no longer manufactured). Same type (0.5mm 22P bottom-contact slide-lock, right angle) offered; FOOTPRINT MUST BE VERIFIED against its drawing
-1    1.1k (1.5A)                  https://www.lcsc.com/product-detail/C3015792.html  SCR0402F1K1
-1    1.5k                         https://www.lcsc.com/product-detail/C3015796.html  SCR0402F1K5
-20   100k                         https://www.lcsc.com/product-detail/C279979.html   CR-02FL6--100K
-18   10k                          https://www.lcsc.com/product-detail/C1858459.html  RC0402FR-1310KL
-1    120k                         https://www.lcsc.com/product-detail/C54920620.html HRC0402F1203DNTO
-1    150k                         https://www.lcsc.com/product-detail/C3152063.html  SC0402F1503F2ANRH
-2    200R                         https://www.lcsc.com/product-detail/C3015766.html  SCR0402F200R
-1    200k                         https://www.lcsc.com/product-detail/C49653950.html GR0402F200KTAG00
-1    22R                          https://www.lcsc.com/product-detail/C49654869.html GR0402F22RTAG00
-4    240R                         https://www.lcsc.com/product-detail/C168215.html   WR04X2400FTL
-1    261k                         https://www.lcsc.com/product-detail/C46444589.html RC-02K2613FT
-1    30k                          https://www.lcsc.com/product-detail/C3152079.html  SC0402F3002F2ANRH
-1    33.2k                        https://www.lcsc.com/product-detail/C159031.html   RTT023322FTH
-6    4.7k                         https://www.lcsc.com/product-detail/C3015810.html  SCR0402F4K7
-1    46.4k                        https://www.lcsc.com/product-detail/C881176.html   CR0402F46K4Q10Z
-4    5.1k                         https://www.lcsc.com/product-detail/C3152095.html  SC0402F5101F2ANRH
-2    510k                         https://www.lcsc.com/product-detail/C880994.html   CR0402F510KQ10Z
-2    511k                         https://www.lcsc.com/product-detail/C3015918.html  SCR0402F511K
-1    590R (1.5A)                  https://www.lcsc.com/product-detail/C3015623.html  SCR0402F590R
-2    91k                          https://www.lcsc.com/product-detail/C5356157.html  SC0402F9102F2ANRH
-1    BQ24072TRGTR                 https://www.lcsc.com/product-detail/C129319.html   BQ24072TRGTR
-2    TPS61160ADRVT                https://www.lcsc.com/product-detail/C2867168.html  TPS61160ADRVT
-2    type-c-31-m-12               https://www.lcsc.com/product-detail/C165948.html   TYPE-C-31-M-12
-1    ch340x                       https://www.lcsc.com/product-detail/C3035748.html  CH340X
-1    msm381acb026                 https://www.lcsc.com/product-detail/C51928208.html MSM381ACB026
-1    w25n02kvzeir                 https://www.lcsc.com/product-detail/C3010298.html  W25N02KVZEIR
-5    Connector 2PIn               J1 J2 JB1 JB2 JT                                             NO PART (no purchased part (pad / test point / antenna))
-2    TESTP                        B1_N B1_P                                                    NO PART (no purchased part (pad / test point / antenna))
+qty   LCSC#       value                        link                                               MPN  ## note
+
+1     C45354925   aht30                        https://www.lcsc.com/product-detail/C45354925.html AHT30
+1     C41368035   ai-m62-cbs(blifn4)           https://www.lcsc.com/product-detail/C41368035.html Ai-M62-CBS(BLIFN4)
+2     C366879     1uF 0805                     https://www.lcsc.com/product-detail/C366879.html   0805B105K100CT   ## no voltage rating in schematic, assumed 10V
+53    C2903663    100n 0201                    https://www.lcsc.com/product-detail/C2903663.html  TCC0201X5R104K160ZT
+12    C6600400    100n                         https://www.lcsc.com/product-detail/C6600400.html  MSASU105SB7104KFNB25
+2     C7507400    120pf                        https://www.lcsc.com/product-detail/C7507400.html  C0402C0G121K500NTB
+2     C696905     12p                          https://www.lcsc.com/product-detail/C696905.html   TCC0402COG120K500AT
+5     C696863     20p                          https://www.lcsc.com/product-detail/C696863.html   TCC0402COG200K500AT
+2     C36911358   220n                         https://www.lcsc.com/product-detail/C36911358.html CGA0402X5R224K500GT
+2     C597503     1uF 50V 1206                 https://www.lcsc.com/product-detail/C597503.html   12065C105JAT2A
+2     C130253     ABS07-32.768KHZ-T            https://www.lcsc.com/product-detail/C130253.html   ABS07-32.768KHZ-T   ## generic 3215 12.5pF alternative: C22386770 SXTF321532768A20F ~0.13 USD
+1     C76883      BLM15AG102SN1D               https://www.lcsc.com/product-detail/C76883.html    BLM15AG102SN1D
+3     C76892      BLM18AG121SN1D               https://www.lcsc.com/product-detail/C76892.html    BLM18AG121SN1D
+5     C668312     DFE201612E-R47M=P2           https://www.lcsc.com/product-detail/C668312.html   DFE201612E-R47M=P2
+2     C703141     DFE252012F-100M=P2           https://www.lcsc.com/product-detail/C703141.html   DFE252012F-100M=P2
+3     C2845237    TPS63802DLAR                 https://www.lcsc.com/product-detail/C2845237.html  TPS63802DLAR
+2     C2693497    TPS62823DLCR                 https://www.lcsc.com/product-detail/C2693497.html  TPS62823DLCR
+13    C5137565    10uF GRM188R61A106ME69D      https://www.lcsc.com/product-detail/C5137565.html  FCC0603X106K100CT
+1     C5189828    1uF 0603                     https://www.lcsc.com/product-detail/C5189828.html  CS1608X7R105K100NRB
+6     C6119880    22uF GRM188R60J226MEA0J      https://www.lcsc.com/product-detail/C6119880.html  CGA0603X5R226M6R3JT
+3     C51898076   DSK24                        https://www.lcsc.com/product-detail/C51898076.html DSK24
+1     C25503856   YLED0402B                    https://www.lcsc.com/product-detail/C25503856.html XL-1005UYC   ## yellow 0402 LED 590nm, replaces generic YLED0402B
+1     C268096     SM05B-NSHSS-TB(LF)(SN)       https://www.lcsc.com/product-detail/C268096.html   SM05B-NSHSS-TB(LF)(SN)
+1     C53283193   DMG2301LK-7                  https://www.lcsc.com/product-detail/C53283193.html DMG2301L-GK
+2     C53283194   DMG2302UK-7                  https://www.lcsc.com/product-detail/C53283194.html DMG2302UK-GK   ## clone brands accepted; Diodes original is C460977
+3     C478118     PRTR5V0U2F,115               https://www.lcsc.com/product-detail/C478118.html   PRTR5V0U2F,115
+1     C103222     10R                          https://www.lcsc.com/product-detail/C103222.html   RTT0310R0FTP
+1     C158913     4R                           https://www.lcsc.com/product-detail/C158913.html   RTT034R02FTP   ## 4R is not an E-series value; 4.02 ohm E96 used
+1     C2965580    XL7EL89CKI-111YLC-24M        https://www.lcsc.com/product-detail/C2965580.html  XL7EL89CKI-111YLC-24M
+3     C173752     S2B-PH-K-S(LF)(SN)           https://www.lcsc.com/product-detail/C173752.html   S2B-PH-K-S(LF)(SN)
+1     C42414902   k230d                        https://www.lcsc.com/product-detail/C42414902.html K230D
+2     C22459552   54548-2271                   https://www.lcsc.com/product-detail/C22459552.html 05B20L22P   ## Molex 54548-2271 DISCONTINUED (LCSC: no longer manufactured). Same type (0.5mm 22P bottom-contact slide-lock, right angle) offered; FOOTPRINT MUST BE VERIFIED against its drawing
+1     C3015792    1.1k (1.5A)                  https://www.lcsc.com/product-detail/C3015792.html  SCR0402F1K1
+1     C3015796    1.5k                         https://www.lcsc.com/product-detail/C3015796.html  SCR0402F1K5
+20    C279979     100k                         https://www.lcsc.com/product-detail/C279979.html   CR-02FL6--100K
+18    C1858459    10k                          https://www.lcsc.com/product-detail/C1858459.html  RC0402FR-1310KL
+1     C54920620   120k                         https://www.lcsc.com/product-detail/C54920620.html HRC0402F1203DNTO
+1     C3152063    150k                         https://www.lcsc.com/product-detail/C3152063.html  SC0402F1503F2ANRH
+2     C3015766    200R                         https://www.lcsc.com/product-detail/C3015766.html  SCR0402F200R
+1     C49653950   200k                         https://www.lcsc.com/product-detail/C49653950.html GR0402F200KTAG00
+1     C49654869   22R                          https://www.lcsc.com/product-detail/C49654869.html GR0402F22RTAG00
+4     C168215     240R                         https://www.lcsc.com/product-detail/C168215.html   WR04X2400FTL
+1     C46444589   261k                         https://www.lcsc.com/product-detail/C46444589.html RC-02K2613FT
+1     C3152079    30k                          https://www.lcsc.com/product-detail/C3152079.html  SC0402F3002F2ANRH
+1     C159031     33.2k                        https://www.lcsc.com/product-detail/C159031.html   RTT023322FTH
+6     C3015810    4.7k                         https://www.lcsc.com/product-detail/C3015810.html  SCR0402F4K7
+1     C881176     46.4k                        https://www.lcsc.com/product-detail/C881176.html   CR0402F46K4Q10Z
+4     C3152095    5.1k                         https://www.lcsc.com/product-detail/C3152095.html  SC0402F5101F2ANRH
+4     C3015918    511k                         https://www.lcsc.com/product-detail/C3015918.html  SCR0402F511K
+1     C3015623    590R (1.5A)                  https://www.lcsc.com/product-detail/C3015623.html  SCR0402F590R
+2     C5356157    91k                          https://www.lcsc.com/product-detail/C5356157.html  SC0402F9102F2ANRH
+1     C129319     BQ24072TRGTR                 https://www.lcsc.com/product-detail/C129319.html   BQ24072TRGTR
+2     C2867168    TPS61160ADRVT                https://www.lcsc.com/product-detail/C2867168.html  TPS61160ADRVT
+2     C165948     type-c-31-m-12               https://www.lcsc.com/product-detail/C165948.html   TYPE-C-31-M-12
+1     C3035748    ch340x                       https://www.lcsc.com/product-detail/C3035748.html  CH340X
+1     C51928208   msm381acb026                 https://www.lcsc.com/product-detail/C51928208.html MSM381ACB026
+1     C3010298    w25n02kvzeir                 https://www.lcsc.com/product-detail/C3010298.html  W25N02KVZEIR
+5     -           Connector 2PIn               J1 J2 JB1 JB2 JT  NO PART (no purchased part (pad / test point / antenna))
+2     -           TESTP                        B1_N B1_P  NO PART (no purchased part (pad / test point / antenna))
 
 TOTAL 43.62 USD
-
-columns: order count | schematic value | LCSC link | chosen MPN | ## note
