@@ -2,7 +2,7 @@ LCSC order list, 1 board(s), generated from the schematic Descriptions; prices J
 
 qty   LCSC#       Basic/Ext value                        link                                               MPN  (designators)
 
-16    C45354925   Extended  aht30                        https://www.lcsc.com/product-detail/C45354925.html AHT30  (U17)  ## need 1, JLCPCB MOQ 16; LCSC may sell fewer
+1     C2757850    Extended  AHT20                        https://www.lcsc.com/product-detail/C2757850.html  AHT20  (U17)
 1     C41368035   Extended  ai-m62-cbs(blifn4)           https://www.lcsc.com/product-detail/C41368035.html Ai-M62-CBS(BLIFN4)  (U11)
 2     C28323      Basic     1uF 0805                     https://www.lcsc.com/product-detail/C28323.html    CL21B105KBFNNNE  (C97 C101)
 53    C2903663    Extended  100n 0201                    https://www.lcsc.com/product-detail/C2903663.html  TCC0201X5R104K160ZT  (C10 C12 C13 C25 C26 C27 C28 C29 C30 C31 C37 C39 C40 C42 C43 C44 C45 C46 C47 C48 C49 C51 C52 C53 C54 C55 C56 C57 C58 C63 C65 C66 C67 C68 C69 C70 C71 C72 C73 C74 C75 C76 C77 C78 C79 C80 C81 C82 C84 C85 C93 C94 C100)
@@ -62,4 +62,4 @@ qty   LCSC#       Basic/Ext value                        link                   
 
 NO PART: ANT1 MIFI, B1_N TESTP, B1_P TESTP, J1 Connector 2PIn, J2 Connector 2PIn, JB1 Connector 2PIn, JB2 Connector 2PIn, JT Connector 2PIn
 
-TOTAL 51.40 USD
+TOTAL 42.96 USD
