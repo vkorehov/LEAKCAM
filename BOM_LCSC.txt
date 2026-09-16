@@ -50,7 +50,7 @@ qty   LCSC#       Basic/Ext value                        link                   
 6     C25900      Basic     4.7k                         https://www.lcsc.com/product-detail/C25900.html    0402WGF4701TCE  (R14 R15 R17 R18 R73 R74)
 1     C25792      Basic     47k                          https://www.lcsc.com/product-detail/C25792.html    0402WGF4702TCE  (R21)
 4     C25905      Basic     5.1k                         https://www.lcsc.com/product-detail/C25905.html    0402WGF5101TCE  (R1 R4 R9 R11)
-1991  C11616      Promo     510k                         https://www.lcsc.com/product-detail/C11616.html    0402WGF5103TCE  (R22 R50)  ## need 2, JLCPCB MOQ 1991; LCSC may sell fewer
+2     C49655223   Extended  511k                         https://www.lcsc.com/product-detail/C49655223.html GR0402F511KTAG00  (R22 R50)
 1     C25794      Basic     51k                          https://www.lcsc.com/product-detail/C25794.html    0402WGF5102TCE  (R56)
 2     C54920709   Extended  91k                          https://www.lcsc.com/product-detail/C54920709.html HRC0402F9102DNTO  (R24 R55)
 1     C129319     Extended  BQ24072TRGTR                 https://www.lcsc.com/product-detail/C129319.html   BQ24072TRGTR  (U1)
@@ -62,4 +62,4 @@ qty   LCSC#       Basic/Ext value                        link                   
 
 NO PART: ANT1 MIFI, B1_N TESTP, B1_P TESTP, J1 Connector 2PIn, J2 Connector 2PIn, JB1 Connector 2PIn, JB2 Connector 2PIn, JT Connector 2PIn
 
-TOTAL 59.96 USD
+TOTAL 51.40 USD
