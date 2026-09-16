@@ -10,230 +10,230 @@ Revision:   c3302682ade55e83da07ff289ab4c3b779997a25
 Variant:    No variations
 Units used: mil
 
-Designator Comment                   Layer       Footprint                       Center-X(mil) Center-Y(mil) Rotation Description                                                        
-C90        "10uF GRM188R61A106ME69D" BottomLayer FP-GRM188-0_15-MFG              492.126       1692.913      270      C19702                                                             
-JT         "Connector 2PIn"          TopLayer    CON_2P                          1388.643      1057.356      270      ""                                                                 
-JB2        "Connector 2PIn"          TopLayer    CON_2P                          1388.160      1174.776      270      ""                                                                 
-JB1        "Connector 2PIn"          TopLayer    CON_2P                          1387.527      1322.984      90       ""                                                                 
-J1         "Connector 2PIn"          TopLayer    CON_2P                          767.630       1140.990      90       ""                                                                 
-J2         "Connector 2PIn"          TopLayer    CON_2P                          751.683       1339.997      180      ""                                                                 
-Y3         Q13FC13500004             TopLayer    FP-ABS07-MFG                    255.905       1397.638      0        C32346                                                             
-Y2         XL7EL89CKI-111YLC-24M     TopLayer    FP-XRCGB_F_N-MFG                579.494       915.812       0        C2965580                                                           
-Y1         Q13FC13500004             TopLayer    FP-ABS07-MFG                    735.165       911.285       180      C32346                                                             
-USBC2      type-c-31-m-12            TopLayer    TYPE-C-31-M-12                  218.535       716.738       270      C165948                                                            
-USBC1      type-c-31-m-12            TopLayer    TYPE-C-31-M-12                  1213.934      804.391       90       C165948                                                            
-U17        aht30                     BottomLayer AHT30                           535.301       1256.788      180      C45354925                                                          
-U16        w25n02kvzeir              TopLayer    w25n02                          181.648       291.845       270      C3010298                                                           
-U15        TPS61160ADRVT             BottomLayer TPS61160ADRVT                   811.835       1470.986      0        C2867168                                                           
-U14        TPS61160ADRVT             BottomLayer TPS61160ADRVT                   944.882       1181.102      0        C2867168                                                           
-U13        msm381acb026              TopLayer    mems                            1321.483      121.560       0        C51928208                                                          
-U11        ai-m62-cbs(blifn4)        TopLayer    AI-M62-CBS                      382.701       1780.217      270      C41368035                                                          
-U10        TPS63802DLAR              BottomLayer FP-DLA0010A-MFG                 1099.409      1692.913      0        C2845237                                                           
-U8         TPS63802DLAR              BottomLayer FP-DLA0010A-MFG                 902.559       1692.913      0        C2845237                                                           
-U7         TPS62823DLCR              BottomLayer FP-DLC0008A-MFG                 1321.270      1678.372      180      C2693497                                                           
-U6         TPS62823DLCR              BottomLayer FP-DLC0008A-MFG                 1319.497      1436.794      180      C2693497                                                           
-U5         TPS63802DLAR              BottomLayer FP-DLA0010A-MFG                 1132.979      1437.643      0        C2845237                                                           
-U3         k230d                     TopLayer    K230D                           752.926       563.981       0        C42414902                                                          
-U2         ch340x                    TopLayer    ch340x                          434.471       516.861       180      C3035748                                                           
-U1         BQ24072TRGTR              TopLayer    RGT0016C_V                      1263.780      1171.260      180      C129319                                                            
-S3         S2B-PH-K-S(LF)(SN)        BottomLayer JST-S2B-PH-K-S_V                1163.386      1968.504      270      C157932                                                            
-S2         S2B-PH-K-S(LF)(SN)        BottomLayer JST-S2B-PH-K-S_V                274.553       1228.381      90       C157932                                                            
-S1         S2B-PH-K-S(LF)(SN)        BottomLayer JST-S2B-PH-K-S_V                1159.845      462.214       270      C157932                                                            
-R76        100k                      BottomLayer RES_0402                        193.125       1951.987      90       C25741                                                             
-R74        4.7k                      BottomLayer RES_0402                        431.063       1230.978      270      C25900                                                             
-R73        4.7k                      BottomLayer RES_0402                        557.286       1154.070      0        C25900                                                             
-R72        511k                      TopLayer    RES_0402                        779.926       1830.955      90       C49655223                                                          
-R71        511k                      TopLayer    RES_0402                        779.499       1764.687      90       C49655223                                                          
-R70        10k                       TopLayer    RES_0402                        56.599        1696.656      0        C25744                                                             
-R69        100k                      BottomLayer RES_0402                        1007.990      1655.484      90       C25741                                                             
-R68        10R                       BottomLayer FP-SR0603-MFG                   726.827       1476.525      270      C22859                                                             
-R67        10k                       TopLayer    RES_0402                        859.057       1299.070      0        C25744                                                             
-R66        4R                        BottomLayer FP-SR0603-MFG                   854.561       1191.518      270      C49654665                                                          
-R65        10k                       TopLayer    RES_0402                        56.171        1749.884      0        C25744                                                             
-R64        10k                       BottomLayer RES_0402                        505.142       694.534       90       C25744                                                             
-R63        30k                       BottomLayer RES_0402                        556.905       525.665       180      C49653548                                                          
-R62        200R                      BottomLayer RES_0402                        569.674       577.420       180      C25087                                                             
-R61        100k                      BottomLayer RES_0402                        472.681       967.369       90       C25741                                                             
-R60        100k                      TopLayer    RES_0402                        759.843       1033.705      0        C25741                                                             
-R59        200k                      BottomLayer RES_0402                        472.681       1043.167      90       C25764                                                             
-R58        100k                      BottomLayer RES_0402                        531.736       1043.167      90       C25741                                                             
-R57        10k                       TopLayer    RES_0402                        55.739        1802.900      0        C25744                                                             
-R56        261k                      BottomLayer RES_0402                        1015.525      1723.793      90       C102933                                                            
-R55        91k                       BottomLayer RES_0402                        809.104       1657.856      90       C54920709                                                          
-R53        100k                      BottomLayer RES_0402                        495.986       599.656       180      C25741                                                             
-R51        100k                      BottomLayer RES_0402                        1220.070      1556.009      180      C25741                                                             
-R50        511k                      BottomLayer RES_0402                        818.548       1725.898      90       C49655223                                                          
-R49        100k                      BottomLayer RES_0402                        1378.596      1524.157      180      C25741                                                             
-R48        240R                      BottomLayer RES_0402                        740.928       776.114       90       C324768                                                            
-R47        240R                      BottomLayer RES_0402                        802.298       788.487       0        C324768                                                            
-R46        240R                      BottomLayer RES_0402                        821.405       827.978       180      C324768                                                            
-R45        100k                      BottomLayer RES_0402                        719.348       841.295       0        C25741                                                             
-R44        10k                       TopLayer    RES_0402                        56.166        1855.914      0        C25744                                                             
-R43        10k                       TopLayer    RES_0402                        56.805        1909.356      0        C25744                                                             
-R42        22R                       TopLayer    RES_0402                        344.054       348.652       180      C25092                                                             
-R41        10k                       BottomLayer RES_0402                        233.407       138.035       180      C25744                                                             
-R40        10k                       BottomLayer RES_0402                        156.256       419.431       270      C25744                                                             
-R39        10k                       BottomLayer RES_0402                        255.665       419.431       270      C25744                                                             
-R38        100k                      TopLayer    RES_0402                        69.936        1972.838      270      C25741                                                             
-R37        200R                      TopLayer    RES_0402                        1039.510      406.256       180      C25087                                                             
-R36        10k                       TopLayer    RES_0402                        709.641       1688.145      90       C25744                                                             
-R35        100k                      BottomLayer RES_0402                        407.598       1878.571      180      C25741                                                             
-R34        10k                       TopLayer    RES_0402                        763.510       1688.145      90       C25744                                                             
-R33        240R                      BottomLayer RES_0402                        863.636       788.812       0        C324768                                                            
-R32        100k                      TopLayer    RES_0402                        858.045       1854.248      0        C25741                                                             
-R31        10k                       BottomLayer RES_0402                        505.142       786.176       90       C25744                                                             
-R30        100k                      TopLayer    RES_0402                        571.453       1452.843      180      C25741                                                             
-R29        120k                      BottomLayer RES_0402                        1379.379      1768.858      180      C54920620                                                          
-R28        100k                      TopLayer    RES_0402                        1004.077      1791.099      180      C25741                                                             
-R27        100k                      TopLayer    RES_0402                        1011.388      1593.361      180      C25741                                                             
-R26        100k                      BottomLayer RES_0402                        1317.982      1768.508      180      C25741                                                             
-R25        33k                       BottomLayer RES_0402                        1314.280      1525.034      180      C25779                                                             
-R24        91k                       BottomLayer RES_0402                        1039.990      1409.796      90       C54920709                                                          
-R23        100k                      TopLayer    RES_0402                        714.085       1763.405      90       C25741                                                             
-R22        511k                      BottomLayer RES_0402                        1050.816      1476.385      90       C49655223                                                          
-R21        47k                       TopLayer    RES_0402                        1324.603      1044.079      90       C25792                                                             
-R20        100k                      BottomLayer RES_0402                        495.404       640.195       0        C25741                                                             
-R19        100k                      TopLayer    RES_0402                        1002.353      1855.008      180      C25741                                                             
-R18        4.7k                      BottomLayer RES_0402                        1064.381      219.820       90       C25900                                                             
-R17        4.7k                      BottomLayer RES_0402                        1125.945      219.057       90       C25900                                                             
-R16        10k                       BottomLayer RES_0402                        1185.801      218.569       90       C25744                                                             
-R15        4.7k                      BottomLayer RES_0402                        322.612       236.583       90       C25900                                                             
-R14        4.7k                      BottomLayer RES_0402                        321.703       165.891       270      C25900                                                             
-R13        10k                       BottomLayer RES_0402                        320.901       95.494        90       C25744                                                             
-R12        1.5k                      BottomLayer RES_0402                        1235.376      1279.528      0        C25867                                                             
-R11        5.1k                      BottomLayer RES_0402                        246.554       646.489       0        C25905                                                             
-R10        10k                       BottomLayer RES_0402                        425.378       527.952       0        C25744                                                             
-R9         5.1k                      BottomLayer RES_0402                        1195.186      873.223       180      C25905                                                             
-R8         150k                      BottomLayer RES_0402                        1207.115      1138.455      270      C54920625                                                          
-R7         "590R (1.5A)"             BottomLayer RES_0402                        1296.732      1130.552      270      C49653889                                                          
-R6         100k                      BottomLayer RES_0402                        616.986       790.114       0        C25741                                                             
-R5         "1.1k (1.5A)"             BottomLayer RES_0402                        1146.890      1086.570      270      C54920634                                                          
-R4         5.1k                      BottomLayer RES_0402                        1190.544      750.466       180      C25905                                                             
-R3         10k                       TopLayer    RES_0402                        999.016       1063.232      0        C25744                                                             
-R2         10k                       BottomLayer RES_0402                        493.849       490.380       180      C25744                                                             
-R1         5.1k                      BottomLayer RES_0402                        250.091       776.667       0        C25905                                                             
-Q4         AO3400A                   TopLayer    FP-SOT23-MFG                    457.556       1409.405      0        C20917                                                             
-Q2         AO3400A                   TopLayer    FP-SOT23-MFG                    649.606       1062.992      180      C20917                                                             
-Q1         AO3401A                   TopLayer    FP-SOT23-IPC_B                  492.126       1062.992      180      C15127                                                             
-PR1        SM05B-NSHSS-TB(LF)(SN)    BottomLayer FP-SM05B-NSHSS-TB_LF_SN-MFG     199.803       1775.591      270      C268096                                                            
-L7         DFE252012F-100M=P2        TopLayer    FP-DFE252012C-IPC_B             925.197       1476.378      90       C703141                                                            
-L6         DFE252012F-100M=P2        TopLayer    FP-DFE252012C-IPC_B             1051.003      1182.642      90       C703141                                                            
-L5         DFE201612E-R47M=P2        TopLayer    FP-DFE201612C-IPC_C             1102.362      1692.913      270      C668312                                                            
-L4         DFE201612E-R47M=P2        TopLayer    FP-DFE201612C-IPC_C             905.512       1692.913      270      C668312                                                            
-L3         DFE201612E-R47M=P2        TopLayer    FP-DFE201612C-IPC_C             1145.268      1431.285      270      C668312                                                            
-L2         DFE201612E-R47M=P2        TopLayer    FP-DFE201612C-IPC_C             1339.331      1706.899      90       C668312                                                            
-L1         DFE201612E-R47M=P2        TopLayer    FP-DFE201612C-IPC_C             1336.443      1470.482      90       C668312                                                            
-J5         05b20l22p                 TopLayer    FLEX_CON_22P                    691.078       178.144       0        C22459552                                                          
-J4         05b20l22p                 BottomLayer FLEX_CON_22P                    690.726       175.896       180      C22459552                                                          
-FB4        GZ1608D601TF              TopLayer    FP-MMZ0603-MFG                  1240.158      98.425        270      "Signal Line Ferrite Bead 600O @ 100MHz 160mA DCR 1700mO SMD 0201" 
-FB3        BLM18PG121SN1D            TopLayer    FP-BLM18-0_15-t0_8-IPC_B        1256.890      508.858       270      C14709                                                             
-FB2        BLM18PG121SN1D            TopLayer    FP-BLM18-0_15-t0_8-IPC_B        1028.801      683.664       270      C14709                                                             
-FB1        BLM18PG121SN1D            TopLayer    FP-BLM18-0_15-t0_8-IPC_B        1026.506      472.677       90       C14709                                                             
-D8         DSK24                     TopLayer    FP-S8-V-3910_01-001-MFG         817.663       1467.249      90       C2939005                                                           
-D7         DSK24                     TopLayer    FP-S8-V-3910_01-001-MFG         946.046       1181.998      90       C2939005                                                           
-D5         PRTR5V0U2F,115            TopLayer    FP-SOT886-MFG                   1033.530      804.333       180      C478118                                                            
-D4         PRTR5V0U2F,115            BottomLayer FP-SOT886-MFG                   391.282       1718.736      0        C478118                                                            
-D3         PRTR5V0U2F,115            TopLayer    FP-SOT886-MFG                   401.246       718.122       0        C478118                                                            
-D2         DSK24                     BottomLayer FP-S8-V-3910_01-001-MFG         128.028       614.339       0        C2939005                                                           
-D1         KT-0603R                  BottomLayer FP-SML-LX0603IW-TR-MFG          1171.580      1235.186      90       "LED RED DIFFUSED SMD"                                             
-C112       20p                       TopLayer    CAP_0402                        295.834       1477.015      0        C1554                                                              
-C111       20p                       TopLayer    CAP_0402                        223.480       1477.190      0        C1554                                                              
-C110       100n                      BottomLayer CAP_0402                        643.206       1273.027      270      C307331                                                            
-C109       100n                      TopLayer    CAP_0402                        714.052       1831.063      270      C307331                                                            
-C107       220n                      BottomLayer CAP_0402                        675.482       1458.971      270      C16772                                                             
-C106       "10uF GRM188R61A106ME69D" TopLayer    FP-GRM188-0_15-MFG              910.090       1369.159      0        C19702                                                             
-C105       "10uF GRM188R61A106ME69D" TopLayer    FP-GRM188-0_15-MFG              1102.362      1594.488      180      C19702                                                             
-C104       "1uF 50V 1206"            TopLayer    FP-1206-L_3_2_0_2-W_1_6_0-IPC_B 725.104       1464.130      90       C597503                                                            
-C103       220n                      BottomLayer CAP_0402                        794.003       1234.239      90       C16772                                                             
-C102       "10uF GRM188R61A106ME69D" TopLayer    FP-GRM188-0_15-MFG              1096.963      1063.684      0        C19702                                                             
-C101       "1uF 0805"                TopLayer    CAPC2013X145X50NL20T20          1169.422      129.969       270      C28323                                                             
-C100       "100n 0201"               BottomLayer CAP_0201                        586.307       436.982       270      C2903663                                                           
-C99        "10uF GRM188R61A106ME69D" BottomLayer FP-GRM188-0_15-MFG              448.792       358.509       180      C19702                                                             
-C98        20p                       BottomLayer CAP_0402                        1116.173      150.436       0        C1554                                                              
-C97        "1uF 0805"                TopLayer    CAPC2013X145X50NL20T20          1082.677      130.905       270      C28323                                                             
-C96        "10uF GRM188R61A106ME69D" TopLayer    FP-GRM188-0_15-MFG              1356.787      294.236       0        C19702                                                             
-C95        100n                      TopLayer    CAP_0402                        1361.031      219.263       180      C307331                                                            
-C94        "100n 0201"               BottomLayer CAP_0201                        740.048       435.671       270      C2903663                                                           
-C93        "100n 0201"               BottomLayer CAP_0201                        778.456       448.940       180      C2903663                                                           
-C92        100n                      BottomLayer CAP_0402                        495.209       530.387       180      C307331                                                            
-C89        "22uF GRM188R60J226MEA0J" TopLayer    FP-GRM188-0_2-IPC_C             1102.362      1791.339      0        C59461                                                             
-C88        100n                      BottomLayer CAP_0402                        259.986       2018.139      180      C307331                                                            
-C87        "22uF GRM188R60J226MEA0J" TopLayer    FP-GRM188-0_2-IPC_C             905.512       1791.339      0        C59461                                                             
-C86        "1uF 0603"                TopLayer    FP-GRM188-0_15-MFG              124.262       71.279        180      C15849                                                             
-C85        "100n 0201"               BottomLayer CAP_0201                        843.431       590.429       270      C2903663                                                           
-C84        "100n 0201"               BottomLayer CAP_0201                        688.221       590.334       90       C2903663                                                           
-C82        "100n 0201"               BottomLayer CAP_0201                        623.576       551.334       180      C2903663                                                           
-C81        "100n 0201"               BottomLayer CAP_0201                        765.919       590.749       270      C2903663                                                           
-C80        "100n 0201"               BottomLayer CAP_0201                        739.484       590.475       270      C2903663                                                           
-C79        "100n 0201"               BottomLayer CAP_0201                        714.781       590.663       90       C2903663                                                           
-C78        "100n 0201"               BottomLayer CAP_0201                        842.788       538.184       270      C2903663                                                           
-C77        "100n 0201"               BottomLayer CAP_0201                        818.164       590.536       270      C2903663                                                           
-C76        "100n 0201"               BottomLayer CAP_0201                        791.609       590.538       270      C2903663                                                           
-C75        "100n 0201"               BottomLayer CAP_0201                        740.446       538.777       270      C2903663                                                           
-C74        "100n 0201"               BottomLayer CAP_0201                        765.711       538.720       270      C2903663                                                           
-C73        "100n 0201"               BottomLayer CAP_0201                        790.651       538.398       270      C2903663                                                           
-C72        "100n 0201"               BottomLayer CAP_0201                        817.094       538.398       270      C2903663                                                           
-C71        "100n 0201"               BottomLayer CAP_0201                        765.315       487.481       270      C2903663                                                           
-C70        "100n 0201"               BottomLayer CAP_0201                        816.489       487.588       270      C2903663                                                           
-C69        "100n 0201"               BottomLayer CAP_0201                        714.447       538.682       90       C2903663                                                           
-C68        "100n 0201"               BottomLayer CAP_0201                        651.110       499.790       180      C2903663                                                           
-C67        "100n 0201"               BottomLayer CAP_0201                        714.682       461.043       270      C2903663                                                           
-C66        "100n 0201"               BottomLayer CAP_0201                        739.407       487.374       270      C2903663                                                           
-C65        "100n 0201"               BottomLayer CAP_0201                        662.447       615.439       90       C2903663                                                           
-C63        "100n 0201"               BottomLayer CAP_0201                        676.225       474.094       180      C2903663                                                           
-C58        "100n 0201"               BottomLayer CAP_0201                        791.010       487.374       270      C2903663                                                           
-C57        "100n 0201"               BottomLayer CAP_0201                        675.772       551.962       0        C2903663                                                           
-C56        "100n 0201"               BottomLayer CAP_0201                        599.308       499.865       180      C2903663                                                           
-C55        "100n 0201"               BottomLayer CAP_0201                        625.379       473.877       180      C2903663                                                           
-C54        "100n 0201"               BottomLayer CAP_0201                        650.770       448.424       0        C2903663                                                           
-C53        "100n 0201"               BottomLayer CAP_0201                        624.003       602.623       180      C2903663                                                           
-C52        "100n 0201"               BottomLayer CAP_0201                        623.802       577.227       0        C2903663                                                           
-C51        "100n 0201"               BottomLayer CAP_0201                        623.743       525.839       0        C2903663                                                           
-C50        "10uF GRM188R61A106ME69D" TopLayer    FP-GRM188-0_15-MFG              905.512       1594.488      180      C19702                                                             
-C49        "100n 0201"               BottomLayer CAP_0201                        804.083       756.088       180      C2903663                                                           
-C48        "100n 0201"               BottomLayer CAP_0201                        689.285       641.115       90       C2903663                                                           
-C47        "100n 0201"               BottomLayer CAP_0201                        676.358       730.817       180      C2903663                                                           
-C46        "100n 0201"               BottomLayer CAP_0201                        676.249       756.088       180      C2903663                                                           
-C45        "100n 0201"               BottomLayer CAP_0201                        829.734       730.336       180      C2903663                                                           
-C44        "100n 0201"               BottomLayer CAP_0201                        727.399       704.628       180      C2903663                                                           
-C43        "100n 0201"               BottomLayer CAP_0201                        740.008       666.441       90       C2903663                                                           
-C42        "100n 0201"               BottomLayer CAP_0201                        713.976       642.100       90       C2903663                                                           
-C40        "100n 0201"               BottomLayer CAP_0201                        790.711       640.430       90       C2903663                                                           
-C39        "100n 0201"               BottomLayer CAP_0201                        816.552       640.280       90       C2903663                                                           
-C37        "100n 0201"               BottomLayer CAP_0201                        778.581       679.010       0        C2903663                                                           
-C36        12p                       TopLayer    CAP_0402                        610.110       825.808       180      C1547                                                              
-C35        12p                       TopLayer    CAP_0402                        536.690       826.116       0        C1547                                                              
-C34        20p                       TopLayer    CAP_0402                        685.015       826.617       180      C1554                                                              
-C33        20p                       TopLayer    CAP_0402                        787.370       826.617       180      C1554                                                              
-C32        100n                      TopLayer    CAP_0402                        243.402       73.929        180      C307331                                                            
-C31        "100n 0201"               BottomLayer CAP_0201                        855.400       473.928       180      C2903663                                                           
-C30        "100n 0201"               BottomLayer CAP_0201                        855.414       498.531       0        C2903663                                                           
-C29        "100n 0201"               BottomLayer CAP_0201                        881.359       551.368       0        C2903663                                                           
-C28        "100n 0201"               BottomLayer CAP_0201                        855.241       448.798       0        C2903663                                                           
-C27        "100n 0201"               BottomLayer CAP_0201                        816.860       436.474       270      C2903663                                                           
-C26        "100n 0201"               BottomLayer CAP_0201                        868.021       590.020       270      C2903663                                                           
-C25        "100n 0201"               BottomLayer CAP_0201                        867.939       640.723       90       C2903663                                                           
-C24        100n                      BottomLayer CAP_0402                        127.996       1604.571      180      C307331                                                            
-C23        100n                      TopLayer    CAP_0402                        570.897       1397.792      0        C307331                                                            
-C22        100pf                     BottomLayer CAP_0402                        1392.713      1664.150      270      C1546                                                              
-C21        100pf                     BottomLayer CAP_0402                        1396.323      1424.188      270      C1546                                                              
-C20        "22uF GRM188R60J226MEA0J" TopLayer    FP-GRM188-0_2-IPC_C             1358.559      1806.553      0        C59461                                                             
-C19        "10uF GRM188R61A106ME69D" TopLayer    FP-GRM188-0_15-MFG              1247.417      1710.912      90       C19702                                                             
-C18        "22uF GRM188R60J226MEA0J" TopLayer    FP-GRM188-0_2-IPC_C             1361.964      1570.505      0        C59461                                                             
-C17        "22uF GRM188R60J226MEA0J" TopLayer    FP-GRM188-0_2-IPC_C             1346.457      508.858       270      C59461                                                             
-C16        "10uF GRM188R61A106ME69D" TopLayer    FP-GRM188-0_15-MFG              1244.229      1466.821      90       C19702                                                             
-C15        "10uF GRM188R61A106ME69D" TopLayer    FP-GRM188-0_15-MFG              1133.152      1330.716      0        C19702                                                             
-C14        "22uF GRM188R60J226MEA0J" TopLayer    FP-GRM188-0_2-IPC_C             1144.930      1527.678      0        C59461                                                             
-C13        "100n 0201"               BottomLayer CAP_0201                        637.761       666.224       90       C2903663                                                           
-C12        "100n 0201"               BottomLayer CAP_0201                        623.997       628.148       180      C2903663                                                           
-C11        "10uF GRM188R61A106ME69D" TopLayer    FP-GRM188-0_15-MFG              1318.898      1318.898      90       C19702                                                             
-C10        "100n 0201"               BottomLayer CAP_0201                        688.998       435.948       270      C2903663                                                           
-C8         100n                      TopLayer    CAP_0402                        953.066       294.790       0        C307331                                                            
-C7         100n                      BottomLayer CAP_0402                        432.861       293.738       180      C307331                                                            
-C6         100n                      BottomLayer CAP_0402                        394.213       472.447       180      C307331                                                            
-C5         100n                      BottomLayer CAP_0402                        494.106       424.563       180      C307331                                                            
-C3         "10uF GRM188R61A106ME69D" TopLayer    FP-GRM188-0_15-MFG              1147.627      1179.330      270      C19702                                                             
-C2         "10uF GRM188R61A106ME69D" TopLayer    FP-GRM188-0_15-MFG              1240.158      1043.307      0        C19702                                                             
-C1         "1uF 50V 1206"            TopLayer    FP-1206-L_3_2_0_2-W_1_6_0-IPC_B 852.629       1179.220      90       C597503                                                            
-B1_P       TESTP                     TopLayer    TESTP                           479.747       709.621       90       ""                                                                 
-B1_N       TESTP                     TopLayer    TESTP                           481.562       773.513       90       ""                                                                 
+Designator Comment                 Layer       Footprint                       Center-X(mil) Center-Y(mil) Rotation Description
+C90        10uF GRM188R61A106ME69D BottomLayer FP-GRM188-0_15-MFG              492.126       1692.913      270      C19702
+JT         Connector 2PIn          TopLayer    CON_2P                          1388.643      1057.356      270      
+JB2        Connector 2PIn          TopLayer    CON_2P                          1388.160      1174.776      270      
+JB1        Connector 2PIn          TopLayer    CON_2P                          1387.527      1322.984      90       
+J1         Connector 2PIn          TopLayer    CON_2P                          767.630       1140.990      90       
+J2         Connector 2PIn          TopLayer    CON_2P                          751.683       1339.997      180      
+Y3         Q13FC13500004           TopLayer    FP-ABS07-MFG                    255.905       1397.638      0        C32346
+Y2         XL7EL89CKI-111YLC-24M   TopLayer    FP-XRCGB_F_N-MFG                579.494       915.812       0        C2965580
+Y1         Q13FC13500004           TopLayer    FP-ABS07-MFG                    735.165       911.285       180      C32346
+USBC2      type-c-31-m-12          TopLayer    TYPE-C-31-M-12                  218.535       716.738       270      C165948
+USBC1      type-c-31-m-12          TopLayer    TYPE-C-31-M-12                  1213.934      804.391       90       C165948
+U17        aht30                   BottomLayer AHT30                           535.301       1256.788      180      C45354925
+U16        w25n02kvzeir            TopLayer    w25n02                          181.648       291.845       270      C3010298
+U15        TPS61160ADRVT           BottomLayer TPS61160ADRVT                   811.835       1470.986      0        C2867168
+U14        TPS61160ADRVT           BottomLayer TPS61160ADRVT                   944.882       1181.102      0        C2867168
+U13        msm381acb026            TopLayer    mems                            1321.483      121.560       0        C51928208
+U11        ai-m62-cbs(blifn4)      TopLayer    AI-M62-CBS                      382.701       1780.217      270      C41368035
+U10        TPS63802DLAR            BottomLayer FP-DLA0010A-MFG                 1099.409      1692.913      0        C2845237
+U8         TPS63802DLAR            BottomLayer FP-DLA0010A-MFG                 902.559       1692.913      0        C2845237
+U7         TPS62823DLCR            BottomLayer FP-DLC0008A-MFG                 1321.270      1678.372      180      C2693497
+U6         TPS62823DLCR            BottomLayer FP-DLC0008A-MFG                 1319.497      1436.794      180      C2693497
+U5         TPS63802DLAR            BottomLayer FP-DLA0010A-MFG                 1132.979      1437.643      0        C2845237
+U3         k230d                   TopLayer    K230D                           752.926       563.981       0        C42414902
+U2         ch340x                  TopLayer    ch340x                          434.471       516.861       180      C3035748
+U1         BQ24072TRGTR            TopLayer    RGT0016C_V                      1263.780      1171.260      180      C129319
+S3         S2B-PH-K-S(LF)(SN)      BottomLayer JST-S2B-PH-K-S_V                1163.386      1968.504      270      C157932
+S2         S2B-PH-K-S(LF)(SN)      BottomLayer JST-S2B-PH-K-S_V                274.553       1228.381      90       C157932
+S1         S2B-PH-K-S(LF)(SN)      BottomLayer JST-S2B-PH-K-S_V                1159.845      462.214       270      C157932
+R76        100k                    BottomLayer RES_0402                        193.125       1951.987      90       C25741
+R74        4.7k                    BottomLayer RES_0402                        431.063       1230.978      270      C25900
+R73        4.7k                    BottomLayer RES_0402                        557.286       1154.070      0        C25900
+R72        1M                      TopLayer    RES_0402                        779.926       1830.955      90       C26083
+R71        1M                      TopLayer    RES_0402                        779.499       1764.687      90       C26083
+R70        10k                     TopLayer    RES_0402                        56.599        1696.656      0        C25744
+R69        20k                     BottomLayer RES_0402                        1007.990      1655.484      90       C25765
+R68        10R                     BottomLayer FP-SR0603-MFG                   726.827       1476.525      270      C22859
+R67        10k                     TopLayer    RES_0402                        859.057       1299.070      0        C25744
+R66        4.7R                    BottomLayer FP-SR0603-MFG                   854.561       1191.518      270      C23164
+R65        10k                     TopLayer    RES_0402                        56.171        1749.884      0        C25744
+R64        10k                     BottomLayer RES_0402                        505.142       694.534       90       C25744
+R63        30k                     BottomLayer RES_0402                        556.905       525.665       180      C49653548
+R62        200R                    BottomLayer RES_0402                        569.674       577.420       180      C25087
+R61        100k                    BottomLayer RES_0402                        472.681       967.369       90       C25741
+R60        100k                    TopLayer    RES_0402                        759.843       1033.705      0        C25741
+R59        200k                    BottomLayer RES_0402                        472.681       1043.167      90       C25764
+R58        100k                    BottomLayer RES_0402                        531.736       1043.167      90       C25741
+R57        10k                     TopLayer    RES_0402                        55.739        1802.900      0        C25744
+R56        51k                     BottomLayer RES_0402                        1015.525      1723.793      90       C25794
+R55        91k                     BottomLayer RES_0402                        809.104       1657.856      90       C54920709
+R53        100k                    BottomLayer RES_0402                        495.986       599.656       180      C25741
+R51        100k                    BottomLayer RES_0402                        1220.070      1556.009      180      C25741
+R50        511k                    BottomLayer RES_0402                        818.548       1725.898      90       C49655223
+R49        100k                    BottomLayer RES_0402                        1378.596      1524.157      180      C25741
+R48        240R                    BottomLayer RES_0402                        740.928       776.114       90       C324768
+R47        240R                    BottomLayer RES_0402                        802.298       788.487       0        C324768
+R46        240R                    BottomLayer RES_0402                        821.405       827.978       180      C324768
+R45        100k                    BottomLayer RES_0402                        719.348       841.295       0        C25741
+R44        10k                     TopLayer    RES_0402                        56.166        1855.914      0        C25744
+R43        10k                     TopLayer    RES_0402                        56.805        1909.356      0        C25744
+R42        22R                     TopLayer    RES_0402                        344.054       348.652       180      C25092
+R41        10k                     BottomLayer RES_0402                        233.407       138.035       180      C25744
+R40        10k                     BottomLayer RES_0402                        156.256       419.431       270      C25744
+R39        10k                     BottomLayer RES_0402                        255.665       419.431       270      C25744
+R38        100k                    TopLayer    RES_0402                        69.936        1972.838      270      C25741
+R37        200R                    TopLayer    RES_0402                        1039.510      406.256       180      C25087
+R36        10k                     TopLayer    RES_0402                        709.641       1688.145      90       C25744
+R35        100k                    BottomLayer RES_0402                        407.598       1878.571      180      C25741
+R34        10k                     TopLayer    RES_0402                        763.510       1688.145      90       C25744
+R33        240R                    BottomLayer RES_0402                        863.636       788.812       0        C324768
+R32        100k                    TopLayer    RES_0402                        858.045       1854.248      0        C25741
+R31        10k                     BottomLayer RES_0402                        505.142       786.176       90       C25744
+R30        100k                    TopLayer    RES_0402                        571.453       1452.843      180      C25741
+R29        120k                    BottomLayer RES_0402                        1379.379      1768.858      180      C25750
+R28        100k                    TopLayer    RES_0402                        1004.077      1791.099      180      C25741
+R27        100k                    TopLayer    RES_0402                        1011.388      1593.361      180      C25741
+R26        100k                    BottomLayer RES_0402                        1317.982      1768.508      180      C25741
+R25        33k                     BottomLayer RES_0402                        1314.280      1525.034      180      C25779
+R24        91k                     BottomLayer RES_0402                        1039.990      1409.796      90       C54920709
+R23        100k                    TopLayer    RES_0402                        714.085       1763.405      90       C25741
+R22        511k                    BottomLayer RES_0402                        1050.816      1476.385      90       C49655223
+R21        47k                     TopLayer    RES_0402                        1324.603      1044.079      90       C25792
+R20        100k                    BottomLayer RES_0402                        495.404       640.195       0        C25741
+R19        100k                    TopLayer    RES_0402                        1002.353      1855.008      180      C25741
+R18        4.7k                    BottomLayer RES_0402                        1064.381      219.820       90       C25900
+R17        4.7k                    BottomLayer RES_0402                        1125.945      219.057       90       C25900
+R16        10k                     BottomLayer RES_0402                        1185.801      218.569       90       C25744
+R15        4.7k                    BottomLayer RES_0402                        322.612       236.583       90       C25900
+R14        4.7k                    BottomLayer RES_0402                        321.703       165.891       270      C25900
+R13        10k                     BottomLayer RES_0402                        320.901       95.494        90       C25744
+R12        1.5k                    BottomLayer RES_0402                        1235.376      1279.528      0        C25867
+R11        5.1k                    BottomLayer RES_0402                        246.554       646.489       0        C25905
+R10        10k                     BottomLayer RES_0402                        425.378       527.952       0        C25744
+R9         5.1k                    BottomLayer RES_0402                        1195.186      873.223       180      C25905
+R8         100k                    BottomLayer RES_0402                        1207.115      1138.455      270      C25741
+R7         1k                      BottomLayer RES_0402                        1296.732      1130.552      270      C11702
+R6         100k                    BottomLayer RES_0402                        616.986       790.114       0        C25741
+R5         1.5k                    BottomLayer RES_0402                        1146.890      1086.570      270      C25867
+R4         5.1k                    BottomLayer RES_0402                        1190.544      750.466       180      C25905
+R3         10k                     TopLayer    RES_0402                        999.016       1063.232      0        C25744
+R2         10k                     BottomLayer RES_0402                        493.849       490.380       180      C25744
+R1         5.1k                    BottomLayer RES_0402                        250.091       776.667       0        C25905
+Q4         AO3400A                 TopLayer    FP-SOT23-MFG                    457.556       1409.405      0        C20917
+Q2         AO3400A                 TopLayer    FP-SOT23-MFG                    649.606       1062.992      180      C20917
+Q1         AO3401A                 TopLayer    FP-SOT23-IPC_B                  492.126       1062.992      180      C15127
+PR1        SM05B-NSHSS-TB(LF)(SN)  BottomLayer FP-SM05B-NSHSS-TB_LF_SN-MFG     199.803       1775.591      270      C268096
+L7         DFE252012F-100M=P2      TopLayer    FP-DFE252012C-IPC_B             925.197       1476.378      90       C703141
+L6         DFE252012F-100M=P2      TopLayer    FP-DFE252012C-IPC_B             1051.003      1182.642      90       C703141
+L5         DFE201612E-R47M=P2      TopLayer    FP-DFE201612C-IPC_C             1102.362      1692.913      270      C668312
+L4         DFE201612E-R47M=P2      TopLayer    FP-DFE201612C-IPC_C             905.512       1692.913      270      C668312
+L3         DFE201612E-R47M=P2      TopLayer    FP-DFE201612C-IPC_C             1145.268      1431.285      270      C668312
+L2         DFE201612E-R47M=P2      TopLayer    FP-DFE201612C-IPC_C             1339.331      1706.899      90       C668312
+L1         DFE201612E-R47M=P2      TopLayer    FP-DFE201612C-IPC_C             1336.443      1470.482      90       C668312
+J5         05b20l22p               TopLayer    FLEX_CON_22P                    691.078       178.144       0        C22459552
+J4         05b20l22p               BottomLayer FLEX_CON_22P                    690.726       175.896       180      C22459552
+FB4        GZ1608D601TF            TopLayer    FP-MMZ0603-MFG                  1240.158      98.425        270      C1002
+FB3        BLM18PG121SN1D          TopLayer    FP-BLM18-0_15-t0_8-IPC_B        1256.890      508.858       270      C14709
+FB2        BLM18PG121SN1D          TopLayer    FP-BLM18-0_15-t0_8-IPC_B        1028.801      683.664       270      C14709
+FB1        BLM18PG121SN1D          TopLayer    FP-BLM18-0_15-t0_8-IPC_B        1026.506      472.677       90       C14709
+D8         DSK24                   TopLayer    FP-S8-V-3910_01-001-MFG         817.663       1467.249      90       C22466352
+D7         DSK24                   TopLayer    FP-S8-V-3910_01-001-MFG         946.046       1181.998      90       C22466352
+D5         PRTR5V0U2F,115          TopLayer    FP-SOT886-MFG                   1033.530      804.333       180      C478118
+D4         PRTR5V0U2F,115          BottomLayer FP-SOT886-MFG                   391.282       1718.736      0        C478118
+D3         PRTR5V0U2F,115          TopLayer    FP-SOT886-MFG                   401.246       718.122       0        C478118
+D2         DSK24                   BottomLayer FP-S8-V-3910_01-001-MFG         128.028       614.339       0        C22466352
+D1         KT-0603R                BottomLayer FP-SML-LX0603IW-TR-MFG          1171.580      1235.186      90       C2286
+C112       20p                     TopLayer    CAP_0402                        295.834       1477.015      0        C1554
+C111       20p                     TopLayer    CAP_0402                        223.480       1477.190      0        C1554
+C110       100n                    BottomLayer CAP_0402                        643.206       1273.027      270      C307331
+C109       100n                    TopLayer    CAP_0402                        714.052       1831.063      270      C307331
+C107       220n                    BottomLayer CAP_0402                        675.482       1458.971      270      C16772
+C106       10uF GRM188R61A106ME69D TopLayer    FP-GRM188-0_15-MFG              910.090       1369.159      0        C19702
+C105       10uF GRM188R61A106ME69D TopLayer    FP-GRM188-0_15-MFG              1102.362      1594.488      180      C19702
+C104       1uF 50V 1206            TopLayer    FP-1206-L_3_2_0_2-W_1_6_0-IPC_B 725.104       1464.130      90       C1848
+C103       220n                    BottomLayer CAP_0402                        794.003       1234.239      90       C16772
+C102       10uF GRM188R61A106ME69D TopLayer    FP-GRM188-0_15-MFG              1096.963      1063.684      0        C19702
+C101       1uF 0805                TopLayer    CAPC2013X145X50NL20T20          1169.422      129.969       270      C28323
+C100       100n 0201               BottomLayer CAP_0201                        586.307       436.982       270      C2903663
+C99        10uF GRM188R61A106ME69D BottomLayer FP-GRM188-0_15-MFG              448.792       358.509       180      C19702
+C98        20p                     BottomLayer CAP_0402                        1116.173      150.436       0        C1554
+C97        1uF 0805                TopLayer    CAPC2013X145X50NL20T20          1082.677      130.905       270      C28323
+C96        10uF GRM188R61A106ME69D TopLayer    FP-GRM188-0_15-MFG              1356.787      294.236       0        C19702
+C95        100n                    TopLayer    CAP_0402                        1361.031      219.263       180      C307331
+C94        100n 0201               BottomLayer CAP_0201                        740.048       435.671       270      C2903663
+C93        100n 0201               BottomLayer CAP_0201                        778.456       448.940       180      C2903663
+C92        100n                    BottomLayer CAP_0402                        495.209       530.387       180      C307331
+C89        22uF GRM188R60J226MEA0J TopLayer    FP-GRM188-0_2-IPC_C             1102.362      1791.339      0        C59461
+C88        100n                    BottomLayer CAP_0402                        259.986       2018.139      180      C307331
+C87        22uF GRM188R60J226MEA0J TopLayer    FP-GRM188-0_2-IPC_C             905.512       1791.339      0        C59461
+C86        1uF 0603                TopLayer    FP-GRM188-0_15-MFG              124.262       71.279        180      C15849
+C85        100n 0201               BottomLayer CAP_0201                        843.431       590.429       270      C2903663
+C84        100n 0201               BottomLayer CAP_0201                        688.221       590.334       90       C2903663
+C82        100n 0201               BottomLayer CAP_0201                        623.576       551.334       180      C2903663
+C81        100n 0201               BottomLayer CAP_0201                        765.919       590.749       270      C2903663
+C80        100n 0201               BottomLayer CAP_0201                        739.484       590.475       270      C2903663
+C79        100n 0201               BottomLayer CAP_0201                        714.781       590.663       90       C2903663
+C78        100n 0201               BottomLayer CAP_0201                        842.788       538.184       270      C2903663
+C77        100n 0201               BottomLayer CAP_0201                        818.164       590.536       270      C2903663
+C76        100n 0201               BottomLayer CAP_0201                        791.609       590.538       270      C2903663
+C75        100n 0201               BottomLayer CAP_0201                        740.446       538.777       270      C2903663
+C74        100n 0201               BottomLayer CAP_0201                        765.711       538.720       270      C2903663
+C73        100n 0201               BottomLayer CAP_0201                        790.651       538.398       270      C2903663
+C72        100n 0201               BottomLayer CAP_0201                        817.094       538.398       270      C2903663
+C71        100n 0201               BottomLayer CAP_0201                        765.315       487.481       270      C2903663
+C70        100n 0201               BottomLayer CAP_0201                        816.489       487.588       270      C2903663
+C69        100n 0201               BottomLayer CAP_0201                        714.447       538.682       90       C2903663
+C68        100n 0201               BottomLayer CAP_0201                        651.110       499.790       180      C2903663
+C67        100n 0201               BottomLayer CAP_0201                        714.682       461.043       270      C2903663
+C66        100n 0201               BottomLayer CAP_0201                        739.407       487.374       270      C2903663
+C65        100n 0201               BottomLayer CAP_0201                        662.447       615.439       90       C2903663
+C63        100n 0201               BottomLayer CAP_0201                        676.225       474.094       180      C2903663
+C58        100n 0201               BottomLayer CAP_0201                        791.010       487.374       270      C2903663
+C57        100n 0201               BottomLayer CAP_0201                        675.772       551.962       0        C2903663
+C56        100n 0201               BottomLayer CAP_0201                        599.308       499.865       180      C2903663
+C55        100n 0201               BottomLayer CAP_0201                        625.379       473.877       180      C2903663
+C54        100n 0201               BottomLayer CAP_0201                        650.770       448.424       0        C2903663
+C53        100n 0201               BottomLayer CAP_0201                        624.003       602.623       180      C2903663
+C52        100n 0201               BottomLayer CAP_0201                        623.802       577.227       0        C2903663
+C51        100n 0201               BottomLayer CAP_0201                        623.743       525.839       0        C2903663
+C50        10uF GRM188R61A106ME69D TopLayer    FP-GRM188-0_15-MFG              905.512       1594.488      180      C19702
+C49        100n 0201               BottomLayer CAP_0201                        804.083       756.088       180      C2903663
+C48        100n 0201               BottomLayer CAP_0201                        689.285       641.115       90       C2903663
+C47        100n 0201               BottomLayer CAP_0201                        676.358       730.817       180      C2903663
+C46        100n 0201               BottomLayer CAP_0201                        676.249       756.088       180      C2903663
+C45        100n 0201               BottomLayer CAP_0201                        829.734       730.336       180      C2903663
+C44        100n 0201               BottomLayer CAP_0201                        727.399       704.628       180      C2903663
+C43        100n 0201               BottomLayer CAP_0201                        740.008       666.441       90       C2903663
+C42        100n 0201               BottomLayer CAP_0201                        713.976       642.100       90       C2903663
+C40        100n 0201               BottomLayer CAP_0201                        790.711       640.430       90       C2903663
+C39        100n 0201               BottomLayer CAP_0201                        816.552       640.280       90       C2903663
+C37        100n 0201               BottomLayer CAP_0201                        778.581       679.010       0        C2903663
+C36        12p                     TopLayer    CAP_0402                        610.110       825.808       180      C1547
+C35        12p                     TopLayer    CAP_0402                        536.690       826.116       0        C1547
+C34        20p                     TopLayer    CAP_0402                        685.015       826.617       180      C1554
+C33        20p                     TopLayer    CAP_0402                        787.370       826.617       180      C1554
+C32        100n                    TopLayer    CAP_0402                        243.402       73.929        180      C307331
+C31        100n 0201               BottomLayer CAP_0201                        855.400       473.928       180      C2903663
+C30        100n 0201               BottomLayer CAP_0201                        855.414       498.531       0        C2903663
+C29        100n 0201               BottomLayer CAP_0201                        881.359       551.368       0        C2903663
+C28        100n 0201               BottomLayer CAP_0201                        855.241       448.798       0        C2903663
+C27        100n 0201               BottomLayer CAP_0201                        816.860       436.474       270      C2903663
+C26        100n 0201               BottomLayer CAP_0201                        868.021       590.020       270      C2903663
+C25        100n 0201               BottomLayer CAP_0201                        867.939       640.723       90       C2903663
+C24        100n                    BottomLayer CAP_0402                        127.996       1604.571      180      C307331
+C23        100n                    TopLayer    CAP_0402                        570.897       1397.792      0        C307331
+C22        100pf                   BottomLayer CAP_0402                        1392.713      1664.150      270      C1546
+C21        100pf                   BottomLayer CAP_0402                        1396.323      1424.188      270      C1546
+C20        22uF GRM188R60J226MEA0J TopLayer    FP-GRM188-0_2-IPC_C             1358.559      1806.553      0        C59461
+C19        10uF GRM188R61A106ME69D TopLayer    FP-GRM188-0_15-MFG              1247.417      1710.912      90       C19702
+C18        22uF GRM188R60J226MEA0J TopLayer    FP-GRM188-0_2-IPC_C             1361.964      1570.505      0        C59461
+C17        22uF GRM188R60J226MEA0J TopLayer    FP-GRM188-0_2-IPC_C             1346.457      508.858       270      C59461
+C16        10uF GRM188R61A106ME69D TopLayer    FP-GRM188-0_15-MFG              1244.229      1466.821      90       C19702
+C15        10uF GRM188R61A106ME69D TopLayer    FP-GRM188-0_15-MFG              1133.152      1330.716      0        C19702
+C14        22uF GRM188R60J226MEA0J TopLayer    FP-GRM188-0_2-IPC_C             1144.930      1527.678      0        C59461
+C13        100n 0201               BottomLayer CAP_0201                        637.761       666.224       90       C2903663
+C12        100n 0201               BottomLayer CAP_0201                        623.997       628.148       180      C2903663
+C11        10uF GRM188R61A106ME69D TopLayer    FP-GRM188-0_15-MFG              1318.898      1318.898      90       C19702
+C10        100n 0201               BottomLayer CAP_0201                        688.998       435.948       270      C2903663
+C8         100n                    TopLayer    CAP_0402                        953.066       294.790       0        C307331
+C7         100n                    BottomLayer CAP_0402                        432.861       293.738       180      C307331
+C6         100n                    BottomLayer CAP_0402                        394.213       472.447       180      C307331
+C5         100n                    BottomLayer CAP_0402                        494.106       424.563       180      C307331
+C3         10uF GRM188R61A106ME69D TopLayer    FP-GRM188-0_15-MFG              1147.627      1179.330      270      C19702
+C2         10uF GRM188R61A106ME69D TopLayer    FP-GRM188-0_15-MFG              1240.158      1043.307      0        C19702
+C1         1uF 50V 1206            TopLayer    FP-1206-L_3_2_0_2-W_1_6_0-IPC_B 852.629       1179.220      90       C1848
+B1_P       TESTP                   TopLayer    TESTP                           479.747       709.621       90       ""
+B1_N       TESTP                   TopLayer    TESTP                           481.562       773.513       90       ""
