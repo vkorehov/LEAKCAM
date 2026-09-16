@@ -54,7 +54,7 @@ qty   LCSC#       Basic/Ext value                        link                   
 1     C25794      Basic     51k                          https://www.lcsc.com/product-detail/C25794.html    0402WGF5102TCE  (R56)
 2     C54920709   Extended  91k                          https://www.lcsc.com/product-detail/C54920709.html HRC0402F9102DNTO  (R24 R55)
 1     C129319     Extended  BQ24072TRGTR                 https://www.lcsc.com/product-detail/C129319.html   BQ24072TRGTR  (U1)
-2     C2867168    Extended  TPS61160ADRVT                https://www.lcsc.com/product-detail/C2867168.html  TPS61160ADRVT  (U14 U15)
+2     C165143     Extended  TPS61160DRVR                 https://www.lcsc.com/product-detail/C165143.html   TPS61160DRVR  (U14 U15)
 2     C165948     Extended  type-c-31-m-12               https://www.lcsc.com/product-detail/C165948.html   TYPE-C-31-M-12  (USBC1 USBC2)
 1     C3035748    Extended  ch340x                       https://www.lcsc.com/product-detail/C3035748.html  CH340X  (U2)
 1     C51928208   Extended  msm381acb026                 https://www.lcsc.com/product-detail/C51928208.html MSM381ACB026  (U13)
@@ -62,4 +62,4 @@ qty   LCSC#       Basic/Ext value                        link                   
 
 NO PART: ANT1 MIFI, B1_N TESTP, B1_P TESTP, J1 Connector 2PIn, J2 Connector 2PIn, JB1 Connector 2PIn, JB2 Connector 2PIn, JT Connector 2PIn
 
-TOTAL 42.96 USD
+TOTAL 41.64 USD
