@@ -62,3 +62,4 @@ qty   LCSC#       value                        link                             
 5     -           Connector 2PIn               J1 J2 JB1 JB2 JT  NO PART (no purchased part (pad / test point / antenna))
 2     -           TESTP                        B1_N B1_P  NO PART (no purchased part (pad / test point / antenna))
 
+TOTAL 43.69 USD (1 board, JLCPCB/LCSC prices 2026-09-16)
