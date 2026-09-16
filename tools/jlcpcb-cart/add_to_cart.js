@@ -24,7 +24,7 @@ const API = 'https://jlcpcb.com/api/overseas-pcb-order/v1/';
 const KEEP_HEADERS = ['secretkey', 'x-xsrf-token', 'accept', 'content-type'];
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const atLogin = u => /login|passport|signin/i.test(new URL(u).pathname);   // pathname only: the cart URL carries an up_spm=Jlcpcb.Login tracking param
+const atLogin = u => { const x = new URL(u); return /passport/i.test(x.hostname) || /login|signin/i.test(x.pathname + x.hash); };   // host passport.jlcpcb.com or #/login; pathname alone missed the SSO page
 
 async function session() {
   const browser = await puppeteer.connect({ browserURL: CDP_URL, defaultViewport: null });
