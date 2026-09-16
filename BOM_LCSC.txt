@@ -4,52 +4,52 @@ qty   LCSC#       value                        link                             
 
 1     C45354925   aht30                        https://www.lcsc.com/product-detail/C45354925.html AHT30
 1     C41368035   ai-m62-cbs(blifn4)           https://www.lcsc.com/product-detail/C41368035.html Ai-M62-CBS(BLIFN4)   ## LOW STOCK 211, no candidate with >= 1000
-2     C20624294   1uF 0805                     https://www.lcsc.com/product-detail/C20624294.html 0805B105K100NT   ## no voltage rating in schematic, assumed 10V
+2     C28323      1uF 0805                     https://www.lcsc.com/product-detail/C28323.html    CL21B105KBFNNNE   ## Basic part (JLCPCB), replaces C20624294 0805B105K100NT
 53    C2903663    100n 0201                    https://www.lcsc.com/product-detail/C2903663.html  TCC0201X5R104K160ZT
-12    C513772     100n                         https://www.lcsc.com/product-detail/C513772.html   CS1005X7R104K500NR   ## LCSC-orderable substitute for C3012377 CSA0402X7R104K500GT (not sold / no stock on lcsc.com)
+12    C307331     100n                         https://www.lcsc.com/product-detail/C307331.html   CL05B104KB54PNC   ## Basic part (JLCPCB), replaces C513772 CS1005X7R104K500NR
 2     C2887023    120pf                        https://www.lcsc.com/product-detail/C2887023.html  TCC0402COG121J500AT   ## LCSC-orderable substitute for C7507400 C0402C0G121K500NTB (not sold / no stock on lcsc.com)
-2     C106201     12p                          https://www.lcsc.com/product-detail/C106201.html   CC0402JRNPO9BN120
-5     C107000     20p                          https://www.lcsc.com/product-detail/C107000.html   CC0402JRNPO9BN200
+2     C1547       12p                          https://www.lcsc.com/product-detail/C1547.html     0402CG120J500NT   ## Basic part (JLCPCB), replaces C106201 CC0402JRNPO9BN120
+5     C1554       20p                          https://www.lcsc.com/product-detail/C1554.html     0402CG200J500NT   ## Basic part (JLCPCB), replaces C107000 CC0402JRNPO9BN200
 2     C36911358   220n                         https://www.lcsc.com/product-detail/C36911358.html CGA0402X5R224K500GT
 2     C597503     1uF 50V 1206                 https://www.lcsc.com/product-detail/C597503.html   12065C105JAT2A
-2     C130253     ABS07-32.768KHZ-T            https://www.lcsc.com/product-detail/C130253.html   ABS07-32.768KHZ-T   ## generic 3215 12.5pF alternative: C22386770 SXTF321532768A20F ~0.13 USD
+2     C32346      Q13FC13500004                https://www.lcsc.com/product-detail/C32346.html    Q13FC13500004   ## Basic part (JLCPCB), replaces C130253 ABS07-32.768KHZ-T; value was ABS07-32.768KHZ-T
 1     C280602     BLM15AG102SN1D               https://www.lcsc.com/product-detail/C280602.html   SBY100505T-102Y-N   ## LCSC-orderable substitute for C76883 BLM15AG102SN1D (not sold / no stock on lcsc.com)
-3     C76892      BLM18AG121SN1D               https://www.lcsc.com/product-detail/C76892.html    BLM18AG121SN1D
+3     C14709      BLM18PG121SN1D               https://www.lcsc.com/product-detail/C14709.html    BLM18PG121SN1D   ## Basic part (JLCPCB), replaces C76892 BLM18AG121SN1D; value was BLM18AG121SN1D
 5     C668312     DFE201612E-R47M=P2           https://www.lcsc.com/product-detail/C668312.html   DFE201612E-R47M=P2
 2     C703141     DFE252012F-100M=P2           https://www.lcsc.com/product-detail/C703141.html   DFE252012F-100M=P2
 3     C2845237    TPS63802DLAR                 https://www.lcsc.com/product-detail/C2845237.html  TPS63802DLAR
 2     C2693497    TPS62823DLCR                 https://www.lcsc.com/product-detail/C2693497.html  TPS62823DLCR
-13    C5137565    10uF GRM188R61A106ME69D      https://www.lcsc.com/product-detail/C5137565.html  FCC0603X106K100CT
-1     C20070307   1uF 0603                     https://www.lcsc.com/product-detail/C20070307.html CGA0603X5R105K100JT
-6     C6119880    22uF GRM188R60J226MEA0J      https://www.lcsc.com/product-detail/C6119880.html  CGA0603X5R226M6R3JT
+13    C19702      10uF GRM188R61A106ME69D      https://www.lcsc.com/product-detail/C19702.html    CL10A106KP8NNNC   ## Basic part (JLCPCB), replaces C5137565 FCC0603X106K100CT
+1     C15849      1uF 0603                     https://www.lcsc.com/product-detail/C15849.html    CL10A105KB8NNNC   ## Basic part (JLCPCB), replaces C20070307 CGA0603X5R105K100JT
+6     C59461      22uF GRM188R60J226MEA0J      https://www.lcsc.com/product-detail/C59461.html    CL10A226MQ8NRNC   ## Basic part (JLCPCB), replaces C6119880 CGA0603X5R226M6R3JT
 3     C2939005    DSK24                        https://www.lcsc.com/product-detail/C2939005.html  DSK24 K24   ## LCSC-orderable substitute for C51898076 DSK24 (not sold / no stock on lcsc.com)
 1     C25503856   YLED0402B                    https://www.lcsc.com/product-detail/C25503856.html XL-1005UYC   ## yellow 0402 LED 590nm, replaces generic YLED0402B
 1     C268096     SM05B-NSHSS-TB(LF)(SN)       https://www.lcsc.com/product-detail/C268096.html   SM05B-NSHSS-TB(LF)(SN)   ## LOW STOCK 984, no candidate with >= 1000
-1     C53283193   DMG2301LK-7                  https://www.lcsc.com/product-detail/C53283193.html DMG2301L-GK
-2     C53283194   DMG2302UK-7                  https://www.lcsc.com/product-detail/C53283194.html DMG2302UK-GK   ## clone brands accepted; Diodes original is C460977
+1     C15127      AO3401A                      https://www.lcsc.com/product-detail/C15127.html    AO3401A   ## Basic part (JLCPCB), replaces C53283193 DMG2301L-GK; value was DMG2301LK-7
+2     C20917      AO3400A                      https://www.lcsc.com/product-detail/C20917.html    AO3400A   ## Basic part (JLCPCB), replaces C53283194 DMG2302UK-GK; value was DMG2302UK-7
 3     C478118     PRTR5V0U2F,115               https://www.lcsc.com/product-detail/C478118.html   PRTR5V0U2F,115
-1     C54920843   10R                          https://www.lcsc.com/product-detail/C54920843.html HRC0603F10R0ENTN
+1     C22859      10R                          https://www.lcsc.com/product-detail/C22859.html    0603WAF100JT5E   ## Basic part (JLCPCB), replaces C54920843 HRC0603F10R0ENTN
 1     C49654665   4R                           https://www.lcsc.com/product-detail/C49654665.html GR0603F4R02T5G00   ## 4R is not an E-series value; 4.02 ohm E96 used
 1     C2965580    XL7EL89CKI-111YLC-24M        https://www.lcsc.com/product-detail/C2965580.html  XL7EL89CKI-111YLC-24M
 3     C157932     S2B-PH-K-S(LF)(SN)           https://www.lcsc.com/product-detail/C157932.html   S2B-PH-K-S-GW   ## LCSC-orderable substitute for C173752 S2B-PH-K-S(LF)(SN) (not sold / no stock on lcsc.com)
 1     C42414902   k230d                        https://www.lcsc.com/product-detail/C42414902.html K230D   ## LOW STOCK 361, no candidate with >= 1000
 2     C22459552   54548-2271                   https://www.lcsc.com/product-detail/C22459552.html 05B20L22P   ## Molex 54548-2271 DISCONTINUED (LCSC: no longer manufactured). Same type (0.5mm 22P bottom-contact slide-lock, right angle) offered; FOOTPRINT MUST BE VERIFIED against its drawing
 1     C54920634   1.1k (1.5A)                  https://www.lcsc.com/product-detail/C54920634.html HRC0402F1101DNTO
-1     C54920638   1.5k                         https://www.lcsc.com/product-detail/C54920638.html HRC0402F1501DNTO
-20    C49652939   100k                         https://www.lcsc.com/product-detail/C49652939.html GR0402F100KTAG00
-18    C1858459    10k                          https://www.lcsc.com/product-detail/C1858459.html  RC0402FR-1310KL   ## LCSC-orderable substitute for C22369472 RCA0210KFLF (not sold / no stock on lcsc.com)
+1     C25867      1.5k                         https://www.lcsc.com/product-detail/C25867.html    0402WGF1501TCE   ## Basic part (JLCPCB), replaces C54920638 HRC0402F1501DNTO
+20    C25741      100k                         https://www.lcsc.com/product-detail/C25741.html    0402WGF1003TCE   ## Basic part (JLCPCB), replaces C49652939 GR0402F100KTAG00
+18    C25744      10k                          https://www.lcsc.com/product-detail/C25744.html    0402WGF1002TCE   ## Basic part (JLCPCB), replaces C1858459 RC0402FR-1310KL
 1     C54920620   120k                         https://www.lcsc.com/product-detail/C54920620.html HRC0402F1203DNTO
 1     C54920625   150k                         https://www.lcsc.com/product-detail/C54920625.html HRC0402F1503DNTO
-2     C54920644   200R                         https://www.lcsc.com/product-detail/C54920644.html HRC0402F2000DNTO
-1     C102872     200k                         https://www.lcsc.com/product-detail/C102872.html   RTT022003FTH   ## LCSC-orderable substitute for C22369550 RCA02200KFLF (not sold / no stock on lcsc.com)
-1     C2929994    22R                          https://www.lcsc.com/product-detail/C2929994.html  FRC0402F22R0TS
+2     C25087      200R                         https://www.lcsc.com/product-detail/C25087.html    0402WGF2000TCE   ## Basic part (JLCPCB), replaces C54920644 HRC0402F2000DNTO
+1     C25764      200k                         https://www.lcsc.com/product-detail/C25764.html    0402WGF2003TCE   ## Basic part (JLCPCB), replaces C102872 RTT022003FTH
+1     C25092      22R                          https://www.lcsc.com/product-detail/C25092.html    0402WGF220JTCE   ## Basic part (JLCPCB), replaces C2929994 FRC0402F22R0TS
 4     C324768     240R                         https://www.lcsc.com/product-detail/C324768.html   RC-02K2400FT   ## LCSC-orderable substitute for C22356255 RCA02240RFLF (not sold / no stock on lcsc.com)
 1     C102933     261k                         https://www.lcsc.com/product-detail/C102933.html   RTT022613FTH
 1     C49653548   30k                          https://www.lcsc.com/product-detail/C49653548.html GR0402F30KTAG00
-1     C53069467   33.2k                        https://www.lcsc.com/product-detail/C53069467.html CL0402FN33K2P
-6     C49652824   4.7k                         https://www.lcsc.com/product-detail/C49652824.html GR0402F4K7TAG00
-1     C103052     46.4k                        https://www.lcsc.com/product-detail/C103052.html   RTT024642FTH
-4     C103079     5.1k                         https://www.lcsc.com/product-detail/C103079.html   RTT025101FTH   ## LCSC-orderable substitute for C22369457 RCA025K1FLF (not sold / no stock on lcsc.com)
+1     C25779      33k                          https://www.lcsc.com/product-detail/C25779.html    0402WGF3302TCE   ## Basic part (JLCPCB), replaces C53069467 CL0402FN33K2P; value was 33.2k
+6     C25900      4.7k                         https://www.lcsc.com/product-detail/C25900.html    0402WGF4701TCE   ## Basic part (JLCPCB), replaces C49652824 GR0402F4K7TAG00
+1     C25792      47k                          https://www.lcsc.com/product-detail/C25792.html    0402WGF4702TCE   ## Basic part (JLCPCB), replaces C103052 RTT024642FTH; value was 46.4k
+4     C25905      5.1k                         https://www.lcsc.com/product-detail/C25905.html    0402WGF5101TCE   ## Basic part (JLCPCB), replaces C103079 RTT025101FTH
 4     C49655223   511k                         https://www.lcsc.com/product-detail/C49655223.html GR0402F511KTAG00
 1     C49653889   590R (1.5A)                  https://www.lcsc.com/product-detail/C49653889.html GR0402F590RTAG00
 2     C54920709   91k                          https://www.lcsc.com/product-detail/C54920709.html HRC0402F9102DNTO
@@ -62,4 +62,3 @@ qty   LCSC#       value                        link                             
 5     -           Connector 2PIn               J1 J2 JB1 JB2 JT  NO PART (no purchased part (pad / test point / antenna))
 2     -           TESTP                        B1_N B1_P  NO PART (no purchased part (pad / test point / antenna))
 
-TOTAL 44.19 USD
