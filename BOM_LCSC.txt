@@ -7,10 +7,10 @@ qty   LCSC#       value                        link                             
 2     C28323      1uF 0805                     https://www.lcsc.com/product-detail/C28323.html    CL21B105KBFNNNE   ## Basic part (JLCPCB), replaces C20624294 0805B105K100NT
 53    C2903663    100n 0201                    https://www.lcsc.com/product-detail/C2903663.html  TCC0201X5R104K160ZT
 12    C307331     100n                         https://www.lcsc.com/product-detail/C307331.html   CL05B104KB54PNC   ## Basic part (JLCPCB), replaces C513772 CS1005X7R104K500NR
-2     C2887023    120pf                        https://www.lcsc.com/product-detail/C2887023.html  TCC0402COG121J500AT   ## LCSC-orderable substitute for C7507400 C0402C0G121K500NTB (not sold / no stock on lcsc.com)
+2     C1546       100pf                        https://www.lcsc.com/product-detail/C1546.html     0402CG101J500NT   ## Basic part (JLCPCB), replaces C2887023 TCC0402COG121J500AT; Cff for TPS62823: 12ms/R2 gives 120pF (0V8) and 100pF (1V1); 100pF within loop tolerance
 2     C1547       12p                          https://www.lcsc.com/product-detail/C1547.html     0402CG120J500NT   ## Basic part (JLCPCB), replaces C106201 CC0402JRNPO9BN120
 5     C1554       20p                          https://www.lcsc.com/product-detail/C1554.html     0402CG200J500NT   ## Basic part (JLCPCB), replaces C107000 CC0402JRNPO9BN200
-2     C36911358   220n                         https://www.lcsc.com/product-detail/C36911358.html CGA0402X5R224K500GT
+2     C16772      220n                         https://www.lcsc.com/product-detail/C16772.html    CL05B224KO5NNNC   ## Basic part (JLCPCB), replaces C36911358 CGA0402X5R224K500GT; 16V part; COMP pin of TPS61160A sits below 3V
 2     C597503     1uF 50V 1206                 https://www.lcsc.com/product-detail/C597503.html   12065C105JAT2A
 2     C32346      Q13FC13500004                https://www.lcsc.com/product-detail/C32346.html    Q13FC13500004   ## Basic part (JLCPCB), replaces C130253 ABS07-32.768KHZ-T; value was ABS07-32.768KHZ-T
 1     C280602     BLM15AG102SN1D               https://www.lcsc.com/product-detail/C280602.html   SBY100505T-102Y-N   ## LCSC-orderable substitute for C76883 BLM15AG102SN1D (not sold / no stock on lcsc.com)
