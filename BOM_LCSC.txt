@@ -24,7 +24,6 @@ qty   LCSC#       Basic/Ext value                        link                   
 6     C59461      Basic     22uF GRM188R60J226MEA0J      https://www.lcsc.com/product-detail/C59461.html    CL10A226MQ8NRNC  (C14 C17 C18 C20 C87 C89)
 1     C1002       Basic     GZ1608D601TF                 https://www.lcsc.com/product-detail/C1002.html     GZ1608D601TF  (FB4)
 3     C22466352   Promo     DSK24                        https://www.lcsc.com/product-detail/C22466352.html DSK24  (D2 D7 D8)
-1     C268096     Extended  SM05B-NSHSS-TB(LF)(SN)       https://www.lcsc.com/product-detail/C268096.html   SM05B-NSHSS-TB(LF)(SN)  (PR1)
 1     C2286       Basic     KT-0603R                     https://www.lcsc.com/product-detail/C2286.html     KT-0603R  (D1)
 1     C15127      Basic     AO3401A                      https://www.lcsc.com/product-detail/C15127.html    AO3401A  (Q1)
 2     C20917      Basic     AO3400A                      https://www.lcsc.com/product-detail/C20917.html    AO3400A  (Q2 Q4)
@@ -60,6 +59,6 @@ qty   LCSC#       Basic/Ext value                        link                   
 1     C51928208   Extended  msm381acb026                 https://www.lcsc.com/product-detail/C51928208.html MSM381ACB026  (U13)
 1     C3010298    Extended  w25n02kvzeir                 https://www.lcsc.com/product-detail/C3010298.html  W25N02KVZEIR  (U16)
 
-NO PART: ANT1 MIFI, B1_N TESTP, B1_P TESTP, J1 Connector 2PIn, J2 Connector 2PIn, JB1 Connector 2PIn, JB2 Connector 2PIn, JT Connector 2PIn
+NO PART: ANT1 MIFI, B1_N TESTP, B1_P TESTP, J1 Connector 2PIn, J2 Connector 2PIn, JB1 Connector 2PIn, JB2 Connector 2PIn, JT Connector 2PIn, PR1 CON5P
 
-TOTAL 41.64 USD
+TOTAL 41.17 USD
