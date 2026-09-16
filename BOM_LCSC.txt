@@ -23,7 +23,7 @@ qty   LCSC#       value                        link                             
 1     C15849      1uF 0603                     https://www.lcsc.com/product-detail/C15849.html    CL10A105KB8NNNC   ## Basic part (JLCPCB), replaces C20070307 CGA0603X5R105K100JT
 6     C59461      22uF GRM188R60J226MEA0J      https://www.lcsc.com/product-detail/C59461.html    CL10A226MQ8NRNC   ## Basic part (JLCPCB), replaces C6119880 CGA0603X5R226M6R3JT
 3     C2939005    DSK24                        https://www.lcsc.com/product-detail/C2939005.html  DSK24 K24   ## LCSC-orderable substitute for C51898076 DSK24 (not sold / no stock on lcsc.com)
-1     C2286       KT-0603R                     https://www.lcsc.com/product-detail/C2286.html     KT-0603R   ## Basic part (JLCPCB), red 0603 replaces yellow 0402 C25503856 XL-1005UYC; FOOTPRINT 0402 -> 0603
+1     C25503856   YLED0402B                    https://www.lcsc.com/product-detail/C25503856.html XL-1005UYC   ## yellow 0402 LED 590nm, replaces generic YLED0402B
 1     C268096     SM05B-NSHSS-TB(LF)(SN)       https://www.lcsc.com/product-detail/C268096.html   SM05B-NSHSS-TB(LF)(SN)   ## LOW STOCK 984, no candidate with >= 1000
 1     C15127      AO3401A                      https://www.lcsc.com/product-detail/C15127.html    AO3401A   ## Basic part (JLCPCB), replaces C53283193 DMG2301L-GK; value was DMG2301LK-7
 2     C20917      AO3400A                      https://www.lcsc.com/product-detail/C20917.html    AO3400A   ## Basic part (JLCPCB), replaces C53283194 DMG2302UK-GK; value was DMG2302UK-7
