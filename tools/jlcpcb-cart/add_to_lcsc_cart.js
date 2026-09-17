@@ -42,11 +42,25 @@ async function session() {
   let page = pages.find(p => p.url().includes('lcsc.com'));
   if (!page) { page = await browser.newPage(); await page.goto('https://www.lcsc.com/', { waitUntil: 'networkidle2', timeout: 60000 }); }
   await page.bringToFront();
-  const fetchJson = (url, body) => page.evaluate(async (url, body) => {
+  // The lcsc.com home page navigates on its own (region redirect, banners), which kills the
+  // execution context mid-fetch. Park the tab on a stable same-origin page and retry any
+  // evaluate that dies with "Execution context was destroyed".
+  const park = async () => { try { await page.goto('https://www.lcsc.com/products', { waitUntil: 'domcontentloaded', timeout: 60000 }); } catch {} };
+  if (!/lcsc\.com\/(products|product-detail)/.test(page.url())) await park();
+  const ev = async (fn, ...args) => {
+    for (let i = 0; ; i++) {
+      try { return await page.evaluate(fn, ...args); }
+      catch (e) {
+        if (i >= 3 || !/context was destroyed|Target closed|detached/i.test(e.message)) throw e;
+        await sleep(1500); await park();
+      }
+    }
+  };
+  const fetchJson = (url, body) => ev(async (url, body) => {
     const r = await fetch(url, body === undefined ? { credentials: 'include' } : { method: 'POST', credentials: 'include', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
     const text = await r.text(); try { return { status: r.status, json: JSON.parse(text) }; } catch { return { status: r.status, text }; }
   }, url, body);
-  const fetchText = url => page.evaluate(async url => (await fetch(url, { credentials: 'include' })).text(), url);
+  const fetchText = url => ev(async url => (await fetch(url, { credentials: 'include' })).text(), url);
   const me = await fetchJson(WMSC + 'wmsc/login/user/info');
   if (!me.json?.result) { console.error('not logged in to lcsc.com in that Chromium window; log in and rerun'); process.exit(2); }
   return { browser, page, fetchJson, fetchText };
