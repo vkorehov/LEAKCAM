@@ -4,13 +4,14 @@ C:\hw\LEAKCAM\Project Outputs for LEAKCAM\Pick Place for MIFA.csv
 ========================================================================================================================
 File Design Information:
 
-Date:       16/09/26
-Time:       22:41
-Revision:   109ed36de6f29621c4f2cea7b716221a37f3a7e3
+Date:       17/09/26
+Time:       05:45
+Revision:   f38d4675c9e19bce7142bbbb1d476e4da4658076
 Variant:    No variations
 Units used: mil
 
 "Designator","Comment","Layer","Footprint","Center-X(mil)","Center-Y(mil)","Rotation","Description"
+"USBC2","type-c-31-m-12","TopLayer","TYPE-C-31-M-12","179.172","716.738","270","C165948"
 "C90","10uF GRM188R61A106ME69D","BottomLayer","FP-GRM188-0_15-MFG","492.126","1692.913","270","C19702"
 "JT","Connector 2PIn","TopLayer","CON_2P","1387.586","1069.395","270",""
 "JB2","Connector 2PIn","TopLayer","CON_2P","1388.060","1192.136","270",""
@@ -20,7 +21,6 @@ Units used: mil
 "Y3","Q13FC13500004","TopLayer","FP-ABS07-MFG","255.905","1397.638","0","C32346"
 "Y2","XL7EL89CKI-111YLC-24M","TopLayer","FP-XRCGB_F_N-MFG","579.494","915.812","0","C2965580"
 "Y1","Q13FC13500004","TopLayer","FP-ABS07-MFG","735.165","911.285","180","C32346"
-"USBC2","type-c-31-m-12","TopLayer","TYPE-C-31-M-12","179.172","716.738","270","C165948"
 "USBC1","type-c-31-m-12","TopLayer","TYPE-C-31-M-12","1253.308","804.391","90","C165948"
 "U17","AHT20","BottomLayer","AHT30","535.301","1256.788","180","C2757850"
 "U16","w25n02kvzeir","TopLayer","w25n02","181.648","291.845","270","C3010298"
