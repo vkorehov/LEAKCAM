@@ -61,4 +61,4 @@ qty   LCSC#       Basic/Ext value                        link                   
 
 NO PART: ANT1 MIFI, B1_N TESTP, B1_P TESTP, J1 Connector 2PIn, J2 Connector 2PIn, JB1 Connector 2PIn, JB2 Connector 2PIn, JT Connector 2PIn, PR1 CON5P
 
-TOTAL 41.17 USD
+TOTAL 41.19 USD
