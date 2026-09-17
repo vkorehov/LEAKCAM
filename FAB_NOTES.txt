@@ -1,0 +1,76 @@
+LEAKCAM - notes for PCB fabrication and assembly
+Board: MIFA, 36.5 x 65.0 mm, 6 layers, 1.6 mm finished
+
+STACKUP
+  JLCPCB JLC06161H-3313, 1.6 mm, 1 oz outer copper, 0.5 oz inner copper.
+  Copper layer order, top to bottom:
+      MIFA.GTL  top
+      MIFA.G1   inner 1   (ground plane)
+      MIFA.G2   inner 2   (power pours)
+      MIFA.G3   inner 3   (power pours)
+      MIFA.G4   inner 4   (signal)
+      MIFA.GBL  bottom
+  Not ordered as controlled impedance.
+
+BOARD OUTLINE
+  MIFA.GKO is the outline: one closed rectangle, 36.5 x 65.0 mm. Nothing else is
+  on that layer. Ignore any outline geometry that may appear on other layers.
+
+DRILL
+  Two files, both containing a PLATED and a NON_PLATED section:
+      MIFA-RoundHoles.TXT
+      MIFA-SlotHoles.TXT
+  PLATED:
+      0.30 mm  619 vias
+      0.60 mm   10 wire pads
+      0.70 mm    6 connector pins
+      0.80 mm    8 routed slots (USB-C shell legs, must be plated, they are the
+                 connector's ground and are soldered)
+  NON-PLATED - do not plate, do not fill, do not cover:
+      0.50 mm  1 hole at X33.566 Y2.563 - acoustic port of the MEMS microphone U13.
+               It must stay open through the whole board. No plating, no epoxy,
+               no mask or paste in the hole.
+      0.60 mm  4 holes - plastic locating posts of the two USB-C connectors.
+      2.60 mm  1 hole - mounting hole.
+
+VIA COVERING
+  Required: epoxy filled and capped (plated over), applied to the 0.30 mm vias only.
+  The board uses via-in-pad: 137 vias sit inside the pads of the 256-ball BGA (U3)
+  and 12 more inside small SMD pads. Without filled and capped vias those joints
+  drain during reflow.
+  The non-plated holes listed above must NOT be filled or capped.
+
+SOLDER MASK
+  BGA U3 is mask-defined: 0.374 mm openings over 0.45 mm pads, 0.28 mm mask dams
+  between them. Please keep the openings as drawn, individually - do not enlarge
+  them and do not gang them into one window.
+
+KNOWN DFM ITEMS, PLEASE BUILD AS DRAWN
+  Drill to copper on inner layers is 0.10 mm for the 0.30 mm vias. This is the BGA
+  fan-out at 0.65 mm ball pitch; enlarging the plane openings would break the ground
+  plane under the SiP. All other holes are at 0.20 mm or more (non-plated 0.20 mm,
+  plated component holes 0.20 mm, mounting hole 0.30 mm).
+  Minimum annular ring 0.075 mm (0.30 mm hole in a 0.45 mm pad).
+  Minimum trace and clearance 0.10 mm.
+
+SURFACE FINISH
+  ENIG preferred for the 0.65 mm pitch BGA (pad flatness). HASL acceptable if ENIG
+  is not available.
+
+STENCIL
+  Cut from the paste layers, both sides:
+      MIFA.GTP  top paste
+      MIFA.GBP  bottom paste
+  0.10 mm stainless steel, frameless, apertures 1:1 as drawn - please do not scale
+  or reduce them. The board carries 0201 parts (smallest aperture 0.325 x 0.270 mm)
+  and the BGA apertures are 0.348 mm.
+
+ASSEMBLY
+  Double sided: 93 parts on top, 134 on the bottom.
+  U3 is a 256-ball BGA, 0.65 mm pitch - X-ray inspection requested.
+  Files: BOM_ASSEMBLY.csv and PickPlace_MIFA.csv (coordinates in mm, origin at the
+  bottom left corner of the board, same origin as the gerbers).
+  Not placed, they are soldered by hand later: S1, S2, S3 (JST PH, through hole).
+  No part at all, pads only: ANT1, B1_N, B1_P, J1, J2, JB1, JB2, JT, PR1.
+  ANT1 is a printed antenna - keep all layers clear there as drawn, no copper,
+  no mask changes, no test points.
