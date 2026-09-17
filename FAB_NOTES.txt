@@ -1,17 +1,9 @@
-LEAKCAM / MIFA, 36.5 x 65 mm, 6 layers, 1.6 mm, JLC06161H-3313, 1 oz outer / 0.5 oz inner.
-Copper order: GTL, G1, G2, G3, G4, GBL.  Outline: MIFA.GKO.  No controlled impedance.
+Order remark (everything else is set by the order options):
 
-Vias: epoxy filled and capped, 0.30 mm vias only (via-in-pad under the 256-ball BGA U3).
+Do not fill or cover the non-plated holes. The 0.50 mm hole at X33.566 Y2.563 is a
+microphone acoustic port and must stay open through the board.
 
-Non-plated, do not plate, fill or cover:
-  0.50 mm at X33.566 Y2.563 - microphone acoustic port, must stay open through the board
-  0.60 mm x4 - USB-C locating posts
-  2.60 mm x1 - mounting hole
-The 0.80 mm USB-C slots stay plated, they are soldered.
+Drill-to-copper is 0.10 mm at the BGA fan-out (U3, 0.65 mm pitch). Build as drawn,
+do not enlarge the plane openings.
 
-Build as drawn: drill-to-copper is 0.10 mm at the BGA fan-out (0.65 mm pitch, wider
-openings would break the ground plane). BGA mask openings 0.374 mm, keep them separate.
-
-Stencil from MIFA.GTP and MIFA.GBP, both sides, 0.10 mm, apertures 1:1.
-
-Assembly: both sides, ENIG preferred, X-ray on U3. Do not place S1, S2, S3.
+Keep the BGA solder mask openings separate, 0.374 mm each, do not gang them.
