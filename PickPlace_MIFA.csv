@@ -1,9 +1,9 @@
 Designator,Mid X,Mid Y,Layer,Rotation
+USBC2,4.5510mm,18.2051mm,Top,270
 C90,12.5000mm,43.0000mm,Bottom,270
 Y3,6.5000mm,35.5000mm,Top,0
 Y2,14.7191mm,23.2616mm,Top,0
 Y1,18.6732mm,23.1466mm,Top,180
-USBC2,4.5510mm,18.2051mm,Top,270
 USBC1,31.8340mm,20.4315mm,Top,90
 U17,13.5966mm,31.9224mm,Bottom,180
 U16,4.6139mm,7.4129mm,Top,270
