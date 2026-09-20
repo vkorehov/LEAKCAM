@@ -42,11 +42,25 @@ async function session() {
   let page = pages.find(p => p.url().includes('lcsc.com'));
   if (!page) { page = await browser.newPage(); await page.goto('https://www.lcsc.com/', { waitUntil: 'networkidle2', timeout: 60000 }); }
   await page.bringToFront();
-  const fetchJson = (url, body) => page.evaluate(async (url, body) => {
+  // The lcsc.com home page navigates on its own (region redirect, banners), which kills the
+  // execution context mid-fetch. Park the tab on a stable same-origin page and retry any
+  // evaluate that dies with "Execution context was destroyed".
+  const park = async () => { try { await page.goto('https://www.lcsc.com/products', { waitUntil: 'domcontentloaded', timeout: 60000 }); } catch {} };
+  if (!/lcsc\.com\/(products|product-detail)/.test(page.url())) await park();
+  const ev = async (fn, ...args) => {
+    for (let i = 0; ; i++) {
+      try { return await page.evaluate(fn, ...args); }
+      catch (e) {
+        if (i >= 3 || !/context was destroyed|Target closed|detached/i.test(e.message)) throw e;
+        await sleep(1500); await park();
+      }
+    }
+  };
+  const fetchJson = (url, body) => ev(async (url, body) => {
     const r = await fetch(url, body === undefined ? { credentials: 'include' } : { method: 'POST', credentials: 'include', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
     const text = await r.text(); try { return { status: r.status, json: JSON.parse(text) }; } catch { return { status: r.status, text }; }
   }, url, body);
-  const fetchText = url => page.evaluate(async url => (await fetch(url, { credentials: 'include' })).text(), url);
+  const fetchText = url => ev(async url => (await fetch(url, { credentials: 'include' })).text(), url);
   const me = await fetchJson(WMSC + 'wmsc/login/user/info');
   if (!me.json?.result) { console.error('not logged in to lcsc.com in that Chromium window; log in and rerun'); process.exit(2); }
   return { browser, page, fetchJson, fetchText };
@@ -135,14 +149,14 @@ async function cart(fetchJson) {
   console.log(`${n} lines, ~${total.toFixed(2)} USD at ladder prices for the LCSC-own lines (other-supplier prices are not in this listing)`);
 }
 
-async function add(csv, dryRun) {
+async function add(csv, dryRun, lcscOnly) {
   const rows = readCsv(csv);
-  console.log(`${rows.length} parts from ${csv}${dryRun ? ' (dry run: nothing added)' : ''}`);
+  console.log(`${rows.length} parts from ${csv}${dryRun ? ' (dry run: nothing added)' : ''}${lcscOnly ? ', LCSC own stock only' : ''}`);
   const { browser, fetchJson, fetchText } = await session();
   let ok = 0, total = 0, nOther = 0; const failed = [];
   for (const r of rows) {
     const [o, offers] = await Promise.all([own(fetchText, r.code), others(fetchJson, r.code)]);
-    const pick = choose(o, offers, r.qty);
+    const pick = choose(o, lcscOnly ? [] : offers, r.qty);   // --lcsc-only: ignore marketplace offers
     if (!pick) { console.log(`FAIL ${r.code.padEnd(11)} x${String(r.qty).padEnd(5)} ${o ? 'no offer covers the quantity (stock)' : 'not sold on lcsc.com'}${offers.length ? ` (${offers.length} other-supplier offers, none usable)` : ''}`); failed.push(r.code); continue; }
     total += pick.c.total; if (pick.kind === 'other') nOther++;
     const line = describe(r.code, r.qty, pick);
@@ -160,7 +174,7 @@ async function add(csv, dryRun) {
 
 (async () => {
   const [mode, arg, flag] = process.argv.slice(2);
-  if (mode === 'add' && arg) await add(arg, flag === '--dry-run');
+  if (mode === 'add' && arg) await add(arg, process.argv.includes('--dry-run'), process.argv.includes('--lcsc-only'));
   else if (mode === 'cart') { const { browser, fetchJson } = await session(); await cart(fetchJson); browser.disconnect(); }
   else if (mode === 'info' && arg) {
     const { browser, fetchJson, fetchText } = await session();
@@ -169,5 +183,5 @@ async function add(csv, dryRun) {
     for (const p of offers) console.log(`other: ${p.productSource}/${p.vendorCode} "${p.productModel}" mpn=${p.productCodeManufacturer} moq=${p.minBuyNumber} stock=${p.stockNumber} ladder=${JSON.stringify(p.productPriceList.map(t => [t.ladder, t.usdPrice]))}`);
     browser.disconnect();
   }
-  else { console.error('usage: add_to_lcsc_cart.js add parts.csv [--dry-run] | cart | info C15849'); process.exit(2); }
+  else { console.error('usage: add_to_lcsc_cart.js add parts.csv [--dry-run] [--lcsc-only] | cart | info C15849'); process.exit(2); }
 })();
