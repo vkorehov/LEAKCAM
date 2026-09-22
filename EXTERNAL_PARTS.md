@@ -9,7 +9,8 @@ part can be re-sourced from any vendor.
 |---|---|---|---|---|
 | 1 | [1005004518439613](https://www.aliexpress.com/item/1005004518439613.html) MF52D NTC, Shenzhen Weiheng Store | 10k B3435 L10CM, 5 pcs x1, EUR 0.42 | MF52D-103F-3435 epoxy bead NTC (Cantherm / Nanjing Shiheng MF52D 103F3435-100 equivalent), 3 mm head, 100 mm leads | JT (TS pad of the BQ24072 charger) to GND |
 | 2 | [1005012836237910](https://www.aliexpress.com/item/1005012836237910.html) 503450/523450 LiPo, da da xiong Authorized Store | 2 pcs x1, EUR 5.69 | 503450 lithium-polymer cell, 3.7 V 1000 mAh, with protection PCM and JST PH 2.0 2-pin plug | S1, JST S2B-PH-K-S (bottom side) |
-| 3 | [1005008549434548](https://www.aliexpress.com/item/1005008549434548.html) 15-to-22 pin FPC, HONG KONG CCD LIMITED | 4 cm, x1, EUR 1.49 | Raspberry Pi Zero style camera adapter FFC: 15-pin 1.0 mm pitch (camera end) to 22-pin 0.5 mm pitch (board end), 40 mm, gold contacts | J4 (bottom) and J5 (top), 05B20L22P 22-pin 0.5 mm |
+| 3 | [1005008549434548](https://www.aliexpress.com/item/1005008549434548.html) 15-to-22 pin FPC, HONG KONG CCD LIMITED | 4 cm, x1 (20 Sep) + x3 (22 Sep, order 3077051597297163), EUR 1.49 each | Raspberry Pi Zero style camera adapter FFC: 15-pin 1.0 mm pitch (camera end) to 22-pin 0.5 mm pitch (board end), 40 mm, gold contacts | J4 (bottom) and J5 (top), 05B20L22P 22-pin 0.5 mm |
+| 5 | [1005007474473512](https://www.aliexpress.com/item/1005007474473512.html) OV5647 "Pi 5 / Zero" camera, MICROBOT Store | standard lens, x1 (7 Sep), EUR 3.79 | Pi camera v1.3 form-factor OV5647 board with the standard ~70-degree lens; useful for bring-up before the fisheye units arrive | J4 / J5 through part 3 |
 | 4 | [1005003352074982](https://www.aliexpress.com/item/1005003352074982.html) OV5647 camera "for Raspberry Pi 3/4", Aideepen Office Store | 222 Degree, x2, EUR 8.89 each | Raspberry Pi camera v1.3 form-factor board (25 x 24 mm) with OV5647 5 MP sensor and an M12 222-degree fisheye lens, 15-pin FFC connector | J4 / J5 through part 3 |
 
 ## 1. Thermistor MF52D-103F-3435
@@ -40,8 +41,9 @@ part can be re-sourced from any vendor.
 - Standard Raspberry Pi Zero camera cable: 15-pin 1.0 mm end into the camera board,
   22-pin 0.5 mm end into J4/J5 (05B20L22P, verified compatible with the Pi Zero camera
   connector pinout).
-- **Only one cable was ordered for two cameras; a second one is needed.** The 15-pin FFC
-  usually bundled with the camera board does not fit the 22-pin connector.
+- Four cables in total (one on 20 Sep, three more on 22 Sep), enough for two cameras plus
+  spares. The 15-pin FFC usually bundled with the camera board does not fit the 22-pin
+  connector.
 - Cable length sets where the folded-back camera lands. With the connectors at the lower
   board edge and the cable folded 180 degrees, a 40 mm cable puts the 25 x 24 mm camera
   board at about y = 35 to 59 mm, overlapping the antenna element at y = 55.5 to 60.7 mm.
