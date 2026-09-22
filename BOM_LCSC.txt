@@ -11,6 +11,7 @@ qty   LCSC#       Basic/Ext value                        link                   
 2     C1547       Basic     12p                          https://www.lcsc.com/product-detail/C1547.html     0402CG120J500NT  (C35 C36)
 5     C1554       Basic     20p                          https://www.lcsc.com/product-detail/C1554.html     0402CG200J500NT  (C33 C34 C98 C111 C112)
 2     C16772      Basic     220n                         https://www.lcsc.com/product-detail/C16772.html    CL05B224KO5NNNC  (C103 C107)
+3     C22466352   Promo     DSK24                        https://www.lcsc.com/product-detail/C22466352.html DSK24  (D2 D7 D8)
 2     C22459552   Extended  05b20l22p                    https://www.lcsc.com/product-detail/C22459552.html 05B20L22P  (J4 J5)
 2     C1848       Basic     1uF 50V 1206                 https://www.lcsc.com/product-detail/C1848.html     CL31B105KBHNNNE  (C1 C104)
 2     C32346      Basic     Q13FC13500004                https://www.lcsc.com/product-detail/C32346.html    Q13FC13500004  (Y1 Y3)
@@ -22,14 +23,13 @@ qty   LCSC#       Basic/Ext value                        link                   
 13    C19702      Basic     10uF GRM188R61A106ME69D      https://www.lcsc.com/product-detail/C19702.html    CL10A106KP8NNNC  (C2 C3 C11 C15 C16 C19 C50 C90 C96 C99 C102 C105 C106)
 1     C696901     Extended  1uF 0603                     https://www.lcsc.com/product-detail/C696901.html   TCC0603X5R105K160CT  (C86)
 6     C59461      Basic     22uF GRM188R60J226MEA0J      https://www.lcsc.com/product-detail/C59461.html    CL10A226MQ8NRNC  (C14 C17 C18 C20 C87 C89)
-3     C22466352   Promo     DSK24                        https://www.lcsc.com/product-detail/C22466352.html DSK24  (D2 D7 D8)
 1     C2286       Basic     KT-0603R                     https://www.lcsc.com/product-detail/C2286.html     KT-0603R  (D1)
 1     C15127      Basic     AO3401A                      https://www.lcsc.com/product-detail/C15127.html    AO3401A  (Q1)
 2     C20917      Basic     AO3400A                      https://www.lcsc.com/product-detail/C20917.html    AO3400A  (Q2 Q4)
 3     C478118     Extended  PRTR5V0U2F,115               https://www.lcsc.com/product-detail/C478118.html   PRTR5V0U2F,115  (D3 D4 D5)
 1     C22859      Basic     10R                          https://www.lcsc.com/product-detail/C22859.html    0603WAF100JT5E  (R68)
 1     C23164      Basic     4.7R                         https://www.lcsc.com/product-detail/C23164.html    0603WAF470KT5E  (R66)
-1     C2965580    Extended  XL7EL89CKI-111YLC-24M        https://www.lcsc.com/product-detail/C2965580.html  XL7EL89CKI-111YLC-24M  (Y2)
+139   C2965580    Extended  XL7EL89CKI-111YLC-24M        https://www.lcsc.com/product-detail/C2965580.html  XL7EL89CKI-111YLC-24M  (Y2)  ## need 1, JLCPCB MOQ 139; LCSC may sell fewer
 3     C157932     Extended  S2B-PH-K-S(LF)(SN)           https://www.lcsc.com/product-detail/C157932.html   S2B-PH-K-S-GW  (S1 S2 S3)
 1     C42414902   Extended  k230d                        https://www.lcsc.com/product-detail/C42414902.html K230D  (U3)
 2     C25867      Basic     1.5k                         https://www.lcsc.com/product-detail/C25867.html    0402WGF1501TCE  (R5 R12)
@@ -60,4 +60,4 @@ qty   LCSC#       Basic/Ext value                        link                   
 
 NO PART: ANT1 MIFI, B1_N TESTP, B1_P TESTP, J1 Connector 2PIn, J2 Connector 2PIn, JB1 Connector 2PIn, JB2 Connector 2PIn, JT Connector 2PIn, PR1 CON5P
 
-TOTAL 41.20 USD
+TOTAL 49.85 USD
