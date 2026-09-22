@@ -5,8 +5,8 @@ C:\hw\LEAKCAM\Project Outputs for LEAKCAM\Pick Place for MIFA.csv
 File Design Information:
 
 Date:       22/09/26
-Time:       12:19
-Revision:   32d73505d41df7268538fabfb1b21fbad78cec6e
+Time:       13:24
+Revision:   df1356b09589785604d73f361f63fce1e09753ad
 Variant:    No variations
 Units used: mil
 
@@ -116,12 +116,12 @@ Units used: mil
 "FB3","BLM18PG121SN1D","TopLayer","FP-BLM18-0_15-t0_8-IPC_B","1256.890","508.858","270","C14709"
 "FB2","BLM18PG121SN1D","TopLayer","FP-BLM18-0_15-t0_8-IPC_B","1028.801","683.664","270","C14709"
 "FB1","BLM18PG121SN1D","TopLayer","FP-BLM18-0_15-t0_8-IPC_B","1026.506","472.677","90","C14709"
-"D8","DSK24","TopLayer","FP-S8-V-3910_01-001-MFG","817.663","1467.249","90","C22466352"
-"D7","DSK24","TopLayer","FP-S8-V-3910_01-001-MFG","946.046","1181.998","90","C22466352"
+"D8","DSK24","TopLayer","DSK24","819.863","1467.599","90","C22466352"
+"D7","DSK24","TopLayer","DSK24","948.246","1182.348","90","C22466352"
 "D5","PRTR5V0U2F,115","TopLayer","FP-SOT886-MFG","1033.530","804.333","180","C478118"
 "D4","PRTR5V0U2F,115","BottomLayer","FP-SOT886-MFG","391.282","1718.736","0","C478118"
 "D3","PRTR5V0U2F,115","TopLayer","FP-SOT886-MFG","401.246","718.122","0","C478118"
-"D2","DSK24","BottomLayer","FP-S8-V-3910_01-001-MFG","114.474","617.558","0","C22466352"
+"D2","DSK24","BottomLayer","DSK24","114.824","619.758","0","C22466352"
 "D1","KT-0603R","BottomLayer","FP-SML-LX0603IW-TR-MFG","1171.580","1235.186","90","C2286"
 "C112","20p","TopLayer","CAP_0402","295.834","1477.015","0","C1554"
 "C111","20p","TopLayer","CAP_0402","223.480","1477.190","0","C1554"
