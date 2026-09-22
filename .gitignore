@@ -128,3 +128,4 @@ tools/jlcpcb-cart/package-lock.json
 *.gex
 *.mss
 *.lok
+*.tmpgrp
