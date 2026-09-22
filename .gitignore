@@ -127,3 +127,4 @@ tools/jlcpcb-cart/package-lock.json
 *.info
 *.gex
 *.mss
+*.lok
