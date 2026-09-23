@@ -28,10 +28,11 @@ IO27 becomes unused. The firmware in this folder is written for this pin map onl
 The AHT20 datasheet (Aosong, 2024-07, page 8, figure 15 and notes 2-3) asks for an RC filter on the
 sensor's VDD: R1 330-390 ohm in series and C1 10 uF to GND. U17 VDD sits directly on 3V3_SLEEP with
 only C110 100 nF, and 3V3_SLEEP is a buck-boost output that also carries the BL616's Wi-Fi transmit
-bursts (266 mA). Add R 390 ohm (0402) from 3V3_SLEEP to a new U17 VDD node and 10 uF (0603) from that
-node to GND. The 390 ohm is what sets the 41 Hz corner that rejects the burst ripple; 10 ohm would
-only filter switching ripple. Drop at the 570 uA measuring current: 0.22 V, leaving ~3.08 V
-(spec 2.2-5.5 V). **R73/R74 stay on 3V3_SLEEP**: figure 15 hangs the 4.7 k pull-ups on the supply
+bursts (266 mA). Add R 240 ohm (0402, C324768, the part already used for R33/R46/R47/R48) from
+3V3_SLEEP to a new U17 VDD node and 10 uF (0603, C19702, already in the BOM) from that node to GND.
+With 10 uF this is a 66 Hz corner: below the datasheet's 330-390 ohm (41-48 Hz) but still far under
+the kilohertz-range burst ripple it is there to reject, and no new BOM line. Drop at the 570 uA
+measuring current: 0.14 V, leaving ~3.17 V (spec 2.2-5.5 V). **R73/R74 stay on 3V3_SLEEP**: figure 15 hangs the 4.7 k pull-ups on the supply
 before R1; note 1 only requires them to come from the same supply as the sensor.
 
 ## Power chain as built (POWER.SchDoc)
