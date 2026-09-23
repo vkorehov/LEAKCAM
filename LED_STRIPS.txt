@@ -24,21 +24,48 @@ can be switched and dimmed independently.
 2. Electrical (set on the main board, LEDS.SchDoc)
 --------------------------------------------------
 
-  Chain  Driver  CTRL / PWM         R_FB             I_LED    String V (typ / max)  Switch peak (max)
-  -----  ------  -----------------  ---------------  -------  --------------------  -----------------
-  white  U14,J1  GPIO61 PWM1 CTL2   R66 6.8R C23214  29.4 mA  ~21 V / 27.2 V        ~0.54 A
-  IR     U15,J2  GPIO60 PWM0 CTL1   R68 5.6R C322191 35.7 mA  ~11 V / 19.2 V        ~0.49 A
+  Design rule: maximum current. R_FB sets a target at the TPS61160's own limit on a typical board
+  with a nominal battery; above that the driver runs in its switch current limit and the LEDs get
+  whatever it can deliver. Firmware backs off with PWM duty where less light is wanted.
 
-  - I_LED = 0.2 V / R_FB at 100 % PWM duty; the TPS61160 turns duty into DC current (no flicker
-    or rolling-shutter banding).
-  - Limits: OVP 37 V min, DSK24 40 V, C1/C104 50 V, switch current limit 0.56 A min, Dmax 93 %.
-  - Switch peak model: 3.0 V battery, L = 10 uH, 600 kHz, 85 % efficiency. "Max" uses the LEDs'
-    datasheet Vf max, which is specified at 350 mA; at 30-36 mA the real Vf is lower.
-  - Why R66 is 6.8R and not 5.6R: eight white LEDs at 35.7 mA can reach ~0.61 A switch peak on
-    a low battery and hit the current limit (not damaging: the light just comes out dimmer than
-    set). 6.8R keeps the white chain inside the limit.
-  - Option, not applied: R68 3.3R (IR 60 mA, ~+70 % IR light). IR chain worst case then
-    ~12.8 V, switch peak ~0.51 A: still inside the limit. Decide after the bench test (section 8).
+  Chain  Driver  CTRL / PWM         R_FB              Target (100 % duty)  String V typ
+  -----  ------  -----------------  ----------------  -------------------  ------------
+  white  U14,J1  GPIO61 PWM1 CTL2   R66 3.0R C23157   66.7 mA              ~22 V
+  IR     U15,J2  GPIO60 PWM0 CTL1   R68 1.5R C22769   133 mA               ~11 V
+
+  What the driver can deliver (datasheet Eq. 3/4, 8 LEDs, Schottky 0.35 V):
+
+  Corner                                        White max   IR max    Input per driver
+  --------------------------------------------  ---------   -------   ----------------
+  typ: ILIM 0.70 A, 10 uH, 600 kHz, eta 0.85-0.87
+      battery 3.3 V                             60 mA       127 mA    ~0.5 A
+      battery 3.7 V                             64 mA       138 mA    ~0.5 A
+      battery 4.2 V                             69 mA       156 mA    ~0.45 A
+  stacked worst: ILIM 0.56 A, 8 uH, 500 kHz,
+      eta 0.80, every LED at datasheet Vf max   ~20 mA      ~33 mA
+
+  So a typical unit sits at the knee on a nominal battery: regulated at 66.7 / 133 mA when the
+  battery is full, current-limited a few percent lower when it is low. The stacked worst case
+  (all tolerances at once) is unlikely but gives about today's old 2835-plan current.
+
+  Running in current limit is safe and designed-in: cycle-by-cycle switch limit (0.84 A max),
+  output held by the LED string far below OVP (37 V min), so open-LED protection does not trip.
+  Only effect: the current follows battery voltage instead of R_FB. imgdiff normalises frame
+  gain, so wake-to-wake brightness differences do not read as change.
+
+  Stress at full current (both chains on, < 1 s per shot):
+    - L6/L7 DFE252012F-100M: peak <= ILIM max 0.84 A, under its saturation rating.
+    - D7/D8 DSK24 (2 A), C1/C104 50 V, R66/R68 0.2 V x I <= 27 mW: fine.
+    - LEDs: white 67 mA of 350 mA, IR 133 mA of 1 A.
+    - Battery (1000 mAh LiPo via bq24072, BAT discharge rating 4.5 A): ~1 A for both drivers
+      plus the K230, ~1.5 A total; ~0.3-0.4 V sag on a low cell. Rails keep regulating
+      (TPS62823 >= 2.4 V, TPS63802 >= 1.3 V).
+    - TPS61160 soft start: half current limit for the first 5 ms, then full; the capture tool
+      waits 10 ms before streaming and drops ~12 frames for AE anyway.
+
+  PWM back-off: -b white%,ir% in leakcam_capture. 100 % = as much as the driver gives. Duty is
+  analog dimming (I = duty x 0.2 V / R_FB) and only has effect below the knee, e.g. white 50 %
+  = 33 mA, IR 25 % = 33 mA. Use it for close scenes that saturate, or to save battery.
 
 
 3. Parts
@@ -138,37 +165,32 @@ can be switched and dimmed independently.
 8. Brightness estimate (verify on the bench)
 --------------------------------------------
 
-  Per camera: 2 strips = 4 white + 4 IR, tilted ~30-45 deg.
+  Target: usable change detection up to 2 m. Per camera: 2 strips = 4 white + 4 IR, tilted
+  ~30-45 deg. Typical unit, nominal battery, 100 % duty.
 
-  White, 29.4 mA: ~10 lm per LED (flux scaled from 100-150 lm @350 mA), ~3 cd on axis;
-  toward the image centre about 10 cd per camera:
-      0.5 m ~ 40 lx     1 m ~ 10 lx     2 m ~ 2.5 lx
-  IR, 35.7 mA: ~9 mW/sr per LED, ~30 mW/sr per camera toward the centre. With the OV5647's
-  ~25 % relative sensitivity at 850 nm this is roughly half the white light as seen by the
-  sensor: about 5 "sensor-equivalent" lx at 1 m (about 8 with R68 = 3.3R).
+  White, ~64 mA: ~20 lm per LED (flux scaled from 100-150 lm @350 mA), ~6 cd on axis; toward
+  the image centre about 20 cd per camera:
+      0.5 m ~ 80 lx     1 m ~ 20 lx     2 m ~ 5 lx
+  IR, ~135 mA: ~35 mW/sr per LED, ~110 mW/sr per camera toward the centre. With the OV5647's
+  ~25 % relative sensitivity at 850 nm: about 20 "sensor-equivalent" lx at 1 m, ~5 at 2 m.
 
-  For change detection at 0.3-2 m this is adequate at 1 m and marginal at 2 m. Levers, in order:
-    1. exposure time: 1280x960 runs at 45 fps, so AE is capped near 22 ms; a slower frame rate
-       (or 2592x1944 at 10 fps) gives several times more light per frame at little battery cost,
-       since the LEDs are only on for the shot;
-    2. R68 3.3R for IR (section 2);
-    3. more LEDs: not without a third driver (both chains are near the switch current limit).
-  Bench test: run leakcam_capture at the expected distances, dark room, -b 100,0 and -b 0,100;
-  the "mean_new" field is the frame's mean luminance; aim for >= 40 at the farthest distance.
+  2 m is covered with margin by both white and IR. Further lever if needed: exposure time
+  (1280x960 at 45 fps caps AE near 22 ms; a slower frame rate gives several times more light per
+  frame at little battery cost). More LEDs would need a third driver.
 
 
 9. Firmware
 -----------
 
   firmware/k230_capture/leakcam_capture.c: -b white%,ir% (white = PWM1, IR = PWM0), 25 kHz PWM,
-  0 leaves a chain off (e.g. -b 0,100 for IR only, no visible flash).
+  100 = maximum the driver delivers, 0 leaves a chain off (e.g. -b 0,100 for IR only, no
+  visible flash).
   The IR LEDs are only useful with the cameras' IR-cut filter removed.
 
 
 10. Open items
 --------------
 
-  - Update the PCB from the schematic in Altium (R66 6.8R C23214, R68 5.6R C322191) and
+  - Update the PCB from the schematic in Altium (R66 3.0R C23157, R68 1.5R C22769) and
     re-export Pick Place: BOM_ASSEMBLY.csv / PickPlace_MIFA.csv still carry 4.7R / 10R.
   - Draw the strips into the schematic and panel (footprint per section 4).
-  - Bench brightness test, then decide on R68 3.3R.
