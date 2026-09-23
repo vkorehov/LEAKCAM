@@ -1,0 +1,4 @@
+/k230_agent/leakcam_agent
+/bl616_pwrmgr/test/test_link
+/bl616_pwrmgr/build/
+*.o

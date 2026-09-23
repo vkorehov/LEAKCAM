@@ -1,0 +1,8 @@
+#!/bin/sh
+# /etc/leakcam/on-wake <cold|leak|rtc>
+# Capture, upload, and optionally print "sleep=<seconds>" for the next scheduled wake-up.
+reason="$1"
+case "$reason" in
+    leak) echo "sleep=600" ;;        # re-check in 10 min while wet
+    *)    echo "sleep=21600" ;;      # routine: every 6 h
+esac
