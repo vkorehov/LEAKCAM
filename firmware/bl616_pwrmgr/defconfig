@@ -1,0 +1,4 @@
+# console on USB CDC (PR1), so UART0 on GPIO21/22 is free for the K230 link and boot logs
+# never drive into the K230's unpowered 3V3 rail
+CONFIG_BSP_CONSOLE_USB_CDC=y
+CONFIG_PM=y
