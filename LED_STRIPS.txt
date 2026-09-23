@@ -1,0 +1,174 @@
+LEAKCAM illumination: LED strip boards
+=====================================
+
+Replaces the earlier ring-board plan (LED_RING.md). Four small strip boards, two per camera,
+panelled with the main board and cut apart by hand. White and IR are two separate chains so they
+can be switched and dimmed independently.
+
+
+1. Topology
+-----------
+
+  4 strips x (2 white + 2 IR) = 8 white + 8 IR.
+
+  White chain: U14 (TPS61160) -> J1 -> strip A -> B (camera 1) -> C -> D (camera 2) -> J1
+  IR chain:    U15 (TPS61160) -> J2 -> strip A -> B (camera 1) -> C -> D (camera 2) -> J2
+
+  Each strip carries both chains: 4 wire pads, one "in" pair at one end (W+, IR+), one "out" pair
+  at the other end (W-, IR-). The return wire of each chain runs back beside the forward wires;
+  twist the pairs on every hop (keeps loops small, see RF below).
+
+  One open LED darkens its whole chain on both cameras; the other chain keeps working.
+
+
+2. Electrical (set on the main board, LEDS.SchDoc)
+--------------------------------------------------
+
+  Chain  Driver  CTRL / PWM         R_FB             I_LED    String V (typ / max)  Switch peak (max)
+  -----  ------  -----------------  ---------------  -------  --------------------  -----------------
+  white  U14,J1  GPIO61 PWM1 CTL2   R66 6.8R C23214  29.4 mA  ~21 V / 27.2 V        ~0.54 A
+  IR     U15,J2  GPIO60 PWM0 CTL1   R68 5.6R C322191 35.7 mA  ~11 V / 19.2 V        ~0.49 A
+
+  - I_LED = 0.2 V / R_FB at 100 % PWM duty; the TPS61160 turns duty into DC current (no flicker
+    or rolling-shutter banding).
+  - Limits: OVP 37 V min, DSK24 40 V, C1/C104 50 V, switch current limit 0.56 A min, Dmax 93 %.
+  - Switch peak model: 3.0 V battery, L = 10 uH, 600 kHz, 85 % efficiency. "Max" uses the LEDs'
+    datasheet Vf max, which is specified at 350 mA; at 30-36 mA the real Vf is lower.
+  - Why R66 is 6.8R and not 5.6R: eight white LEDs at 35.7 mA can reach ~0.61 A switch peak on
+    a low battery and hit the current limit (not damaging: the light just comes out dimmer than
+    set). 6.8R keeps the white chain inside the limit.
+  - Option, not applied: R68 3.3R (IR 60 mA, ~+70 % IR light). IR chain worst case then
+    ~12.8 V, switch peak ~0.51 A: still inside the limit. Decide after the bench test (section 8).
+
+
+3. Parts
+--------
+
+  Type    Part                                LCSC       Height  Beam  Rating   Stock   Price   Board/order
+  ------  ----------------------------------  ---------  ------  ----  -------  ------  ------  -----------
+  White   Xinglight XL-HD3535UWC-A2,          C3646951   2.00 mm 130   350 mA   19.7k   $0.150  8 / 10
+          5500-7000 K, 100-150 lm @350 mA
+  IR      JNJ JNJ-LTJI0112W120/35mil/845-860nm C19185834  2.10 mm 120   1 A      438     $0.220  8 / 10
+          855 nm, 90 mW/sr @350 mA
+  IR alt  Xinglight XL-HD3535HIR-T4A2, 850 nm C5221244   1.67 mm 120   700 mA   4.8k    $0.229  (backup)
+
+  Domed 3535 parts were chosen so the lens stands out through the printed cover (section 5).
+  Rejected:
+    - SMD2835 (C385305 white, C22466172 / C53191414 IR): only 0.8 mm tall, cannot reach through
+      a printed wall.
+    - OSRAM SFH 4715AS (Oslon Black, 2.29 mm): $1.88, +-40 deg, different footprint.
+    - Vishay VSMY3850: 1.75 mm, $0.37.
+    - Through-hole 3/5 mm: IR in stock is 940 nm with 20-40 deg beams (OV5647 is about half as
+      sensitive at 940 nm); white 3/5 mm parts are 20 mA LEDs with narrow beams.
+  Both chosen parts are JLC Extended (one-off setup fee each). JLC places domed 3535 LEDs
+  routinely; the nozzle picks on the dome, datasheets say not to press the lens.
+
+
+4. Footprint (one footprint for both LEDs)
+------------------------------------------
+
+  Pad roles differ per part:
+    JNJ white   pad 1 cathode, pad 2 anode, centre pad 3 = anode
+    JNJ IR      pad 1 cathode, pad 2 anode, centre pad 3 = not connected
+    Xinglight white: outer pads cathode / anode, centre = thermal
+    Xinglight IR:    centre pad 2 = anode, pad 1 anode, pad 3 cathode
+  Shared footprint: left outer pad = cathode, right outer pad = anode, centre pad tied to the
+  anode net. Pad widths per the JNJ recommended layout: 1.0 / 0.6 / 0.5 mm, 3.3 mm long.
+  Silkscreen a cathode mark; makers mark polarity differently (dot, notch, corner cut), so check
+  the first placed part of each type against its datasheet.
+
+
+5. Mechanical
+-------------
+
+  Strip: 36 x 6 mm, same stack as the main board (panelled). One screw, centred at x = 18 mm.
+    - M2: 2.2 mm non-plated hole, no copper ring; head keep-out 4.5 mm diameter (M1.6: 1.8 mm
+      hole, 3.0 mm head).
+    - LED order along the strip: W - IR - (screw) - IR - W, centres at x = 4.5, 11, 25, 31.5 mm,
+      so both colours are centred on the same spot.
+    - Wire pads at the strip ends, about 1.5 x 2 mm each, two per end.
+    - The two strings pass the screw on an inner layer (insulated under a metal screw head);
+      0.5 mm from the hole wall.
+  Anti-rotation: one screw lets the strip turn. Print a 6.2 mm pocket or ribs that the strip sits
+  in; the same boss is wedged to give the tilt (section 6). Alternative: a 1.0 mm hole ~8 mm
+  from the screw for a moulded pin.
+  Screw into plastic: M2 heat-set insert, or an M2 thread-forming screw directly into PLA/PETG.
+
+  Printed cover:
+    - Press the strip flat against the inside of the wall; wall 1.0 mm thick at the LEDs, one
+      3.4 mm round hole per LED. The 0.7-0.8 mm LED base sits inside the wall and the dome stands
+      about 1.0-1.1 mm proud of the outer surface. The chip ends up ~0.3 mm below the outer
+      surface with 1.7 mm hole radius: the wall clips only light beyond ~80 deg.
+    - Seal with a bead of clear silicone around each dome.
+    - Shell opaque (black or dark). Keep >= 2-3 mm of solid plastic between the LED holes and the
+      lens opening: printed layers guide light sideways, and 850 nm passes through thin plastic,
+      black included. Line pocket walls facing the lens with black vinyl tape or matte paint if in
+      doubt (no metal tape near the antenna).
+    - Never put LEDs behind the lens's own window or dome.
+
+  Panel: strips on the sides of the main board inside one rectangle; cut line drawn on silkscreen
+  only (no slots or mouse bites, which JLC counts as extra designs). Copper >= 1 mm from the cut
+  line on every layer, no trace crosses it. Components >= 2.5 mm from the outer panel edge, or
+  JLC adds rails.
+
+
+6. Glare
+--------
+
+  - Direct: the 222 deg lens sees 21 deg behind its front plane. Every LED must sit outside that
+    cone (an LED 12 mm off-axis must be > ~4.6 mm behind the front element, plus margin).
+  - Specular: tilt the strips 30-45 deg outward from the camera axis so a shiny surface facing the
+    camera (wet floor, water) does not return a hotspot into the image centre. With a 120-130 deg
+    beam the centre of the scene stays lit at 45 deg tilt.
+  - Internal: separate LED openings from the lens opening (see section 5).
+
+
+7. RF (2.45 GHz Wi-Fi/BLE antenna)
+----------------------------------
+
+  - Strips (and their wires) at or below y = 43 mm, the same limit as the camera boards;
+    >= 20 mm from the antenna, 30 mm or more preferred.
+  - No copper pour on the strips: only the string traces and pads.
+  - Strip trace + wire forms a monopole on the main ground: avoid 25-35 mm and 85-100 mm total
+    length; 45-75 mm is good. The chains cross both camera sides, so twist go and return wires on
+    every hop and route them away from the antenna, not alongside it.
+  - Tilting the strips has no RF effect.
+
+
+8. Brightness estimate (verify on the bench)
+--------------------------------------------
+
+  Per camera: 2 strips = 4 white + 4 IR, tilted ~30-45 deg.
+
+  White, 29.4 mA: ~10 lm per LED (flux scaled from 100-150 lm @350 mA), ~3 cd on axis;
+  toward the image centre about 10 cd per camera:
+      0.5 m ~ 40 lx     1 m ~ 10 lx     2 m ~ 2.5 lx
+  IR, 35.7 mA: ~9 mW/sr per LED, ~30 mW/sr per camera toward the centre. With the OV5647's
+  ~25 % relative sensitivity at 850 nm this is roughly half the white light as seen by the
+  sensor: about 5 "sensor-equivalent" lx at 1 m (about 8 with R68 = 3.3R).
+
+  For change detection at 0.3-2 m this is adequate at 1 m and marginal at 2 m. Levers, in order:
+    1. exposure time: 1280x960 runs at 45 fps, so AE is capped near 22 ms; a slower frame rate
+       (or 2592x1944 at 10 fps) gives several times more light per frame at little battery cost,
+       since the LEDs are only on for the shot;
+    2. R68 3.3R for IR (section 2);
+    3. more LEDs: not without a third driver (both chains are near the switch current limit).
+  Bench test: run leakcam_capture at the expected distances, dark room, -b 100,0 and -b 0,100;
+  the "mean_new" field is the frame's mean luminance; aim for >= 40 at the farthest distance.
+
+
+9. Firmware
+-----------
+
+  firmware/k230_capture/leakcam_capture.c: -b white%,ir% (white = PWM1, IR = PWM0), 25 kHz PWM,
+  0 leaves a chain off (e.g. -b 0,100 for IR only, no visible flash).
+  The IR LEDs are only useful with the cameras' IR-cut filter removed.
+
+
+10. Open items
+--------------
+
+  - Update the PCB from the schematic in Altium (R66 6.8R C23214, R68 5.6R C322191) and
+    re-export Pick Place: BOM_ASSEMBLY.csv / PickPlace_MIFA.csv still carry 4.7R / 10R.
+  - Draw the strips into the schematic and panel (footprint per section 4).
+  - Bench brightness test, then decide on R68 3.3R.
