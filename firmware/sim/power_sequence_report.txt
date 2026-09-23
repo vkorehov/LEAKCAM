@@ -1,0 +1,41 @@
+== 1. Cold power-up, K230_PWR goes high at t = 0 ==
+   0V8  10 % at   0.350 ms   90 % at   1.145 ms
+   3V3  10 % at   1.640 ms   90 % at   1.740 ms
+   1V8  10 % at   1.640 ms   90 % at   1.730 ms
+   1V1  10 % at   2.090 ms   90 % at   2.895 ms
+   RSTN crosses 1.26 V (0.7 x 1V8) at  15.430 ms
+   rule "0V8 before 1V8 and 3V3 IO":        PASS  (0V8 at 90 % 495 us before the first IO rail starts)
+   rule "0V8_MIPI before 1V8_MIPI":          PASS  (beads from 0V8 and 1V8, inherit the above)
+   rule "1V8_RTC not later than 1V8_LDO":    PASS  (both on the 1V8 net)
+   reset released after all rails at 90 %:  PASS  (12.5 ms margin, set by R30 x C23 = 10 ms)
+
+== 2. Power-down, K230_PWR low at t = 0 (all ENs fall together: R27/R28 pull up to K230_PWR) ==
+   light off-load (1V8 50 uA, 3V3 50 uA)    0V8   0.492 ms  1V1   0.334 ms  1V8 1889.962 ms  3V3 3692.886 ms
+   typical (1V8 0.5 mA, 3V3 0.3 mA)         0V8   0.492 ms  1V1   0.334 ms  1V8 188.996 ms  3V3 615.481 ms
+   with 1 k bleed on 1V8 and 3V3            0V8   0.492 ms  1V1   0.334 ms  1V8  51.080 ms  3V3  55.118 ms
+   -> the core (0V8) is gone in ~0.5 ms while 1V8 and 3V3 linger; the IO rails outlive the core.
+
+== 3. Power-cycle: off for T, then on again. Does 0V8 still come up first? ==
+   PASS means 1V8 < 10 % and 3V3 < 10 % at the moment 0V8 starts rising again.
+   scenario                                       0.01s   0.10s   0.30s   1.00s   2.00s   5.00s
+   light off-load, no bleed                       FAIL   FAIL   FAIL   FAIL   FAIL   PASS 
+   typical off-load, no bleed                     FAIL   FAIL   FAIL   PASS   PASS   PASS 
+   1 k bleed on 1V8 and 3V3                       FAIL   PASS   PASS   PASS   PASS   PASS 
+   1 k bleed, BL616 UART TX left high             FAIL   PASS   PASS   PASS   PASS   PASS 
+   1 k bleed, UART + 5 SDIO pins left high        FAIL   FAIL   FAIL   FAIL   FAIL   FAIL 
+   no bleed, UART TX left high                    FAIL   FAIL   FAIL   FAIL   FAIL   FAIL 
+
+== 4. K230 "off" but BL616 pins driven high into the 10 k pull-ups to 3V3 ==
+   1 pin(s) high, light load -> 3V3 rail sits at 2.87 V, costing 0.04 mA from 3V3_SLEEP
+   1 pin(s) high, typ load   -> 3V3 rail sits at 1.73 V, costing 0.16 mA from 3V3_SLEEP
+   1 pin(s) high, 1 k bleed  -> 3V3 rail sits at 0.30 V, costing 0.30 mA from 3V3_SLEEP
+   2 pin(s) high, light load -> 3V3 rail sits at 3.07 V, costing 0.05 mA from 3V3_SLEEP
+   2 pin(s) high, typ load   -> 3V3 rail sits at 2.27 V, costing 0.21 mA from 3V3_SLEEP
+   2 pin(s) high, 1 k bleed  -> 3V3 rail sits at 0.54 V, costing 0.55 mA from 3V3_SLEEP
+   7 pin(s) high, light load -> 3V3 rail sits at 3.23 V, costing 0.05 mA from 3V3_SLEEP
+   7 pin(s) high, typ load   -> 3V3 rail sits at 2.92 V, costing 0.27 mA from 3V3_SLEEP
+   7 pin(s) high, 1 k bleed  -> 3V3 rail sits at 1.35 V, costing 1.37 mA from 3V3_SLEEP
+   -> with the UART TX idling high the "off" K230 IO banks, cameras and CH340X sit at up to 2.9 V,
+      the idle budget grows by 0.04-0.3 mA per pin (more with a bleed resistor), and the next
+      power-up starts with 3V3 already up. Bleed resistors cannot fix this; the firmware must park
+      those pins (analog/input, no pull) before K230_PWR goes low and keep them parked until 3V3 is up.
