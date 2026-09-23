@@ -13,7 +13,8 @@
 #include "bflb_gpio.h"
 
 /*
- * Pin map for the NEXT board spin. Two nets on U11 change against the Sep 2026 fab:
+ * Pin map for the first board revision (not yet fabricated). Two nets on U11 differ from the
+ * schematic as it stood on 22 Sep 2026 and must be changed there:
  *   PGOOD    U11.39 (IO27) -> U11.7  (IO03 = ADC_CH3, watched by ACOMP0, can wake HBN)
  *   K230_PWR U11.7  (IO03) -> U11.43 (IO30, plain output; R19 still pulls it low in HBN)
  * Reason: a USB plug must wake the BL616 from HBN. HBN wakes only on GPIO16-19 (not brought out
@@ -28,6 +29,11 @@
 
 /* USB input power: BQ24072 PGOOD (U1.7, open drain, R23 100k to 3V3_SLEEP), LOW = USB power good */
 #define PIN_USB_PGOOD   GPIO_PIN_3   /* IO03 = ADC_CH3 -> ACOMP0 */
+
+/* AHT20 (U17) humidity sensor: I2C0, R73/R74 4.7 k to 3V3_SLEEP. IO28 = I2C_SCL, IO29 = I2C_SDA
+ * per the module pin table. No interrupt pin on the AHT20: humidity is polled on RTC wake-ups. */
+#define PIN_TEMP_SCL    GPIO_PIN_28
+#define PIN_TEMP_SDA    GPIO_PIN_29
 
 /* leak probes S1..S3: 1 M / 1 M divider from 3V3_SLEEP, 1.65 V dry. GPIO20 = ADC_CH0 = ACOMP ADC0 */
 #define PIN_LEAK_SENS   GPIO_PIN_20

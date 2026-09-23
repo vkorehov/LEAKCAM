@@ -10,6 +10,7 @@ target_sources(app PRIVATE
                    leak_wake.c
                    usb_power.c
                    ble_pairing.c
+                   aht20.c
                    )
 
 sdk_set_main_file(main.c)

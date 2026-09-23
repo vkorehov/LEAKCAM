@@ -22,7 +22,7 @@
 
 #define LEAK_ACOMP          AON_ACOMP1_ID
 #define ACOMP_VIO_1V65      33          /* vio_sel is in 50 mV steps; SDK: DEFAULT_ACOMP_VREF_1V65 */
-#define PERSIST_MAGIC       0x4C430000u /* 'LC' in the top half, flags in the bottom half */
+#define PERSIST_MAGIC       0xA5000000u
 
 void leak_init(void)
 {
@@ -73,19 +73,34 @@ const char *wake_reason_name(enum wake_reason r)
         case WAKE_LEAK: return "leak";
         case WAKE_RTC:  return "rtc";
         case WAKE_USB:  return "usb";
+        case WAKE_HUMID: return "humid";
         default:        return "cold";
     }
 }
 
-uint32_t persist_get(void)
+void persist_get(uint32_t *flags, uint32_t *hum_wakes_left)
 {
     uint32_t v = HBN_Get_Status_Flag();
-    return ((v & 0xFFFF0000u) == PERSIST_MAGIC) ? (v & 0xFFFFu) : 0;
+    if ((v & 0xFF000000u) != PERSIST_MAGIC)
+        v = 0;
+    *flags = v & 0xFFu;
+    *hum_wakes_left = (v >> 8) & 0xFFFFu;
 }
 
-void persist_set(uint32_t flags)
+void persist_set(uint32_t flags, uint32_t hum_wakes_left)
 {
-    HBN_Set_Status_Flag(PERSIST_MAGIC | (flags & 0xFFFFu));
+    if (hum_wakes_left > 0xFFFFu)
+        hum_wakes_left = 0xFFFFu;
+    HBN_Set_Status_Flag(PERSIST_MAGIC | (hum_wakes_left << 8) | (flags & 0xFFu));
+}
+
+void rtc_use_crystal(void)
+{
+    /* Idempotent: after an HBN wake the crystal is still running. On a cold boot it needs up to
+     * ~1 s to start; until then the RTC runs from RC32K (a few % off), fine for minute-scale wakes.
+     * To verify on hardware: frequency on IO17 and RTC drift over a day. */
+    HBN_Power_On_Xtal_32K();
+    HBN_32K_Sel(HBN_32K_XTAL);
 }
 
 void hbn_sleep(uint32_t seconds)
@@ -97,7 +112,7 @@ void hbn_sleep(uint32_t seconds)
 
     LOG_I("hbn: sleeping %u s, probes %s\r\n", (unsigned)seconds, leak_is_wet() ? "wet" : "dry");
     bflb_mtimer_delay_ms(5);                               /* let the USB console drain */
-    /* RTC ticks at 32768 Hz (Y3 crystal on IO16/IO17, RC32K if it is not started) */
+    /* RTC ticks at 32768 Hz (Y3 crystal on IO16/IO17 via rtc_use_crystal(), else RC32K) */
     pm_hbn_mode_enter(PM_HBN_LEVEL_0, (uint64_t)seconds * 32768u);
     while (1) {
     }

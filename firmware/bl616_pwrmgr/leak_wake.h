@@ -9,6 +9,7 @@ enum wake_reason {
     WAKE_LEAK,          /* ACOMP1 edge on GPIO20 */
     WAKE_RTC,           /* scheduled wake-up */
     WAKE_USB,           /* ACOMP0 falling edge on PGOOD: USB plugged in */
+    WAKE_HUMID,         /* not a hardware source: an RTC wake whose humidity reading crossed the alarm */
 };
 
 void leak_init(void);
@@ -22,9 +23,13 @@ const char *wake_reason_name(enum wake_reason r);
  * K230_PWR low). Does not return: wake-up is a reboot. */
 void hbn_sleep(uint32_t seconds);
 
-/* 16 flag bits kept across hibernate in the HBN status register (HBN_Set_Status_Flag);
- * a cold power-on reads back 0 */
-uint32_t persist_get(void);
-void persist_set(uint32_t flags);
+/* Kept across hibernate in the HBN status register (HBN_Set_Status_Flag):
+ *   [31:24] magic   [23:8] humidity wake-ups left before the next scheduled K230 report   [7:0] flags
+ * A cold power-on reads back zeros. */
+void persist_get(uint32_t *flags, uint32_t *hum_wakes_left);
+void persist_set(uint32_t flags, uint32_t hum_wakes_left);
+
+/* Run the HBN RTC from the 32.768 kHz crystal Y3 (IO16/IO17) instead of RC32K. */
+void rtc_use_crystal(void);
 
 #endif

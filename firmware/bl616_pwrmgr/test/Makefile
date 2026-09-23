@@ -1,10 +1,16 @@
-# Host test of the BL616 frame parser against the K230 agent's framing (no SDK needed).
+# Host tests (no SDK needed): BL616 link parser vs the K230 agent's framing, AHT20 arithmetic.
 #   make -C firmware/bl616_pwrmgr/test
+all: test_link test_aht20
+
 test_link: test_link.c ../k230_link.c stub/bflb_uart.h
 	$(CC) -Wall -Wextra -Werror -Istub -I.. -o $@ test_link.c ../k230_link.c
 	./$@
 
-clean:
-	rm -f test_link
+test_aht20: test_aht20.c ../aht20_calc.h
+	$(CC) -Wall -Wextra -Werror -I.. -o $@ test_aht20.c
+	./$@
 
-.PHONY: clean
+clean:
+	rm -f test_link test_aht20
+
+.PHONY: all clean
