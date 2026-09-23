@@ -8,7 +8,7 @@ part can be re-sourced from any vendor.
 | # | Ordered (AliExpress) | Variant / qty | Actual hardware | Mates with on the board |
 |---|---|---|---|---|
 | 1 | [1005004518439613](https://www.aliexpress.com/item/1005004518439613.html) MF52D NTC, Shenzhen Weiheng Store | 10k B3435 L10CM, 5 pcs x1, EUR 0.42 | MF52D-103F-3435 epoxy bead NTC (Cantherm / Nanjing Shiheng MF52D 103F3435-100 equivalent), 3 mm head, 100 mm leads | JT (TS pad of the BQ24072 charger) to GND |
-| 2 | [1005012836237910](https://www.aliexpress.com/item/1005012836237910.html) 503450/523450 LiPo, da da xiong Authorized Store | 2 pcs x1, EUR 5.69 | 503450 lithium-polymer cell, 3.7 V 1000 mAh, with protection PCM and JST PH 2.0 2-pin plug | S1, JST S2B-PH-K-S (bottom side) |
+| 2 | [1005012836237910](https://www.aliexpress.com/item/1005012836237910.html) 503450/523450 LiPo, da da xiong Authorized Store | 2 pcs x1, EUR 5.69 | 503450 lithium-polymer cell, 3.7 V 1000 mAh, with protection PCM and JST PH 2.0 2-pin plug | JB1 (and JB2 for a second cell in parallel): 0.6 mm solder-wire pads, BAT / GND |
 | 3 | [1005008549434548](https://www.aliexpress.com/item/1005008549434548.html) 15-to-22 pin FPC, HONG KONG CCD LIMITED | 4 cm, x1 (20 Sep) + x3 (22 Sep, order 3077051597297163), EUR 1.49 each | Raspberry Pi Zero style camera adapter FFC: 15-pin 1.0 mm pitch (camera end) to 22-pin 0.5 mm pitch (board end), 40 mm, gold contacts | J4 (bottom) and J5 (top), 05B20L22P 22-pin 0.5 mm |
 | 5 | [1005007474473512](https://www.aliexpress.com/item/1005007474473512.html) OV5647 "Pi 5 / Zero" camera, MICROBOT Store | standard lens, x1 (7 Sep), EUR 3.79 | Pi camera v1.3 form-factor OV5647 board with the standard ~70-degree lens; useful for bring-up before the fisheye units arrive | J4 / J5 through part 3 |
 | 4 | [1005003352074982](https://www.aliexpress.com/item/1005003352074982.html) OV5647 camera "for Raspberry Pi 3/4", Aideepen Office Store | 222 Degree, x2, EUR 8.89 each | Raspberry Pi camera v1.3 form-factor board (25 x 24 mm) with OV5647 5 MP sensor and an M12 222-degree fisheye lens, 15-pin FFC connector | J4 / J5 through part 3 |
@@ -30,11 +30,16 @@ part can be re-sourced from any vendor.
   (1000 mA), max continuous discharge 1 C, charge temperature 0 to 45 C, about
   5.0 x 34 x 50 mm, about 22 g (generic 503450 specification; "523450" in the title is
   the 5.2 mm thick sibling). Built-in PCM for over-charge / over-discharge / short.
-- The board charges at about 0.89 A, which is 0.9 C; within the cell's 1 C rating.
-- Connector: JST PH 2.0 mm 2-pin plug, mates with S1 (S2B-PH-K-S).
-- **Check polarity before plugging in.** Aftermarket packs do not follow one convention for
-  which PH pin is positive. Measure the plug against S1 pin 1 (BAT) / pin 2 (GND) first;
-  the PCM does not protect against reverse connection.
+- The board charges at about 0.89 A, which is 0.9 C for one cell (0.45 C with two cells in
+  parallel on JB1 + JB2); within the cell's 1 C rating.
+- Connection: the board has no battery connector. Cut the JST PH plug off and solder the
+  leads to JB1 (pin 1 BAT, pin 2 GND, 0.6 mm holes, 1.6 mm pitch); JB2 is a second, parallel
+  pad pair for the second cell. S1, S2 and S3 (the JST PH sockets) are the three leak-probe
+  inputs, not battery connectors.
+- **Check polarity before soldering.** Aftermarket packs do not follow one wire-colour
+  convention. Measure which lead is positive and solder it to JB1 pin 1 (BAT); the PCM does
+  not protect against reverse connection. With two cells, match their voltages to within
+  about 0.1 V before joining them on JB1/JB2.
 
 ## 3. Camera adapter cable, 15-pin to 22-pin, 40 mm
 
