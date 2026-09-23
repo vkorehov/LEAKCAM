@@ -1,0 +1,7 @@
+/k230_agent/leakcam_agent
+/bl616_pwrmgr/test/test_link
+/bl616_pwrmgr/build/
+*.o
+# the repo root ignores *.txt (Altium outputs); these two are sources
+!CMakeLists.txt
+!/sim/power_sequence_report.txt
