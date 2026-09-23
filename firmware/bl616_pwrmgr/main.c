@@ -29,6 +29,7 @@
 #include "rfparam_adapter.h"
 #include "log.h"
 
+#include "aht20.h"
 #include "ble_pairing.h"
 #include "k230_power.h"
 #include "k230_link.h"
@@ -43,13 +44,20 @@
 #define BOOT_RETRIES         3
 
 #define REPORT_PERIOD_S      (6u * 3600u)
+#define HUM_PERIOD_S         600u    /* humidity sample interval: RTC wake, ~85 ms awake, no K230 */
+#define HUM_ALARM_X10        850     /* 85.0 %RH starts a K230 session ... */
+#define HUM_CLEAR_X10        750     /* ... re-armed once it falls below 75.0 %RH */
 #define RETRY_PERIOD_S       300u
 #define GIVE_UP_PERIOD_S     3600u
 
-/* persisted across hibernate (persist_set) */
-#define PF_FAILS_MASK        0x000Fu
-#define PF_LEAK_REPORTED     0x0010u
-#define PF_FROM_USB_MODE     0x0020u   /* reboot was the USB-unplug exit, not a real cold start */
+/* persisted across hibernate (persist_set, 8 flag bits) */
+#define PF_FAILS_MASK        0x0Fu
+#define PF_LEAK_REPORTED     0x10u
+#define PF_FROM_USB_MODE     0x20u   /* reboot was the USB-unplug exit, not a real cold start */
+#define PF_HUMID_REPORTED    0x40u
+
+/* last humidity sample of this boot, sent to the K230 as ENV,<rh_x10>,<t_x10>; rh < 0 = none */
+static int env_rh_x10 = -1, env_t_x10;
 
 #define USB_UNPLUG_DEBOUNCE_MS 1000
 
@@ -83,6 +91,16 @@ static void graceful_off(void)
     k230_power_off();
 }
 
+static void send_wake(enum wake_reason reason)
+{
+    link_send("WAKE", wake_reason_name(reason));
+    if (env_rh_x10 >= 0) {
+        char env[16];
+        snprintf(env, sizeof(env), "%d,%d", env_rh_x10, env_t_x10);
+        link_send("ENV", env);
+    }
+}
+
 static enum session_end run_session(enum wake_reason reason, uint32_t *sleep_s)
 {
     struct link_msg m;
@@ -96,7 +114,7 @@ static enum session_end run_session(enum wake_reason reason, uint32_t *sleep_s)
         k230_power_off();                       /* nothing to sync with, K230 never came up */
         return END_NO_BOOT;
     }
-    link_send("WAKE", wake_reason_name(reason));
+    send_wake(reason);
 
     uint64_t start = bflb_mtimer_get_time_ms(), last_edge = start;
     bool level = k230_alive_level();
@@ -121,7 +139,7 @@ static enum session_end run_session(enum wake_reason reason, uint32_t *sleep_s)
                 return END_SLEEP_REQUEST;
             }
             if (strcmp(m.cmd, "READY") == 0)    /* agent restarted inside the session */
-                link_send("WAKE", wake_reason_name(reason));
+                send_wake(reason);
         }
 
         if (now - last_edge > HEARTBEAT_TIMEOUT_MS) {
@@ -134,7 +152,7 @@ static enum session_end run_session(enum wake_reason reason, uint32_t *sleep_s)
                 k230_hard_reset();
                 link_reset();
                 if (wait_for("READY", BOOT_TIMEOUT_MS, &m)) {
-                    link_send("WAKE", wake_reason_name(reason));
+                    send_wake(reason);
                     last_edge = bflb_mtimer_get_time_ms();
                     level = k230_alive_level();
                     continue;
@@ -159,9 +177,14 @@ static void sleep_for(uint32_t pf, uint32_t seconds)
 {
     if (seconds == 0)
         seconds = 24u * 3600u;                  /* "leak only": still check in daily */
+    /* the K230's requested interval is served in HUM_PERIOD_S slices: every slice is an RTC wake
+     * that samples humidity; the count left is carried across the reboots */
+    uint32_t slices = (seconds + HUM_PERIOD_S - 1) / HUM_PERIOD_S;
+    uint32_t first = seconds < HUM_PERIOD_S ? seconds : HUM_PERIOD_S;
+    aht20_deinit();
     usb_arm_hbn_wake();                         /* a USB plug wakes us through ACOMP0 */
-    persist_set(pf);
-    hbn_sleep(seconds);
+    persist_set(pf, slices - 1);
+    hbn_sleep(first);
 }
 
 /* ---------------- USB powered: stay awake, BLE pairing ---------------- */
@@ -211,7 +234,7 @@ static void supervisor_task(void *arg)
             LOG_I("usb: unplugged, back to battery mode\r\n");
             ble_pairing_stop();
             vTaskDelay(pdMS_TO_TICKS(200));     /* let the disconnect go out */
-            persist_set(pf | PF_FROM_USB_MODE | (usb_leak_reported ? PF_LEAK_REPORTED : 0));
+            persist_set(pf | PF_FROM_USB_MODE | (usb_leak_reported ? PF_LEAK_REPORTED : 0), 0);
             GLB_SW_System_Reset();
         }
         vTaskDelay(pdMS_TO_TICKS(200));
@@ -244,7 +267,9 @@ int main(void)
     enum wake_reason reason = wake_reason_get();
     leak_init();
     usb_sense_init();
-    uint32_t pf = persist_get();
+    rtc_use_crystal();
+    uint32_t pf, hum_left;
+    persist_get(&pf, &hum_left);
     bool wet = leak_is_wet();
     LOG_I("boot: wake=%s usb=%d probes=%s fails=%u\r\n", wake_reason_name(reason), usb_present(),
           wet ? "wet" : "dry", (unsigned)(pf & PF_FAILS_MASK));
@@ -252,11 +277,36 @@ int main(void)
     if (usb_present())
         usb_mode(pf & ~PF_FROM_USB_MODE);       /* does not return */
 
+    /* humidity is sampled on every battery boot; the AHT20 cannot wake us by itself */
+    aht20_init();
+    int rh, t;
+    enum aht20_result hr = aht20_read(&rh, &t);
+    if (hr == AHT20_OK) {
+        env_rh_x10 = rh;
+        env_t_x10 = t;
+        LOG_I("aht20: %d.%d %%RH %d.%d C\r\n", rh / 10, rh % 10, t / 10, t < 0 ? -t % 10 : t % 10);
+        if (rh < HUM_CLEAR_X10)
+            pf &= ~PF_HUMID_REPORTED;
+    } else {
+        LOG_E("aht20: read failed (%d)\r\n", (int)hr);
+    }
+
     /* a leak that is still present after an RTC wake is reported once, not every period */
     if (reason == WAKE_LEAK && !wet)
         reason = WAKE_COLD;                     /* edge came from drying out */
     if (reason == WAKE_RTC && wet && !(pf & PF_LEAK_REPORTED))
         reason = WAKE_LEAK;
+    if ((reason == WAKE_RTC || reason == WAKE_COLD) && hr == AHT20_OK &&
+        rh >= HUM_ALARM_X10 && !(pf & PF_HUMID_REPORTED))
+        reason = WAKE_HUMID;
+
+    /* humidity slice with nothing to report: straight back to sleep, the K230 stays off */
+    if (reason == WAKE_RTC && hum_left > 0) {
+        aht20_deinit();
+        usb_arm_hbn_wake();
+        persist_set(pf, hum_left - 1);
+        hbn_sleep(HUM_PERIOD_S);
+    }
 
     /* the reboot out of USB mode is not a new installation: no K230 session for it */
     if (pf & PF_FROM_USB_MODE) {
@@ -281,6 +331,8 @@ int main(void)
         fails = 0;
         if (reason == WAKE_LEAK)
             pf |= PF_LEAK_REPORTED;
+        if (reason == WAKE_HUMID)
+            pf |= PF_HUMID_REPORTED;
         if (!wet)
             pf &= ~PF_LEAK_REPORTED;
     } else {
