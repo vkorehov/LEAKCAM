@@ -7,6 +7,10 @@
  * Between sessions it hibernates (HBN level 0), which also forces the K230 off: HBN releases
  * every non-AON pad and R19 pulls K230_PWR low.
  *
+ * On USB power the BL616 does not hibernate at all: it starts FreeRTOS and BLE, advertises for
+ * pairing (ble_pairing.c) and keeps watching the probes, until USB goes away. The charger's power
+ * path then feeds the system from USB, so staying awake costs the battery nothing.
+ *
  * Production note: the BL616 is also the K230's Wi-Fi (SDIO, examples/wifi/sdio_wifi +
  * nethub host_linux). There is only one BL616 firmware, so this logic has to move into that
  * application as a task; it is kept standalone here to exercise the power paths in isolation.
@@ -14,13 +18,22 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <FreeRTOS.h>
+#include "task.h"
+
 #include "board.h"
 #include "bflb_mtimer.h"
+#include "bflb_mtd.h"
+#include "bl616_glb.h"
+#include "easyflash.h"
+#include "rfparam_adapter.h"
 #include "log.h"
 
+#include "ble_pairing.h"
 #include "k230_power.h"
 #include "k230_link.h"
 #include "leak_wake.h"
+#include "usb_power.h"
 
 #define BOOT_TIMEOUT_MS      90000   /* SPI NAND boot + Linux + agent start; measure and tighten */
 #define HEARTBEAT_TIMEOUT_MS 10000   /* agent toggles K230 GPIO2 every 500 ms */
@@ -33,9 +46,12 @@
 #define RETRY_PERIOD_S       300u
 #define GIVE_UP_PERIOD_S     3600u
 
-/* persisted across hibernate (16 bits) */
+/* persisted across hibernate (persist_set) */
 #define PF_FAILS_MASK        0x000Fu
 #define PF_LEAK_REPORTED     0x0010u
+#define PF_FROM_USB_MODE     0x0020u   /* reboot was the USB-unplug exit, not a real cold start */
+
+#define USB_UNPLUG_DEBOUNCE_MS 1000
 
 enum session_end {
     END_SLEEP_REQUEST,   /* K230 finished and asked to sleep */
@@ -137,6 +153,87 @@ static enum session_end run_session(enum wake_reason reason, uint32_t *sleep_s)
     }
 }
 
+/* ---------------- battery: schedule the next hibernate ---------------- */
+
+static void sleep_for(uint32_t pf, uint32_t seconds)
+{
+    if (seconds == 0)
+        seconds = 24u * 3600u;                  /* "leak only": still check in daily */
+    usb_arm_hbn_wake();                         /* a USB plug wakes us through ACOMP0 */
+    persist_set(pf);
+    hbn_sleep(seconds);
+}
+
+/* ---------------- USB powered: stay awake, BLE pairing ---------------- */
+
+static volatile bool session_running;
+static volatile bool usb_leak_reported;
+
+static void session_task(void *arg)
+{
+    (void)arg;
+    uint32_t sleep_s;
+    run_session(WAKE_LEAK, &sleep_s);           /* K230 captures, then asks to be powered off */
+    session_running = false;
+    vTaskDelete(NULL);
+}
+
+static void ble_task(void *arg)
+{
+    (void)arg;
+    ble_pairing_start();
+    vTaskDelete(NULL);
+}
+
+static void supervisor_task(void *arg)
+{
+    uint32_t pf = (uint32_t)(uintptr_t)arg;
+    uint64_t gone_since = 0;
+    while (1) {
+        uint64_t now = bflb_mtimer_get_time_ms();
+
+        /* leak while on USB: same response as on battery, once per wet episode */
+        bool wet = leak_is_wet();
+        if (wet && !usb_leak_reported && !session_running) {
+            usb_leak_reported = true;
+            session_running = true;
+            xTaskCreate(session_task, "k230", 2048, NULL, 2, NULL);
+        }
+        if (!wet)
+            usb_leak_reported = false;
+
+        /* unplug: leave through a clean reboot into the battery path */
+        if (usb_present()) {
+            gone_since = 0;
+        } else if (gone_since == 0) {
+            gone_since = now;
+        } else if (now - gone_since > USB_UNPLUG_DEBOUNCE_MS && !session_running) {
+            LOG_I("usb: unplugged, back to battery mode\r\n");
+            ble_pairing_stop();
+            vTaskDelay(pdMS_TO_TICKS(200));     /* let the disconnect go out */
+            persist_set(pf | PF_FROM_USB_MODE | (usb_leak_reported ? PF_LEAK_REPORTED : 0));
+            GLB_SW_System_Reset();
+        }
+        vTaskDelay(pdMS_TO_TICKS(200));
+    }
+}
+
+static void usb_mode(uint32_t pf)
+{
+    LOG_I("usb: powered, staying awake for BLE pairing\r\n");
+    bflb_mtd_init();
+    easyflash_init();                           /* BLE bonds and Wi-Fi credentials */
+    if (rfparam_init(0, NULL, 0) != 0) {
+        LOG_E("usb: RF init failed, BLE unavailable\r\n");
+    } else {
+        xTaskCreate(ble_task, "ble", 1024, NULL, configMAX_PRIORITIES - 2, NULL);
+    }
+    xTaskCreate(supervisor_task, "usb", 1024, (void *)(uintptr_t)pf, 3, NULL);
+    vTaskStartScheduler();
+    while (1) {
+    }
+}
+
 int main(void)
 {
     board_init();
@@ -146,16 +243,27 @@ int main(void)
 
     enum wake_reason reason = wake_reason_get();
     leak_init();
+    usb_sense_init();
     uint32_t pf = persist_get();
     bool wet = leak_is_wet();
-    LOG_I("boot: wake=%s probes=%s fails=%u\r\n", wake_reason_name(reason), wet ? "wet" : "dry",
-          (unsigned)(pf & PF_FAILS_MASK));
+    LOG_I("boot: wake=%s usb=%d probes=%s fails=%u\r\n", wake_reason_name(reason), usb_present(),
+          wet ? "wet" : "dry", (unsigned)(pf & PF_FAILS_MASK));
+
+    if (usb_present())
+        usb_mode(pf & ~PF_FROM_USB_MODE);       /* does not return */
 
     /* a leak that is still present after an RTC wake is reported once, not every period */
     if (reason == WAKE_LEAK && !wet)
         reason = WAKE_COLD;                     /* edge came from drying out */
     if (reason == WAKE_RTC && wet && !(pf & PF_LEAK_REPORTED))
         reason = WAKE_LEAK;
+
+    /* the reboot out of USB mode is not a new installation: no K230 session for it */
+    if (pf & PF_FROM_USB_MODE) {
+        pf &= ~PF_FROM_USB_MODE;
+        if (reason != WAKE_LEAK)
+            sleep_for(pf, REPORT_PERIOD_S);
+    }
 
     uint32_t sleep_s = REPORT_PERIOD_S;
     enum session_end end = END_NO_BOOT;
@@ -179,9 +287,5 @@ int main(void)
         fails = fails < PF_FAILS_MASK ? fails + 1 : fails;
         sleep_s = fails >= 3 ? GIVE_UP_PERIOD_S : RETRY_PERIOD_S;
     }
-    persist_set((pf & ~PF_FAILS_MASK) | fails);
-
-    if (sleep_s == 0)
-        sleep_s = 24u * 3600u;                  /* "leak only": still check in daily */
-    hbn_sleep(sleep_s);
+    sleep_for((pf & ~PF_FAILS_MASK) | fails, sleep_s);
 }
