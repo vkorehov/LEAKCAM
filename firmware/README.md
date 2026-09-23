@@ -25,18 +25,14 @@ IO27 becomes unused. The firmware in this folder is written for this pin map onl
 
 ### 2. AHT20 (U17) supply filter
 
-The AHT20 datasheet (Aosong, 2024-07, figure 14 notes 1 and 3) asks for an RC filter on the sensor's
-VDD, R1 330-390 ohm and C1 10 uF, with the SDA/SCL pull-ups taken from that same filtered VDD.
-U17 VDD sits directly on 3V3_SLEEP with only C110 100 nF, and 3V3_SLEEP is a buck-boost output that
-also carries the BL616's Wi-Fi transmit bursts (266 mA). Add R 390 ohm (0402) from 3V3_SLEEP to a new
-U17 VDD node, 10 uF (0603) from that node to GND, and move R73/R74 to it. Drop at 570 uA measuring
-current: 0.22 V, leaving ~3.08 V (spec 2.2-5.5 V).
-
-| Path | What it is |
-|---|---|
-| `sim/power_sequence.py` | rail-by-rail timing model of the EN/PG chain, checks the K230 sequencing rules; output in `sim/power_sequence_report.txt` |
-| `bl616_pwrmgr/` | BL616 firmware, bouffalo_sdk layout (`make CHIP=bl616 BOARD=bl616dk`); `usb_power.c` + `ble_pairing.c` are the USB/BLE mode, `aht20.c` the humidity sensor |
-| `k230_agent/` | K230 Linux daemon: heartbeat, UART protocol, sync and read-only remount before power-off |
+The AHT20 datasheet (Aosong, 2024-07, page 8, figure 15 and notes 2-3) asks for an RC filter on the
+sensor's VDD: R1 330-390 ohm in series and C1 10 uF to GND. U17 VDD sits directly on 3V3_SLEEP with
+only C110 100 nF, and 3V3_SLEEP is a buck-boost output that also carries the BL616's Wi-Fi transmit
+bursts (266 mA). Add R 390 ohm (0402) from 3V3_SLEEP to a new U17 VDD node and 10 uF (0603) from that
+node to GND. The 390 ohm is what sets the 41 Hz corner that rejects the burst ripple; 10 ohm would
+only filter switching ripple. Drop at the 570 uA measuring current: 0.22 V, leaving ~3.08 V
+(spec 2.2-5.5 V). **R73/R74 stay on 3V3_SLEEP**: figure 15 hangs the 4.7 k pull-ups on the supply
+before R1; note 1 only requires them to come from the same supply as the sensor.
 
 ## Power chain as built (POWER.SchDoc)
 
