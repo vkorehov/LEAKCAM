@@ -2,17 +2,34 @@
 
 The BL616 (Ai-M62-CBS, U11) runs from the always-on `3V3_SLEEP` rail and owns the K230's power.
 It wakes on a leak or on its RTC, powers the K230 up, lets it capture, and powers it down again.
+When USB power is plugged in it wakes, stays awake and advertises over BLE so a phone can set the
+Wi-Fi credentials; unplugging returns it to the battery schedule.
+
+## Required schematic change for the next spin
+
+A USB plug must wake the BL616 from hibernate, and on the current board it cannot. PGOOD (BQ24072
+U1.7) goes to IO27, which is ADC_CH10: HBN wakes only on GPIO16-19 (not brought out by the module /
+used by the 32 kHz crystal), the RTC and the two always-on comparators, and the comparators can
+only select ADC_CH0-7. Every comparator-capable pin is taken, but IO03 (ADC_CH3) only drives
+K230_PWR, which any GPIO can do. Swap two nets on U11:
+
+| Net | Now | Next spin |
+|---|---|---|
+| PGOOD (R23 100k to 3V3_SLEEP stays) | U11.39 IO27 | **U11.7 IO03** (ADC_CH3, ACOMP0) |
+| K230_PWR (R19 100k pull-down stays) | U11.7 IO03 | **U11.43 IO30** (free today) |
+
+IO27 becomes unused. The firmware in this folder is written for the new pin map only.
 
 | Path | What it is |
 |---|---|
 | `sim/power_sequence.py` | rail-by-rail timing model of the EN/PG chain, checks the K230 sequencing rules; output in `sim/power_sequence_report.txt` |
-| `bl616_pwrmgr/` | BL616 firmware, bouffalo_sdk layout (`make CHIP=bl616 BOARD=bl616dk`) |
+| `bl616_pwrmgr/` | BL616 firmware, bouffalo_sdk layout (`make CHIP=bl616 BOARD=bl616dk`); `usb_power.c` + `ble_pairing.c` are the USB/BLE mode |
 | `k230_agent/` | K230 Linux daemon: heartbeat, UART protocol, sync and read-only remount before power-off |
 
 ## Power chain as built (POWER.SchDoc)
 
 ```
-BL616 IO03 K230_PWR -> U6  TPS62823  0V8   (0.798 V)  --PG--+
+BL616 IO30 K230_PWR -> U6  TPS62823  0V8   (0.798 V)  --PG--+     (IO03 on the current board)
                                                             +-> U8  TPS63802  3V3 (3.308 V)
                                                             +-> U10 TPS63802  1V8 (1.775 V) --PG_1V8--> U7 TPS62823 1V1 (1.100 V)
 U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> RSTN (high = held in reset)
@@ -55,6 +72,20 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
    R19's pull-down. The K230 can only run while the BL616 is awake; the firmware turns it off first.
 6. **K230 GPIO2 is JTAG_TCK at reset**, so the heartbeat is edges, not a level, and the device tree
    must mux IO2 to GPIO and enable UART1 on IO40/IO41.
+7. **USB plug wake** (after the pin swap): PGOOD on IO03 is watched by ACOMP0 at 1.65 V and wakes HBN
+   on its falling edge; the leak line keeps ACOMP1. On USB the BL616 never hibernates: the charger's
+   power path runs the system from USB, so staying awake costs the cell nothing.
+
+### USB / BLE mode
+- On boot, if PGOOD is low: FreeRTOS + BLE (bring-up as the SDK's `examples/btble/peripheral`),
+  advertising as `LEAKCAM-xxyy` with one service, `4c43a000-4c45-4b43-414d-000000000001`:
+  SSID (...0002), passphrase (...0003), commit (...0004, write 0x01). All three need an encrypted
+  link. The credentials are stored in easyflash on the BL616, which is the Wi-Fi device.
+- Pairing is LE Secure Connections Just Works (no display, no buttons) and is accepted only while
+  USB power is present: plugging in is the proof of physical access.
+- The probes are still watched; a leak on USB starts a normal K230 session.
+- Unplug (debounced 1 s): BLE stops, the BL616 reboots into the battery path with a flag that
+  suppresses the cold-start K230 session, and hibernates with both comparators armed.
 
 ### Optional hardware change: bleed resistors
 - **1 k on 1V8 and on 3V3** (0402). They draw 1.8 mA and 3.3 mA only while the K230 is on (under 1 %
@@ -78,6 +109,10 @@ the SDIO Wi-Fi application, and the Wi-Fi low-power firmware and this HBN policy
 - Link protocol: BL616 parser tested on the host against agent-formatted frames mixed with boot
   noise, bad checksums and over-long lines.
 - K230 agent: builds natively with `-Wall -Wextra -Werror`; not run on a K230.
+- BLE mode: `ble_pairing.c` and `main.c` compiled against the SDK's BLE host, controller, RF and
+  easyflash headers with the stack's own build defines. This caught one real bug: the 128-bit UUID
+  macro shifts its last field by 40 bits, so it must be a 64-bit literal. The resulting service
+  UUID was checked byte for byte on the host.
 
 ## Bring-up checklist
 1. Scope K230_PWR and K230_RSTN while the BL616 resets and while it is being flashed: both must stay
@@ -88,3 +123,7 @@ the SDIO Wi-Fi application, and the Wi-Fi low-power firmware and this HBN policy
    `HBN_Get_Reset_Event()` if the BootROM clears the interrupt state.
 5. Measure HBN current with ACOMP1 enabled against the datasheet's 2.1 uA.
 6. Measure K230 boot time from SPI NAND to agent `READY`; tighten `BOOT_TIMEOUT_MS` (90 s now).
+7. Plug USB during HBN: the BL616 must boot into BLE mode within about a second. Measure HBN current
+   with both comparators enabled.
+8. Pair from a phone (nRF Connect is enough), write SSID, passphrase and 0x01, reboot, confirm the
+   credentials are read back from easyflash. Confirm pairing is refused on battery.
