@@ -1,8 +1,10 @@
 #!/bin/sh
-# /etc/leakcam/on-wake <cold|leak|rtc>
+# /etc/leakcam/on-wake <cold|leak|rtc|humid>
+# LEAKCAM_RH / LEAKCAM_T hold the BL616's last AHT20 sample when there was one.
 # Capture, upload, and optionally print "sleep=<seconds>" for the next scheduled wake-up.
 reason="$1"
 case "$reason" in
-    leak) echo "sleep=600" ;;        # re-check in 10 min while wet
+    leak)  echo "sleep=600" ;;       # re-check in 10 min while wet
+    humid) echo "sleep=3600" ;;      # humidity alarm: look again in an hour
     *)    echo "sleep=21600" ;;      # routine: every 6 h
 esac

@@ -3,11 +3,14 @@
 The BL616 (Ai-M62-CBS, U11) runs from the always-on `3V3_SLEEP` rail and owns the K230's power.
 It wakes on a leak or on its RTC, powers the K230 up, lets it capture, and powers it down again.
 When USB power is plugged in it wakes, stays awake and advertises over BLE so a phone can set the
-Wi-Fi credentials; unplugging returns it to the battery schedule.
+Wi-Fi credentials; unplugging returns it to the battery schedule. Every 10 minutes it wakes on its
+RTC to read the AHT20 humidity sensor and goes back to sleep without the K230 unless humidity is high.
 
-## Required schematic change for the next spin
+## Schematic changes needed before the first fab
 
-A USB plug must wake the BL616 from hibernate, and on the current board it cannot. PGOOD (BQ24072
+### 1. USB-plug wake: swap two nets on U11
+
+A USB plug must wake the BL616 from hibernate, and with the schematic as of 22 Sep it cannot. PGOOD (BQ24072
 U1.7) goes to IO27, which is ADC_CH10: HBN wakes only on GPIO16-19 (not brought out by the module /
 used by the 32 kHz crystal), the RTC and the two always-on comparators, and the comparators can
 only select ADC_CH0-7. Every comparator-capable pin is taken, but IO03 (ADC_CH3) only drives
@@ -18,18 +21,27 @@ K230_PWR, which any GPIO can do. Swap two nets on U11:
 | PGOOD (R23 100k to 3V3_SLEEP stays) | U11.39 IO27 | **U11.7 IO03** (ADC_CH3, ACOMP0) |
 | K230_PWR (R19 100k pull-down stays) | U11.7 IO03 | **U11.43 IO30** (free today) |
 
-IO27 becomes unused. The firmware in this folder is written for the new pin map only.
+IO27 becomes unused. The firmware in this folder is written for this pin map only.
+
+### 2. AHT20 (U17) supply filter
+
+The AHT20 datasheet (Aosong, 2024-07, figure 14 notes 1 and 3) asks for an RC filter on the sensor's
+VDD, R1 330-390 ohm and C1 10 uF, with the SDA/SCL pull-ups taken from that same filtered VDD.
+U17 VDD sits directly on 3V3_SLEEP with only C110 100 nF, and 3V3_SLEEP is a buck-boost output that
+also carries the BL616's Wi-Fi transmit bursts (266 mA). Add R 390 ohm (0402) from 3V3_SLEEP to a new
+U17 VDD node, 10 uF (0603) from that node to GND, and move R73/R74 to it. Drop at 570 uA measuring
+current: 0.22 V, leaving ~3.08 V (spec 2.2-5.5 V).
 
 | Path | What it is |
 |---|---|
 | `sim/power_sequence.py` | rail-by-rail timing model of the EN/PG chain, checks the K230 sequencing rules; output in `sim/power_sequence_report.txt` |
-| `bl616_pwrmgr/` | BL616 firmware, bouffalo_sdk layout (`make CHIP=bl616 BOARD=bl616dk`); `usb_power.c` + `ble_pairing.c` are the USB/BLE mode |
+| `bl616_pwrmgr/` | BL616 firmware, bouffalo_sdk layout (`make CHIP=bl616 BOARD=bl616dk`); `usb_power.c` + `ble_pairing.c` are the USB/BLE mode, `aht20.c` the humidity sensor |
 | `k230_agent/` | K230 Linux daemon: heartbeat, UART protocol, sync and read-only remount before power-off |
 
 ## Power chain as built (POWER.SchDoc)
 
 ```
-BL616 IO30 K230_PWR -> U6  TPS62823  0V8   (0.798 V)  --PG--+     (IO03 on the current board)
+BL616 IO30 K230_PWR -> U6  TPS62823  0V8   (0.798 V)  --PG--+     (IO03 in the schematic until change 1)
                                                             +-> U8  TPS63802  3V3 (3.308 V)
                                                             +-> U10 TPS63802  1V8 (1.775 V) --PG_1V8--> U7 TPS62823 1V1 (1.100 V)
 U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> RSTN (high = held in reset)
@@ -75,6 +87,24 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
 7. **USB plug wake** (after the pin swap): PGOOD on IO03 is watched by ACOMP0 at 1.65 V and wakes HBN
    on its falling edge; the leak line keeps ACOMP1. On USB the BL616 never hibernates: the charger's
    power path runs the system from USB, so staying awake costs the cell nothing.
+   Requires schematic change 1.
+
+### Humidity (AHT20)
+- **Periodic only.** The AHT20 has no interrupt or alert pin (pins: NC, VDD, SCL, SDA, GND, NC), so
+  it cannot wake anything. HBN's RTC wake is used: every `HUM_PERIOD_S` (600 s) the BL616 boots,
+  measures (80 ms), and hibernates again. The K230's requested interval is served in these slices;
+  the number left is kept in the HBN status register across the reboots.
+- **I2C verified against the netlist and datasheets:** SCL on IO28 and SDA on IO29, which the module
+  pin table lists as I2C_SCL / I2C_SDA; R73/R74 4.7 k pull-ups and VDD on 3V3_SLEEP, so the sensor
+  and bus stay powered in hibernate; address 0x38 (datasheet writes 0x70/0x71); 100 kHz, inside the
+  datasheet's 10-400 kHz, and samples far apart from the >= 1 s minimum period.
+- In hibernate the BL616 releases IO28/IO29, the pull-ups hold the bus idle-high and no current
+  flows; the AHT20 sleeps at <= 0.2 uA.
+- **Alarm:** >= 85 %RH starts a K230 session with reason `humid`; re-armed below 75 %RH. Every session
+  also gets `ENV,<rh_x10>,<t_x10>`, which the agent passes to the hook as `LEAKCAM_RH` / `LEAKCAM_T`.
+- **Cost (estimate, to measure):** ~120 ms awake per sample at an assumed 8-15 mA MCU-only current
+  (the datasheet gives only 38 mA with the radio receiving) = 1-1.8 mAs, so 1.7-3 uA average at 10 min.
+- The RTC runs from the 32.768 kHz crystal Y3 (`rtc_use_crystal()`), RC32K until it has started.
 
 ### USB / BLE mode
 - On boot, if PGOOD is low: FreeRTOS + BLE (bring-up as the SDK's `examples/btble/peripheral`),
@@ -109,6 +139,8 @@ the SDIO Wi-Fi application, and the Wi-Fi low-power firmware and this HBN policy
 - Link protocol: BL616 parser tested on the host against agent-formatted frames mixed with boot
   noise, bad checksums and over-long lines.
 - K230 agent: builds natively with `-Wall -Wextra -Werror`; not run on a K230.
+- AHT20: `aht20.c` compiled against the SDK I2C driver; CRC, frame layout and conversions tested on
+  the host against the datasheet's own example (ST 0x2FFAB = -12.5 C) and the CRC-8 check value.
 - BLE mode: `ble_pairing.c` and `main.c` compiled against the SDK's BLE host, controller, RF and
   easyflash headers with the stack's own build defines. This caught one real bug: the 128-bit UUID
   macro shifts its last field by 40 bits, so it must be a 64-bit literal. The resulting service
@@ -127,3 +159,5 @@ the SDIO Wi-Fi application, and the Wi-Fi low-power firmware and this HBN policy
    with both comparators enabled.
 8. Pair from a phone (nRF Connect is enough), write SSID, passphrase and 0x01, reboot, confirm the
    credentials are read back from easyflash. Confirm pairing is refused on battery.
+9. Read the AHT20 on the bench against a reference hygrometer; confirm the 10-minute RTC wake
+   interval with the crystal (drift over a day) and the current per wake.

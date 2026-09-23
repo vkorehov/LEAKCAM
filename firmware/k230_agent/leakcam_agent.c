@@ -3,7 +3,8 @@
  *
  *  - toggles K230 GPIO2 (net K230_ALIVE -> BL616 IO01) as a heartbeat, every 500 ms;
  *  - talks to the BL616 over UART1 (GPIO40 TXD / GPIO41 RXD), protocol in bl616_pwrmgr/k230_link.h;
- *  - runs the capture hook for the wake reason, then asks to be powered off;
+ *  - runs the capture hook for the wake reason, then asks to be powered off; the BL616's last
+ *    humidity sample (ENV frame) is passed to the hook as LEAKCAM_RH / LEAKCAM_T;
  *  - before power is cut: sync, remount / read-only, sync, send HALTED.
  *
  * Needs in the device tree: uart1 enabled on IO40/IO41, and IO2 muxed as GPIO (its reset
@@ -216,6 +217,13 @@ static void make_safe_for_power_cut(void)
     sync();
 }
 
+/* tenths to text, sign-correct for -0.5 */
+static void fmt_x10(char *out, size_t n, long v)
+{
+    long a = v < 0 ? -v : v;
+    snprintf(out, n, "%s%ld.%ld", v < 0 ? "-" : "", a / 10, a % 10);
+}
+
 static void on_signal(int s)
 {
     (void)s;
@@ -318,6 +326,21 @@ int main(int argc, char **argv)
     if (!got_wake)
         logmsg("no WAKE from BL616, assuming cold start");
     logmsg("wake reason: %s", reason);
+
+    /* ENV,<rh_x10>,<t_x10> follows WAKE when the BL616 has a fresh AHT20 sample */
+    if (got_wake && link_recv(cmd, sizeof(cmd), arg, sizeof(arg), 300) && strcmp(cmd, "ENV") == 0) {
+        char *comma = strchr(arg, ',');
+        long rh = strtol(arg, NULL, 10), t = comma ? strtol(comma + 1, NULL, 10) : -9999;
+        /* AHT20 range: 0-100 %RH, -40..+85 C; anything else is a corrupted frame */
+        if (comma && rh >= 0 && rh <= 1000 && t >= -400 && t <= 850) {
+            char v[24];
+            fmt_x10(v, sizeof(v), rh);
+            setenv("LEAKCAM_RH", v, 1);
+            fmt_x10(v, sizeof(v), t);
+            setenv("LEAKCAM_T", v, 1);
+            logmsg("humidity %s %%RH, %s C", getenv("LEAKCAM_RH"), v);
+        }
+    }
 
     unsigned sleep_s = DEFAULT_SLEEP_S;
     if (!shutdown_req) {
