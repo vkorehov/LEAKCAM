@@ -57,9 +57,12 @@ enum wake_reason wake_reason_get(void)
     enum wake_reason r = WAKE_COLD;
     if (HBN_Get_INT_State(HBN_INT_ACOMP1) == SET)
         r = WAKE_LEAK;
+    else if (HBN_Get_INT_State(HBN_INT_ACOMP0) == SET)
+        r = WAKE_USB;
     else if (HBN_Get_INT_State(HBN_INT_RTC) == SET)
         r = WAKE_RTC;
     HBN_Clear_IRQ(HBN_INT_ACOMP1);
+    HBN_Clear_IRQ(HBN_INT_ACOMP0);
     HBN_Clear_IRQ(HBN_INT_RTC);
     return r;
 }
@@ -69,6 +72,7 @@ const char *wake_reason_name(enum wake_reason r)
     switch (r) {
         case WAKE_LEAK: return "leak";
         case WAKE_RTC:  return "rtc";
+        case WAKE_USB:  return "usb";
         default:        return "cold";
     }
 }
@@ -79,9 +83,9 @@ uint32_t persist_get(void)
     return ((v & 0xFFFF0000u) == PERSIST_MAGIC) ? (v & 0xFFFFu) : 0;
 }
 
-void persist_set(uint32_t v)
+void persist_set(uint32_t flags)
 {
-    HBN_Set_Status_Flag(PERSIST_MAGIC | (v & 0xFFFFu));
+    HBN_Set_Status_Flag(PERSIST_MAGIC | (flags & 0xFFFFu));
 }
 
 void hbn_sleep(uint32_t seconds)

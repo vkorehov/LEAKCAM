@@ -8,6 +8,7 @@ enum wake_reason {
     WAKE_COLD = 0,      /* power-on or reset, not from hibernate */
     WAKE_LEAK,          /* ACOMP1 edge on GPIO20 */
     WAKE_RTC,           /* scheduled wake-up */
+    WAKE_USB,           /* ACOMP0 falling edge on PGOOD: USB plugged in */
 };
 
 void leak_init(void);
@@ -21,8 +22,9 @@ const char *wake_reason_name(enum wake_reason r);
  * K230_PWR low). Does not return: wake-up is a reboot. */
 void hbn_sleep(uint32_t seconds);
 
-/* 32-bit word kept by HBN across hibernate (HBN_Set_Status_Flag) */
+/* 16 flag bits kept across hibernate in the HBN status register (HBN_Set_Status_Flag);
+ * a cold power-on reads back 0 */
 uint32_t persist_get(void);
-void persist_set(uint32_t v);
+void persist_set(uint32_t flags);
 
 #endif
