@@ -36,6 +36,9 @@ handler; a full linux/amd64 container fails under qemu-user (bison/m4 crash).
   (`k230_read_toc`, slot retry, ota_meta CRC check); it takes the load address from the uImage
   header in the slot, so the TOC's `load_addr` = 0 is right.
 - The kernel has the SDIO stack, lwIP 2.1.2, the WLAN framework, ADC and the temperature sensor.
+- The BL616 Wi-Fi driver (`bl616_nethub`) compiles without warnings and is linked into the kernel
+  (`__rt_init_bl616_sdio_init` in `rtthread.elf`), with `RT_USING_BL616_NETHUB`, `BSP_USING_WIFI_SDIO`
+  on SDIO0 and the SDIO0 reset output off in `rtconfig.h`. Not run: there is no board yet.
 - `check_pad_voltage.py` on the built SPL and U-Boot: 64 pads each, all at the bank voltage of the
   board. The same check on Canaan's prebuilt EVB SPI-NAND SPL: 50 of 64 pads wrong.
 - The SPL's device tree is LEAKCAM's (model "LEAKCAM K230D", SPI NAND quad on spi0); the kernel
@@ -54,6 +57,12 @@ handler; a full linux/amd64 container fails under qemu-user (bison/m4 crash).
   `mkuffs`, which rejects spare sizes above 64.
 - Deletes `output/k230d_rtos_leakcam_defconfig/rtsmart/kernel/board/pinmux.o`: `pinmux.c`
   includes the board file through a macro that scons does not track.
+- `drivers/extdrv/Kconfig` (RT-Smart): one `source` line for `drivers/extdrv/bl616_nethub/Kconfig`.
+  `extdrv/SConscript` already builds every subfolder that has a SConscript.
+- `rt-thread/components/drivers/sdio/sdio.c`: for function 1 of 424c:0606 only, a CIS without a
+  FUNCE tuple gets `max_blk_size = 512` and a 200 ms enable timeout. The core otherwise refuses a
+  function with a zero block size, and the BL616 SDU publishes none (Bouffalo's Linux host driver
+  sets both values by hand for the same reason).
 
 ## Files
 
@@ -68,6 +77,7 @@ handler; a full linux/amd64 container fails under qemu-user (bison/m4 crash).
 | `sdk/configs/k230d_rtos_leakcam_defconfig` | `configs/` | top-level board config, cameras |
 | `sdk/boards/k230d_leakcam/` | `boards/k230d_leakcam/` | U-Boot env, NAND image layout |
 | `../k230_capture/rtsmart/` | `src/applications/leakcam/` (sources in `src/`) | the capture app |
+| `rtsmart/drivers/bl616_nethub/` + `../bl616_wifi/wifi_ctrl_proto.h` | `.../bsp/maix3/drivers/extdrv/bl616_nethub/` | BL616 Wi-Fi driver, see `../bl616_wifi/README.md` |
 
 `install.sh` also adds the board to `boards/Kconfig` and the dtb to U-Boot's dts Makefile.
 
@@ -109,9 +119,9 @@ handler; a full linux/amd64 container fails under qemu-user (bison/m4 crash).
 
 ## Not in this port yet
 
-- **Wi-Fi on RT-Smart.** The BL616 is the Wi-Fi, on MMC0 as an SDIO device; RT-Smart has no host
-  driver for it (the SDK's SDIO Wi-Fi drivers are Realtek / AIC8800). SDIO and lwIP are in the
-  kernel; the BL616 driver (NetHub protocol over SDIO) is the next step.
+- **Wi-Fi on hardware.** The BL616 driver (`bl616_nethub`, NetHub over SDIO, `wlan0` with DHCP on
+  the K230) builds and links, but has never talked to a BL616; `../bl616_wifi/README.md` lists what to
+  check first.
 - **OTA writer.** The SPL reads `ota_meta` and both slots; nothing on RT-Smart writes the
   inactive slot and the slot record yet.
 - **The power agent on RT-Smart** (heartbeat, UART link, orderly halt): not ported;

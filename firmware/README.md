@@ -141,9 +141,11 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
   CRC-32); HBN_RSV1 (SDK wake callback) and RSV3 (ROM patch code) are not free either.
 
 ### Architecture consequence
-The BL616 is also the K230's Wi-Fi (SDIO, `examples/wifi/sdio_wifi` with the `nethub` Linux host
-driver). There is one BL616 firmware, so in production this power manager becomes a task inside
-the SDIO Wi-Fi application, and the Wi-Fi low-power firmware and this HBN policy have to agree.
+The BL616 is also the K230's Wi-Fi: Bouffalo's NetHub bridge over SDIO (`bl616_wifi/`) with our own
+RT-Smart driver on the K230 (`k230_board/rtsmart/drivers/bl616_nethub/`), described in
+`bl616_wifi/README.md`. There is one BL616 firmware, so in production the power manager calls
+`wifi_link_start()` / `wifi_link_stop()` around each K230 session. NetHub's own low-power mode stays
+off: between sessions the BL616 hibernates, which ends the association anyway.
 
 ### K230 capture and image history (`k230_capture/`, Linux and RT-Smart)
 - `leakcam_capture`: both OV5647s through the vvcam V4L2 stack (`/dev/video0`, `/dev/video3`,
@@ -164,7 +166,8 @@ the SDIO Wi-Fi application, and the Wi-Fi low-power firmware and this HBN policy
 - Sequence: `sim/power_sequence.py`, datasheet timings (TPS62823 SLVSDV8, TPS63802 SLVSEU9D) and
   schematic R/C values. Off-state rail loads are unknown and swept.
 - BL616 code: every source compiled for riscv32 against the current bouffalo_sdk headers (API names,
-  macros and struct fields all resolve). Not linked or flashed: the T-Head toolchain is x86-64 only.
+  macros and struct fields all resolve), and the whole firmware links into
+  `leakcam_pwrmgr_bl616.bin` in the build container (BUILD.md). Not flashed yet.
 - Link protocol: BL616 parser tested on the host against agent-formatted frames mixed with boot
   noise, bad checksums and over-long lines.
 - K230 agent: builds natively with `-Wall -Wextra -Werror`; not run on a K230.
