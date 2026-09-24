@@ -1,16 +1,16 @@
 # leakcam_capture and leakcam_hist as k230_rtos_sdk applications (RT-Smart user space).
 #
-# Install into the SDK once (see README.md):
-#   ln -s <LEAKCAM>/firmware/k230_capture/rtsmart <k230_rtos_sdk>/src/applications/leakcam
-#   append to src/applications/apps.mk:  subdirs-$(CONFIG_APP_ENABLE_LEAKCAM) += leakcam
-#   append Kconfig.app below to the applications menu, enable APP_ENABLE_LEAKCAM
+# Installed into an SDK by firmware/k230_board/install.sh (copies this folder to
+# src/applications/leakcam with the sources in ./src, registers it in apps.mk).
 # Binaries land in $(SDK_APPS_IMAGE_DIR) = /sdcard/app on the target.
 #
 # Follows src/applications/helloworld/Makefile, with explicit sources from the parent folder.
 include ../mkenv.mk
 include $(SDK_RTSMART_SRC_DIR)/libs/mk/toolchain_riscv64_musl.mk
 
-SRC_ROOT := $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST))))/..)
+# sources: the folder above this Makefile in the LEAKCAM repo, or ./src when install.sh copied
+# them into the SDK (the Docker build only sees the SDK tree)
+SRC_ROOT ?= $(if $(wildcard $(CURDIR)/src/leakcam_capture.c),$(CURDIR)/src,$(realpath $(CURDIR)/..))
 BUILD    := $(SDK_APPS_BUILD_DIR)/leakcam
 CAPTURE  := $(SDK_APPS_IMAGE_DIR)/leakcam_capture
 HIST     := $(SDK_APPS_IMAGE_DIR)/leakcam_hist
