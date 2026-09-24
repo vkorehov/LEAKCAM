@@ -44,7 +44,7 @@
 #define PIN_LINK_TX     GPIO_PIN_21
 #define PIN_LINK_RX     GPIO_PIN_22
 
-/* SDIO slave to K230 MMC0 (hosted Wi-Fi). Not used by this PoC, but parked with the rest. */
+/* SDIO slave to K230 MMC0 (Wi-Fi bridge, bl616_wifi; drive strength 0 there). Parked with the rest. */
 #define PIN_SD_D2       GPIO_PIN_10
 #define PIN_SD_D3       GPIO_PIN_11
 #define PIN_SD_CMD      GPIO_PIN_12
