@@ -1,0 +1,128 @@
+/*
+ * LEAKCAM: K230D SiP (128 MiB LPDDR4) + BL616, boots from a W25N02KV 3.3 V SPI NAND on OSPI
+ * (IO14-IO19). Based on k230d_canmv_bpi_zero.dts (same SiP, same U-Boot board code); the NAND
+ * node follows k230_burntool_spi_nand.dts and the K230 EVB SPI-NAND U-Boot.
+ *
+ * Every VDDIO bank is on 3V3 on this board, so every bank is 3.3 V here. Canaan's prebuilt
+ * EVB SPI-NAND SPL/U-Boot must not be used on LEAKCAM: it sets most banks, including the NAND
+ * bank, to 1.8 V mode.
+ */
+/dts-v1/;
+
+#include <dt-bindings/pinctrl/k230-pinctrl.h>
+
+#define BANK_VOLTAGE_IO0_IO1     K230_MSC_1V8  // FIXED
+#define BANK_VOLTAGE_IO2_IO13    K230_MSC_3V3
+#define BANK_VOLTAGE_IO14_IO25   K230_MSC_3V3  // W25N02KV SPI NAND
+#define BANK_VOLTAGE_IO26_IO37   K230_MSC_3V3
+#define BANK_VOLTAGE_IO38_IO49   K230_MSC_3V3
+#define BANK_VOLTAGE_IO50_IO61   K230_MSC_3V3
+#define BANK_VOLTAGE_IO62_IO63   K230_MSC_3V3
+
+#include "k230d.dtsi"
+
+/ {
+	model = "LEAKCAM K230D";
+	compatible = "leakcam,k230d", "kendryte,k230d_canmv_bp";
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0 0x0 0x8000000>;
+	};
+};
+
+/* MMC0 is the BL616's SDIO device interface (Wi-Fi), MMC1 is not connected: nothing to boot or
+ * mount there, and probing MMC0 from U-Boot would only talk to the BL616. */
+&mmc0 {
+	status = "disabled";
+};
+
+&mmc1 {
+	status = "disabled";
+};
+
+&usbotg0 {
+	status = "okay";
+};
+
+/* U16 W25N02KV on OSPI CS0, quad I/O at 50 MHz (as the burn tool and the EVB U-Boot) */
+&spi0 {
+	status = "okay";
+	rx-sample-delay-ns = <5>;
+	u-boot,dm-pre-reloc;
+
+	spi-flash@0 {
+		compatible = "spi-nand";
+		reg = <0>;
+		spi-max-frequency = <50000000>;
+		spi-tx-bus-width = <4>;
+		spi-rx-bus-width = <4>;
+		status = "okay";
+		u-boot,dm-pre-reloc;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			/* the layout genimage-spinand.cfg writes. Fixed offsets in the code: TOC 0xe0000
+			 * (k230_boot.c K230_TOC_OFFSET), U-Boot 2M and RT-Smart 5M for the fallback path
+			 * (board_common.h UBOOT_SYS_IN_SPI_NAND_OFF / RTT_SYS_IN_SPI_NAND_OFF) */
+			spl@0 {
+				label = "spl";
+				reg = <0x0 0xe0000>;
+			};
+			toc@e0000 {
+				label = "toc";
+				reg = <0xe0000 0x20000>;
+			};
+			ota_meta@100000 {
+				label = "ota_meta";
+				reg = <0x100000 0x40000>;
+			};
+			uboot@200000 {
+				label = "uboot";
+				reg = <0x200000 0x200000>;
+			};
+			env@400000 {
+				label = "uboot_env";
+				reg = <0x400000 0x80000>;
+			};
+			rtt_a@500000 {
+				label = "rtt_a";
+				reg = <0x500000 0x1400000>;
+			};
+			rtt_b@1900000 {
+				label = "rtt_b";
+				reg = <0x1900000 0x1400000>;
+			};
+			bin@3000000 {
+				label = "bin";
+				reg = <0x3000000 0x1400000>;
+			};
+			sdcard@4800000 {
+				label = "sdcard";
+				reg = <0x4800000 0xB000000>;
+			};
+		};
+	};
+};
+
+#include "k230d_leakcam_pins.dtsi"
+
+&pmu_iomux {
+	status = "okay";
+	pmu_pins: pmu_pins {
+		u-boot,dm-pre-reloc;
+		pinctrl-single,pins = <
+			(IO64) ( PMU_IOSEL_GPIO<<SEL | 0<<SL | 1<<IE | 0<<OE | 0<<PU | 1<<PD | 2<<DS | 0<<ST )
+			(IO65) ( PMU_IOSEL_INT<<SEL | 0<<SL | 1<<IE | 0<<OE | 0<<PU | 1<<PD | 2<<DS | 0<<ST )
+			(IO66) ( PMU_IOSEL_INT<<SEL | 0<<SL | 1<<IE | 0<<OE | 0<<PU | 1<<PD | 2<<DS | 0<<ST )
+			(IO67) ( PMU_IOSEL_INT<<SEL | 0<<SL | 1<<IE | 0<<OE | 0<<PU | 1<<PD | 2<<DS | 0<<ST )
+			(IO68) ( PMU_IOSEL_INT<<SEL | 0<<SL | 1<<IE | 0<<OE | 0<<PU | 1<<PD | 2<<DS | 0<<ST )
+			(IO69) ( PMU_IOSEL_INT<<SEL | 0<<SL | 1<<IE | 0<<OE | 0<<PU | 1<<PD | 2<<DS | 0<<ST )
+			(IO70) ( PMU_IOSEL_INT<<SEL | 0<<SL | 0<<IE | 1<<OE | 0<<PU | 0<<PD | 2<<DS | 0<<ST )
+			(IO71) ( PMU_IOSEL_INT<<SEL | 0<<SL | 0<<IE | 1<<OE | 0<<PU | 0<<PD | 2<<DS | 0<<ST )
+		>;
+	};
+};
