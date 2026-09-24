@@ -111,7 +111,7 @@ handler; a full linux/amd64 container fails under qemu-user (bison/m4 crash).
 - **OpenSBI from source**.
 - **Clock: the K230's hardware RTC** (PMU, `RT_USING_RTC_PMU`, device `rtc`) on its own 32.768 kHz
   crystal. Its supply AVDD1P8_RTC is the switched 1V8 rail, so it starts from a default date at
-  every power-up; the agent sets it from the BL616's `TIME` frame at every boot (the BL616's HBN
+  every power-up; the agent sets it from the time in the BL616's `WAKE` frame at every boot (the BL616's HBN
   RTC keeps the time across K230 power-offs). The PMU pads IO64-IO71 stay GPIO; the pin mux has 72
   entries.
 - **NAND layout (256 MiB, 2048 + 128 B pages):** SPL 0 / 512K, TOC 896K, ota_meta 1M, U-Boot 2M,

@@ -215,17 +215,21 @@ static bool ntp_synced(void)
     return s >= 0 && s != TIME_ERROR && !(t.status & STA_UNSYNC);
 }
 
-/* TIME,<unix s> from the BL616: its crystal clock is better than our power-up default */
+/* the time in WAKE,<reason>,<unix s>: the BL616's crystal clock beats our power-up default */
 static void clock_from_bl616(const char *arg)
 {
     char *end;
     long v = strtol(arg, &end, 10);
-    if (*end || v < EPOCH_MIN) {
-        logmsg("TIME %s from BL616 ignored", arg);
+    if (*end || v == 0) {
+        logmsg("BL616 has no valid time yet");
+        return;
+    }
+    if (v < EPOCH_MIN) {
+        logmsg("time %s from BL616 ignored", arg);
         return;
     }
     if (ntp_synced()) {
-        logmsg("TIME from BL616 ignored, NTP already synchronised");
+        logmsg("time from BL616 ignored, NTP already synchronised");
         return;
     }
     struct timespec ts = { .tv_sec = v, .tv_nsec = 0 };
@@ -345,14 +349,19 @@ int main(int argc, char **argv)
     pthread_t hb;
     pthread_create(&hb, NULL, heartbeat_thread, NULL);
 
-    char cmd[16], arg[16], reason[16] = "cold";
+    char cmd[16], arg[32], reason[32] = "cold";
     bool got_wake = false;
     for (int i = 0; i < READY_TRIES && !got_wake && !shutdown_req; i++) {
         link_send("READY", NULL);
         uint64_t until = now_ms() + READY_RETRY_MS;
         while (now_ms() < until && link_recv(cmd, sizeof(cmd), arg, sizeof(arg), (int)(until - now_ms()))) {
             if (strcmp(cmd, "WAKE") == 0) {
+                char *comma = strchr(arg, ',');
+                if (comma)
+                    *comma = 0;
                 snprintf(reason, sizeof(reason), "%s", arg);
+                if (comma)
+                    clock_from_bl616(comma + 1);
                 got_wake = true;
                 break;
             }
@@ -364,15 +373,10 @@ int main(int argc, char **argv)
         logmsg("no WAKE from BL616, assuming cold start");
     logmsg("wake reason: %s", reason);
 
-    /* after WAKE, within a moment: ENV,<rh_x10>,<t_x10> (fresh AHT20 sample) and TIME,<unix s>
-     * (BL616 clock valid), each optional, in either order */
+    /* after WAKE, within a moment and only with a fresh AHT20 sample: ENV,<rh_x10>,<t_x10> */
     uint64_t follow_end = now_ms() + 300;
     while (got_wake && now_ms() < follow_end &&
            link_recv(cmd, sizeof(cmd), arg, sizeof(arg), (int)(follow_end - now_ms()))) {
-        if (strcmp(cmd, "TIME") == 0) {
-            clock_from_bl616(arg);
-            continue;
-        }
         if (strcmp(cmd, "ENV") != 0)
             continue;
         char *comma = strchr(arg, ',');
