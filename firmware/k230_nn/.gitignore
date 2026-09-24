@@ -1,0 +1,10 @@
+data/
+build/
+pyenv/
+dotnet/
+qemu11/
+keras_home/
+gmodel_dump_dir/
+*.log
+k230/*.o
+k230/leak_nn.elf
