@@ -94,18 +94,18 @@ static void graceful_off(void)
 
 static void send_wake(enum wake_reason reason)
 {
-    link_send("WAKE", wake_reason_name(reason));
+    /* WAKE,<reason>,<unix s>: the K230's RTC restarts at every power-up, ours runs on the Y3
+     * crystal, so the time rides in the same frame; 0 = our clock is not valid (battery was out) */
+    uint32_t now;
+    char wake[24];
+    if (!wallclock_get(&now))
+        now = 0;
+    snprintf(wake, sizeof(wake), "%s,%lu", wake_reason_name(reason), (unsigned long)now);
+    link_send("WAKE", wake);
     if (env_rh_x10 >= 0) {
         char env[16];
         snprintf(env, sizeof(env), "%d,%d", env_rh_x10, env_t_x10);
         link_send("ENV", env);
-    }
-    /* the K230 has no clock of its own after power-up; ours runs on the Y3 crystal */
-    uint32_t now;
-    if (wallclock_get(&now)) {
-        char t[12];
-        snprintf(t, sizeof(t), "%lu", (unsigned long)now);
-        link_send("TIME", t);
     }
 }
 
