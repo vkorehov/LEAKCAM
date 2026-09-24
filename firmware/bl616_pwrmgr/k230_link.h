@@ -7,10 +7,10 @@
  *                 SLEEP,<seconds>     work done: power me off, wake me in <seconds> (0 = leak only)
  *                 HALTED              filesystems synced / read-only, power may be cut
  *                 TIME,<unix s>       the K230 has real time (NTP): the BL616 takes it
- * BL616 -> K230   WAKE,<reason>       reply to READY: cold | leak | rtc
+ * BL616 -> K230   WAKE,<reason>,<unix s>  reply to READY: reason cold | leak | rtc, and the
+ *                                     BL616 wall clock; 0 when it is not valid (after a power
+ *                                     loss, until the K230 has sent TIME once)
  *                 ENV,<rh_x10>,<t_x10> after WAKE, when there is a fresh AHT20 sample
- *                 TIME,<unix s>       after WAKE, when the BL616 clock is valid (not after a
- *                                     power loss until the K230 has sent TIME once)
  *                 SHUTDOWN            please sync and send HALTED (low battery, session timeout)
  *                 ACK,<cmd>
  *
