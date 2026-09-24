@@ -51,8 +51,12 @@ int cap_open_all(struct cap_cam *cams, int n, unsigned width, unsigned height)
 {
     k_vb_config vb;
     memset(&vb, 0, sizeof(vb));
+#ifdef LEAKCAM_MPP_K230SDK
     vb.max_pool_cnt = 2 * CAP_MAX_CAMS;
     int pool = 0;
+#else
+    vb.max_pool_cnt = 64;                         /* VICAP creates its own pools (below) */
+#endif
     k_u32 out_size[CAP_MAX_CAMS] = { 0 };
 
     for (int i = 0; i < n; i++) {
@@ -90,20 +94,26 @@ int cap_open_all(struct cap_cam *cams, int n, unsigned width, unsigned height)
         dev.pipe_ctrl.bits.awb_enable = 1;
         dev.cpature_frame = 0;                    /* continuous; we stop the stream ourselves */
         dev.dw_enable = K_FALSE;
+#ifndef LEAKCAM_MPP_K230SDK
+        /* 0 is a real pool id: without this both devices would share one 3-block pool */
+        dev.buffer_pool_id = VB_INVALID_POOLID;
+#endif
         if (kd_mpi_vicap_set_dev_attr((k_vicap_dev)c->node, dev)) {
             fprintf(stderr, "vicap: dev %u set_dev_attr failed\n", c->node);
             return -1;
         }
 
+        out_size[i] = VICAP_ALIGN_UP(c->width * c->height * 3 / 2, VICAP_ALIGN_1K);
+#ifdef LEAKCAM_MPP_K230SDK
         vb.comm_pool[pool].blk_cnt = IN_BUF_NUM;
         vb.comm_pool[pool].blk_size = dev.buffer_size;
         vb.comm_pool[pool].mode = VB_REMAP_MODE_NOCACHE;
         pool++;
-        out_size[i] = VICAP_ALIGN_UP(c->width * c->height * 3 / 2, VICAP_ALIGN_1K);
         vb.comm_pool[pool].blk_cnt = OUT_BUF_NUM;
         vb.comm_pool[pool].blk_size = out_size[i];
         vb.comm_pool[pool].mode = VB_REMAP_MODE_NOCACHE;
         pool++;
+#endif
     }
     if (kd_mpi_vb_set_config(&vb) || kd_mpi_vb_init()) {
         fprintf(stderr, "vicap: video buffer pools failed (MMZ too small?)\n");
@@ -126,6 +136,9 @@ int cap_open_all(struct cap_cam *cams, int n, unsigned width, unsigned height)
         chn.buffer_num = OUT_BUF_NUM;
         chn.buffer_size = out_size[i];
         chn.fps = 0;                              /* sensor rate */
+#ifndef LEAKCAM_MPP_K230SDK
+        chn.buffer_pool_id = VB_INVALID_POOLID;
+#endif
         kd_mpi_vicap_set_dump_reserved((k_vicap_dev)c->node, VICAP_CHN_ID_0, K_TRUE);
         if (kd_mpi_vicap_set_chn_attr((k_vicap_dev)c->node, VICAP_CHN_ID_0, chn)) {
             fprintf(stderr, "vicap: dev %u set_chn_attr failed\n", c->node);

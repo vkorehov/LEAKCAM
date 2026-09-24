@@ -20,39 +20,10 @@ knows the 1.8 V W25N01GW/W25N02JW IDs (EF BA xx), not the W25N02KV (EF AA 22) on
 
 ## Install into the SDK
 
-```
-ln -s <LEAKCAM>/firmware/k230_capture/rtsmart <k230_rtos_sdk>/src/applications/leakcam
-echo 'subdirs-$(CONFIG_APP_ENABLE_LEAKCAM) += leakcam' >> <k230_rtos_sdk>/src/applications/apps.mk
-cat <LEAKCAM>/firmware/k230_capture/rtsmart/Kconfig.app  # add to the applications Kconfig menu
-make menuconfig   # enable APP_ENABLE_LEAKCAM
-```
-
-`leakcam_capture` and `leakcam_hist` land in `/sdcard/app/`.
-
-## Board port still to do (the LEAKCAM board is not a stock SDK board)
-
-1. **Sensors.** Enable `MPP_ENABLE_SENSOR_OV5647` with CSI devices 0 and 2
-   (`MPP_ENABLE_CSI_DEV_0`, `MPP_ENABLE_CSI_DEV_2`): the 1280x960 mode names only exist with them.
-   The OV5647 drivers take I2C bus, reset pin and MCLK from per-board settings; LEAKCAM needs
-   CSI0 = CAM2 (J4) on `i2c0` (GPIO48/49) and CSI2 = CAM1 (J5) on `i2c4` (GPIO7/8). The CSI2 1280x960
-   mode enables MCLK0 in the stock driver; the modules carry their own oscillator (to confirm),
-   so no MCLK is needed.
-2. **Camera pin 18** (GPIO62 / GPIO63). The drivers pulse a "CAM_PIN" as reset. If pin 18 is a
-   plain GPIO on the modules, mux IO62/63 as GPIO and use them as CAM_PIN; if the modules take
-   XCLK there, keep them as M_CLK and point CAM_PIN at an unused GPIO.
-3. **Pin mux** (`board/configs/<board>/pinmux_config.c`): IO48/49 IIC0, IO7/8 IIC4,
-   IO40/41 UART1 (sel 1, BL616 link), IO60/61 PWM0/PWM1 (sel 1), IO2 GPIO (heartbeat),
-   IO14-19 for the SPI NAND.
-4. **SPI NAND** (`LPKG_USING_SPINAND`, Winbond on): the W25N02KV is in `flash/winbond.c`
-   (2048 + 128 OOB, 64 pages/block, 2048 blocks). The stock `k230_evb_spinand` layout is for a
-   128 MB part with 64-byte OOB: rewrite `spinand_parts.h`, `genimage-spinand.cfg` and the kdimg
-   OOB flag for 256 MB / 128 B OOB. Which QSPI controller the boot ROM uses on GPIO14-19 (OSPI
-   sel 1 or QSPI0 sel 3) is not confirmed; the EVB uses OSPI (`spi0`).
-5. **Clock.** No hardware RTC on the K230D here: enable `RT_USING_SOFT_RTC`, and set the time from
-   the BL616 over the link at every wake (`clock_settime` needs an `rtc` device).
-6. **Autostart.** `CONFIG_RTT_AUTO_EXEC_CMD` runs the agent after the NAND mounts.
-7. **Memory.** Two cameras at 1280x960: about 26 MB of video buffers (3 raw + 3 NV12 per camera)
-   plus ISP working memory; the K230D RT-only configs give 80 MB of MMZ.
+`firmware/k230_board/install.sh <k230_rtos_sdk>` copies this folder to `src/applications/leakcam`
+(sources in `src/`), registers it and enables `APP_ENABLE_LEAKCAM` through the LEAKCAM defconfig.
+The board itself (pins, NAND, cameras, kernel config, image layout) is `firmware/k230_board/`; the
+full procedure is `firmware/BUILD.md`. `leakcam_capture` and `leakcam_hist` land in `/sdcard/app/`.
 
 ## Not ported yet
 
@@ -62,6 +33,11 @@ make menuconfig   # enable APP_ENABLE_LEAKCAM
   NAND after `fsync`.
 
 ## Verified so far
+
+- Built inside the SDK with the LEAKCAM board (2026-09-24): both programs link against the real
+  `libmpp` and are in the image's `/sdcard/app`. VICAP buffers come from pools VICAP creates
+  itself (`buffer_pool_id = VB_INVALID_POOLID`, as the SDK samples): an id of 0 would put both
+  cameras' raw and NV12 buffers into one 3-block pool.
 
 - Every RT-Smart source compiles for `riscv64-linux-musl` with `-Wall -Wextra -Werror` against the
   CanMV MPP headers (`zig cc`, stand-in `k_autoconf_comm.h` with OV5647 and CSI 0/2 enabled).

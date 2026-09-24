@@ -1,0 +1,8 @@
+if BOARD_K230D_LEAKCAM
+    # No PMU RTC in use: the K230's RTC domain (AVDD1P8_RTC) is on the switched 1V8 rail and
+    # loses its time at every power-off; the time comes from the BL616 (soft RTC, TIME frame).
+    # Also selects the 64-pin pin-mux table (no PMU pads IO64-IO71).
+    config BOARD_NOT_SUPPORT_HW_RTC
+        bool
+        default y
+endif
