@@ -1,0 +1,3 @@
+# LEAKCAM board options: none. The hardware RTC (PMU, RT_USING_RTC_PMU in the kernel config) is
+# used, so BOARD_NOT_SUPPORT_HW_RTC stays unset and the pin mux has 72 entries (PMU pads
+# IO64-IO71 included).
