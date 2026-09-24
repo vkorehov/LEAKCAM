@@ -5,3 +5,7 @@
 # the repo root ignores *.txt (Altium outputs); these two are sources
 !CMakeLists.txt
 !/sim/power_sequence_report.txt
+/k230_capture/leakcam_capture
+/k230_capture/leakcam_hist
+/k230_capture/test/test_imgdiff
+/k230_capture/test/test_history
