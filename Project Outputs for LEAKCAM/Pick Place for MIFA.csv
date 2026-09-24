@@ -5,12 +5,14 @@ C:\hw\LEAKCAM\Project Outputs for LEAKCAM\Pick Place for MIFA.csv
 File Design Information:
 
 Date:       24/09/26
-Time:       06:10
-Revision:   c173ced3d3b2bc33ef2ca053eb2a17296c88b2ea
+Time:       19:26
+Revision:   2b8335e65faaf93c505752e9dbd735af0ed1dd77
 Variant:    No variations
 Units used: mil
 
 "Designator","Comment","Layer","Footprint","Center-X(mil)","Center-Y(mil)","Rotation","Description"
+"CB2","100n 0201","BottomLayer","CAP_0201","1493.462","448.611","180","C2903663"
+"CB1","10uF GRM188R61A106ME69D","BottomLayer","FP-GRM188-0_15-MFG","1351.134","423.159","180","C19702"
 "LED15","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","807.087","1417.323","270","C19185834"
 "LED13","xl-hd3535uwc-a2","TopLayer","XL-HD3535UWC-A2","807.087","1220.522","90","C3646951"
 "LED11","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","570.866","1417.323","270","C19185834"
@@ -58,8 +60,8 @@ Units used: mil
 "USBC1","type-c-31-m-12","TopLayer","TYPE-C-31-M-12","2198.190","804.391","90","C165948"
 "U17","AHT20","BottomLayer","AHT30","1480.182","1256.788","180","C2757850"
 "U16","w25n02kvzeir","TopLayer","w25n02","1126.530","291.845","270","C17626844"
-"U15","TPS61160DRVR","BottomLayer","TPS61160ADRVT","1756.717","1470.986","0","C165143"
-"U14","TPS61160DRVR","BottomLayer","TPS61160ADRVT","1889.764","1181.102","0","C165143"
+"U15","TPS61161DRVR","BottomLayer","TPS61160ADRVT","1756.717","1470.986","0","C324075"
+"U14","TPS61161DRVR","BottomLayer","TPS61160ADRVT","1889.764","1181.102","0","C324075"
 "U13","msm381acb026","TopLayer","mems","2266.365","121.560","0","C51928208"
 "U10","TPS63802DLAR","BottomLayer","FP-DLA0010A-MFG","2044.291","1692.913","0","C2845237"
 "U8","TPS63802DLAR","BottomLayer","FP-DLA0010A-MFG","1847.441","1692.913","0","C2845237"
@@ -263,13 +265,13 @@ Units used: mil
 "R35","100k","BottomLayer","RES_0402","1352.480","1878.571","180","C25741"
 "R32","100k","TopLayer","RES_0402","1802.927","1854.248","0","C25741"
 "R19","100k","TopLayer","RES_0402","1947.235","1855.008","180","C25741"
-"PR1","CON5P","BottomLayer","CON_5P","1214.106","1777.396","90",""
+"PR1","CON6P","BottomLayer","CON6P","1214.106","1816.766","90",""
 "S3","S2B-PH-K-S(LF)(SN)","BottomLayer","JST-S2B-PH-K-S_V","2108.268","1968.504","270","C157932"
 "RB6","47k","TopLayer","RES_0402","2145.909","1909.589","270","C25792"
 "R43","10k","TopLayer","RES_0402","1001.687","1909.356","0","C25744"
 "R76","100k","BottomLayer","RES_0402","1138.007","1951.987","90","C25741"
 "R38","100k","TopLayer","RES_0402","1014.817","1972.838","270","C25741"
 "RB5","47k","TopLayer","RES_0402","2156.433","1988.886","270","C25792"
-"C88","100n","BottomLayer","CAP_0402","1204.868","2018.139","180","C307331"
+"C88","100n","BottomLayer","CAP_0402","1219.090","2072.748","90","C307331"
 "U11","ai-m62-cbs(blifn4)","TopLayer","AI-M62-CBS","1327.583","1780.217","270","C41368035"
-"CT1","100n","TopLayer","CAP_0402","1486.083","2093.890","0","C307331"
+"CT1","NF","TopLayer","CAP_0402","1486.083","2093.890","0",""
