@@ -304,7 +304,7 @@ Both pass as of 2026-09-24. Run them before every firmware commit.
 | Symptom | Cause | Fix (already in the port) |
 |---|---|---|
 | `mkuffs: Invalid spare size` | spare 128 in the layout; mkuffs accepts at most 64 | layout uses `spare-size = 64`, kernel patched to 64 |
-| `#error "RTC PMU is not supported"` (drv_fpioa.h) | board lacks `BOARD_NOT_SUPPORT_HW_RTC` | set in `sdk/boards/k230d_leakcam/Kconfig` |
+| `#error "RTC PMU is not supported"` (drv_fpioa.h) | neither the PMU RTC nor `BOARD_NOT_SUPPORT_HW_RTC` selected | kernel config enables `RT_USING_RTC_PMU` |
 | undefined `board_specific_pin_init_sequence` | stale `pinmux.o` after a pin-table change | `install.sh` deletes it |
 | missing `opensbi_fw_jump.bin` | prebuilt OpenSBI selected | OpenSBI built from source |
 | undefined `RT_SYSTEM_WORKQUEUE_PRIORITY`, `tsensor_*`, `rt_adc_*` | SDIO/network or ADC/TS stripped from the kernel | kept on: the SDK's pm and audio code need them, Wi-Fi needs SDIO |

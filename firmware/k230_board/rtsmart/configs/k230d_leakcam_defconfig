@@ -1,7 +1,7 @@
 # LEAKCAM RT-Smart kernel config (bsp/maix3/configs/k230d_leakcam_defconfig).
 # Base: k230d_canmv_bpi_zero_defconfig (same K230D SiP, OV5647 on CSI0/CSI2), cut to what LEAKCAM
 # uses for the lightest runtime and fastest boot: UART, I2C0/I2C4, PWM, GPIO, SPI0 (NAND) + UFFS,
-# watchdog, DMA, soft RTC, romfs/tmpfs/procfs, the MPP camera stack, and networking over the BL616
+# watchdog, DMA, PMU RTC, romfs/tmpfs/procfs, the MPP camera stack, and networking over the BL616
 # (SDIO host on MMC0, RT-Thread WLAN framework, lwIP, SAL sockets, NTP). Removed: touch, WS2812,
 # one-wire, Realtek Wi-Fi, USB device, FAT, crypto engines, FFT, hardware timers, soft I2C,
 # I2C1-3, SPI1-2, regulators, fast-boot preload.
@@ -82,5 +82,8 @@ CONFIG_SPI_NAND_WINBOND=y
 CONFIG_RT_SPI0_RXSD=6
 CONFIG_RT_USING_DFS_UFFS=y
 CONFIG_RT_UFFS_ECC_MODE_3=y
-# --- LEAKCAM: the K230's RTC loses power with the K230; the time comes from the BL616 (TIME frame)
-CONFIG_RT_USING_SOFT_RTC=y
+# --- LEAKCAM: hardware RTC in the PMU, on the K230's own 32.768 kHz crystal. Its supply
+# (AVDD1P8_RTC) is the switched 1V8 rail, so it restarts at every power-up; the agent sets it
+# from the BL616's TIME frame at every boot and it keeps crystal time for the session.
+CONFIG_RT_USING_RTC=y
+CONFIG_RT_USING_RTC_PMU=y
