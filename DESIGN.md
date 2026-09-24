@@ -326,19 +326,25 @@ Checked against the schematic on 2026-09-24.
 - TPS61161 instead of TPS61160 for both LED drivers.
 - R66 3.0R and R68 1.5R.
 - CT1 not fitted.
+- LED polarity: all strip connectors have + on pin 2 (the main-board J1/J2 on pin 1), and the
+  silkscreen marks every LED (dot = anode, stripe = cathode). The IR part's EasyEDA numbering
+  (pad 1 anode, pad 3 cathode, pad 2 centre) differs from its datasheet but agrees between symbol
+  and footprint.
 
 **Still to do:**
-1. **MIC_BIAS decoupling.** Add 1-4.7 µF directly at the U3.A4 ball. Today only FB4 connects
-   there, and C96 sits about 20 mm away.
-2. **Mic DC blocks.** Move C97/C101 next to the K230. They are about 14 mm away today, at the
-   mic end.
+1. **MIC_BIAS decoupling.** A small cap (0402, 1 µF C52923 or 4.7 µF C23733, both Basic)
+   within a few mm of U3.A4, between the ball and FB4. A4 is an outer-row ball, so it can sit
+   just outside the package. Design guide: "Place a large capacitance low-ESR capacitor on the
+   MICBIAS pin"; the EVB has 4.7 µF + 100 nF there. C96 and the other mic-supply bypass caps stay
+   at the mic, but FB4 hides them from the codec's bias regulator. If there is no room, FB4 →
+   0 Ω is the fallback.
+2. **Mic DC blocks (optional, lower priority).** Move C97/C101 toward U3 (design guide: "Place
+   the DC blocking capacitors for audio input close to the K230 chip"), so the long run is the
+   mic's low-impedance side, not the biased codec input. Route C101's ground end back to U13's
+   GND pad beside MICPL. They are 0805 today; 1 µF 0402 fits better (footprint change).
 3. **PR1 supply pad.** Add a sixth pad for 3V3_SLEEP, so a fixture can hold AI_BOOT high
    without a wire.
-4. **LED strip connectors.** Make the polarity the same on every strip. Re-checked in the
-   schematic on 2026-09-24: white J3/J7/J9/J11 have + on pin 2, IR J6/J8/J10/J12 have + on pin 1,
-   and the main-board J1/J2 have + on pin 1. A strip wired the wrong way round opens its whole
-   chain.
-5. **Regenerate the fab files after 1-4.** Push the schematic to the PCB and regenerate the
+4. **Regenerate the fab files after 1-3.** Push the schematic to the PCB and regenerate the
    gerbers, pick-and-place and BOM_ASSEMBLY. The current outputs already contain the earlier
    changes (RBT1, R52/C4/C9, TPS61161, R66/R68).
 
