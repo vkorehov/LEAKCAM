@@ -1,5 +1,5 @@
 #define _GNU_SOURCE
-#include "v4l2cap.h"
+#include "cap.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -98,8 +98,10 @@ static int map_and_queue(struct cap_cam *c)
 
 int cap_open_all(struct cap_cam *cams, int n, unsigned width, unsigned height)
 {
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < n; i++) {
         cams[i].fd = -1;
+        cams[i].slot = cams[i].node / 3;          /* vvcam: three nodes per ISP port */
+    }
     qsort(cams, (size_t)n, sizeof(cams[0]), by_node);   /* ISP ports probe in node order */
     for (int i = 0; i < n; i++)
         if (open_and_format(&cams[i], width, height) < 0)

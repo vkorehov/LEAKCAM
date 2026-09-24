@@ -8,19 +8,20 @@ CFLAGS  ?= -O2 -Wall -Wextra -Werror
 LDLIBS  += -lz -lm
 
 CORE := imgdiff.c refstore.c history.c
-HDRS := imgdiff.h refstore.h history.h v4l2cap.h
+HDRS := imgdiff.h refstore.h history.h cap.h
 
 all: leakcam_capture leakcam_hist
 
-leakcam_capture: leakcam_capture.c v4l2cap.c $(CORE) $(HDRS)
-	$(CC) $(CFLAGS) -o $@ leakcam_capture.c v4l2cap.c $(CORE) $(LDLIBS)
+leakcam_capture: leakcam_capture.c v4l2cap.c led_linux.c $(CORE) $(HDRS) led.h
+	$(CC) $(CFLAGS) -o $@ leakcam_capture.c v4l2cap.c led_linux.c $(CORE) $(LDLIBS)
 
 leakcam_hist: leakcam_hist.c $(CORE) $(HDRS)
 	$(CC) $(CFLAGS) -o $@ leakcam_hist.c $(CORE) $(LDLIBS)
 
-test: test/test_imgdiff test/test_history
+test: test/test_imgdiff test/test_history test/test_history_miniz
 	./test/test_imgdiff
 	./test/test_history
+	./test/test_history_miniz
 
 test/test_imgdiff: test/test_imgdiff.c $(CORE) $(HDRS)
 	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_imgdiff.c $(CORE) -lz -lm
@@ -28,7 +29,11 @@ test/test_imgdiff: test/test_imgdiff.c $(CORE) $(HDRS)
 test/test_history: test/test_history.c $(CORE) $(HDRS)
 	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_history.c $(CORE) -lz -lm
 
+# the RT-Smart build compresses with the bundled miniz instead of zlib: same tests, same format
+test/test_history_miniz: test/test_history.c $(CORE) $(HDRS) third_party/miniz/miniz.c
+	cc -O2 -Wall -Wextra -Werror -I. -Ithird_party/miniz -DLEAKCAM_MINIZ -o $@ test/test_history.c $(CORE) third_party/miniz/miniz.c -lm
+
 clean:
-	rm -f leakcam_capture leakcam_hist test/test_imgdiff test/test_history
+	rm -f leakcam_capture leakcam_hist test/test_imgdiff test/test_history test/test_history_miniz
 
 .PHONY: all test clean

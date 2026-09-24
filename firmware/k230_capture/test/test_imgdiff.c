@@ -92,14 +92,34 @@ int main(void)
     CHECK(refstore_load(dir, 0, REF_LAST, b, &t) == 1, "missing reference not reported as absent");
     CHECK(refstore_save(dir, 0, REF_LAST, a, 1758700000) == 0, "save");
     CHECK(refstore_load(dir, 0, REF_LAST, b, &t) == 0 && !memcmp(a, b, sizeof(a)) && t == 1758700000, "round trip");
+    /* two slots: the second save goes to slot 1, the newest copy wins */
+    uint8_t c[IMGDIFF_W * IMGDIFF_H];
+    memcpy(c, a, sizeof(c));
+    c[0] ^= 0xFF;
+    CHECK(refstore_save(dir, 0, REF_LAST, c, 1758700600) == 0, "second save");
+    CHECK(refstore_load(dir, 0, REF_LAST, b, &t) == 0 && !memcmp(b, c, sizeof(c)) && t == 1758700600,
+          "newest slot not chosen");
+    /* newest slot torn (power cut mid-write): fall back to the older good copy */
     char path[300];
-    snprintf(path, sizeof(path), "%s/cam0.last", dir);
+    snprintf(path, sizeof(path), "%s/cam0.last.1", dir);
     CHECK(truncate(path, 1000) == 0, "truncate");
-    CHECK(refstore_load(dir, 0, REF_LAST, b, &t) == 1, "torn file accepted");
-    unlink(path);
+    CHECK(refstore_load(dir, 0, REF_LAST, b, &t) == 0 && !memcmp(a, b, sizeof(a)) && t == 1758700000,
+          "torn newest slot not skipped");
+    /* the next save overwrites the torn slot, not the good one */
+    CHECK(refstore_save(dir, 0, REF_LAST, c, 1758701200) == 0, "third save");
+    CHECK(refstore_load(dir, 0, REF_LAST, b, &t) == 0 && t == 1758701200, "save after tear");
+    snprintf(path, sizeof(path), "%s/cam0.last.0", dir);
+    CHECK(truncate(path, 1000) == 0, "truncate 0");
+    snprintf(path, sizeof(path), "%s/cam0.last.1", dir);
+    CHECK(truncate(path, 1000) == 0, "truncate 1");
+    CHECK(refstore_load(dir, 0, REF_LAST, b, &t) == 1, "both slots torn, still accepted");
+    for (int s = 0; s < 2; s++) {
+        snprintf(path, sizeof(path), "%s/cam0.last.%d", dir, s);
+        unlink(path);
+    }
     rmdir(dir);
 
-    printf(fails ? "imgdiff: %d failures\n" : "imgdiff: noise and exposure ignored, puddle found, mask and torn files handled\n", fails);
+    printf(fails ? "imgdiff: %d failures\n" : "imgdiff: noise and exposure ignored, puddle found, mask, two-slot references and torn files handled\n", fails);
     free(ref);
     free(cur);
     return fails != 0;

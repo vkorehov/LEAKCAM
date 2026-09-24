@@ -25,7 +25,11 @@ static int usage(const char *argv0)
 
 int main(int argc, char **argv)
 {
+#ifdef LEAKCAM_RTSMART
+    const char *dir = "/sdcard/leakcam";
+#else
     const char *dir = "/var/lib/leakcam";
+#endif
     int opt;
     while ((opt = getopt(argc, argv, "d:")) != -1) {
         if (opt != 'd')
