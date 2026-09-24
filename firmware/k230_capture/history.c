@@ -10,7 +10,11 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#ifdef LEAKCAM_MINIZ
+#include "miniz.h"          /* RT-Smart: no zlib in the SDK; miniz has the same one-shot calls */
+#else
 #include <zlib.h>
+#endif
 
 #define HIST_MAGIC   0x5453484Cu    /* "LHST" little-endian */
 #define HIST_VERSION 1u

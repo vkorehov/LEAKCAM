@@ -128,7 +128,7 @@ The BL616 is also the K230's Wi-Fi (SDIO, `examples/wifi/sdio_wifi` with the `ne
 driver). There is one BL616 firmware, so in production this power manager becomes a task inside
 the SDIO Wi-Fi application, and the Wi-Fi low-power firmware and this HBN policy have to agree.
 
-### K230 capture and image history (`k230_capture/`, Linux PoC)
+### K230 capture and image history (`k230_capture/`, Linux and RT-Smart)
 - `leakcam_capture`: both OV5647s through the vvcam V4L2 stack (`/dev/video0`, `/dev/video3`,
   1280x960 binned), white and IR chains on during the shot with separate PWM brightness
   (`-b white%,ir%`, 25 kHz on GPIO61/GPIO60), frames reduced to 320x240 and compared with the last
@@ -140,6 +140,8 @@ the SDIO Wi-Fi application, and the Wi-Fi low-power firmware and this HBN policy
 - `leakcam_hist list <cam>` / `get <cam> <seq> out.pgm` rebuilds any stored frame.
 - Open: the K230 has no wall clock after power-up (record times need the BL616 RTC over the link);
   sequence order is correct regardless.
+- RT-Smart build (k230_rtos_sdk): `vicap_cap.c` (MPP VICAP, both sensors in offline mode),
+  `led_rtsmart.c` (`/dev/pwm`), bundled miniz; board port steps in `k230_capture/rtsmart/README.md`.
 
 ## How this was verified
 - Sequence: `sim/power_sequence.py`, datasheet timings (TPS62823 SLVSDV8, TPS63802 SLVSEU9D) and
