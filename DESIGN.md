@@ -334,10 +334,12 @@ Checked against the schematic on 2026-09-24.
    mic end.
 3. **PR1 supply pad.** Add a sixth pad for 3V3_SLEEP, so a fixture can hold AI_BOOT high
    without a wire.
-4. **LED strip connectors.** Make the polarity the same on every strip. Re-checked in the
-   schematic on 2026-09-24: white J3/J7/J9/J11 have + on pin 2, IR J6/J8/J10/J12 have + on pin 1,
-   and the main-board J1/J2 have + on pin 1. A strip wired the wrong way round opens its whole
-   chain.
+4. **LED polarity marks.** All strip connectors already have + on pin 2 (white J3/J7/J9/J11 to
+   the anode pin 2 of XL-HD3535UWC-A2; IR J6/J8/J10/J12 to the anode pin 1 of the EasyEDA
+   JNJ-LTJI0112W120 symbol). The main-board J1/J2 have + on pin 1. Mark + on the silkscreen of
+   every pad pair (or flip J1/J2 for one rule). The IR part's EasyEDA numbering (pad 1 anode,
+   pad 2 centre, pad 3 cathode) differs from its datasheet (1 cathode, 2 anode, 3 centre): in JLC's
+   placement preview, check that the IR LED's notch (anode side) sits at footprint pad 1.
 5. **Regenerate the fab files after 1-4.** Push the schematic to the PCB and regenerate the
    gerbers, pick-and-place and BOM_ASSEMBLY. The current outputs already contain the earlier
    changes (RBT1, R52/C4/C9, TPS61161, R66/R68).
