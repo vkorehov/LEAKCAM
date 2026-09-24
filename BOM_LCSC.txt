@@ -5,7 +5,7 @@ qty   LCSC#       Basic/Ext value                        link                   
 1     C2757850    Extended  AHT20                        https://www.lcsc.com/product-detail/C2757850.html  AHT20  (U17)
 1     C41368035   Extended  ai-m62-cbs(blifn4)           https://www.lcsc.com/product-detail/C41368035.html Ai-M62-CBS(BLIFN4)  (U11)
 2     C28323      Basic     1uF 0805                     https://www.lcsc.com/product-detail/C28323.html    CL21B105KBFNNNE  (C97 C101)
-53    C2903663    Extended  100n 0201                    https://www.lcsc.com/product-detail/C2903663.html  TCC0201X5R104K160ZT  (C10 C12 C13 C25 C26 C27 C28 C29 C30 C31 C37 C39 C40 C42 C43 C44 C45 C46 C47 C48 C49 C51 C52 C53 C54 C55 C56 C57 C58 C63 C65 C66 C67 C68 C69 C70 C71 C72 C73 C74 C75 C76 C77 C78 C79 C80 C81 C82 C84 C85 C93 C94 C100)
+54    C2903663    Extended  100n 0201                    https://www.lcsc.com/product-detail/C2903663.html  TCC0201X5R104K160ZT  (C10 C12 C13 C25 C26 C27 C28 C29 C30 C31 C37 C39 C40 C42 C43 C44 C45 C46 C47 C48 C49 C51 C52 C53 C54 C55 C56 C57 C58 C63 C65 C66 C67 C68 C69 C70 C71 C72 C73 C74 C75 C76 C77 C78 C79 C80 C81 C82 C84 C85 C93 C94 C100 CB2)
 12    C307331     Basic     100n                         https://www.lcsc.com/product-detail/C307331.html   CL05B104KB54PNC  (C5 C6 C7 C8 C9 C23 C24 C32 C88 C92 C95 C109)
 2     C1546       Basic     100pf                        https://www.lcsc.com/product-detail/C1546.html     0402CG101J500NT  (C21 C22)
 2     C1547       Basic     12p                          https://www.lcsc.com/product-detail/C1547.html     0402CG120J500NT  (C35 C36)
@@ -20,7 +20,7 @@ qty   LCSC#       Basic/Ext value                        link                   
 2     C703141     Extended  DFE252012F-100M=P2           https://www.lcsc.com/product-detail/C703141.html   DFE252012F-100M=P2  (L6 L7)
 3     C2845237    Extended  TPS63802DLAR                 https://www.lcsc.com/product-detail/C2845237.html  TPS63802DLAR  (U5 U8 U10)
 2     C2693497    Extended  TPS62823DLCR                 https://www.lcsc.com/product-detail/C2693497.html  TPS62823DLCR  (U6 U7)
-14    C19702      Basic     10uF GRM188R61A106ME69D      https://www.lcsc.com/product-detail/C19702.html    CL10A106KP8NNNC  (C2 C3 C4 C11 C15 C16 C19 C50 C90 C96 C99 C102 C105 C106)
+15    C19702      Basic     10uF GRM188R61A106ME69D      https://www.lcsc.com/product-detail/C19702.html    CL10A106KP8NNNC  (C2 C3 C4 C11 C15 C16 C19 C50 C90 C96 C99 C102 C105 C106 CB1)
 1     C696901     Extended  1uF 0603                     https://www.lcsc.com/product-detail/C696901.html   TCC0603X5R105K160CT  (C86)
 6     C59461      Basic     22uF GRM188R60J226MEA0J      https://www.lcsc.com/product-detail/C59461.html    CL10A226MQ8NRNC  (C14 C17 C18 C20 C87 C89)
 1     C2286       Basic     KT-0603R                     https://www.lcsc.com/product-detail/C2286.html     KT-0603R  (D1)
@@ -60,6 +60,6 @@ qty   LCSC#       Basic/Ext value                        link                   
 1     C51928208   Extended  msm381acb026                 https://www.lcsc.com/product-detail/C51928208.html MSM381ACB026  (U13)
 1     C17626844   Extended  w25n02kvzeir                 https://www.lcsc.com/product-detail/C17626844.html W25N02KVZEIR  (U16)
 
-NO PART: ANT1 MIFI, B1_N TESTP, B1_P TESTP, CT1 NF, J1 Connector 2PIn, J2 Connector 2PIn, J3 Connector 2PIn, J6 Connector 2PIn, J7 Connector 2PIn, J8 Connector 2PIn, J9 Connector 2PIn, J10 Connector 2PIn, J11 Connector 2PIn, J12 Connector 2PIn, JB1 Connector 2PIn, JB2 Connector 2PIn, JT Connector 2PIn, PR1 CON5P
+NO PART: ANT1 MIFI, B1_N TESTP, B1_P TESTP, CT1 NF, J1 Connector 2PIn, J2 Connector 2PIn, J3 Connector 2PIn, J6 Connector 2PIn, J7 Connector 2PIn, J8 Connector 2PIn, J9 Connector 2PIn, J10 Connector 2PIn, J11 Connector 2PIn, J12 Connector 2PIn, JB1 Connector 2PIn, JB2 Connector 2PIn, JT Connector 2PIn, PR1 CON6P
 
-TOTAL 47.89 USD
+TOTAL 47.92 USD

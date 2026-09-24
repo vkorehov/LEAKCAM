@@ -1,6 +1,6 @@
 Order remark (everything else is set by the order options):
 
-Do not fill or cover the non-plated holes. The 0.50 mm hole at X33.566 Y2.563 is a
+Do not fill or cover the non-plated holes. The 0.50 mm hole at X57.566 Y2.563 is a
 microphone acoustic port and must stay open through the board.
 
 Drill-to-copper is 0.10 mm at the BGA fan-out (U3, 0.65 mm pitch). Build as drawn,
