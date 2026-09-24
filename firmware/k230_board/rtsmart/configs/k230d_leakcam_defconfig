@@ -4,7 +4,7 @@
 # watchdog, DMA, soft RTC, romfs/tmpfs/procfs, the MPP camera stack, and networking over the BL616
 # (SDIO host on MMC0, RT-Thread WLAN framework, lwIP, SAL sockets, NTP). Removed: touch, WS2812,
 # one-wire, Realtek Wi-Fi, USB device, FAT, crypto engines, FFT, hardware timers, soft I2C,
-# I2C1-3, SPI1-2, regulators, fast-boot preload. The BL616 SDIO Wi-Fi host driver is still to write.
+# I2C1-3, SPI1-2, regulators, fast-boot preload.
 CONFIG_RT_NAME_MAX=20
 CONFIG_RT_USING_SMART=y
 CONFIG_RT_ALIGN_SIZE=64
@@ -51,6 +51,11 @@ CONFIG_RT_SDIO_STACK_SIZE=10240
 CONFIG_RT_SDIO_THREAD_PRIORITY=4
 CONFIG_RT_MMCSD_STACK_SIZE=32768
 CONFIG_RT_USING_SDIO0=y
+# BL616 NetHub Wi-Fi driver (drivers/extdrv/bl616_nethub, installed by install.sh). The BL616 is
+# wired to MMC0 with CLK, CMD and D0-D3 only (bl616_pwrmgr/board_pins.h); its CHIP_EN is not the
+# K230's to pulse, so the board glue must not toggle the SDIO0 reset output before probing.
+CONFIG_RT_USING_BL616_NETHUB=y
+# CONFIG_BSP_WIFI_SDIO_USE_SDIO0_RESET is not set
 CONFIG_RT_USING_WIFI=y
 CONFIG_RT_WLAN_DEVICE_STA_NAME="sta"
 CONFIG_RT_WLAN_DEVICE_AP_NAME="ap"
