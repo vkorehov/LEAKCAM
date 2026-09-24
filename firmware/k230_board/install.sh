@@ -77,12 +77,12 @@ grep -q 'k230d_leakcam.dtb' "$UB/arch/riscv/dts/Makefile" ||
         "$UB/arch/riscv/dts/Makefile"
 grep -q 'k230d_leakcam.dtb' "$UB/arch/riscv/dts/Makefile" || { echo "could not register the dtb"; exit 1; }
 
-# 4. the capture app: Makefile + Kconfig, sources copied into ./src
+# 4. the LEAKCAM apps (capture, history, stream, audio): Makefile + Kconfig, sources copied into ./src
 APP=$SDK/src/applications/leakcam
 rm -rf "$APP"; mkdir -p "$APP/src"
 cp "$CAP/rtsmart/Makefile" "$APP/Makefile"
 cp "$CAP/rtsmart/Kconfig.app" "$APP/Kconfig"
-( cd "$CAP" && cp -r --parents *.c *.h third_party/miniz/miniz.c third_party/miniz/miniz.h \
+( cd "$CAP" && cp -r --parents *.c *.cpp *.h third_party/miniz/miniz.c third_party/miniz/miniz.h \
       third_party/miniz/LICENSE "$APP/src/" )
 grep -q 'CONFIG_APP_ENABLE_LEAKCAM' "$SDK/src/applications/apps.mk" ||
     echo 'subdirs-$(CONFIG_APP_ENABLE_LEAKCAM) += leakcam' >> "$SDK/src/applications/apps.mk"
