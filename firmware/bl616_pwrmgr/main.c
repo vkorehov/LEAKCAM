@@ -30,6 +30,7 @@
 #include "log.h"
 
 #include "aht20.h"
+#include "aon_state.h"
 #include "ble_pairing.h"
 #include "k230_power.h"
 #include "k230_link.h"
@@ -50,7 +51,7 @@
 #define RETRY_PERIOD_S       300u
 #define GIVE_UP_PERIOD_S     3600u
 
-/* persisted across hibernate (persist_set, 8 flag bits) */
+/* persisted across hibernate in HBN RAM (aon_state.c, 8 flag bits) */
 #define PF_FAILS_MASK        0x0Fu
 #define PF_LEAK_REPORTED     0x10u
 #define PF_FROM_USB_MODE     0x20u   /* reboot was the USB-unplug exit, not a real cold start */
@@ -93,7 +94,14 @@ static void graceful_off(void)
 
 static void send_wake(enum wake_reason reason)
 {
-    link_send("WAKE", wake_reason_name(reason));
+    /* WAKE,<reason>,<unix s>: the K230's RTC restarts at every power-up, ours runs on the Y3
+     * crystal, so the time rides in the same frame; 0 = our clock is not valid (battery was out) */
+    uint32_t now;
+    char wake[24];
+    if (!wallclock_get(&now))
+        now = 0;
+    snprintf(wake, sizeof(wake), "%s,%lu", wake_reason_name(reason), (unsigned long)now);
+    link_send("WAKE", wake);
     if (env_rh_x10 >= 0) {
         char env[16];
         snprintf(env, sizeof(env), "%d,%d", env_rh_x10, env_t_x10);
@@ -140,6 +148,9 @@ static enum session_end run_session(enum wake_reason reason, uint32_t *sleep_s)
             }
             if (strcmp(m.cmd, "READY") == 0)    /* agent restarted inside the session */
                 send_wake(reason);
+            /* the K230 learned real time (NTP over Wi-Fi): take it, correcting crystal drift */
+            if (strcmp(m.cmd, "TIME") == 0 && m.has_arg)
+                link_send("ACK", wallclock_set(m.arg) ? "TIME" : "TIME,refused");
         }
 
         if (now - last_edge > HEARTBEAT_TIMEOUT_MS) {
@@ -268,6 +279,7 @@ int main(void)
     leak_init();
     usb_sense_init();
     rtc_use_crystal();
+    aon_init();                                 /* HBN RAM: flags and wall clock, before any use */
     uint32_t pf, hum_left;
     persist_get(&pf, &hum_left);
     bool wet = leak_is_wet();

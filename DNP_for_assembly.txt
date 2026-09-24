@@ -1,3 +1,4 @@
 Not placed by JLCPCB, hand-soldered after delivery (through-hole):
   S2B-PH-K-S(LF)(SN)  S1 S2 S3   leak probe connectors, LCSC C157932
+Not fitted: CT1 (antenna shunt capacitor pad, NF until the value is tuned; left out of BOM and CPL)
 Pads only, no part: ANT1 (MIFA antenna), B1_N B1_P (test points), J1 J2 JB1 JB2 JT (wire pads), PR1 (module programming pads)

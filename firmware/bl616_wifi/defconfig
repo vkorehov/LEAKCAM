@@ -1,0 +1,41 @@
+# LEAKCAM BL616 Wi-Fi bridge: Bouffalo NetHub (SDIO profile) with our own control channel.
+# Base: the SDK's examples/wifi/nethub, cut to what the bridge needs. Removed: the AT control
+# module, low power (the BL616 hibernates between sessions instead), USB/dual profiles, IPv6
+# (the BL616 has no address of its own), ping, iperf, Ethernet PHY, TTY channel. The DHCP server
+# stays: the Wi-Fi stack's lwIP adapter includes it unconditionally.
+
+-include $(BL_SDK_BASE)/examples/wifi/defconfig
+
+CONFIG_PING =n
+CONFIG_IPV6 =n
+
+# NetHub over SDIO; the control path is ours (wifi_ctrl_proto.h on the USER virtual channel)
+CONFIG_NETHUB                          =y
+CONFIG_NETHUB_PROFILE_SDIO             =y
+CONFIG_NETHUB_PROFILE_USB              =n
+CONFIG_NETHUB_PROFILE_DUAL             =n
+CONFIG_NETHUB_CTRLCHANNEL_USE_ATMODULE =n
+CONFIG_NETHUB_LOWPOWER_ENABLE          =n
+
+# message router: SDIO device driver, netdev and virtual-channel services.
+# SDIO ports per direction: the K230 driver counts the same number (BL616_PORTS = 4)
+CONFIG_BSP_MR              =y
+CONFIG_MR_SDIO_DRIVER      =y
+CONFIG_MR_SDIO_QUEUE_DEPTH =4
+CONFIG_MR_NETDEV           =y
+CONFIG_MR_VIRTUALCHAN      =y
+CONFIG_MR_TTY              =n
+
+# Wi-Fi credentials from BLE provisioning live in easyflash on littlefs
+CONFIG_LITTLEFS              =y
+CONFIG_LITTLEFS_KV_EASYFLASH =y
+CONFIG_BFLB_MTD              =y
+CONFIG_PARTITION             =y
+
+# console on USB CDC (PR1): UART0 on GPIO21/22 is the K230 link, and nothing may drive those
+# pins while the K230 is off. The console option depends on CherryUSB's CDC-ACM device class.
+CONFIG_CHERRYUSB                =y
+CONFIG_CHERRYUSB_DEVICE         =y
+CONFIG_CHERRYUSB_DEVICE_CDC     =y
+CONFIG_CHERRYUSB_DEVICE_CDC_ACM =y
+CONFIG_BSP_CONSOLE_USB_CDC      =y

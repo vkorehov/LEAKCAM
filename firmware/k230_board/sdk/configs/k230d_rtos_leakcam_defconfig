@@ -1,0 +1,31 @@
+CONFIG_BOARD_CONFIG_NAME="k230d_rtos_leakcam_defconfig"
+CONFIG_BOARD_K230D_LEAKCAM=y
+CONFIG_BOARD_NAME="LEAKCAM_K230D"
+CONFIG_BOARD_GEN_IMAGE_CFG_FILE="genimage-spinand.cfg"
+# SPL/U-Boot built from source with the LEAKCAM device tree: the prebuilt EVB SPI-NAND binaries
+# set most IO banks to 1.8 V mode, and every bank is 3.3 V on this board
+# CONFIG_UBOOT_USE_PREBUILT is not set
+CONFIG_UBOOT_CONFIG_FILE="k230d_leakcam"
+CONFIG_RTSMART_CONFIG_FILE="k230d_leakcam"
+CONFIG_RTT_AUTO_EXEC_CMD=""
+# no fast-boot preload (it expects a MicroPython or rtapp image); the agent starts via RTT_AUTO_EXEC_CMD
+# CONFIG_FAST_BOOT_CONFIGURATION is not set
+# OpenSBI built from source (no prebuilt board blobs)
+# CONFIG_OPENSBI_USE_PREBUILT_FW_JUMP is not set
+# cameras: CAM2 (J4) on CSI0 + i2c0 (IO48/49), CAM1 (J5) on CSI2 + i2c4 (IO7/8), OV5647 on
+# Pi-v1.3-style boards with their own 25 MHz oscillator (no chip MCLK); connector pin 18 is the
+# module's LED line, not a reset, so no reset or power-down GPIO
+CONFIG_MPP_ENABLE_CSI_DEV_0=y
+CONFIG_MPP_CSI_DEV0_POWER=-1
+CONFIG_MPP_CSI_DEV0_RESET=-1
+CONFIG_MPP_CSI_DEV0_I2C_DEV="i2c0"
+CONFIG_MPP_CSI_DEV0_MCLK_INVALID=y
+CONFIG_MPP_ENABLE_CSI_DEV_2=y
+CONFIG_MPP_CSI_DEV2_POWER=-1
+CONFIG_MPP_CSI_DEV2_RESET=-1
+CONFIG_MPP_CSI_DEV2_I2C_DEV="i2c4"
+CONFIG_MPP_CSI_DEV2_MCLK_INVALID=y
+CONFIG_MPP_ENABLE_SENSOR_OV5647=y
+CONFIG_APP_ENABLE_LEAKCAM=y
+# networking comes from the BL616 over SDIO, not USB LAN
+# CONFIG_ENABLE_NETWORK_RT_LAN_OVER_USB is not set

@@ -16,7 +16,7 @@ int main(void){
   rx=stream; rxi=0; struct link_msg m; const char *want[]={"READY","SLEEP","HALTED"}; int k=0;
   while(link_poll(&m)){ printf("got %-7s arg=%u has_arg=%d\n",m.cmd,m.arg,m.has_arg); if(k>=3||strcmp(m.cmd,want[k]))fails++; if(k==1&&m.arg!=600)fails++; k++; }
   if(k!=3) fails++;
-  link_send("WAKE","leak"); char expect[80]; agent_frame(expect,"WAKE","leak");
+  link_send("WAKE","leak,1790000000"); char expect[80]; agent_frame(expect,"WAKE","leak,1790000000");
   printf("BL616 sends %s", tx); if(strcmp(tx,expect)) fails++;
   printf(fails? "FAIL (%d)\n":"link protocol: all frames round-trip, noise and bad checksums dropped\n",fails);
   return fails!=0;

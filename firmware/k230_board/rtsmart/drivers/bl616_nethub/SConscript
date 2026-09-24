@@ -1,0 +1,8 @@
+from building import *
+
+cwd = GetCurrentDir()
+src = Glob('*.c')
+
+group = DefineGroup('bl616_nethub', src, depend=['RT_USING_BL616_NETHUB'])
+
+Return('group')
