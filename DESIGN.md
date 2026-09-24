@@ -326,6 +326,10 @@ Checked against the schematic on 2026-09-24.
 - TPS61161 instead of TPS61160 for both LED drivers.
 - R66 3.0R and R68 1.5R.
 - CT1 not fitted.
+- LED polarity: all strip connectors have + on pin 2 (the main-board J1/J2 on pin 1), and the
+  silkscreen marks every LED (dot = anode, stripe = cathode). The IR part's EasyEDA numbering
+  (pad 1 anode, pad 3 cathode, pad 2 centre) differs from its datasheet but agrees between symbol
+  and footprint.
 
 **Still to do:**
 1. **MIC_BIAS decoupling.** Add 1-4.7 µF directly at the U3.A4 ball. Today only FB4 connects
@@ -334,13 +338,7 @@ Checked against the schematic on 2026-09-24.
    mic end.
 3. **PR1 supply pad.** Add a sixth pad for 3V3_SLEEP, so a fixture can hold AI_BOOT high
    without a wire.
-4. **LED polarity marks.** All strip connectors already have + on pin 2 (white J3/J7/J9/J11 to
-   the anode pin 2 of XL-HD3535UWC-A2; IR J6/J8/J10/J12 to the anode pin 1 of the EasyEDA
-   JNJ-LTJI0112W120 symbol). The main-board J1/J2 have + on pin 1. Mark + on the silkscreen of
-   every pad pair (or flip J1/J2 for one rule). The IR part's EasyEDA numbering (pad 1 anode,
-   pad 2 centre, pad 3 cathode) differs from its datasheet (1 cathode, 2 anode, 3 centre): in JLC's
-   placement preview, check that the IR LED's notch (anode side) sits at footprint pad 1.
-5. **Regenerate the fab files after 1-4.** Push the schematic to the PCB and regenerate the
+4. **Regenerate the fab files after 1-3.** Push the schematic to the PCB and regenerate the
    gerbers, pick-and-place and BOM_ASSEMBLY. The current outputs already contain the earlier
    changes (RBT1, R52/C4/C9, TPS61161, R66/R68).
 
