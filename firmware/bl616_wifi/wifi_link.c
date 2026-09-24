@@ -26,6 +26,7 @@
 #include <lwip/prot/ethernet.h>
 
 #include "async_event.h"
+#include "bflb_gpio.h"
 #include "bflb_mtd.h"
 #include "bl616_glb.h"
 #include "bl_fw_api.h"
@@ -40,6 +41,7 @@
 #include "nethub_filter.h"
 #include "nethub_vchan.h"
 
+#include "board_pins.h"
 #include "wifi_ctrl_proto.h"
 #include "wifi_link.h"
 
@@ -254,14 +256,33 @@ static nethub_wifi_rx_filter_action_t rx_filter(nethub_channel_t src, const stru
     return NETHUB_WIFI_RX_FILTER_HOST;
 }
 
+/*
+ * SDIO pads at drive strength 0 instead of the SDK's 1 (board_sdio_gpio_init()). Datasheet
+ * 7.2.2, GPIO 0-20: DRV_0 sources 9.7 mA / sinks 11.4 mA at the 10 % VOH/VOL limit, about 35 ohm,
+ * close to the ~49 ohm SDIO traces (35-52 mm), so the driver itself source-terminates them;
+ * DRV_1 is about 11 ohm and rings. Called after every SDK call that muxes the pads.
+ */
+static void sdio_pins_low_drive(void)
+{
+    static const uint8_t pins[] = { PIN_SD_D2, PIN_SD_D3, PIN_SD_CMD, PIN_SD_CLK, PIN_SD_D0, PIN_SD_D1 };
+    struct bflb_device_s *gpio = bflb_device_get_by_name("gpio");
+
+    for (unsigned i = 0; i < sizeof(pins); i++)
+        bflb_gpio_init(gpio, pins[i], GPIO_FUNC_SDU | GPIO_ALTERNATE | GPIO_PULLUP | GPIO_SMT_EN |
+                                          GPIO_DRV_0);
+}
+
 /* ------------------------------------------------------------------ entry points */
 
 int wifi_link_start(void)
 {
     int ret;
 
-    if (booted)
-        return mr_sdio_drv_lowpower_restore();   /* K230 powered up again: re-mux and resync */
+    if (booted) {
+        ret = mr_sdio_drv_lowpower_restore();    /* K230 powered up again: re-mux and resync */
+        sdio_pins_low_drive();
+        return ret;
+    }
 
     if (rfparam_init(0, NULL, 0) != 0) {
         LOG_E("RF init failed\r\n");
@@ -278,6 +299,7 @@ int wifi_link_start(void)
         LOG_E("nethub bootstrap failed: %d\r\n", ret);
         return ret;
     }
+    sdio_pins_low_drive();
     nethub_vchan_user_recv_register(ctrl_rx, NULL);
 
     /* Wi-Fi start as in the SDK's NetHub example: the rest follows from wifi_event() */
