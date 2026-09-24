@@ -22,12 +22,12 @@
 		(IO11) ( 0<<SEL | 0<<SL | BANK_VOLTAGE_IO2_IO13<<MSC | 1<<IE | 0<<OE | 0<<PU | 1<<PD | 4<<DS | 1<<ST ) // NC
 		(IO12) ( 0<<SEL | 0<<SL | BANK_VOLTAGE_IO2_IO13<<MSC | 1<<IE | 0<<OE | 0<<PU | 1<<PD | 4<<DS | 1<<ST ) // NC
 		(IO13) ( 0<<SEL | 0<<SL | BANK_VOLTAGE_IO2_IO13<<MSC | 1<<IE | 0<<OE | 0<<PU | 1<<PD | 4<<DS | 1<<ST ) // NC
-		(IO14) ( 1<<SEL | 0<<SL | BANK_VOLTAGE_IO14_IO25<<MSC | 0<<IE | 1<<OE | 1<<PU | 0<<PD | 15<<DS | 1<<ST ) // OSPI_CS  -> U16 W25N02KV CS# (R39 pull-up)
-		(IO15) ( 1<<SEL | 0<<SL | BANK_VOLTAGE_IO14_IO25<<MSC | 0<<IE | 1<<OE | 0<<PU | 0<<PD | 15<<DS | 1<<ST ) // OSPI_CLK -> U16 CLK via R42 22R
-		(IO16) ( 1<<SEL | 0<<SL | BANK_VOLTAGE_IO14_IO25<<MSC | 1<<IE | 1<<OE | 0<<PU | 0<<PD | 15<<DS | 1<<ST ) // OSPI_D0  <> U16 DI/IO0
-		(IO17) ( 1<<SEL | 0<<SL | BANK_VOLTAGE_IO14_IO25<<MSC | 1<<IE | 1<<OE | 0<<PU | 0<<PD | 15<<DS | 1<<ST ) // OSPI_D1  <> U16 DO/IO1
-		(IO18) ( 1<<SEL | 0<<SL | BANK_VOLTAGE_IO14_IO25<<MSC | 1<<IE | 1<<OE | 0<<PU | 0<<PD | 15<<DS | 1<<ST ) // OSPI_D2  <> U16 WP#/IO2 (R40 pull-up)
-		(IO19) ( 1<<SEL | 0<<SL | BANK_VOLTAGE_IO14_IO25<<MSC | 1<<IE | 1<<OE | 0<<PU | 0<<PD | 15<<DS | 1<<ST ) // OSPI_D3  <> U16 HOLD#/IO3 (R41 pull-up)
+		(IO14) ( 1<<SEL | 0<<SL | BANK_VOLTAGE_IO14_IO25<<MSC | 0<<IE | 1<<OE | 1<<PU | 0<<PD | 7<<DS | 1<<ST ) // OSPI_CS  -> U16 W25N02KV CS# (R39 pull-up)
+		(IO15) ( 1<<SEL | 0<<SL | BANK_VOLTAGE_IO14_IO25<<MSC | 0<<IE | 1<<OE | 0<<PU | 0<<PD | 7<<DS | 1<<ST ) // OSPI_CLK -> U16 CLK via R42 22R
+		(IO16) ( 1<<SEL | 0<<SL | BANK_VOLTAGE_IO14_IO25<<MSC | 1<<IE | 1<<OE | 0<<PU | 0<<PD | 7<<DS | 1<<ST ) // OSPI_D0  <> U16 DI/IO0
+		(IO17) ( 1<<SEL | 0<<SL | BANK_VOLTAGE_IO14_IO25<<MSC | 1<<IE | 1<<OE | 0<<PU | 0<<PD | 7<<DS | 1<<ST ) // OSPI_D1  <> U16 DO/IO1
+		(IO18) ( 1<<SEL | 0<<SL | BANK_VOLTAGE_IO14_IO25<<MSC | 1<<IE | 1<<OE | 0<<PU | 0<<PD | 7<<DS | 1<<ST ) // OSPI_D2  <> U16 WP#/IO2 (R40 pull-up)
+		(IO19) ( 1<<SEL | 0<<SL | BANK_VOLTAGE_IO14_IO25<<MSC | 1<<IE | 1<<OE | 0<<PU | 0<<PD | 7<<DS | 1<<ST ) // OSPI_D3  <> U16 HOLD#/IO3 (R41 pull-up)
 		(IO20) ( 0<<SEL | 0<<SL | BANK_VOLTAGE_IO14_IO25<<MSC | 1<<IE | 0<<OE | 0<<PU | 1<<PD | 4<<DS | 1<<ST ) // NC (bank 1)
 		(IO21) ( 0<<SEL | 0<<SL | BANK_VOLTAGE_IO14_IO25<<MSC | 1<<IE | 0<<OE | 0<<PU | 1<<PD | 4<<DS | 1<<ST ) // NC (bank 1)
 		(IO22) ( 0<<SEL | 0<<SL | BANK_VOLTAGE_IO14_IO25<<MSC | 1<<IE | 0<<OE | 0<<PU | 1<<PD | 4<<DS | 1<<ST ) // NC (bank 1)

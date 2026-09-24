@@ -29,12 +29,15 @@ PINS = {
     7:  (2, 1, 1, 1, 0, 7, 1, "IIC4_SCL, CAM1 (J5, CSI2), R14/R15 4.7k to 3V3"),
     8:  (2, 1, 1, 1, 0, 7, 1, "IIC4_SDA, CAM1 (J5, CSI2)"),
     10: NC_IN + ("NC",), 11: NC_IN + ("NC",), 12: NC_IN + ("NC",), 13: NC_IN + ("NC",),
-    14: (1, 0, 1, 1, 0, 15, 1, "OSPI_CS  -> U16 W25N02KV CS# (R39 pull-up)"),
-    15: (1, 0, 1, 0, 0, 15, 1, "OSPI_CLK -> U16 CLK via R42 22R"),
-    16: (1, 1, 1, 0, 0, 15, 1, "OSPI_D0  <> U16 DI/IO0"),
-    17: (1, 1, 1, 0, 0, 15, 1, "OSPI_D1  <> U16 DO/IO1"),
-    18: (1, 1, 1, 0, 0, 15, 1, "OSPI_D2  <> U16 WP#/IO2 (R40 pull-up)"),
-    19: (1, 1, 1, 0, 0, 15, 1, "OSPI_D3  <> U16 HOLD#/IO3 (R41 pull-up)"),
+    # OSPI drive 7 of 15, not Canaan's 15: the NAND traces are 12-20 mm (under 130 ps one way) with no
+    # room for series resistors at the balls (only SPI_CLK has R42), so a weaker driver keeps the
+    # edges from ringing; 50 MHz quad needs nowhere near full strength (layout audit 2026-09-24).
+    14: (1, 0, 1, 1, 0, 7, 1, "OSPI_CS  -> U16 W25N02KV CS# (R39 pull-up)"),
+    15: (1, 0, 1, 0, 0, 7, 1, "OSPI_CLK -> U16 CLK via R42 22R"),
+    16: (1, 1, 1, 0, 0, 7, 1, "OSPI_D0  <> U16 DI/IO0"),
+    17: (1, 1, 1, 0, 0, 7, 1, "OSPI_D1  <> U16 DO/IO1"),
+    18: (1, 1, 1, 0, 0, 7, 1, "OSPI_D2  <> U16 WP#/IO2 (R40 pull-up)"),
+    19: (1, 1, 1, 0, 0, 7, 1, "OSPI_D3  <> U16 HOLD#/IO3 (R41 pull-up)"),
 }
 for p in list(range(20, 38)):
     PINS[p] = NC_IN + ("NC" if p > 25 else "NC (bank 1)",)
@@ -81,6 +84,7 @@ def check():
         assert (p in PINS) != (p in NOT_BONDED), "pin %d must be in exactly one table" % p
     # the NAND must be on the OSPI function, the BL616 link on UART1, the LEDs on PWM
     assert all(PINS[p][0] == 1 for p in range(14, 20))
+    assert all(PINS[p][5] == 7 for p in range(14, 20))      # OSPI drive, see the table
     assert PINS[40][0] == 1 and PINS[41][0] == 1 and PINS[60][0] == 1 and PINS[61][0] == 1
 
 

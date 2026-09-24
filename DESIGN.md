@@ -162,6 +162,15 @@ the kernel NAND glue is patched to report 64.
   | IO62/63 | camera LEDs, held low |
   | IO64-71 | PMU pads, GPIO |
 
+- **Drive strength, set from the 2026-09-24 layout audit instead of series resistors.**
+  - OSPI NAND pins (IO14-19): `ds 7` of 15, not Canaan's 15. The traces are short (12-20 mm), there
+    is no room for resistors at the balls, and SPI_CLK keeps R42 22R.
+  - BL616 SDIO pads: DRV_0 instead of the SDK's DRV_1 (`bl616_wifi/wifi_link.c`). Per the BL616
+    datasheet, DRV_0 is about 35 ohm on GPIO0-20, close to the ~49 ohm traces, so it
+    source-terminates them. DRV_1 is about 11 ohm and rings.
+  - K230 SDIO (MMC0 PHY pads): left at Canaan's values (PAD_SP/SN 9/8, TXSLEW 3/1 in `drv_sdhci.c`).
+    The code scale is undocumented, and these are the only values known to work at 50 MHz.
+    AI_SD_CLK gets a 22-33 ohm series resistor at the K230 instead, if the layout adds one.
 - **U-Boot target.** It reuses Canaan's BPI-Zero board code (the same K230D SiP); only the
   device tree and defconfig are LEAKCAM's.
 - **Kernel trimmed.**
