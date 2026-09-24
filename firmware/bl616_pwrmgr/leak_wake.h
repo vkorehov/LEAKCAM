@@ -23,11 +23,7 @@ const char *wake_reason_name(enum wake_reason r);
  * K230_PWR low). Does not return: wake-up is a reboot. */
 void hbn_sleep(uint32_t seconds);
 
-/* Kept across hibernate in the HBN status register (HBN_Set_Status_Flag):
- *   [31:24] magic   [23:8] humidity wake-ups left before the next scheduled K230 report   [7:0] flags
- * A cold power-on reads back zeros. */
-void persist_get(uint32_t *flags, uint32_t *hum_wakes_left);
-void persist_set(uint32_t flags, uint32_t hum_wakes_left);
+/* persist_get / persist_set moved to aon_state.h (HBN RAM; HBN_RSV0 is overwritten on sleep) */
 
 /* Run the HBN RTC from the 32.768 kHz crystal Y3 (IO16/IO17) instead of RC32K. */
 void rtc_use_crystal(void);
