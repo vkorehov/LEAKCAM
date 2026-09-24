@@ -11,6 +11,7 @@
  *   3.3 * (1M || Rw) / (1M + 1M || Rw) = 0.825  ->  Rw = 500 k  (406 k with 2 x 47 k in series)
  */
 #include "leak_wake.h"
+#include "aon_state.h"
 #include "board_pins.h"
 
 #include "bflb_gpio.h"
@@ -22,7 +23,6 @@
 
 #define LEAK_ACOMP          AON_ACOMP1_ID
 #define ACOMP_VIO_1V65      33          /* vio_sel is in 50 mV steps; SDK: DEFAULT_ACOMP_VREF_1V65 */
-#define PERSIST_MAGIC       0xA5000000u
 
 void leak_init(void)
 {
@@ -78,22 +78,6 @@ const char *wake_reason_name(enum wake_reason r)
     }
 }
 
-void persist_get(uint32_t *flags, uint32_t *hum_wakes_left)
-{
-    uint32_t v = HBN_Get_Status_Flag();
-    if ((v & 0xFF000000u) != PERSIST_MAGIC)
-        v = 0;
-    *flags = v & 0xFFu;
-    *hum_wakes_left = (v >> 8) & 0xFFFFu;
-}
-
-void persist_set(uint32_t flags, uint32_t hum_wakes_left)
-{
-    if (hum_wakes_left > 0xFFFFu)
-        hum_wakes_left = 0xFFFFu;
-    HBN_Set_Status_Flag(PERSIST_MAGIC | (hum_wakes_left << 8) | (flags & 0xFFu));
-}
-
 void rtc_use_crystal(void)
 {
     /* Idempotent: after an HBN wake the crystal is still running. On a cold boot it needs up to
@@ -110,6 +94,7 @@ void hbn_sleep(uint32_t seconds)
     HBN_Clear_IRQ(HBN_INT_ACOMP1);
     HBN_Enable_AComp_IRQ(LEAK_ACOMP, leak_is_wet() ? HBN_ACOMP_INT_EDGE_POSEDGE : HBN_ACOMP_INT_EDGE_NEGEDGE);
 
+    aon_prepare_sleep();                                   /* persisted state + clock in HBN RAM */
     LOG_I("hbn: sleeping %u s, probes %s\r\n", (unsigned)seconds, leak_is_wet() ? "wet" : "dry");
     bflb_mtimer_delay_ms(5);                               /* let the USB console drain */
     /* RTC ticks at 32768 Hz (Y3 crystal on IO16/IO17 via rtc_use_crystal(), else RC32K) */
