@@ -33,7 +33,11 @@ test/test_history: test/test_history.c $(CORE) $(HDRS)
 test/test_history_miniz: test/test_history.c $(CORE) $(HDRS) third_party/miniz/miniz.c
 	cc -O2 -Wall -Wextra -Werror -I. -Ithird_party/miniz -DLEAKCAM_MINIZ -o $@ test/test_history.c $(CORE) third_party/miniz/miniz.c -lm
 
+# measurement tool, needs leakcam PGM pairs (firmware/k230_nn/README.md section 5): not part of `test`
+test/test_imgqual: test/test_imgqual.c imgqual.c imgqual.h imgdiff.c imgdiff.h
+	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_imgqual.c imgqual.c imgdiff.c -lm
+
 clean:
-	rm -f leakcam_capture leakcam_hist test/test_imgdiff test/test_history test/test_history_miniz
+	rm -f leakcam_capture leakcam_hist test/test_imgdiff test/test_history test/test_history_miniz test/test_imgqual
 
 .PHONY: all test clean
