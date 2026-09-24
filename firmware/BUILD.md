@@ -6,6 +6,10 @@ The board carries two independent firmwares:
 |---|---|---|---|---|
 | K230D (U3) | SPL + RT-Smart kernel + `leakcam_capture` / `leakcam_hist`, one `.kdimg` for the SPI NAND (U16 W25N02KV) | `k230_board/`, `k230_capture/` | `kendryte/k230_rtos_sdk` (CanMV manifest) | USB-C 1, K230 boot ROM USB mode, `k230_flash` |
 | BL616 (U11 Ai-M62-CBS) | power manager, leak/humidity wake, BLE provisioning | `bl616_pwrmgr/` | `bouffalolab/bouffalo_sdk` | PR1 pads (USB D+/D-, BOOT, EN), `BLFlashCommand` |
+| BL616 (U11), Wi-Fi bring-up | NetHub Wi-Fi bridge to the K230 over SDIO | `bl616_wifi/` | `bouffalolab/bouffalo_sdk` | the same |
+
+`bl616_wifi/` is a bring-up firmware for the Wi-Fi path until it moves into the power manager
+(one BL616 firmware in the product, see `bl616_wifi/README.md`); flash one or the other.
 
 Flash the BL616 first: it owns the K230's power (K230_PWR, K230_RSTN), and a blank BL616 keeps the
 K230 off.
@@ -231,19 +235,31 @@ git clone --depth 1 https://github.com/bouffalolab/toolchain_gcc_t-head_linux.gi
 export PATH=$PWD/toolchain_gcc_t-head_linux/bin:$PATH    # riscv64-unknown-elf-gcc
 ```
 
-The T-Head toolchain is x86-64 only: on the arm64 host it runs through qemu, like the K230 one.
-The sources have been compiled against the SDK headers, but not yet linked into a firmware
-binary; the first full `make` is still to be done.
+The T-Head toolchain is x86-64 only. On the arm64 host it runs through qemu, but it needs the
+amd64 runtime libraries, so build inside the K230 build container (section 2.2):
+
+```
+cd ~/k230d-hw/LEAKCAM/firmware/bl616_wifi          # or bl616_pwrmgr
+docker run --rm --user $(id -u):$(id -g) -e HOME=/tmp \
+    -e PATH=$HOME/k230d-hw/toolchain_gcc_t-head_linux/bin:/usr/bin:/bin \
+    -v $HOME/k230d-hw:$HOME/k230d-hw -w $PWD k230-rtos-sdk-build:arm64-x86tc make -j5
+```
+
+`bl616_wifi` links into `build/build_out/leakcam_wifi_bl616.bin` (2026-09-24, bouffalo_sdk
+63784aa0), and `bl616_pwrmgr` into `build/build_out/leakcam_pwrmgr_bl616.bin`.
 
 ### 4.2 Build
 
 ```
 cd ~/k230d-hw/LEAKCAM/firmware/bl616_pwrmgr
-make                         # CHIP=bl616 BOARD=bl616dk CROSS_COMPILE=riscv64-unknown-elf- are the defaults
+make                         # inside the container as above; CHIP=bl616 BOARD=bl616dk are the defaults
 ```
 
 The firmware lands in `build/build_out/leakcam_pwrmgr_bl616.bin`. `defconfig` moves the SDK
-console to USB CDC, because GPIO21/22 are the K230 link.
+console to USB CDC, because GPIO21/22 are the K230 link. That option needs the SDK shell,
+FreeRTOS and CherryUSB's CDC-ACM class; if any is missing Kconfig drops it without a word and
+the console falls back to UART0 on the link pins. Check `build/generated/autoconfig.h` for
+`CONFIG_BSP_CONSOLE_USB_CDC 1` after changing the defconfig.
 
 ### 4.3 Flash through PR1
 
@@ -281,6 +297,7 @@ Both pass as of 2026-09-24. Run them before every firmware commit.
 | kernel config (`k230_board/rtsmart/configs/`) | `install.sh`, `./leakcam_docker_build.sh k230d_rtos_leakcam_defconfig`, `log` |
 | NAND layout | edit `genimage-spinand.cfg`, `spinand_parts.h` and the U-Boot dts partitions together: they must agree |
 | BL616 | `make && make flash COMX=/dev/ttyACM0` |
+| K230 Wi-Fi driver (`k230_board/rtsmart/drivers/bl616_nethub/`) or `bl616_wifi/wifi_ctrl_proto.h` | `install.sh`, `./leakcam_docker_build.sh log` (and rebuild `bl616_wifi` for a protocol change) |
 
 ## 7. Known build problems and their fixes
 

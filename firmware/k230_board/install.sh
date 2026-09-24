@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Install the LEAKCAM board (K230D + W25N02KV SPI NAND) and the leakcam_capture app into a
-# k230_rtos_sdk checkout. Idempotent: rerun after editing anything in firmware/k230_board or
-# firmware/k230_capture.
+# Install the LEAKCAM board (K230D + W25N02KV SPI NAND), the BL616 Wi-Fi driver and the
+# leakcam_capture app into a k230_rtos_sdk checkout. Idempotent: rerun after editing anything in
+# firmware/k230_board, firmware/k230_capture or firmware/bl616_wifi/wifi_ctrl_proto.h.
 #
 #   firmware/k230_board/install.sh <k230_rtos_sdk>
 #   cd <k230_rtos_sdk> && make k230d_rtos_leakcam_defconfig && make
@@ -68,6 +68,45 @@ assert s.count(a) == 1, 'spinand_port.c changed, cannot apply the OOB patch'
 open(p, 'w').write(s.replace(a, b))
 PY
 grep -q 'LEAKCAM: UFFS user OOB' "$PORT" || { echo "OOB patch not applied"; exit 1; }
+
+# BL616 Wi-Fi driver (NetHub over SDIO): sources + the control protocol header shared with the
+# BL616 firmware; extdrv/SConscript picks up every subfolder, Kconfig needs one source line
+DRV=$RTT/drivers/extdrv/bl616_nethub
+rm -rf "$DRV"; mkdir -p "$DRV"
+cp "$HERE"/rtsmart/drivers/bl616_nethub/* "$DRV/"
+cp "$HERE/../bl616_wifi/wifi_ctrl_proto.h" "$DRV/"
+python3 - "$RTT/drivers/extdrv/Kconfig" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+line = '    source "drivers/extdrv/bl616_nethub/Kconfig"\n'
+if line not in s:
+    a = '    source "drivers/extdrv/esp_hosted_mcu/Kconfig"\n'
+    assert s.count(a) == 1, 'extdrv/Kconfig changed, cannot add the BL616 driver'
+    open(p, 'w').write(s.replace(a, a + line))
+PY
+
+# RT-Thread SDIO core: the BL616 SDU function 1 CIS has no FUNCE tuple, so the core reads a
+# max block size of 0 and refuses the function. Give it the 512-byte block of its port FIFO
+# and the 200 ms enable timeout Bouffalo's own host driver sets for the same reason.
+SDIOC=$SDK/src/rtsmart/rtsmart/kernel/rt-thread/components/drivers/sdio/sdio.c
+grep -q 'LEAKCAM: BL616 SDU' "$SDIOC" || python3 - "$SDIOC" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = '        ret = sdio_read_cis(func);\n'
+b = a + ('        /* LEAKCAM: BL616 SDU function 1 (424c:0606) has no FUNCE tuple */\n'
+         '        if (ret == RT_EOK && !func->max_blk_size &&\n'
+         '            ((func->manufacturer == 0x424c && func->product == 0x0606) ||\n'
+         '             (!func->product && card->cis.manufacturer == 0x424c &&\n'
+         '              card->cis.product == 0x0606)))\n'
+         '        {\n'
+         '            func->max_blk_size = 512;\n'
+         '            if (!func->enable_timeout_val)\n'
+         '                func->enable_timeout_val = 200;\n'
+         '        }\n')
+assert s.count(a) == 1, 'sdio.c changed, cannot apply the BL616 FUNCE patch'
+open(p, 'w').write(s.replace(a, b))
+PY
+grep -q 'LEAKCAM: BL616 SDU' "$SDIOC" || { echo "SDIO FUNCE patch not applied"; exit 1; }
 
 # 3. U-Boot/SPL: defconfig, device tree (reuses the BPI-Zero TARGET: same K230D SiP board code)
 cp "$HERE/uboot/configs/k230d_leakcam_defconfig" "$UB/configs/"
