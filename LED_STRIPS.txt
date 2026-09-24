@@ -11,8 +11,8 @@ can be switched and dimmed independently.
 
   4 strips x (2 white + 2 IR) = 8 white + 8 IR.
 
-  White chain: U14 (TPS61160) -> J1 -> strip A -> B (camera 1) -> C -> D (camera 2) -> J1
-  IR chain:    U15 (TPS61160) -> J2 -> strip A -> B (camera 1) -> C -> D (camera 2) -> J2
+  White chain: U14 (TPS61161) -> J1 -> strip A -> B (camera 1) -> C -> D (camera 2) -> J1
+  IR chain:    U15 (TPS61161) -> J2 -> strip A -> B (camera 1) -> C -> D (camera 2) -> J2
 
   Each strip carries both chains: 4 wire pads, one "in" pair at one end (W+, IR+), one "out" pair
   at the other end (W-, IR-). The return wire of each chain runs back beside the forward wires;
@@ -24,7 +24,7 @@ can be switched and dimmed independently.
 2. Electrical (set on the main board, LEDS.SchDoc)
 --------------------------------------------------
 
-  Design rule: maximum current. R_FB sets a target at the TPS61160's own limit on a typical board
+  Design rule: maximum current. R_FB sets a target at the TPS61161's own limit on a typical board
   with a nominal battery; above that the driver runs in its switch current limit and the LEDs get
   whatever it can deliver. Firmware backs off with PWM duty where less light is wanted.
 
@@ -50,6 +50,8 @@ can be switched and dimmed independently.
 
   Running in current limit is safe and designed-in: cycle-by-cycle switch limit (0.84 A max),
   output held by the LED string far below OVP (37 V min), so open-LED protection does not trip.
+  The part must be the TPS61161 (38 V OVP): the TPS61160 trips at 25-27 V, inside the white
+  chain's 22-26 V range. Same WSON-6 package, pinout and footprint (C324075).
   Only effect: the current follows battery voltage instead of R_FB. imgdiff normalises frame
   gain, so wake-to-wake brightness differences do not read as change.
 
@@ -60,7 +62,7 @@ can be switched and dimmed independently.
     - Battery (1000 mAh LiPo via bq24072, BAT discharge rating 4.5 A): ~1 A for both drivers
       plus the K230, ~1.5 A total; ~0.3-0.4 V sag on a low cell. Rails keep regulating
       (TPS62823 >= 2.4 V, TPS63802 >= 1.3 V).
-    - TPS61160 soft start: half current limit for the first 5 ms, then full; the capture tool
+    - TPS61161 soft start: half current limit for the first 5 ms, then full; the capture tool
       waits 10 ms before streaming and drops ~12 frames for AE anyway.
 
   PWM back-off: -b white%,ir% in leakcam_capture. 100 % = as much as the driver gives. Duty is
