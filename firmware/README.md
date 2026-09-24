@@ -128,6 +128,19 @@ The BL616 is also the K230's Wi-Fi (SDIO, `examples/wifi/sdio_wifi` with the `ne
 driver). There is one BL616 firmware, so in production this power manager becomes a task inside
 the SDIO Wi-Fi application, and the Wi-Fi low-power firmware and this HBN policy have to agree.
 
+### K230 capture and image history (`k230_capture/`, Linux PoC)
+- `leakcam_capture`: both OV5647s through the vvcam V4L2 stack (`/dev/video0`, `/dev/video3`,
+  1280x960 binned), white and IR chains on during the shot with separate PWM brightness
+  (`-b white%,ir%`, 25 kHz on GPIO61/GPIO60), frames reduced to 320x240 and compared with the last
+  wake and with a baseline (16x12 blocks, image-circle mask, gain normalised). Exit 10 = change.
+- History on the SPI NAND, because the K230 loses its RAM at every power-off: per camera a
+  keyframe (whole 1280x960 luminance, zlib) and deltas holding only the changed 80x80 blocks;
+  new keyframe on more than half the image changed or after 96 deltas; 32 MB quota per camera,
+  oldest whole group deleted first. Every file is written tmp + fsync + rename with a CRC.
+- `leakcam_hist list <cam>` / `get <cam> <seq> out.pgm` rebuilds any stored frame.
+- Open: the K230 has no wall clock after power-up (record times need the BL616 RTC over the link);
+  sequence order is correct regardless.
+
 ## How this was verified
 - Sequence: `sim/power_sequence.py`, datasheet timings (TPS62823 SLVSDV8, TPS63802 SLVSEU9D) and
   schematic R/C values. Off-state rail loads are unknown and swept.
@@ -136,6 +149,9 @@ the SDIO Wi-Fi application, and the Wi-Fi low-power firmware and this HBN policy
 - Link protocol: BL616 parser tested on the host against agent-formatted frames mixed with boot
   noise, bad checksums and over-long lines.
 - K230 agent: builds natively with `-Wall -Wextra -Werror`; not run on a K230.
+- K230 capture: builds natively with `-Werror`; `make test` checks the change detector (noise,
+  exposure, puddle, mask, torn reference) and the history (keyframe + stacked deltas rebuild
+  byte-exact, policy, torn delta, stale tmp, quota), the latter also under ASan/UBSan. No camera run.
 - AHT20: `aht20.c` compiled against the SDK I2C driver; CRC, frame layout and conversions tested on
   the host against the datasheet's own example (ST 0x2FFAB = -12.5 C) and the CRC-8 check value.
 - BLE mode: `ble_pairing.c` and `main.c` compiled against the SDK's BLE host, controller, RF and
