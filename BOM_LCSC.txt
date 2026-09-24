@@ -6,7 +6,7 @@ qty   LCSC#       Basic/Ext value                        link                   
 1     C41368035   Extended  ai-m62-cbs(blifn4)           https://www.lcsc.com/product-detail/C41368035.html Ai-M62-CBS(BLIFN4)  (U11)
 2     C28323      Basic     1uF 0805                     https://www.lcsc.com/product-detail/C28323.html    CL21B105KBFNNNE  (C97 C101)
 53    C2903663    Extended  100n 0201                    https://www.lcsc.com/product-detail/C2903663.html  TCC0201X5R104K160ZT  (C10 C12 C13 C25 C26 C27 C28 C29 C30 C31 C37 C39 C40 C42 C43 C44 C45 C46 C47 C48 C49 C51 C52 C53 C54 C55 C56 C57 C58 C63 C65 C66 C67 C68 C69 C70 C71 C72 C73 C74 C75 C76 C77 C78 C79 C80 C81 C82 C84 C85 C93 C94 C100)
-13    C307331     Basic     100n                         https://www.lcsc.com/product-detail/C307331.html   CL05B104KB54PNC  (C5 C6 C7 C8 C9 C23 C24 C32 C88 C92 C95 C109 CT1)
+12    C307331     Basic     100n                         https://www.lcsc.com/product-detail/C307331.html   CL05B104KB54PNC  (C5 C6 C7 C8 C9 C23 C24 C32 C88 C92 C95 C109)
 2     C1546       Basic     100pf                        https://www.lcsc.com/product-detail/C1546.html     0402CG101J500NT  (C21 C22)
 2     C1547       Basic     12p                          https://www.lcsc.com/product-detail/C1547.html     0402CG120J500NT  (C35 C36)
 5     C1554       Basic     20p                          https://www.lcsc.com/product-detail/C1554.html     0402CG200J500NT  (C33 C34 C98 C111 C112)
@@ -30,6 +30,7 @@ qty   LCSC#       Basic/Ext value                        link                   
 1     C22769      Extended  1.5R                         https://www.lcsc.com/product-detail/C22769.html    0603WAF150KT5E  (R68)
 1     C23157      Extended  3R                           https://www.lcsc.com/product-detail/C23157.html    0603WAF300KT5E  (R66)
 1     C2965580    Extended  XL7EL89CKI-111YLC-24M        https://www.lcsc.com/product-detail/C2965580.html  XL7EL89CKI-111YLC-24M  (Y2)
+10    C19185834   Extended  jnj-ltji0112w120/35mil/845-8 https://www.lcsc.com/product-detail/C19185834.html JNJ-LTJI0112W120/35mil/845-860nm  (LED3 LED6 LED7 LED10 LED11 LED14 LED15 LED16)
 3     C157932     Extended  S2B-PH-K-S(LF)(SN)           https://www.lcsc.com/product-detail/C157932.html   S2B-PH-K-S-GW  (S1 S2 S3)
 1     C42414902   Extended  k230d                        https://www.lcsc.com/product-detail/C42414902.html K230D  (U3)
 4     C25867      Basic     1.5k                         https://www.lcsc.com/product-detail/C25867.html    0402WGF1501TCE  (R5 R12 RD1 RD2)
@@ -54,12 +55,11 @@ qty   LCSC#       Basic/Ext value                        link                   
 1     C129319     Extended  BQ24072TRGTR                 https://www.lcsc.com/product-detail/C129319.html   BQ24072TRGTR  (U1)
 2     C324075     Extended  TPS61161DRVR                 https://www.lcsc.com/product-detail/C324075.html   TPS61161DRVR  (U14 U15)
 2     C165948     Extended  type-c-31-m-12               https://www.lcsc.com/product-detail/C165948.html   TYPE-C-31-M-12  (USBC1 USBC2)
+8     C3646951    Extended  xl-hd3535uwc-a2              https://www.lcsc.com/product-detail/C3646951.html  XL-HD3535UWC-A2  (LED1 LED2 LED4 LED5 LED8 LED9 LED12 LED13)
 1     C3035748    Extended  ch340x                       https://www.lcsc.com/product-detail/C3035748.html  CH340X  (U2)
-10    C19185834   Extended  jnj-ltji0112w120/35mil/845-8 https://www.lcsc.com/product-detail/C19185834.html JNJ-LTJI0112W120/35mil/845-860nm  (LED3 LED6 LED7 LED10 LED11 LED14 LED15 LED16)
 1     C51928208   Extended  msm381acb026                 https://www.lcsc.com/product-detail/C51928208.html MSM381ACB026  (U13)
 1     C17626844   Extended  w25n02kvzeir                 https://www.lcsc.com/product-detail/C17626844.html W25N02KVZEIR  (U16)
-8     C3646951    Extended  xl-hd3535uwc-a2              https://www.lcsc.com/product-detail/C3646951.html  XL-HD3535UWC-A2  (LED1 LED2 LED4 LED5 LED8 LED9 LED12 LED13)
 
-NO PART: ANT1 MIFI, B1_N TESTP, B1_P TESTP, J1 Connector 2PIn, J2 Connector 2PIn, J3 Connector 2PIn, J6 Connector 2PIn, J7 Connector 2PIn, J8 Connector 2PIn, J9 Connector 2PIn, J10 Connector 2PIn, J11 Connector 2PIn, J12 Connector 2PIn, JB1 Connector 2PIn, JB2 Connector 2PIn, JT Connector 2PIn, PR1 CON5P
+NO PART: ANT1 MIFI, B1_N TESTP, B1_P TESTP, CT1 NF, J1 Connector 2PIn, J2 Connector 2PIn, J3 Connector 2PIn, J6 Connector 2PIn, J7 Connector 2PIn, J8 Connector 2PIn, J9 Connector 2PIn, J10 Connector 2PIn, J11 Connector 2PIn, J12 Connector 2PIn, JB1 Connector 2PIn, JB2 Connector 2PIn, JT Connector 2PIn, PR1 CON5P
 
-TOTAL 47.97 USD
+TOTAL 47.89 USD
