@@ -331,22 +331,16 @@ Checked against the schematic on 2026-09-24.
   (pad 1 anode, pad 3 cathode, pad 2 centre) differs from its datasheet but agrees between symbol
   and footprint.
 
-**Still to do:**
-1. **MIC_BIAS decoupling.** A small cap (0402, 1 µF C52923 or 4.7 µF C23733, both Basic)
-   within a few mm of U3.A4, between the ball and FB4. A4 is an outer-row ball, so it can sit
-   just outside the package. Design guide: "Place a large capacitance low-ESR capacitor on the
-   MICBIAS pin"; the EVB has 4.7 µF + 100 nF there. C96 and the other mic-supply bypass caps stay
-   at the mic, but FB4 hides them from the codec's bias regulator. If there is no room, FB4 →
-   0 Ω is the fallback.
-2. **Mic DC blocks (optional, lower priority).** Move C97/C101 toward U3 (design guide: "Place
-   the DC blocking capacitors for audio input close to the K230 chip"), so the long run is the
-   mic's low-impedance side, not the biased codec input. Route C101's ground end back to U13's
-   GND pad beside MICPL. They are 0805 today; 1 µF 0402 fits better (footprint change).
-3. **PR1 supply pad.** Add a sixth pad for 3V3_SLEEP, so a fixture can hold AI_BOOT high
-   without a wire.
-4. **Regenerate the fab files after 1-3.** Push the schematic to the PCB and regenerate the
-   gerbers, pick-and-place and BOM_ASSEMBLY. The current outputs already contain the earlier
-   changes (RBT1, R52/C4/C9, TPS61161, R66/R68).
+- MIC_BIAS decoupling: CB2 100 nF 0201 behind the U3.A4 ball (0.3 mm), CB1 10 µF 0603 4 mm
+  away, both before FB4.
+- PR1 pad 6 on 3V3_SLEEP, so a fixture can hold AI_BOOT high.
+- Fab outputs regenerated from the PCB (2026-09-24): gerber zip, BOM_ASSEMBLY and
+  PickPlace_MIFA (244 placements, 56 part numbers, matched to the schematic and the ODB++ board).
+
+**Optional, not done:** move the mic DC blocks C97/C101 toward U3 (design guide: "Place the DC
+blocking capacitors for audio input close to the K230 chip"), so the long run is the mic's
+low-impedance side. They sit about 15 mm from U3, at the mic. If moved, route C101's ground end
+back to U13's GND pad beside MICPL; 1 µF 0402 fits better than the 0805 (footprint change).
 
 ## 7. Open firmware work
 
