@@ -332,10 +332,16 @@ Checked against the schematic on 2026-09-24.
   and footprint.
 
 **Still to do:**
-1. **MIC_BIAS decoupling.** Add 1-4.7 µF directly at the U3.A4 ball. Today only FB4 connects
-   there, and C96 sits about 20 mm away.
-2. **Mic DC blocks.** Move C97/C101 next to the K230. They are about 14 mm away today, at the
-   mic end.
+1. **MIC_BIAS decoupling.** A small cap (0402, 1 µF C52923 or 4.7 µF C23733, both Basic)
+   within a few mm of U3.A4, between the ball and FB4. A4 is an outer-row ball, so it can sit
+   just outside the package. Design guide: "Place a large capacitance low-ESR capacitor on the
+   MICBIAS pin"; the EVB has 4.7 µF + 100 nF there. C96 and the other mic-supply bypass caps stay
+   at the mic, but FB4 hides them from the codec's bias regulator. If there is no room, FB4 →
+   0 Ω is the fallback.
+2. **Mic DC blocks (optional, lower priority).** Move C97/C101 toward U3 (design guide: "Place
+   the DC blocking capacitors for audio input close to the K230 chip"), so the long run is the
+   mic's low-impedance side, not the biased codec input. Route C101's ground end back to U13's
+   GND pad beside MICPL. They are 0805 today; 1 µF 0402 fits better (footprint change).
 3. **PR1 supply pad.** Add a sixth pad for 3V3_SLEEP, so a fixture can hold AI_BOOT high
    without a wire.
 4. **Regenerate the fab files after 1-3.** Push the schematic to the PCB and regenerate the
