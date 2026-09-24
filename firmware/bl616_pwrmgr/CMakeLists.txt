@@ -5,6 +5,7 @@ find_package(bouffalo_sdk REQUIRED HINTS $ENV{BL_SDK_BASE})
 sdk_add_include_directories(.)
 
 target_sources(app PRIVATE
+                   aon_state.c
                    k230_power.c
                    k230_link.c
                    leak_wake.c

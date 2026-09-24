@@ -123,6 +123,23 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
   is only the second step. Worth adding only if a fast power-cycle matters or the off-state load
   turns out lighter than 50 uA at bring-up (check item 2). They do not fix finding 2.
 
+### Wall clock and state across hibernate (`aon_state.c`)
+- **The K230 cannot keep time between wakes.** Its RTC runs from AVDD1P8_RTC on the switched 1V8
+  rail, so the Y1 crystal stops with the K230 at every power-off.
+- **The BL616 keeps it.** Its HBN RTC is a 40-bit counter on the Y3 32.768 kHz crystal that keeps
+  counting through HBN level 0 and software resets; `pm_hbn_mode_enter()` only adds a compare
+  value to it. The wall clock is a (Unix seconds, RTC count) reference pair next to it, rebased
+  at every boot (the counter wraps after 388 days). Drift: the crystal's, about 1.7 s/day.
+- **Time sources:** the K230 sends `TIME,<unix s>` once it is NTP-synchronised (Wi-Fi); the BL616
+  sends `TIME` after `WAKE` whenever its clock is valid, and the agent sets the system clock from
+  it. The clock is lost only with 3V3_SLEEP (battery out) or an EN reset; it stays invalid, and no
+  TIME is sent, until the K230 has real time again.
+- **Found and fixed:** the session flags used `HBN_Set_Status_Flag()` = HBN_RSV0, which
+  `pm_hbn_mode_enter()` overwrites with its own HBN_STATUS_ENTER_FLAG on the way into hibernate:
+  the humidity wake count, leak-reported and USB-mode flags were lost at every sleep. Flags and
+  clock now live in the last 64 bytes of HBN RAM (retention enabled before every sleep, magic +
+  CRC-32); HBN_RSV1 (SDK wake callback) and RSV3 (ROM patch code) are not free either.
+
 ### Architecture consequence
 The BL616 is also the K230's Wi-Fi (SDIO, `examples/wifi/sdio_wifi` with the `nethub` Linux host
 driver). There is one BL616 firmware, so in production this power manager becomes a task inside
@@ -138,8 +155,8 @@ the SDIO Wi-Fi application, and the Wi-Fi low-power firmware and this HBN policy
   new keyframe on more than half the image changed or after 96 deltas; 32 MB quota per camera,
   oldest whole group deleted first. Every file is written tmp + fsync + rename with a CRC.
 - `leakcam_hist list <cam>` / `get <cam> <seq> out.pgm` rebuilds any stored frame.
-- Open: the K230 has no wall clock after power-up (record times need the BL616 RTC over the link);
-  sequence order is correct regardless.
+- Record times come from the BL616 (see "Wall clock" below): the K230 sets its clock from the
+  TIME frame at every wake.
 - RT-Smart build (k230_rtos_sdk): `vicap_cap.c` (MPP VICAP, both sensors in offline mode),
   `led_rtsmart.c` (`/dev/pwm`), bundled miniz; board port steps in `k230_capture/rtsmart/README.md`.
 
@@ -154,6 +171,8 @@ the SDIO Wi-Fi application, and the Wi-Fi low-power firmware and this HBN policy
 - K230 capture: builds natively with `-Werror`; `make test` checks the change detector (noise,
   exposure, puddle, mask, torn reference) and the history (keyframe + stacked deltas rebuild
   byte-exact, policy, torn delta, stale tmp, quota), the latter also under ASan/UBSan. No camera run.
+- Always-on state: `test/test_aon.c` on the host (clock across the 40-bit wrap, 144 rebases
+  without drift, counter-reset detection, CRC); `aon_state.c` compiled against the SDK HBN/RTC headers.
 - AHT20: `aht20.c` compiled against the SDK I2C driver; CRC, frame layout and conversions tested on
   the host against the datasheet's own example (ST 0x2FFAB = -12.5 C) and the CRC-8 check value.
 - BLE mode: `ble_pairing.c` and `main.c` compiled against the SDK's BLE host, controller, RF and
@@ -168,7 +187,9 @@ the SDIO Wi-Fi application, and the Wi-Fi low-power firmware and this HBN policy
 3. Check IO01 really follows 3V3 while the K230 is off (it relies on K230 GPIO2 staying high-impedance).
 4. Confirm the HBN wake reason survives the reboot (`wake_reason_get()`); fall back to
    `HBN_Get_Reset_Event()` if the BootROM clears the interrupt state.
-5. Measure HBN current with ACOMP1 enabled against the datasheet's 2.1 uA.
+5. Measure HBN current with ACOMP1 enabled against the datasheet's 2.1 uA (and with HBN RAM
+   retention on). Check the aon block survives an HBN wake and a software reset, and the RTC
+   drift over a day against NTP.
 6. Measure K230 boot time from SPI NAND to agent `READY`; tighten `BOOT_TIMEOUT_MS` (90 s now).
 7. Plug USB during HBN: the BL616 must boot into BLE mode within about a second. Measure HBN current
    with both comparators enabled.

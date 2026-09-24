@@ -9,3 +9,5 @@
 /k230_capture/leakcam_hist
 /k230_capture/test/test_imgdiff
 /k230_capture/test/test_history
+/bl616_pwrmgr/test/test_aht20
+/bl616_pwrmgr/test/test_aon

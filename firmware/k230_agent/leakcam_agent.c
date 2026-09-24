@@ -5,6 +5,8 @@
  *  - talks to the BL616 over UART1 (GPIO40 TXD / GPIO41 RXD), protocol in bl616_pwrmgr/k230_link.h;
  *  - runs the capture hook for the wake reason, then asks to be powered off; the BL616's last
  *    humidity sample (ENV frame) is passed to the hook as LEAKCAM_RH / LEAKCAM_T;
+ *  - sets the system clock from the BL616's TIME frame (the K230 has no running clock after
+ *    power-up), and sends TIME back when the K230 itself is NTP-synchronised;
  *  - before power is cut: sync, remount / read-only, sync, send HALTED.
  *
  * Needs in the device tree: uart1 enabled on IO40/IO41, and IO2 muxed as GPIO (its reset
@@ -27,6 +29,7 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/mount.h>
+#include <sys/timex.h>
 #include <sys/wait.h>
 #include <termios.h>
 #include <time.h>
@@ -198,6 +201,40 @@ static bool link_recv(char *cmd, size_t cmdlen, char *arg, size_t arglen, int ti
     }
 }
 
+/* ---------------- clock ---------------- */
+
+/* earliest plausible time, 2026-01-01T00:00:00Z: anything before is a default, not real time */
+#define EPOCH_MIN 1767225600L
+
+/* true when the kernel clock is disciplined by NTP (chrony / systemd-timesyncd clear STA_UNSYNC) */
+static bool ntp_synced(void)
+{
+    struct timex t;
+    memset(&t, 0, sizeof(t));
+    int s = adjtimex(&t);
+    return s >= 0 && s != TIME_ERROR && !(t.status & STA_UNSYNC);
+}
+
+/* TIME,<unix s> from the BL616: its crystal clock is better than our power-up default */
+static void clock_from_bl616(const char *arg)
+{
+    char *end;
+    long v = strtol(arg, &end, 10);
+    if (*end || v < EPOCH_MIN) {
+        logmsg("TIME %s from BL616 ignored", arg);
+        return;
+    }
+    if (ntp_synced()) {
+        logmsg("TIME from BL616 ignored, NTP already synchronised");
+        return;
+    }
+    struct timespec ts = { .tv_sec = v, .tv_nsec = 0 };
+    if (clock_settime(CLOCK_REALTIME, &ts) < 0)
+        logmsg("clock_settime: %s", strerror(errno));
+    else
+        logmsg("clock set from BL616: %ld", v);
+}
+
 /* ---------------- shutdown ---------------- */
 
 static void make_safe_for_power_cut(void)
@@ -327,8 +364,17 @@ int main(int argc, char **argv)
         logmsg("no WAKE from BL616, assuming cold start");
     logmsg("wake reason: %s", reason);
 
-    /* ENV,<rh_x10>,<t_x10> follows WAKE when the BL616 has a fresh AHT20 sample */
-    if (got_wake && link_recv(cmd, sizeof(cmd), arg, sizeof(arg), 300) && strcmp(cmd, "ENV") == 0) {
+    /* after WAKE, within a moment: ENV,<rh_x10>,<t_x10> (fresh AHT20 sample) and TIME,<unix s>
+     * (BL616 clock valid), each optional, in either order */
+    uint64_t follow_end = now_ms() + 300;
+    while (got_wake && now_ms() < follow_end &&
+           link_recv(cmd, sizeof(cmd), arg, sizeof(arg), (int)(follow_end - now_ms()))) {
+        if (strcmp(cmd, "TIME") == 0) {
+            clock_from_bl616(arg);
+            continue;
+        }
+        if (strcmp(cmd, "ENV") != 0)
+            continue;
         char *comma = strchr(arg, ',');
         long rh = strtol(arg, NULL, 10), t = comma ? strtol(comma + 1, NULL, 10) : -9999;
         /* AHT20 range: 0-100 %RH, -40..+85 C; anything else is a corrupted frame */
@@ -346,6 +392,16 @@ int main(int argc, char **argv)
     if (!shutdown_req) {
         int rc = run_hook(reason, &sleep_s);
         logmsg("hook exited %d, next wake in %u s", rc, sleep_s);
+    }
+
+    /* real time learned during the session (NTP over Wi-Fi): hand it to the BL616, whose clock
+     * then survives until the next battery change and corrects its crystal drift */
+    if (!shutdown_req && ntp_synced()) {
+        char t[16];
+        snprintf(t, sizeof(t), "%ld", (long)time(NULL));
+        link_send("TIME", t);
+        if (!link_recv(cmd, sizeof(cmd), arg, sizeof(arg), 1000) || strcmp(cmd, "ACK") != 0)
+            logmsg("no ACK for TIME");
     }
 
     if (!shutdown_req) {
