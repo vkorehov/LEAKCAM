@@ -6,10 +6,11 @@
  *   <dir>/cam<N>.hist   what the stored history shows (history.h): the last keyframe with every
  *                       stored delta applied, reduced; decides which blocks the next delta holds
  *
- * Each file is a 32-byte header (magic, version, size, capture time, CRC-32) plus the
- * IMGDIFF_W x IMGDIFF_H luminance payload, 76.8 KB. Writes go to a temporary file, are fsync'd,
- * renamed over the old one and the directory is fsync'd, so a power cut leaves either the old or
- * the new file, never a torn one; a bad CRC on load is treated as "no reference".
+ * Each reference is two slot files, <name>.0 and <name>.1: a 32-byte header (magic, version,
+ * size, capture time, CRC-32, generation) plus the IMGDIFF_W x IMGDIFF_H luminance payload,
+ * 76.8 KB. A save goes to the older slot (tmp file, fsync, unlink, rename, directory fsync) and
+ * a load takes the newest slot whose CRC checks. That survives a power cut at any point on both
+ * ext4/UBIFS and UFFS, where rename() cannot replace an existing file.
  */
 #ifndef LEAKCAM_REFSTORE_H
 #define LEAKCAM_REFSTORE_H

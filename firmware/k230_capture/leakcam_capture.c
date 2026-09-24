@@ -42,71 +42,17 @@
 
 #include "history.h"
 #include "imgdiff.h"
+#include "led.h"
 #include "refstore.h"
-#include "v4l2cap.h"
+#include "cap.h"
 
-#define LED_SOFTSTART_US 10000   /* TPS61161: 32 steps x 213 us = 6.8 ms to full current */
-/* 25 kHz: inside the TPS61161's 5-100 kHz dimming range, and every low phase (< 40 us) is far
- * shorter than the 260 us that would select EasyScale mode after enable, or the 2.5 ms that
- * shuts the driver down. Both channels share one K230 PWM controller, so one period for both. */
-#define LED_PWM_PERIOD_NS 40000
-
+#ifdef LEAKCAM_RTSMART
+static const char *state_dir = "/sdcard/leakcam";    /* UFFS on NAND partition nand1 */
+#else
 static const char *state_dir = "/var/lib/leakcam";
+#endif
 static unsigned pwm_chip = 0;                        /* K230 pwm0 controller: PWM0..PWM2 */
-enum { LED_WHITE, LED_IR };
-static unsigned led_channel[2] = { 1, 0 };           /* white: PWM1 = GPIO61 = LED_CTL2, IR: PWM0 = GPIO60 = LED_CTL1 */
-static const char *const led_name[2] = { "white", "ir" };
 static unsigned led_percent[2] = { 100, 100 };
-
-static int sysfs_write(const char *path, const char *val)
-{
-    int fd = open(path, O_WRONLY | O_CLOEXEC);
-    if (fd < 0)
-        return -1;
-    ssize_t n = write(fd, val, strlen(val));
-    close(fd);
-    return n == (ssize_t)strlen(val) ? 0 : -1;
-}
-
-static int pwm_attr(unsigned ch, const char *attr, unsigned long v)
-{
-    char path[96], val[24];
-    snprintf(path, sizeof(path), "/sys/class/pwm/pwmchip%u/pwm%u/%s", pwm_chip, ch, attr);
-    snprintf(val, sizeof(val), "%lu", v);
-    return sysfs_write(path, val);
-}
-
-static int led_set(bool on)
-{
-    int rc = 0;
-    for (int i = 0; i < 2; i++) {
-        unsigned ch = led_channel[i];
-        char dir[64], exp[64], num[8];
-        snprintf(dir, sizeof(dir), "/sys/class/pwm/pwmchip%u/pwm%u", pwm_chip, ch);
-        if (access(dir, F_OK) != 0) {
-            snprintf(exp, sizeof(exp), "/sys/class/pwm/pwmchip%u/export", pwm_chip);
-            snprintf(num, sizeof(num), "%u", ch);
-            if (sysfs_write(exp, num) < 0) {
-                fprintf(stderr, "led %s: export pwm%u on pwmchip%u failed (pwm0 node disabled, or "
-                                "GPIO6%u not muxed as PWM%u?)\n", led_name[i], ch, pwm_chip, ch, ch);
-                rc = -1;
-                continue;
-            }
-            usleep(10000);                        /* udev creates the attributes asynchronously */
-        }
-        unsigned pct = on ? led_percent[i] : 0;
-        /* period before duty: duty may never exceed the period the driver holds */
-        if (pwm_attr(ch, "period", LED_PWM_PERIOD_NS) < 0 ||
-            pwm_attr(ch, "duty_cycle", (unsigned long)LED_PWM_PERIOD_NS * pct / 100u) < 0 ||
-            pwm_attr(ch, "enable", on && pct ? 1 : 0) < 0) {
-            fprintf(stderr, "led %s: configuring pwm%u failed: %s\n", led_name[i], ch, strerror(errno));
-            rc = -1;
-        }
-    }
-    if (on && rc == 0)
-        usleep(LED_SOFTSTART_US);
-    return rc;
-}
 
 static void print_result(unsigned slot, const char *against, const struct imgdiff_result *r, bool have)
 {
@@ -143,7 +89,7 @@ static void apply_blocks(uint8_t *hist, const uint8_t *cur,
 
 int main(int argc, char **argv)
 {
-    unsigned nodes[CAP_MAX_CAMS] = { 0, 3 };  /* slot 0 = CSI0 = CAM2 (J4), slot 1 = CSI2 = CAM1 (J5) */
+    unsigned nodes[CAP_MAX_CAMS] = CAP_DEFAULT_NODES;
     int ncam = 2;
     unsigned width = 1280, height = 960;      /* OV5647 2x2 binned, full field of view */
     unsigned settle = 12;                     /* ~0.3 s at 45 fps */
@@ -205,11 +151,11 @@ int main(int argc, char **argv)
     int status = 1;
     if (cap_open_all(cams, ncam, width, height) < 0)
         goto out;
-    if (use_led && led_set(true) < 0)
+    if (use_led && led_set(true, led_percent, pwm_chip) < 0)
         fprintf(stderr, "led: continuing without full illumination\n");
     int grab = cap_grab_all(cams, ncam, settle, 5000);
     if (use_led)
-        led_set(false);                           /* duty 0 + disable: CTRL low, driver shuts down */
+        led_set(false, led_percent, pwm_chip);    /* duty 0 + disable: CTRL low, drivers shut down */
     if (grab < 0)
         goto out;
 
@@ -217,7 +163,7 @@ int main(int argc, char **argv)
     bool any_change = false;
     status = 0;
     for (int i = 0; i < ncam; i++) {
-        unsigned slot = cams[i].node / 3;
+        unsigned slot = cams[i].slot;
         uint8_t cur[IMGDIFF_W * IMGDIFF_H], ref[IMGDIFF_W * IMGDIFF_H];
         if (imgdiff_reduce(cams[i].luma, (int)cams[i].width, (int)cams[i].height,
                            (int)cams[i].width, cur) < 0) {

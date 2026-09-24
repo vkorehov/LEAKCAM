@@ -129,7 +129,9 @@ int main(void)
      *    the keyframe and earlier frames still rebuild */
     char path[400];
     snprintf(path, sizeof(path), "%s/hist0/%08u.D", dir, 3u);
-    CHECK(truncate(path, 100) == 0, "truncate");
+    struct stat st;
+    CHECK(stat(path, &st) == 0 && st.st_size > 60, "delta size");
+    CHECK(truncate(path, st.st_size / 2) == 0, "truncate");   /* torn in the middle */
     uint8_t *got;
     unsigned w, h;
     time_t t;
