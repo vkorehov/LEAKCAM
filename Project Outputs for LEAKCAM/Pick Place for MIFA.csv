@@ -5,13 +5,13 @@ C:\hw\LEAKCAM\Project Outputs for LEAKCAM\Pick Place for MIFA.csv
 File Design Information:
 
 Date:       25/09/26
-Time:       05:19
-Revision:   22bd4527feb5de914ef391996fd0b33ddaf1718c
+Time:       06:12
+Revision:   7c6820081446a5a797cf5141a09d9be3503c4db8
 Variant:    No variations
 Units used: mil
 
 "Designator","Comment","Layer","Footprint","Center-X(mil)","Center-Y(mil)","Rotation","Description"
-"R54","22R","BottomLayer","RES_0402","1154.140","1739.219","90","C25092"
+"R54","22R","BottomLayer","RES_0402","1439.605","893.313","90","C25092"
 "CB2","100n 0201","BottomLayer","CAP_0201","1493.462","448.611","180","C2903663"
 "CB1","10uF GRM188R61A106ME69D","BottomLayer","FP-GRM188-0_15-MFG","1299.213","314.961","180","C19702"
 "LED15","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","807.087","1417.323","270","C19185834"
