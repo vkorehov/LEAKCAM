@@ -149,7 +149,7 @@ void bl616_wifi_attach(const rt_uint8_t mac[6])
                                     &bl616_wlan_ops, RT_NULL);
     if (err != RT_EOK)
     {
-        LOG_E("WLAN device registration failed: %d", err);
+        LOG_E("WLAN device registration failed: %d", (int)err);
         return;
     }
     /* op_send copies the frame into a transmit slot before it returns */
@@ -157,7 +157,7 @@ void bl616_wifi_attach(const rt_uint8_t mac[6])
     registered = RT_TRUE;
     err = rt_wlan_set_mode(wlan.device.parent.name, RT_WLAN_STATION);
     if (err != RT_EOK)
-        LOG_E("station mode failed: %d", err);
+        LOG_E("station mode failed: %d", (int)err);
     LOG_I("station %02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4],
           mac[5]);
     /* a WCP_STATUS may have come in before the device existed */
@@ -172,6 +172,8 @@ void bl616_wifi_detach(void)
     rt_wlan_dev_unregister(&wlan);
     registered = RT_FALSE;
     told_up = RT_FALSE;
+    /* a later attach must not report the old link as up: the BL616 sends a fresh STATUS */
+    rt_memset(&status, 0, sizeof(status));
 }
 
 void bl616_wifi_ctrl_up(void)

@@ -281,12 +281,21 @@ Rev 1 adds a sixth PR1 pad for 3V3_SLEEP, so a pogo fixture can drive BOOT.
 ## 5. Host tests (no hardware)
 
 ```
-make -C firmware/k230_capture test          # change detector, image history (zlib and miniz builds)
-make -C firmware/bl616_pwrmgr/test          # link parser, AHT20 maths, always-on clock/state
+make -C firmware/k230_capture test          # change detector, image history (zlib and miniz builds),
+                                            # image quality + LED step, audio WAV/level meter
+make -C firmware/bl616_pwrmgr/test          # link protocol (seq/ACK/NAK/resends), AHT20 maths, always-on clock/state
+make -C firmware/k230_agent test            # agent link code against the BL616's over a lossy socket pair
+make -C firmware/k230_board/rtsmart/drivers/bl616_nethub/test   # K230 Wi-Fi driver on a simulated BL616 SDU
+make -C firmware/bl616_wifi/test            # BL616 wifi_link.c: receive filter, control channel, protocol layout
 make -C firmware/k230_capture clean; make -C firmware/bl616_pwrmgr/test clean
+make -C firmware/k230_board/rtsmart/drivers/bl616_nethub/test clean; make -C firmware/bl616_wifi/test clean
+make -C firmware/k230_agent clean
 ```
 
-Both pass as of 2026-09-24. Run them before every firmware commit.
+The driver and `wifi_link.c` are compiled unchanged against small stand-ins for the SDK headers
+(`test/stub/`); `install.sh` copies only the driver's own files, not its `test/` folder. The
+NetHub test runs the driver's worker thread in lockstep with the test on a virtual clock, so it
+is deterministic. All pass as of 2026-09-25. Run them before every firmware commit.
 
 ## 6. Everyday loop
 
