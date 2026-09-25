@@ -232,9 +232,17 @@ the kernel NAND glue is patched to report 64.
 
 ### 5.4 K230-BL616 link and time
 
-- **The UART carries session control.** UART1 at 115200 8N1, frames `$CMD[,args]*XX` with an
-  XOR checksum; invalid lines are dropped. It is available as soon as RT-Smart runs, without
-  Wi-Fi.
+- **The UART carries session control.** UART1 at 115200 8N1, frames `$<seq>,<CMD>[,args]*XX`
+  with an XOR checksum; invalid lines are dropped. It is available as soon as RT-Smart runs,
+  without Wi-Fi.
+- **Every command is answered.** `ACK,<seq>` means accepted; `NAK,<seq>` means received but refused,
+  for example a `TIME` before 2026 or an `ENV` out of the AHT20 range. The sender keeps one command
+  in flight, resends it after 300 ms without an answer, and gives up after 5 sends. A NAK ends the
+  command at once. A corrupted frame gets no answer, because its seq can't be trusted, so the
+  timeout covers it. Repeats (a lost answer) get the same answer again and are not acted on twice.
+  A `READY` restarts both sequence states, unless it repeats the one just accepted. The timeout,
+  retry count and result names are defined once in `bl616_pwrmgr/k230_link.h`, which the agent
+  includes too.
   - K230 → BL616: `READY`, `SLEEP,<s>`, `HALTED`, `TIME,<unix s>`.
   - BL616 → K230: `WAKE,<cold|leak|rtc>,<unix s>`, `ENV`, `SHUTDOWN`, `ACK`.
 - **GPIO2 heartbeat.** The heartbeat is edges, not a level, because IO2 is JTAG_TCK at reset.

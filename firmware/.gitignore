@@ -11,3 +11,11 @@
 /k230_capture/test/test_history
 /bl616_pwrmgr/test/test_aht20
 /bl616_pwrmgr/test/test_aon
+/k230_capture/test/test_history_miniz
+/k230_capture/test/test_imgqual
+/k230_capture/test/test_imgqual_synth
+/k230_capture/test/test_audio
+/k230_board/rtsmart/drivers/bl616_nethub/test/test_nethub
+/bl616_wifi/test/test_wifi_link
+/k230_agent/test/test_link_e2e
+/bl616_pwrmgr/test/test_link

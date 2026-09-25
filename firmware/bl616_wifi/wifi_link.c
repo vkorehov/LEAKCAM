@@ -317,4 +317,6 @@ void wifi_link_stop(void)
     /* SDU off and its pads released; k230_power_off() then parks them in analog mode */
     if (booted)
         mr_sdio_drv_lowpower_prepare();
+    /* the next K230 session starts unheard, like the first (see set_state()) */
+    host_seen = false;
 }

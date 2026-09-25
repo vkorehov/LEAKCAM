@@ -5,8 +5,10 @@
  *  - talks to the BL616 over UART1 (GPIO40 TXD / GPIO41 RXD), protocol in bl616_pwrmgr/k230_link.h;
  *  - runs the capture hook for the wake reason, then asks to be powered off; the BL616's last
  *    humidity sample (ENV frame) is passed to the hook as LEAKCAM_RH / LEAKCAM_T;
- *  - sets the system clock from the BL616's TIME frame (the K230 has no running clock after
- *    power-up), and sends TIME back when the K230 itself is NTP-synchronised;
+ *  - sets the system clock from the time in the BL616's WAKE frame (the K230 has no running
+ *    clock after power-up), and sends TIME back when the K230 itself is NTP-synchronised;
+ *  - every frame both ways carries a sequence number and is answered ACK/NAK, with resends
+ *    (link section below, same rules as bl616_pwrmgr/k230_link.h);
  *  - before power is cut: sync, remount / read-only, sync, send HALTED.
  *
  * Needs in the device tree: uart1 enabled on IO40/IO41, and IO2 muxed as GPIO (its reset
@@ -34,6 +36,8 @@
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
+
+#include "k230_link.h"
 
 #define HEARTBEAT_HALF_PERIOD_MS 500
 #define READY_RETRY_MS           1000
@@ -136,10 +140,31 @@ static int uart_open(void)
     return tcsetattr(uart_fd, TCSANOW, &t);
 }
 
-static void link_send(const char *cmd, const char *arg)
+/* ---------------- link: $<seq>,<CMD>[,args]*XX, every command answered ACK/NAK ---------------- */
+
+/* LINK_ACK_TIMEOUT_MS, LINK_TRIES and enum link_end come from the protocol header shared
+ * with the BL616, bl616_pwrmgr/k230_link.h */
+#define LINK_INBOX          4
+
+struct frame {
+    char cmd[16];
+    char arg[32];
+    unsigned seq;
+};
+
+static unsigned tx_next;                /* our next seq, 0..255 */
+static int rx_last = -1;                /* last seq accepted from the BL616, and our answer */
+static bool rx_last_ok;
+static struct frame inbox[LINK_INBOX];  /* commands that arrived while we waited for an answer */
+static unsigned in_head, in_count;
+
+static void send_frame(unsigned seq, const char *cmd, const char *arg)
 {
     char body[64], frame[80];
-    snprintf(body, sizeof(body), arg ? "%s,%s" : "%s", cmd, arg);
+    if (arg && *arg)
+        snprintf(body, sizeof(body), "%u,%s,%s", seq, cmd, arg);
+    else
+        snprintf(body, sizeof(body), "%u,%s", seq, cmd);
     uint8_t sum = 0;
     for (const char *p = body; *p; p++)
         sum ^= (uint8_t)*p;
@@ -147,6 +172,13 @@ static void link_send(const char *cmd, const char *arg)
     if (write(uart_fd, frame, n) != n)
         logmsg("uart write: %s", strerror(errno));
     tcdrain(uart_fd);
+}
+
+static void send_answer(unsigned seq, bool ok)
+{
+    char s[4];
+    snprintf(s, sizeof(s), "%u", seq);
+    send_frame(seq, ok ? "ACK" : "NAK", s);
 }
 
 /* frames longer than the caller's buffer are rejected, never truncated into a valid-looking command */
@@ -159,8 +191,8 @@ static bool copy_field(char *dst, size_t dstlen, const char *src)
     return true;
 }
 
-/* returns true with cmd/arg filled when a valid frame arrives within timeout_ms */
-static bool link_recv(char *cmd, size_t cmdlen, char *arg, size_t arglen, int timeout_ms)
+/* returns true with f filled when a valid frame arrives within timeout_ms */
+static bool read_frame(struct frame *f, int timeout_ms)
 {
     static char line[64];
     static size_t len;
@@ -193,12 +225,101 @@ static bool link_recv(char *cmd, size_t cmdlen, char *arg, size_t arglen, int ti
             for (char *q = line; q < star; q++) sum ^= (uint8_t)*q;
             if (strtoul(star + 1, NULL, 16) != sum) continue;
             *star = 0;
-            char *comma = strchr(line, ',');
+            char *end_seq;
+            unsigned long seq = strtoul(line, &end_seq, 10);
+            if (end_seq == line || *end_seq != ',' || seq > 255) continue;
+            char *cmd = end_seq + 1, *comma = strchr(cmd, ',');
             if (comma) *comma = 0;
-            if (copy_field(cmd, cmdlen, line) && copy_field(arg, arglen, comma ? comma + 1 : ""))
+            if (*cmd && copy_field(f->cmd, sizeof(f->cmd), cmd) &&
+                copy_field(f->arg, sizeof(f->arg), comma ? comma + 1 : "")) {
+                f->seq = (unsigned)seq;
                 return true;
+            }
         }
     }
+}
+
+/* AHT20 range: 0-100 %RH, -40..+85 C; anything else is refused as a corrupted value */
+static bool env_valid(const char *arg, long *rh, long *t)
+{
+    char *comma = strchr(arg, ',');
+    *rh = strtol(arg, NULL, 10);
+    *t = comma ? strtol(comma + 1, NULL, 10) : -9999;
+    return comma && *rh >= 0 && *rh <= 1000 && *t >= -400 && *t <= 850;
+}
+
+/* answer a command from the BL616 (once per seq; a repeat gets the same answer again) and
+ * tell whether it is new and accepted, i.e. should be acted on */
+static bool accept_cmd(const struct frame *f)
+{
+    if (rx_last == (int)f->seq) {
+        send_answer(f->seq, rx_last_ok);
+        return false;
+    }
+    long rh, t;
+    rx_last = (int)f->seq;
+    rx_last_ok = strcmp(f->cmd, "ENV") != 0 || env_valid(f->arg, &rh, &t);
+    send_answer(f->seq, rx_last_ok);
+    return rx_last_ok;
+}
+
+static void inbox_put(const struct frame *f)
+{
+    if (in_count == LINK_INBOX) {
+        logmsg("link inbox full, %s dropped", f->cmd);
+        return;
+    }
+    inbox[(in_head + in_count++) % LINK_INBOX] = *f;
+}
+
+/* send a command and wait for its answer, resending up to LINK_TRIES times; commands that
+ * arrive meanwhile are answered and kept for next_cmd() */
+static enum link_end link_cmd(const char *cmd, const char *arg)
+{
+    unsigned seq = tx_next;
+    tx_next = (tx_next + 1) & 0xff;
+    for (int i = 0; i < LINK_TRIES; i++) {
+        send_frame(seq, cmd, arg);
+        uint64_t until = now_ms() + LINK_ACK_TIMEOUT_MS;
+        struct frame f;
+        while (now_ms() < until && read_frame(&f, (int)(until - now_ms()))) {
+            bool ack = strcmp(f.cmd, "ACK") == 0;
+            if (ack || strcmp(f.cmd, "NAK") == 0) {
+                if (strtoul(f.arg, NULL, 10) == seq)
+                    return ack ? LINK_ACKED : LINK_NAKED;
+                continue;               /* a stale answer */
+            }
+            if (accept_cmd(&f))
+                inbox_put(&f);
+        }
+    }
+    return LINK_TIMED_OUT;
+}
+
+/* next new, accepted command from the BL616 within timeout_ms (0 = only what is buffered) */
+static bool next_cmd(struct frame *f, int timeout_ms)
+{
+    if (in_count) {
+        *f = inbox[in_head];
+        in_head = (in_head + 1) % LINK_INBOX;
+        in_count--;
+        return true;
+    }
+    uint64_t until = now_ms() + (uint64_t)timeout_ms;
+    for (;;) {
+        int left = (int)(until - now_ms());
+        if (!read_frame(f, left > 0 ? left : 0))
+            return false;
+        if (strcmp(f->cmd, "ACK") == 0 || strcmp(f->cmd, "NAK") == 0)
+            continue;                   /* an answer nobody waits for any more */
+        if (accept_cmd(f))
+            return true;
+    }
+}
+
+static const char *link_end_name(enum link_end e)
+{
+    return e == LINK_ACKED ? "acknowledged" : e == LINK_NAKED ? "refused" : "not answered";
 }
 
 /* ---------------- clock ---------------- */
@@ -301,10 +422,11 @@ static int run_hook(const char *reason, unsigned *sleep_s)
         if (rc < 0 && errno == EINTR)
             continue;
         if (rc == 0) {
-            /* keep reading BL616 frames while the hook runs: it may send SHUTDOWN */
-            char c[16], a[16];
-            if (link_recv(c, sizeof(c), a, sizeof(a), 0) && strcmp(c, "SHUTDOWN") == 0)
-                shutdown_req = 1;
+            /* keep answering BL616 frames while the hook runs: it may send SHUTDOWN */
+            struct frame f;
+            while (next_cmd(&f, 0))
+                if (strcmp(f.cmd, "SHUTDOWN") == 0)
+                    shutdown_req = 1;
             continue;
         }
         n = read(pipefd[0], buf, sizeof(buf));
@@ -349,47 +471,51 @@ int main(int argc, char **argv)
     pthread_t hb;
     pthread_create(&hb, NULL, heartbeat_thread, NULL);
 
-    char cmd[16], arg[32], reason[32] = "cold";
+    char reason[32] = "cold";
     bool got_wake = false;
+    struct frame f;
     for (int i = 0; i < READY_TRIES && !got_wake && !shutdown_req; i++) {
-        link_send("READY", NULL);
+        enum link_end e = link_cmd("READY", NULL);
+        if (e != LINK_ACKED) {
+            logmsg("READY %s", link_end_name(e));
+            continue;
+        }
         uint64_t until = now_ms() + READY_RETRY_MS;
-        while (now_ms() < until && link_recv(cmd, sizeof(cmd), arg, sizeof(arg), (int)(until - now_ms()))) {
-            if (strcmp(cmd, "WAKE") == 0) {
-                char *comma = strchr(arg, ',');
+        while (!got_wake && now_ms() < until && next_cmd(&f, (int)(until - now_ms()))) {
+            if (strcmp(f.cmd, "WAKE") == 0) {
+                char *comma = strchr(f.arg, ',');
                 if (comma)
                     *comma = 0;
-                snprintf(reason, sizeof(reason), "%s", arg);
+                snprintf(reason, sizeof(reason), "%s", f.arg);
                 if (comma)
                     clock_from_bl616(comma + 1);
                 got_wake = true;
-                break;
-            }
-            if (strcmp(cmd, "SHUTDOWN") == 0)
+            } else if (strcmp(f.cmd, "SHUTDOWN") == 0) {
                 shutdown_req = 1;
+            }
         }
     }
     if (!got_wake)
         logmsg("no WAKE from BL616, assuming cold start");
     logmsg("wake reason: %s", reason);
 
-    /* after WAKE, within a moment and only with a fresh AHT20 sample: ENV,<rh_x10>,<t_x10> */
+    /* after WAKE, within a moment and only with a fresh AHT20 sample: ENV,<rh_x10>,<t_x10>
+     * (out-of-range values were already refused with NAK) */
     uint64_t follow_end = now_ms() + 300;
-    while (got_wake && now_ms() < follow_end &&
-           link_recv(cmd, sizeof(cmd), arg, sizeof(arg), (int)(follow_end - now_ms()))) {
-        if (strcmp(cmd, "ENV") != 0)
+    while (got_wake && now_ms() < follow_end && next_cmd(&f, (int)(follow_end - now_ms()))) {
+        if (strcmp(f.cmd, "SHUTDOWN") == 0) {
+            shutdown_req = 1;
             continue;
-        char *comma = strchr(arg, ',');
-        long rh = strtol(arg, NULL, 10), t = comma ? strtol(comma + 1, NULL, 10) : -9999;
-        /* AHT20 range: 0-100 %RH, -40..+85 C; anything else is a corrupted frame */
-        if (comma && rh >= 0 && rh <= 1000 && t >= -400 && t <= 850) {
-            char v[24];
-            fmt_x10(v, sizeof(v), rh);
-            setenv("LEAKCAM_RH", v, 1);
-            fmt_x10(v, sizeof(v), t);
-            setenv("LEAKCAM_T", v, 1);
-            logmsg("humidity %s %%RH, %s C", getenv("LEAKCAM_RH"), v);
         }
+        long rh, t;
+        if (strcmp(f.cmd, "ENV") != 0 || !env_valid(f.arg, &rh, &t))
+            continue;
+        char v[24];
+        fmt_x10(v, sizeof(v), rh);
+        setenv("LEAKCAM_RH", v, 1);
+        fmt_x10(v, sizeof(v), t);
+        setenv("LEAKCAM_T", v, 1);
+        logmsg("humidity %s %%RH, %s C", getenv("LEAKCAM_RH"), v);
     }
 
     unsigned sleep_s = DEFAULT_SLEEP_S;
@@ -403,21 +529,23 @@ int main(int argc, char **argv)
     if (!shutdown_req && ntp_synced()) {
         char t[16];
         snprintf(t, sizeof(t), "%ld", (long)time(NULL));
-        link_send("TIME", t);
-        if (!link_recv(cmd, sizeof(cmd), arg, sizeof(arg), 1000) || strcmp(cmd, "ACK") != 0)
-            logmsg("no ACK for TIME");
+        enum link_end e = link_cmd("TIME", t);
+        if (e != LINK_ACKED)
+            logmsg("TIME %s", link_end_name(e));
     }
 
     if (!shutdown_req) {
         char s[16];
         snprintf(s, sizeof(s), "%u", sleep_s);
-        link_send("SLEEP", s);
-        /* ACK is informative; the BL616 cuts power HALT_TIMEOUT_MS after SLEEP regardless */
-        if (!link_recv(cmd, sizeof(cmd), arg, sizeof(arg), 2000) || strcmp(cmd, "ACK") != 0)
-            logmsg("no ACK for SLEEP");
+        /* the BL616 cuts power HALT_TIMEOUT_MS after SLEEP (or after SHUTDOWN) regardless */
+        enum link_end e = link_cmd("SLEEP", s);
+        if (e != LINK_ACKED)
+            logmsg("SLEEP %s", link_end_name(e));
     }
     make_safe_for_power_cut();
-    link_send("HALTED", NULL);
+    enum link_end e = link_cmd("HALTED", NULL);
+    if (e != LINK_ACKED)
+        logmsg("HALTED %s", link_end_name(e));
 
     /* keep the heartbeat running: stopping it now would only make the BL616 log a spurious
      * "heartbeat lost" if its power cut is delayed */
