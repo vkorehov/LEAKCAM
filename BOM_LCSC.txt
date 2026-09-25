@@ -42,7 +42,7 @@ qty   LCSC#       Basic/Ext value                        link                   
 2     C25087      Basic     200R                         https://www.lcsc.com/product-detail/C25087.html    0402WGF2000TCE  (R37 R62)
 1     C25764      Basic     200k                         https://www.lcsc.com/product-detail/C25764.html    0402WGF2003TCE  (R59)
 1     C25765      Basic     20k                          https://www.lcsc.com/product-detail/C25765.html    0402WGF2002TCE  (R69)
-1     C25092      Basic     22R                          https://www.lcsc.com/product-detail/C25092.html    0402WGF220JTCE  (R42)
+2     C25092      Basic     22R                          https://www.lcsc.com/product-detail/C25092.html    0402WGF220JTCE  (R42 R54)
 5     C324768     Extended  240R                         https://www.lcsc.com/product-detail/C324768.html   RC-02K2400FT  (R33 R46 R47 R48 R52)
 1     C49653548   Extended  30k                          https://www.lcsc.com/product-detail/C49653548.html GR0402F30KTAG00  (R63)
 1     C25779      Basic     33k                          https://www.lcsc.com/product-detail/C25779.html    0402WGF3302TCE  (R25)
@@ -62,4 +62,4 @@ qty   LCSC#       Basic/Ext value                        link                   
 
 NO PART: ANT1 MIFI, B1_N TESTP, B1_P TESTP, CT1 NF, J1 Connector 2PIn, J2 Connector 2PIn, J3 Connector 2PIn, J6 Connector 2PIn, J7 Connector 2PIn, J8 Connector 2PIn, J9 Connector 2PIn, J10 Connector 2PIn, J11 Connector 2PIn, J12 Connector 2PIn, JB1 Connector 2PIn, JB2 Connector 2PIn, JT Connector 2PIn, PR1 CON6P
 
-TOTAL 47.93 USD
+TOTAL 47.92 USD
