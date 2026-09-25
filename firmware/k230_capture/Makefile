@@ -18,10 +18,12 @@ leakcam_capture: leakcam_capture.c v4l2cap.c led_linux.c $(CORE) $(HDRS) led.h
 leakcam_hist: leakcam_hist.c $(CORE) $(HDRS)
 	$(CC) $(CFLAGS) -o $@ leakcam_hist.c $(CORE) $(LDLIBS)
 
-test: test/test_imgdiff test/test_history test/test_history_miniz
+test: test/test_imgdiff test/test_history test/test_history_miniz test/test_imgqual_synth test/test_audio
 	./test/test_imgdiff
 	./test/test_history
 	./test/test_history_miniz
+	./test/test_imgqual_synth
+	./test/test_audio
 
 test/test_imgdiff: test/test_imgdiff.c $(CORE) $(HDRS)
 	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_imgdiff.c $(CORE) -lz -lm
@@ -33,11 +35,20 @@ test/test_history: test/test_history.c $(CORE) $(HDRS)
 test/test_history_miniz: test/test_history.c $(CORE) $(HDRS) third_party/miniz/miniz.c
 	cc -O2 -Wall -Wextra -Werror -I. -Ithird_party/miniz -DLEAKCAM_MINIZ -o $@ test/test_history.c $(CORE) third_party/miniz/miniz.c -lm
 
+# image quality verdicts and LED step on synthetic frames
+test/test_imgqual_synth: test/test_imgqual_synth.c imgqual.c imgqual.h imgdiff.h
+	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_imgqual_synth.c imgqual.c -lm
+
+# leakcam_audio.c included unchanged, MPP stand-ins in test/mpp_stub
+test/test_audio: test/test_audio.c leakcam_audio.c $(wildcard test/mpp_stub/*.h)
+	cc -O2 -Wall -Wextra -Werror -I. -Itest/mpp_stub -o $@ test/test_audio.c -lm
+
 # measurement tool, needs leakcam PGM pairs (firmware/k230_nn/README.md section 5): not part of `test`
 test/test_imgqual: test/test_imgqual.c imgqual.c imgqual.h imgdiff.c imgdiff.h
 	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_imgqual.c imgqual.c imgdiff.c -lm
 
 clean:
-	rm -f leakcam_capture leakcam_hist test/test_imgdiff test/test_history test/test_history_miniz test/test_imgqual
+	rm -f leakcam_capture leakcam_hist test/test_imgdiff test/test_history test/test_history_miniz test/test_imgqual \
+	      test/test_imgqual_synth test/test_audio
 
 .PHONY: all test clean

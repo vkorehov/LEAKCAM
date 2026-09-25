@@ -73,7 +73,8 @@ grep -q 'LEAKCAM: UFFS user OOB' "$PORT" || { echo "OOB patch not applied"; exit
 # BL616 firmware; extdrv/SConscript picks up every subfolder, Kconfig needs one source line
 DRV=$RTT/drivers/extdrv/bl616_nethub
 rm -rf "$DRV"; mkdir -p "$DRV"
-cp "$HERE"/rtsmart/drivers/bl616_nethub/* "$DRV/"
+# files only: test/ holds the host tests and their RT-Thread stand-in headers
+find "$HERE"/rtsmart/drivers/bl616_nethub -maxdepth 1 -type f -exec cp {} "$DRV/" \;
 cp "$HERE/../bl616_wifi/wifi_ctrl_proto.h" "$DRV/"
 python3 - "$RTT/drivers/extdrv/Kconfig" <<'PY'
 import sys
