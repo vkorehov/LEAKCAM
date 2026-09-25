@@ -1,0 +1,23 @@
+# Rotation corrections for JLCPCB assembly: degrees added to Altium's rotation where JLCPCB's part
+# model puts pin 1 elsewhere than our footprint. Found in JLCPCB's placement preview (2026-09-25):
+# the pin-1 mark sat on the corner opposite footprint pad 1. Applied by jlc_assembly_files.py --rot.
+# designator,degrees
+U5,180    # TPS63802DLAR C2845237, FP-DLA0010A
+U8,180    # TPS63802DLAR
+U10,180   # TPS63802DLAR
+U14,180   # TPS61161DRVR C324075, WSON-6
+U15,180   # TPS61161DRVR
+D2,180    # DSK24 C22466352: JLCPCB's cathode on the anode pad
+Q1,180    # AO3401A C15127, FP-SOT23-IPC_B: JLCPCB's pin-1 mark beside pad 3
+Q2,180    # AO3400A C20917, FP-SOT23-MFG
+Q4,180    # AO3400A C20917, FP-SOT23-MFG
+# JLCPCB turns the raw EasyEDA footprint by the CPL angle and, on the bottom, then mirrors it
+# left-right (shown by D1 in the preview: EasyEDA's pin 1 of KT-0603R is the anode). The corrections
+# below make every EasyEDA pad land on our pad of the same function (EasyEDA pad data, 2026-09-25).
+D3,270    # PRTR5V0U2F C478118, SOT-886: EasyEDA draws the pins in rows, our footprint in columns
+D5,270    # PRTR5V0U2F
+U16,270   # W25N02KVZEIR C17626844, WSON-8 8x6
+J4,180    # 05B20L22P C22459552 on the bottom (J5 on top needs none)
+D4,90     # PRTR5V0U2F, bottom side
+U6,90     # TPS62823DLCR C2693497, bottom side
+U7,90     # TPS62823DLCR, bottom side
