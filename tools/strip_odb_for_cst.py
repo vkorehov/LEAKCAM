@@ -4,7 +4,7 @@
   strip_odb_for_cst.py MIFA_cst_full.tgz MIFA_cst_stripped.tgz
 
 Kept: every pour (surface) on every layer and net; traces and pads of GND and the antenna feed
-net; vias of GND, the feed and every net that has a pour, so the pours stay connected as on the
+net; all copper without a net (footprint copper, including the antenna element); vias of GND, the feed and every net that has a pour, so the pours stay connected as on the
 board; board outline, stack-up, dielectric and solder mask layers; components and netlist.
 Removed: other traces and pads (signal and power traces, BGA and component pads), signal vias,
 and the silkscreen and paste features.
@@ -16,6 +16,8 @@ features are dropped. The fab outputs are not touched: this file only feeds the 
 import os, re, sys, shutil, tarfile, tempfile, collections
 
 FEED_NETS = {'GND', 'NetANT1_1'}
+# copper with no net is footprint copper: the MIFA element itself is eight net-less pads of ANT1
+NO_NET = (None, '$NONE$')
 EMPTY_TYPES = {'SILK_SCREEN', 'SOLDER_PASTE'}
 RECORD = re.compile(r'^(L|P|A|T|B|S) ')
 
@@ -101,7 +103,7 @@ def main():
             if t in EMPTY_TYPES:
                 keep = False
             elif t == 'SIGNAL':
-                keep = kind == 'S' or n in FEED_NETS
+                keep = kind == 'S' or n in FEED_NETS or n in NO_NET
             elif t == 'DRILL':
                 keep = n in via_nets
             else:
