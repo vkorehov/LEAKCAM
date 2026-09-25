@@ -11,3 +11,12 @@ D2,180    # DSK24 C22466352: JLCPCB's cathode on the anode pad
 Q1,180    # AO3401A C15127, FP-SOT23-IPC_B: JLCPCB's pin-1 mark beside pad 3
 Q2,180    # AO3400A C20917, FP-SOT23-MFG
 Q4,180    # AO3400A C20917, FP-SOT23-MFG
+# JLCPCB rotates the raw EasyEDA footprint by the CPL angle; the corrections below make its pads
+# land on ours with every pad number matching (EasyEDA pad data, 2026-09-25)
+D3,270    # PRTR5V0U2F C478118, SOT-886: EasyEDA draws the pins in rows, our footprint in columns
+D5,270    # PRTR5V0U2F
+U16,270   # W25N02KVZEIR C17626844, WSON-8 8x6
+J4,180    # 05B20L22P C22459552 on the bottom (J5 on top needs none)
+D4,270    # PRTR5V0U2F, bottom side: check the pin-1 dot in the preview (quarter-turn direction on the bottom)
+U6,270    # TPS62823DLCR C2693497, bottom side: same check
+U7,270    # TPS62823DLCR, bottom side: same check
