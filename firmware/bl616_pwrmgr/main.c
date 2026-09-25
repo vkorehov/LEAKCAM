@@ -70,10 +70,28 @@ enum session_end {
     END_POWER_FAULT,
 };
 
+/* (re)sends queued commands; logs the ones the K230 refused or never answered */
+static void link_tick(void)
+{
+    const struct link_result *r = link_service(bflb_mtimer_get_time_ms());
+    if (r && r->end != LINK_ACKED)
+        LOG_W("link: %s %s\r\n", r->cmd, r->end == LINK_NAKED ? "refused" : "not answered");
+}
+
+/* TIME is carried out here, so it is answered ACK/NAK even while the loop waits for something
+ * else: the K230 learned real time (NTP over Wi-Fi), take it, correcting crystal drift */
+static bool verdict(const struct link_msg *m)
+{
+    if (strcmp(m->cmd, "TIME") == 0)
+        return m->has_arg && wallclock_set(m->arg);
+    return true;
+}
+
 static bool wait_for(const char *cmd, uint32_t timeout_ms, struct link_msg *m)
 {
     uint64_t t0 = bflb_mtimer_get_time_ms();
     while (bflb_mtimer_get_time_ms() - t0 < timeout_ms) {
+        link_tick();
         if (link_poll(m) && strcmp(m->cmd, cmd) == 0)
             return true;
         bflb_mtimer_delay_ms(2);
@@ -84,7 +102,7 @@ static bool wait_for(const char *cmd, uint32_t timeout_ms, struct link_msg *m)
 static void graceful_off(void)
 {
     struct link_msg m;
-    link_send("SHUTDOWN", NULL);
+    link_send_cmd("SHUTDOWN", NULL);
     if (wait_for("HALTED", HALT_TIMEOUT_MS, &m))
         bflb_mtimer_delay_ms(HALT_GRACE_MS);
     else
@@ -101,11 +119,11 @@ static void send_wake(enum wake_reason reason)
     if (!wallclock_get(&now))
         now = 0;
     snprintf(wake, sizeof(wake), "%s,%lu", wake_reason_name(reason), (unsigned long)now);
-    link_send("WAKE", wake);
+    link_send_cmd("WAKE", wake);
     if (env_rh_x10 >= 0) {
         char env[16];
         snprintf(env, sizeof(env), "%d,%d", env_rh_x10, env_t_x10);
-        link_send("ENV", env);
+        link_send_cmd("ENV", env);
     }
 }
 
@@ -117,6 +135,7 @@ static enum session_end run_session(enum wake_reason reason, uint32_t *sleep_s)
         return END_POWER_FAULT;
 
     link_reset();
+    link_set_verdict(verdict);
     if (!wait_for("READY", BOOT_TIMEOUT_MS, &m)) {
         LOG_E("session: no READY within %u ms\r\n", BOOT_TIMEOUT_MS);
         k230_power_off();                       /* nothing to sync with, K230 never came up */
@@ -136,10 +155,10 @@ static enum session_end run_session(enum wake_reason reason, uint32_t *sleep_s)
             last_edge = now;
         }
 
-        if (link_poll(&m)) {
+        link_tick();
+        if (link_poll(&m)) {                    /* already answered by the link layer */
             if (strcmp(m.cmd, "SLEEP") == 0) {
                 *sleep_s = m.has_arg ? m.arg : REPORT_PERIOD_S;
-                link_send("ACK", "SLEEP");
                 /* the agent syncs and remounts read-only, then sends HALTED */
                 if (wait_for("HALTED", HALT_TIMEOUT_MS, &m))
                     bflb_mtimer_delay_ms(HALT_GRACE_MS);
@@ -148,9 +167,6 @@ static enum session_end run_session(enum wake_reason reason, uint32_t *sleep_s)
             }
             if (strcmp(m.cmd, "READY") == 0)    /* agent restarted inside the session */
                 send_wake(reason);
-            /* the K230 learned real time (NTP over Wi-Fi): take it, correcting crystal drift */
-            if (strcmp(m.cmd, "TIME") == 0 && m.has_arg)
-                link_send("ACK", wallclock_set(m.arg) ? "TIME" : "TIME,refused");
         }
 
         if (now - last_edge > HEARTBEAT_TIMEOUT_MS) {
