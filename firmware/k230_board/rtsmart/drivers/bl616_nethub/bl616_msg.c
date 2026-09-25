@@ -274,7 +274,7 @@ static rt_err_t ch_service(struct chan *ch)
     rt_err_t err;
 
     if (ch->state == CH_WAIT &&
-        rt_tick_get() - ch->ready_at > rt_tick_from_millisecond(START_TIMEOUT_MS))
+        rt_tick_get() - ch->ready_at >= rt_tick_from_millisecond(START_TIMEOUT_MS))
         ch->state = CH_RESET;
     if (ch->state == CH_RESET)
     {
@@ -295,7 +295,7 @@ static rt_err_t ch_service(struct chan *ch)
         if (err == -RT_EBUSY)
             return err;
         if (err != RT_EOK)
-            LOG_W("%s: download failed (%d), message dropped", ch->name, err);
+            LOG_W("%s: download failed (%d), message dropped", ch->name, (int)err);
         else
             ch->sent++;
         ring_pop(r);
@@ -326,7 +326,7 @@ static void worker_entry(void *param)
                 break;
             if (err != RT_EOK)
             {
-                LOG_E("upload failed: %d", err);
+                LOG_E("upload failed: %d", (int)err);
                 break;
             }
             dispatch(rx_buf, len);
@@ -364,6 +364,8 @@ rt_err_t bl616_link_start(void)
     vchan.ring.head = vchan.ring.count = 0;
     rt_completion_init(&worker_done);
     running = RT_TRUE;
+    /* the first pass sends HOST_READY at once, not after the first 1 s safety poll */
+    rt_event_send(&link_event, EV_WAKE);
     worker = rt_thread_create("bl616", worker_entry, RT_NULL, WORKER_STACK, WORKER_PRIORITY, 10);
     if (!worker)
     {
