@@ -282,7 +282,7 @@ static rt_int32_t bl616_sdio_probe(struct rt_mmcsd_card *card)
     }
     if (err != RT_EOK)
     {
-        LOG_E("probe failed: %d", err);
+        LOG_E("probe failed: %d", (int)err);
         sdio_disable_func(func);
         sd.func = RT_NULL;
         return err;
