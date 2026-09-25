@@ -7,3 +7,7 @@ Drill-to-copper is 0.10 mm at the BGA fan-out (U3, 0.65 mm pitch). Build as draw
 do not enlarge the plane openings.
 
 Keep the BGA solder mask openings separate, 0.374 mm each, do not gang them.
+
+Via covering: Epoxy filled & capped (POFV). Required: vias sit inside pads (172 in the U3 BGA
+ball pads, others in SMD pads including 0201 pads on the bottom); open vias there would wick the
+solder. All other vias are tented in the solder mask.
