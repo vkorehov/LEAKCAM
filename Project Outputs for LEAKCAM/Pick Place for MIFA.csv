@@ -4,15 +4,16 @@ C:\hw\LEAKCAM\Project Outputs for LEAKCAM\Pick Place for MIFA.csv
 ========================================================================================================================
 File Design Information:
 
-Date:       24/09/26
-Time:       19:26
-Revision:   2b8335e65faaf93c505752e9dbd735af0ed1dd77
+Date:       25/09/26
+Time:       05:19
+Revision:   22bd4527feb5de914ef391996fd0b33ddaf1718c
 Variant:    No variations
 Units used: mil
 
 "Designator","Comment","Layer","Footprint","Center-X(mil)","Center-Y(mil)","Rotation","Description"
+"R54","22R","BottomLayer","RES_0402","1154.140","1739.219","90","C25092"
 "CB2","100n 0201","BottomLayer","CAP_0201","1493.462","448.611","180","C2903663"
-"CB1","10uF GRM188R61A106ME69D","BottomLayer","FP-GRM188-0_15-MFG","1351.134","423.159","180","C19702"
+"CB1","10uF GRM188R61A106ME69D","BottomLayer","FP-GRM188-0_15-MFG","1299.213","314.961","180","C19702"
 "LED15","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","807.087","1417.323","270","C19185834"
 "LED13","xl-hd3535uwc-a2","TopLayer","XL-HD3535UWC-A2","807.087","1220.522","90","C3646951"
 "LED11","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","570.866","1417.323","270","C19185834"
@@ -44,7 +45,7 @@ Units used: mil
 "C9","100n","BottomLayer","CAP_0402","1585.289","1254.825","180","C307331"
 "C4","10uF GRM188R61A106ME69D","BottomLayer","FP-GRM188-0_15-MFG","1605.534","1303.138","0","C19702"
 "RB4","47k","TopLayer","RES_0402","1176.255","1280.150","90","C25792"
-"RB3","47k","TopLayer","RES_0402","1260.827","1199.557","90","C25792"
+"RB3","47k","TopLayer","RES_0402","1279.287","1220.333","90","C25792"
 "RB2","47k","TopLayer","RES_0402","2145.429","432.931","90","C25792"
 "RB1","47k","TopLayer","RES_0402","2146.083","500.039","90","C25792"
 "USBC2","type-c-31-m-12","TopLayer","TYPE-C-31-M-12","1124.054","716.738","270","C165948"
@@ -71,8 +72,8 @@ Units used: mil
 "U3","k230d","TopLayer","K230D","1697.808","563.981","0","C42414902"
 "U2","ch340x","TopLayer","ch340x","1379.353","516.861","180","C3035748"
 "U1","BQ24072TRGTR","TopLayer","RGT0016C_V","2208.662","1171.260","180","C129319"
-"S2","S2B-PH-K-S(LF)(SN)","BottomLayer","JST-S2B-PH-K-S_V","1219.435","1228.381","90","C157932"
-"S1","S2B-PH-K-S(LF)(SN)","BottomLayer","JST-S2B-PH-K-S_V","2104.727","462.214","270","C157932"
+"S2","S2B-PH-K-S(LF)(SN)","BottomLayer","JST-S2B-PH-K-S_V","1238.189","1220.472","90","C157932"
+"S1","S2B-PH-K-S(LF)(SN)","BottomLayer","JST-S2B-PH-K-S_V","2095.362","469.814","270","C157932"
 "R74","4.7k","BottomLayer","RES_0402","1375.945","1230.978","270","C25900"
 "R73","4.7k","BottomLayer","RES_0402","1502.168","1154.070","0","C25900"
 "R71","1M","TopLayer","RES_0402","1724.380","1764.687","90","C26083"
@@ -266,7 +267,7 @@ Units used: mil
 "R32","100k","TopLayer","RES_0402","1802.927","1854.248","0","C25741"
 "R19","100k","TopLayer","RES_0402","1947.235","1855.008","180","C25741"
 "PR1","CON6P","BottomLayer","CON6P","1214.106","1816.766","90",""
-"S3","S2B-PH-K-S(LF)(SN)","BottomLayer","JST-S2B-PH-K-S_V","2108.268","1968.504","270","C157932"
+"S3","S2B-PH-K-S(LF)(SN)","BottomLayer","JST-S2B-PH-K-S_V","2088.583","1968.504","270","C157932"
 "RB6","47k","TopLayer","RES_0402","2145.909","1909.589","270","C25792"
 "R43","10k","TopLayer","RES_0402","1001.687","1909.356","0","C25744"
 "R76","100k","BottomLayer","RES_0402","1138.007","1951.987","90","C25741"
