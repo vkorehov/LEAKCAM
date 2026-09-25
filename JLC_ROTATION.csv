@@ -1,0 +1,10 @@
+# Rotation corrections for JLCPCB assembly: degrees added to Altium's rotation where JLCPCB's part
+# model puts pin 1 elsewhere than our footprint. Found in JLCPCB's placement preview (2026-09-25):
+# the pin-1 mark sat on the corner opposite footprint pad 1. Applied by jlc_assembly_files.py --rot.
+# designator,degrees
+U5,180    # TPS63802DLAR C2845237, FP-DLA0010A
+U8,180    # TPS63802DLAR
+U10,180   # TPS63802DLAR
+U14,180   # TPS61161DRVR C324075, WSON-6
+U15,180   # TPS61161DRVR
+D2,180    # DSK24 C22466352: JLCPCB's cathode on the anode pad
