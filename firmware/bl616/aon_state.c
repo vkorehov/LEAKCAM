@@ -7,6 +7,8 @@
 #include "bl616_hbn.h"
 #include "log.h"
 
+#include "evlog.h"
+
 /* the last 64 bytes of HBN RAM, away from anything the SDK might place at its start */
 #define AON_ADDR (HBN_RAM_BASE + HBN_RAM_SIZE - 64u)
 _Static_assert(sizeof(struct aon_block) <= 64, "aon block must fit the reserved 64 bytes");
@@ -40,6 +42,7 @@ void aon_init(void)
         memset(&a, 0, sizeof(a));
     } else if (a.clock_valid && !aon_rebase(&a, rtc_now())) {
         LOG_W("aon: RTC counter was reset, wall clock unknown until the next TIME\r\n");
+        evlog_add(EV_CLOCK_LOST, 0, 0);
     }
     store(&a);
 }
@@ -83,11 +86,31 @@ bool wallclock_set(uint32_t epoch)
     if (!aon_clock_set(&a, rtc_now(), epoch))
         return false;
     store(&a);
+    int32_t corr = had ? (int32_t)(epoch - old) : 0;
+    corr = corr > INT16_MAX ? INT16_MAX : corr < INT16_MIN ? INT16_MIN : corr;
+    evlog_add(EV_CLOCK, had, (uint16_t)(int16_t)corr);
     if (had)
         LOG_I("aon: clock set, correction %d s\r\n", (int)(epoch - old));
     else
         LOG_I("aon: clock set to %u\r\n", (unsigned)epoch);
     return true;
+}
+
+int battery_get(void)
+{
+    struct aon_block a;
+    load(&a);
+    return aon_intact(&a) && a.bat_mv ? (int)a.bat_mv : -1;
+}
+
+void battery_set(unsigned mv)
+{
+    struct aon_block a;
+    load(&a);
+    if (!aon_intact(&a))
+        memset(&a, 0, sizeof(a));
+    a.bat_mv = mv;
+    store(&a);
 }
 
 void aon_prepare_sleep(void)

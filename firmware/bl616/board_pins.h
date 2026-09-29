@@ -52,6 +52,18 @@
 #define PIN_SD_D0       GPIO_PIN_14
 #define PIN_SD_D1       GPIO_PIN_15
 
+#ifdef LEAKCAM_JTAG
+/* Debug build only (DEBUG.txt): JTAG on four SDIO pads instead of Wi-Fi, so the K230 link, its
+ * power control and USB sensing still work. The reset-default JTAG pins IO0-IO3 are K230_RSTN,
+ * K230_ALIVE and PGOOD and are taken over at boot. The signal follows the pin number mod 4 as on
+ * IO0-IO3 (TMS, TCK, TDO, TDI); an IDCODE scan (0x10000b6f) on the first board confirms it. */
+#define PIN_JTAG_TMS    GPIO_PIN_12     /* AI_SD_CMD */
+#define PIN_JTAG_TCK    GPIO_PIN_13     /* AI_SD_CLK, through R54 */
+#define PIN_JTAG_TDO    GPIO_PIN_14     /* AI_SD_D0 */
+#define PIN_JTAG_TDI    GPIO_PIN_15     /* AI_SD_D1 */
+#define K230_SIDE_PINS { PIN_LINK_TX, PIN_LINK_RX, PIN_SD_D2, PIN_SD_D3 }
+#else
 #define K230_SIDE_PINS { PIN_LINK_TX, PIN_LINK_RX, PIN_SD_D2, PIN_SD_D3, PIN_SD_CMD, PIN_SD_CLK, PIN_SD_D0, PIN_SD_D1 }
+#endif
 
 #endif

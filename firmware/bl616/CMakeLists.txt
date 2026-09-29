@@ -9,8 +9,14 @@ sdk_add_compile_definitions(-DWPA_SUPPLICANT_CLEANUP_INTERVAL=1800)
 
 sdk_add_include_directories(.)
 
+# debug build: JTAG on IO12-IO15 instead of Wi-Fi (DEBUG.txt): rm -rf build, then LEAKCAM_JTAG=1 make
+if(DEFINED ENV{LEAKCAM_JTAG})
+    sdk_add_compile_definitions(-DLEAKCAM_JTAG)
+endif()
+
 target_sources(app PRIVATE
                    aon_state.c
+                   evlog.c
                    k230_power.c
                    k230_link.c
                    leak_wake.c

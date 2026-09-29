@@ -20,6 +20,7 @@
 #include "easyflash.h"
 #include "log.h"
 
+#include "evlog.h"
 #include "usb_power.h"
 
 /* the last field is 48 bits and BT_UUID_128_ENCODE shifts it by up to 40: it must be a 64-bit literal */
@@ -72,6 +73,7 @@ static ssize_t commit_write(struct bt_conn *conn, const struct bt_gatt_attr *att
         ef_set_env_blob("wifi_psk", psk, strlen(psk)) != EF_NO_ERR)
         return BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
     LOG_I("ble: Wi-Fi credentials stored for \"%s\"\r\n", ssid);
+    evlog_add(EV_BLE_CREDS, 0, 0);
     return len;
 }
 

@@ -83,9 +83,13 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
   flows; the AHT20 sleeps at <= 0.2 uA.
 - **Alarm:** >= 85 %RH wakes the K230 with reason `humid`, at every sample while it stays that
   high: the BL616 keeps no memory of what was reported, the K230 decides. Every session
-  gets the sample in `WAKE,<reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>`, together with the probe
-  node voltage; the agent passes them to `leakcam_wake` as `LEAKCAM_RH` / `LEAKCAM_T` /
-  `LEAKCAM_PROBE_MV`, and they take part in the leak decision whatever the cameras see.
+  gets the sample in `WAKE,<reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>,<bat_mv>`, together with
+  the probe node voltage and the last battery reading; the agent passes them to `leakcam_wake` as
+  `LEAKCAM_RH` / `LEAKCAM_T` / `LEAKCAM_PROBE_MV` / `LEAKCAM_BAT_MV`, and they take part in the
+  leak decision whatever the cameras see.
+- **Battery:** measured by the K230 (ADC_1, VBAT/3 through R59/R61, powered only with the K230's
+  3V3; the BL616 has no input for it on rev 1) and returned in the agent's `ACK,<seq>,<bat_mv>`
+  to WAKE. The BL616 keeps it in the always-on block for the next WAKE and logs it (`evlog`).
 - **Cost (estimate, to measure):** ~120 ms awake per sample at an assumed 8-15 mA MCU-only current
   (the datasheet gives only 38 mA with the radio receiving) = 1-1.8 mAs, so 1.7-3 uA average at 10 min.
 - The RTC runs from the 32.768 kHz crystal Y3 (`rtc_use_crystal()`), RC32K until it has started.
@@ -109,6 +113,13 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
   costs 300 ms instead of seconds.
 - **They do not fix finding 2:** a pin left high still feeds the rail (0.4 V and 0.3 mA per pin
   against RD2).
+
+### Retained event log (`evlog.c`)
+- The last 32 events (wake reason and probe mV, AHT20 reading, READY latency, NAKs, Wi-Fi start,
+  session length, sleep length, USB, clock) in 512 bytes of HBN RAM below the always-on block,
+  CRC-guarded, surviving hibernate and software resets. The bare-metal battery wakes never reach
+  the USB console, so this is their only record. `evlog` on the BL616 console prints it
+  (DEBUG.txt).
 
 ### Wall clock and state across hibernate (`aon_state.c`)
 - **The K230 cannot keep time between wakes.** Its RTC runs from AVDD1P8_RTC on the switched 1V8
@@ -148,6 +159,7 @@ mode stays off: between sessions the BL616 hibernates, which ends the associatio
 - Record times come from the BL616 (see "Wall clock" below): the K230 sets its clock from the
   time in the WAKE frame at every wake.
 - Build and board port steps: `k230_capture/rtsmart/README.md`.
+- Debugging (consoles, retained event log, BL616 JTAG debug build): `DEBUG.txt`.
 
 ## How this was verified
 - Sequence: `sim/power_sequence.py`, datasheet timings (TPS62823 SLVSDV8, TPS63802 SLVSEU9D) and
@@ -162,6 +174,9 @@ mode stays off: between sessions the BL616 hibernates, which ends the associatio
 - K230 capture: `make test` checks the change detector (noise,
   exposure, puddle, mask, torn reference) and the history (keyframe + stacked deltas rebuild
   byte-exact, policy, torn delta, stale tmp, quota), the latter also under ASan/UBSan. No camera run.
+- Event log: `test/test_evlog.c` on the host (8-byte entries, order across the ring wrap, CRC
+  guard against power-loss RAM and bit flips); `evlog.c` built into the image, and the
+  `LEAKCAM_JTAG` debug variant builds too. Link trace checked in `test/test_link.c`.
 - Always-on state: `test/test_aon.c` on the host (clock across the 40-bit wrap, 144 rebases
   without drift, counter-reset detection, CRC); `aon_state.c` compiled against the SDK HBN/RTC headers.
 - AHT20: `aht20.c` compiled against the SDK I2C driver; CRC, frame layout and conversions tested on

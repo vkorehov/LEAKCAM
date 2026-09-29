@@ -18,6 +18,7 @@
  * path then feeds the system from USB, so staying awake costs the battery nothing.
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <FreeRTOS.h>
@@ -34,6 +35,7 @@
 #include "aht20.h"
 #include "aon_state.h"
 #include "ble_pairing.h"
+#include "evlog.h"
 #include "k230_power.h"
 #include "k230_link.h"
 #include "leak_wake.h"
@@ -86,9 +88,10 @@ static void radio_init(void)
     if (radio_up)
         return;
     storage_init();
-    if (rfparam_init(0, NULL, 0) != 0)
+    if (rfparam_init(0, NULL, 0) != 0) {
         LOG_E("radio: RF init failed, no BLE and no Wi-Fi\r\n");
-    else
+        evlog_add(EV_RADIO_FAIL, 0, 0);
+    } else
         radio_up = true;
 }
 
@@ -102,22 +105,43 @@ static void k230_off(void)
     k230_power_off();
 }
 
+/* the K230's answer to WAKE carries its battery reading (K230 ADC_1, VBAT/3) */
+static void battery_from_ack(const char *answer)
+{
+    char *end;
+    long mv = strtol(answer, &end, 10);
+    if (end == answer || mv < 2000 || mv > 5000) {
+        LOG_W("battery: no reading in the WAKE answer (\"%s\")\r\n", answer);
+        return;
+    }
+    LOG_I("battery: %ld mV\r\n", mv);
+    battery_set((unsigned)mv);
+    evlog_add(EV_BATTERY, 0, (unsigned)mv);
+}
+
 /* (re)sends queued commands; logs the ones the K230 never answered */
 static void link_tick(void)
 {
     const struct link_result *r = link_service(bflb_mtimer_get_time_ms());
-    if (r && r->end == LINK_TIMED_OUT)
-        LOG_W("link: %s not answered\r\n", r->cmd);
+    if (r && r->end == LINK_ACKED && strcmp(r->cmd, "WAKE") == 0)
+        battery_from_ack(r->answer);
+    if (r && r->end == LINK_TIMED_OUT) {
+        LOG_W("link: %s not answered after %u sends\r\n", r->cmd, LINK_TRIES);
+        evlog_add(EV_LINK_LOST, 0, LINK_TRIES);
+    }
 }
 
 /* answered here, so even while the loop waits for something else:
  *   TIME  the K230 learned real time (NTP over Wi-Fi), take it, correcting crystal drift
  *   WIFI  refused without stored credentials or radio; started by run_session() once accepted */
-static uint8_t reply(const struct link_msg *m)
+static uint8_t decide(const struct link_msg *m)
 {
     if (strcmp(m->cmd, "TIME") == 0)
         return m->has_arg && wallclock_set(m->arg) ? 0 : LINK_ERR_REFUSED;
     if (strcmp(m->cmd, "WIFI") == 0) {
+#ifdef LEAKCAM_JTAG
+        return LINK_ERR_RADIO;                  /* the SDIO pads carry JTAG in this build */
+#endif
         storage_init();                         /* credentials first: without them no RF at all */
         if (!wifi_link_has_credentials())
             return LINK_ERR_NO_CREDENTIALS;
@@ -125,6 +149,14 @@ static uint8_t reply(const struct link_msg *m)
         return radio_up ? 0 : LINK_ERR_RADIO;
     }
     return 0;
+}
+
+static uint8_t reply(const struct link_msg *m)
+{
+    uint8_t code = decide(m);
+    if (code)
+        evlog_add(EV_NAK, code, (unsigned char)m->cmd[0]);
+    return code;
 }
 
 static bool wait_link_cmd(const char *cmd, uint32_t timeout_ms, struct link_msg *m)
@@ -141,31 +173,38 @@ static bool wait_link_cmd(const char *cmd, uint32_t timeout_ms, struct link_msg 
 
 static void send_wake(enum wake_reason reason)
 {
-    /* WAKE,<reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>. The K230's RTC restarts at every
-     * power-up, ours runs on the Y3 crystal, so the time rides in this frame (0 = our clock is
-     * not valid, the battery was out); so do the sensors, which take part in the leak decision
-     * whatever the cameras see (rh -1 = no AHT20 sample: USB mode or a failed read) */
+    /* WAKE,<reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>,<bat_mv>. The K230's RTC restarts at
+     * every power-up, ours runs on the Y3 crystal, so the time rides in this frame (0 = our clock
+     * is not valid, the battery was out); so do the sensors, which take part in the leak decision
+     * whatever the cameras see (rh -1 = no AHT20 sample: USB mode or a failed read), and the
+     * battery the K230 measured last time (-1 = none since the power loss) */
     uint32_t now;
-    char wake[48];
+    char wake[56];
     if (!wallclock_get(&now))
         now = 0;
-    snprintf(wake, sizeof(wake), "%s,%lu,%d,%d,%d", wake_reason_name(reason), (unsigned long)now,
-             env_rh_x10, env_rh_x10 >= 0 ? env_t_x10 : 0, leak_probe_mv());
+    snprintf(wake, sizeof(wake), "%s,%lu,%d,%d,%d,%d", wake_reason_name(reason), (unsigned long)now,
+             env_rh_x10, env_rh_x10 >= 0 ? env_t_x10 : 0, leak_probe_mv(), battery_get());
     link_send_cmd("WAKE", wake);
 }
 
 static enum session_end run_session(enum wake_reason reason, uint32_t *sleep_s)
 {
     struct link_msg m;
+    evlog_add(EV_SESSION, reason, 0);
+    uint64_t t_on = bflb_mtimer_get_time_ms();
     k230_power_on();
 
     link_reset();
     link_set_reply(reply);
     if (!wait_link_cmd("READY", BOOT_TIMEOUT_MS, &m)) {
         LOG_E("session: no READY within %u ms\r\n", BOOT_TIMEOUT_MS);
+        evlog_add(EV_NO_READY, 0, BOOT_TIMEOUT_MS / 1000);
         k230_off();                             /* nothing to sync with, K230 never came up */
         return END_NO_BOOT;
     }
+    unsigned ready_ms = (unsigned)(bflb_mtimer_get_time_ms() - t_on);
+    LOG_I("session: READY %u ms after power-on\r\n", ready_ms);
+    evlog_add(EV_READY, 0, ready_ms);
     send_wake(reason);
 
     /* the K230 decides how long it stays: as long as its heartbeat runs. SLEEP,<s> only says
@@ -181,7 +220,10 @@ static enum session_end run_session(enum wake_reason reason, uint32_t *sleep_s)
             last_edge = now;
         }
         if (now - last_edge > HEARTBEAT_STOP_MS) {
-            LOG_I("session: heartbeat stopped, next wake in %u s\r\n", (unsigned)*sleep_s);
+            unsigned len_s = (unsigned)((now - t_on) / 1000);
+            LOG_I("session: heartbeat stopped after %u s, next wake in %u s\r\n", len_s,
+                  (unsigned)*sleep_s);
+            evlog_add(EV_SESSION_END, 0, len_s);
             k230_off();
             return END_DONE;
         }
@@ -193,10 +235,13 @@ static enum session_end run_session(enum wake_reason reason, uint32_t *sleep_s)
             if (strcmp(m.cmd, "READY") == 0)    /* agent restarted inside the session */
                 send_wake(reason);
             if (strcmp(m.cmd, "WIFI") == 0 && !wifi_on) {   /* accepted by reply() */
-                if (wifi_link_start() == 0)
+                if (wifi_link_start() == 0) {
                     wifi_on = true;
-                else
+                    evlog_add(EV_WIFI, 0, 0);
+                } else {
                     LOG_E("session: Wi-Fi start failed\r\n");
+                    evlog_add(EV_WIFI, -1, 0);
+                }
             }
         }
         vTaskDelay(pdMS_TO_TICKS(5));
@@ -263,6 +308,7 @@ static void supervisor_task(void *arg)
             gone_since = now;
         } else if (now - gone_since > USB_UNPLUG_DEBOUNCE_MS && !session_running) {
             LOG_I("usb: unplugged, back to battery mode\r\n");
+            evlog_add(EV_USB, 0, 0);
             ble_pairing_stop();
             vTaskDelay(pdMS_TO_TICKS(200));     /* let the disconnect go out */
             persist_set(pf | PF_FROM_USB_MODE, 0);
@@ -274,7 +320,8 @@ static void supervisor_task(void *arg)
 
 static void usb_mode(uint32_t pf)
 {
-    LOG_I("usb: powered, staying awake for BLE pairing\r\n");
+    LOG_I("usb: powered, staying awake for BLE pairing; `evlog` prints the event log\r\n");
+    evlog_add(EV_USB, 1, 0);
     radio_init();
     if (radio_up)
         xTaskCreate(ble_task, "ble", 1024, NULL, configMAX_PRIORITIES - 2, NULL);
@@ -304,6 +351,7 @@ static void battery_task(void *arg)
         if (end == END_DONE)
             break;
         LOG_W("session: attempt %u ended with %d, retrying\r\n", attempt + 1, (int)end);
+        evlog_add(EV_RETRY, (int)attempt + 1, end);
     }
 
     if (end == END_DONE) {
@@ -315,9 +363,25 @@ static void battery_task(void *arg)
     sleep_for((pf & ~PF_FAILS_MASK) | fails, sleep_s);
 }
 
+#ifdef LEAKCAM_JTAG
+#include "board_pins.h"
+
+static void jtag_attach(void)
+{
+    struct bflb_device_s *gpio = bflb_device_get_by_name("gpio");
+    static const uint8_t pins[] = { PIN_JTAG_TMS, PIN_JTAG_TCK, PIN_JTAG_TDO, PIN_JTAG_TDI };
+    for (unsigned i = 0; i < sizeof(pins); i++)
+        bflb_gpio_init(gpio, pins[i], GPIO_FUNC_JTAG | GPIO_ALTERNATE | GPIO_PULLUP | GPIO_SMT_EN | GPIO_DRV_1);
+    LOG_W("debug build: JTAG on IO12-IO15, Wi-Fi refused\r\n");
+}
+#endif
+
 int main(void)
 {
     board_init();
+#ifdef LEAKCAM_JTAG
+    jtag_attach();
+#endif
     /* first thing after clocks: rails off, reset held, K230-side pins parked. R19/R76 already
      * hold this state in hardware while the BL616 is in reset or booting. */
     k230_power_init();
@@ -330,8 +394,11 @@ int main(void)
     uint32_t pf, hum_left;
     persist_get(&pf, &hum_left);
     bool wet = leak_is_wet();
-    LOG_I("boot: wake=%s usb=%d probes=%s fails=%u\r\n", wake_reason_name(reason), usb_present(),
-          wet ? "wet" : "dry", (unsigned)(pf & PF_FAILS_MASK));
+    int probe_mv = leak_probe_mv();
+    LOG_I("boot: wake=%s usb=%d probes=%s %d mV battery %d mV (last session) fails=%u\r\n",
+          wake_reason_name(reason), usb_present(), wet ? "wet" : "dry", probe_mv, battery_get(),
+          (unsigned)(pf & PF_FAILS_MASK));
+    evlog_add(EV_BOOT, reason, probe_mv < 0 ? 0 : (unsigned)probe_mv);
 
     if (usb_present())
         usb_mode(pf & ~PF_FROM_USB_MODE);       /* does not return */
@@ -344,8 +411,10 @@ int main(void)
         env_rh_x10 = rh;
         env_t_x10 = t;
         LOG_I("aht20: %d.%d %%RH %d.%d C\r\n", rh / 10, rh % 10, t / 10, t < 0 ? -t % 10 : t % 10);
+        evlog_add(EV_ENV, t / 10, (unsigned)rh);
     } else {
         LOG_E("aht20: read failed (%d)\r\n", (int)hr);
+        evlog_add(EV_AHT_FAIL, (int)hr, 0);
     }
 
     /* no memory of what was reported: a sensor over its threshold wakes the K230, every time, and
