@@ -4,9 +4,9 @@ C:\hw\LEAKCAM\Project Outputs for LEAKCAM\Pick Place for MIFA.csv
 ========================================================================================================================
 File Design Information:
 
-Date:       28/09/26
-Time:       19:08
-Revision:   14b8aa96fd0a1748c9fa08a273fa250a955d91a5
+Date:       29/09/26
+Time:       04:54
+Revision:   3da998ba9d02018c18443f97f571ce591dab62cc
 Variant:    No variations
 Units used: mil
 
@@ -17,13 +17,13 @@ Units used: mil
 "R54","22R","BottomLayer","RES_0402","1439.605","893.313","90","C25092"
 "CB2","100n 0201","BottomLayer","CAP_0201","1493.462","448.611","180","C2903663"
 "CB1","10uF GRM188R61A106ME69D","BottomLayer","FP-GRM188-0_15-MFG","1299.213","314.961","180","C19702"
-"LED15","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","807.087","1417.323","270","C19185834"
+"LED15","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","807.281","1417.323","270","C19185834"
 "LED13","xl-hd3535uwc-a2","TopLayer","XL-HD3535UWC-A2","807.087","1220.522","90","C3646951"
-"LED11","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","570.866","1417.323","270","C19185834"
+"LED11","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","571.061","1417.323","270","C19185834"
 "LED9","xl-hd3535uwc-a2","TopLayer","XL-HD3535UWC-A2","570.866","1220.522","90","C3646951"
-"LED7","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","334.646","1417.323","270","C19185834"
+"LED7","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","334.840","1417.323","270","C19185834"
 "LED5","xl-hd3535uwc-a2","TopLayer","XL-HD3535UWC-A2","334.646","1220.522","90","C3646951"
-"LED3","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","98.425","1417.323","270","C19185834"
+"LED3","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","98.620","1417.323","270","C19185834"
 "LED2","xl-hd3535uwc-a2","TopLayer","XL-HD3535UWC-A2","98.425","1220.522","90","C3646951"
 "J12","Connector 2PIn","TopLayer","CON_2P","866.228","1764.522","270",""
 "J11","Connector 2PIn","TopLayer","CON_2P","748.118","1764.522","270",""
@@ -33,12 +33,12 @@ Units used: mil
 "J7","Connector 2PIn","TopLayer","CON_2P","275.667","1764.522","270",""
 "J6","Connector 2PIn","TopLayer","CON_2P","157.567","1764.522","270",""
 "J3","Connector 2PIn","TopLayer","CON_2P","39.447","1764.522","270",""
-"LED16","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","98.425","2283.465","90","C19185834"
-"LED14","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","807.087","2283.465","90","C19185834"
+"LED16","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","98.231","2283.465","90","C19185834"
+"LED14","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","806.892","2283.465","90","C19185834"
 "LED12","xl-hd3535uwc-a2","TopLayer","XL-HD3535UWC-A2","807.087","2480.365","90","C3646951"
-"LED10","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","570.866","2283.465","90","C19185834"
+"LED10","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","570.672","2283.465","90","C19185834"
 "LED8","xl-hd3535uwc-a2","TopLayer","XL-HD3535UWC-A2","570.866","2480.365","90","C3646951"
-"LED6","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","334.646","2283.465","90","C19185834"
+"LED6","jnj-ltji0112w120/35mil/845-860nm","TopLayer","JNJ-LTJI0112W120","334.451","2283.465","90","C19185834"
 "LED4","xl-hd3535uwc-a2","TopLayer","XL-HD3535UWC-A2","334.646","2480.365","90","C3646951"
 "LED1","xl-hd3535uwc-a2","TopLayer","XL-HD3535UWC-A2","98.425","2480.365","90","C3646951"
 "RD2","1.5k","BottomLayer","RES_0402","2114.683","275.968","180","C25867"
@@ -72,7 +72,7 @@ Units used: mil
 "U7","TPS62823DLCR","BottomLayer","FP-DLC0008A-MFG","2266.151","1678.372","180","C2693497"
 "U6","TPS62823DLCR","BottomLayer","FP-DLC0008A-MFG","2264.378","1436.794","180","C2693497"
 "U5","TPS63802DLAR","BottomLayer","FP-DLA0010A-MFG","2077.861","1437.643","0","C2845237"
-"U3","k230d","TopLayer","K230D","1697.808","563.981","0","C42414902"
+"U3","k230d","TopLayer","K230D","1697.808","563.854","0","C42414902"
 "U2","ch340x","TopLayer","ch340x","1379.353","516.861","180","C3035748"
 "U1","BQ24072TRGTR","TopLayer","RGT0016C_V","2208.662","1171.260","180","C129319"
 "S2","S2B-PH-K-S(LF)(SN)","BottomLayer","JST-S2B-PH-K-S_V","1238.189","1220.472","90","C157932"
