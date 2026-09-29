@@ -20,7 +20,7 @@ qty   LCSC#       Basic/Ext value                        link                   
 4     C703141     Extended  DFE252012F-100M=P2           https://www.lcsc.com/product-detail/C703141.html   DFE252012F-100M=P2  (L6 L7)
 6     C2845237    Extended  TPS63802DLAR                 https://www.lcsc.com/product-detail/C2845237.html  TPS63802DLAR  (U5 U8 U10)
 4     C2693497    Extended  TPS62823DLCR                 https://www.lcsc.com/product-detail/C2693497.html  TPS62823DLCR  (U6 U7)
-30    C19702      Basic     10uF GRM188R61A106ME69D      https://www.lcsc.com/product-detail/C19702.html    CL10A106KP8NNNC  (C2 C3 C4 C11 C15 C16 C19 C50 C90 C96 C99 C102 C105 C106 CB1)
+36    C19702      Basic     10uF GRM188R61A106ME69D      https://www.lcsc.com/product-detail/C19702.html    CL10A106KP8NNNC  (C2 C3 C4 C11 C15 C16 C19 C38 C41 C50 C59 C90 C96 C99 C102 C105 C106 CB1)
 2     C15849      Basic     1uF 0603                     https://www.lcsc.com/product-detail/C15849.html    CL10A105KB8NNNC  (C86)
 12    C59461      Basic     22uF GRM188R60J226MEA0J      https://www.lcsc.com/product-detail/C59461.html    CL10A226MQ8NRNC  (C14 C17 C18 C20 C87 C89)
 2     C2286       Basic     KT-0603R                     https://www.lcsc.com/product-detail/C2286.html     KT-0603R  (D1)
@@ -62,4 +62,4 @@ qty   LCSC#       Basic/Ext value                        link                   
 
 NO PART: ANT1 MIFI, B1_N TESTP, B1_P TESTP, CT1 NF, J1 Connector 2PIn, J2 Connector 2PIn, J3 Connector 2PIn, J6 Connector 2PIn, J7 Connector 2PIn, J8 Connector 2PIn, J9 Connector 2PIn, J10 Connector 2PIn, J11 Connector 2PIn, J12 Connector 2PIn, JB1 Connector 2PIn, JB2 Connector 2PIn, JT Connector 2PIn, PR1 CON6P
 
-TOTAL 94.48 USD
+TOTAL 92.97 USD
