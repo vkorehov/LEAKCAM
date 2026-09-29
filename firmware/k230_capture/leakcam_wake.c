@@ -10,8 +10,8 @@
  *      whatever the cameras see;
  *   3. something is new -> ask the agent for Wi-Fi ("wifi" on stdout, the answer "wifi=ok" or
  *      "wifi=fail,<code>" on stdin); no Wi-Fi, no server config or no connection -> sleep;
- *   4. POST /v1/check?reason=<reason>&rh=<%RH>&t=<C>&probe_mv=<mV> with the reduced frame of
- *      every camera (PGM, one after the other); the server decides from the images and the
+ *   4. POST /v1/check?reason=<reason>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C> with the
+ *      reduced frame of every camera (PGM, one after the other); the server decides from the images and the
  *      sensors together and answers {"leak":true} or {"leak":false};
  *   5. leak -> leakcam_stream pushes 5 s of H.264 from both cameras to the server, then sleep;
  *      the frames are not stored, so every wake reports again until the server says no leak;
@@ -19,7 +19,8 @@
  *      keyframe) and sleep. Wi-Fi ends with the session: the BL616 stops it before power-off.
  *
  * The sensor values come from the BL616 (in WAKE) through the agent: LEAKCAM_RH, LEAKCAM_T
- * (unset without an AHT20 sample) and LEAKCAM_PROBE_MV. "sleep=<seconds>" on stdout picks the
+ * (unset without an AHT20 sample), LEAKCAM_PROBE_MV and LEAKCAM_BAT_MV (the K230's own ADC_1
+ * reading, unset without one; -1 in the query). "sleep=<seconds>" on stdout picks the
  * next scheduled wake. The server address is one line
  * "<host> <port>" in /sdcard/leakcam/server. Nothing is kept in RAM between wakes.
  */
@@ -133,6 +134,7 @@ static bool wifi_up(void)
 struct sensors {
     const char *rh, *t;                   /* NULL: no AHT20 sample */
     int probe_mv;                         /* -1: no reading */
+    int bat_mv;                           /* -1: no reading */
 };
 
 /* POST /v1/check: 1 leak, 0 no leak, -1 not reported */
@@ -141,7 +143,8 @@ static int server_check(const char *host, const char *port, const char *reason, 
 {
     char head[32], path[160], reply[256];
     int hlen = snprintf(head, sizeof(head), "P5\n%d %d\n255\n", IMGDIFF_W, IMGDIFF_H);
-    int k = snprintf(path, sizeof(path), "/v1/check?reason=%s&probe_mv=%d", reason, s->probe_mv);
+    int k = snprintf(path, sizeof(path), "/v1/check?reason=%s&probe_mv=%d&bat_mv=%d", reason,
+                     s->probe_mv, s->bat_mv);
     if (s->rh && s->t)
         snprintf(path + k, sizeof(path) - (size_t)k, "&rh=%s&t=%s", s->rh, s->t);
     int fd = net_connect(host, port, NET_TIMEOUT_S);
@@ -209,12 +212,13 @@ int main(int argc, char **argv)
     const char *reason = argc > 1 ? argv[1] : "cold";
     static struct cam_frame f[2];
     const int n = 2;
-    const char *mv = getenv("LEAKCAM_PROBE_MV");
-    struct sensors sens = { getenv("LEAKCAM_RH"), getenv("LEAKCAM_T"), mv ? atoi(mv) : -1 };
+    const char *mv = getenv("LEAKCAM_PROBE_MV"), *bat = getenv("LEAKCAM_BAT_MV");
+    struct sensors sens = { getenv("LEAKCAM_RH"), getenv("LEAKCAM_T"), mv ? atoi(mv) : -1,
+                            bat ? atoi(bat) : -1 };
     bool sensor_alarm = !strcmp(reason, "leak") || !strcmp(reason, "humid") ||
                         (sens.probe_mv >= 0 && sens.probe_mv < PROBE_WET_MV);
-    printf("sensors: rh %s, t %s, probe %d mV%s\n", sens.rh ? sens.rh : "-", sens.t ? sens.t : "-",
-           sens.probe_mv, sensor_alarm ? ", alarm" : "");
+    printf("sensors: rh %s, t %s, probe %d mV, battery %d mV%s\n", sens.rh ? sens.rh : "-",
+           sens.t ? sens.t : "-", sens.probe_mv, sens.bat_mv, sensor_alarm ? ", alarm" : "");
 
     if (mkdir(STATE_DIR, 0755) < 0 && errno != EEXIST)
         return 1;

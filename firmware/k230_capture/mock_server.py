@@ -3,7 +3,7 @@
 
   mock_server.py [--port 8000] [--dir mock_out] [--leak probe|always|never]
 
-POST /v1/check?reason=<r>&probe_mv=<mV>[&rh=<%RH>&t=<C>]
+POST /v1/check?reason=<r>&probe_mv=<mV>&bat_mv=<mV>[&rh=<%RH>&t=<C>]
                             body: one binary PGM per camera, back to back. Saved as
                             check-<n>-cam<i>.pgm. Answers {"leak":true|false}: with --leak
                             probe (default) a leak is what the BL616's probes say: the
@@ -81,8 +81,9 @@ class Handler(BaseHTTPRequestHandler):
                     f.write(p)
             wet = reason == "leak" or 0 <= mv < 825
             leak = args.leak == "always" or (args.leak == "probe" and wet)
-            print(f"check {n}: reason={reason} probe={mv} mV rh={q.get('rh', ['-'])[0]} "
-                  f"t={q.get('t', ['-'])[0]} cameras={len(pgms)} -> leak={leak}", flush=True)
+            print(f"check {n}: reason={reason} probe={mv} mV bat={q.get('bat_mv', ['-'])[0]} mV "
+                  f"rh={q.get('rh', ['-'])[0]} t={q.get('t', ['-'])[0]} cameras={len(pgms)} "
+                  f"-> leak={leak}", flush=True)
             self.reply({"leak": leak})
         elif url.path == "/v1/video":
             cam = q.get("cam", ["0"])[0]

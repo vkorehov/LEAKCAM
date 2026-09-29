@@ -1,11 +1,13 @@
 /* Host test: BL616 k230_link.c against frames built exactly like leakcam_agent.c send_frame():
  * parsing and noise, ACK/NAK answers, duplicates, resends and giving up, stale answers, READY. */
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include "k230_link.h"
 #include "bflb_uart.h"
+#include "log.h"
 
-static struct bflb_device_s dev;
+static struct bflb_device_s dev = { "uart0" };
 static char rx[1024];
 static size_t rxi, rxn;
 static char tx[2048];
@@ -13,6 +15,21 @@ static size_t txn;
 struct bflb_device_s *bflb_device_get_by_name(const char *n) { (void)n; return &dev; }
 int bflb_uart_getchar(struct bflb_device_s *d) { (void)d; return rxi < rxn ? (unsigned char)rx[rxi++] : -1; }
 int bflb_uart_putchar(struct bflb_device_s *d, int c) { (void)d; if (txn < sizeof(tx) - 1) { tx[txn++] = (char)c; tx[txn] = 0; } return 0; }
+
+/* the link trace (log.h stand-in): kept to check what a bench console would show */
+static char logbuf[8192];
+static size_t logn;
+void test_log(char level, const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    logn += (size_t)snprintf(logbuf + logn, sizeof(logbuf) - logn, "%c ", level);
+    logn += (size_t)vsnprintf(logbuf + logn, sizeof(logbuf) - logn, fmt, ap);
+    va_end(ap);
+    if (logn >= sizeof(logbuf))
+        logn = sizeof(logbuf) - 1;
+}
+static int logged(const char *needle) { int n = 0; for (const char *p = logbuf; (p = strstr(p, needle)); p++) n++; return n; }
 
 static int fails;
 #define CHECK(c, ...) do { if (!(c)) { fails++; printf("FAIL %s:%d: ", __FILE__, __LINE__); printf(__VA_ARGS__); printf("\n"); } } while (0)
@@ -70,6 +87,9 @@ int main(void)
     agent_frame(want, 1, "ACK", "1"); CHECK(strstr(tx, want) != NULL, "ACK for SLEEP");
     agent_frame(want, 2, "ACK", "2"); CHECK(strstr(tx, want) != NULL, "ACK for WIFI");
     CHECK(count("ACK") == 3, "exactly 3 answers, got %d: %s", count("ACK"), tx);
+    CHECK(logged("link: dropped") == 3, "trace: 3 dropped frames (junk, bad CRC, no seq), got %d",
+          logged("link: dropped"));
+    CHECK(logged("link< 1,SLEEP,600*") == 1 && logged("link> 2,ACK,2") == 1, "trace: RX and TX lines");
 
     /* 2. a repeat (our ACK was lost) is answered again but not delivered twice */
     clear_tx();
@@ -96,36 +116,39 @@ int main(void)
      * after 5; while it is in flight a second one is refused */
     link_reset();
     clear_tx();
-    CHECK(link_send_cmd("WAKE", "leak,1790000000,-1,0,700"), "send");
-    CHECK(!link_send_cmd("WAKE", "rtc,1790000000,-1,0,700"), "second WAKE while one is in flight");
+    CHECK(link_send_cmd("WAKE", "leak,1790000000,-1,0,700,-1"), "send");
+    CHECK(!link_send_cmd("WAKE", "rtc,1790000000,-1,0,700,-1"), "second WAKE while one is in flight");
     uint64_t t = 1000;
     CHECK(link_service(t) == NULL, "first send reports nothing");
-    agent_frame(want, 0, "WAKE", "leak,1790000000,-1,0,700"); CHECK(strcmp(tx, want) == 0, "WAKE frame: %s", tx);
+    agent_frame(want, 0, "WAKE", "leak,1790000000,-1,0,700,-1"); CHECK(strcmp(tx, want) == 0, "WAKE frame: %s", tx);
     CHECK(link_service(t + 299) == NULL && count("WAKE") == 1, "no resend before the timeout");
     const struct link_result *r = NULL;
     for (int i = 1; i <= 5 && !r; i++)
         r = link_service(t + 300u * (unsigned)i);
     CHECK(count("WAKE") == 5, "WAKE sent 5 times, got %d", count("WAKE"));
     CHECK(r && r->end == LINK_TIMED_OUT && strcmp(r->cmd, "WAKE") == 0, "WAKE given up");
+    CHECK(logged("no answer to WAKE, resend") == 4 && logged("resend 5 of 5") == 1,
+          "trace: 4 resends of WAKE, got %d", logged("no answer to WAKE, resend"));
 
     /* 5. the next WAKE gets a new seq; a stale ACK (old seq) does not end it, the right one does;
      * then nothing more is sent */
     clear_tx();
-    CHECK(link_send_cmd("WAKE", "rtc,1790000600,655,213,1650"), "send after give-up");
+    CHECK(link_send_cmd("WAKE", "rtc,1790000600,655,213,1650,3712"), "send after give-up");
     CHECK(link_service(t + 2000) == NULL, "WAKE sent");
-    agent_frame(want, 1, "WAKE", "rtc,1790000600,655,213,1650"); CHECK(strcmp(tx, want) == 0, "WAKE frame with seq 1: %s", tx);
+    agent_frame(want, 1, "WAKE", "rtc,1790000600,655,213,1650,3712"); CHECK(strcmp(tx, want) == 0, "WAKE frame with seq 1: %s", tx);
     feed_cmd(9, "ACK", "0");
     CHECK(!link_poll(&m), "an ACK is never delivered");
     CHECK(link_service(t + 2001) == NULL, "stale ACK must not end WAKE");
-    feed_cmd(9, "ACK", "1");
+    feed_cmd(9, "ACK", "1,3705");                       /* the agent's battery reading rides on it */
     CHECK(!link_poll(&m), "ACK consumed");
     r = link_service(t + 2002);
     CHECK(r && r->end == LINK_ACKED && strcmp(r->cmd, "WAKE") == 0, "WAKE acknowledged");
+    CHECK(r && strcmp(r->answer, "3705") == 0, "answer carried by the ACK: \"%s\"", r ? r->answer : "");
     clear_tx();
     CHECK(link_service(t + 5000) == NULL && txn == 0, "nothing more sent");
 
     /* 6. READY from a restarted agent: seq 0 again is new, and the WAKE in flight is dropped */
-    link_send_cmd("WAKE", "rtc,1790000000,-1,0,1650");
+    link_send_cmd("WAKE", "rtc,1790000000,-1,0,1650,3698");
     link_service(t + 6000);
     feed_cmd(0, "READY", NULL);
     CHECK(link_poll(&m) && strcmp(m.cmd, "READY") == 0, "READY after restart delivered");
@@ -135,8 +158,8 @@ int main(void)
     CHECK(link_poll(&m) && strcmp(m.cmd, "SLEEP") == 0 && m.arg == 60, "next seq delivered");
     clear_tx();
     CHECK(link_service(t + 7000) == NULL && count("WAKE") == 0, "WAKE dropped on READY: not resent");
-    CHECK(link_send_cmd("WAKE", "rtc,1790000000,-1,0,1650"), "a new WAKE can be sent after READY");
+    CHECK(link_send_cmd("WAKE", "rtc,1790000000,-1,0,1650,3698"), "a new WAKE can be sent after READY");
 
-    printf(fails ? "FAIL (%d)\n" : "link protocol: CRC-8, seq/ACK/NAK, duplicates, resends, give-up, stale answers, READY restart, noise\n", fails);
+    printf(fails ? "FAIL (%d)\n" : "link protocol: CRC-8, seq/ACK/NAK, duplicates, resends, give-up, stale answers, READY restart, noise, trace\n", fails);
     return fails != 0;
 }

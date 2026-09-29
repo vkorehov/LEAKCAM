@@ -192,9 +192,12 @@ the kernel NAND glue is patched to report 64.
 1. The BL616 wakes on the RTC (every 10 min for humidity, or the K230's requested interval), a
    leak comparator, or USB plug-in. It powers the K230 and releases reset. Wi-Fi stays off.
 2. RT-Smart boots from NAND and starts `leakcam_agent`. The agent sends `READY` on UART1; the
-   BL616 answers `WAKE,<reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>`: the wake reason, its
-   clock, the AHT20 sample and the probe node voltage (GPADC on the comparator's pad). The
-   agent sets the clock and passes the sensor values to `leakcam_wake`.
+   BL616 answers `WAKE,<reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>,<bat_mv>`: the wake reason,
+   its clock, the AHT20 sample, the probe node voltage (GPADC on the comparator's pad) and the
+   battery as the K230 measured it last session. The agent answers `ACK,<seq>,<bat_mv>` with its
+   own reading: the VBAT/3 divider (R59/R61) goes to K230 ADC_1 only and is switched by the
+   K230's 3V3, so the BL616 has no battery input of its own and keeps the last value. The agent
+   sets the clock and passes the sensor values and the battery to `leakcam_wake`.
 3. The agent runs `leakcam_wake <reason>`, the main algorithm (below).
 4. The agent sends `TIME` when NTP set the clock and `SLEEP,<seconds>` with the interval
    `leakcam_wake` chose, then stops its heartbeat. 2 s after the last edge the BL616 stops Wi-Fi
@@ -298,8 +301,9 @@ is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
   includes too.
   - K230 → BL616: `READY`, `SLEEP,<s>` (the next wake only, not a power-off), `TIME,<unix s>`,
     `WIFI`.
-  - BL616 → K230: `WAKE,<cold|leak|rtc|humid>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>` (rh -1 = no
-    AHT20 sample, probe -1 = no reading), once per `READY`; `ACK`.
+  - BL616 → K230: `WAKE,<cold|leak|rtc|humid>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>,<bat_mv>`
+    (rh -1 = no AHT20 sample, probe -1 = no reading, bat -1 = no reading since the power loss),
+    once per `READY`, answered `ACK,<seq>,<bat_mv>` with the K230's ADC_1 reading; `ACK`.
 - **K230 side: `leakcam_agent`**, an RT-Smart program started at boot (`RTT_AUTO_EXEC_CMD`). It
   talks to `/dev/uart1` and `/dev/gpio` directly and runs the capture hook for the wake reason.
   The hook prints `wifi` when it needs the network; the agent sends `WIFI` and, once it is

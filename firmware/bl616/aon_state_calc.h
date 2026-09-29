@@ -27,7 +27,7 @@ struct aon_block {
     uint32_t clock_valid;       /* 1 = epoch_ref/rtc_ref describe real time */
     uint32_t epoch_ref;         /* Unix seconds at rtc_ref */
     uint64_t rtc_ref;           /* 40-bit RTC count, 32768 Hz */
-    uint32_t reserved;
+    uint32_t bat_mv;            /* battery at the last K230 session (its ADC); 0 = none yet */
     uint32_t crc;               /* CRC-32 over everything above */
 };
 

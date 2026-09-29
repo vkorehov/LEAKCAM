@@ -1,6 +1,6 @@
 /*
- * State that must survive hibernate and software resets: the persisted session flags and the
- * wall clock. Kept in the last 64 bytes of HBN RAM (4 KB always-on SRAM at HBN_RAM_BASE, held in
+ * State that must survive hibernate and software resets: the persisted session flags, the
+ * wall clock and the last battery reading. Kept in the last 64 bytes of HBN RAM (4 KB always-on SRAM at HBN_RAM_BASE, held in
  * retention through HBN level 0) with a magic and a CRC.
  *
  * Why not HBN_Set_Status_Flag(): it is HBN_RSV0, and pm_hbn_mode_enter() overwrites HBN_RSV0 with
@@ -30,6 +30,10 @@ void persist_set(uint32_t flags, uint32_t hum_wakes_left);
 bool wallclock_get(uint32_t *epoch);
 /* false = refused (before 2026-01-01, i.e. not a real time) */
 bool wallclock_set(uint32_t epoch);
+
+/* battery voltage as the K230 last measured it (ACK of WAKE); -1 = none since the power loss */
+int battery_get(void);
+void battery_set(unsigned mv);
 
 /* before every hibernate: keep HBN RAM in retention */
 void aon_prepare_sleep(void);
