@@ -48,6 +48,19 @@
  * it is done and its files are written. */
 #define HEARTBEAT_STOP_MS    2000
 #define BOOT_RETRIES         3
+/* Left out of LEAKCAM_RELEASE builds; the default build has it (CMakeLists.txt, DEBUG.txt).
+ * First boot (power-on or EN reset, so every reflash): the K230's rails come up but it is held in
+ * reset, which also powers its console (USBC2, the CH340X on the switched 3V3) so that port can
+ * be opened before the K230 prints its first line. The BL616 releases it ATTACH_COUNTDOWN_S after
+ * a terminal opens its own console (PR1, USB CDC: DTR), or after ATTACH_WAIT_MS with nobody there
+ * (a field install). The CH340X has no DTR wired to anything, so "both consoles attached" means:
+ * open the K230 one first. A terminal on PR1 then also makes it a debug session: READY and the
+ * heartbeat get DEBUG_TIMEOUT_MS, so the K230 may sit at its prompt or halted in a debugger. */
+#ifndef LEAKCAM_RELEASE
+#define ATTACH_WAIT_MS       30000
+#define ATTACH_COUNTDOWN_S   3
+#define DEBUG_TIMEOUT_MS     (30u * 60u * 1000u)
+#endif
 
 #define REPORT_PERIOD_S      (6u * 3600u)
 #define HUM_PERIOD_S         600u    /* humidity sample interval: RTC wake, ~85 ms awake, no K230 */
@@ -59,8 +72,22 @@
 #define PF_FAILS_MASK        0x0Fu
 #define PF_FROM_USB_MODE     0x20u   /* reboot was the USB-unplug exit, not a real cold start */
 
-/* last humidity sample of this boot, sent to the K230 in WAKE; rh < 0 = none */
+/* last humidity sample, sent to the K230 in WAKE; rh -1 = the read failed */
 static int env_rh_x10 = -1, env_t_x10;
+
+static void env_take(enum aht20_result hr, int rh, int t)
+{
+    if (hr == AHT20_OK) {
+        env_rh_x10 = rh;
+        env_t_x10 = t;
+        LOG_I("aht20: %d.%d %%RH %d.%d C\r\n", rh / 10, rh % 10, t / 10, t < 0 ? -t % 10 : t % 10);
+        evlog_add(EV_ENV, t / 10, (unsigned)rh);
+    } else {
+        env_rh_x10 = -1;
+        LOG_E("aht20: read failed (%d)\r\n", (int)hr);
+        evlog_add(EV_AHT_FAIL, (int)hr, 0);
+    }
+}
 
 #define USB_UNPLUG_DEBOUNCE_MS 1000
 
@@ -171,34 +198,81 @@ static bool wait_link_cmd(const char *cmd, uint32_t timeout_ms, struct link_msg 
     return false;
 }
 
-static void send_wake(enum wake_reason reason)
+static void send_wake(unsigned reason)
 {
     /* WAKE,<reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>,<bat_mv>. The K230's RTC restarts at
      * every power-up, ours runs on the Y3 crystal, so the time rides in this frame (0 = our clock
      * is not valid, the battery was out); so do the sensors, which take part in the leak decision
-     * whatever the cameras see (rh -1 = no AHT20 sample: USB mode or a failed read), and the
+     * whatever the cameras see (rh -1 = the AHT20 read failed), and the
      * battery the K230 measured last time (-1 = none since the power loss) */
     uint32_t now;
-    char wake[56];
+    char wake[64], why[24];
     if (!wallclock_get(&now))
         now = 0;
-    snprintf(wake, sizeof(wake), "%s,%lu,%d,%d,%d,%d", wake_reason_name(reason), (unsigned long)now,
+    snprintf(wake, sizeof(wake), "%s,%lu,%d,%d,%d,%d", wake_reason_text(reason, why, sizeof(why)), (unsigned long)now,
              env_rh_x10, env_rh_x10 >= 0 ? env_t_x10 : 0, leak_probe_mv(), battery_get());
     link_send_cmd("WAKE", wake);
 }
 
-static enum session_end run_session(enum wake_reason reason, uint32_t *sleep_s)
+/* ---------------- first boot: wait for the consoles (not in LEAKCAM_RELEASE) ---------------- */
+
+static bool debug_session;              /* a terminal attached at first boot: slow timeouts */
+
+#ifndef LEAKCAM_RELEASE
+static volatile bool console_open;
+
+/* CherryUSB's weak hook, called from its control request handler when the host sets the CDC
+ * line state: a terminal opening the PR1 console raises DTR */
+void usbd_cdc_acm_set_dtr(uint8_t busid, uint8_t intf, bool dtr)
+{
+    (void)busid;
+    (void)intf;
+    console_open = dtr;
+}
+
+/* task context (the USB console runs with the scheduler); true = a terminal opened */
+static bool wait_for_terminal(bool k230_held)
+{
+    for (unsigned t = 0; !console_open && t < ATTACH_WAIT_MS; t += 100)
+        vTaskDelay(pdMS_TO_TICKS(100));
+    if (!console_open)
+        return false;
+    printf("\r\nLEAKCAM BL616, " __DATE__ " " __TIME__ ", first boot: debug timeouts (%u min)\r\n",
+           DEBUG_TIMEOUT_MS / 60000u);
+    evlog_print();
+    for (unsigned n = ATTACH_COUNTDOWN_S; k230_held && n > 0; n--) {
+        printf("K230 leaves reset in %u s: its console is USBC2\r\n", n);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+    return true;
+}
+#else
+static bool wait_for_terminal(bool k230_held)
+{
+    (void)k230_held;
+    return false;
+}
+#define DEBUG_TIMEOUT_MS 0
+#endif
+
+static enum session_end run_session(unsigned reason, uint32_t *sleep_s, bool first_boot)
 {
     struct link_msg m;
     evlog_add(EV_SESSION, reason, 0);
+    k230_power_on(first_boot);
+    if (first_boot) {
+        debug_session = wait_for_terminal(true);
+        k230_reset_release();
+    }
     uint64_t t_on = bflb_mtimer_get_time_ms();
-    k230_power_on();
+    uint32_t ready_timeout = debug_session ? DEBUG_TIMEOUT_MS : BOOT_TIMEOUT_MS;
+    uint32_t heartbeat_stop = debug_session ? DEBUG_TIMEOUT_MS : HEARTBEAT_STOP_MS;
 
     link_reset();
     link_set_reply(reply);
-    if (!wait_link_cmd("READY", BOOT_TIMEOUT_MS, &m)) {
-        LOG_E("session: no READY within %u ms\r\n", BOOT_TIMEOUT_MS);
-        evlog_add(EV_NO_READY, 0, BOOT_TIMEOUT_MS / 1000);
+    if (!wait_link_cmd("READY", ready_timeout, &m)) {
+        LOG_E("session: no READY within %u ms\r\n", (unsigned)ready_timeout);
+        evlog_add(EV_NO_READY, 0, ready_timeout / 1000);
         k230_off();                             /* nothing to sync with, K230 never came up */
         return END_NO_BOOT;
     }
@@ -219,7 +293,7 @@ static enum session_end run_session(enum wake_reason reason, uint32_t *sleep_s)
             level = l;
             last_edge = now;
         }
-        if (now - last_edge > HEARTBEAT_STOP_MS) {
+        if (now - last_edge > heartbeat_stop) {
             unsigned len_s = (unsigned)((now - t_on) / 1000);
             LOG_I("session: heartbeat stopped after %u s, next wake in %u s\r\n", len_s,
                   (unsigned)*sleep_s);
@@ -273,7 +347,12 @@ static void session_task(void *arg)
 {
     (void)arg;
     uint32_t sleep_s;
-    run_session(WAKE_LEAK, &sleep_s);           /* K230 captures, then asks to be powered off */
+    int rh = 0, t = 0;
+    enum aht20_result hr = aht20_start();      /* the boot's sample is hours old on USB power */
+    if (hr == AHT20_OK)
+        hr = aht20_finish(&rh, &t);
+    env_take(hr, rh, t);
+    run_session(WAKE_LEAK, &sleep_s, false);    /* K230 captures, then asks to be powered off */
     session_running = false;
     vTaskDelete(NULL);
 }
@@ -285,9 +364,13 @@ static void ble_task(void *arg)
     vTaskDelete(NULL);
 }
 
+static bool usb_first_boot;
+
 static void supervisor_task(void *arg)
 {
     uint32_t pf = (uint32_t)(uintptr_t)arg;
+    if (usb_first_boot)
+        debug_session = wait_for_terminal(false);   /* no K230 at boot on USB power */
     uint64_t gone_since = 0;
     while (1) {
         uint64_t now = bflb_mtimer_get_time_ms();
@@ -318,8 +401,9 @@ static void supervisor_task(void *arg)
     }
 }
 
-static void usb_mode(uint32_t pf)
+static void usb_mode(uint32_t pf, bool first_boot)
 {
+    usb_first_boot = first_boot;
     LOG_I("usb: powered, staying awake for BLE pairing; `evlog` prints the event log\r\n");
     evlog_add(EV_USB, 1, 0);
     radio_init();
@@ -333,13 +417,13 @@ static void usb_mode(uint32_t pf)
 
 /* ---------------- battery: one K230 session, then hibernate ---------------- */
 
-static enum wake_reason bat_reason;
+static unsigned bat_reason;
 static uint32_t bat_pf;
 
 static void battery_task(void *arg)
 {
     (void)arg;
-    enum wake_reason reason = bat_reason;
+    unsigned reason = bat_reason;
     uint32_t pf = bat_pf;
 
     uint32_t sleep_s = REPORT_PERIOD_S;
@@ -347,7 +431,7 @@ static void battery_task(void *arg)
     unsigned fails = pf & PF_FAILS_MASK;
 
     for (unsigned attempt = 0; attempt < BOOT_RETRIES; attempt++) {
-        end = run_session(reason, &sleep_s);
+        end = run_session(reason, &sleep_s, (reason & WAKE_COLD) && attempt == 0);
         if (end == END_DONE)
             break;
         LOG_W("session: attempt %u ended with %d, retrying\r\n", attempt + 1, (int)end);
@@ -386,7 +470,12 @@ int main(void)
      * hold this state in hardware while the BL616 is in reset or booting. */
     k230_power_init();
 
-    enum wake_reason reason = wake_reason_get();
+    /* the AHT20 converts while the rest of the boot runs (aht20_finish() below) */
+    aht20_init();
+    enum aht20_result hr = aht20_start();
+
+    unsigned reason = wake_reason_get();
+    char why[24];
     leak_init();
     usb_sense_init();
     rtc_use_crystal();
@@ -396,36 +485,29 @@ int main(void)
     bool wet = leak_is_wet();
     int probe_mv = leak_probe_mv();
     LOG_I("boot: wake=%s usb=%d probes=%s %d mV battery %d mV (last session) fails=%u\r\n",
-          wake_reason_name(reason), usb_present(), wet ? "wet" : "dry", probe_mv, battery_get(),
+          wake_reason_text(reason, why, sizeof(why)), usb_present(), wet ? "wet" : "dry", probe_mv, battery_get(),
           (unsigned)(pf & PF_FAILS_MASK));
     evlog_add(EV_BOOT, reason, probe_mv < 0 ? 0 : (unsigned)probe_mv);
 
     if (usb_present())
-        usb_mode(pf & ~PF_FROM_USB_MODE);       /* does not return */
+        usb_mode(pf & ~PF_FROM_USB_MODE, reason & WAKE_COLD);   /* does not return */
 
     /* humidity is sampled on every battery boot; the AHT20 cannot wake us by itself */
-    aht20_init();
-    int rh, t;
-    enum aht20_result hr = aht20_read(&rh, &t);
-    if (hr == AHT20_OK) {
-        env_rh_x10 = rh;
-        env_t_x10 = t;
-        LOG_I("aht20: %d.%d %%RH %d.%d C\r\n", rh / 10, rh % 10, t / 10, t < 0 ? -t % 10 : t % 10);
-        evlog_add(EV_ENV, t / 10, (unsigned)rh);
-    } else {
-        LOG_E("aht20: read failed (%d)\r\n", (int)hr);
-        evlog_add(EV_AHT_FAIL, (int)hr, 0);
-    }
+    int rh = 0, t = 0;
+    if (hr == AHT20_OK)
+        hr = aht20_finish(&rh, &t);
+    env_take(hr, rh, t);
 
     /* no memory of what was reported: a sensor over its threshold wakes the K230, every time, and
      * the K230 decides (it gets the values in WAKE). A drying edge is a leak wake too: the probe
-     * voltage tells the K230 which way it went. */
-    if (reason == WAKE_RTC && wet)
-        reason = WAKE_LEAK;
-    if ((reason == WAKE_RTC || reason == WAKE_COLD) && hr == AHT20_OK && rh >= HUM_ALARM_X10)
-        reason = WAKE_HUMID;
+     * voltage tells the K230 which way it went. The sensors add to the hardware causes. */
+    if (wet)
+        reason |= WAKE_LEAK;
+    if (hr == AHT20_OK && rh >= HUM_ALARM_X10)
+        reason |= WAKE_HUMID;
 
-    /* humidity slice with nothing to report: straight back to sleep, the K230 stays off */
+    /* humidity slice with nothing to report (only the RTC woke us): straight back to sleep, the
+     * K230 stays off */
     if (reason == WAKE_RTC && hum_left > 0) {
         aht20_deinit();
         usb_arm_hbn_wake();
@@ -436,7 +518,7 @@ int main(void)
     /* the reboot out of USB mode is not a new installation: no K230 session for it */
     if (pf & PF_FROM_USB_MODE) {
         pf &= ~PF_FROM_USB_MODE;
-        if (reason != WAKE_LEAK)
+        if (!(reason & (WAKE_LEAK | WAKE_HUMID)))
             sleep_for(pf, REPORT_PERIOD_S);
     }
 

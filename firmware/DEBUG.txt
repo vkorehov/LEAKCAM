@@ -1,11 +1,12 @@
 LEAKCAM firmware debugging
 ==========================
 
-Three tools, from the one you always have to the one that needs wires:
+Four tools, from the one you always have to the one that needs wires:
 
   1. consoles         BL616 on PR1 (USB CDC), K230 on USBC2 (CH340X)
   2. retained log     the BL616's last 32 events, read with `evlog` on the BL616 console
-  3. JTAG             BL616 only, debug build, four wires soldered to the SDIO pull-ups
+  3. default build    first boot waits for your terminals, 30 min timeouts (not in LEAKCAM_RELEASE)
+  4. JTAG             BL616 only, debug build, four wires soldered to the SDIO pull-ups
 
 
 1. Consoles
@@ -57,24 +58,53 @@ Read it: put the board on USB power (USBC1), connect PR1, type `evlog`:
   evlog: 9 events, oldest first
     2026-10-02 03:10:00Z  boot rtc probe=1650 mV
     2026-10-02 03:10:00Z  env 61.2 %RH 22 C
-    2026-10-02 03:10:00Z  sleep 600 s, probes dry
-    2026-10-02 03:20:00Z  boot leak probe=410 mV
-    2026-10-02 03:20:00Z  session leak
+    2026-10-02 03:10:00Z  sleep 600 s, awake 92 ms
+    2026-10-02 03:20:00Z  boot leak+rtc probe=410 mV
+    2026-10-02 03:20:00Z  session leak+rtc
     2026-10-02 03:20:24Z  ready after 23400 ms
+    2026-10-02 03:21:41Z  battery 3712 mV
     2026-10-02 03:21:41Z  session-end after 101 s
-    2026-10-02 03:21:41Z  sleep 600 s, probes wet
+    2026-10-02 03:21:41Z  sleep 600 s, awake >1020 ms
     2026-10-02 06:02:13Z  usb plugged
 
 Times are UTC once the K230 has sent TIME (NTP) since the last power loss; before that they
 read "N s ago". "(before an RTC reset)" marks entries older than an EN reset.
 
-Events: boot (wake reason, probe mV), env (RH, temperature), aht20-fail, session (reason),
+Events: boot (wake reasons, probe mV), env (RH, temperature), aht20-fail, session (reasons),
 ready (ms to READY), no-ready, nak (command letter, NAK code), wifi (started / start failed),
-link-lost, session-end (length), retry, sleep (seconds, probe state), usb (plugged /
-unplugged), clock (correction), clock-lost, radio-fail, ble-creds.
+link-lost, session-end (length), retry, sleep (seconds, ms awake since reset: the wake cost to
+shorten; ">1020" after a K230 session), usb (plugged / unplugged), clock (correction), clock-lost,
+radio-fail, ble-creds, battery (the K230's reading).
+Wake reasons are every cause that applied, joined by '+': cold, leak, rtc, usb, humid.
 
 
-3. JTAG (BL616)
+3. Default build: first boot waits for the terminals
+----------------------------------------------------
+
+A plain `make` (BUILD.md 4.1) builds it while boards are being brought up. The release build
+leaves it out:
+
+  rm -rf firmware/bl616/build
+  docker run ... -e LEAKCAM_RELEASE=1 ... make -j5
+
+Needs both USB cables: PR1 (BL616) and USBC2 (K230). On the first boot (power-on or EN reset,
+so right after flashing) the BL616 brings the K230's rails up but holds it in reset: that
+powers the CH340X, whose port can now be opened. Then:
+
+  1. open the K230 terminal (USBC2), 2. open the BL616 terminal (PR1).
+
+Opening the BL616 terminal (DTR) prints the build, the event log and a 3 s countdown, then the
+K230 leaves reset and its whole boot, bootloader first, is on the K230 terminal. The CH340X
+has no DTR wired, so the BL616 cannot see the K230 terminal: open that one first. With no
+terminal within 30 s it boots as usual (normal timeouts).
+
+A terminal opened then makes it a debug session until the next reset: READY may take 30 min
+and the heartbeat may stop for 30 min before the BL616 cuts the K230's power, so the K230 can
+sit at its msh prompt or halted in a debugger. The release build has none of this: no wait,
+no reset hold, 90 s / 2 s. LEAKCAM_JTAG can be added on top.
+
+
+4. JTAG (BL616)
 ---------------
 
 The BL616's reset-default JTAG pins IO0-IO3 are K230_RSTN, K230_ALIVE, PGOOD and the BOOT strap

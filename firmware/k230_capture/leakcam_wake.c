@@ -13,14 +13,13 @@
  *   4. POST /v1/check?reason=<reason>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C> with the
  *      reduced frame of every camera (PGM, one after the other); the server decides from the images and the
  *      sensors together and answers {"leak":true} or {"leak":false};
- *   5. leak -> leakcam_stream pushes 5 s of H.264 from both cameras to the server, then sleep;
+ *   5. leak -> leakcam_stream pushes 5 s of video with audio (FLV) from both cameras, then sleep;
  *      the frames are not stored, so every wake reports again until the server says no leak;
  *   6. no leak -> the new frames go to the history (a delta of the changed blocks, or a
  *      keyframe) and sleep. Wi-Fi ends with the session: the BL616 stops it before power-off.
  *
- * The sensor values come from the BL616 (in WAKE) through the agent: LEAKCAM_RH, LEAKCAM_T
- * (unset without an AHT20 sample), LEAKCAM_PROBE_MV and LEAKCAM_BAT_MV (the K230's own ADC_1
- * reading, unset without one; -1 in the query). "sleep=<seconds>" on stdout picks the
+ * The sensor values come from the BL616 (in WAKE) through the agent, always all four:
+ * LEAKCAM_RH, LEAKCAM_T, LEAKCAM_PROBE_MV and LEAKCAM_BAT_MV (the K230's own ADC_1 reading). "sleep=<seconds>" on stdout picks the
  * next scheduled wake. The server address is one line
  * "<host> <port>" in /sdcard/leakcam/server. Nothing is kept in RAM between wakes.
  */
@@ -132,9 +131,8 @@ static bool wifi_up(void)
 
 /* the BL616's values, as the agent passes them */
 struct sensors {
-    const char *rh, *t;                   /* NULL: no AHT20 sample */
-    int probe_mv;                         /* -1: no reading */
-    int bat_mv;                           /* -1: no reading */
+    const char *rh, *t;                   /* %RH, C as the agent formats them */
+    int probe_mv, bat_mv;
 };
 
 /* POST /v1/check: 1 leak, 0 no leak, -1 not reported */
@@ -143,10 +141,13 @@ static int server_check(const char *host, const char *port, const char *reason, 
 {
     char head[32], path[160], reply[256];
     int hlen = snprintf(head, sizeof(head), "P5\n%d %d\n255\n", IMGDIFF_W, IMGDIFF_H);
-    int k = snprintf(path, sizeof(path), "/v1/check?reason=%s&probe_mv=%d&bat_mv=%d", reason,
-                     s->probe_mv, s->bat_mv);
-    if (s->rh && s->t)
-        snprintf(path + k, sizeof(path) - (size_t)k, "&rh=%s&t=%s", s->rh, s->t);
+    char why[48];                         /* "rtc+leak": '+' is a space in a query, send %2B */
+    size_t w = 0;
+    for (const char *c = reason; *c && w + 4 < sizeof(why); c++)
+        w += (size_t)snprintf(why + w, sizeof(why) - w, *c == '+' ? "%%2B" : "%c", *c);
+    why[w] = 0;
+    snprintf(path, sizeof(path), "/v1/check?reason=%s&probe_mv=%d&bat_mv=%d&rh=%s&t=%s", why,
+             s->probe_mv, s->bat_mv, s->rh, s->t);
     int fd = net_connect(host, port, NET_TIMEOUT_S);
     if (fd < 0)
         return -1;
@@ -212,13 +213,14 @@ int main(int argc, char **argv)
     const char *reason = argc > 1 ? argv[1] : "cold";
     static struct cam_frame f[2];
     const int n = 2;
-    const char *mv = getenv("LEAKCAM_PROBE_MV"), *bat = getenv("LEAKCAM_BAT_MV");
-    struct sensors sens = { getenv("LEAKCAM_RH"), getenv("LEAKCAM_T"), mv ? atoi(mv) : -1,
-                            bat ? atoi(bat) : -1 };
-    bool sensor_alarm = !strcmp(reason, "leak") || !strcmp(reason, "humid") ||
+    /* all four always set by the agent */
+    struct sensors sens = { getenv("LEAKCAM_RH"), getenv("LEAKCAM_T"), atoi(getenv("LEAKCAM_PROBE_MV")),
+                            atoi(getenv("LEAKCAM_BAT_MV")) };
+    /* the reasons come as "rtc+leak+humid" (bl616 WAKE): any leak or humid part is an alarm */
+    bool sensor_alarm = strstr(reason, "leak") || strstr(reason, "humid") ||
                         (sens.probe_mv >= 0 && sens.probe_mv < PROBE_WET_MV);
-    printf("sensors: rh %s, t %s, probe %d mV, battery %d mV%s\n", sens.rh ? sens.rh : "-",
-           sens.t ? sens.t : "-", sens.probe_mv, sens.bat_mv, sensor_alarm ? ", alarm" : "");
+    printf("sensors: rh %s, t %s, probe %d mV, battery %d mV%s\n", sens.rh, sens.t, sens.probe_mv,
+           sens.bat_mv, sensor_alarm ? ", alarm" : "");
 
     if (mkdir(STATE_DIR, 0755) < 0 && errno != EEXIST)
         return 1;

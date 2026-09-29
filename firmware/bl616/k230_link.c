@@ -18,7 +18,7 @@ static bool rx_last_ready;         /* the last accepted command was READY */
 static uint8_t (*reply_fn)(const struct link_msg *m);
 
 /* transmit side: one command at a time; the BL616 only sends WAKE, once per READY */
-static char tx_cmd[16], tx_arg[40];
+static char tx_cmd[16], tx_arg[56];         /* WAKE: "rtc+leak+humid,<unix s>,<4 sensors>" ~46 */
 static bool tx_pending;             /* a command is waiting to be sent or for its ACK */
 static uint8_t tx_seq;              /* seq of the command in flight */
 static uint8_t tx_next;             /* next seq to hand out */

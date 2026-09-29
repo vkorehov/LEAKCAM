@@ -19,9 +19,10 @@
  *  - before the heartbeat stops the hook has exited. UFFS (/sdcard) is log-structured and
  *    survives a power cut; RT-Smart has no sync() or remount, so programs fsync what they write.
  *
- * The hook is a program (RT-Smart has no shell): <hook> <cold|leak|rtc|humid>, with the BL616's
- * AHT20 sample in LEAKCAM_RH / LEAKCAM_T (unset without one), the probe voltage in
- * LEAKCAM_PROBE_MV and the battery in LEAKCAM_BAT_MV (unset without a reading). It may print
+ * The hook is a program (RT-Smart has no shell): <hook> <reasons>, the BL616's wake reasons joined
+ * by '+' (cold, leak, rtc, usb, humid: "rtc+leak+humid"), with the BL616's
+ * AHT20 sample in LEAKCAM_RH / LEAKCAM_T, the probe voltage in
+ * LEAKCAM_PROBE_MV and the battery in LEAKCAM_BAT_MV. It may print
  * "sleep=<seconds>" for the next
  * scheduled wake-up, and a line "wifi" when it needs the network; the answer, "wifi=ok" or
  * "wifi=fail,<code>", comes back on its stdin.
@@ -150,7 +151,7 @@ static int uart_open(void)
 
 struct frame {
     char cmd[16];
-    char arg[48];
+    char arg[56];                       /* WAKE with every reason and sensor: ~46 */
     unsigned seq;
 };
 
@@ -274,41 +275,24 @@ static int battery_read_mv(void)
     return (int)((raw * 1800u * BAT_DIVIDER + 4095u / 2) / 4095u);
 }
 
-/* the sensor part of WAKE, <rh_x10>,<t_x10>,<probe_mv>,<bat_mv>, for the hook: LEAKCAM_RH /
- * LEAKCAM_T (AHT20 range 0-100 %RH, -40..+85 C; unset for rh -1 = no sample), LEAKCAM_PROBE_MV
- * (0..3300, -1 = no reading) and LEAKCAM_BAT_MV: our own reading, or the BL616's copy of the
- * previous session's when our ADC failed. WAKE itself is never refused: values out of range are
- * dropped. */
+/* the sensor part of WAKE, <rh_x10>,<t_x10>,<probe_mv>,<bat_mv>, for the hook as LEAKCAM_RH and
+ * LEAKCAM_T (%RH, C), LEAKCAM_PROBE_MV and LEAKCAM_BAT_MV: our own battery reading, or the
+ * BL616's copy of the previous session's if our ADC failed */
 static void sensors_from_bl616(const char *arg)
 {
-    long rh, t, mv, bat;
-    if (sscanf(arg, "%ld,%ld,%ld,%ld", &rh, &t, &mv, &bat) != 4) {
-        logmsg("no sensor values in WAKE");
-        return;
-    }
+    long rh = 0, t = 0, mv = 0, bat = 0;
+    sscanf(arg, "%ld,%ld,%ld,%ld", &rh, &t, &mv, &bat);
     char v[24];
-    if (rh >= 0 && rh <= 1000 && t >= -400 && t <= 850) {
-        fmt_x10(v, sizeof(v), rh);
-        setenv("LEAKCAM_RH", v, 1);
-        fmt_x10(v, sizeof(v), t);
-        setenv("LEAKCAM_T", v, 1);
-    } else if (rh != -1) {
-        logmsg("humidity %ld / temperature %ld out of range, dropped", rh, t);
-    }
-    if (mv >= -1 && mv <= 3300) {
-        snprintf(v, sizeof(v), "%ld", mv);
-        setenv("LEAKCAM_PROBE_MV", v, 1);
-    } else {
-        logmsg("probe %ld mV out of range, dropped", mv);
-    }
-    long use = bat_mv >= 0 ? bat_mv : bat;
-    if (use >= 2000 && use <= 5000) {
-        snprintf(v, sizeof(v), "%ld", use);
-        setenv("LEAKCAM_BAT_MV", v, 1);
-    }
-    logmsg("sensors: %s %%RH, %s C, probe %s mV, battery %d mV (last session %ld mV)",
-           getenv("LEAKCAM_RH") ? getenv("LEAKCAM_RH") : "-", getenv("LEAKCAM_T") ? getenv("LEAKCAM_T") : "-",
-           getenv("LEAKCAM_PROBE_MV") ? getenv("LEAKCAM_PROBE_MV") : "-", bat_mv, bat);
+    fmt_x10(v, sizeof(v), rh);
+    setenv("LEAKCAM_RH", v, 1);
+    fmt_x10(v, sizeof(v), t);
+    setenv("LEAKCAM_T", v, 1);
+    snprintf(v, sizeof(v), "%ld", mv);
+    setenv("LEAKCAM_PROBE_MV", v, 1);
+    snprintf(v, sizeof(v), "%ld", bat_mv >= 0 ? (long)bat_mv : bat);
+    setenv("LEAKCAM_BAT_MV", v, 1);
+    logmsg("sensors: %s %%RH, %s C, probe %s mV, battery %s mV", getenv("LEAKCAM_RH"),
+           getenv("LEAKCAM_T"), getenv("LEAKCAM_PROBE_MV"), getenv("LEAKCAM_BAT_MV"));
 }
 
 /* acknowledge a command from the BL616 (a repeat, whose ACK was lost, is acknowledged again)
@@ -584,8 +568,10 @@ int main(int argc, char **argv)
             }
         }
     }
-    if (!got_wake)
+    if (!got_wake) {
         logmsg("no WAKE from BL616, assuming cold start");
+        sensors_from_bl616("-1,0,-1,-1");   /* the hook still gets every variable */
+    }
     logmsg("wake reason: %s", reason);
 
     unsigned sleep_s = DEFAULT_SLEEP_S;

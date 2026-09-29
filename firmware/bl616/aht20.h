@@ -14,13 +14,17 @@
 enum aht20_result {
     AHT20_OK = 0,
     AHT20_ERR_I2C,        /* no ACK: sensor missing, bus stuck, pull-ups unpowered */
-    AHT20_ERR_BUSY,       /* still measuring after the 80 ms wait */
+    AHT20_ERR_BUSY,       /* still measuring 100 ms after the trigger */
     AHT20_ERR_CRC,
 };
 
 void aht20_init(void);
-/* one measurement, ~85 ms blocking; tenths of %RH and degC */
-enum aht20_result aht20_read(int *rh_x10, int *t_x10);
+/* trigger a measurement and return at once: the sensor converts (datasheet: up to 80 ms) while
+ * the boot goes on */
+enum aht20_result aht20_start(void);
+/* the triggered measurement: read 50 ms after aht20_start(), again every 5 ms while the sensor
+ * is still busy, up to 100 ms; tenths of %RH and degC */
+enum aht20_result aht20_finish(int *rh_x10, int *t_x10);
 /* release the pins before hibernate: the pull-ups keep the bus idle-high, no current flows */
 void aht20_deinit(void);
 

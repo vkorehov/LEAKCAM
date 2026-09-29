@@ -33,14 +33,9 @@ port = re.search(r"port (\d+)", srv.stdout.readline()).group(1)
 
 def run(reason, scene, answer="wifi=ok", probe_mv="1650", rh="45.5", t="21.3", bat="3712"):
     """one wake: (stdout lines, was Wi-Fi asked for, sleep seconds). The sensor values arrive as
-    the agent passes them from WAKE; rh None = no AHT20 sample, bat None = no battery reading"""
-    env = dict(os.environ, LEAKCAM_TEST_SCENE=scene, LEAKCAM_PROBE_MV=probe_mv)
-    for k in ("LEAKCAM_RH", "LEAKCAM_T", "LEAKCAM_BAT_MV"):
-        env.pop(k, None)
-    if rh is not None:
-        env.update(LEAKCAM_RH=rh, LEAKCAM_T=t)
-    if bat is not None:
-        env.update(LEAKCAM_BAT_MV=bat)
+    the agent passes them from WAKE, always all four"""
+    env = dict(os.environ, LEAKCAM_TEST_SCENE=scene, LEAKCAM_PROBE_MV=probe_mv, LEAKCAM_RH=rh,
+               LEAKCAM_T=t, LEAKCAM_BAT_MV=bat)
     p = subprocess.Popen([wake, reason], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE, text=True, env=env)
     lines, asked = [], False
@@ -89,24 +84,41 @@ check(len(files("check-*")) == 2, "nothing may be sent for an unchanged scene")
 nchecks = len(files("check-*"))
 lines, asked, sleep = run("humid", "dry", rh="87.0")
 check(asked and sleep == 21600 and "cam 0: same" in lines, f"humidity alarm, same scene: {lines}")
-lines, asked, sleep = run("rtc", "dry", probe_mv="700", rh=None, bat=None)
+lines, asked, sleep = run("rtc", "dry", probe_mv="700")
 check(asked and sleep == 600 and "leak reported" in lines, f"probe wet, same scene: {lines}")
+lines, asked, sleep = run("rtc+leak+humid", "dry", rh="88.0")
+check(asked and sleep == 600 and "leak reported" in lines, f"combined reasons, same scene: {lines}")
 lines, asked, sleep = run("leak", "dry")
 check(asked and sleep == 600 and "leak reported" in lines, f"probe wake, same scene: {lines}")
-check(len(files("check-*")) == nchecks + 2 * 3, "every sensor alarm must reach the server")
+check(len(files("check-*")) == nchecks + 2 * 4, "every sensor alarm must reach the server")
 for v in files("video-*"):
     os.remove(v)
 
 # puddle, BL616 probe wet: server says leak -> 5 s video from both cameras, nothing stored
 lines, asked, sleep = run("leak", "wet")
 check(asked and sleep == 600 and "leak reported" in lines, f"leak: {lines}")
-check([os.path.getsize(v) for v in files("video-*")] == [800, 800], f"video uploads {files('video-*')}")
+def flv_tags(path):
+    """(video tags, audio tags) of an FLV, or None if it is not one"""
+    d = open(path, "rb").read()
+    if d[:3] != b"FLV":
+        return None
+    pos, counts = 13, {8: 0, 9: 0}
+    while pos + 11 <= len(d):
+        size = int.from_bytes(d[pos + 1:pos + 4], "big")
+        counts[d[pos]] = counts.get(d[pos], 0) + 1
+        pos += 11 + size + 4
+    return counts[9], counts[8]
+
+
+videos = files("video-*")
+check(len(videos) == 2 and all(flv_tags(v) == (4, 9) for v in videos),
+      f"video uploads: {[(v, flv_tags(v)) for v in videos]}")
 check(len(glob.glob(os.path.join(state, "hist0", "*"))) == 1, "a reported leak must not be stored")
 
 # still wet, Wi-Fi refused (no credentials): retry in an hour, nothing sent
 lines, asked, sleep = run("rtc", "wet", "wifi=fail,2")
 check(asked and sleep == 3600, f"no Wi-Fi: {lines}")
-check(len(files("check-*")) == nchecks + 2 * 4, "nothing may be sent without Wi-Fi")
+check(len(files("check-*")) == nchecks + 2 * 5, "nothing may be sent without Wi-Fi")
 
 # wet, server says no leak (routine wake): the change is stored as a delta, then it is "same"
 lines, asked, sleep = run("rtc", "wet")

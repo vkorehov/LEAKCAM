@@ -50,11 +50,13 @@ static void print_detail(const struct evlog_entry *e)
 {
     switch (e->ev) {
         case EV_BOOT:
-        case EV_SESSION:
-            printf(" %s", wake_reason_name((enum wake_reason)e->arg));
+        case EV_SESSION: {
+            char why[24];
+            printf(" %s", wake_reason_text((uint8_t)e->arg, why, sizeof(why)));
             if (e->ev == EV_BOOT)
                 printf(" probe=%u mV", e->val);
             break;
+        }
         case EV_ENV:         printf(" %u.%u %%RH %d C", e->val / 10, e->val % 10, e->arg); break;
         case EV_AHT_FAIL:    printf(" result=%d", e->arg); break;
         case EV_READY:       printf(" after %u ms", e->val); break;
@@ -64,7 +66,12 @@ static void print_detail(const struct evlog_entry *e)
         case EV_LINK_LOST:   printf(" after %u sends", e->val); break;
         case EV_SESSION_END: printf(" after %u s", e->val); break;
         case EV_RETRY:       printf(" attempt %d end=%u", e->arg, e->val); break;
-        case EV_SLEEP:       printf(" %u s, probes %s", e->val, e->arg ? "wet" : "dry"); break;
+        case EV_SLEEP:
+            if ((uint8_t)e->arg == 255)
+                printf(" %u s, awake >1020 ms", e->val);
+            else
+                printf(" %u s, awake %u ms", e->val, (uint8_t)e->arg * 4u);
+            break;
         case EV_USB:         printf(" %s", e->arg ? "plugged" : "unplugged"); break;
         case EV_CLOCK:       if (e->arg) printf(" correction %d s", (int16_t)e->val); break;
         case EV_BATTERY:     printf(" %u mV", e->val); break;
@@ -72,11 +79,11 @@ static void print_detail(const struct evlog_entry *e)
     }
 }
 
-/* shell command on the USB console: oldest first, UTC when the wall clock is known */
-static void cmd_evlog(int argc, char **argv)
+/* newlib has it; the SDK's headers only declare it with POSIX features on */
+struct tm *gmtime_r(const time_t *t, struct tm *out);
+
+void evlog_print(void)
 {
-    (void)argc;
-    (void)argv;
     if (!evlog_intact(log_ram)) {
         printf("evlog: empty (power loss or first boot)\r\n");
         return;
@@ -90,9 +97,10 @@ static void cmd_evlog(int argc, char **argv)
             printf("  (before an RTC reset)     ");
         } else if (clock) {
             time_t t = (time_t)(epoch - (now - e->t));
-            const struct tm *tm = gmtime(&t);          /* only the shell task calls this */
-            printf("  %04d-%02d-%02d %02d:%02d:%02dZ  ", tm->tm_year + 1900, tm->tm_mon + 1,
-                   tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+            struct tm tm;
+            gmtime_r(&t, &tm);
+            printf("  %04d-%02d-%02d %02d:%02d:%02dZ  ", tm.tm_year + 1900, tm.tm_mon + 1,
+                   tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
         } else {
             printf("  %10lu s ago        ", (unsigned long)(now - e->t));
         }
@@ -100,5 +108,11 @@ static void cmd_evlog(int argc, char **argv)
         print_detail(e);
         printf("\r\n");
     }
+}
+static void cmd_evlog(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    evlog_print();
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_evlog, evlog, print the retained event log);
