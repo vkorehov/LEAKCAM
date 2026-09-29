@@ -1,60 +1,61 @@
 /*
  * leakcam_stream: PoC streaming from both LEAKCAM OV5647 cameras on RT-Smart (K230D).
  *
- *   RTSP  (H.264, live555 via the SDK's librtsp_server.a):  rtsp://<ip>:8554/cam0, /cam1
- *   HTTP  (own tiny server on POSIX sockets / SAL / lwIP):
- *         GET /snap/0.jpg  /snap/1.jpg     one JPEG (VENC JPEG channel)
- *         GET /mjpeg/0     /mjpeg/1        multipart/x-mixed-replace MJPEG
+ * Video is always with audio: H.264 per camera plus the microphone as G.711 mu-law, 8 kHz mono.
+ *   RTSP  (live555 via the SDK's librtsp_server.a):  rtsp://<ip>:8554/cam0, /cam1, both with the
+ *         microphone (G711U)
  *
  * Pipeline per camera N (N = VICAP dev 0 = CSI0/J4, dev 1 = CSI2/J5):
  *   sensor -> VICAP dev N (offline mode, raw to DDR) -> ISP -> VICAP chn 0 (NV12 1280x960)
  *
  *   cap thread: kd_mpi_vicap_dump_frame -> kd_mpi_venc_send_frame(H.264 chn N)
- *               [+ kd_mpi_venc_send_frame(JPEG chn 2+N) when a JPEG is wanted]
  *               -> kd_mpi_vicap_dump_release
- *   Pattern: examples/mpp/sample_uvc_dev_vicap/main.c (dump -> send_frame -> release). The same
- *   NV12 frame feeds both encoders, so one VICAP channel per camera is enough (a VI -> VENC bind
- *   would need a second channel for the JPEGs: +5 MiB of MMZ per camera). Frames are not copied.
+ *   Pattern: examples/mpp/sample_uvc_dev_vicap/main.c (dump -> send_frame -> release). Frames
+ *   are not copied.
  *
- *   venc thread per H.264 chn: kd_mpi_venc_get_stream -> mmap packs -> rtsp_glue_send -> release
+ *   venc thread per chn: kd_mpi_venc_get_stream -> mmap packs -> RTSP or the upload -> release
+ *   audio thread: kd_mpi_ai_get_frame (40 ms, inner codec left input = the mic) -> mu-law -> every
+ *                 camera's RTSP session or upload. The AI is enabled first: its codec power-up
+ *                 (~2 s) is over by the first video frame.
  *
- * VENC channels (VENC_MAX_CHN_NUMS = 4 in k_venc_comm.h): 0,1 = H.264 cam0/cam1,
- * 2,3 = JPEG cam0/cam1. All four are used.
+ * VENC channels: 0,1 = H.264 cam0/cam1.
  *
  * Push mode, run by leakcam_wake when the server reports a leak:
  *   leakcam_stream -p <host>:<port> -t <seconds>
- * H.264 of both cameras for <seconds>, each as one chunked POST /v1/video?cam=<N> (Annex-B,
- * starting on an IDR). No RTSP, HTTP server or JPEG channels. Exit 0 when both uploads were
+ * both cameras for <seconds>, each as one chunked POST /v1/video?cam=<N>: an FLV (flv.h) with the
+ * camera's H.264, starting on an IDR, and the microphone. No RTSP. Exit 0 when both uploads were
  * answered 200.
  *
  * Not run on hardware yet (no boards, and the BL616 Wi-Fi driver is still to come).
  */
-#include <errno.h>
 #include <stdbool.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <unistd.h>
-#include <sys/select.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <time.h>
 
 #include "k_type.h"
+#include "k_audio_comm.h"
+#include "k_ai_comm.h"
+#include "k_acodec_comm.h"
 #include "k_module.h"
 #include "k_vb_comm.h"
 #include "k_vicap_comm.h"
 #include "k_venc_comm.h"
 #include "k_video_comm.h"
+#include "mpi_ai_api.h"
 #include "mpi_sys_api.h"
 #include "mpi_vb_api.h"
 #include "mpi_venc_api.h"
 #include "mpi_vicap_api.h"
 
+#include "flv.h"
 #include "netclient.h"
 #include "rtsp_glue.h"
 
@@ -63,15 +64,15 @@
 #define HEIGHT          960
 #define FPS             30              /* VICAP chn fps (sensor runs 45); venc src=dst=FPS */
 #define H264_KBPS       1500            /* per camera; k_venc_cbr.bit_rate is kbps (sample_venc.c) */
-#define JPEG_QFACTOR    60              /* k_venc_mjpeg_fixqp.q_factor [1,99] */
-#define MJPEG_EVERY     6               /* manual feed: JPEG every 6th frame (5 fps) while wanted */
 #define RAW_BUF_NUM     3               /* offline-mode raw buffers per device (all SDK samples: 3) */
 #define YUV_BUF_NUM     4               /* NV12 output buffers per VICAP channel */
 #define H264_STREAM_BLK 4               /* VENC output (bitstream) VB blocks per channel */
-#define JPEG_STREAM_BLK 2
 #define RTSP_PORT       8554
-#define HTTP_PORT       8080
-#define JPEG_MAX        (512 * 1024)
+#define AUDIO_FRAME     (FLV_AUDIO_RATE / 25)   /* 320 samples = 40 ms, as the SDK's sample_audio */
+#define AUDIO_QUEUE     50              /* AI frames buffered: 2 s */
+#define MIC_GAIN_DB     30              /* inner codec mic PGA: 0, 6, 20 or 30 dB */
+#define AI_DEV          0               /* the inner codec is behind I2S device 0 */
+#define AI_CHN          0
 
 #define ALIGN_UP(x, a)  (((x) + ((a) - 1)) & ~((a) - 1))
 #define NV12_SIZE       ALIGN_UP(WIDTH * HEIGHT * 3 / 2, 0x1000)
@@ -79,7 +80,6 @@
 #define STREAM_SIZE     ALIGN_UP(WIDTH * HEIGHT / 2, 0x1000)   /* as kdmedia CreateVencVBPool */
 
 #define H264_CHN(n)     (n)
-#define JPEG_CHN(n)     (2 + (n))
 
 static const k_vicap_sensor_type slot_sensor[NCAM] = {
     OV5647_MIPI_CSI0_1280X960_45FPS_10BIT_LINEAR,   /* CAM2, J4, CSI0 -> VICAP dev 0 */
@@ -87,23 +87,26 @@ static const k_vicap_sensor_type slot_sensor[NCAM] = {
 };
 static const char *session_name[NCAM] = { "cam0", "cam1" };
 
-/* latest JPEG per camera, produced by the cap thread, consumed by HTTP clients */
-struct jpeg_slot {
-    pthread_mutex_t mu;
-    pthread_cond_t cv;
-    unsigned char *buf;
-    size_t len;
-    unsigned seq;          /* bumps on every new JPEG */
-    int want;              /* >0: snapshot requests + MJPEG clients waiting */
-};
-
-static struct jpeg_slot jslot[NCAM];
-static k_u32 stream_pool[4] = { VB_INVALID_POOLID, VB_INVALID_POOLID, VB_INVALID_POOLID,
-                                VB_INVALID_POOLID };
+static k_u32 stream_pool[NCAM] = { VB_INVALID_POOLID, VB_INVALID_POOLID };
 static volatile int g_run = 1;
 static volatile int g_want_idr[NCAM];
-static pthread_t cap_tid[NCAM], venc_tid[NCAM], http_tid;
+static pthread_t cap_tid[NCAM], venc_tid[NCAM];
 static int push_fd[NCAM] = { -1, -1 };    /* push mode: the upload per camera, else -1 */
+static pthread_mutex_t push_mu[NCAM] = { PTHREAD_MUTEX_INITIALIZER, PTHREAD_MUTEX_INITIALIZER };
+static struct flv_video push_flv[NCAM];   /* one FLV per upload: video and audio tags interleave */
+static uint8_t push_au[NCAM][STREAM_SIZE];  /* the access unit being collected from VENC packs */
+static size_t push_au_len[NCAM];
+static volatile uint64_t g_t0_ms;         /* stream time 0: the cameras started; 0 = not yet */
+static bool g_push;                       /* push mode (-p), else RTSP */
+static int g_ncam = NCAM;
+static pthread_t audio_tid;
+
+static uint64_t now_ms(void)
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (uint64_t)ts.tv_sec * 1000u + (uint64_t)ts.tv_nsec / 1000000u;
+}
 
 /* ------------------------------------------------------------------ VB + VENC */
 
@@ -120,11 +123,11 @@ static int vb_setup(void)
     return 0;
 }
 
-static int venc_create(k_u32 chn, k_payload_type type, k_u32 blocks)
+static int venc_create(k_u32 chn)
 {
     k_vb_pool_config pc;
     memset(&pc, 0, sizeof(pc));
-    pc.blk_cnt = blocks;
+    pc.blk_cnt = H264_STREAM_BLK;
     pc.blk_size = STREAM_SIZE;
     pc.mode = VB_REMAP_MODE_NOCACHE;
     stream_pool[chn] = kd_mpi_vb_create_pool(&pc);
@@ -136,27 +139,20 @@ static int venc_create(k_u32 chn, k_payload_type type, k_u32 blocks)
 
     k_venc_chn_attr a;
     memset(&a, 0, sizeof(a));
-    a.venc_attr.type = type;
+    a.venc_attr.type = K_PT_H264;
     a.venc_attr.pic_width = WIDTH;
     a.venc_attr.pic_height = HEIGHT;
-    if (type == K_PT_JPEG) {
-        a.rc_attr.rc_mode = K_VENC_RC_MODE_MJPEG_FIXQP;
-        a.rc_attr.mjpeg_fixqp.src_frame_rate = FPS;
-        a.rc_attr.mjpeg_fixqp.dst_frame_rate = FPS;
-        a.rc_attr.mjpeg_fixqp.q_factor = JPEG_QFACTOR;
-    } else {
-        a.venc_attr.profile = type == K_PT_H265 ? VENC_PROFILE_H265_MAIN : VENC_PROFILE_H264_MAIN;
-        a.rc_attr.rc_mode = K_VENC_RC_MODE_CBR;
-        a.rc_attr.cbr.gop = 2 * FPS;    /* IDR every 2 s; new RTSP clients also request one */
-        a.rc_attr.cbr.src_frame_rate = FPS;
-        a.rc_attr.cbr.dst_frame_rate = FPS;
-        a.rc_attr.cbr.bit_rate = H264_KBPS;
-    }
+    a.venc_attr.profile = VENC_PROFILE_H264_MAIN;
+    a.rc_attr.rc_mode = K_VENC_RC_MODE_CBR;
+    a.rc_attr.cbr.gop = 2 * FPS;        /* IDR every 2 s; new RTSP clients also request one */
+    a.rc_attr.cbr.src_frame_rate = FPS;
+    a.rc_attr.cbr.dst_frame_rate = FPS;
+    a.rc_attr.cbr.bit_rate = H264_KBPS;
     if (kd_mpi_venc_create_chn(chn, &a)) {
         fprintf(stderr, "venc %u: create_chn failed\n", chn);
         return -1;
     }
-    if (type != K_PT_JPEG && kd_mpi_venc_enable_idr(chn, K_TRUE))
+    if (kd_mpi_venc_enable_idr(chn, K_TRUE))
         fprintf(stderr, "venc %u: enable_idr failed\n", chn);
     if (kd_mpi_venc_start_chn(chn)) {
         fprintf(stderr, "venc %u: start_chn failed\n", chn);
@@ -175,12 +171,10 @@ static void venc_destroy(k_u32 chn)
     stream_pool[chn] = VB_INVALID_POOLID;
 }
 
-/* Pull one encoded frame (all its packs) from a VENC channel.
- * sink == NULL: copy the concatenated packs into out (JPEG). Returns bytes or -1. */
+/* Pull one encoded frame (all its packs) from a VENC channel into sink. -1: none in time */
 typedef void (*pack_sink)(int cam, const k_u8 *data, k_u32 len, k_u64 pts);
 
-static int venc_pull(k_u32 chn, int cam, pack_sink sink, unsigned char *out, size_t cap,
-                     k_s32 timeout_ms)
+static int venc_pull(k_u32 chn, int cam, pack_sink sink, k_s32 timeout_ms)
 {
     k_venc_chn_status st;
     k_venc_stream s;
@@ -194,21 +188,15 @@ static int venc_pull(k_u32 chn, int cam, pack_sink sink, unsigned char *out, siz
     s.pack = packs;
     if (kd_mpi_venc_get_stream(chn, &s, timeout_ms))
         return -1;
-    size_t n = 0;
     for (k_u32 i = 0; i < s.pack_cnt; i++) {
         k_u8 *p = kd_mpi_sys_mmap(s.pack[i].phys_addr, s.pack[i].len);
         if (!p)
             continue;
-        if (sink)
-            sink(cam, p, s.pack[i].len, s.pack[i].pts);
-        else if (n + s.pack[i].len <= cap) {
-            memcpy(out + n, p, s.pack[i].len);
-            n += s.pack[i].len;
-        }
+        sink(cam, p, s.pack[i].len, s.pack[i].pts);
         kd_mpi_sys_munmap(p, s.pack[i].len);
     }
     kd_mpi_venc_release_stream(chn, &s);
-    return (int)n;
+    return 0;
 }
 
 static void rtsp_sink(int cam, const k_u8 *data, k_u32 len, k_u64 pts)
@@ -216,14 +204,29 @@ static void rtsp_sink(int cam, const k_u8 *data, k_u32 len, k_u64 pts)
     rtsp_glue_send(session_name[cam], data, len, pts);   /* copies; SPS/PPS/IDR parsed inside */
 }
 
+/* collect the frame's packs: an FLV video tag needs the whole access unit */
 static void push_sink(int cam, const k_u8 *data, k_u32 len, k_u64 pts)
 {
     (void)pts;
-    if (push_fd[cam] >= 0 && http_chunk(push_fd[cam], data, len) < 0) {
+    if (push_au_len[cam] + len <= sizeof(push_au[cam])) {
+        memcpy(push_au[cam] + push_au_len[cam], data, len);
+        push_au_len[cam] += len;
+    }
+}
+
+/* flv_sink into camera N's chunked upload; push_mu[N] held by the caller */
+static int push_write(void *ctx, const void *p, size_t n)
+{
+    int cam = (int)(long)ctx;
+    if (push_fd[cam] < 0)
+        return -1;
+    if (http_chunk(push_fd[cam], p, n) < 0) {
         fprintf(stderr, "push cam%d: upload broke off\n", cam);
         close(push_fd[cam]);
         push_fd[cam] = -1;
+        return -1;
     }
+    return 0;
 }
 
 static void *venc_thread(void *arg)
@@ -234,7 +237,14 @@ static void *venc_thread(void *arg)
             g_want_idr[cam] = 0;
             kd_mpi_venc_request_idr(H264_CHN(cam));
         }
-        venc_pull(H264_CHN(cam), cam, push_fd[cam] >= 0 ? push_sink : rtsp_sink, NULL, 0, 1000);
+        bool push = push_fd[cam] >= 0;
+        if (venc_pull(H264_CHN(cam), cam, push ? push_sink : rtsp_sink, 1000) == 0 && push) {
+            pthread_mutex_lock(&push_mu[cam]);
+            flv_video(&push_flv[cam], push_write, (void *)(long)cam, push_au[cam], push_au_len[cam],
+                      (uint32_t)(now_ms() - g_t0_ms));
+            pthread_mutex_unlock(&push_mu[cam]);
+        }
+        push_au_len[cam] = 0;
     }
     return NULL;
 }
@@ -247,6 +257,85 @@ static void on_play(const char *session, size_t clients, void *user)
         if (!strcmp(session, session_name[i]))
             g_want_idr[i] = 1;
     printf("rtsp: %s play, %u client(s)\n", session, (unsigned)clients);
+}
+
+/* ------------------------------------------------------------------ microphone */
+
+/* the inner codec's left input is the mic (the SDK's names are the EVB's: "left" is its headset
+ * jack). Order as src/rtsmart/examples/mpp/sample_audio: pub attr -> enable (the first enable
+ * powers the codec up, ~2 s, and resets its gains) -> enable chn -> gains */
+static int mic_open(void)
+{
+    k_aio_dev_attr a;
+    memset(&a, 0, sizeof(a));
+    a.audio_type = KD_AUDIO_INPUT_TYPE_I2S;
+    a.avsync = K_FALSE;
+    a.kd_audio_attr.i2s_attr.sample_rate = FLV_AUDIO_RATE;
+    a.kd_audio_attr.i2s_attr.bit_width = KD_AUDIO_BIT_WIDTH_16;
+    a.kd_audio_attr.i2s_attr.chn_cnt = 2;                     /* the SDK sample: always 2 on I2S */
+    a.kd_audio_attr.i2s_attr.snd_mode = KD_AUDIO_SOUND_MODE_MONO;
+    a.kd_audio_attr.i2s_attr.mono_channel = KD_I2S_IN_MONO_LEFT_CHANNEL;
+    a.kd_audio_attr.i2s_attr.i2s_mode = K_STANDARD_MODE;
+    a.kd_audio_attr.i2s_attr.frame_num = AUDIO_QUEUE;
+    a.kd_audio_attr.i2s_attr.point_num_per_frame = AUDIO_FRAME;
+    a.kd_audio_attr.i2s_attr.i2s_type = K_AIO_I2STYPE_INNERCODEC;
+    if (kd_mpi_ai_set_pub_attr(AI_DEV, &a) || kd_mpi_ai_enable(AI_DEV) ||
+        kd_mpi_ai_enable_chn(AI_DEV, AI_CHN)) {
+        fprintf(stderr, "mic: AI enable failed\n");
+        return -1;
+    }
+    int fd = open("/dev/acodec_device", O_RDWR);
+    k_u32 gain = MIC_GAIN_DB;
+    if (fd < 0 || ioctl(fd, k_acodec_set_gain_micl, &gain))
+        fprintf(stderr, "mic: gain not set\n");
+    if (fd >= 0)
+        close(fd);
+    return 0;
+}
+
+static void mic_close(void)
+{
+    kd_mpi_ai_disable_chn(AI_DEV, AI_CHN);
+    kd_mpi_ai_disable(AI_DEV);
+}
+
+/* 40 ms frames to every camera's stream; stamped by the samples sent, from the moment the cameras
+ * started, so audio and video share one clock */
+static void *audio_thread(void *arg)
+{
+    (void)arg;
+    uint64_t sent = 0, start_ms = 0;
+    uint8_t u[AUDIO_FRAME];
+    while (g_run) {
+        k_audio_frame fr;
+        if (kd_mpi_ai_get_frame(AI_DEV, AI_CHN, &fr, 100))
+            continue;
+        int16_t *pcm = kd_mpi_sys_mmap(fr.phys_addr, fr.len);
+        size_t n = pcm ? fr.len / 2 : 0;
+        if (n > AUDIO_FRAME)
+            n = AUDIO_FRAME;
+        for (size_t i = 0; i < n; i++)
+            u[i] = flv_ulaw(pcm[i]);
+        if (pcm)
+            kd_mpi_sys_munmap(pcm, fr.len);
+        kd_mpi_ai_release_frame(AI_DEV, AI_CHN, &fr);
+        if (!g_t0_ms || !n)
+            continue;                                 /* before the cameras: codec settling */
+        if (!sent)
+            start_ms = now_ms() - g_t0_ms;
+        uint32_t ms = (uint32_t)(start_ms + sent * 1000 / FLV_AUDIO_RATE);
+        sent += n;
+        for (int cam = 0; cam < g_ncam; cam++) {
+            if (g_push) {
+                pthread_mutex_lock(&push_mu[cam]);
+                flv_audio(push_write, (void *)(long)cam, u, n, ms);   /* no-op once it broke off */
+                pthread_mutex_unlock(&push_mu[cam]);
+            } else {
+                rtsp_glue_send_audio(session_name[cam], u, n, ms);
+            }
+        }
+    }
+    return NULL;
 }
 
 /* ------------------------------------------------------------------ VICAP */
@@ -304,33 +393,11 @@ static int vicap_setup(int cam)
 
 /* ------------------------------------------------------------------ capture thread */
 
-static void jpeg_publish(int cam, k_video_frame_info *f)
-{
-    static unsigned char tmp[NCAM][JPEG_MAX];
-    if (kd_mpi_venc_send_frame(JPEG_CHN(cam), f, 1000))
-        return;
-    int n = venc_pull(JPEG_CHN(cam), cam, NULL, tmp[cam], JPEG_MAX, 1000);
-    if (n <= 0)
-        return;
-    struct jpeg_slot *s = &jslot[cam];
-    pthread_mutex_lock(&s->mu);
-    memcpy(s->buf, tmp[cam], (size_t)n);
-    s->len = (size_t)n;
-    s->seq++;
-    pthread_cond_broadcast(&s->cv);
-    pthread_mutex_unlock(&s->mu);
-}
-
 static void *cap_thread(void *arg)
 {
     int cam = (int)(long)arg;
-    unsigned frame = 0;
     const k_vicap_chn jchn = VICAP_CHN_ID_0;
     while (g_run) {
-        int want;
-        pthread_mutex_lock(&jslot[cam].mu);
-        want = jslot[cam].want;
-        pthread_mutex_unlock(&jslot[cam].mu);
         k_video_frame_info f;
         memset(&f, 0, sizeof(f));
         if (kd_mpi_vicap_dump_frame((k_vicap_dev)cam, jchn, VICAP_DUMP_YUV, &f, 1000)) {
@@ -338,159 +405,10 @@ static void *cap_thread(void *arg)
             continue;
         }
         kd_mpi_venc_send_frame(H264_CHN(cam), &f, 1000);
-        if (want && (frame % MJPEG_EVERY) == 0)
-            jpeg_publish(cam, &f);
         /* sample_uvc_dev_vicap releases right after send_frame: VENC holds its own
          * reference on the VB block (not verifiable in source: libvenc/libvpu are binary) */
         kd_mpi_vicap_dump_release((k_vicap_dev)cam, jchn, &f);
-        frame++;
     }
-    return NULL;
-}
-
-/* ------------------------------------------------------------------ HTTP (snapshot + MJPEG) */
-
-static int send_all(int fd, const void *p, size_t n)
-{
-    const char *c = p;
-    while (n) {
-        ssize_t k = send(fd, c, n, 0);
-        if (k <= 0)
-            return -1;
-        c += k;
-        n -= (size_t)k;
-    }
-    return 0;
-}
-
-/* wait for a JPEG newer than *seq; copies it into out. Returns length or -1. */
-static int jpeg_wait(int cam, unsigned *seq, unsigned char *out, int timeout_s)
-{
-    struct jpeg_slot *s = &jslot[cam];
-    struct timespec ts;
-    int n = -1;
-    clock_gettime(CLOCK_REALTIME, &ts);
-    ts.tv_sec += timeout_s;
-    pthread_mutex_lock(&s->mu);
-    while (g_run && s->seq == *seq)
-        if (pthread_cond_timedwait(&s->cv, &s->mu, &ts) == ETIMEDOUT)
-            break;
-    if (s->seq != *seq && s->len) {
-        memcpy(out, s->buf, s->len);
-        n = (int)s->len;
-        *seq = s->seq;
-    }
-    pthread_mutex_unlock(&s->mu);
-    return n;
-}
-
-static void jpeg_want(int cam, int delta)
-{
-    pthread_mutex_lock(&jslot[cam].mu);
-    jslot[cam].want += delta;
-    pthread_mutex_unlock(&jslot[cam].mu);
-}
-
-static void *http_client(void *arg)
-{
-    int fd = (int)(long)arg;
-    char req[512];
-    int cam = -1, mjpeg = 0;
-    ssize_t r = recv(fd, req, sizeof(req) - 1, 0);
-    if (r > 0) {
-        req[r] = 0;
-        if (!strncmp(req, "GET /snap/0", 11) || !strncmp(req, "GET /snap/1", 11))
-            cam = req[10] - '0';
-        else if (!strncmp(req, "GET /mjpeg/0", 12) || !strncmp(req, "GET /mjpeg/1", 12))
-            cam = req[11] - '0', mjpeg = 1;
-    }
-    if (cam < 0) {
-        const char *nf = "HTTP/1.0 404 Not Found\r\nContent-Length: 0\r\n\r\n";
-        send_all(fd, nf, strlen(nf));
-        close(fd);
-        return NULL;
-    }
-    unsigned char *buf = malloc(JPEG_MAX);
-    unsigned seq = 0;
-    char hdr[160];
-    jpeg_want(cam, 1);
-    if (buf && !mjpeg) {
-        pthread_mutex_lock(&jslot[cam].mu);
-        seq = jslot[cam].seq;                 /* want a fresh one, not the cached frame */
-        pthread_mutex_unlock(&jslot[cam].mu);
-        int n = jpeg_wait(cam, &seq, buf, 3);
-        if (n > 0) {
-            int h = snprintf(hdr, sizeof(hdr), "HTTP/1.0 200 OK\r\nContent-Type: image/jpeg\r\n"
-                             "Content-Length: %d\r\nCache-Control: no-cache\r\n\r\n", n);
-            if (!send_all(fd, hdr, (size_t)h))
-                send_all(fd, buf, (size_t)n);
-        }
-    } else if (buf) {
-        const char *mh = "HTTP/1.0 200 OK\r\nCache-Control: no-cache\r\n"
-                         "Content-Type: multipart/x-mixed-replace; boundary=leakcam\r\n\r\n";
-        if (!send_all(fd, mh, strlen(mh)))
-            while (g_run) {
-                int n = jpeg_wait(cam, &seq, buf, 3);
-                if (n <= 0)
-                    continue;
-                int h = snprintf(hdr, sizeof(hdr), "--leakcam\r\nContent-Type: image/jpeg\r\n"
-                                 "Content-Length: %d\r\n\r\n", n);
-                if (send_all(fd, hdr, (size_t)h) || send_all(fd, buf, (size_t)n) ||
-                    send_all(fd, "\r\n", 2))
-                    break;                    /* client went away */
-            }
-    }
-    jpeg_want(cam, -1);
-    free(buf);
-    close(fd);
-    return NULL;
-}
-
-/* select() with a timeout instead of a blocking accept(): RT-Smart does not wake accept() on
- * close (examples/integrated_poc/smart_ipc/http_server.c header comment) */
-static void *http_thread(void *arg)
-{
-    (void)arg;
-    int s = socket(AF_INET, SOCK_STREAM, 0);
-    int one = 1;
-    struct sockaddr_in a;
-    if (s < 0) {
-        perror("http socket");
-        return NULL;
-    }
-    setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
-    memset(&a, 0, sizeof(a));
-    a.sin_family = AF_INET;
-    a.sin_port = htons(HTTP_PORT);
-    a.sin_addr.s_addr = htonl(INADDR_ANY);
-    if (bind(s, (struct sockaddr *)&a, sizeof(a)) || listen(s, 4)) {
-        perror("http bind/listen");
-        close(s);
-        return NULL;
-    }
-    printf("http: port %d, /snap/{0,1}.jpg /mjpeg/{0,1}\n", HTTP_PORT);
-    while (g_run) {
-        fd_set rf;
-        struct timeval tv = { 1, 0 };
-        FD_ZERO(&rf);
-        FD_SET(s, &rf);
-        if (select(s + 1, &rf, NULL, NULL, &tv) <= 0)
-            continue;
-        int c = accept(s, NULL, NULL);
-        if (c < 0)
-            continue;
-        struct timeval rto = { 5, 0 };
-        setsockopt(c, SOL_SOCKET, SO_RCVTIMEO, &rto, sizeof(rto));
-        pthread_t t;
-        pthread_attr_t at;
-        pthread_attr_init(&at);
-        pthread_attr_setdetachstate(&at, PTHREAD_CREATE_DETACHED);
-        pthread_attr_setstacksize(&at, 32 * 1024);
-        if (pthread_create(&t, &at, http_client, (void *)(long)c))
-            close(c);
-        pthread_attr_destroy(&at);
-    }
-    close(s);
     return NULL;
 }
 
@@ -501,6 +419,7 @@ static void on_sig(int sig) { (void)sig; g_run = 0; }
 int main(int argc, char **argv)
 {
     int ncam = NCAM, seconds = 0, status = 0;
+    bool mic_on = false;
     char host[64] = "", port[8] = "";
     int opt;
     while ((opt = getopt(argc, argv, "p:t:")) != -1) {
@@ -511,30 +430,27 @@ int main(int argc, char **argv)
         fprintf(stderr, "usage: %s [ncam] | -p host:port -t seconds\n", argv[0]);
         return 2;
     }
-    bool push = host[0] != 0;
+    bool push = g_push = host[0] != 0;
     if (!push && optind < argc)
         ncam = atoi(argv[optind]);                    /* 1 = camera 0 only */
     if (ncam < 1 || ncam > NCAM)
         ncam = NCAM;
+    g_ncam = ncam;
     if (push && seconds <= 0)
         seconds = 5;
     signal(SIGINT, on_sig);
     signal(SIGPIPE, SIG_IGN);
 
-    for (int i = 0; i < NCAM; i++) {
-        pthread_mutex_init(&jslot[i].mu, NULL);
-        pthread_cond_init(&jslot[i].cv, NULL);
-        jslot[i].buf = malloc(JPEG_MAX);
-        if (!jslot[i].buf)
-            return 1;
-    }
-
-    /* 1. VB, 2. VENC (pools attached before create; start before frames arrive) */
+    /* 1. VB, the microphone (its codec powers up while the rest is set up), 2. VENC (pools
+     * attached before create; start before frames arrive) */
     if (vb_setup())
         return 1;
+    if (mic_open())
+        goto out;
+    mic_on = true;
+    pthread_create(&audio_tid, NULL, audio_thread, NULL);
     for (int i = 0; i < ncam; i++)
-        if (venc_create(H264_CHN(i), K_PT_H264, H264_STREAM_BLK) ||
-            (!push && venc_create(JPEG_CHN(i), K_PT_JPEG, JPEG_STREAM_BLK)))
+        if (venc_create(H264_CHN(i)))
             goto out;
 
     /* 3. push: one chunked upload per camera, opened before the first frame. Otherwise RTSP
@@ -544,7 +460,8 @@ int main(int argc, char **argv)
             char path[32];
             snprintf(path, sizeof(path), "/v1/video?cam=%d", i);
             push_fd[i] = net_connect(host, port, 10);
-            if (push_fd[i] < 0 || http_post(push_fd[i], host, path, "video/h264", -1) < 0) {
+            if (push_fd[i] < 0 || http_post(push_fd[i], host, path, "video/x-flv", -1) < 0 ||
+                flv_header(push_write, (void *)(long)i) < 0) {
                 fprintf(stderr, "push cam%d: %s:%s not reached\n", i, host, port);
                 goto out;
             }
@@ -554,7 +471,7 @@ int main(int argc, char **argv)
         if (rtsp_glue_init(RTSP_PORT, on_play, NULL) < 0)
             goto out;
         for (int i = 0; i < ncam; i++)
-            if (rtsp_glue_add_session(session_name[i], RTSP_H264) < 0)
+            if (rtsp_glue_add_session(session_name[i]) < 0)            /* H.264 + G711U */
                 goto out;
         rtsp_glue_start();
     }
@@ -579,24 +496,21 @@ int main(int argc, char **argv)
             fprintf(stderr, "vicap %d: start_stream failed\n", i);
             g_run = 0;
         }
-    if (!push) {
-        pthread_create(&http_tid, NULL, http_thread, NULL);
-        for (int i = 0; i < ncam; i++)
-            rtsp_glue_print_url(session_name[i]);
-    }
+    g_t0_ms = now_ms();                                /* audio and video stamps count from here */
+    for (int i = 0; !push && i < ncam; i++)
+        rtsp_glue_print_url(session_name[i]);
 
     for (int left = seconds; g_run && (!push || left > 0); left--)
         sleep(1);
     g_run = 0;
 
-    for (int i = 0; i < NCAM; i++)
-        pthread_cond_broadcast(&jslot[i].cv);
-    if (!push)
-        pthread_join(http_tid, NULL);
     for (int i = 0; i < ncam; i++) {
         pthread_join(cap_tid[i], NULL);
         pthread_join(venc_tid[i], NULL);
     }
+    pthread_join(audio_tid, NULL);
+    mic_on = false;
+    mic_close();
     for (int i = 0; push && i < ncam; i++) {        /* end the bodies, then the server answers */
         char reply[128];
         int st = push_fd[i] >= 0 && http_chunk(push_fd[i], NULL, 0) == 0 ? http_reply(push_fd[i], reply, sizeof(reply)) : -1;
@@ -610,6 +524,10 @@ out:
     status = 1;
 done:
     g_run = 0;
+    if (mic_on) {                                      /* failed on the way up */
+        pthread_join(audio_tid, NULL);
+        mic_close();
+    }
     for (int i = 0; i < ncam; i++) {
         kd_mpi_vicap_stop_stream((k_vicap_dev)i);
         kd_mpi_vicap_deinit((k_vicap_dev)i);
@@ -618,8 +536,6 @@ done:
         rtsp_glue_stop();
     for (int i = 0; i < ncam; i++) {
         venc_destroy(H264_CHN(i));
-        if (!push)
-            venc_destroy(JPEG_CHN(i));
         if (push_fd[i] >= 0)
             close(push_fd[i]);
     }

@@ -4,20 +4,24 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+/* why this boot runs: a bitmask, since several sources can be pending at once and the sensors
+ * add their own (a wet probe on an RTC wake is rtc+leak) */
 enum wake_reason {
-    WAKE_COLD = 0,      /* power-on or reset, not from hibernate */
-    WAKE_LEAK,          /* ACOMP1 edge on GPIO20 */
-    WAKE_RTC,           /* scheduled wake-up */
-    WAKE_USB,           /* ACOMP0 falling edge on PGOOD: USB plugged in */
-    WAKE_HUMID,         /* not a hardware source: an RTC wake whose humidity reading crossed the alarm */
+    WAKE_COLD  = 0x01,  /* power-on or reset, not from hibernate */
+    WAKE_LEAK  = 0x02,  /* ACOMP1 edge on GPIO20, or the probes read wet */
+    WAKE_RTC   = 0x04,  /* scheduled wake-up */
+    WAKE_USB   = 0x08,  /* ACOMP0 falling edge on PGOOD: USB plugged in */
+    WAKE_HUMID = 0x10,  /* not a hardware source: the humidity reading is at the alarm */
 };
 
 void leak_init(void);
 bool leak_is_wet(void);
 /* probe node voltage in mV (1650 dry, below 825 the comparator calls it wet); -1 = no reading */
 int leak_probe_mv(void);
-enum wake_reason wake_reason_get(void);
-const char *wake_reason_name(enum wake_reason r);
+/* the hardware sources pending since the hibernate, WAKE_COLD when none */
+unsigned wake_reason_get(void);
+/* "leak+rtc" style, into buf; the WAKE frame and the logs use it */
+const char *wake_reason_text(unsigned reasons, char *buf, unsigned len);
 
 /* Enter HBN level 0 (~2.1 uA chip). Only GPIO16-19, RTC and ACOMP0/1 can wake HBN on BL616;
  * the leak line is on GPIO20, which is why the comparator is used instead of a pin interrupt.

@@ -4,7 +4,7 @@ The board carries two independent firmwares:
 
 | Chip | Firmware | Source here | SDK | Flashed through |
 |---|---|---|---|---|
-| K230D (U3) | SPL + RT-Smart kernel + `leakcam_agent` / `leakcam_wake` / `leakcam_hist` / `leakcam_stream` / `leakcam_audio`, one `.kdimg` for the SPI NAND (U16 W25N02KV) | `k230_board/`, `k230_agent/`, `k230_capture/` | `kendryte/k230_rtos_sdk` (CanMV manifest) | USB-C 1, K230 boot ROM USB mode, `k230_flash` |
+| K230D (U3) | SPL + RT-Smart kernel + `leakcam_agent` / `leakcam_wake` / `leakcam_hist` / `leakcam_stream`, one `.kdimg` for the SPI NAND (U16 W25N02KV) | `k230_board/`, `k230_agent/`, `k230_capture/` | `kendryte/k230_rtos_sdk` (CanMV manifest) | USB-C 1, K230 boot ROM USB mode, `k230_flash` |
 | BL616 (U11 Ai-M62-CBS) | power manager, leak/humidity wake, Wi-Fi bridge to the K230 (SDIO), BLE provisioning | `bl616/` | `bouffalolab/bouffalo_sdk` | PR1 pads (USB D+/D-, BOOT, EN), `BLFlashCommand` |
 
 Flash the BL616 first: it owns the K230's power (K230_PWR, K230_RSTN), and a blank BL616 keeps the
@@ -212,8 +212,8 @@ K230's 3V3, so it only appears while the K230 is on. Expect this order on the co
 2. `k230_read_toc`, then slot A loading.
 3. The OpenSBI banner.
 4. The RT-Smart `msh />` prompt.
-5. `ls /sdcard/app` should list `leakcam_agent`, `leakcam_wake`, `leakcam_hist`, `leakcam_stream`
-   and `leakcam_audio`. For a first real wake, write the server address to `/sdcard/leakcam/server`
+5. `ls /sdcard/app` should list `leakcam_agent`, `leakcam_wake`, `leakcam_hist` and
+   `leakcam_stream`. For a first real wake, write the server address to `/sdcard/leakcam/server`
    (`<host> <port>`) and run `python3 firmware/k230_capture/mock_server.py` on that host.
 
 **Not yet verified on hardware:**
@@ -275,7 +275,7 @@ Consoles, the retained event log (`evlog` on the BL616 console) and the JTAG deb
 
 ```
 make -C firmware/k230_capture test          # change detector, image history (miniz), image quality + LED step,
-                                            # audio WAV/level meter, the wake algorithm against mock_server.py
+                                            # the clip's FLV (ffprobe), the wake algorithm against mock_server.py
 make -C firmware/bl616/test                 # link protocol (seq/ACK/NAK codes/resends, trace), AHT20 maths,
                                             # always-on clock/state, retained event log, wifi_link.c (receive
                                             # filter, control channel, layout)

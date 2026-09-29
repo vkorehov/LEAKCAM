@@ -5,8 +5,7 @@
 | `leakcam_agent` | `../../k230_agent/leakcam_agent.c`, `../../bl616/k230_link.h` | BL616 link, heartbeat, hook, Wi-Fi request (started at boot) |
 | `leakcam_wake` | `leakcam_wake.c`, `vicap_cap.c` (MPP VICAP devices 0 and 1, offline mode), `led_rtsmart.c` (`/dev/pwm`), `netclient.c`, core | the wake algorithm (DESIGN.md 5.1): capture, compare with the history, server check, video, history |
 | `leakcam_hist` | `leakcam_hist.c`, core | list and rebuild stored frames |
-| `leakcam_stream` | `leakcam_stream.c`, `rtsp_glue.cpp`, `netclient.c` | 5 s push to the server on a leak (`-p host:port -t 5`), or live video for the bench, below |
-| `leakcam_audio` | `leakcam_audio.c` | microphone recording and level |
+| `leakcam_stream` | `leakcam_stream.c`, `flv.c`, `rtsp_glue.cpp`, `netclient.c` | video with audio: 5 s push to the server on a leak (`-p host:port -t 5`), or live for the bench, below |
 
 Core: `imgdiff.c`, `refstore.c`, `history.c` and the bundled miniz 3.0.2 (`third_party/miniz`,
 MIT) for the history compression. State lives in `/sdcard/leakcam` (UFFS, NAND partition
@@ -27,46 +26,39 @@ full procedure is `firmware/BUILD.md`. All programs land in `/sdcard/app/`.
 ## leakcam_stream push mode: 5 s to the server on a leak
 
 `leakcam_stream -p <host>:<port> -t <seconds>`, started by `leakcam_wake` when the server answers
-`{"leak":true}`. One chunked `POST /v1/video?cam=<N>` per camera, both at once, each starting on
-an IDR (H.264 Annex-B as VENC produces it). No RTSP, HTTP server or JPEG channels. Exit 0 when the
-server answered 200 for both uploads.
+`{"leak":true}`. One chunked `POST /v1/video?cam=<N>` per camera, both at once: an FLV (`flv.c`)
+with the camera's H.264, starting on an IDR, and the microphone as G.711 mu-law 8 kHz mono, both
+stamped from the moment the cameras start. No RTSP. Exit 0 when the server answered 200 for both
+uploads. `ffplay` / VLC play the saved uploads as they are.
 
-## leakcam_stream live mode: RTSP H.264, HTTP JPEG/MJPEG (bench)
+## leakcam_stream live mode: RTSP (bench)
 
 - `rtsp://<ip>:8554/cam0` and `/cam1`: H.264 main profile, 1280x960, 30 fps, CBR 1500 kbit/s per
   camera, IDR every 2 s and on every new client. Served by the SDK's `librtsp_server.a` (live555)
   through `rtsp_glue.cpp`.
-- `http://<ip>:8080/snap/0.jpg`, `/snap/1.jpg` (one fresh JPEG) and `/mjpeg/0`, `/mjpeg/1`
-  (multipart MJPEG, 5 fps). JPEGs are encoded only while a client wants one.
-- Pipeline per camera: VICAP (offline mode, NV12) -> dump -> the same frame to the H.264 channel
-  and, when wanted, the JPEG channel -> release. Four VENC channels, the hardware maximum.
-- Budget: about 3 Mbit/s for both H.264 streams, inside the 10-25 Mbit/s expected from the BL616
-  over SDIO. About 45 of the 70 MiB of MMZ.
+- Both sessions carry the microphone as G711U, the only audio type the SDK's server has. H.264
+  only, no JPEG or MJPEG.
+- Pipeline per camera: VICAP (offline mode, NV12) -> dump -> the H.264 channel -> release. Two
+  VENC channels.
+- Budget: about 3 Mbit/s for both H.264 streams plus 64 kbit/s of audio each, inside the 10-25 Mbit/s expected from the BL616
+  over SDIO. Under 45 of the 70 MiB of MMZ.
 - `leakcam_stream 1` streams camera 0 only.
 - Needs the network: the hook (or whoever starts it) asks the agent for Wi-Fi first.
 - Not verifiable from the source (binary MPP libraries), to check on the board:
   - that VENC keeps its own reference to a frame after `send_frame`;
   - that VICAP drops the 45 fps sensor rate to 30 fps in offline mode.
 
-## leakcam_audio: microphone bench test
+## Microphone (in every stream)
 
-```
-leakcam_audio [-d sec(10)] [-o file.wav] [-g 0|6|20|30] [-a alc_db] [-v adc_db] [-s skip_ms] [-r]
-```
-
-- **Recording.** 16 kHz, 16-bit mono from the codec's left input: U13 MSM381ACB026 on MICPL/MICNL
+- **Capture.** 8 kHz, 16-bit mono from the codec's left input: U13 MSM381ACB026 on MICPL/MICNL
   through C97/C101. The SDK names that input `KD_I2S_IN_MONO_LEFT_CHANNEL`, "hp input", after the
-  EVB, whose on-board mic is on the right input.
-- **Output.** It writes `/sdcard/leakcam/audio-<time>.wav`, never overwriting an existing file,
-  and prints RMS, peak, DC and clip count every second.
-- **Gains.** Gains are set after `kd_mpi_ai_enable`, because the first enable resets them.
-  Defaults: 30 dB mic PGA and +9 dB ALC. That overloads near 94 dB SPL, so if the clip count
-  rises, use `-g 20`.
+  EVB, whose on-board mic is on the right input. Encoded as G.711 mu-law (flv.h): 64 kbit/s, a few
+  operations a sample, no library.
+- **Gain.** 30 dB mic PGA, set after `kd_mpi_ai_enable`, because the first enable resets it. The
+  AI is enabled before the cameras, so its ~2 s codec power-up is over by the first frame.
 - **MIC_BIAS.** Neither the SDK nor the Linux driver ever writes the MIC_BIAS voltage field
   (codec register 0x80 bits 2:0), and no Canaan document gives the default. The mic needs 1.5 V
-  or more.
-  - **First bench check:** measure DC at C96 while recording.
-  - `-r` dumps the register. Whether `kd_mpi_sys_mmap` maps the codec registers is not verified.
+  or more. **First bench check:** measure DC at C96 while a stream runs.
 
 Hardware review of the mic path: the topology and values match the EVB headset mic (1 uF DC
 blocks, pseudo-differential). Two rev 1 changes:

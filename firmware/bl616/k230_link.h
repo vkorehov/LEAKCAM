@@ -23,10 +23,11 @@
  *                                     the radio is up and the BL616 joins with the stored
  *                                     credentials. NAK codes: NO_CREDENTIALS, RADIO
  * BL616 -> K230   WAKE,<reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>,<bat_mv>
- *                                     reply to READY: reason cold | leak | rtc | humid; the
+ *                                     reply to READY: the reasons, every one that applies,
+ *                                     joined by '+' (cold, leak, rtc, usb, humid: "rtc+leak"); the
  *                                     BL616 wall clock, 0 when it is not valid (after a power
  *                                     loss, until the K230 has sent TIME once); the AHT20 sample
- *                                     (rh -1 = none, t then 0); the leak probe node voltage
+ *                                     (rh -1 = the read failed, t then 0); the leak probe node voltage
  *                                     (1650 dry, below 825 wet; -1 = no reading); the battery as
  *                                     the K230 measured it at the previous session (-1 = none
  *                                     since the power loss). The BL616 has no battery ADC input:

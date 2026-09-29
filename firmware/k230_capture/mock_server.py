@@ -3,12 +3,12 @@
 
   mock_server.py [--port 8000] [--dir mock_out] [--leak probe|always|never]
 
-POST /v1/check?reason=<r>&probe_mv=<mV>&bat_mv=<mV>[&rh=<%RH>&t=<C>]
+POST /v1/check?reason=<r>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>
                             body: one binary PGM per camera, back to back. Saved as
                             check-<n>-cam<i>.pgm. Answers {"leak":true|false}: with --leak
                             probe (default) a leak is what the BL616's probes say: the
                             reason "leak", or the probe node below 825 mV (wet).
-POST /v1/video?cam=<N>      chunked H.264 (Annex-B), saved as video-<n>-cam<N>.h264.
+POST /v1/video?cam=<N>      chunked FLV (H.264 + G.711 mu-law 8 kHz), saved as video-<n>-cam<N>.flv.
                             Answers {"bytes":<received>}.
 
 On the device, /sdcard/leakcam/server holds "<host> <port>" of this server.
@@ -74,20 +74,19 @@ class Handler(BaseHTTPRequestHandler):
         n = next_n()
         if url.path == "/v1/check":
             reason = q.get("reason", [""])[0]
-            mv = int(q.get("probe_mv", ["-1"])[0])
+            mv = int(q["probe_mv"][0])
             pgms = split_pgms(body)
             for i, p in enumerate(pgms):
                 with open(os.path.join(args.dir, f"check-{n}-cam{i}.pgm"), "wb") as f:
                     f.write(p)
-            wet = reason == "leak" or 0 <= mv < 825
+            wet = "leak" in reason.split("+") or 0 <= mv < 825
             leak = args.leak == "always" or (args.leak == "probe" and wet)
-            print(f"check {n}: reason={reason} probe={mv} mV bat={q.get('bat_mv', ['-'])[0]} mV "
-                  f"rh={q.get('rh', ['-'])[0]} t={q.get('t', ['-'])[0]} cameras={len(pgms)} "
-                  f"-> leak={leak}", flush=True)
+            print(f"check {n}: reason={reason} probe={mv} mV bat={q['bat_mv'][0]} mV "
+                  f"rh={q['rh'][0]} t={q['t'][0]} cameras={len(pgms)} -> leak={leak}", flush=True)
             self.reply({"leak": leak})
         elif url.path == "/v1/video":
             cam = q.get("cam", ["0"])[0]
-            with open(os.path.join(args.dir, f"video-{n}-cam{cam}.h264"), "wb") as f:
+            with open(os.path.join(args.dir, f"video-{n}-cam{cam}.flv"), "wb") as f:
                 f.write(body)
             print(f"video {n}: cam{cam} {len(body)} bytes", flush=True)
             self.reply({"bytes": len(body)})

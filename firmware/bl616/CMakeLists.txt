@@ -13,6 +13,12 @@ sdk_add_include_directories(.)
 if(DEFINED ENV{LEAKCAM_JTAG})
     sdk_add_compile_definitions(-DLEAKCAM_JTAG)
 endif()
+# The default build is for board bring-up: first boot holds the K230 in reset until a terminal
+# opens the PR1 console, then 30 min READY/heartbeat timeouts (DEBUG.txt). The release build
+# leaves that out: rm -rf build, then LEAKCAM_RELEASE=1 make
+if(DEFINED ENV{LEAKCAM_RELEASE})
+    sdk_add_compile_definitions(-DLEAKCAM_RELEASE)
+endif()
 
 target_sources(app PRIVATE
                    aon_state.c

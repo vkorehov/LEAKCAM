@@ -90,7 +90,14 @@ void k230_power_init(void)
     rails_on = false;
 }
 
-void k230_power_on(void)
+void k230_reset_release(void)
+{
+    /* R30/C23 add another ~12 ms before RSTN crosses 1.26 V */
+    reset_assert(false);
+    LOG_I("k230: reset released\r\n");
+}
+
+void k230_power_on(bool hold_reset)
 {
     if (rails_on)
         return;
@@ -110,9 +117,11 @@ void k230_power_on(void)
     /* 2. only now may the link pins drive: 3V3 and the pull-ups are powered */
     k230_link_pins_attach();
 
-    /* 3. release reset; R30/C23 add another ~12 ms before RSTN crosses 1.26 V */
-    reset_assert(false);
-    LOG_I("k230: rails up, reset released\r\n");
+    /* 3. release reset, unless the caller wants the K230 held (first boot: its console, the
+     * CH340X on the same 3V3, needs time to enumerate before the K230 prints anything) */
+    LOG_I("k230: rails up\r\n");
+    if (!hold_reset)
+        k230_reset_release();
 }
 
 void k230_power_off(void)

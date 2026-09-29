@@ -117,7 +117,7 @@ grep -q 'k230d_leakcam.dtb' "$UB/arch/riscv/dts/Makefile" ||
         "$UB/arch/riscv/dts/Makefile"
 grep -q 'k230d_leakcam.dtb' "$UB/arch/riscv/dts/Makefile" || { echo "could not register the dtb"; exit 1; }
 
-# 4. the LEAKCAM apps (capture, history, stream, audio): Makefile + Kconfig, sources copied into ./src
+# 4. the LEAKCAM apps (capture, history, stream): Makefile + Kconfig, sources copied into ./src
 APP=$SDK/src/applications/leakcam
 rm -rf "$APP"; mkdir -p "$APP/src"
 cp "$CAP/rtsmart/Makefile" "$APP/Makefile"

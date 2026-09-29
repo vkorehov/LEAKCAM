@@ -5,11 +5,12 @@ MINIZ := -Ithird_party/miniz third_party/miniz/miniz.c
 CORE  := imgdiff.c refstore.c history.c
 HDRS  := imgdiff.h refstore.h history.h cap.h
 
-test: test/test_imgdiff test/test_history test/test_imgqual_synth test/test_audio test/leakcam_wake_host test/fake_stream
+test: test/test_imgdiff test/test_history test/test_imgqual_synth test/test_flv test/leakcam_wake_host test/fake_stream
 	./test/test_imgdiff
 	./test/test_history
 	./test/test_imgqual_synth
-	./test/test_audio
+	./test/test_flv test/sample.h264 $(WAKE_STATE).flv
+	python3 test/test_flv.py $(WAKE_STATE).flv
 	python3 test/test_wake.py test/leakcam_wake_host $(WAKE_STATE)
 
 test/test_imgdiff: test/test_imgdiff.c $(CORE) $(HDRS)
@@ -25,23 +26,24 @@ test/leakcam_wake_host: leakcam_wake.c netclient.c netclient.h test/wake_stub.c 
 	cc -O2 -Wall -Wextra -Werror -I. -DSTATE_DIR='"$(WAKE_STATE)"' -DSTREAM_PROG='"$(CURDIR)/test/fake_stream"' \
 	   -DNET_TIMEOUT_S=2 -o $@ leakcam_wake.c netclient.c test/wake_stub.c $(CORE) $(MINIZ) -lm
 
-test/fake_stream: test/fake_stream.c netclient.c netclient.h
-	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/fake_stream.c netclient.c
+test/fake_stream: test/fake_stream.c netclient.c netclient.h flv.c flv.h test/sample.h264
+	cc -O2 -Wall -Wextra -Werror -I. -DSAMPLE_H264='"$(CURDIR)/test/sample.h264"' -o $@ test/fake_stream.c \
+	   netclient.c flv.c -lm
 
 # image quality checks and LED step on synthetic frames
 test/test_imgqual_synth: test/test_imgqual_synth.c imgqual.c imgqual.h imgdiff.h
 	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_imgqual_synth.c imgqual.c -lm
 
-# leakcam_audio.c included unchanged, MPP stand-ins in test/mpp_stub
-test/test_audio: test/test_audio.c leakcam_audio.c $(wildcard test/mpp_stub/*.h)
-	cc -O2 -Wall -Wextra -Werror -I. -Itest/mpp_stub -o $@ test/test_audio.c -lm
+# the clip's FLV (H.264 + G.711): mu-law values here, container and decode by ffprobe/ffmpeg
+test/test_flv: test/test_flv.c flv.c flv.h
+	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_flv.c flv.c -lm
 
 # measurement tool, needs leakcam PGM pairs (firmware/k230_nn/README.md section 5): not part of `test`
 test/test_imgqual: test/test_imgqual.c imgqual.c imgqual.h imgdiff.c imgdiff.h
 	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_imgqual.c imgqual.c imgdiff.c -lm
 
 clean:
-	rm -f test/test_imgdiff test/test_history test/test_imgqual test/test_imgqual_synth test/test_audio \
+	rm -f test/test_imgdiff test/test_history test/test_imgqual test/test_imgqual_synth test/test_flv \
 	      test/leakcam_wake_host test/fake_stream
 
 .PHONY: test clean
