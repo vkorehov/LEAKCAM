@@ -1,31 +1,37 @@
-# leakcam_capture on RT-Smart (k230_rtos_sdk)
+# leakcam programs on RT-Smart (k230_rtos_sdk)
 
-The same program as the Linux build, with two platform files swapped:
-
-| Part | Linux (k230_linux_sdk) | RT-Smart (k230_rtos_sdk / CanMV) |
+| Program | Sources | What it does |
 |---|---|---|
-| Cameras | `v4l2cap.c`, vvcam V4L2, `/dev/video0`, `/dev/video3` | `vicap_cap.c`, MPP VICAP devices 0 and 1, offline mode |
-| LED PWM | `led_linux.c`, sysfs `pwmchip0` | `led_rtsmart.c`, `/dev/pwm` ioctl |
-| Compression | system zlib | bundled miniz 3.0.2 (`third_party/miniz`, MIT) |
-| State folder | `/var/lib/leakcam` | `/sdcard/leakcam` (UFFS, NAND partition `nand1`) |
+| `leakcam_agent` | `../../k230_agent/leakcam_agent.c`, `../../bl616/k230_link.h` | BL616 link, heartbeat, hook, Wi-Fi request (started at boot) |
+| `leakcam_wake` | `leakcam_wake.c`, `vicap_cap.c` (MPP VICAP devices 0 and 1, offline mode), `led_rtsmart.c` (`/dev/pwm`), `netclient.c`, core | the wake algorithm (DESIGN.md 5.1): capture, compare with the history, server check, video, history |
+| `leakcam_hist` | `leakcam_hist.c`, core | list and rebuild stored frames |
+| `leakcam_stream` | `leakcam_stream.c`, `rtsp_glue.cpp`, `netclient.c` | 5 s push to the server on a leak (`-p host:port -t 5`), or live video for the bench, below |
+| `leakcam_audio` | `leakcam_audio.c` | microphone recording and level |
 
-Change detection, reference files and the image history are shared. The reference files use two
-slots per image because UFFS cannot `rename()` onto an existing file; that code is the same on
-both systems.
+Core: `imgdiff.c`, `refstore.c`, `history.c` and the bundled miniz 3.0.2 (`third_party/miniz`,
+MIT) for the history compression. State lives in `/sdcard/leakcam` (UFFS, NAND partition
+`nand1`). The reference files use two slots per image because UFFS cannot `rename()` onto an
+existing file.
 
 Target SDK: `kendryte/k230_rtos_sdk` with the CanMV rtsmart kernel and `canmv-k230/mpp` (manifest
 `canmv-k230/manifest`). The older `kendryte/k230_sdk` is not usable here: its SPI-NAND driver only
 knows the 1.8 V W25N01GW/W25N02JW IDs (EF BA xx), not the W25N02KV (EF AA 22) on this board.
-`vicap_cap.c` also builds against the older MPP with `-DLEAKCAM_MPP_K230SDK`.
 
 ## Install into the SDK
 
 `firmware/k230_board/install.sh <k230_rtos_sdk>` copies this folder to `src/applications/leakcam`
 (sources in `src/`), registers it and enables `APP_ENABLE_LEAKCAM` through the LEAKCAM defconfig.
 The board itself (pins, NAND, cameras, kernel config, image layout) is `firmware/k230_board/`; the
-full procedure is `firmware/BUILD.md`. `leakcam_capture` and `leakcam_hist` land in `/sdcard/app/`.
+full procedure is `firmware/BUILD.md`. All programs land in `/sdcard/app/`.
 
-## leakcam_stream: live video (RTSP H.264, HTTP JPEG/MJPEG)
+## leakcam_stream push mode: 5 s to the server on a leak
+
+`leakcam_stream -p <host>:<port> -t <seconds>`, started by `leakcam_wake` when the server answers
+`{"leak":true}`. One chunked `POST /v1/video?cam=<N>` per camera, both at once, each starting on
+an IDR (H.264 Annex-B as VENC produces it). No RTSP, HTTP server or JPEG channels. Exit 0 when the
+server answered 200 for both uploads.
+
+## leakcam_stream live mode: RTSP H.264, HTTP JPEG/MJPEG (bench)
 
 - `rtsp://<ip>:8554/cam0` and `/cam1`: H.264 main profile, 1280x960, 30 fps, CBR 1500 kbit/s per
   camera, IDR every 2 s and on every new client. Served by the SDK's `librtsp_server.a` (live555)
@@ -37,7 +43,7 @@ full procedure is `firmware/BUILD.md`. `leakcam_capture` and `leakcam_hist` land
 - Budget: about 3 Mbit/s for both H.264 streams, inside the 10-25 Mbit/s expected from the BL616
   over SDIO. About 45 of the 70 MiB of MMZ.
 - `leakcam_stream 1` streams camera 0 only.
-- Needs a network interface: the BL616 Wi-Fi driver is still to come.
+- Needs the network: the hook (or whoever starts it) asks the agent for Wi-Fi first.
 - Not verifiable from the source (binary MPP libraries), to check on the board:
   - that VENC keeps its own reference to a frame after `send_frame`;
   - that VICAP drops the 45 fps sensor rate to 30 fps in offline mode.
@@ -67,24 +73,13 @@ blocks, pseudo-differential). Two rev 1 changes:
 - a 1-4.7 uF capacitor directly on the MIC_BIAS ball (U3.A4); C96 is 20 mm away behind FB4;
 - C97/C101 moved next to the K230; they are about 14 mm away today, at the mic end.
 
-## Not ported yet
-
-- `k230_agent` (heartbeat GPIO, UART link to the BL616, ENV frame, orderly halt): RT-Smart has
-  `/dev/gpio` (lseek + write of one byte, `KD_GPIO_IOCTL_SET_MODE`), `/dev/uart1`
-  (`UART_IOCTL_SET_CONFIG`, `poll()` for timeouts) and no read-only remount; UFFS data is on the
-  NAND after `fsync`.
-
 ## Verified so far
 
-- Built inside the SDK with the LEAKCAM board (2026-09-24): both programs link against the real
-  `libmpp` and are in the image's `/sdcard/app`. VICAP buffers come from pools VICAP creates
+- Built inside the SDK with the LEAKCAM board (2026-09-27): all five programs link against the
+  real `libmpp` and are in the image's `/sdcard/app`. VICAP buffers come from pools VICAP creates
   itself (`buffer_pool_id = VB_INVALID_POOLID`, as the SDK samples): an id of 0 would put both
   cameras' raw and NV12 buffers into one 3-block pool.
-
-- Every RT-Smart source compiles for `riscv64-linux-musl` with `-Wall -Wextra -Werror` against the
-  CanMV MPP headers (`zig cc`, stand-in `k_autoconf_comm.h` with OV5647 and CSI 0/2 enabled).
-  `vicap_cap.c` also compiles against the older k230_sdk MPP headers.
-- Linking resolves everything except the 15 `kd_mpi_*` calls that `libmpp` provides;
-  `leakcam_hist` links completely.
-- The shared code passes the host tests with zlib and with miniz (and under ASan/UBSan).
+- The wake algorithm runs on the host against `mock_server.py` (`make test`: cameras and LEDs
+  from `test/wake_stub.c`, `test/fake_stream` in place of the push mode); the shared code passes
+  its host tests with the bundled miniz.
 - Nothing has run on a K230 yet.

@@ -5,6 +5,8 @@
 
 #include <rtthread.h>
 
+#define MMCSD_HOST_PLUGED 0
+
 #define SDIO_MAX_FUNCTIONS 7
 
 struct rt_mmcsd_host { int lock_depth; };

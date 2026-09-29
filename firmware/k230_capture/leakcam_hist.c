@@ -1,5 +1,5 @@
 /*
- * leakcam_hist: read the image history leakcam_capture keeps on the NAND.
+ * leakcam_hist: read the image history leakcam_wake keeps on the NAND.
  *
  *   leakcam_hist [-d /var/lib/leakcam] list <cam>
  *   leakcam_hist [-d /var/lib/leakcam] get <cam> <seq|0> <out.pgm>     0 = newest
@@ -25,11 +25,7 @@ static int usage(const char *argv0)
 
 int main(int argc, char **argv)
 {
-#ifdef LEAKCAM_RTSMART
     const char *dir = "/sdcard/leakcam";
-#else
-    const char *dir = "/var/lib/leakcam";
-#endif
     int opt;
     while ((opt = getopt(argc, argv, "d:")) != -1) {
         if (opt != 'd')

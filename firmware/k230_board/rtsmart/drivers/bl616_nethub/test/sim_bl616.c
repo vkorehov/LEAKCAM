@@ -1,6 +1,6 @@
 /*
  * Simulated BL616 SDU behind the RT-Thread SDIO core API, plus the WLAN manager calls of
- * bl616_wifi.c. The SDU side follows bl616_nethub.h / bl616_wifi/README.md: registers read by
+ * bl616_wifi.c. The SDU side follows bl616_nethub.h / bl616/WIFI.md: registers read by
  * CMD52, 4 upload and 4 download ports used in ring order from OUT_PTR, packed RD_LEN, CMD53 in
  * byte mode up to 512 bytes and whole 512-byte blocks above. Every rule the host must keep is
  * checked here and counted in sim.violations.
@@ -79,6 +79,34 @@ rt_int32_t sdio_register_driver(struct rt_sdio_driver *driver)
 {
     sim_driver = driver;
     return -RT_EEMPTY;    /* registered, no card yet: the core's answer before card detection */
+}
+
+/* /dev/bl616 and the MMC0 rescan it triggers: the core's detect thread probes the card */
+rt_device_t sim_rescan_dev;
+unsigned sim_rescans;
+
+rt_err_t rt_device_register(rt_device_t dev, const char *name, rt_uint16_t flags)
+{
+    (void)flags;
+    snprintf(dev->parent.name, sizeof(dev->parent.name), "%s", name);
+    sim_rescan_dev = dev;
+    return RT_EOK;
+}
+
+void kd_sdhci_change(int id)
+{
+    (void)id;
+    sim_rescans++;
+    mmcsd_host_lock(&sim_host);
+    sim_driver->probe(&sim_card);
+    mmcsd_host_unlock(&sim_host);
+}
+
+int kd_sdhci_wait_card(int id, int timeout)
+{
+    (void)id;
+    (void)timeout;
+    return MMCSD_HOST_PLUGED;
 }
 
 rt_int32_t sdio_enable_func(struct rt_sdio_function *func)

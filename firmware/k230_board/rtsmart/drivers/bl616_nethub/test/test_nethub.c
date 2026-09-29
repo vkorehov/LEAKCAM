@@ -677,6 +677,25 @@ static void t_ctrl(void)
     CHECK(send_frame(60, 0) == -RT_EIO, "send after remove accepted");
 }
 
+/* after WIFI the agent's ioctl probes MMC0 and the card binds; a second one while bound does not
+ * probe again */
+static void t_rescan(void)
+{
+    extern rt_device_t sim_rescan_dev;
+    extern unsigned sim_rescans;
+
+    unbind();
+    sim_reset(0);
+    wl.registrations = 0;
+    CHECK(sim_rescan_dev && !strcmp(sim_rescan_dev->parent.name, "bl616"), "/dev/bl616 not registered");
+    CHECK(sim_rescan_dev->ops->control(sim_rescan_dev, 0x1234, RT_NULL) == -RT_EINVAL, "unknown ioctl accepted");
+    CHECK(sim_rescan_dev->ops->control(sim_rescan_dev, BL616_IOCTL_RESCAN, RT_NULL) == RT_EOK && sim_rescans == 1,
+          "rescan did not bind the card (%u rescans)", sim_rescans);
+    CHECK(sim_rescan_dev->ops->control(sim_rescan_dev, BL616_IOCTL_RESCAN, RT_NULL) == RT_EOK && sim_rescans == 1,
+          "rescan while bound");
+    unbind();
+}
+
 int main(void)
 {
     t_register();
@@ -692,10 +711,11 @@ int main(void)
     t_rd_len();
     t_reset();
     t_ctrl();
+    t_rescan();
     if (fails)
         printf("bl616_nethub: FAIL (%d)\n", fails);
     else
         printf("bl616_nethub: probe, handshake, ports from OUT_PTR, frames both ways, credits, "
-               "rings, RD_LEN, resets, control messages all pass\n");
+               "rings, RD_LEN, resets, control messages, rescan all pass\n");
     return fails != 0;
 }

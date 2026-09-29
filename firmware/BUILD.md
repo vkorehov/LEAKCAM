@@ -4,12 +4,8 @@ The board carries two independent firmwares:
 
 | Chip | Firmware | Source here | SDK | Flashed through |
 |---|---|---|---|---|
-| K230D (U3) | SPL + RT-Smart kernel + `leakcam_capture` / `leakcam_hist`, one `.kdimg` for the SPI NAND (U16 W25N02KV) | `k230_board/`, `k230_capture/` | `kendryte/k230_rtos_sdk` (CanMV manifest) | USB-C 1, K230 boot ROM USB mode, `k230_flash` |
-| BL616 (U11 Ai-M62-CBS) | power manager, leak/humidity wake, BLE provisioning | `bl616_pwrmgr/` | `bouffalolab/bouffalo_sdk` | PR1 pads (USB D+/D-, BOOT, EN), `BLFlashCommand` |
-| BL616 (U11), Wi-Fi bring-up | NetHub Wi-Fi bridge to the K230 over SDIO | `bl616_wifi/` | `bouffalolab/bouffalo_sdk` | the same |
-
-`bl616_wifi/` is a bring-up firmware for the Wi-Fi path until it moves into the power manager
-(one BL616 firmware in the product, see `bl616_wifi/README.md`); flash one or the other.
+| K230D (U3) | SPL + RT-Smart kernel + `leakcam_agent` / `leakcam_wake` / `leakcam_hist` / `leakcam_stream` / `leakcam_audio`, one `.kdimg` for the SPI NAND (U16 W25N02KV) | `k230_board/`, `k230_agent/`, `k230_capture/` | `kendryte/k230_rtos_sdk` (CanMV manifest) | USB-C 1, K230 boot ROM USB mode, `k230_flash` |
+| BL616 (U11 Ai-M62-CBS) | power manager, leak/humidity wake, Wi-Fi bridge to the K230 (SDIO), BLE provisioning | `bl616/` | `bouffalolab/bouffalo_sdk` | PR1 pads (USB D+/D-, BOOT, EN), `BLFlashCommand` |
 
 Flash the BL616 first: it owns the K230's power (K230_PWR, K230_RSTN), and a blank BL616 keeps the
 K230 off.
@@ -216,7 +212,9 @@ K230's 3V3, so it only appears while the K230 is on. Expect this order on the co
 2. `k230_read_toc`, then slot A loading.
 3. The OpenSBI banner.
 4. The RT-Smart `msh />` prompt.
-5. `ls /sdcard/app` should list `leakcam_capture` and `leakcam_hist`.
+5. `ls /sdcard/app` should list `leakcam_agent`, `leakcam_wake`, `leakcam_hist`, `leakcam_stream`
+   and `leakcam_audio`. For a first real wake, write the server address to `/sdcard/leakcam/server`
+   (`<host> <port>`) and run `python3 firmware/k230_capture/mock_server.py` on that host.
 
 **Not yet verified on hardware:**
 - that the ROM reads the NAND on the 3.3 V bank;
@@ -224,7 +222,7 @@ K230's 3V3, so it only appears while the K230 is on. Expect this order on the co
 - that the loader recognises the W25N02KV (JEDEC EF AA 22). If `k230_flash` stops at the NAND
   probe, the loader must be rebuilt from our U-Boot.
 
-## 4. BL616: power manager
+## 4. BL616 firmware
 
 ### 4.1 SDK and toolchain (once)
 
@@ -239,23 +237,16 @@ The T-Head toolchain is x86-64 only. On the arm64 host it runs through qemu, but
 amd64 runtime libraries, so build inside the K230 build container (section 2.2):
 
 ```
-cd ~/k230d-hw/LEAKCAM/firmware/bl616_wifi          # or bl616_pwrmgr
+cd ~/k230d-hw/LEAKCAM/firmware/bl616
 docker run --rm --user $(id -u):$(id -g) -e HOME=/tmp \
     -e PATH=$HOME/k230d-hw/toolchain_gcc_t-head_linux/bin:/usr/bin:/bin \
     -v $HOME/k230d-hw:$HOME/k230d-hw -w $PWD k230-rtos-sdk-build:arm64-x86tc make -j5
 ```
 
-`bl616_wifi` links into `build/build_out/leakcam_wifi_bl616.bin` (2026-09-24, bouffalo_sdk
-63784aa0), and `bl616_pwrmgr` into `build/build_out/leakcam_pwrmgr_bl616.bin`.
-
 ### 4.2 Build
 
-```
-cd ~/k230d-hw/LEAKCAM/firmware/bl616_pwrmgr
-make                         # inside the container as above; CHIP=bl616 BOARD=bl616dk are the defaults
-```
-
-The firmware lands in `build/build_out/leakcam_pwrmgr_bl616.bin`. `defconfig` moves the SDK
+`make` inside the container as above; CHIP=bl616 BOARD=bl616dk are the defaults. The firmware
+lands in `build/build_out/leakcam_bl616.bin`. `defconfig` moves the SDK
 console to USB CDC, because GPIO21/22 are the K230 link. That option needs the SDK shell,
 FreeRTOS and CherryUSB's CDC-ACM class; if any is missing Kconfig drops it without a word and
 the console falls back to UART0 on the link pins. Check `build/generated/autoconfig.h` for
@@ -281,32 +272,31 @@ Rev 1 adds a sixth PR1 pad for 3V3_SLEEP, so a pogo fixture can drive BOOT.
 ## 5. Host tests (no hardware)
 
 ```
-make -C firmware/k230_capture test          # change detector, image history (zlib and miniz builds),
-                                            # image quality + LED step, audio WAV/level meter
-make -C firmware/bl616_pwrmgr/test          # link protocol (seq/ACK/NAK/resends), AHT20 maths, always-on clock/state
+make -C firmware/k230_capture test          # change detector, image history (miniz), image quality + LED step,
+                                            # audio WAV/level meter, the wake algorithm against mock_server.py
+make -C firmware/bl616/test                 # link protocol (seq/ACK/NAK codes/resends), AHT20 maths, always-on
+                                            # clock/state, wifi_link.c (receive filter, control channel, layout)
 make -C firmware/k230_agent test            # agent link code against the BL616's over a lossy socket pair
 make -C firmware/k230_board/rtsmart/drivers/bl616_nethub/test   # K230 Wi-Fi driver on a simulated BL616 SDU
-make -C firmware/bl616_wifi/test            # BL616 wifi_link.c: receive filter, control channel, protocol layout
-make -C firmware/k230_capture clean; make -C firmware/bl616_pwrmgr/test clean
-make -C firmware/k230_board/rtsmart/drivers/bl616_nethub/test clean; make -C firmware/bl616_wifi/test clean
-make -C firmware/k230_agent clean
+make -C firmware/k230_capture clean; make -C firmware/bl616/test clean; make -C firmware/k230_agent clean
+make -C firmware/k230_board/rtsmart/drivers/bl616_nethub/test clean
 ```
 
 The driver and `wifi_link.c` are compiled unchanged against small stand-ins for the SDK headers
 (`test/stub/`); `install.sh` copies only the driver's own files, not its `test/` folder. The
 NetHub test runs the driver's worker thread in lockstep with the test on a virtual clock, so it
-is deterministic. All pass as of 2026-09-25. Run them before every firmware commit.
+is deterministic. All pass as of 2026-09-27. Run them before every firmware commit.
 
 ## 6. Everyday loop
 
 | Changed | Do |
 |---|---|
-| `k230_capture/*.c` | `install.sh`, `./leakcam_docker_build.sh log`, flash (or copy the two programs to `/sdcard/app` once networking works) |
+| `k230_capture/*.c`, `k230_agent/leakcam_agent.c` | `install.sh`, `./leakcam_docker_build.sh log`, flash (or copy the programs to `/sdcard/app` once networking works) |
 | pin table (`k230_board/pins.py`) | the same; check `check_pad_voltage.py` again |
 | kernel config (`k230_board/rtsmart/configs/`) | `install.sh`, `./leakcam_docker_build.sh k230d_rtos_leakcam_defconfig`, `log` |
 | NAND layout | edit `genimage-spinand.cfg`, `spinand_parts.h` and the U-Boot dts partitions together: they must agree |
 | BL616 | `make && make flash COMX=/dev/ttyACM0` |
-| K230 Wi-Fi driver (`k230_board/rtsmart/drivers/bl616_nethub/`) or `bl616_wifi/wifi_ctrl_proto.h` | `install.sh`, `./leakcam_docker_build.sh log` (and rebuild `bl616_wifi` for a protocol change) |
+| K230 Wi-Fi driver (`k230_board/rtsmart/drivers/bl616_nethub/`), `bl616/wifi_ctrl_proto.h` or `bl616/k230_link.h` | `install.sh`, `./leakcam_docker_build.sh log`, and rebuild the BL616 for a protocol change |
 
 ## 7. Known build problems and their fixes
 

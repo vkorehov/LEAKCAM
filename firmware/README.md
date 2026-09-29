@@ -46,11 +46,12 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
   datasheet's 0.1 ms minimum after the supply.
 
 ### Must be handled, and is, in this firmware
-1. **1V8 and 3V3 do not discharge.** TPS62823 (0V8, 1V1) actively discharges at >= 75 mA, but the
-   TPS63802 (1V8, 3V3) has no output discharge. After power-off the core is gone in 0.5 ms while the
-   IO rails take 0.6 s to 3.7 s to fall below 10 %, depending on the unknown off-state load. Powering
-   up again sooner brings 0V8 up *after* 1V8/3V3, the order the guide forbids. The firmware enforces
-   `K230_MIN_OFF_MS` = 5000 and checks that 3V3 reads low on IO01 (via R32) before re-enabling.
+1. **1V8 and 3V3 do not discharge by themselves.** TPS62823 (0V8, 1V1) actively discharges at
+   >= 75 mA, but the TPS63802 (1V8, 3V3) has no output discharge. RD1 and RD2 (1.5 k to GND on 1V8
+   and 3V3) do it instead: after power-off the core is gone in 0.5 ms and the IO rails are below 10 %
+   after 56-82 ms, whatever else loads them (`sim/power_sequence_report.txt`). Powering up again
+   sooner brings 0V8 up *after* 1V8/3V3, the order the guide forbids, so `k230_power_off()` waits
+   300 ms after cutting the rails.
 2. **Back-feed through the 10 k pull-ups.** SDIO and UART pull-ups (R34 R36 R43 R44 R57 R65 R70) go to
    switched 3V3. Any BL616 pin driven high while the K230 is off pushes current into the dead rail:
    one UART TX idling high holds 3V3 at up to 2.9 V. The firmware parks all eight pins in analog
@@ -80,8 +81,11 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
   datasheet's 10-400 kHz, and samples far apart from the >= 1 s minimum period.
 - In hibernate the BL616 releases IO28/IO29, the pull-ups hold the bus idle-high and no current
   flows; the AHT20 sleeps at <= 0.2 uA.
-- **Alarm:** >= 85 %RH starts a K230 session with reason `humid`; re-armed below 75 %RH. Every session
-  also gets `ENV,<rh_x10>,<t_x10>`, which the agent passes to the hook as `LEAKCAM_RH` / `LEAKCAM_T`.
+- **Alarm:** >= 85 %RH wakes the K230 with reason `humid`, at every sample while it stays that
+  high: the BL616 keeps no memory of what was reported, the K230 decides. Every session
+  gets the sample in `WAKE,<reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>`, together with the probe
+  node voltage; the agent passes them to `leakcam_wake` as `LEAKCAM_RH` / `LEAKCAM_T` /
+  `LEAKCAM_PROBE_MV`, and they take part in the leak decision whatever the cameras see.
 - **Cost (estimate, to measure):** ~120 ms awake per sample at an assumed 8-15 mA MCU-only current
   (the datasheet gives only 38 mA with the radio receiving) = 1-1.8 mAs, so 1.7-3 uA average at 10 min.
 - The RTC runs from the 32.768 kHz crystal Y3 (`rtc_use_crystal()`), RC32K until it has started.
@@ -97,14 +101,14 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
 - Unplug (debounced 1 s): BLE stops, the BL616 reboots into the battery path with a flag that
   suppresses the cold-start K230 session, and hibernates with both comparators armed.
 
-### Optional hardware change: bleed resistors
-- **1 k on 1V8 and on 3V3** (0402). They draw 1.8 mA and 3.3 mA only while the K230 is on (under 1 %
-  of its power) and nothing in idle. They shorten the safe off-time from ~5 s to ~0.1 s and make it
-  independent of what is plugged in.
-- **Not needed for correctness.** The firmware already waits `K230_MIN_OFF_MS` before any restart,
-  and recovers a hung K230 with an RSTN pulse first (rails stay on, no wait); a full power-cycle
-  is only the second step. Worth adding only if a fast power-cycle matters or the off-state load
-  turns out lighter than 50 uA at bring-up (check item 2). They do not fix finding 2.
+### Discharge resistors RD1 / RD2 (fitted)
+- **1.5 k on 1V8 (RD1) and on 3V3 (RD2)** (0402). They draw 1.2 mA and 2.2 mA only while the K230 is
+  on (under 1 % of its power) and nothing in idle. They make the safe off-time ~0.1 s, independent
+  of what is plugged in.
+- **Recovery** stays RSTN first (rails on, no wait); a full power-cycle is the second step and now
+  costs 300 ms instead of seconds.
+- **They do not fix finding 2:** a pin left high still feeds the rail (0.4 V and 0.3 mA per pin
+  against RD2).
 
 ### Wall clock and state across hibernate (`aon_state.c`)
 - **The K230 cannot keep time between wakes.** Its RTC runs from AVDD1P8_RTC on the switched 1V8
@@ -124,37 +128,38 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
   CRC-32); HBN_RSV1 (SDK wake callback) and RSV3 (ROM patch code) are not free either.
 
 ### Architecture consequence
-The BL616 is also the K230's Wi-Fi: Bouffalo's NetHub bridge over SDIO (`bl616_wifi/`) with our own
-RT-Smart driver on the K230 (`k230_board/rtsmart/drivers/bl616_nethub/`), described in
-`bl616_wifi/README.md`. There is one BL616 firmware, so in production the power manager calls
-`wifi_link_start()` / `wifi_link_stop()` around each K230 session. NetHub's own low-power mode stays
-off: between sessions the BL616 hibernates, which ends the association anyway.
+The BL616 is also the K230's Wi-Fi: Bouffalo's NetHub bridge over SDIO (`bl616/wifi_link.c`) with
+our own RT-Smart driver on the K230 (`k230_board/rtsmart/drivers/bl616_nethub/`), described in
+`bl616/WIFI.md`. One BL616 firmware (`bl616/`): Wi-Fi starts when the K230 sends `WIFI` (NAK code 2
+without stored credentials), and stops before the K230's rail goes down. NetHub's own low-power
+mode stays off: between sessions the BL616 hibernates, which ends the association anyway.
 
-### K230 capture and image history (`k230_capture/`, Linux and RT-Smart)
-- `leakcam_capture`: both OV5647s through the vvcam V4L2 stack (`/dev/video0`, `/dev/video3`,
-  1280x960 binned), white and IR chains on during the shot with separate PWM brightness
-  (`-b white%,ir%`, 25 kHz on GPIO61/GPIO60), frames reduced to 320x240 and compared with the last
-  wake and with a baseline (16x12 blocks, image-circle mask, gain normalised). Exit 10 = change.
+### K230 capture and image history (`k230_capture/`, RT-Smart)
+- `leakcam_wake`, run by the agent at every wake: both OV5647s through MPP VICAP (`vicap_cap.c`,
+  offline mode, 1280x960 binned), white and IR chains on during the shot (25 kHz PWM on
+  GPIO61/GPIO60, `led_rtsmart.c`), frames reduced to 320x240 and compared with what the history
+  shows (16x12 blocks, image-circle mask, gain normalised). Anything new goes to the server over
+  Wi-Fi; a leak adds 5 s of video, no leak stores the frames. The algorithm is in DESIGN.md 5.1.
 - History on the SPI NAND, because the K230 loses its RAM at every power-off: per camera a
-  keyframe (whole 1280x960 luminance, zlib) and deltas holding only the changed 80x80 blocks;
+  keyframe (whole 1280x960 luminance, deflate via the bundled miniz) and deltas holding only the changed 80x80 blocks;
   new keyframe on more than half the image changed or after 96 deltas; 32 MB quota per camera,
   oldest whole group deleted first. Every file is written tmp + fsync + rename with a CRC.
 - `leakcam_hist list <cam>` / `get <cam> <seq> out.pgm` rebuilds any stored frame.
 - Record times come from the BL616 (see "Wall clock" below): the K230 sets its clock from the
   time in the WAKE frame at every wake.
-- RT-Smart build (k230_rtos_sdk): `vicap_cap.c` (MPP VICAP, both sensors in offline mode),
-  `led_rtsmart.c` (`/dev/pwm`), bundled miniz; board port steps in `k230_capture/rtsmart/README.md`.
+- Build and board port steps: `k230_capture/rtsmart/README.md`.
 
 ## How this was verified
 - Sequence: `sim/power_sequence.py`, datasheet timings (TPS62823 SLVSDV8, TPS63802 SLVSEU9D) and
   schematic R/C values. Off-state rail loads are unknown and swept.
 - BL616 code: every source compiled for riscv32 against the current bouffalo_sdk headers (API names,
   macros and struct fields all resolve), and the whole firmware links into
-  `leakcam_pwrmgr_bl616.bin` in the build container (BUILD.md). Not flashed yet.
+  `leakcam_bl616.bin` in the build container (BUILD.md). Not flashed yet.
 - Link protocol: BL616 parser tested on the host against agent-formatted frames mixed with boot
   noise, bad checksums and over-long lines.
-- K230 agent: builds natively with `-Wall -Wextra -Werror`; not run on a K230.
-- K230 capture: builds natively with `-Werror`; `make test` checks the change detector (noise,
+- K230 agent: its link code runs on the host against the BL616's `k230_link.c` over a lossy
+  socket pair (`k230_agent/test`); not run on a K230.
+- K230 capture: `make test` checks the change detector (noise,
   exposure, puddle, mask, torn reference) and the history (keyframe + stacked deltas rebuild
   byte-exact, policy, torn delta, stale tmp, quota), the latter also under ASan/UBSan. No camera run.
 - Always-on state: `test/test_aon.c` on the host (clock across the 40-bit wrap, 144 rebases
@@ -169,8 +174,10 @@ off: between sessions the BL616 hibernates, which ends the association anyway.
 ## Bring-up checklist
 1. Scope K230_PWR and K230_RSTN while the BL616 resets and while it is being flashed: both must stay
    in the safe state (PWR low, RSTN pin high). The BL616's reset-default pad pull is not documented.
-2. Measure 1V8 and 3V3 decay after power-off with cameras and USB plugged in; set `K230_MIN_OFF_MS`.
-3. Check IO01 really follows 3V3 while the K230 is off (it relies on K230 GPIO2 staying high-impedance).
+2. Measure 1V8 and 3V3 decay after power-off (expected < 0.1 s with RD1/RD2); confirm the 300 ms wait in `k230_power_off()`.
+3. Scope the heartbeat on IO01 after READY: an edge every 500 ms, and K230_PWR low 2 s after the
+   last one (the level before READY means nothing:
+   the K230 pad is JTAG_TCK with a pull-down in reset, against R32 100 k).
 4. Confirm the HBN wake reason survives the reboot (`wake_reason_get()`); fall back to
    `HBN_Get_Reset_Event()` if the BootROM clears the interrupt state.
 5. Measure HBN current with ACOMP1 enabled against the datasheet's 2.1 uA (and with HBN RAM
