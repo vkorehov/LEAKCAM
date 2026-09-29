@@ -13,7 +13,7 @@ This file records what was decided and why. Details live in the documents it lin
 | Power management, BL616 firmware, findings | [firmware/README.md](firmware/README.md) |
 | K230 board port (boot, NAND, pins, kernel) | [firmware/k230_board/README.md](firmware/k230_board/README.md) |
 | Capture, history, streaming, audio on RT-Smart | [firmware/k230_capture/rtsmart/README.md](firmware/k230_capture/rtsmart/README.md) |
-| Wi-Fi (BL616 NetHub + K230 SDIO driver) | [firmware/bl616_wifi/README.md](firmware/bl616_wifi/README.md) |
+| Wi-Fi (BL616 NetHub + K230 SDIO driver) | [firmware/bl616/WIFI.md](firmware/bl616/WIFI.md) |
 | Neural networks, image quality | [firmware/k230_nn/README.md](firmware/k230_nn/README.md) |
 | LED strips | [LED_STRIPS.txt](LED_STRIPS.txt) |
 | PCB stack and gerbers | [LAYERS.txt](LAYERS.txt), [FAB_NOTES.txt](FAB_NOTES.txt) |
@@ -63,9 +63,11 @@ These apply to every part of the project.
   µA and runs the Wi-Fi and BLE radio.
 - **The BL616 decides when the K230 runs.** It wakes on its RTC, on a leak probe (analog
   comparator) or on USB plug-in, powers the K230 up, and cuts it off when the session ends.
-- **One BL616 firmware in the product.** The power manager and the Wi-Fi bridge are two folders
-  today (`bl616_pwrmgr`, `bl616_wifi`) and become one image. That needs the power manager's
-  battery path to run the FreeRTOS scheduler during a K230 session.
+- **One BL616 firmware** (`firmware/bl616`): power manager, Wi-Fi bridge and BLE provisioning in
+  one image. A battery wake decides bare-metal; only a K230 session starts FreeRTOS, because the
+  Wi-Fi stack runs in its own tasks.
+- **Radios only on demand.** Wi-Fi starts only when the K230 sends `WIFI`; BLE runs only on USB
+  power. A battery session that never asks for Wi-Fi never powers the RF.
 
 ## 3. Hardware decisions
 
@@ -81,7 +83,7 @@ These apply to every part of the project.
 | Forcing USB flash mode | BL616 IO27 → RBT1 10k → BOOT1; test points B1_P/B1_N as manual fallback | The BL616 can put the K230 into USB flash mode without opening the unit (BOOT1 = 1.65 V, reads high on the 1.8 V pin) |
 | USB | USB-C 1 = K230 USB0 (flashing, device mode); USB-C 2 = CH340X console on UART0 | Flashing and console independent. The CH340X runs from the switched 3V3, so it cannot back-power an off K230. |
 | Power chain | BQ24072 charger (ISET 0.89 A, ILIM 1.0 A, TMR 6.3 h); TPS62823 0V8 → TPS63802 3V3 and 1V8 → TPS62823 1V1; U7 PG → RSTN | Meets the K230 power-up order (core first, IO after, RSTN 12.5 ms after the last rail). Soft charge chosen on purpose. |
-| Power-off | Firmware waits ≥ 5 s before re-powering; all BL616 pins toward the K230 go analog before K230_PWR drops | The TPS63802 has no output discharge; pull-ups on the switched 3V3 would back-feed the dead rail |
+| Power-off | RD1/RD2 1.5 k discharge 1V8/3V3; firmware waits ≥ 300 ms before re-powering; all BL616 pins toward the K230 go analog before K230_PWR drops | The TPS63802 has no output discharge (RD1/RD2 bring the rails below 10 % in < 0.1 s); pull-ups on the switched 3V3 would back-feed the dead rail |
 | BL616 pins | PGOOD on IO03 (ACOMP0), K230_PWR on IO30, leak line on GPIO20 (ACOMP1) | Hibernate wakes only on GPIO16-19, the RTC and the two comparators; USB plug-in and leak both need a comparator |
 | Humidity | AHT20 on the always-on rail with an RC filter (R52 + C4/C9); polled every 10 min from HBN | No interrupt pin, so polling; the filter keeps Wi-Fi burst ripple off the sensor |
 | Clock | Both chips have 32.768 kHz crystals. The BL616 HBN RTC keeps the wall clock; the K230's PMU RTC restarts at every power-up | The K230 RTC supply (AVDD1P8_RTC) is on the switched 1V8 rail. Time is handed over at every boot (section 5.4). |
@@ -101,8 +103,7 @@ These apply to every part of the project.
   1.2 MB against tens of MB for Linux and a rootfs. Canaan's camera stack (MPP: VICAP, ISP,
   VENC, audio) and the KPU runtime run on it.
 - **SDK:** `kendryte/k230_rtos_sdk` (CanMV manifest). It is installed and patched by
-  `firmware/k230_board/install.sh`. The Linux capture build (`k230_capture/v4l2cap.c`) remains
-  only as the first prototype.
+  `firmware/k230_board/install.sh`. There is no Linux build of anything.
 - **Build host:** an arm64 host, in a native arm64 Docker image. The SDK's x86-64 toolchains
   run through qemu binfmt.
 
@@ -165,7 +166,7 @@ the kernel NAND glue is patched to report 64.
 - **Drive strength, set from the 2026-09-24 layout audit instead of series resistors.**
   - OSPI NAND pins (IO14-19): `ds 7` of 15, not Canaan's 15. The traces are short (12-20 mm), there
     is no room for resistors at the balls, and SPI_CLK keeps R42 22R.
-  - BL616 SDIO pads: DRV_0 instead of the SDK's DRV_1 (`bl616_wifi/wifi_link.c`). Per the BL616
+  - BL616 SDIO pads: DRV_0 instead of the SDK's DRV_1 (`bl616/wifi_link.c`). Per the BL616
     datasheet, DRV_0 is about 35 ohm on GPIO0-20, close to the ~49 ohm traces, so it
     source-terminates them. DRV_1 is about 11 ohm and rings.
   - K230 SDIO (MMC0 PHY pads): left at Canaan's values (PAD_SP/SN 9/8, TXSLEW 3/1 in `drv_sdhci.c`).
@@ -189,20 +190,66 @@ the kernel NAND glue is patched to report 64.
 ### 5.1 A wake, end to end
 
 1. The BL616 wakes on the RTC (every 10 min for humidity, or the K230's requested interval), a
-   leak comparator, or USB plug-in.
-2. It powers the K230 and releases reset. It brings up Wi-Fi in parallel, if credentials are
-   stored.
-3. RT-Smart boots from NAND. The agent sends `READY` on UART1.
-4. The BL616 answers `WAKE,<reason>,<unix s>` and, with a fresh humidity sample,
-   `ENV,<rh>,<t>`. The agent sets the RTC from the time in `WAKE`.
-5. Capture: both cameras stream with the LEDs on and auto-exposure settles; one frame per camera
-   is taken.
-6. The image-quality check runs, then change detection, then (if changed) the leak network. See
-   5.6.
-7. Changed blocks go to the NAND history. The result is reported over Wi-Fi when the link is
-   up.
-8. The agent sends `SLEEP,<seconds>`, syncs the filesystems and sends `HALTED`. The BL616 cuts
-   the power and hibernates.
+   leak comparator, or USB plug-in. It powers the K230 and releases reset. Wi-Fi stays off.
+2. RT-Smart boots from NAND and starts `leakcam_agent`. The agent sends `READY` on UART1; the
+   BL616 answers `WAKE,<reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>`: the wake reason, its
+   clock, the AHT20 sample and the probe node voltage (GPADC on the comparator's pad). The
+   agent sets the clock and passes the sensor values to `leakcam_wake`.
+3. The agent runs `leakcam_wake <reason>`, the main algorithm (below).
+4. The agent sends `TIME` when NTP set the clock and `SLEEP,<seconds>` with the interval
+   `leakcam_wake` chose, then stops its heartbeat. 2 s after the last edge the BL616 stops Wi-Fi
+   if it ran, cuts the K230's power and hibernates.
+
+**The K230 decides how long a session lasts.** The BL616 wakes it and keeps it powered for as long
+as the heartbeat on GPIO2 runs; there is no session limit and no shutdown command. The agent
+stops the heartbeat when its work is done and written; it kills a hook still running after
+10 min, since nothing else would end a hung session. A K230 that never sends `READY` (90 s) is
+retried and backed off as a failed boot.
+
+**`leakcam_wake` (`firmware/k230_capture/leakcam_wake.c`):**
+
+```
+capture both cameras (LEDs on for the shot, AE settled), reduce to 320x240
+  |
+compare each camera with what its history shows (cam<N>.hist; none yet = new)
+  |-- same on every camera, and no sensor alarm -------------> sleep 6 h
+  | new, or a sensor alarm (probe wake, humidity alarm, probe node < 825 mV)
+no server configured (/sdcard/leakcam/server) --------------> sleep 1 h
+  |
+"wifi" to the agent -> WIFI to the BL616 -> MMC0 probe
+  |-- refused (no credentials, radio) or no card ------------> sleep 1 h
+  | wifi=ok
+POST /v1/check?reason=&probe_mv=&rh=&t=, both reduced frames
+  |-- server not reached ------------------------------------> sleep 1 h
+  |-- {"leak":true}: leakcam_stream -p pushes 5 s of H.264
+  |                  from both cameras; nothing stored -------> sleep 10 min
+  |-- {"leak":false}: the new frames go to the history ------> sleep 6 h
+```
+
+- **Compared with the history, not with the last wake.** The history is what was last seen and
+  judged: a change is new until the server has seen it and said "no leak". Then it becomes part
+  of the history, and the next wake compares with it.
+- **A reported leak is not stored.** Every following wake (10 min later) sees the change again,
+  reports again and sends new video, until the scene is back to normal or the server says "no
+  leak".
+- **Anything not reported is retried in an hour.** Nothing is stored then either, so the retry
+  sees the same change.
+- **The sensors count as much as the cameras.** A leak the cameras cannot see (under a cabinet,
+  behind the lens' field) still reaches the server when the probes or the humidity say so. The
+  server decides from the images and the sensor values together.
+- **Wi-Fi only for news.** An unchanged scene with quiet sensors costs a capture and a compare,
+  with the radios off.
+- **The camera is released before the video.** `leakcam_wake` closes VICAP after the capture;
+  `leakcam_stream` opens it again for the push. Both run the same MPP pipeline once.
+
+**Server protocol (HTTP/1.1, one request per connection).** The mock is
+`firmware/k230_capture/mock_server.py`; it answers "leak" when the probes say wet (the reason
+is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
+
+| Request | Body | Reply |
+|---|---|---|
+| `POST /v1/check?reason=<cold\|leak\|rtc\|humid>&probe_mv=<mV>[&rh=<%RH>&t=<C>]` | one binary PGM per camera, 320x240, back to back | `{"leak":true}` or `{"leak":false}` |
+| `POST /v1/video?cam=<N>` | chunked H.264 Annex-B, 5 s, starting on an IDR; one per camera, at the same time | `{"bytes":<n>}` |
 
 ### 5.2 BL616 power manager ([firmware/README.md](firmware/README.md))
 
@@ -213,10 +260,14 @@ the kernel NAND glue is patched to report 64.
   - leak line on ACOMP1, trip at 0.825 V;
   - USB plug-in via PGOOD on ACOMP0;
   - the RTC.
+- **The BL616 does not judge.** It keeps no memory of what was reported: a probe reading wet or
+  humidity at or above 85 %RH at any wake starts a K230 session, every time, and the values
+  ride in `WAKE`. The K230 decides leak or no leak and how long to sleep. The only state the
+  BL616 keeps is the failed-boot count (for the retry back-off) and the USB-exit flag.
 - **USB mode.** On USB power the BL616 stays awake and advertises BLE for provisioning.
   Unplugging returns it to the battery schedule.
-- **Recovery.** A hung K230 gets an RSTN pulse first; a full power cycle comes second, with the
-  5 s minimum off time.
+- **No recovery of its own.** A stopped heartbeat means the session is over, whatever the
+  reason: the BL616 cuts the power (300 ms discharge wait included) and schedules the next wake.
 - **Console on USB CDC.** It requires the SDK shell, FreeRTOS and CherryUSB CDC-ACM. If any of
   these is missing, Kconfig drops the option silently and the console lands on the K230 link
   pins. Check `CONFIG_BSP_CONSOLE_USB_CDC` in the generated config.
@@ -233,19 +284,29 @@ the kernel NAND glue is patched to report 64.
 ### 5.4 K230-BL616 link and time
 
 - **The UART carries session control.** UART1 at 115200 8N1, frames `$<seq>,<CMD>[,args]*XX`
-  with an XOR checksum; invalid lines are dropped. It is available as soon as RT-Smart runs,
-  without Wi-Fi.
-- **Every command is answered.** `ACK,<seq>` means accepted; `NAK,<seq>` means received but refused,
-  for example a `TIME` before 2026 or an `ENV` out of the AHT20 range. The sender keeps one command
+  with a CRC-8 (polynomial 0x07, `link_crc8()` in `k230_link.h`, shared by both ends); invalid
+  lines are dropped. It is available as soon as RT-Smart runs, without Wi-Fi.
+- **Every command is answered.** `ACK,<seq>` means accepted; `NAK,<seq>,<code>` means received but
+  refused, with a reason: 1 invalid argument (a `TIME` before 2026), 2 no Wi-Fi credentials
+  stored, 3 BL616 radio failed. The agent never refuses `WAKE`: sensor values out of range are
+  dropped instead, so a bad reading cannot stall a session. The sender keeps one command
   in flight, resends it after 300 ms without an answer, and gives up after 5 sends. A NAK ends the
   command at once. A corrupted frame gets no answer, because its seq can't be trusted, so the
   timeout covers it. Repeats (a lost answer) get the same answer again and are not acted on twice.
   A `READY` restarts both sequence states, unless it repeats the one just accepted. The timeout,
-  retry count and result names are defined once in `bl616_pwrmgr/k230_link.h`, which the agent
+  retry count, result names and NAK codes are defined once in `bl616/k230_link.h`, which the agent
   includes too.
-  - K230 → BL616: `READY`, `SLEEP,<s>`, `HALTED`, `TIME,<unix s>`.
-  - BL616 → K230: `WAKE,<cold|leak|rtc>,<unix s>`, `ENV`, `SHUTDOWN`, `ACK`.
-- **GPIO2 heartbeat.** The heartbeat is edges, not a level, because IO2 is JTAG_TCK at reset.
+  - K230 → BL616: `READY`, `SLEEP,<s>` (the next wake only, not a power-off), `TIME,<unix s>`,
+    `WIFI`.
+  - BL616 → K230: `WAKE,<cold|leak|rtc|humid>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>` (rh -1 = no
+    AHT20 sample, probe -1 = no reading), once per `READY`; `ACK`.
+- **K230 side: `leakcam_agent`**, an RT-Smart program started at boot (`RTT_AUTO_EXEC_CMD`). It
+  talks to `/dev/uart1` and `/dev/gpio` directly and runs the capture hook for the wake reason.
+  The hook prints `wifi` when it needs the network; the agent sends `WIFI` and, once it is
+  accepted, probes MMC0 through `/dev/bl616`. Nothing probes MMC0 at boot: the SDU is off until
+  `WIFI`, so a boot-time probe would only cost time and power.
+- **GPIO2 heartbeat.** Every 500 ms while the agent runs; its stop ends the session. It is
+  edges, not a level, because IO2 is JTAG_TCK with a pull-down at reset.
 - **Time.** The BL616 is the clock of record. Its HBN RTC is a 40-bit counter on the Y3 crystal
   plus a (Unix seconds, count) reference, re-based at every boot. It drifts about 1.7 s/day.
   - The time rides in the `WAKE` reply (`0` = not valid), so the K230 has it in the first frame
@@ -254,7 +315,7 @@ the kernel NAND glue is patched to report 64.
   - The clock is lost only with the battery. `WAKE` then carries 0 until NTP time arrives
     again.
 
-### 5.5 Wi-Fi ([firmware/bl616_wifi/README.md](firmware/bl616_wifi/README.md))
+### 5.5 Wi-Fi ([firmware/bl616/WIFI.md](firmware/bl616/WIFI.md))
 
 - **Split.** The BL616 is only the radio and the WPA supplicant. The K230's lwIP owns the IP
   address: DHCP, DNS, NTP and every socket, with the BL616's station MAC.
@@ -281,22 +342,25 @@ the kernel NAND glue is patched to report 64.
 
 ### 5.6 Imaging pipeline per camera
 
+Today `leakcam_wake` runs capture -> imgdiff against the history -> server (5.1). The plan adds
+on-device checks between capture and the server:
+
 ```
 capture (LEDs at 100 %, AE settled)
  -> image quality (imgqual.c): too dark / clipped -> LED step, recapture (max 2)
                                sharpness < 0.35 x ref or contrast < 0.5 x ref -> INOPERATIONAL (lens)
- -> imgdiff vs base and vs last: low-threshold gate, its job is recall
+ -> imgdiff vs the history view: low-threshold gate, its job is recall        (built)
  -> change net (feature maps vs stored reference embedding): no meaningful change -> done
- -> leak net (current vs dry base): P(inoperational) first, then severity; alarm after N wakes
- -> history: changed blocks to NAND, report
+ -> leak net (current vs dry base): P(inoperational) first, then severity
+ -> server check, history                                                      (built)
 ```
 
-- **Change detection today (`imgdiff.c`).**
+- **Change detection (`imgdiff.c`).**
   - Frames are reduced to 320x240, masked to the image circle and gain-normalised.
   - Blocks are compared on a 16x12 grid.
-  - Two references are kept: the dry baseline and the last wake.
-  - The baseline is compared as well, so a slow seep is not absorbed. It is never refreshed
-    while severity is raised.
+  - One reference per camera: the history view (`cam<N>.hist`), the last keyframe with every
+    stored delta applied. A slow seep is not absorbed, because nothing enters the history
+    before the server has judged it.
 - **Image history on NAND.** It must be on NAND because the K230 loses its RAM at every
   power-off.
   - Per camera: a keyframe (full luma, compressed) plus deltas holding only the changed 80x80
@@ -322,7 +386,9 @@ capture (LEDs at 100 %, AE settled)
 ### 5.7 Streaming and audio (built, not run)
 
 - **Streaming (`leakcam_stream`).**
-  - RTSP H.264 per camera (`rtsp://<ip>:8554/cam0`, `/cam1`), 1500 kbit/s, IDR every 2 s and
+  - Push mode (`-p host:port -t seconds`), used by `leakcam_wake` on a leak: H.264 of both
+    cameras, one chunked POST per camera. No RTSP, HTTP server or JPEG channels.
+  - Live mode, for the bench: RTSP H.264 per camera (`rtsp://<ip>:8554/cam0`, `/cam1`), 1500 kbit/s, IDR every 2 s and
     on every new client.
   - HTTP `/snap/N.jpg` and `/mjpeg/N` on port 8080, encoded only while someone watches.
   - One VICAP channel per camera feeds both encoders, without copying frames.
@@ -361,15 +427,11 @@ back to U13's GND pad beside MICPL; 1 µF 0402 fits better than the 0805 (footpr
 
 ## 7. Open firmware work
 
-- **K230 agent on RT-Smart.**
-  - UART1 link and the time in `WAKE` into the PMU RTC.
-  - GPIO2 heartbeat.
-  - `READY`/`SLEEP`/`HALTED`.
-  - Start through `RTT_AUTO_EXEC_CMD`.
+- **The real server.** Replace the mock; same two requests. Add authentication and TLS.
+- **Run on hardware.** The agent, `leakcam_wake` and the push mode are built and tested on the
+  host only.
 - **OTA writer.** Download into the inactive slot and write `ota_meta`. The SPL side already
   exists.
-- **BL616 merge.** One firmware for the power manager and the Wi-Fi bridge, which needs the
-  scheduler during battery sessions.
 - **LEAKCAM dataset.**
   - Fisheye captures from both cameras, white and IR, at several LED levels.
   - Retrain the leak net (and replace its wall-band exposure reference) and train the change

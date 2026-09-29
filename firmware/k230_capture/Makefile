@@ -1,41 +1,34 @@
-# Cross-compile with the k230_linux_sdk toolchain, e.g.
-#   make CROSS_COMPILE=riscv64-unknown-linux-gnu-
-# (zlib is in the SDK rootfs; BR2_PACKAGE_PYTHON3_ZLIB selects it)
-# Host unit tests (no camera needed):  make test
-CROSS_COMPILE ?=
-CC      := $(CROSS_COMPILE)gcc
-CFLAGS  ?= -O2 -Wall -Wextra -Werror
-LDLIBS  += -lz -lm
+# Host unit tests (no camera needed): make test. The device build is rtsmart/Makefile, run by the
+# SDK after firmware/k230_board/install.sh. History files are compressed with the bundled miniz,
+# as on the device.
+MINIZ := -Ithird_party/miniz third_party/miniz/miniz.c
+CORE  := imgdiff.c refstore.c history.c
+HDRS  := imgdiff.h refstore.h history.h cap.h
 
-CORE := imgdiff.c refstore.c history.c
-HDRS := imgdiff.h refstore.h history.h cap.h
-
-all: leakcam_capture leakcam_hist
-
-leakcam_capture: leakcam_capture.c v4l2cap.c led_linux.c $(CORE) $(HDRS) led.h
-	$(CC) $(CFLAGS) -o $@ leakcam_capture.c v4l2cap.c led_linux.c $(CORE) $(LDLIBS)
-
-leakcam_hist: leakcam_hist.c $(CORE) $(HDRS)
-	$(CC) $(CFLAGS) -o $@ leakcam_hist.c $(CORE) $(LDLIBS)
-
-test: test/test_imgdiff test/test_history test/test_history_miniz test/test_imgqual_synth test/test_audio
+test: test/test_imgdiff test/test_history test/test_imgqual_synth test/test_audio test/leakcam_wake_host test/fake_stream
 	./test/test_imgdiff
 	./test/test_history
-	./test/test_history_miniz
 	./test/test_imgqual_synth
 	./test/test_audio
+	python3 test/test_wake.py test/leakcam_wake_host $(WAKE_STATE)
 
 test/test_imgdiff: test/test_imgdiff.c $(CORE) $(HDRS)
-	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_imgdiff.c $(CORE) -lz -lm
+	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_imgdiff.c $(CORE) $(MINIZ) -lm
 
 test/test_history: test/test_history.c $(CORE) $(HDRS)
-	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_history.c $(CORE) -lz -lm
+	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_history.c $(CORE) $(MINIZ) -lm
 
-# the RT-Smart build compresses with the bundled miniz instead of zlib: same tests, same format
-test/test_history_miniz: test/test_history.c $(CORE) $(HDRS) third_party/miniz/miniz.c
-	cc -O2 -Wall -Wextra -Werror -I. -Ithird_party/miniz -DLEAKCAM_MINIZ -o $@ test/test_history.c $(CORE) third_party/miniz/miniz.c -lm
+# the wake algorithm: leakcam_wake unchanged, cameras and LEDs from test/wake_stub.c, run by
+# test/test_wake.py against mock_server.py; test/fake_stream stands in for leakcam_stream -p
+WAKE_STATE := /tmp/leakcam_wake_test
+test/leakcam_wake_host: leakcam_wake.c netclient.c netclient.h test/wake_stub.c $(CORE) $(HDRS) led.h
+	cc -O2 -Wall -Wextra -Werror -I. -DSTATE_DIR='"$(WAKE_STATE)"' -DSTREAM_PROG='"$(CURDIR)/test/fake_stream"' \
+	   -DNET_TIMEOUT_S=2 -o $@ leakcam_wake.c netclient.c test/wake_stub.c $(CORE) $(MINIZ) -lm
 
-# image quality verdicts and LED step on synthetic frames
+test/fake_stream: test/fake_stream.c netclient.c netclient.h
+	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/fake_stream.c netclient.c
+
+# image quality checks and LED step on synthetic frames
 test/test_imgqual_synth: test/test_imgqual_synth.c imgqual.c imgqual.h imgdiff.h
 	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_imgqual_synth.c imgqual.c -lm
 
@@ -48,7 +41,7 @@ test/test_imgqual: test/test_imgqual.c imgqual.c imgqual.h imgdiff.c imgdiff.h
 	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_imgqual.c imgqual.c imgdiff.c -lm
 
 clean:
-	rm -f leakcam_capture leakcam_hist test/test_imgdiff test/test_history test/test_history_miniz test/test_imgqual \
-	      test/test_imgqual_synth test/test_audio
+	rm -f test/test_imgdiff test/test_history test/test_imgqual test/test_imgqual_synth test/test_audio \
+	      test/leakcam_wake_host test/fake_stream
 
-.PHONY: all test clean
+.PHONY: test clean

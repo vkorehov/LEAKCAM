@@ -4,7 +4,7 @@
  *
  *   leak_nn <embed.kmodel> <leak.kmodel> <ref_luma> <cur_luma> [--ai2d]
  *
- * ref_luma / cur_luma: 8-bit grey images (PGM from `leakcam_capture --pgm`, or any file
+ * ref_luma / cur_luma: 8-bit grey images (PGM from `leakcam_hist get <cam> 0 <out.pgm>`, or any file
  * cv::imread can read), same camera, 1280x960 or 640x480.
  *
  *   1. image quality (imgqual.c) on the imgdiff-reduced 320x240 frame: exposure, clipping,

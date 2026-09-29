@@ -22,8 +22,10 @@ Datasheet numbers used (files in ~/k230d-hw):
     earlier than VDD1P8 and VDDIO3P3_0..5; AVDD0P8_MIPI earlier than AVDD1P8_MIPI;
     AVDD1P8_RTC not later than AVDD1P8_LDO. Nothing is said about power-down.
 
-Rail capacitance is the nominal sum from the schematic (DC bias derating ignored, so
-real decays are somewhat faster). Off-state rail loads are NOT known; they are swept.
+Discharge resistors RD1 (1V8 to GND) and RD2 (3V3 to GND), 1.5 k each, are fitted: they sit in
+parallel with whatever else loads the rail. Rail capacitance is the nominal sum from the
+schematic (DC bias derating ignored, so real decays are somewhat faster). The other off-state
+rail loads are NOT known; they are swept.
 
 Usage:  python3 power_sequence.py            # full report
 """
@@ -34,6 +36,17 @@ DT = 5e-6
 # nominal capacitance per rail, sum of schematic values (see report header)
 C = {'0V8': 46.2e-6, '1V1': 22.8e-6, '1V8': 22.8e-6, '3V3': 24.3e-6}
 VT = {'0V8': 0.798, '1V1': 1.100, '1V8': 1.775, '3V3': 3.308}   # from FB dividers
+R_DIS = 1.5e3                                  # RD1 on 1V8, RD2 on 3V3
+
+
+def par(r):
+    """an off-state load in parallel with the fitted discharge resistor"""
+    return r * R_DIS / (r + R_DIS)
+
+
+# unknown off-state loads other than RD1/RD2: (label, 1V8 ohms, 3V3 ohms)
+LOADS = (('light off-load (1V8 50 uA, 3V3 50 uA)', 36e3, 66e3),
+         ('typical off-load (1V8 0.5 mA, 3V3 0.3 mA)', 3.6e3, 11e3))
 
 
 class Tps62823:
@@ -120,7 +133,7 @@ def ms(x): return '%7.3f ms' % (x * 1e3) if x is not None else '   never  '
 
 
 def powerup_report():
-    r = run([(0.0, 1)], 0.030, 36e3, 66e3, record=True)
+    r = run([(0.0, 1)], 0.030, par(36e3), par(66e3), record=True)
     m = r['marks']
     print('== 1. Cold power-up, K230_PWR goes high at t = 0 ==')
     for name in ('0V8', '3V3', '1V8', '1V1'):
@@ -139,16 +152,17 @@ def powerup_report():
 
 def powerdown_report():
     print('\n== 2. Power-down, K230_PWR low at t = 0 (all ENs fall together: R27/R28 pull up to K230_PWR) ==')
-    for label, r18, r33 in (('light off-load (1V8 50 uA, 3V3 50 uA)', 36e3, 66e3),
-                            ('typical (1V8 0.5 mA, 3V3 0.3 mA)', 3.6e3, 11e3),
-                            ('with 1 k bleed on 1V8 and 3V3', 36e3 * 1e3 / (36e3 + 1e3), 66e3 * 1e3 / (66e3 + 1e3))):
+    print('   time to 10 %, RD1/RD2 1.5 k in parallel with the load')
+    for label, l18, l33 in LOADS:
+        r18, r33 = par(l18), par(l33)
         # time for each rail to fall below 10 % after the off edge, analytic for the RC rails
         t08 = VT['0V8'] / (75e-3 / C['0V8'])
         t11 = VT['1V1'] / (75e-3 / C['1V1'])
         t18 = r18 * C['1V8'] * math.log(10)
         t33 = r33 * C['3V3'] * math.log(10)
         print('   %-40s 0V8 %s  1V1 %s  1V8 %s  3V3 %s' % (label, ms(t08), ms(t11), ms(t18), ms(t33)))
-    print('   -> the core (0V8) is gone in ~0.5 ms while 1V8 and 3V3 linger; the IO rails outlive the core.')
+    print('   -> the core (0V8) is gone in ~0.5 ms; RD1/RD2 bring 1V8 and 3V3 down in under 0.1 s whatever')
+    print('      else hangs on them. The IO rails still outlive the core by that much.')
 
 
 def powercycle_report():
@@ -156,12 +170,10 @@ def powercycle_report():
     print('   PASS means 1V8 < 10 % and 3V3 < 10 % at the moment 0V8 starts rising again.')
     gaps = (0.01, 0.1, 0.3, 1.0, 2.0, 5.0)
     print('   %-44s ' % 'scenario' + ' '.join('%6.2fs' % g for g in gaps))
-    scen = (('light off-load, no bleed', 36e3, 66e3, 0),
-            ('typical off-load, no bleed', 3.6e3, 11e3, 0),
-            ('1 k bleed on 1V8 and 3V3', 1e3 * 36e3 / 37e3, 1e3 * 66e3 / 67e3, 0),
-            ('1 k bleed, BL616 UART TX left high', 1e3 * 36e3 / 37e3, 1e3 * 66e3 / 67e3, 1),
-            ('1 k bleed, UART + 5 SDIO pins left high', 1e3 * 36e3 / 37e3, 1e3 * 66e3 / 67e3, 6),
-            ('no bleed, UART TX left high', 36e3, 66e3, 1))
+    scen = (('light off-load', par(36e3), par(66e3), 0),
+            ('typical off-load', par(3.6e3), par(11e3), 0),
+            ('light off-load, BL616 UART TX left high', par(36e3), par(66e3), 1),
+            ('light off-load, UART + 5 SDIO pins left high', par(36e3), par(66e3), 6))
     for label, r18, r33, bfp in scen:
         row = []
         for g in gaps:
@@ -182,15 +194,15 @@ def powercycle_report():
 def backfeed_report():
     print('\n== 4. K230 "off" but BL616 pins driven high into the 10 k pull-ups to 3V3 ==')
     for pins in (1, 2, 7):
-        for r33, lab in ((66e3, 'light load'), (11e3, 'typ load'), (1e3 * 66e3 / 67e3, '1 k bleed')):
+        for r33, lab in ((par(66e3), 'light load'), (par(11e3), 'typ load')):
             rp = 10e3 / pins
             v = 3.3 * r33 / (r33 + rp); i = (3.3 - v) / rp
             print('   %d pin(s) high, %-10s -> 3V3 rail sits at %.2f V, costing %.2f mA from 3V3_SLEEP'
                   % (pins, lab, v, i * 1e3))
-    print('   -> with the UART TX idling high the "off" K230 IO banks, cameras and CH340X sit at up to 2.9 V,')
-    print('      the idle budget grows by 0.04-0.3 mA per pin (more with a bleed resistor), and the next')
-    print('      power-up starts with 3V3 already up. Bleed resistors cannot fix this; the firmware must park')
-    print('      those pins (analog/input, no pull) before K230_PWR goes low and keep them parked until 3V3 is up.')
+    print('   -> RD2 holds the rail low (0.4 V for 2 pins), but every pin left high costs about 0.3 mA from')
+    print('      3V3_SLEEP for as long as the K230 is off, and powers the "off" IO banks, cameras and CH340X')
+    print('      from 0.4-1.7 V. The firmware parks those pins (analog/input, no pull) before K230_PWR goes low')
+    print('      and keeps them parked until 3V3 is up.')
 
 
 if __name__ == '__main__':

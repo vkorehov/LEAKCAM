@@ -44,7 +44,7 @@
 #define BL616_SIZE_UNIT        64    /* unit of HOST_READY / CARD_READY */
 #define BL616_BLOCK_SIZE       512
 /* ports per direction: SDIO2_MAX_PORT_NUM on the BL616, which NetHub builds with
- * CONFIG_MR_SDIO_QUEUE_DEPTH (4, set in firmware/bl616_wifi/defconfig). Both ends count the
+ * CONFIG_MR_SDIO_QUEUE_DEPTH (4, set in firmware/bl616/defconfig). Both ends count the
  * ports in the same order, so the two numbers must be equal; there is no register for it. */
 #define BL616_PORTS            4
 
@@ -120,6 +120,12 @@ rt_err_t bl616_link_send_frame(const void *frame, rt_size_t len);
 rt_err_t bl616_link_send_ctrl(const void *msg, rt_size_t len);
 
 /* bl616_wifi.c, called from the link worker */
+/* the BL616 SDU is wired to MMC0 (SDIO0) */
+#define BL616_SDIO_HOST 0
+
+/* /dev/bl616 ioctl: rescan MMC0 for the BL616, the only probe of it (user space: the same number) */
+#define BL616_IOCTL_RESCAN 0x4c01
+
 void bl616_wifi_attach(const rt_uint8_t mac[6]);
 void bl616_wifi_ctrl_up(void);
 void bl616_wifi_rx(void *frame, rt_size_t len);

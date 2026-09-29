@@ -1,6 +1,6 @@
 /*
  * The two LED chains (TPS61161 U14 white on J1, U15 IR on J2), each dimmed by the PWM duty on
- * its CTRL pin: I_LED = duty x 200 mV / R_FB. Implemented per platform (led_linux.c, led_rtsmart.c).
+ * its CTRL pin: I_LED = duty x 200 mV / R_FB. Implemented in led_rtsmart.c.
  */
 #ifndef LEAKCAM_LED_H
 #define LEAKCAM_LED_H
@@ -21,7 +21,7 @@ extern const char *const led_name[2];
 
 /* on: both chains at percent[LED_WHITE] / percent[LED_IR] (0 = that chain off), then wait for the
  * soft start; off: duty 0 and disabled, CTRL low, the drivers shut down. pwm_dev selects the
- * PWM controller (Linux: pwmchip number). Returns 0 or -1 (message on stderr). */
+ * PWM controller. Returns 0 or -1 (message on stderr). */
 int led_set(bool on, const unsigned percent[2], unsigned pwm_dev);
 
 #endif

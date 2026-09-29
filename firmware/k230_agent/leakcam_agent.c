@@ -1,25 +1,38 @@
 /*
- * leakcam_agent: K230 (Linux, little core) side of the BL616 power protocol.
+ * leakcam_agent: K230 (RT-Smart) side of the BL616 power protocol, started at boot through
+ * RTT_AUTO_EXEC_CMD.
  *
- *  - toggles K230 GPIO2 (net K230_ALIVE -> BL616 IO01) as a heartbeat, every 500 ms;
- *  - talks to the BL616 over UART1 (GPIO40 TXD / GPIO41 RXD), protocol in bl616_pwrmgr/k230_link.h;
- *  - runs the capture hook for the wake reason, then asks to be powered off; the BL616's last
- *    humidity sample (ENV frame) is passed to the hook as LEAKCAM_RH / LEAKCAM_T;
+ *  - toggles K230 GPIO2 (net K230_ALIVE -> BL616 IO01) as a heartbeat, every 500 ms: the K230
+ *    stays powered while it runs, and stopping it is how the session ends (the BL616 cuts the
+ *    power 2 s after the last edge; there is no shutdown command);
+ *  - talks to the BL616 over UART1 (GPIO40 TXD / GPIO41 RXD, /dev/uart1), protocol in
+ *    bl616/k230_link.h;
+ *  - runs the capture hook for the wake reason (killed after HOOK_TIMEOUT_S: nothing else ends
+ *    a session that hangs), sends SLEEP,<s> for the next wake, then stops the heartbeat; the BL616's
+ *    sensor values (in the WAKE frame) are passed to the hook as LEAKCAM_RH / LEAKCAM_T /
+ *    LEAKCAM_PROBE_MV; a line "wifi"
+ *    from the hook sends WIFI, the only way the BL616's Wi-Fi is started;
  *  - sets the system clock from the time in the BL616's WAKE frame (the K230 has no running
- *    clock after power-up), and sends TIME back when the K230 itself is NTP-synchronised;
+ *    clock after power-up), and sends TIME back when NTP has set the clock during the session;
  *  - every frame both ways carries a sequence number and is answered ACK/NAK, with resends
- *    (link section below, same rules as bl616_pwrmgr/k230_link.h);
- *  - before power is cut: sync, remount / read-only, sync, send HALTED.
+ *    (link section below, same rules as bl616/k230_link.h);
+ *  - before the heartbeat stops the hook has exited. UFFS (/sdcard) is log-structured and
+ *    survives a power cut; RT-Smart has no sync() or remount, so programs fsync what they write.
  *
- * Needs in the device tree: uart1 enabled on IO40/IO41, and IO2 muxed as GPIO (its reset
- * function is JTAG_TCK). Build: see Makefile (k230_sdk RISC-V Linux toolchain).
+ * The hook is a program (RT-Smart has no shell): <hook> <cold|leak|rtc|humid>, with the BL616's
+ * AHT20 sample in LEAKCAM_RH / LEAKCAM_T (unset without one) and the probe voltage in
+ * LEAKCAM_PROBE_MV. It may print "sleep=<seconds>" for the next
+ * scheduled wake-up, and a line "wifi" when it needs the network; the answer, "wifi=ok" or
+ * "wifi=fail,<code>", comes back on its stdin.
  *
- *   leakcam_agent [-u /dev/ttyS1] [-c /dev/gpiochip0] [-l 2] [-x /etc/leakcam/on-wake]
+ * Pins (IO2 as GPIO, IO40/IO41 as UART1) are set by the board pinmux (k230_board/pins.py).
+ * Built into the image by the SDK (k230_board/install.sh); the host test is test/.
+ *
+ *   leakcam_agent [-u 1] [-l 2] [-x /sdcard/app/leakcam_wake]
  */
 #define _GNU_SOURCE
 #include <errno.h>
 #include <fcntl.h>
-#include <linux/gpio.h>
 #include <poll.h>
 #include <pthread.h>
 #include <signal.h>
@@ -30,10 +43,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
-#include <sys/mount.h>
-#include <sys/timex.h>
 #include <sys/wait.h>
-#include <termios.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -43,17 +53,15 @@
 #define READY_RETRY_MS           1000
 #define READY_TRIES              15
 #define DEFAULT_SLEEP_S          (6 * 3600)
+#define HOOK_TIMEOUT_S           600u    /* a hook still running then is killed */
 
-static const char *uart_dev = "/dev/ttyS1";
-static const char *chip_dev = "/dev/gpiochip0";
-static unsigned alive_line = 2;               /* K230 IO2; confirm offset with `gpioinfo` */
-static const char *hook = "/etc/leakcam/on-wake";
+static int uart_id = 1;                       /* /dev/uart1 on IO40/IO41 */
+static int alive_pin = 2;                     /* K230 IO2 */
+static const char *hook = "/sdcard/app/leakcam_wake";
 
 static int uart_fd = -1;
-static int alive_fd = -1;
+static int gpio_fd = -1;
 static volatile sig_atomic_t heartbeat_run = 1;
-static volatile sig_atomic_t shutdown_req;
-static pid_t hook_pid;
 
 static void logmsg(const char *fmt, ...)
 {
@@ -72,36 +80,34 @@ static uint64_t now_ms(void)
     return (uint64_t)ts.tv_sec * 1000u + ts.tv_nsec / 1000000u;
 }
 
-/* ---------------- GPIO heartbeat (GPIO character device, uAPI v1) ---------------- */
+/* ---------------- GPIO heartbeat ---------------- */
 
-static int alive_open(void)
-{
-    int chip = open(chip_dev, O_RDONLY | O_CLOEXEC);
-    if (chip < 0) {
-        logmsg("open %s: %s", chip_dev, strerror(errno));
-        return -1;
-    }
-    struct gpiohandle_request req = { 0 };
-    req.lineoffsets[0] = alive_line;
-    req.lines = 1;
-    req.flags = GPIOHANDLE_REQUEST_OUTPUT;
-    req.default_values[0] = 0;
-    strncpy(req.consumer_label, "leakcam-alive", sizeof(req.consumer_label) - 1);
-    int rc = ioctl(chip, GPIO_GET_LINEHANDLE_IOCTL, &req);
-    close(chip);
-    if (rc < 0) {
-        logmsg("request line %u on %s: %s (is IO2 still muxed as JTAG_TCK?)", alive_line, chip_dev, strerror(errno));
-        return -1;
-    }
-    alive_fd = req.fd;
-    return 0;
-}
+/* the RT-Smart GPIO device: one ioctl sets a pin's mode, then the file offset is the pin and
+ * one byte written is its level (kernel ABI of bsp/maix3 drv_gpio, 'G' 0 = set mode, 0 = output) */
+struct gpio_cfg {
+    uint16_t pin;
+    uint16_t value;
+};
+#define GPIO_IOCTL_SET_MODE _IOW('G', 0, struct gpio_cfg *)
+#define GPIO_MODE_OUTPUT    0
 
 static void alive_set(int v)
 {
-    struct gpiohandle_data d = { .values = { (uint8_t)v } };
-    if (ioctl(alive_fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &d) < 0)
-        logmsg("set alive: %s", strerror(errno));
+    uint8_t b = (uint8_t)v;
+    if (lseek(gpio_fd, alive_pin, SEEK_SET) != alive_pin || write(gpio_fd, &b, 1) != 1)
+        logmsg("set GPIO%d: %s", alive_pin, strerror(errno));
+}
+
+static int alive_open(void)
+{
+    struct gpio_cfg c = { .pin = (uint16_t)alive_pin, .value = GPIO_MODE_OUTPUT };
+    gpio_fd = open("/dev/gpio", O_RDWR);
+    if (gpio_fd < 0 || ioctl(gpio_fd, GPIO_IOCTL_SET_MODE, &c) != 0) {
+        logmsg("GPIO%d as output: %s", alive_pin, strerror(errno));
+        return -1;
+    }
+    alive_set(0);
+    return 0;
 }
 
 static void *heartbeat_thread(void *arg)
@@ -119,42 +125,37 @@ static void *heartbeat_thread(void *arg)
 
 /* ---------------- UART link ---------------- */
 
+/* /dev/uart<id> comes up at the kernel's default 115200 8N1 (RT_SERIAL_CONFIG_DEFAULT) */
 static int uart_open(void)
 {
-    uart_fd = open(uart_dev, O_RDWR | O_NOCTTY | O_CLOEXEC);
+    char dev[16];
+    snprintf(dev, sizeof(dev), "/dev/uart%d", uart_id);
+    uart_fd = open(dev, O_RDWR | O_NONBLOCK);
     if (uart_fd < 0) {
-        logmsg("open %s: %s", uart_dev, strerror(errno));
+        logmsg("open %s: %s", dev, strerror(errno));
         return -1;
     }
-    struct termios t;
-    if (tcgetattr(uart_fd, &t) < 0)
-        return -1;
-    cfmakeraw(&t);
-    cfsetispeed(&t, B115200);
-    cfsetospeed(&t, B115200);
-    t.c_cflag |= CLOCAL | CREAD;
-    t.c_cflag &= ~(CRTSCTS | CSTOPB | PARENB);
-    t.c_cc[VMIN] = 0;
-    t.c_cc[VTIME] = 0;
-    tcflush(uart_fd, TCIOFLUSH);              /* drop anything the BL616 printed before we opened */
-    return tcsetattr(uart_fd, TCSANOW, &t);
+    char junk[64];                            /* drop anything the BL616 printed before we opened */
+    while (read(uart_fd, junk, sizeof(junk)) > 0) {
+    }
+    return 0;
 }
 
 /* ---------------- link: $<seq>,<CMD>[,args]*XX, every command answered ACK/NAK ---------------- */
 
 /* LINK_ACK_TIMEOUT_MS, LINK_TRIES and enum link_end come from the protocol header shared
- * with the BL616, bl616_pwrmgr/k230_link.h */
+ * with the BL616, bl616/k230_link.h */
 #define LINK_INBOX          4
 
 struct frame {
     char cmd[16];
-    char arg[32];
+    char arg[48];
     unsigned seq;
 };
 
 static unsigned tx_next;                /* our next seq, 0..255 */
-static int rx_last = -1;                /* last seq accepted from the BL616, and our answer */
-static bool rx_last_ok;
+static int rx_last = -1;                /* last seq accepted from the BL616 */
+static unsigned nak_code;               /* code of the last NAK link_cmd() got */
 static struct frame inbox[LINK_INBOX];  /* commands that arrived while we waited for an answer */
 static unsigned in_head, in_count;
 
@@ -165,20 +166,16 @@ static void send_frame(unsigned seq, const char *cmd, const char *arg)
         snprintf(body, sizeof(body), "%u,%s,%s", seq, cmd, arg);
     else
         snprintf(body, sizeof(body), "%u,%s", seq, cmd);
-    uint8_t sum = 0;
-    for (const char *p = body; *p; p++)
-        sum ^= (uint8_t)*p;
-    int n = snprintf(frame, sizeof(frame), "$%s*%02X\n", body, sum);
+    int n = snprintf(frame, sizeof(frame), "$%s*%02X\n", body, link_crc8(body, body + strlen(body)));
     if (write(uart_fd, frame, n) != n)
         logmsg("uart write: %s", strerror(errno));
-    tcdrain(uart_fd);
 }
 
-static void send_answer(unsigned seq, bool ok)
+static void send_ack(unsigned seq)
 {
-    char s[4];
+    char s[8];
     snprintf(s, sizeof(s), "%u", seq);
-    send_frame(seq, ok ? "ACK" : "NAK", s);
+    send_frame(seq, "ACK", s);
 }
 
 /* frames longer than the caller's buffer are rejected, never truncated into a valid-looking command */
@@ -221,9 +218,7 @@ static bool read_frame(struct frame *f, int timeout_ms)
             line[len] = 0;
             char *star = strchr(line, '*');
             if (!star) continue;
-            uint8_t sum = 0;
-            for (char *q = line; q < star; q++) sum ^= (uint8_t)*q;
-            if (strtoul(star + 1, NULL, 16) != sum) continue;
+            if (strtoul(star + 1, NULL, 16) != link_crc8(line, star)) continue;
             *star = 0;
             char *end_seq;
             unsigned long seq = strtoul(line, &end_seq, 10);
@@ -239,28 +234,52 @@ static bool read_frame(struct frame *f, int timeout_ms)
     }
 }
 
-/* AHT20 range: 0-100 %RH, -40..+85 C; anything else is refused as a corrupted value */
-static bool env_valid(const char *arg, long *rh, long *t)
+/* tenths to text, sign-correct for -0.5 */
+static void fmt_x10(char *out, size_t n, long v)
 {
-    char *comma = strchr(arg, ',');
-    *rh = strtol(arg, NULL, 10);
-    *t = comma ? strtol(comma + 1, NULL, 10) : -9999;
-    return comma && *rh >= 0 && *rh <= 1000 && *t >= -400 && *t <= 850;
+    long a = v < 0 ? -v : v;
+    snprintf(out, n, "%s%ld.%ld", v < 0 ? "-" : "", a / 10, a % 10);
 }
 
-/* answer a command from the BL616 (once per seq; a repeat gets the same answer again) and
- * tell whether it is new and accepted, i.e. should be acted on */
+/* the sensor part of WAKE, <rh_x10>,<t_x10>,<probe_mv>, for the hook: LEAKCAM_RH / LEAKCAM_T
+ * (AHT20 range 0-100 %RH, -40..+85 C; unset for rh -1 = no sample) and LEAKCAM_PROBE_MV
+ * (0..3300, -1 = no reading). WAKE itself is never refused: values out of range are dropped. */
+static void sensors_from_bl616(const char *arg)
+{
+    long rh, t, mv;
+    if (sscanf(arg, "%ld,%ld,%ld", &rh, &t, &mv) != 3) {
+        logmsg("no sensor values in WAKE");
+        return;
+    }
+    char v[24];
+    if (rh >= 0 && rh <= 1000 && t >= -400 && t <= 850) {
+        fmt_x10(v, sizeof(v), rh);
+        setenv("LEAKCAM_RH", v, 1);
+        fmt_x10(v, sizeof(v), t);
+        setenv("LEAKCAM_T", v, 1);
+    } else if (rh != -1) {
+        logmsg("humidity %ld / temperature %ld out of range, dropped", rh, t);
+    }
+    if (mv >= -1 && mv <= 3300) {
+        snprintf(v, sizeof(v), "%ld", mv);
+        setenv("LEAKCAM_PROBE_MV", v, 1);
+    } else {
+        logmsg("probe %ld mV out of range, dropped", mv);
+    }
+    logmsg("sensors: %s %%RH, %s C, probe %s mV", getenv("LEAKCAM_RH") ? getenv("LEAKCAM_RH") : "-",
+           getenv("LEAKCAM_T") ? getenv("LEAKCAM_T") : "-",
+           getenv("LEAKCAM_PROBE_MV") ? getenv("LEAKCAM_PROBE_MV") : "-");
+}
+
+/* acknowledge a command from the BL616 (a repeat, whose ACK was lost, is acknowledged again)
+ * and tell whether it is new, i.e. should be acted on. Nothing the BL616 sends is refused */
 static bool accept_cmd(const struct frame *f)
 {
-    if (rx_last == (int)f->seq) {
-        send_answer(f->seq, rx_last_ok);
+    send_ack(f->seq);
+    if (rx_last == (int)f->seq)
         return false;
-    }
-    long rh, t;
     rx_last = (int)f->seq;
-    rx_last_ok = strcmp(f->cmd, "ENV") != 0 || env_valid(f->arg, &rh, &t);
-    send_answer(f->seq, rx_last_ok);
-    return rx_last_ok;
+    return true;
 }
 
 static void inbox_put(const struct frame *f)
@@ -285,8 +304,11 @@ static enum link_end link_cmd(const char *cmd, const char *arg)
         while (now_ms() < until && read_frame(&f, (int)(until - now_ms()))) {
             bool ack = strcmp(f.cmd, "ACK") == 0;
             if (ack || strcmp(f.cmd, "NAK") == 0) {
-                if (strtoul(f.arg, NULL, 10) == seq)
+                if (strtoul(f.arg, NULL, 10) == seq) {
+                    const char *code = strchr(f.arg, ',');   /* NAK,<seq>,<code> */
+                    nak_code = ack ? 0 : code ? (unsigned)strtoul(code + 1, NULL, 10) : LINK_ERR_REFUSED;
                     return ack ? LINK_ACKED : LINK_NAKED;
+                }
                 continue;               /* a stale answer */
             }
             if (accept_cmd(&f))
@@ -327,21 +349,30 @@ static const char *link_end_name(enum link_end e)
 /* earliest plausible time, 2026-01-01T00:00:00Z: anything before is a default, not real time */
 #define EPOCH_MIN 1767225600L
 
-/* true when the kernel clock is disciplined by NTP (chrony / systemd-timesyncd clear STA_UNSYNC) */
-static bool ntp_synced(void)
+/* NTP (netutils, over Wi-Fi) steps the clock when it syncs. Seen from here: the offset between
+ * the real-time and the monotonic clock moves after the last time we set it ourselves. */
+static int64_t clock_offset_s(void)
 {
-    struct timex t;
-    memset(&t, 0, sizeof(t));
-    int s = adjtimex(&t);
-    return s >= 0 && s != TIME_ERROR && !(t.status & STA_UNSYNC);
+    struct timespec r, m;
+    clock_gettime(CLOCK_REALTIME, &r);
+    clock_gettime(CLOCK_MONOTONIC, &m);
+    return (int64_t)r.tv_sec - (int64_t)m.tv_sec;
 }
 
-/* the time in WAKE,<reason>,<unix s>: the BL616's crystal clock beats our power-up default */
+static int64_t own_offset;                    /* offset after our last clock_settime(), or at start */
+
+static bool ntp_synced(void)
+{
+    int64_t d = clock_offset_s() - own_offset;
+    return time(NULL) >= EPOCH_MIN && (d > 2 || d < -2);
+}
+
+/* the time in WAKE,<reason>,<unix s>,...: the BL616's crystal clock beats our power-up default */
 static void clock_from_bl616(const char *arg)
 {
     char *end;
     long v = strtol(arg, &end, 10);
-    if (*end || v == 0) {
+    if ((*end && *end != ',') || v == 0) {
         logmsg("BL616 has no valid time yet");
         return;
     }
@@ -349,84 +380,92 @@ static void clock_from_bl616(const char *arg)
         logmsg("time %s from BL616 ignored", arg);
         return;
     }
-    if (ntp_synced()) {
-        logmsg("time from BL616 ignored, NTP already synchronised");
+    struct timespec ts = { .tv_sec = v, .tv_nsec = 0 };
+    if (clock_settime(CLOCK_REALTIME, &ts) < 0) {
+        logmsg("clock_settime: %s", strerror(errno));
+    } else {
+        own_offset = clock_offset_s();
+        logmsg("clock set from BL616: %ld", v);
+    }
+}
+
+/* ---------------- Wi-Fi ---------------- */
+
+/* The BL616 starts its SDIO device only on WIFI, and nothing probes MMC0 at boot: /dev/bl616
+ * (k230_board bl616_nethub driver) probes it and returns once wlan0 exists */
+#define BL616_IOCTL_RESCAN 0x4c01            /* bl616_nethub.h */
+
+/* the answer for the hook's stdin: "wifi=ok", or "wifi=fail,<code>" (LINK_ERR_*, 0 = no answer
+ * from the BL616, -1 = the SDIO card did not come up) */
+static void wifi_start(char *answer, size_t n)
+{
+    enum link_end e = link_cmd("WIFI", NULL);
+    if (e != LINK_ACKED) {
+        int code = e == LINK_NAKED ? (int)nak_code : 0;
+        logmsg("WIFI %s: %s", link_end_name(e), code == LINK_ERR_NO_CREDENTIALS ? "no credentials stored, pair over BLE on USB power"
+                                               : code == LINK_ERR_RADIO        ? "BL616 radio failed"
+                                                                               : "no Wi-Fi");
+        snprintf(answer, n, "wifi=fail,%d\n", code);
         return;
     }
-    struct timespec ts = { .tv_sec = v, .tv_nsec = 0 };
-    if (clock_settime(CLOCK_REALTIME, &ts) < 0)
-        logmsg("clock_settime: %s", strerror(errno));
-    else
-        logmsg("clock set from BL616: %ld", v);
-}
-
-/* ---------------- shutdown ---------------- */
-
-static void make_safe_for_power_cut(void)
-{
-    if (hook_pid > 0) {
-        kill(hook_pid, SIGTERM);
-        for (int i = 0; i < 50 && waitpid(hook_pid, NULL, WNOHANG) == 0; i++)
-            usleep(100000);
-        kill(hook_pid, SIGKILL);
-        waitpid(hook_pid, NULL, 0);
-        hook_pid = 0;
-    }
-    sync();
-    /* read-only root: a power cut can then no longer interrupt a UBIFS commit on the SPI NAND */
-    if (mount(NULL, "/", NULL, MS_REMOUNT | MS_RDONLY, NULL) < 0)
-        logmsg("remount / ro: %s (continuing, data is synced)", strerror(errno));
-    sync();
-}
-
-/* tenths to text, sign-correct for -0.5 */
-static void fmt_x10(char *out, size_t n, long v)
-{
-    long a = v < 0 ? -v : v;
-    snprintf(out, n, "%s%ld.%ld", v < 0 ? "-" : "", a / 10, a % 10);
-}
-
-static void on_signal(int s)
-{
-    (void)s;
-    shutdown_req = 1;
+    int fd = open("/dev/bl616", O_RDWR);
+    bool up = fd >= 0 && ioctl(fd, BL616_IOCTL_RESCAN, NULL) == 0;
+    if (!up)
+        logmsg("BL616 SDIO rescan: %s", strerror(errno));
+    if (fd >= 0)
+        close(fd);
+    snprintf(answer, n, up ? "wifi=ok\n" : "wifi=fail,-1\n");
 }
 
 /* ---------------- main ---------------- */
 
 static int run_hook(const char *reason, unsigned *sleep_s)
 {
-    int pipefd[2];
+    int pipefd[2], infd[2];                  /* hook's stdout to us, our answers to its stdin */
     if (pipe(pipefd) < 0)
         return -1;
-    hook_pid = fork();
-    if (hook_pid == 0) {
-        dup2(pipefd[1], STDOUT_FILENO);
+    if (pipe(infd) < 0) {
         close(pipefd[0]);
         close(pipefd[1]);
+        return -1;
+    }
+    pid_t hook_pid = fork();
+    if (hook_pid == 0) {
+        dup2(pipefd[1], STDOUT_FILENO);
+        dup2(infd[0], STDIN_FILENO);
+        close(pipefd[0]);
+        close(pipefd[1]);
+        close(infd[0]);
+        close(infd[1]);
         execl(hook, hook, reason, (char *)NULL);
         _exit(127);
     }
     close(pipefd[1]);
+    close(infd[0]);
 
-    /* the hook may print "sleep=<seconds>" to choose the next wake-up */
+    /* the hook may print "sleep=<seconds>" to choose the next wake-up, and a line "wifi" when it
+     * needs the network: the BL616 never starts Wi-Fi on its own */
     char buf[128];
     ssize_t n;
-    size_t used = 0;
+    size_t used = 0, scanned = 0;
     char out[512] = "";
+    bool killed = false;
+    uint64_t deadline = now_ms() + HOOK_TIMEOUT_S * 1000ull;
     while (used < sizeof(out) - 1) {
+        if (now_ms() > deadline) {
+            logmsg("hook still running after %u s, killed", HOOK_TIMEOUT_S);
+            kill(hook_pid, SIGKILL);
+            killed = true;
+            break;
+        }
         struct pollfd p = { .fd = pipefd[0], .events = POLLIN };
         int rc = poll(&p, 1, 200);
-        if (shutdown_req)
-            break;
         if (rc < 0 && errno == EINTR)
             continue;
         if (rc == 0) {
-            /* keep answering BL616 frames while the hook runs: it may send SHUTDOWN */
-            struct frame f;
-            while (next_cmd(&f, 0))
-                if (strcmp(f.cmd, "SHUTDOWN") == 0)
-                    shutdown_req = 1;
+            struct frame f;                 /* answer repeats (a lost ACK) while the hook runs */
+            while (next_cmd(&f, 0)) {
+            }
             continue;
         }
         n = read(pipefd[0], buf, sizeof(buf));
@@ -436,45 +475,50 @@ static int run_hook(const char *reason, unsigned *sleep_s)
         memcpy(out + used, buf, k);
         used += k;
         out[used] = 0;
+        for (char *nl; (nl = memchr(out + scanned, '\n', used - scanned)) != NULL; scanned = nl + 1 - out) {
+            if (nl - (out + scanned) == 4 && memcmp(out + scanned, "wifi", 4) == 0) {
+                char answer[24];
+                wifi_start(answer, sizeof(answer));
+                if (write(infd[1], answer, strlen(answer)) < 0)
+                    logmsg("answer to the hook: %s", strerror(errno));
+            }
+        }
     }
     close(pipefd[0]);
+    close(infd[1]);
     int status = 0;
-    if (!shutdown_req)
-        waitpid(hook_pid, &status, 0);
+    waitpid(hook_pid, &status, 0);
     char *s = strstr(out, "sleep=");
-    if (s)
+    if (s && !killed)
         *sleep_s = (unsigned)strtoul(s + 6, NULL, 10);
-    if (!shutdown_req)
-        hook_pid = 0;
     return WIFEXITED(status) ? WEXITSTATUS(status) : -1;
 }
 
 int main(int argc, char **argv)
 {
     int opt;
-    while ((opt = getopt(argc, argv, "u:c:l:x:")) != -1) {
+    while ((opt = getopt(argc, argv, "u:l:x:")) != -1) {
         switch (opt) {
-            case 'u': uart_dev = optarg; break;
-            case 'c': chip_dev = optarg; break;
-            case 'l': alive_line = (unsigned)strtoul(optarg, NULL, 0); break;
+            case 'u': uart_id = atoi(optarg); break;
+            case 'l': alive_pin = atoi(optarg); break;
             case 'x': hook = optarg; break;
             default:
-                fprintf(stderr, "usage: %s [-u tty] [-c gpiochip] [-l line] [-x hook]\n", argv[0]);
+                fprintf(stderr, "usage: %s [-u uart] [-l gpio] [-x hook]\n", argv[0]);
                 return 2;
         }
     }
-    signal(SIGTERM, on_signal);
-    signal(SIGINT, on_signal);
+    signal(SIGPIPE, SIG_IGN);                 /* a hook that exited early must not take us down */
 
     if (alive_open() < 0 || uart_open() < 0)
         return 1;
+    own_offset = clock_offset_s();
     pthread_t hb;
     pthread_create(&hb, NULL, heartbeat_thread, NULL);
 
     char reason[32] = "cold";
     bool got_wake = false;
     struct frame f;
-    for (int i = 0; i < READY_TRIES && !got_wake && !shutdown_req; i++) {
+    for (int i = 0; i < READY_TRIES && !got_wake; i++) {
         enum link_end e = link_cmd("READY", NULL);
         if (e != LINK_ACKED) {
             logmsg("READY %s", link_end_name(e));
@@ -482,16 +526,18 @@ int main(int argc, char **argv)
         }
         uint64_t until = now_ms() + READY_RETRY_MS;
         while (!got_wake && now_ms() < until && next_cmd(&f, (int)(until - now_ms()))) {
-            if (strcmp(f.cmd, "WAKE") == 0) {
-                char *comma = strchr(f.arg, ',');
-                if (comma)
-                    *comma = 0;
-                snprintf(reason, sizeof(reason), "%s", f.arg);
-                if (comma)
-                    clock_from_bl616(comma + 1);
+            if (strcmp(f.cmd, "WAKE") == 0) {    /* <reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv> */
+                char *time_s = strchr(f.arg, ',');
+                if (time_s)
+                    *time_s++ = 0;
+                snprintf(reason, sizeof(reason), "%.31s", f.arg);
+                if (time_s) {
+                    clock_from_bl616(time_s);
+                    char *sens = strchr(time_s, ',');
+                    if (sens)
+                        sensors_from_bl616(sens + 1);
+                }
                 got_wake = true;
-            } else if (strcmp(f.cmd, "SHUTDOWN") == 0) {
-                shutdown_req = 1;
             }
         }
     }
@@ -499,34 +545,13 @@ int main(int argc, char **argv)
         logmsg("no WAKE from BL616, assuming cold start");
     logmsg("wake reason: %s", reason);
 
-    /* after WAKE, within a moment and only with a fresh AHT20 sample: ENV,<rh_x10>,<t_x10>
-     * (out-of-range values were already refused with NAK) */
-    uint64_t follow_end = now_ms() + 300;
-    while (got_wake && now_ms() < follow_end && next_cmd(&f, (int)(follow_end - now_ms()))) {
-        if (strcmp(f.cmd, "SHUTDOWN") == 0) {
-            shutdown_req = 1;
-            continue;
-        }
-        long rh, t;
-        if (strcmp(f.cmd, "ENV") != 0 || !env_valid(f.arg, &rh, &t))
-            continue;
-        char v[24];
-        fmt_x10(v, sizeof(v), rh);
-        setenv("LEAKCAM_RH", v, 1);
-        fmt_x10(v, sizeof(v), t);
-        setenv("LEAKCAM_T", v, 1);
-        logmsg("humidity %s %%RH, %s C", getenv("LEAKCAM_RH"), v);
-    }
-
     unsigned sleep_s = DEFAULT_SLEEP_S;
-    if (!shutdown_req) {
-        int rc = run_hook(reason, &sleep_s);
-        logmsg("hook exited %d, next wake in %u s", rc, sleep_s);
-    }
+    int rc = run_hook(reason, &sleep_s);
+    logmsg("hook exited %d, next wake in %u s", rc, sleep_s);
 
     /* real time learned during the session (NTP over Wi-Fi): hand it to the BL616, whose clock
      * then survives until the next battery change and corrects its crystal drift */
-    if (!shutdown_req && ntp_synced()) {
+    if (ntp_synced()) {
         char t[16];
         snprintf(t, sizeof(t), "%ld", (long)time(NULL));
         enum link_end e = link_cmd("TIME", t);
@@ -534,21 +559,16 @@ int main(int argc, char **argv)
             logmsg("TIME %s", link_end_name(e));
     }
 
-    if (!shutdown_req) {
-        char s[16];
-        snprintf(s, sizeof(s), "%u", sleep_s);
-        /* the BL616 cuts power HALT_TIMEOUT_MS after SLEEP (or after SHUTDOWN) regardless */
-        enum link_end e = link_cmd("SLEEP", s);
-        if (e != LINK_ACKED)
-            logmsg("SLEEP %s", link_end_name(e));
-    }
-    make_safe_for_power_cut();
-    enum link_end e = link_cmd("HALTED", NULL);
+    char sl[16];
+    snprintf(sl, sizeof(sl), "%u", sleep_s);
+    enum link_end e = link_cmd("SLEEP", sl);
     if (e != LINK_ACKED)
-        logmsg("HALTED %s", link_end_name(e));
+        logmsg("SLEEP %s", link_end_name(e));
 
-    /* keep the heartbeat running: stopping it now would only make the BL616 log a spurious
-     * "heartbeat lost" if its power cut is delayed */
-    for (;;)
-        pause();
+    /* done: the heartbeat stops and with it the session; the BL616 cuts the power */
+    heartbeat_run = 0;
+    pthread_join(hb, NULL);
+    alive_set(0);
+    logmsg("done, heartbeat stopped");
+    return 0;
 }

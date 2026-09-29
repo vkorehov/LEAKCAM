@@ -7,8 +7,9 @@ CONFIG_BOARD_GEN_IMAGE_CFG_FILE="genimage-spinand.cfg"
 # CONFIG_UBOOT_USE_PREBUILT is not set
 CONFIG_UBOOT_CONFIG_FILE="k230d_leakcam"
 CONFIG_RTSMART_CONFIG_FILE="k230d_leakcam"
-CONFIG_RTT_AUTO_EXEC_CMD=""
-# no fast-boot preload (it expects a MicroPython or rtapp image); the agent starts via RTT_AUTO_EXEC_CMD
+# the BL616 link agent, started at boot by msh; no fast-boot preload (it expects a MicroPython or
+# rtapp image)
+CONFIG_RTT_AUTO_EXEC_CMD="/sdcard/app/leakcam_agent &"
 # CONFIG_FAST_BOOT_CONFIGURATION is not set
 # OpenSBI built from source (no prebuilt board blobs)
 # CONFIG_OPENSBI_USE_PREBUILT_FW_JUMP is not set

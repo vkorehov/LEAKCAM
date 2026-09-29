@@ -1,6 +1,7 @@
 config APP_ENABLE_LEAKCAM
-    bool "LEAKCAM capture (both OV5647, LED chains, NAND image history)"
+    bool "LEAKCAM programs (BL616 link agent, wake algorithm, history, stream, audio)"
     default n
     help
-      Builds leakcam_capture and leakcam_hist into /sdcard/app. Needs
+      Builds leakcam_agent, leakcam_wake, leakcam_hist, leakcam_stream and
+      leakcam_audio into /sdcard/app. Needs
       MPP_ENABLE_SENSOR_OV5647 with CSI devices 0 and 2.

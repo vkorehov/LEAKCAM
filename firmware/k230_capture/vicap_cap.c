@@ -33,17 +33,10 @@
 /* slot -> sensor mode; both are the 1280x960@45 binned mode of the same register table.
  * k230_rtos_sdk / CanMV MPP (default) names them without the OV_ prefix and only with
  * CONFIG_MPP_ENABLE_SENSOR_OV5647; the older k230_sdk MPP has fixed OV_ values 45 and 48. */
-#ifdef LEAKCAM_MPP_K230SDK
-static const k_vicap_sensor_type slot_sensor[2] = {
-    OV_OV5647_MIPI_CSI0_1280X960_45FPS_10BIT_LINEAR,   /* CAM2, J4, CSI0 */
-    OV_OV5647_MIPI_CSI2_1280X960_45FPS_10BIT_LINEAR,   /* CAM1, J5, CSI2 */
-};
-#else
 static const k_vicap_sensor_type slot_sensor[2] = {
     OV5647_MIPI_CSI0_1280X960_45FPS_10BIT_LINEAR,      /* CAM2, J4, CSI0 */
     OV5647_MIPI_CSI2_1280X960_45FPS_10BIT_LINEAR,      /* CAM1, J5, CSI2 */
 };
-#endif
 
 static int vb_ready, dev_started[CAP_MAX_CAMS], dev_inited[CAP_MAX_CAMS];
 
@@ -51,17 +44,11 @@ int cap_open_all(struct cap_cam *cams, int n, unsigned width, unsigned height)
 {
     k_vb_config vb;
     memset(&vb, 0, sizeof(vb));
-#ifdef LEAKCAM_MPP_K230SDK
-    vb.max_pool_cnt = 2 * CAP_MAX_CAMS;
-    int pool = 0;
-#else
     vb.max_pool_cnt = 64;                         /* VICAP creates its own pools (below) */
-#endif
     k_u32 out_size[CAP_MAX_CAMS] = { 0 };
 
     for (int i = 0; i < n; i++) {
         struct cap_cam *c = &cams[i];
-        c->fd = -1;
         c->slot = c->node;
         if (c->node > 1) {
             fprintf(stderr, "vicap: camera %u does not exist (0 = CSI0/J4, 1 = CSI2/J5)\n", c->node);
@@ -94,26 +81,14 @@ int cap_open_all(struct cap_cam *cams, int n, unsigned width, unsigned height)
         dev.pipe_ctrl.bits.awb_enable = 1;
         dev.cpature_frame = 0;                    /* continuous; we stop the stream ourselves */
         dev.dw_enable = K_FALSE;
-#ifndef LEAKCAM_MPP_K230SDK
         /* 0 is a real pool id: without this both devices would share one 3-block pool */
         dev.buffer_pool_id = VB_INVALID_POOLID;
-#endif
         if (kd_mpi_vicap_set_dev_attr((k_vicap_dev)c->node, dev)) {
             fprintf(stderr, "vicap: dev %u set_dev_attr failed\n", c->node);
             return -1;
         }
 
         out_size[i] = VICAP_ALIGN_UP(c->width * c->height * 3 / 2, VICAP_ALIGN_1K);
-#ifdef LEAKCAM_MPP_K230SDK
-        vb.comm_pool[pool].blk_cnt = IN_BUF_NUM;
-        vb.comm_pool[pool].blk_size = dev.buffer_size;
-        vb.comm_pool[pool].mode = VB_REMAP_MODE_NOCACHE;
-        pool++;
-        vb.comm_pool[pool].blk_cnt = OUT_BUF_NUM;
-        vb.comm_pool[pool].blk_size = out_size[i];
-        vb.comm_pool[pool].mode = VB_REMAP_MODE_NOCACHE;
-        pool++;
-#endif
     }
     if (kd_mpi_vb_set_config(&vb) || kd_mpi_vb_init()) {
         fprintf(stderr, "vicap: video buffer pools failed (MMZ too small?)\n");
@@ -136,9 +111,7 @@ int cap_open_all(struct cap_cam *cams, int n, unsigned width, unsigned height)
         chn.buffer_num = OUT_BUF_NUM;
         chn.buffer_size = out_size[i];
         chn.fps = 0;                              /* sensor rate */
-#ifndef LEAKCAM_MPP_K230SDK
         chn.buffer_pool_id = VB_INVALID_POOLID;
-#endif
         kd_mpi_vicap_set_dump_reserved((k_vicap_dev)c->node, VICAP_CHN_ID_0, K_TRUE);
         if (kd_mpi_vicap_set_chn_attr((k_vicap_dev)c->node, VICAP_CHN_ID_0, chn)) {
             fprintf(stderr, "vicap: dev %u set_chn_attr failed\n", c->node);

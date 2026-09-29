@@ -1,4 +1,4 @@
-# leakcam_capture, leakcam_hist, leakcam_stream and leakcam_audio as k230_rtos_sdk applications
+# leakcam_wake, leakcam_hist, leakcam_stream, leakcam_audio and leakcam_agent as k230_rtos_sdk applications
 # (RT-Smart user space).
 #
 # Installed into an SDK by firmware/k230_board/install.sh (copies this folder to
@@ -11,27 +11,29 @@ include $(SDK_RTSMART_SRC_DIR)/libs/mk/toolchain_riscv64_musl.mk
 
 # sources: the folder above this Makefile in the LEAKCAM repo, or ./src when install.sh copied
 # them into the SDK (the Docker build only sees the SDK tree)
-SRC_ROOT ?= $(if $(wildcard $(CURDIR)/src/leakcam_capture.c),$(CURDIR)/src,$(realpath $(CURDIR)/..))
+SRC_ROOT ?= $(if $(wildcard $(CURDIR)/src/leakcam_wake.c),$(CURDIR)/src,$(realpath $(CURDIR)/..))
 BUILD    := $(SDK_APPS_BUILD_DIR)/leakcam
-CAPTURE  := $(SDK_APPS_IMAGE_DIR)/leakcam_capture
+CAPTURE  := $(SDK_APPS_IMAGE_DIR)/leakcam_wake
 HIST     := $(SDK_APPS_IMAGE_DIR)/leakcam_hist
 STREAM   := $(SDK_APPS_IMAGE_DIR)/leakcam_stream
 AUDIO    := $(SDK_APPS_IMAGE_DIR)/leakcam_audio
+AGENT    := $(SDK_APPS_IMAGE_DIR)/leakcam_agent
 
 CORE     := imgdiff.c refstore.c history.c third_party/miniz/miniz.c
-CAP_SRCS := leakcam_capture.c vicap_cap.c led_rtsmart.c $(CORE)
+CAP_SRCS := leakcam_wake.c vicap_cap.c led_rtsmart.c netclient.c $(CORE)
 HIST_SRCS:= leakcam_hist.c $(CORE)
 CAP_OBJS := $(addprefix $(BUILD)/cap/, $(CAP_SRCS:.c=.o))
 HIST_OBJS:= $(addprefix $(BUILD)/hist/, $(HIST_SRCS:.c=.o))
-STREAM_OBJS := $(BUILD)/stream/leakcam_stream.o $(BUILD)/stream/rtsp_glue.o
+STREAM_OBJS := $(BUILD)/stream/leakcam_stream.o $(BUILD)/stream/rtsp_glue.o $(BUILD)/stream/netclient.o
 AUDIO_OBJS  := $(BUILD)/audio/leakcam_audio.o
+AGENT_OBJS  := $(BUILD)/agent/leakcam_agent.o
 
 include $(SDK_RTSMART_SRC_DIR)/libs/mk/libmpp.mk
 
 # miniz: only the one-shot compress/uncompress calls are used
-MINIZ    := -DLEAKCAM_MINIZ -DMINIZ_NO_STDIO -DMINIZ_NO_ARCHIVE_APIS -DMINIZ_NO_TIME -I$(SRC_ROOT)/third_party/miniz
+MINIZ    := -DMINIZ_NO_STDIO -DMINIZ_NO_ARCHIVE_APIS -DMINIZ_NO_TIME -I$(SRC_ROOT)/third_party/miniz
 CFLAGS   := -march=rv64imafdcv -mabi=lp64d -mcmodel=medany -Os -std=gnu11
-CFLAGS   += -DLEAKCAM_RTSMART $(MINIZ) -I$(SRC_ROOT) $(LIB_CFLAGS) -I$(SDK_SRC_ROOT_DIR)/include
+CFLAGS   += $(MINIZ) -I$(SRC_ROOT) $(LIB_CFLAGS) -I$(SDK_SRC_ROOT_DIR)/include
 CFLAGS   += -include "generated/autoconf.h" -Wall -Wextra -ffunction-sections -fdata-sections
 LDFLAGS  := -T $(SDK_RTSMART_SRC_DIR)/libs/mk/link.lds --static -Wl,--gc-sections $(LIB_LDFLAGS) -lm
 # leakcam_stream: the SDK's RTSP server (librtsp_server.a + live555, in LIB_LDFLAGS) is C++
@@ -40,7 +42,7 @@ CXXFLAGS += -I$(SDK_SRC_ROOT_DIR)/include -include "generated/autoconf.h" -Wall 
 CXXFLAGS += -ffunction-sections -fdata-sections
 
 .PHONY: all clean distclean
-all: $(CAPTURE) $(HIST) $(STREAM) $(AUDIO)
+all: $(CAPTURE) $(HIST) $(STREAM) $(AUDIO) $(AGENT)
 	@$(ECHO) [BUILD] applications leakcam done.
 
 $(CAPTURE): $(CAP_OBJS)
@@ -66,6 +68,17 @@ $(AUDIO): $(AUDIO_OBJS)
 	@mkdir -p $(dir $@)
 	$(Q)$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
 	$(Q)$(STRIP) $@
+
+$(AGENT): $(AGENT_OBJS)
+	@echo "[LD] $@"
+	@mkdir -p $(dir $@)
+	$(Q)$(CC) $(CFLAGS) $^ $(LDFLAGS) -lpthread -o $@
+	$(Q)$(STRIP) $@
+
+$(BUILD)/agent/%.o: $(SRC_ROOT)/%.c
+	@echo "[CC] $@"
+	@mkdir -p $(dir $@)
+	$(Q)$(CC) $(CFLAGS) -MD -MP -c $< -o $@
 
 # one rule per program: a pattern rule with two targets would mean "one run makes both"
 $(BUILD)/cap/%.o: $(SRC_ROOT)/%.c

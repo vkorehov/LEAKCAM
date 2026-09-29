@@ -51,7 +51,12 @@ static inline void *rt_memcpy(void *d, const void *s, rt_ubase_t n) { return mem
 void rt_kprintf(const char *fmt, ...);
 
 struct rt_object { char name[RT_NAME_MAX]; };
-struct rt_device { struct rt_object parent; };
+typedef struct rt_device *rt_device_t;
+struct rt_device_ops { rt_err_t (*control)(rt_device_t dev, int cmd, void *args); };
+struct rt_device { struct rt_object parent; int type; const struct rt_device_ops *ops; };
+#define RT_Device_Class_Miscellaneous 1
+#define RT_DEVICE_FLAG_RDWR           3
+rt_err_t rt_device_register(rt_device_t dev, const char *name, rt_uint16_t flags);
 
 rt_tick_t rt_tick_get(void);
 rt_tick_t rt_tick_from_millisecond(rt_int32_t ms);

@@ -277,7 +277,7 @@ and blur as a learned second opinion, and gets LEAKCAM failure cohorts when it i
 ## 6. Recommended pipeline per wake, per camera
 
 ```
-capture (LEDs at PWM p, AE settled or locked)            existing leakcam_capture
+capture (LEDs at PWM p, AE settled or locked)            existing leakcam_wake
  |
  +-> imgqual on 320x240 --- too dark / clipped -> LED step, recapture (max 2 retries)
  |                      \-- sharpness < 0.35x ref or contrast < 0.5x ref -> INOPERATIONAL (lens)
@@ -363,7 +363,7 @@ KERAS_HOME=$PWD/keras_home PYTHONDONTWRITEBYTECODE=1 python3 change_embed_poc.py
 ./run_x86.sh compile_embed.py --quant int16
 k230/build_leak_nn.sh                                           # -> k230/leak_nn.elf
 
-# on the board (not verified): copy the elf and kmodels to /sdcard/app, frames from leakcam_capture --pgm
+# on the board (not verified): copy the elf and kmodels to /sdcard/app, frames from leakcam_hist get <cam> 0 <out.pgm>
 ./leak_nn.elf embed_u8_i16.kmodel leak_f32_uint8.kmodel cam0-ref.pgm cam0-now.pgm [--ai2d] [--thr 0.42]
 ```
 
