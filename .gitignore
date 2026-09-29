@@ -9,6 +9,7 @@ __Previews
 History
 *.CAM
 tools/jlcpcb-cart/node_modules/
+tools/ali-research/node_modules
 tools/jlcpcb-cart/cart_api.json
 tools/jlcpcb-cart/package-lock.json
 *.json
