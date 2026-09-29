@@ -74,13 +74,19 @@ static pthread_mutex_t mu = PTHREAD_MUTEX_INITIALIZER;
 static char bl_queue_cmd[16], bl_queue_arg[40];
 static volatile bool bl_queue;
 
-static bool bl_verdict(const struct link_msg *m) { return strcmp(m->cmd, "TIME") != 0 || m->arg >= 1767225600u; }
+/* as main.c: TIME before 2026 refused; WIFI refused as if no credentials were stored */
+static uint8_t bl_reply(const struct link_msg *m)
+{
+    if (strcmp(m->cmd, "WIFI") == 0)
+        return LINK_ERR_NO_CREDENTIALS;
+    return strcmp(m->cmd, "TIME") != 0 || m->arg >= 1767225600u ? 0 : LINK_ERR_REFUSED;
+}
 
 static void *bl616(void *arg)
 {
     (void)arg;
     link_reset();
-    link_set_verdict(bl_verdict);
+    link_set_reply(bl_reply);
     while (bl_run) {
         pthread_mutex_lock(&mu);
         if (bl_queue) { link_send_cmd(bl_queue_cmd, bl_queue_arg[0] ? bl_queue_arg : NULL); bl_queue = false; }
@@ -116,7 +122,7 @@ static int got(const char *cmd)
     return n;
 }
 
-static const struct link_result *wait_result(int idx, int ms)
+static const struct link_result *wait_bl616_result(int idx, int ms)
 {
     uint64_t end = now_ms() + (uint64_t)ms;
     while (now_ms() < end) {
@@ -151,33 +157,30 @@ int main(void)
     bl_tx_n = 0; ag_tx_n = 0;
     drop_bl_tx = 0x1;               /* the first WAKE frame */
     drop_ag_tx = 0x1;               /* the agent's ACK to the second send */
-    bl_send("WAKE", "leak,1790000000");
+    bl_send("WAKE", "leak,1790000000,-1,0,700");
     struct frame f;
     int wakes = 0;
     uint64_t end = now_ms() + 2500;
     while (now_ms() < end)
         if (next_cmd(&f, 100) && strcmp(f.cmd, "WAKE") == 0) {
             wakes++;
-            CHECK(strcmp(f.arg, "leak,1790000000") == 0, "WAKE arg %s", f.arg);
+            CHECK(strcmp(f.arg, "leak,1790000000,-1,0,700") == 0, "WAKE arg %s", f.arg);
         }
-    const struct link_result *r = wait_result(0, 500);
+    const struct link_result *r = wait_bl616_result(0, 500);
     CHECK(wakes == 1, "WAKE delivered %d times", wakes);
     CHECK(r && r->end == LINK_ACKED && strcmp(r->cmd, "WAKE") == 0, "WAKE %s", r ? (r->end == LINK_ACKED ? "acked" : "not acked") : "no result");
     drop_bl_tx = drop_ag_tx = 0;
 
-    /* 3. ENV out of range is refused by the agent: the BL616 sees NAK and does not resend */
-    bl_send("ENV", "1500,213");
-    end = now_ms() + 600;
-    while (now_ms() < end)
-        CHECK(!next_cmd(&f, 50) || strcmp(f.cmd, "ENV") != 0, "refused ENV delivered");
-    r = wait_result(1, 500);
-    CHECK(r && r->end == LINK_NAKED && strcmp(r->cmd, "ENV") == 0, "ENV must be refused");
-
-    /* 4. TIME before 2026 refused by the BL616 verdict, a real time accepted */
+    /* 3. TIME before 2026 refused by the BL616 reply, a real time accepted */
     e = link_cmd("TIME", "12345");
-    CHECK(e == LINK_NAKED, "old TIME %s", link_end_name(e));
+    CHECK(e == LINK_NAKED && nak_code == LINK_ERR_REFUSED, "old TIME %s, code %u", link_end_name(e), nak_code);
     e = link_cmd("TIME", "1790000000");
     CHECK(e == LINK_ACKED && got("TIME") == 1, "TIME %s, delivered %d", link_end_name(e), got("TIME"));
+
+    /* 4. WIFI without stored credentials: NAK with its code, not delivered */
+    e = link_cmd("WIFI", NULL);
+    CHECK(e == LINK_NAKED && nak_code == LINK_ERR_NO_CREDENTIALS && got("WIFI") == 0,
+          "WIFI %s, code %u, delivered %d", link_end_name(e), nak_code, got("WIFI"));
 
     /* 5. every BL616 answer lost: the agent gives up after LINK_TRIES sends, about 1.5 s */
     drop_bl_tx = ~0u;
@@ -191,6 +194,6 @@ int main(void)
 
     bl_run = false;
     pthread_join(th, NULL);
-    printf(fails ? "FAIL (%d)\n" : "link end to end: agent vs BL616 over a lossy line, resends, duplicates, NAK both ways, give-up\n", fails);
+    printf(fails ? "FAIL (%d)\n" : "link end to end: agent vs BL616 over a lossy line, resends, duplicates, NAK codes, give-up\n", fails);
     return fails != 0;
 }

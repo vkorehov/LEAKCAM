@@ -31,10 +31,9 @@ uint32_t refstore_crc32(const uint8_t *p, size_t n)
     return ~c;
 }
 
-static void path_of(char *buf, size_t n, const char *dir, int cam, enum ref_kind kind, int slot)
+static void path_of(char *buf, size_t n, const char *dir, int cam, int slot)
 {
-    static const char *const ext[] = { [REF_LAST] = "last", [REF_BASE] = "base", [REF_HIST] = "hist" };
-    snprintf(buf, n, "%s/cam%d.%s.%d", dir, cam, ext[kind], slot);
+    snprintf(buf, n, "%s/cam%d.hist.%d", dir, cam, slot);
 }
 
 static int read_all(int fd, void *buf, size_t n)
@@ -84,7 +83,7 @@ static int load_slot(const char *path, struct ref_header *h, uint8_t *img)
 }
 
 /* newest valid slot; *gen = its generation, *slot = its index (or -1) */
-static int load_best(const char *dir, int cam, enum ref_kind kind, uint8_t *img, time_t *taken,
+static int load_best(const char *dir, int cam, uint8_t *img, time_t *taken,
                      uint32_t *gen, int *slot)
 {
     static uint8_t tmp[IMGDIFF_W * IMGDIFF_H];
@@ -93,7 +92,7 @@ static int load_best(const char *dir, int cam, enum ref_kind kind, uint8_t *img,
     uint32_t best_gen = 0;
     for (int s = 0; s < 2; s++) {
         char path[256];
-        path_of(path, sizeof(path), dir, cam, kind, s);
+        path_of(path, sizeof(path), dir, cam, s);
         if (load_slot(path, &h, tmp) != 0)
             continue;
         /* wrap-safe "newer": a slot is at most one generation ahead of the other */
@@ -110,11 +109,11 @@ static int load_best(const char *dir, int cam, enum ref_kind kind, uint8_t *img,
     return best < 0 ? 1 : 0;
 }
 
-int refstore_load(const char *dir, int cam, enum ref_kind kind, uint8_t *img, time_t *taken)
+int refstore_load(const char *dir, int cam, uint8_t *img, time_t *taken)
 {
     uint32_t gen;
     int slot;
-    return load_best(dir, cam, kind, img, taken, &gen, &slot);
+    return load_best(dir, cam, img, taken, &gen, &slot);
 }
 
 /*
@@ -122,16 +121,16 @@ int refstore_load(const char *dir, int cam, enum ref_kind kind, uint8_t *img, ti
  * filesystem) refuses rename() onto an existing name, so the old slot file is unlinked first;
  * a power cut between unlink and rename loses only that older slot, the newest copy stays.
  */
-int refstore_save(const char *dir, int cam, enum ref_kind kind, const uint8_t *img, time_t taken)
+int refstore_save(const char *dir, int cam, const uint8_t *img, time_t taken)
 {
     static uint8_t cur[IMGDIFF_W * IMGDIFF_H];
     uint32_t gen = 0;
     int have = -1;
-    load_best(dir, cam, kind, cur, NULL, &gen, &have);
+    load_best(dir, cam, cur, NULL, &gen, &have);
     int slot = have == 0 ? 1 : 0;
 
     char path[256], tmp[272];
-    path_of(path, sizeof(path), dir, cam, kind, slot);
+    path_of(path, sizeof(path), dir, cam, slot);
     snprintf(tmp, sizeof(tmp), "%s.tmp", path);
     struct ref_header h = {
         .magic = REF_MAGIC, .version = REF_VERSION,

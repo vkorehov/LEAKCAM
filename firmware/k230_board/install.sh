@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Install the LEAKCAM board (K230D + W25N02KV SPI NAND), the BL616 Wi-Fi driver and the
-# leakcam_capture app into a k230_rtos_sdk checkout. Idempotent: rerun after editing anything in
-# firmware/k230_board, firmware/k230_capture or firmware/bl616_wifi/wifi_ctrl_proto.h.
+# leakcam programs into a k230_rtos_sdk checkout. Idempotent: rerun after editing anything in
+# firmware/k230_board, firmware/k230_capture, firmware/k230_agent or firmware/bl616/wifi_ctrl_proto.h.
 #
 #   firmware/k230_board/install.sh <k230_rtos_sdk>
 #   cd <k230_rtos_sdk> && make k230d_rtos_leakcam_defconfig && make
@@ -75,7 +75,7 @@ DRV=$RTT/drivers/extdrv/bl616_nethub
 rm -rf "$DRV"; mkdir -p "$DRV"
 # files only: test/ holds the host tests and their RT-Thread stand-in headers
 find "$HERE"/rtsmart/drivers/bl616_nethub -maxdepth 1 -type f -exec cp {} "$DRV/" \;
-cp "$HERE/../bl616_wifi/wifi_ctrl_proto.h" "$DRV/"
+cp "$HERE/../bl616/wifi_ctrl_proto.h" "$DRV/"
 python3 - "$RTT/drivers/extdrv/Kconfig" <<'PY'
 import sys
 p = sys.argv[1]; s = open(p).read()
@@ -124,6 +124,8 @@ cp "$CAP/rtsmart/Makefile" "$APP/Makefile"
 cp "$CAP/rtsmart/Kconfig.app" "$APP/Kconfig"
 ( cd "$CAP" && cp -r --parents *.c *.cpp *.h third_party/miniz/miniz.c third_party/miniz/miniz.h \
       third_party/miniz/LICENSE "$APP/src/" )
+# the BL616 link agent, with the protocol header it shares with the BL616 firmware
+cp "$HERE/../k230_agent/leakcam_agent.c" "$HERE/../bl616/k230_link.h" "$APP/src/"
 grep -q 'CONFIG_APP_ENABLE_LEAKCAM' "$SDK/src/applications/apps.mk" ||
     echo 'subdirs-$(CONFIG_APP_ENABLE_LEAKCAM) += leakcam' >> "$SDK/src/applications/apps.mk"
 

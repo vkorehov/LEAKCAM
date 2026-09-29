@@ -1,0 +1,20 @@
+/*
+ * LEAKCAM BL616 Wi-Fi link (NetHub bridge to the K230 over SDIO). See wifi_link.c.
+ *
+ * Call wifi_link_start() only while the K230's 3V3 is up (after k230_power_on()): it muxes
+ * the SDIO pads, whose 10 k pull-ups sit on the K230's switched rail. Call wifi_link_stop()
+ * before k230_power_off(). RF (rfparam_init) and easyflash must be up already: BLE shares them.
+ * The first start brings up lwIP, NetHub and Wi-Fi; later starts only re-arm the SDIO device
+ * for the next K230 boot, the association is kept.
+ */
+#ifndef LEAKCAM_WIFI_LINK_H
+#define LEAKCAM_WIFI_LINK_H
+
+#include <stdbool.h>
+
+int wifi_link_start(void);
+void wifi_link_stop(void);
+/* an SSID from BLE provisioning is stored (easyflash must be up) */
+bool wifi_link_has_credentials(void);
+
+#endif

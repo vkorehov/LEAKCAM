@@ -1,6 +1,6 @@
 # Host test: the agent's link code against the BL616's k230_link.c over a lossy socket pair.
 #   make -C firmware/k230_agent/test
-BL := ../../bl616_pwrmgr
+BL := ../../bl616
 all: test_link_e2e
 
 test_link_e2e: test_link_e2e.c ../leakcam_agent.c $(BL)/k230_link.c $(BL)/k230_link.h

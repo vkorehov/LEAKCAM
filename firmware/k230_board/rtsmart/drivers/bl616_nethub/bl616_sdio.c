@@ -317,11 +317,37 @@ static struct rt_sdio_driver bl616_sdio_driver = {
     "bl616-nethub", bl616_sdio_probe, bl616_sdio_remove, &bl616_sdio_id, 0,
 };
 
+/* The BL616 starts its SDU only when the K230 asks for Wi-Fi (WIFI on the UART link), so nothing
+ * probes MMC0 at boot. /dev/bl616 lets the agent probe it then: ioctl BL616_IOCTL_RESCAN returns
+ * once the card is bound, or with an error after 3 s. */
+extern void kd_sdhci_change(int id);
+extern int kd_sdhci_wait_card(int id, int timeout);
+
+static struct rt_device rescan_dev;
+
+static rt_err_t rescan_control(rt_device_t dev, int cmd, void *args)
+{
+    (void)dev;
+    (void)args;
+    if (cmd != BL616_IOCTL_RESCAN)
+        return -RT_EINVAL;
+    if (sd.func)
+        return RT_EOK;                   /* already bound (agent restarted, WIFI again) */
+    kd_sdhci_change(BL616_SDIO_HOST);
+    return kd_sdhci_wait_card(BL616_SDIO_HOST, rt_tick_from_millisecond(3000)) == MMCSD_HOST_PLUGED && sd.func
+               ? RT_EOK : -RT_ETIMEOUT;
+}
+
+static const struct rt_device_ops rescan_ops = { .control = rescan_control };
+
 static int bl616_sdio_init(void)
 {
     rt_int32_t err = sdio_register_driver(&bl616_sdio_driver);
 
-    /* -RT_EEMPTY: registered, no card yet; the board's SDIO Wi-Fi thread probes MMC0 later */
+    rescan_dev.type = RT_Device_Class_Miscellaneous;
+    rescan_dev.ops = &rescan_ops;
+    rt_device_register(&rescan_dev, "bl616", RT_DEVICE_FLAG_RDWR);
+    /* -RT_EEMPTY: registered, no card yet: the first probe is the agent's rescan */
     return err == -RT_EEMPTY ? RT_EOK : err;
 }
 INIT_COMPONENT_EXPORT(bl616_sdio_init);

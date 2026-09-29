@@ -21,9 +21,16 @@
  * VENC channels (VENC_MAX_CHN_NUMS = 4 in k_venc_comm.h): 0,1 = H.264 cam0/cam1,
  * 2,3 = JPEG cam0/cam1. All four are used.
  *
+ * Push mode, run by leakcam_wake when the server reports a leak:
+ *   leakcam_stream -p <host>:<port> -t <seconds>
+ * H.264 of both cameras for <seconds>, each as one chunked POST /v1/video?cam=<N> (Annex-B,
+ * starting on an IDR). No RTSP, HTTP server or JPEG channels. Exit 0 when both uploads were
+ * answered 200.
+ *
  * Not run on hardware yet (no boards, and the BL616 Wi-Fi driver is still to come).
  */
 #include <errno.h>
+#include <stdbool.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
@@ -48,6 +55,7 @@
 #include "mpi_venc_api.h"
 #include "mpi_vicap_api.h"
 
+#include "netclient.h"
 #include "rtsp_glue.h"
 
 #define NCAM            2
@@ -95,6 +103,7 @@ static k_u32 stream_pool[4] = { VB_INVALID_POOLID, VB_INVALID_POOLID, VB_INVALID
 static volatile int g_run = 1;
 static volatile int g_want_idr[NCAM];
 static pthread_t cap_tid[NCAM], venc_tid[NCAM], http_tid;
+static int push_fd[NCAM] = { -1, -1 };    /* push mode: the upload per camera, else -1 */
 
 /* ------------------------------------------------------------------ VB + VENC */
 
@@ -207,6 +216,16 @@ static void rtsp_sink(int cam, const k_u8 *data, k_u32 len, k_u64 pts)
     rtsp_glue_send(session_name[cam], data, len, pts);   /* copies; SPS/PPS/IDR parsed inside */
 }
 
+static void push_sink(int cam, const k_u8 *data, k_u32 len, k_u64 pts)
+{
+    (void)pts;
+    if (push_fd[cam] >= 0 && http_chunk(push_fd[cam], data, len) < 0) {
+        fprintf(stderr, "push cam%d: upload broke off\n", cam);
+        close(push_fd[cam]);
+        push_fd[cam] = -1;
+    }
+}
+
 static void *venc_thread(void *arg)
 {
     int cam = (int)(long)arg;
@@ -215,7 +234,7 @@ static void *venc_thread(void *arg)
             g_want_idr[cam] = 0;
             kd_mpi_venc_request_idr(H264_CHN(cam));
         }
-        venc_pull(H264_CHN(cam), cam, rtsp_sink, NULL, 0, 1000);
+        venc_pull(H264_CHN(cam), cam, push_fd[cam] >= 0 ? push_sink : rtsp_sink, NULL, 0, 1000);
     }
     return NULL;
 }
@@ -481,9 +500,24 @@ static void on_sig(int sig) { (void)sig; g_run = 0; }
 
 int main(int argc, char **argv)
 {
-    int ncam = argc > 1 ? atoi(argv[1]) : NCAM;      /* 1 = camera 0 only */
+    int ncam = NCAM, seconds = 0, status = 0;
+    char host[64] = "", port[8] = "";
+    int opt;
+    while ((opt = getopt(argc, argv, "p:t:")) != -1) {
+        if (opt == 'p' && sscanf(optarg, "%63[^:]:%7s", host, port) == 2)
+            continue;
+        if (opt == 't' && (seconds = atoi(optarg)) > 0)
+            continue;
+        fprintf(stderr, "usage: %s [ncam] | -p host:port -t seconds\n", argv[0]);
+        return 2;
+    }
+    bool push = host[0] != 0;
+    if (!push && optind < argc)
+        ncam = atoi(argv[optind]);                    /* 1 = camera 0 only */
     if (ncam < 1 || ncam > NCAM)
         ncam = NCAM;
+    if (push && seconds <= 0)
+        seconds = 5;
     signal(SIGINT, on_sig);
     signal(SIGPIPE, SIG_IGN);
 
@@ -500,16 +534,30 @@ int main(int argc, char **argv)
         return 1;
     for (int i = 0; i < ncam; i++)
         if (venc_create(H264_CHN(i), K_PT_H264, H264_STREAM_BLK) ||
-            venc_create(JPEG_CHN(i), K_PT_JPEG, JPEG_STREAM_BLK))
+            (!push && venc_create(JPEG_CHN(i), K_PT_JPEG, JPEG_STREAM_BLK)))
             goto out;
 
-    /* 3. RTSP sessions (network must be up for clients, not for Init) */
-    if (rtsp_glue_init(RTSP_PORT, on_play, NULL) < 0)
-        goto out;
-    for (int i = 0; i < ncam; i++)
-        if (rtsp_glue_add_session(session_name[i], RTSP_H264) < 0)
+    /* 3. push: one chunked upload per camera, opened before the first frame. Otherwise RTSP
+     * sessions (network must be up for clients, not for Init) */
+    if (push) {
+        for (int i = 0; i < ncam; i++) {
+            char path[32];
+            snprintf(path, sizeof(path), "/v1/video?cam=%d", i);
+            push_fd[i] = net_connect(host, port, 10);
+            if (push_fd[i] < 0 || http_post(push_fd[i], host, path, "video/h264", -1) < 0) {
+                fprintf(stderr, "push cam%d: %s:%s not reached\n", i, host, port);
+                goto out;
+            }
+            g_want_idr[i] = 1;                        /* the upload starts on an IDR */
+        }
+    } else {
+        if (rtsp_glue_init(RTSP_PORT, on_play, NULL) < 0)
             goto out;
-    rtsp_glue_start();
+        for (int i = 0; i < ncam; i++)
+            if (rtsp_glue_add_session(session_name[i], RTSP_H264) < 0)
+                goto out;
+        rtsp_glue_start();
+    }
 
     /* 4. VICAP: set_dev_attr/set_chn_attr on every device, then init every device */
     for (int i = 0; i < ncam; i++)
@@ -531,32 +579,51 @@ int main(int argc, char **argv)
             fprintf(stderr, "vicap %d: start_stream failed\n", i);
             g_run = 0;
         }
-    pthread_create(&http_tid, NULL, http_thread, NULL);
-    for (int i = 0; i < ncam; i++)
-        rtsp_glue_print_url(session_name[i]);
+    if (!push) {
+        pthread_create(&http_tid, NULL, http_thread, NULL);
+        for (int i = 0; i < ncam; i++)
+            rtsp_glue_print_url(session_name[i]);
+    }
 
-    while (g_run)
+    for (int left = seconds; g_run && (!push || left > 0); left--)
         sleep(1);
+    g_run = 0;
 
     for (int i = 0; i < NCAM; i++)
         pthread_cond_broadcast(&jslot[i].cv);
-    pthread_join(http_tid, NULL);
+    if (!push)
+        pthread_join(http_tid, NULL);
     for (int i = 0; i < ncam; i++) {
         pthread_join(cap_tid[i], NULL);
         pthread_join(venc_tid[i], NULL);
     }
+    for (int i = 0; push && i < ncam; i++) {        /* end the bodies, then the server answers */
+        char reply[128];
+        int st = push_fd[i] >= 0 && http_chunk(push_fd[i], NULL, 0) == 0 ? http_reply(push_fd[i], reply, sizeof(reply)) : -1;
+        if (st != 200) {
+            fprintf(stderr, "push cam%d: server status %d\n", i, st);
+            status = 1;
+        }
+    }
+    goto done;
 out:
+    status = 1;
+done:
     g_run = 0;
     for (int i = 0; i < ncam; i++) {
         kd_mpi_vicap_stop_stream((k_vicap_dev)i);
         kd_mpi_vicap_deinit((k_vicap_dev)i);
     }
-    rtsp_glue_stop();
+    if (!push)
+        rtsp_glue_stop();
     for (int i = 0; i < ncam; i++) {
         venc_destroy(H264_CHN(i));
-        venc_destroy(JPEG_CHN(i));
+        if (!push)
+            venc_destroy(JPEG_CHN(i));
+        if (push_fd[i] >= 0)
+            close(push_fd[i]);
     }
     kd_mpi_venc_close_fd();
     kd_mpi_vb_exit();
-    return 0;
+    return status;
 }

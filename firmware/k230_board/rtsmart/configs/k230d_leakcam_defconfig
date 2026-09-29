@@ -52,10 +52,9 @@ CONFIG_RT_SDIO_THREAD_PRIORITY=4
 CONFIG_RT_MMCSD_STACK_SIZE=32768
 CONFIG_RT_USING_SDIO0=y
 # BL616 NetHub Wi-Fi driver (drivers/extdrv/bl616_nethub, installed by install.sh). The BL616 is
-# wired to MMC0 with CLK, CMD and D0-D3 only (bl616_pwrmgr/board_pins.h); its CHIP_EN is not the
-# K230's to pulse, so the board glue must not toggle the SDIO0 reset output before probing.
+# wired to MMC0 with CLK, CMD and D0-D3 only (bl616/board_pins.h). No boot-time Wi-Fi probe
+# (BSP_USING_WIFI_SDIO stays off): MMC0 is probed only when the agent asks, after WIFI.
 CONFIG_RT_USING_BL616_NETHUB=y
-# CONFIG_BSP_WIFI_SDIO_USE_SDIO0_RESET is not set
 CONFIG_RT_USING_WIFI=y
 CONFIG_RT_WLAN_DEVICE_STA_NAME="sta"
 CONFIG_RT_WLAN_DEVICE_AP_NAME="ap"

@@ -1,9 +1,10 @@
 config RT_USING_BL616_NETHUB
     bool "LEAKCAM: BL616 NetHub Wi-Fi over SDIO"
-    depends on RT_USING_WIFI && RT_USING_SDIO
-    select BSP_USING_WIFI_SDIO
+    depends on RT_USING_WIFI && RT_USING_SDIO0
     default n
     help
-        Station Wi-Fi through a BL616 running Bouffalo's NetHub bridge on the
-        SDIO host of BSP_WIFI_SDIO_HOST (SDIO id 424c:0606). The BL616 bridges
-        Ethernet frames; lwIP on this side runs DHCP and all sockets.
+        Station Wi-Fi through a BL616 running Bouffalo's NetHub bridge on SDIO0
+        (SDIO id 424c:0606). The BL616 bridges Ethernet frames; lwIP on this side
+        runs DHCP and all sockets. It does not select BSP_USING_WIFI_SDIO: the
+        board's boot-time Wi-Fi probe would search for a card that the BL616
+        starts only on request. MMC0 is probed only through /dev/bl616.
