@@ -1,4 +1,4 @@
-# leakcam_wake, leakcam_hist, leakcam_stream, leakcam_audio and leakcam_agent as k230_rtos_sdk applications
+# leakcam_wake, leakcam_hist, leakcam_stream and leakcam_agent as k230_rtos_sdk applications
 # (RT-Smart user space).
 #
 # Installed into an SDK by firmware/k230_board/install.sh (copies this folder to
@@ -16,7 +16,6 @@ BUILD    := $(SDK_APPS_BUILD_DIR)/leakcam
 CAPTURE  := $(SDK_APPS_IMAGE_DIR)/leakcam_wake
 HIST     := $(SDK_APPS_IMAGE_DIR)/leakcam_hist
 STREAM   := $(SDK_APPS_IMAGE_DIR)/leakcam_stream
-AUDIO    := $(SDK_APPS_IMAGE_DIR)/leakcam_audio
 AGENT    := $(SDK_APPS_IMAGE_DIR)/leakcam_agent
 
 CORE     := imgdiff.c refstore.c history.c third_party/miniz/miniz.c
@@ -24,8 +23,8 @@ CAP_SRCS := leakcam_wake.c vicap_cap.c led_rtsmart.c netclient.c $(CORE)
 HIST_SRCS:= leakcam_hist.c $(CORE)
 CAP_OBJS := $(addprefix $(BUILD)/cap/, $(CAP_SRCS:.c=.o))
 HIST_OBJS:= $(addprefix $(BUILD)/hist/, $(HIST_SRCS:.c=.o))
-STREAM_OBJS := $(BUILD)/stream/leakcam_stream.o $(BUILD)/stream/rtsp_glue.o $(BUILD)/stream/netclient.o
-AUDIO_OBJS  := $(BUILD)/audio/leakcam_audio.o
+STREAM_OBJS := $(BUILD)/stream/leakcam_stream.o $(BUILD)/stream/rtsp_glue.o $(BUILD)/stream/netclient.o \
+               $(BUILD)/stream/flv.o
 AGENT_OBJS  := $(BUILD)/agent/leakcam_agent.o
 
 include $(SDK_RTSMART_SRC_DIR)/libs/mk/libmpp.mk
@@ -42,7 +41,7 @@ CXXFLAGS += -I$(SDK_SRC_ROOT_DIR)/include -include "generated/autoconf.h" -Wall 
 CXXFLAGS += -ffunction-sections -fdata-sections
 
 .PHONY: all clean distclean
-all: $(CAPTURE) $(HIST) $(STREAM) $(AUDIO) $(AGENT)
+all: $(CAPTURE) $(HIST) $(STREAM) $(AGENT)
 	@$(ECHO) [BUILD] applications leakcam done.
 
 $(CAPTURE): $(CAP_OBJS)
@@ -61,12 +60,6 @@ $(STREAM): $(STREAM_OBJS)
 	@echo "[LD] $@"
 	@mkdir -p $(dir $@)
 	$(Q)$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -lpthread -o $@
-	$(Q)$(STRIP) $@
-
-$(AUDIO): $(AUDIO_OBJS)
-	@echo "[LD] $@"
-	@mkdir -p $(dir $@)
-	$(Q)$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
 	$(Q)$(STRIP) $@
 
 $(AGENT): $(AGENT_OBJS)
@@ -101,13 +94,8 @@ $(BUILD)/stream/%.o: $(SRC_ROOT)/%.cpp
 	@mkdir -p $(dir $@)
 	$(Q)$(CXX) $(CXXFLAGS) -MD -MP -c $< -o $@
 
-$(BUILD)/audio/%.o: $(SRC_ROOT)/%.c
-	@echo "[CC] $@"
-	@mkdir -p $(dir $@)
-	$(Q)$(CC) $(CFLAGS) -MD -MP -c $< -o $@
-
 clean:
-	@rm -f $(CAPTURE) $(HIST) $(STREAM) $(AUDIO)
+	@rm -f $(CAPTURE) $(HIST) $(STREAM) $(AGENT)
 
 distclean: clean
 	@rm -rf $(BUILD)

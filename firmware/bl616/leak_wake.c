@@ -11,9 +11,14 @@
  *   3.3 * (1M || Rw) / (1M + 1M || Rw) = 0.825  ->  Rw = 500 k  (406 k with 2 x 47 k in series)
  */
 #include "leak_wake.h"
+
+#include <stdio.h>
 #include "aon_state.h"
 #include "board_pins.h"
 #include "evlog.h"
+
+#include <FreeRTOS.h>
+#include "task.h"
 
 #include "bflb_adc.h"
 #include "bflb_gpio.h"
@@ -98,32 +103,32 @@ int leak_probe_mv(void)
     return mv;
 }
 
-enum wake_reason wake_reason_get(void)
+unsigned wake_reason_get(void)
 {
     /* The HBN interrupt state survives the wake-up reboot until it is cleared. To be confirmed
      * on hardware: if the BootROM clears it, read it from HBN_Get_Reset_Event() instead. */
-    enum wake_reason r = WAKE_COLD;
+    unsigned r = 0;
     if (HBN_Get_INT_State(HBN_INT_ACOMP1) == SET)
-        r = WAKE_LEAK;
-    else if (HBN_Get_INT_State(HBN_INT_ACOMP0) == SET)
-        r = WAKE_USB;
-    else if (HBN_Get_INT_State(HBN_INT_RTC) == SET)
-        r = WAKE_RTC;
+        r |= WAKE_LEAK;
+    if (HBN_Get_INT_State(HBN_INT_ACOMP0) == SET)
+        r |= WAKE_USB;
+    if (HBN_Get_INT_State(HBN_INT_RTC) == SET)
+        r |= WAKE_RTC;
     HBN_Clear_IRQ(HBN_INT_ACOMP1);
     HBN_Clear_IRQ(HBN_INT_ACOMP0);
     HBN_Clear_IRQ(HBN_INT_RTC);
-    return r;
+    return r ? r : WAKE_COLD;
 }
 
-const char *wake_reason_name(enum wake_reason r)
+const char *wake_reason_text(unsigned reasons, char *buf, unsigned len)
 {
-    switch (r) {
-        case WAKE_LEAK: return "leak";
-        case WAKE_RTC:  return "rtc";
-        case WAKE_USB:  return "usb";
-        case WAKE_HUMID: return "humid";
-        default:        return "cold";
-    }
+    static const char *const names[] = { "cold", "leak", "rtc", "usb", "humid" };
+    unsigned n = 0;
+    buf[0] = 0;
+    for (unsigned i = 0; i < sizeof(names) / sizeof(names[0]); i++)
+        if (reasons & (1u << i))
+            n += (unsigned)snprintf(buf + n, n < len ? len - n : 0, "%s%s", n ? "+" : "", names[i]);
+    return buf;
 }
 
 void rtc_use_crystal(void)
@@ -143,9 +148,14 @@ void hbn_sleep(uint32_t seconds)
     HBN_Enable_AComp_IRQ(LEAK_ACOMP, leak_is_wet() ? HBN_ACOMP_INT_EDGE_POSEDGE : HBN_ACOMP_INT_EDGE_NEGEDGE);
 
     aon_prepare_sleep();                                   /* persisted state + clock in HBN RAM */
-    LOG_I("hbn: sleeping %u s, probes %s\r\n", (unsigned)seconds, leak_is_wet() ? "wet" : "dry");
-    evlog_add(EV_SLEEP, leak_is_wet(), seconds);
-    bflb_mtimer_delay_ms(5);                               /* let the USB console drain */
+    /* the time since reset: the number to shorten, measured on every wake */
+    unsigned awake_ms = (unsigned)bflb_mtimer_get_time_ms();
+    LOG_I("hbn: sleeping %u s, probes %s, awake %u ms\r\n", (unsigned)seconds,
+          leak_is_wet() ? "wet" : "dry", awake_ms);
+    evlog_add(EV_SLEEP, (int)(uint8_t)(awake_ms / 4 > 255 ? 255 : awake_ms / 4), seconds);
+    /* the USB console only runs with the scheduler: a bare-metal wake has nothing to drain */
+    if (xTaskGetSchedulerState() == taskSCHEDULER_RUNNING)
+        bflb_mtimer_delay_ms(5);
     /* RTC ticks at 32768 Hz (Y3 crystal on IO16/IO17 via rtc_use_crystal(), else RC32K) */
     pm_hbn_mode_enter(PM_HBN_LEVEL_0, (uint64_t)seconds * 32768u);
     while (1) {

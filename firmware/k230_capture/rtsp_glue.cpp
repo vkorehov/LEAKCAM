@@ -36,15 +36,13 @@ extern "C" int rtsp_glue_init(int port, rtsp_play_cb on_play, void *user)
     return g_srv->Init(port, nullptr, &g_hook);
 }
 
-extern "C" int rtsp_glue_add_session(const char *name, enum rtsp_codec codec)
+extern "C" int rtsp_glue_add_session(const char *name)
 {
     SessionAttr a;
     a.with_video = true;
-    a.with_audio = false;
+    a.with_audio = true;                   /* G711U, the only audio type SessionAttr knows */
     a.with_audio_backchannel = false;
-    a.video_type = codec == RTSP_H265 ? VideoType::kVideoTypeH265
-                 : codec == RTSP_MJPEG ? VideoType::kVideoTypeMjpeg
-                                       : VideoType::kVideoTypeH264;
+    a.video_type = VideoType::kVideoTypeH264;
     return g_srv->CreateSession(name, a);
 }
 
@@ -55,7 +53,10 @@ extern "C" int rtsp_glue_send(const char *name, const uint8_t *data, size_t size
     return g_srv->SendVideoData(name, data, size, pts);
 }
 
-extern "C" size_t rtsp_glue_clients(const char *name) { return g_srv->GetClientCount(name); }
+extern "C" int rtsp_glue_send_audio(const char *name, const uint8_t *data, size_t size, uint64_t pts)
+{
+    return g_srv->SendAudioData(name, data, size, pts);
+}
 
 extern "C" void rtsp_glue_print_url(const char *name)
 {

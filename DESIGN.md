@@ -12,7 +12,7 @@ This file records what was decided and why. Details live in the documents it lin
 | Build and flash, from an empty machine | [firmware/BUILD.md](firmware/BUILD.md) |
 | Power management, BL616 firmware, findings | [firmware/README.md](firmware/README.md) |
 | K230 board port (boot, NAND, pins, kernel) | [firmware/k230_board/README.md](firmware/k230_board/README.md) |
-| Capture, history, streaming, audio on RT-Smart | [firmware/k230_capture/rtsmart/README.md](firmware/k230_capture/rtsmart/README.md) |
+| Capture, history, streaming (video with audio) on RT-Smart | [firmware/k230_capture/rtsmart/README.md](firmware/k230_capture/rtsmart/README.md) |
 | Wi-Fi (BL616 NetHub + K230 SDIO driver) | [firmware/bl616/WIFI.md](firmware/bl616/WIFI.md) |
 | Neural networks, image quality | [firmware/k230_nn/README.md](firmware/k230_nn/README.md) |
 | LED strips | [LED_STRIPS.txt](LED_STRIPS.txt) |
@@ -222,9 +222,9 @@ no server configured (/sdcard/leakcam/server) --------------> sleep 1 h
 "wifi" to the agent -> WIFI to the BL616 -> MMC0 probe
   |-- refused (no credentials, radio) or no card ------------> sleep 1 h
   | wifi=ok
-POST /v1/check?reason=&probe_mv=&rh=&t=, both reduced frames
+POST /v1/check?reason=&probe_mv=&bat_mv=&rh=&t=, both reduced frames
   |-- server not reached ------------------------------------> sleep 1 h
-  |-- {"leak":true}: leakcam_stream -p pushes 5 s of H.264
+  |-- {"leak":true}: leakcam_stream -p pushes 5 s of H.264 + audio (FLV)
   |                  from both cameras; nothing stored -------> sleep 10 min
   |-- {"leak":false}: the new frames go to the history ------> sleep 6 h
 ```
@@ -251,8 +251,8 @@ is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
 
 | Request | Body | Reply |
 |---|---|---|
-| `POST /v1/check?reason=<cold\|leak\|rtc\|humid>&probe_mv=<mV>[&rh=<%RH>&t=<C>]` | one binary PGM per camera, 320x240, back to back | `{"leak":true}` or `{"leak":false}` |
-| `POST /v1/video?cam=<N>` | chunked H.264 Annex-B, 5 s, starting on an IDR; one per camera, at the same time | `{"bytes":<n>}` |
+| `POST /v1/check?reason=<reasons>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>` (reasons joined by `+`, sent as `%2B`) | one binary PGM per camera, 320x240, back to back | `{"leak":true}` or `{"leak":false}` |
+| `POST /v1/video?cam=<N>` | chunked FLV, 5 s: the camera's H.264 from an IDR plus the microphone (G.711 mu-law 8 kHz mono); one per camera, at the same time | `{"bytes":<n>}` |
 
 ### 5.2 BL616 power manager ([firmware/README.md](firmware/README.md))
 
@@ -301,8 +301,9 @@ is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
   includes too.
   - K230 → BL616: `READY`, `SLEEP,<s>` (the next wake only, not a power-off), `TIME,<unix s>`,
     `WIFI`.
-  - BL616 → K230: `WAKE,<cold|leak|rtc|humid>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>,<bat_mv>`
-    (rh -1 = no AHT20 sample, probe -1 = no reading, bat -1 = no reading since the power loss),
+  - BL616 → K230: `WAKE,<reasons>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>,<bat_mv>`, reasons being
+    every cause that applies joined by `+` (`cold`, `leak`, `rtc`, `usb`, `humid`; e.g. `rtc+leak`)
+    (rh -1 = the AHT20 read failed, probe -1 = no reading, bat -1 = no reading since the power loss),
     once per `READY`, answered `ACK,<seq>,<bat_mv>` with the K230's ADC_1 reading; `ACK`.
 - **K230 side: `leakcam_agent`**, an RT-Smart program started at boot (`RTT_AUTO_EXEC_CMD`). It
   talks to `/dev/uart1` and `/dev/gpio` directly and runs the capture hook for the wake reason.
@@ -385,20 +386,21 @@ capture (LEDs at 100 %, AE settled)
     puddle changes 1-3 of 300 cells. Needs int16 quantisation; must be trained.
   - **Focus and LED level.** No network is needed: classic signals (percentiles, clipping,
     Sobel sharpness ratio against the reference).
-- **Encoders.** VENC has 4 channels: H.264 for each camera and JPEG for each camera.
+- **Encoders.** H.264 only, one VENC channel per camera.
 
 ### 5.7 Streaming and audio (built, not run)
 
 - **Streaming (`leakcam_stream`).**
   - Push mode (`-p host:port -t seconds`), used by `leakcam_wake` on a leak: H.264 of both
-    cameras, one chunked POST per camera. No RTSP, HTTP server or JPEG channels.
-  - Live mode, for the bench: RTSP H.264 per camera (`rtsp://<ip>:8554/cam0`, `/cam1`), 1500 kbit/s, IDR every 2 s and
-    on every new client.
-  - HTTP `/snap/N.jpg` and `/mjpeg/N` on port 8080, encoded only while someone watches.
-  - One VICAP channel per camera feeds both encoders, without copying frames.
-- **Audio (`leakcam_audio`).**
-  - 16 kHz mono from the codec left input to WAV, with a level meter.
-  - Gains are set after the first enable, which resets them.
+    cameras with the microphone, one chunked POST per camera, each an FLV: video is always with
+    audio. No RTSP.
+  - Live mode, for the bench: RTSP per camera (`rtsp://<ip>:8554/cam0`, `/cam1`), H.264 1500
+    kbit/s, IDR every 2 s and on every new client, with the microphone as G711U.
+  - One VICAP channel per camera feeds its encoder, without copying frames.
+- **Audio, in every stream.**
+  - 8 kHz mono from the codec left input, G.711 mu-law: lossy, 64 kbit/s, next to no CPU. FLV
+    carries it with H.264 natively and is written as the frames come, with no file and no seek.
+  - The gain is set after the first enable, which resets it.
   - The MIC_BIAS default voltage is undocumented: measure it at C96 first (the mic needs at
     least 1.5 V).
 
