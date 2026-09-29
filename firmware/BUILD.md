@@ -254,12 +254,11 @@ the console falls back to UART0 on the link pins. Check `build/generated/autocon
 
 ### 4.3 Flash through PR1
 
-PR1 is on the bottom side: pad 1 D+, pad 2 D-, pad 3 GND, pad 4 AI_BOOT, pad 5 AI_EN.
+PR1 is on the bottom side: pad 1 D+, pad 2 D-, pad 3 GND, pad 4 AI_BOOT, pad 5 AI_EN, pad 6 3V3_SLEEP.
 
-1. Power the board from the battery or USB-C 1; PR1 carries no supply.
+1. Power the board from the battery or USB-C 1; PR1's 3V3_SLEEP is an output, not a supply input.
 2. Wire a USB cable's D+/D-/GND to pads 1-3.
-3. Hold **AI_BOOT high**: PR1 has no 3.3 V pad, so use a wire to 3V3_SLEEP, for example the top of
-   R38. Pulse **AI_EN low**, then release it.
+3. Hold **AI_BOOT high** (pad 4 to pad 6). Pulse **AI_EN low** (pad 5 to pad 3), then release it.
 4. The BL616 ROM enumerates as `Bouffalo CDC` (349b:6160), `/dev/ttyACM0`. Run:
    ```
    make flash COMX=/dev/ttyACM0        # BLFlashCommand --interface=uart --baudrate=2000000 --chipname=bl616
@@ -267,15 +266,19 @@ PR1 is on the bottom side: pad 1 D+, pad 2 D-, pad 3 GND, pad 4 AI_BOOT, pad 5 A
    The SDK picks `BLFlashCommand-arm` on aarch64 and `BLFlashCommand-ubuntu` on x86-64.
 5. Release BOOT and pulse EN.
 
-Rev 1 adds a sixth PR1 pad for 3V3_SLEEP, so a pogo fixture can drive BOOT.
+### 4.4 Debugging
+
+Consoles, the retained event log (`evlog` on the BL616 console) and the JTAG debug build
+(`LEAKCAM_JTAG=1`, JTAG on IO12-IO15 instead of Wi-Fi) are in [DEBUG.txt](DEBUG.txt).
 
 ## 5. Host tests (no hardware)
 
 ```
 make -C firmware/k230_capture test          # change detector, image history (miniz), image quality + LED step,
                                             # audio WAV/level meter, the wake algorithm against mock_server.py
-make -C firmware/bl616/test                 # link protocol (seq/ACK/NAK codes/resends), AHT20 maths, always-on
-                                            # clock/state, wifi_link.c (receive filter, control channel, layout)
+make -C firmware/bl616/test                 # link protocol (seq/ACK/NAK codes/resends, trace), AHT20 maths,
+                                            # always-on clock/state, retained event log, wifi_link.c (receive
+                                            # filter, control channel, layout)
 make -C firmware/k230_agent test            # agent link code against the BL616's over a lossy socket pair
 make -C firmware/k230_board/rtsmart/drivers/bl616_nethub/test   # K230 Wi-Fi driver on a simulated BL616 SDU
 make -C firmware/k230_capture clean; make -C firmware/bl616/test clean; make -C firmware/k230_agent clean

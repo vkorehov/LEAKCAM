@@ -22,13 +22,20 @@
  *                 WIFI                start Wi-Fi for this session; nothing else starts it. ACK:
  *                                     the radio is up and the BL616 joins with the stored
  *                                     credentials. NAK codes: NO_CREDENTIALS, RADIO
- * BL616 -> K230   WAKE,<reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>
+ * BL616 -> K230   WAKE,<reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>,<bat_mv>
  *                                     reply to READY: reason cold | leak | rtc | humid; the
  *                                     BL616 wall clock, 0 when it is not valid (after a power
  *                                     loss, until the K230 has sent TIME once); the AHT20 sample
  *                                     (rh -1 = none, t then 0); the leak probe node voltage
- *                                     (1650 dry, below 825 wet; -1 = no reading)
- * both            ACK,<seq>   NAK,<seq>,<code>
+ *                                     (1650 dry, below 825 wet; -1 = no reading); the battery as
+ *                                     the K230 measured it at the previous session (-1 = none
+ *                                     since the power loss). The BL616 has no battery ADC input:
+ *                                     the VBAT/3 divider (R59/R61, switched by the K230's 3V3)
+ *                                     goes to K230 ADC_1 only.
+ *                                     Answered ACK,<seq>,<bat_mv>: the K230's own reading now
+ *                                     (-1 = its ADC failed), which the BL616 keeps for the next
+ *                                     WAKE and its event log
+ * both            ACK,<seq>[,<answer>]   NAK,<seq>,<code>
  *
  * Anything that is not a valid frame (K230 boot noise, a partial line) is dropped silently.
  *
@@ -76,6 +83,7 @@ enum link_end { LINK_ACKED, LINK_NAKED, LINK_TIMED_OUT };
 struct link_result {                /* how a BL616 command ended: ACKED or TIMED_OUT */
     enum link_end end;
     char cmd[16];
+    char answer[16];                /* what the ACK carried after its seq ("" = nothing) */
 };
 
 void link_reset(void);

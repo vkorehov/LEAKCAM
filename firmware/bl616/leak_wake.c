@@ -13,6 +13,7 @@
 #include "leak_wake.h"
 #include "aon_state.h"
 #include "board_pins.h"
+#include "evlog.h"
 
 #include "bflb_adc.h"
 #include "bflb_gpio.h"
@@ -51,11 +52,14 @@ bool leak_is_wet(void)
     return bflb_acomp_get_result(LEAK_ACOMP) == 0;
 }
 
-/* The probe node in mV, by the GPADC on the same pad (ADC channel 0), as the SDK's
- * adc_poll_onechan example: continuous conversion, the first 5 results dropped, 8 averaged.
- * The node's source impedance is 500 k (1 M || 1 M, less when wet), far above what a sampling
- * ADC wants: the slowest ADC clock gives the sample capacitor the most time. Absolute accuracy
- * is to be measured on the board; the comparator stays the wake source, this value is data. */
+/* The probe node in mV, by the GPADC on the same pad (ADC channel 0). C109 (100 nF) holds the
+ * node, so the sample capacitor charges from it rather than through the 500 k divider (1 M || 1 M,
+ * less when wet): one conversion is the reading. The SDK only runs the ADC continuously and its
+ * adc_poll_onechan example drops the first results after the start, so the sixth is taken.
+ * Absolute accuracy is to be measured on the board; the comparator stays the wake source, this
+ * value is data. */
+#define ADC_SETTLE_RESULTS 5
+
 int leak_probe_mv(void)
 {
     struct bflb_device_s *adc = bflb_device_get_by_name("adc");
@@ -68,30 +72,26 @@ int leak_probe_mv(void)
         .vref = ADC_VREF_3P2V,
     };
     struct bflb_adc_channel_s chan = { .pos_chan = ADC_CHANNEL_0, .neg_chan = ADC_CHANNEL_GND };
-    uint32_t sum = 0;
-    int n = 0;
+    uint32_t raw = 0;
+    bool got = false;
 
     bflb_adc_init(adc, &cfg);
     bflb_adc_channel_config(adc, &chan, 1);
     bflb_adc_start_conversion(adc);
-    for (int i = 0, waited = 0; i < 13 && waited < 50; ) {
+    for (int i = 0, waited = 0; !got && waited < 50; ) {
         if (bflb_adc_get_count(adc) == 0) {
             bflb_mtimer_delay_ms(1);
             waited++;
             continue;
         }
-        uint32_t raw = bflb_adc_read_raw(adc);
-        if (i++ >= 5) {
-            sum += raw;
-            n++;
-        }
+        raw = bflb_adc_read_raw(adc);
+        got = i++ == ADC_SETTLE_RESULTS;
     }
     bflb_adc_stop_conversion(adc);
     int mv = -1;
-    if (n) {
+    if (got) {
         struct bflb_adc_result_s r;
-        uint32_t avg = sum / (uint32_t)n;
-        bflb_adc_parse_result(adc, &avg, &r, 1);
+        bflb_adc_parse_result(adc, &raw, &r, 1);
         mv = r.millivolt;
     }
     bflb_adc_deinit(adc);
@@ -144,6 +144,7 @@ void hbn_sleep(uint32_t seconds)
 
     aon_prepare_sleep();                                   /* persisted state + clock in HBN RAM */
     LOG_I("hbn: sleeping %u s, probes %s\r\n", (unsigned)seconds, leak_is_wet() ? "wet" : "dry");
+    evlog_add(EV_SLEEP, leak_is_wet(), seconds);
     bflb_mtimer_delay_ms(5);                               /* let the USB console drain */
     /* RTC ticks at 32768 Hz (Y3 crystal on IO16/IO17 via rtc_use_crystal(), else RC32K) */
     pm_hbn_mode_enter(PM_HBN_LEVEL_0, (uint64_t)seconds * 32768u);

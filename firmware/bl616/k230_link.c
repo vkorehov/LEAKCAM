@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "bflb_uart.h"
+#include "log.h"
 
 static char line[LINK_MAX_LINE];
 static unsigned len;
@@ -58,6 +59,7 @@ static void send_frame(uint8_t seq, const char *cmd, const char *arg)
     else
         snprintf(body, sizeof(body), "%u,%s", seq, cmd);
     int n = snprintf(frame, sizeof(frame), "$%s*%02X\n", body, link_crc8(body, body + strlen(body)));
+    LOG_I("link> %s\r\n", body);
     for (int i = 0; i < n; i++)
         bflb_uart_putchar(uart(), frame[i]);
 }
@@ -73,10 +75,11 @@ static void send_answer(uint8_t seq, uint8_t code)
 }
 
 /* the command in flight has ended: drop it and keep how, for link_service() to report */
-static void tx_done(enum link_end end)
+static void tx_done(enum link_end end, const char *answer)
 {
     result.end = end;
     snprintf(result.cmd, sizeof(result.cmd), "%s", tx_cmd);
+    snprintf(result.answer, sizeof(result.answer), "%s", answer);
     result_ready = true;
     tx_pending = false;
     tx_sends = 0;
@@ -113,8 +116,10 @@ static bool parse(struct link_msg *out)
 static bool accept(struct link_msg *m)
 {
     if (strcmp(m->cmd, "ACK") == 0) {
-        if (tx_pending && tx_sends && m->has_arg && m->arg == tx_seq)
-            tx_done(LINK_ACKED);
+        if (tx_pending && tx_sends && m->has_arg && m->arg == tx_seq) {
+            const char *extra = strchr(m->args, ',');     /* ACK,<seq>[,<answer>] */
+            tx_done(LINK_ACKED, extra ? extra + 1 : "");
+        }
         return false;                   /* a stale answer is simply ignored */
     }
     bool ready = strcmp(m->cmd, "READY") == 0;
@@ -153,7 +158,14 @@ bool link_poll(struct link_msg *out)
         if (c == '\n') {
             in_frame = false;
             line[len] = 0;
-            if (parse(out) && accept(out))
+            char raw[LINK_MAX_LINE];
+            memcpy(raw, line, len + 1);             /* parse() cuts the line up */
+            if (!parse(out)) {
+                LOG_W("link: dropped %s (CRC or format)\r\n", raw);
+                continue;
+            }
+            LOG_I("link< %s\r\n", raw);
+            if (accept(out))
                 return true;
             continue;
         }
@@ -187,12 +199,14 @@ const struct link_result *link_service(uint64_t now_ms)
     if (tx_sends && now_ms - tx_at < LINK_ACK_TIMEOUT_MS)
         return NULL;
     if (tx_sends >= LINK_TRIES) {
-        tx_done(LINK_TIMED_OUT);
+        tx_done(LINK_TIMED_OUT, "");
         result_ready = false;
         return &result;
     }
     if (!tx_sends)
         tx_seq = tx_next++;
+    else
+        LOG_W("link: no answer to %s, resend %u of %u\r\n", tx_cmd, tx_sends + 1, LINK_TRIES);
     send_frame(tx_seq, tx_cmd, tx_arg);
     tx_sends++;
     tx_at = now_ms;

@@ -21,6 +21,17 @@ static size_t in_len, in_pos;
 static bool in_ready;
 
 struct bflb_device_s *bflb_device_get_by_name(const char *n) { (void)n; static struct bflb_device_s d; return &d; }
+/* the BL616 link trace (log.h stand-in): printed with LINK_TRACE=1 */
+void test_log(char level, const char *fmt, ...)
+{
+    if (!getenv("LINK_TRACE"))
+        return;
+    va_list ap;
+    va_start(ap, fmt);
+    printf("bl616 %c ", level);
+    vprintf(fmt, ap);
+    va_end(ap);
+}
 
 /* whole frames are passed or dropped, so a loss never leaves half a line behind */
 int bflb_uart_putchar(struct bflb_device_s *d, int c)
@@ -153,22 +164,25 @@ int main(void)
     CHECK(got("READY") == 1, "READY delivered %d times", got("READY"));
     drop_bl_tx = 0;
 
-    /* 2. WAKE with its first send lost and the agent's first ACK lost: the agent gets it once */
+    /* 2. WAKE with its first send lost and the agent's first ACK lost: the agent gets it once,
+     * and its (repeated) ACK carries its battery reading back */
+    bat_mv = 3712;
     bl_tx_n = 0; ag_tx_n = 0;
     drop_bl_tx = 0x1;               /* the first WAKE frame */
     drop_ag_tx = 0x1;               /* the agent's ACK to the second send */
-    bl_send("WAKE", "leak,1790000000,-1,0,700");
+    bl_send("WAKE", "leak,1790000000,-1,0,700,3690");
     struct frame f;
     int wakes = 0;
     uint64_t end = now_ms() + 2500;
     while (now_ms() < end)
         if (next_cmd(&f, 100) && strcmp(f.cmd, "WAKE") == 0) {
             wakes++;
-            CHECK(strcmp(f.arg, "leak,1790000000,-1,0,700") == 0, "WAKE arg %s", f.arg);
+            CHECK(strcmp(f.arg, "leak,1790000000,-1,0,700,3690") == 0, "WAKE arg %s", f.arg);
         }
     const struct link_result *r = wait_bl616_result(0, 500);
     CHECK(wakes == 1, "WAKE delivered %d times", wakes);
     CHECK(r && r->end == LINK_ACKED && strcmp(r->cmd, "WAKE") == 0, "WAKE %s", r ? (r->end == LINK_ACKED ? "acked" : "not acked") : "no result");
+    CHECK(r && strcmp(r->answer, "3712") == 0, "battery in the WAKE ACK: \"%s\"", r ? r->answer : "");
     drop_bl_tx = drop_ag_tx = 0;
 
     /* 3. TIME before 2026 refused by the BL616 reply, a real time accepted */
@@ -194,6 +208,6 @@ int main(void)
 
     bl_run = false;
     pthread_join(th, NULL);
-    printf(fails ? "FAIL (%d)\n" : "link end to end: agent vs BL616 over a lossy line, resends, duplicates, NAK codes, give-up\n", fails);
+    printf(fails ? "FAIL (%d)\n" : "link end to end: agent vs BL616 over a lossy line, resends, duplicates, NAK codes, give-up, battery in the WAKE ACK\n", fails);
     return fails != 0;
 }

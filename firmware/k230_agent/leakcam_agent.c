@@ -10,7 +10,7 @@
  *  - runs the capture hook for the wake reason (killed after HOOK_TIMEOUT_S: nothing else ends
  *    a session that hangs), sends SLEEP,<s> for the next wake, then stops the heartbeat; the BL616's
  *    sensor values (in the WAKE frame) are passed to the hook as LEAKCAM_RH / LEAKCAM_T /
- *    LEAKCAM_PROBE_MV; a line "wifi"
+ *    LEAKCAM_PROBE_MV, the battery (our ADC_1, answered to WAKE) as LEAKCAM_BAT_MV; a line "wifi"
  *    from the hook sends WIFI, the only way the BL616's Wi-Fi is started;
  *  - sets the system clock from the time in the BL616's WAKE frame (the K230 has no running
  *    clock after power-up), and sends TIME back when NTP has set the clock during the session;
@@ -20,8 +20,9 @@
  *    survives a power cut; RT-Smart has no sync() or remount, so programs fsync what they write.
  *
  * The hook is a program (RT-Smart has no shell): <hook> <cold|leak|rtc|humid>, with the BL616's
- * AHT20 sample in LEAKCAM_RH / LEAKCAM_T (unset without one) and the probe voltage in
- * LEAKCAM_PROBE_MV. It may print "sleep=<seconds>" for the next
+ * AHT20 sample in LEAKCAM_RH / LEAKCAM_T (unset without one), the probe voltage in
+ * LEAKCAM_PROBE_MV and the battery in LEAKCAM_BAT_MV (unset without a reading). It may print
+ * "sleep=<seconds>" for the next
  * scheduled wake-up, and a line "wifi" when it needs the network; the answer, "wifi=ok" or
  * "wifi=fail,<code>", comes back on its stdin.
  *
@@ -171,10 +172,14 @@ static void send_frame(unsigned seq, const char *cmd, const char *arg)
         logmsg("uart write: %s", strerror(errno));
 }
 
-static void send_ack(unsigned seq)
+/* ACK,<seq>[,<answer>]: only WAKE's ACK carries an answer, our battery reading */
+static void send_ack(unsigned seq, const char *answer)
 {
-    char s[8];
-    snprintf(s, sizeof(s), "%u", seq);
+    char s[24];
+    if (answer)
+        snprintf(s, sizeof(s), "%u,%s", seq, answer);
+    else
+        snprintf(s, sizeof(s), "%u", seq);
     send_frame(seq, "ACK", s);
 }
 
@@ -241,13 +246,43 @@ static void fmt_x10(char *out, size_t n, long v)
     snprintf(out, n, "%s%ld.%ld", v < 0 ? "-" : "", a / 10, a % 10);
 }
 
-/* the sensor part of WAKE, <rh_x10>,<t_x10>,<probe_mv>, for the hook: LEAKCAM_RH / LEAKCAM_T
- * (AHT20 range 0-100 %RH, -40..+85 C; unset for rh -1 = no sample) and LEAKCAM_PROBE_MV
- * (0..3300, -1 = no reading). WAKE itself is never refused: values out of range are dropped. */
+/* ---------------- battery: ADC_1 (ball A6) = VBAT / 3 ---------------- */
+
+/* R59 200 k over R61 100 k, switched on with our 3V3 (Q2 -> Q1), so only readable while we run;
+ * C92 100 nF holds the node, one conversion is enough. The RT-Smart ADC device: ioctl 0 enables
+ * a channel, then a 4-byte read at file offset <channel> is one 12-bit conversion against the
+ * 1.8 V ADC reference (kernel ABI of bsp/maix3 drv_adc and the RT-Thread ADC framework) */
+#define BAT_ADC_CHANNEL  1
+#define BAT_DIVIDER      3
+#define ADC_IOCTL_ENABLE 0
+
+static int bat_mv = -1;                 /* our reading this session, -1 = none */
+
+static int battery_read_mv(void)
+{
+    uint32_t raw;
+    int fd = open("/dev/adc", O_RDWR);
+    bool ok = fd >= 0 && ioctl(fd, ADC_IOCTL_ENABLE, BAT_ADC_CHANNEL) == 0 &&
+              lseek(fd, BAT_ADC_CHANNEL, SEEK_SET) == BAT_ADC_CHANNEL &&
+              read(fd, &raw, sizeof(raw)) == (ssize_t)sizeof(raw) && raw <= 4095;
+    if (fd >= 0)
+        close(fd);
+    if (!ok) {
+        logmsg("battery: ADC channel %d: %s", BAT_ADC_CHANNEL, strerror(errno));
+        return -1;
+    }
+    return (int)((raw * 1800u * BAT_DIVIDER + 4095u / 2) / 4095u);
+}
+
+/* the sensor part of WAKE, <rh_x10>,<t_x10>,<probe_mv>,<bat_mv>, for the hook: LEAKCAM_RH /
+ * LEAKCAM_T (AHT20 range 0-100 %RH, -40..+85 C; unset for rh -1 = no sample), LEAKCAM_PROBE_MV
+ * (0..3300, -1 = no reading) and LEAKCAM_BAT_MV: our own reading, or the BL616's copy of the
+ * previous session's when our ADC failed. WAKE itself is never refused: values out of range are
+ * dropped. */
 static void sensors_from_bl616(const char *arg)
 {
-    long rh, t, mv;
-    if (sscanf(arg, "%ld,%ld,%ld", &rh, &t, &mv) != 3) {
+    long rh, t, mv, bat;
+    if (sscanf(arg, "%ld,%ld,%ld,%ld", &rh, &t, &mv, &bat) != 4) {
         logmsg("no sensor values in WAKE");
         return;
     }
@@ -266,16 +301,23 @@ static void sensors_from_bl616(const char *arg)
     } else {
         logmsg("probe %ld mV out of range, dropped", mv);
     }
-    logmsg("sensors: %s %%RH, %s C, probe %s mV", getenv("LEAKCAM_RH") ? getenv("LEAKCAM_RH") : "-",
-           getenv("LEAKCAM_T") ? getenv("LEAKCAM_T") : "-",
-           getenv("LEAKCAM_PROBE_MV") ? getenv("LEAKCAM_PROBE_MV") : "-");
+    long use = bat_mv >= 0 ? bat_mv : bat;
+    if (use >= 2000 && use <= 5000) {
+        snprintf(v, sizeof(v), "%ld", use);
+        setenv("LEAKCAM_BAT_MV", v, 1);
+    }
+    logmsg("sensors: %s %%RH, %s C, probe %s mV, battery %d mV (last session %ld mV)",
+           getenv("LEAKCAM_RH") ? getenv("LEAKCAM_RH") : "-", getenv("LEAKCAM_T") ? getenv("LEAKCAM_T") : "-",
+           getenv("LEAKCAM_PROBE_MV") ? getenv("LEAKCAM_PROBE_MV") : "-", bat_mv, bat);
 }
 
 /* acknowledge a command from the BL616 (a repeat, whose ACK was lost, is acknowledged again)
  * and tell whether it is new, i.e. should be acted on. Nothing the BL616 sends is refused */
 static bool accept_cmd(const struct frame *f)
 {
-    send_ack(f->seq);
+    char bat[12];
+    snprintf(bat, sizeof(bat), "%d", bat_mv);
+    send_ack(f->seq, strcmp(f->cmd, "WAKE") == 0 ? bat : NULL);
     if (rx_last == (int)f->seq)
         return false;
     rx_last = (int)f->seq;
@@ -512,6 +554,7 @@ int main(int argc, char **argv)
     if (alive_open() < 0 || uart_open() < 0)
         return 1;
     own_offset = clock_offset_s();
+    bat_mv = battery_read_mv();                 /* before READY: the answer to WAKE carries it */
     pthread_t hb;
     pthread_create(&hb, NULL, heartbeat_thread, NULL);
 
@@ -526,7 +569,7 @@ int main(int argc, char **argv)
         }
         uint64_t until = now_ms() + READY_RETRY_MS;
         while (!got_wake && now_ms() < until && next_cmd(&f, (int)(until - now_ms()))) {
-            if (strcmp(f.cmd, "WAKE") == 0) {    /* <reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv> */
+            if (strcmp(f.cmd, "WAKE") == 0) {    /* <reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>,<bat_mv> */
                 char *time_s = strchr(f.arg, ',');
                 if (time_s)
                     *time_s++ = 0;

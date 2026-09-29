@@ -1,0 +1,139 @@
+LEAKCAM firmware debugging
+==========================
+
+Three tools, from the one you always have to the one that needs wires:
+
+  1. consoles         BL616 on PR1 (USB CDC), K230 on USBC2 (CH340X)
+  2. retained log     the BL616's last 32 events, read with `evlog` on the BL616 console
+  3. JTAG             BL616 only, debug build, four wires soldered to the SDIO pull-ups
+
+
+1. Consoles
+-----------
+
+BL616: USB CDC on PR1 (bottom side, 6 pins)
+  PR1.1 D+   PR1.2 D-   PR1.3 GND   PR1.4 BOOT (IO2)   PR1.5 EN   PR1.6 3V3_SLEEP
+  Wire a USB cable's D+, D- and GND to PR1 (not VBUS: the board powers the BL616 itself). The
+  PC sees a CDC-ACM port (/dev/ttyACM*), any baud rate. UART0 (IO21/22) is the K230 link and
+  carries no console.
+
+  What gets through: the SDK drops output until the PC has enumerated the port, and enumeration
+  runs in a FreeRTOS task. So
+    - a K230 session and USB mode (seconds to hours) are logged;
+    - a battery wake that decides bare-metal (boot line, AHT20 reading, a humidity slice going
+      straight back to sleep) is over in ~85 ms and never reaches the console. That is what the
+      retained log (2.) is for.
+  Output never blocks: with nothing connected the firmware runs exactly the same.
+
+  The SDK shell runs on this console (type `help`); LEAKCAM adds `evlog`.
+
+  Link trace, one line per frame on the K230 link:
+    link> 0,WAKE,rtc,1790000000,655,213,1650     sent (seq, command, args)
+    link< 3,SLEEP,21600*XX                       received (XX = its CRC, checked)
+    link: no answer to WAKE, resend 2 of 5       no ACK within 300 ms
+    link: dropped 1,SLEEP,5*00 (CRC or format)   corrupted frame, not answered
+    link: WAKE not answered after 5 sends        given up (also in the retained log)
+  Session lines give the timing: "READY 23400 ms after power-on", "heartbeat stopped after
+  96 s, next wake in 21600 s".
+
+K230: USB-C USBC2 -> CH340X (U2) -> K230 UART0 (DBG_TXD/DBG_RXD), 115200 8N1.
+  The CH340X is on the switched 3V3, so the port appears only while the BL616 has the K230
+  powered. RT-Smart's msh prompt and the agent's own output (leakcam_agent, leakcam_wake) are
+  here.
+
+Flashing the BL616: hold BOOT (PR1.4 to 3V3_SLEEP), pulse EN (PR1.5 to GND), release BOOT; the
+BootROM then takes the image over the same USB lines (BUILD.md, section 4).
+
+
+2. Retained event log
+---------------------
+
+The BL616 keeps its last 32 events in HBN RAM (evlog.c, 512 bytes just below the always-on
+block at the end of the 4 KB). It survives hibernate and software resets and is lost only
+with 3V3_SLEEP (battery out). A CRC guards it: RAM left by a power loss reads as empty.
+
+Read it: put the board on USB power (USBC1), connect PR1, type `evlog`:
+
+  evlog: 9 events, oldest first
+    2026-10-02 03:10:00Z  boot rtc probe=1650 mV
+    2026-10-02 03:10:00Z  env 61.2 %RH 22 C
+    2026-10-02 03:10:00Z  sleep 600 s, probes dry
+    2026-10-02 03:20:00Z  boot leak probe=410 mV
+    2026-10-02 03:20:00Z  session leak
+    2026-10-02 03:20:24Z  ready after 23400 ms
+    2026-10-02 03:21:41Z  session-end after 101 s
+    2026-10-02 03:21:41Z  sleep 600 s, probes wet
+    2026-10-02 06:02:13Z  usb plugged
+
+Times are UTC once the K230 has sent TIME (NTP) since the last power loss; before that they
+read "N s ago". "(before an RTC reset)" marks entries older than an EN reset.
+
+Events: boot (wake reason, probe mV), env (RH, temperature), aht20-fail, session (reason),
+ready (ms to READY), no-ready, nak (command letter, NAK code), wifi (started / start failed),
+link-lost, session-end (length), retry, sleep (seconds, probe state), usb (plugged /
+unplugged), clock (correction), clock-lost, radio-fail, ble-creds.
+
+
+3. JTAG (BL616)
+---------------
+
+The BL616's reset-default JTAG pins IO0-IO3 are K230_RSTN, K230_ALIVE, PGOOD and the BOOT strap
+on this board, and the firmware takes them over at boot. The debug build moves JTAG to four of
+the SDIO pads instead, so everything except Wi-Fi keeps working (WIFI is refused with NAK 3):
+
+  rm -rf firmware/bl616/build
+  docker run ... -e LEAKCAM_JTAG=1 ... make -j5      (the container command of BUILD.md 4.1)
+
+  It prints "debug build: JTAG on IO12-IO15, Wi-Fi refused" at boot. Remove the build directory
+  again before the normal build: the option is read when CMake configures.
+
+Wiring (solder to the BL616 side of each net):
+
+  JTAG   BL616   net          solder point                          HW-USBN-2B lead
+  TMS    IO12    AI_SD_CMD    R57.2 (top)                           purple
+  TCK    IO13    AI_SD_CLK    R54.2 (bottom; BL616 end of the 22 R)  white
+  TDO    IO14    AI_SD_D0     R65.2 (top)                           brown
+  TDI    IO15    AI_SD_D1     R70.2 (top)                           orange
+  VREF   -       3V3_SLEEP    PR1.6                                 red (VCC)
+  GND    -       GND          PR1.3                                 black
+  reset  EN      AI_EN        PR1.5                                 by hand (tweezers to PR1.3)
+
+  Leave the cable's green (TRST), yellow (ISPEN), blue (DONE) and the I2C/5 V leads unconnected.
+  The red lead is not optional: the cable's level shifters run from it (about 10 mA from
+  3V3_SLEEP).
+
+  The TMS/TCK/TDO/TDI order on IO12-IO15 is taken from the default group (pin number mod 4).
+  Confirm it with the first scan: OpenOCD must read IDCODE 0x10000b6f. If it does not, swap
+  wires, not firmware.
+
+  R57, R65 and R70 are the 10 k pull-ups to the K230's switched 3V3. While the K230 is off, an
+  adapter driving these lines high feeds a little current (under 1 mA) into that dead rail.
+  That is harmless, but power-sequence measurements (firmware/sim) are only valid with the
+  adapter unplugged.
+
+Adapter: Lattice HW-USBN-2B, an FT2232H with level shifters, driven by OpenOCD's ftdi driver
+through firmware/bl616/hw-usbn-2b.cfg (channel A, ADBUS0-3 = TCK/TDI/TDO/TMS), with
+firmware/bl616/bl616.cfg for the chip. Lattice does not publish the cable's schematic: if the
+scan reads all ones or all zeros with the wiring right, its buffers want an enable bit on
+ADBUS4-7, so try layout_init 0x00f8 0x00fb (all four high, as the SDK's interface/ft2232h.cfg
+does) and note the value that works in that file.
+The older HW-USBN-2A (Cypress) does not work with OpenOCD. Other adapters that do:
+  - WCH CH347 boards: interface/ch347.cfg.
+  - Any FT2232H/FT2232D module, or a J-Link.
+  - Not an STM32 Discovery: its ST-LINK only debugs ARM cores through ST's own protocol, and
+    OpenOCD cannot drive a RISC-V core through it.
+
+Session (the SDK's bundled openocd is x86-64 only; on the aarch64 host use Ubuntu's 0.12, which
+also installs udev rules for FTDI adapters):
+  sudo apt install openocd gdb-multiarch                                          (once)
+  cd ~/k230d-hw/LEAKCAM/firmware/bl616
+  openocd -f hw-usbn-2b.cfg -f bl616.cfg
+      expect: "tap/device found: 0x10000b6f". The debug image must be running: JTAG reaches
+      IO12-IO15 only when main() has started, so there is nothing to scan while EN is held low,
+      and code before jtag_attach() (board_init) cannot be stepped. Attach, then "monitor halt".
+  gdb-multiarch build/build_out/leakcam_bl616.elf -ex "target remote :3333"      (second terminal)
+      the T-Head riscv64-unknown-elf-gdb is x86-64 only as well
+
+Limits: hibernate (HBN) powers the core down, so the debugger loses the target at every sleep
+and has to re-attach after the wake-up reboot. To stay attached, debug in USB mode (USBC1
+plugged in: no hibernate).

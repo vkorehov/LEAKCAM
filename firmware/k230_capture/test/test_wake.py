@@ -31,14 +31,16 @@ srv = subprocess.Popen([sys.executable, os.path.join(HERE, "..", "mock_server.py
 port = re.search(r"port (\d+)", srv.stdout.readline()).group(1)
 
 
-def run(reason, scene, answer="wifi=ok", probe_mv="1650", rh="45.5", t="21.3"):
+def run(reason, scene, answer="wifi=ok", probe_mv="1650", rh="45.5", t="21.3", bat="3712"):
     """one wake: (stdout lines, was Wi-Fi asked for, sleep seconds). The sensor values arrive as
-    the agent passes them from WAKE; rh None = no AHT20 sample"""
+    the agent passes them from WAKE; rh None = no AHT20 sample, bat None = no battery reading"""
     env = dict(os.environ, LEAKCAM_TEST_SCENE=scene, LEAKCAM_PROBE_MV=probe_mv)
-    env.pop("LEAKCAM_RH", None)
-    env.pop("LEAKCAM_T", None)
+    for k in ("LEAKCAM_RH", "LEAKCAM_T", "LEAKCAM_BAT_MV"):
+        env.pop(k, None)
     if rh is not None:
         env.update(LEAKCAM_RH=rh, LEAKCAM_T=t)
+    if bat is not None:
+        env.update(LEAKCAM_BAT_MV=bat)
     p = subprocess.Popen([wake, reason], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE, text=True, env=env)
     lines, asked = [], False
@@ -71,6 +73,7 @@ with open(os.path.join(state, "server"), "w") as f:
 # first wake: no history yet -> new -> Wi-Fi -> server says no leak -> stored
 lines, asked, sleep = run("rtc", "dry")
 check(asked and sleep == 21600 and "cam 0: first frame" in lines, f"first wake: {lines}")
+check(any("battery 3712 mV" in l for l in lines), f"battery not taken from the agent: {lines}")
 check(len(files("check-*-cam0.pgm")) == 1 and len(files("check-*-cam1.pgm")) == 1, "check upload")
 check(os.path.getsize(files("check-*-cam0.pgm")[0]) == 15 + 320 * 240, "PGM size")
 check(os.path.exists(os.path.join(state, "cam0.hist.0")) or os.path.exists(os.path.join(state, "cam0.hist.1")),
@@ -86,7 +89,7 @@ check(len(files("check-*")) == 2, "nothing may be sent for an unchanged scene")
 nchecks = len(files("check-*"))
 lines, asked, sleep = run("humid", "dry", rh="87.0")
 check(asked and sleep == 21600 and "cam 0: same" in lines, f"humidity alarm, same scene: {lines}")
-lines, asked, sleep = run("rtc", "dry", probe_mv="700", rh=None)
+lines, asked, sleep = run("rtc", "dry", probe_mv="700", rh=None, bat=None)
 check(asked and sleep == 600 and "leak reported" in lines, f"probe wet, same scene: {lines}")
 lines, asked, sleep = run("leak", "dry")
 check(asked and sleep == 600 and "leak reported" in lines, f"probe wake, same scene: {lines}")
