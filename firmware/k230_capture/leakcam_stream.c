@@ -2,7 +2,7 @@
  * leakcam_stream: both LEAKCAM OV5647 cameras live to the server on RT-Smart (K230D), video always
  * with audio: H.265 (Main) per camera plus the microphone as Opus, over Enhanced RTMP (rtmp.h).
  *
- *   leakcam_stream -p <host>:<port> [-t <seconds>]      (default 5 s, run by leakcam_wake on a leak)
+ *   leakcam_stream -p <host>:<port> -t <seconds>     (run by leakcam_wake for the clip the server asks for)
  *
  * Each camera is published as rtmp://<host>:<port>/leakcam/cam<N>, starting on an IDR; both carry
  * the same microphone track. Exit 0 when both streams stayed up to the end. For the bench, point
@@ -382,7 +382,7 @@ static void on_sig(int sig) { (void)sig; g_run = 0; }
 
 int main(int argc, char **argv)
 {
-    int seconds = 5, status = 0, opt;
+    int seconds = 0, status = 0, opt;
     bool mic_on = false, bound[NCAM] = { false }, streaming = false;
     char host[64] = "", port[8] = "";
     while ((opt = getopt(argc, argv, "p:t:")) != -1) {
@@ -393,8 +393,8 @@ int main(int argc, char **argv)
         host[0] = 0;
         break;
     }
-    if (!host[0]) {
-        fprintf(stderr, "usage: %s -p host:port [-t seconds]\n", argv[0]);
+    if (!host[0] || seconds <= 0) {
+        fprintf(stderr, "usage: %s -p host:port -t seconds\n", argv[0]);
         return 2;
     }
     signal(SIGINT, on_sig);

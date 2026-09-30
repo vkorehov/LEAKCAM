@@ -12,10 +12,12 @@ POST /v1/check?reason=<r>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>&nn=<CRC>&thr=
                             check-<n>.json: the pairs a teacher labels for the next change net
                             (firmware/NN.txt). Answers {"leak":true|false}: with --leak probe
                             (default) a leak is what the BL616's probes say: the reason "leak",
-                            or the probe node below 825 mV (wet). With --nn, the answer adds
+                            or the probe node below 825 mV (wet); a leak answer asks for --video-s seconds of video
+                            ("video":<s>). With --nn, the answer adds
                             "nn":"<CRC>","thr":[t0,t1] when the board's net or thresholds differ.
-POST /v1/video              asks for a clip: the next check answer adds "video":true, and the
-                            board streams as for a leak (bench: curl -X POST <host>:<port>/v1/video)
+POST /v1/video?s=<seconds>  asks for a clip: the next check answer adds "video":<seconds>, and
+                            the board streams that long, leak or not
+                            (bench: curl -X POST '<host>:<port>/v1/video?s=30')
 GET /v1/nn/<CRC>            the --nn kmodel (CRC-32, 8 hex digits); each download leaves a file
                             nn-get-<n>.
 The leak video is not sent here: leakcam_stream publishes it live over RTMP to port 1935 of the
@@ -34,7 +36,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 counter = 0
-video_pending = False
+video_pending = 0                                  # seconds asked for, 0 = none
 lock = threading.Lock()
 
 
@@ -93,10 +95,11 @@ class Handler(BaseHTTPRequestHandler):
         n = next_n()
         global video_pending
         if url.path == "/v1/video":
+            s = int(q.get("s", ["0"])[0])
             with lock:
-                video_pending = True
-            print("video requested for the next check", flush=True)
-            self.reply({"video": True})
+                video_pending = s
+            print(f"video of {s} s requested for the next check", flush=True)
+            self.reply({"video": s})
         elif url.path == "/v1/check":
             reason = q.get("reason", [""])[0]
             mv = int(q["probe_mv"][0])
@@ -120,9 +123,10 @@ class Handler(BaseHTTPRequestHandler):
                   f"{'sample ' if 'sample' in q else ''}-> leak={leak}", flush=True)
             answer = {"leak": leak}
             with lock:
-                if video_pending and not leak:        # a leak streams anyway
-                    answer["video"] = True
-                video_pending = False
+                video = video_pending or (args.video_s if leak else 0)
+                video_pending = 0
+            if video:
+                answer["video"] = video
             if nn_model and (q["nn"][0] != nn_crc or q["thr"][0] != args.thr):
                 answer.update(nn=nn_crc, thr=[float(t) for t in args.thr.split(",")])
             self.reply(answer)
@@ -138,6 +142,7 @@ if __name__ == "__main__":
     ap.add_argument("--port", type=int, default=8000)
     ap.add_argument("--dir", default="mock_out")
     ap.add_argument("--leak", choices=["probe", "always", "never"], default="probe")
+    ap.add_argument("--video-s", type=int, default=5, help="clip length asked for on a leak")
     ap.add_argument("--nn", help="change net kmodel to offer to the boards")
     ap.add_argument("--thr", default="0.44,0.44", help="its thresholds, camera 0 and 1, two decimals")
     args = ap.parse_args()
