@@ -1,11 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">LEAKCAM Setup</string>
-    <string name="intro">Plug the LEAKCAM into USB power, scan, pick it, then enter the Wi-Fi network it should use.</string>
-    <string name="scan">Scan for LEAKCAM</string>
+    <string name="intro">Connect your LEAKCAM to Wi-Fi in four steps. The phone talks to it over Bluetooth, so stay within a few metres of it.</string>
+
+    <!-- the four steps, shown as a list; the current one is highlighted -->
+    <string name="step1">1. Plug the LEAKCAM into USB power</string>
+    <string name="step2">2. Find it</string>
+    <string name="step3">3. Enter your Wi-Fi network</string>
+    <string name="step4">4. Pair and save</string>
+
+    <string name="scan">Find LEAKCAM</string>
     <string name="ssid">Wi-Fi name (SSID)</string>
     <string name="password">Wi-Fi password</string>
     <string name="show_password">Show password</string>
-    <string name="send">Save to LEAKCAM</string>
+    <string name="send">Pair and save</string>
     <string name="device_entry">%1$s   (%2$d dBm)</string>
+
+    <!-- what to do now, in the box under the steps -->
+    <string name="help_plug">Plug the LEAKCAM into a USB charger or a computer with its USB-C cable. It can be set up only while it is on USB power: being able to plug it in proves it is yours, so nobody outside your home can pair with it. Then tap Find LEAKCAM.</string>
+    <string name="help_scanning">Looking for LEAKCAM boards nearby…</string>
+    <string name="help_none_found">No LEAKCAM found. Check that it is plugged into USB power and within a few metres, then tap Find LEAKCAM again.</string>
+    <string name="help_none_found_location">No LEAKCAM found. Check that it is plugged into USB power and within a few metres, and that Location is on (this Android version needs it for Bluetooth scanning), then tap Find LEAKCAM again.</string>
+    <string name="help_pick">Pick your LEAKCAM (the one with the strongest signal is usually the nearest), then enter the Wi-Fi network it should use.</string>
+    <string name="help_wifi">Enter the name and password of the Wi-Fi network the LEAKCAM should use. It must be a 2.4 GHz network: the LEAKCAM does not see 5 GHz. If your router shows separate names for the two bands, pick the 2.4 GHz one. Leave the password empty for an open network. Then tap Pair and save.</string>
+    <string name="help_connecting">Connecting to %1$s…</string>
+    <string name="help_pairing">Your phone now asks to pair with %1$s.\n\n• Tap Pair (on some phones: Allow or OK).\n• There is no PIN to type: the LEAKCAM has no screen or buttons.\n• If no request appears, pull down the notification shade and tap the Bluetooth pairing notification.\n\nPairing is needed only once. It keeps the Wi-Fi password encrypted on its way to the LEAKCAM.</string>
+    <string name="help_already_paired">%1$s is already paired with this phone. Sending the Wi-Fi settings…</string>
+    <string name="help_sending">Paired. Sending the Wi-Fi settings…</string>
+    <string name="help_done">Done. %1$s stored the Wi-Fi network \"%2$s\".\n\nYou can unplug it now. It connects to Wi-Fi at its next scheduled check. If it never reports, the name or password was wrong: plug it in again and repeat.</string>
+
+    <!-- problems -->
+    <string name="err_no_bluetooth">This phone has no Bluetooth, which the setup needs.</string>
+    <string name="err_permission">Allow Bluetooth access (Nearby devices) so the app can find the LEAKCAM, then tap again.</string>
+    <string name="err_permission_granted">Bluetooth access allowed. Tap again to continue.</string>
+    <string name="err_bluetooth_off">Bluetooth is off. Turn it on, then tap again.</string>
+    <string name="err_scan">Scanning failed (error %1$d). Turn Bluetooth off and on, then tap Find LEAKCAM again.</string>
+    <string name="err_pick">Tap Find LEAKCAM and pick your board first.</string>
+    <string name="err_ssid">The Wi-Fi name must be 1 to 32 characters long.</string>
+    <string name="err_password">The Wi-Fi password must be 8 to 63 characters long, or empty for an open network.</string>
+    <string name="err_timeout">The LEAKCAM did not answer. Check it is still plugged into USB power and nearby, then try again. If a pairing request is still open on the phone, accept it first.</string>
+    <string name="err_disconnected">The LEAKCAM disconnected (status %1$d). Keep it on USB power and nearby, then try again.</string>
+    <string name="err_pairing_refused">Pairing did not go through.\n\n• Was the request declined, or did it time out? Try again and tap Pair.\n• Is the LEAKCAM on USB power? It refuses pairing on battery.</string>
+    <string name="err_pairing_stale">The LEAKCAM no longer recognises this phone (it was reset, or paired again elsewhere).\n\nOpen the phone\'s Bluetooth settings, tap %1$s, choose Forget (or Unpair), then tap Pair and save again.</string>
+    <string name="err_no_service">This device is not a LEAKCAM in setup mode. Keep it on USB power and scan again.</string>
+    <string name="err_refused">The LEAKCAM refused the %1$s (error %2$d). Check it and try again.</string>
+    <string name="err_write">Could not send the %1$s. Try again.</string>
+    <string name="what_ssid">Wi-Fi name</string>
+    <string name="what_psk">Wi-Fi password</string>
+    <string name="what_commit">save command</string>
 </resources>
