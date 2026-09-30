@@ -2,7 +2,6 @@
 
 #include <netdb.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/time.h>
@@ -70,23 +69,9 @@ int net_send_all(int fd, const void *p, size_t n)
 int http_post(int fd, const char *host, const char *path, const char *type, long len)
 {
     char head[256];
-    int n;
-    if (len < 0)
-        n = snprintf(head, sizeof(head), "POST %s HTTP/1.1\r\nHost: %s\r\nContent-Type: %s\r\n"
-                     "Transfer-Encoding: chunked\r\nConnection: close\r\n\r\n", path, host, type);
-    else
-        n = snprintf(head, sizeof(head), "POST %s HTTP/1.1\r\nHost: %s\r\nContent-Type: %s\r\n"
-                     "Content-Length: %ld\r\nConnection: close\r\n\r\n", path, host, type, len);
+    int n = snprintf(head, sizeof(head), "POST %s HTTP/1.1\r\nHost: %s\r\nContent-Type: %s\r\n"
+                 "Content-Length: %ld\r\nConnection: close\r\n\r\n", path, host, type, len);
     return n > 0 && n < (int)sizeof(head) ? net_send_all(fd, head, (size_t)n) : -1;
-}
-
-int http_chunk(int fd, const void *p, size_t n)
-{
-    char size[16];
-    int k = snprintf(size, sizeof(size), "%zx\r\n", n);
-    if (net_send_all(fd, size, (size_t)k) < 0 || (n && net_send_all(fd, p, n) < 0))
-        return -1;
-    return net_send_all(fd, "\r\n", 2);
 }
 
 int http_reply(int fd, char *body, size_t cap)
