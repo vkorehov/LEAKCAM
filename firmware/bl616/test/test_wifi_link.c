@@ -413,8 +413,87 @@ static void t_restart(void)
     CHECK(one_status(m, WCP_STATE_JOINING), "changes reported again once the K230 spoke");
 }
 
+/* ---------------------------------------------------------------- the credential check */
+
+static int check_events[16], ncheck_events;
+static void check_ev(int code) { if (ncheck_events < 16) check_events[ncheck_events++] = code; }
+
+static void t_claim(void)
+{
+    CHECK(wifi_link_claim(WIFI_OWNER_K230) && wifi_link_claim(WIFI_OWNER_K230), "K230 claim");
+    CHECK(!wifi_link_claim(WIFI_OWNER_CHECK), "check claimed the radio during a K230 session");
+    wifi_link_release(WIFI_OWNER_CHECK);
+    CHECK(!wifi_link_claim(WIFI_OWNER_CHECK), "released by the wrong owner");
+    wifi_link_release(WIFI_OWNER_K230);
+    CHECK(wifi_link_claim(WIFI_OWNER_CHECK), "check claim after the session");
+    CHECK(!wifi_link_claim(WIFI_OWNER_K230), "K230 session started during a check");
+    wifi_link_release(WIFI_OWNER_CHECK);
+}
+
+/* a check on USB power after a K230 session brought the bridge up (a leak while plugged in) */
+static void t_check_after_bridge(void)
+{
+    unsigned m = nsent;
+    int c = connects;
+
+    ncheck_events = 0;
+    calls[0] = 0;
+    wifi_link_stop();
+    wifi_link_local_begin(check_ev);
+    CHECK(ncheck_events == 1 && check_events[0] == CODE_WIFI_ON_MGMR_DONE, "manager ready not passed on");
+    CHECK(!strstr(calls, "wifi_task") && !strstr(calls, "fhost") && !strstr(calls, "tcpip"),
+          "Wi-Fi started again: %s", calls);
+    CHECK(filter(0x0800, 60) == NETHUB_WIFI_RX_FILTER_LOCAL && filter(0x0806, 60) == NETHUB_WIFI_RX_FILTER_LOCAL,
+          "check's DHCP/ARP not kept on the BL616");
+    event(CODE_WIFI_ON_CONNECTED);
+    event(CODE_WIFI_ON_MGMR_DONE);
+    CHECK(ncheck_events == 3 && check_events[1] == CODE_WIFI_ON_CONNECTED, "events not passed to the check");
+    CHECK(connects == c, "stored join during the check");
+    CHECK(nsent == m, "check's link changes reported to the K230");
+    wifi_link_local_end();
+    CHECK(filter(0x0800, 60) == NETHUB_WIFI_RX_FILTER_HOST, "filter not back to the bridge");
+    event(CODE_WIFI_ON_CONNECTED);
+    CHECK(ncheck_events == 3, "events still passed after the check");
+    CHECK(wifi_link_start() == 0 && connects == c + 1 && conn.use_dhcp == 0,
+          "next K230 session did not rejoin the stored network");
+    CHECK(wifi_link_start() == 0 && connects == c + 1, "rejoined twice");
+}
+
+#ifdef CHECK_FIRST
+/* the usual case: a check before any K230 session, so no bridge yet (a binary of its own:
+ * wifi_link.c keeps its start-up state) */
+static void t_check_first(void)
+{
+    stored_ssid = "leak-net";
+    stored_psk = "0123456789";
+    ncheck_events = 0;
+    wifi_link_local_begin(check_ev);
+    CHECK(!strcmp(calls, "tcpip events wifi_task fhost "), "check start order: %s", calls);
+    CHECK(bootstraps == 0 && ngpio == 0, "check touched NetHub or the SDIO pads (K230 unpowered)");
+    event(CODE_WIFI_ON_INIT_DONE);
+    event(CODE_WIFI_ON_MGMR_DONE);
+    CHECK(mgmr_started == 1 && ncheck_events == 2 && check_events[1] == CODE_WIFI_ON_MGMR_DONE,
+          "manager start not passed on");
+    CHECK(connects == 0, "stored credentials joined during the check");
+    wifi_link_local_end();
+
+    calls[0] = 0;
+    CHECK(wifi_link_start() == 0, "bridge start after a check");
+    CHECK(!strcmp(calls, "rx_filter bootstrap vchan "), "bridge start after a check: %s", calls);
+    CHECK(connects == 1 && conn.use_dhcp == 0, "stored network not joined for the K230");
+}
+#endif
+
 int main(void)
 {
+#ifdef CHECK_FIRST
+    t_check_first();
+    if (fails)
+        printf("wifi_link (check first): FAIL (%d)\n", fails);
+    else
+        printf("wifi_link: credential check before the bridge, then the bridge, pass\n");
+    return fails != 0;
+#endif
     t_start();
     t_filter();
     t_boot_join();
@@ -423,10 +502,12 @@ int main(void)
     t_scan();
     t_odd();
     t_restart();
+    t_claim();
+    t_check_after_bridge();
     if (fails)
         printf("wifi_link: FAIL (%d)\n", fails);
     else
         printf("wifi_link: receive filter, start order, stored join, link states, JOIN/LEAVE/SCAN, "
-               "protocol layout all pass\n");
+               "protocol layout, radio claim, check after a K230 session all pass\n");
     return fails != 0;
 }

@@ -280,7 +280,8 @@ make -C firmware/k230_capture test          # change detector, image history (mi
                                             # the wake algorithm against mock_server.py (change net stubbed)
 make -C firmware/bl616/test                 # link protocol (seq/ACK/NAK codes/resends, trace), AHT20 maths,
                                             # always-on clock/state, retained event log, wifi_link.c (receive
-                                            # filter, control channel, layout)
+                                            # filter, control channel, layout, radio owner, credential
+                                            # check's local mode), the check's result reading
 make -C firmware/k230_agent test            # agent link code against the BL616's over a lossy socket pair
 make -C firmware/k230_board/rtsmart/drivers/bl616_nethub/test   # K230 Wi-Fi driver on a simulated BL616 SDU
 make -C firmware/k230_capture clean; make -C firmware/bl616/test clean; make -C firmware/k230_agent clean

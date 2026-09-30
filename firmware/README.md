@@ -97,8 +97,14 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
 ### USB / BLE mode
 - On boot, if PGOOD is low: FreeRTOS + BLE (bring-up as the SDK's `examples/btble/peripheral`),
   advertising as `LEAKCAM-xxyy` with one service, `4c43a000-4c45-4b43-414d-000000000001`:
-  SSID (...0002), passphrase (...0003), commit (...0004, write 0x01). All three need an encrypted
-  link. The credentials are stored in easyflash on the BL616, which is the Wi-Fi device.
+  SSID (...0002), passphrase (...0003), commit (...0004), status (...0005, read/notify). All need
+  an encrypted link. Commit 0x01 checks before it stores: the BL616 joins the network, gets an
+  address by DHCP and fetches `http://connectivitycheck.gstatic.com/generate_204` itself
+  (`wifi_check.c`; the K230 is off and no K230 session starts meanwhile, so the MAC's DHCP is
+  the BL616's), reports each step and the result on status (`wifi_check_calc.h`: wrong password,
+  network not found, no address, no DNS, no internet, login page), and stores only after the 204.
+  Commit 0x02 stores without checking. The credentials are stored in easyflash on the BL616,
+  which is the Wi-Fi device.
   The phone side is the Android app in [android/](../android/README.md).
 - Pairing is LE Secure Connections Just Works (no display, no buttons) and is accepted only while
   USB power is present: plugging in is the proof of physical access.

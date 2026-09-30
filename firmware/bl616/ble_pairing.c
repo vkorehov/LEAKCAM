@@ -22,6 +22,8 @@
 
 #include "evlog.h"
 #include "usb_power.h"
+#include "wifi_check.h"
+#include "wifi_link.h"
 
 /* the last field is 48 bits and BT_UUID_128_ENCODE shifts it by up to 40: it must be a 64-bit literal */
 #define LEAKCAM_UUID_BYTES(n) BT_UUID_128_ENCODE(0x4c43a000, 0x4c45, 0x4b43, 0x414d, (n##ULL))
@@ -30,6 +32,8 @@
 static struct bt_conn *active_conn;
 static char ssid[33];
 static char psk[64];
+static uint8_t status[3];                /* state, detail LE16: the STATUS characteristic */
+static volatile bool checking;
 
 /* ---------------- GATT ---------------- */
 
@@ -60,21 +64,82 @@ static ssize_t psk_write(struct bt_conn *conn, const struct bt_gatt_attr *attr,
     return write_str(buf, len, offset, psk, sizeof(psk));
 }
 
+static void set_status(enum wifi_check_state st, uint16_t detail);
+
+/* stored on the BL616: it is the Wi-Fi device, and the K230 is usually powered off */
+static void store(const char *s, const char *k)
+{
+    if (ef_set_env_blob("wifi_ssid", s, strlen(s)) != EF_NO_ERR ||
+        ef_set_env_blob("wifi_psk", k, strlen(k)) != EF_NO_ERR) {
+        set_status(WCHK_SAVE_FAILED, 0);
+        return;
+    }
+    LOG_I("ble: Wi-Fi credentials stored for \"%s\"\r\n", s);
+    evlog_add(EV_BLE_CREDS, 0, 0);
+    set_status(WCHK_SAVED, 0);
+}
+
+static void progress(enum wifi_check_state st, uint16_t detail)
+{
+    set_status(st, detail);
+}
+
+static void check_task(void *arg)
+{
+    static char s[33], k[64];            /* this check's copy: the phone may write again meanwhile */
+    uint16_t detail;
+
+    (void)arg;
+    memcpy(s, ssid, sizeof(s));
+    memcpy(k, psk, sizeof(k));
+    enum wifi_check_state st = wifi_check_run(s, strlen(s), k, strlen(k), progress, &detail);
+    wifi_link_release(WIFI_OWNER_CHECK);
+    if (st != WCHK_INTERNET)
+        set_status(st, detail);
+    else if (active_conn)
+        store(s, k);
+    else                                 /* the phone left: it told its user nothing was stored */
+        LOG_W("ble: check passed but the phone is gone, not stored\r\n");
+    checking = false;
+    vTaskDelete(NULL);
+}
+
 static ssize_t commit_write(struct bt_conn *conn, const struct bt_gatt_attr *attr,
                             const void *buf, u16_t len, u16_t offset, u8_t flags)
 {
     (void)conn; (void)attr; (void)flags;
-    if (offset != 0 || len != 1 || ((const uint8_t *)buf)[0] != 0x01)
+    uint8_t cmd = len == 1 ? ((const uint8_t *)buf)[0] : 0;
+    if (offset != 0 || (cmd != 0x01 && cmd != 0x02) || ssid[0] == 0)
         return BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
-    if (ssid[0] == 0)
-        return BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
-    /* stored on the BL616: it is the Wi-Fi device, and the K230 is usually powered off */
-    if (ef_set_env_blob("wifi_ssid", ssid, strlen(ssid)) != EF_NO_ERR ||
-        ef_set_env_blob("wifi_psk", psk, strlen(psk)) != EF_NO_ERR)
-        return BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
-    LOG_I("ble: Wi-Fi credentials stored for \"%s\"\r\n", ssid);
-    evlog_add(EV_BLE_CREDS, 0, 0);
+    if (checking)
+        return len;                      /* the running check reports */
+    if (cmd == 0x02) {
+        store(ssid, psk);
+        return len;
+    }
+    /* the check blocks for up to a minute: its own task, never the BLE host's */
+    if (!wifi_link_claim(WIFI_OWNER_CHECK)) {
+        set_status(WCHK_BUSY, 0);
+        return len;
+    }
+    checking = true;
+    if (xTaskCreate(check_task, "wchk", 1536, NULL, 3, NULL) != pdPASS) {
+        checking = false;
+        wifi_link_release(WIFI_OWNER_CHECK);
+        set_status(WCHK_BUSY, 0);
+    }
     return len;
+}
+
+static ssize_t status_read(struct bt_conn *conn, const struct bt_gatt_attr *attr,
+                           void *buf, u16_t len, u16_t offset)
+{
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, status, sizeof(status));
+}
+
+static void status_ccc_changed(const struct bt_gatt_attr *attr, u16_t value)
+{
+    (void)attr; (void)value;
 }
 
 static struct bt_gatt_attr prov_attrs[] = {
@@ -85,8 +150,21 @@ static struct bt_gatt_attr prov_attrs[] = {
                            BT_GATT_PERM_WRITE_ENCRYPT, NULL, psk_write, NULL),
     BT_GATT_CHARACTERISTIC(LEAKCAM_UUID(0x000000000004), BT_GATT_CHRC_WRITE,
                            BT_GATT_PERM_WRITE_ENCRYPT, NULL, commit_write, NULL),
+    /* index 8 is its value: set_status() notifies through it */
+    BT_GATT_CHARACTERISTIC(LEAKCAM_UUID(0x000000000005), BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
+                           BT_GATT_PERM_READ_ENCRYPT, status_read, NULL, NULL),
+    BT_GATT_CCC(status_ccc_changed, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE_ENCRYPT),
 };
 static struct bt_gatt_service prov_svc = BT_GATT_SERVICE(prov_attrs);
+
+static void set_status(enum wifi_check_state st, uint16_t detail)
+{
+    status[0] = (uint8_t)st;
+    status[1] = (uint8_t)detail;
+    status[2] = (uint8_t)(detail >> 8);
+    if (active_conn)
+        bt_gatt_notify(active_conn, &prov_attrs[8], status, sizeof(status));   /* STATUS value */
+}
 
 /* ---------------- pairing policy ---------------- */
 
