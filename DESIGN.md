@@ -14,7 +14,7 @@ This file records what was decided and why. Details live in the documents it lin
 | K230 board port (boot, NAND, pins, kernel) | [firmware/k230_board/README.md](firmware/k230_board/README.md) |
 | Capture, history, streaming (video with audio) on RT-Smart | [firmware/k230_capture/rtsmart/README.md](firmware/k230_capture/rtsmart/README.md) |
 | Wi-Fi (BL616 NetHub + K230 SDIO driver) | [firmware/bl616/WIFI.md](firmware/bl616/WIFI.md) |
-| Neural networks, image quality | [firmware/k230_nn/README.md](firmware/k230_nn/README.md) |
+| Change net | [firmware/k230_nn/README.md](firmware/k230_nn/README.md) |
 | LED strips | [LED_STRIPS.txt](LED_STRIPS.txt) |
 | PCB stack and gerbers | [LAYERS.txt](LAYERS.txt), [FAB_NOTES.txt](FAB_NOTES.txt) |
 | Off-board parts (battery, NTC, cameras, cables) | [EXTERNAL_PARTS.md](EXTERNAL_PARTS.md) |
@@ -347,17 +347,11 @@ is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
 
 ### 5.6 Imaging pipeline per camera
 
-Today `leakcam_wake` runs capture -> imgdiff against the history -> server (5.1). The plan adds
-on-device checks between capture and the server:
-
 ```
 capture (LEDs at 100 %, AE settled)
- -> image quality (imgqual.c): too dark / clipped -> LED step, recapture (max 2)
-                               sharpness < 0.35 x ref or contrast < 0.5 x ref -> INOPERATIONAL (lens)
- -> imgdiff vs the history view: low-threshold gate, its job is recall        (built)
- -> change net (feature maps vs stored reference embedding): no meaningful change -> done
- -> leak net (current vs dry base): P(inoperational) first, then severity
- -> server check, history                                                      (built)
+ -> imgdiff vs the history view: a low-threshold gate, its job is recall
+ -> change net on the KPU where imgdiff saw a change: light only -> not changed
+ -> anything changed, or a sensor alarm -> server check (leak / no leak), history
 ```
 
 - **Change detection (`imgdiff.c`).**
@@ -377,15 +371,14 @@ capture (LEDs at 100 %, AE settled)
 - **LED control.** Start at maximum current, because 2 m must be lit. Back off only when
   highlights clip. White and IR are independent; IR is useful only with the IR-cut filter
   removed.
-- **Neural networks** ([firmware/k230_nn/README.md](firmware/k230_nn/README.md)).
-  - **Leak net.** The leakcam U-Net plus a camera-failure branch. It compiles to a 275 KB
-    nncase 2.11 kmodel and matches TensorFlow in the K230 simulator. Its weights come from the
-    Pi USB camera, so it needs LEAKCAM data and a retrain. Use float32 input.
-  - **Change net.** MobileNetV2-0.35 feature maps at stride 16 (20x15 cells), compared per cell
-    against a reference embedding stored on NAND. Per-cell rather than global, because a small
-    puddle changes 1-3 of 300 cells. Needs int16 quantisation; must be trained.
-  - **Focus and LED level.** No network is needed: classic signals (percentiles, clipping,
-    Sobel sharpness ratio against the reference).
+- **Change net** ([firmware/NN.txt](firmware/NN.txt): design and retraining plan; `change.[ch]`).
+  - MobileNetV2-0.35 with frozen ImageNet weights up to stride 16: a 15x20x192 feature map of
+    the reduced frame, int16 kmodel (372 KB), 69 MMAC.
+  - Distance: the max over cells of (1 - cosine) between the history view and the current
+    frame. Per cell, because a small puddle changes 1-3 of 300 cells.
+  - Below 0.44, the largest distance of any lighting or AGC pair, the change is light only
+    and the wake sleeps without Wi-Fi. The history view stays, so a growing leak is still
+    compared with the dry floor.
 - **Encoders.** H.265 (Main) only, one VENC channel per camera.
 
 ### 5.7 Streaming and audio (built, not run)
@@ -446,9 +439,7 @@ back to U13's GND pad beside MICPL; 1 µF 0402 fits better than the 0805 (footpr
   exists.
 - **LEAKCAM dataset.**
   - Fisheye captures from both cameras, white and IR, at several LED levels.
-  - Retrain the leak net (and replace its wall-band exposure reference) and train the change
-    net.
-  - Re-measure every threshold.
+  - Re-measure every threshold; retrain the change net as in [firmware/NN.txt](firmware/NN.txt).
 
 ## 8. Check first on the board
 

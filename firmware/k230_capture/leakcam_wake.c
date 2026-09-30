@@ -4,10 +4,11 @@
  *   leakcam_wake <cold|leak|rtc|humid>
  *
  *   1. capture: both cameras, LEDs on for the shot, one frame each after AE/AWB settled;
- *   2. compare each frame, reduced to 320x240, with what the history shows (cam<N>.hist);
- *      nothing changed on any camera and no sensor alarm -> sleep. A sensor alarm (the wake
- *      came from the probes or the humidity alarm, or the probe node reads wet) is reported
- *      whatever the cameras see;
+ *   2. compare each frame, reduced to 320x240, with what the history shows (cam<N>.hist):
+ *      imgdiff, and where it sees a change, the change net on the KPU (change.h) to drop
+ *      changes of light only; nothing changed on any camera and no sensor alarm -> sleep. A
+ *      sensor alarm (the wake came from the probes or the humidity alarm, or the probe node
+ *      reads wet) is reported whatever the cameras see;
  *   3. something is new -> ask the agent for Wi-Fi ("wifi" on stdout, the answer "wifi=ok" or
  *      "wifi=fail,<code>" on stdin); no Wi-Fi, no server config or no connection -> sleep;
  *   4. POST /v1/check?reason=<reason>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C> with the
@@ -36,6 +37,7 @@
 #include <unistd.h>
 
 #include "cap.h"
+#include "change.h"
 #include "history.h"
 #include "imgdiff.h"
 #include "led.h"
@@ -239,6 +241,13 @@ int main(int argc, char **argv)
         if (f[i].have_view)
             imgdiff_compare(f[i].view, f[i].cur, &cfg, &f[i].diff);
         f[i].changed = !f[i].have_view || f[i].diff.changed;   /* no history yet: new */
+        if (f[i].have_view && f[i].changed) {
+            /* imgdiff also trips on light; the change net tells a changed scene. Light only:
+             * the view stays as it is, so a leak that grows is still measured against dry */
+            float d = change_distance(f[i].view, f[i].cur);
+            printf("cam %u: change net %.3f\n", f[i].slot, d);
+            f[i].changed = d < 0 || d >= CHANGE_THRESHOLD;   /* the net failed: report */
+        }
         any |= f[i].changed;
         printf("cam %u: %s\n", f[i].slot, !f[i].have_view ? "first frame" : f[i].changed ? "changed" : "same");
     }

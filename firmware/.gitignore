@@ -9,10 +9,11 @@
 /k230_capture/test/test_history
 /bl616/test/test_aht20
 /bl616/test/test_aon
-/k230_capture/test/test_imgqual
-/k230_capture/test/test_imgqual_synth
-/k230_capture/test/test_audio
 /k230_capture/test/leakcam_wake_host
 /k230_capture/test/fake_stream
 /k230_board/rtsmart/drivers/bl616_nethub/test/test_nethub
 /k230_agent/test/test_link_e2e
+/k230_capture/test/test_rtmp
+/k230_capture/test/libopus.a
+!/NN.txt
+!/DEBUG.txt

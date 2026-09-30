@@ -13,10 +13,9 @@ OPUS_INC := -I$(OPUS_DIR)/include -I$(OPUS_DIR)/celt -I$(OPUS_DIR)/silk -I$(OPUS
 CORE  := imgdiff.c refstore.c history.c
 HDRS  := imgdiff.h refstore.h history.h cap.h
 
-test: test/test_imgdiff test/test_history test/test_imgqual_synth test/test_rtmp test/leakcam_wake_host test/fake_stream
+test: test/test_imgdiff test/test_history test/test_rtmp test/leakcam_wake_host test/fake_stream
 	./test/test_imgdiff
 	./test/test_history
-	./test/test_imgqual_synth
 	python3 test/test_rtmp.py test/test_rtmp test/sample.h265 $(WAKE_STATE).flv   # FFMPEG_BIN: FFmpeg 7.1+
 	python3 test/test_wake.py test/leakcam_wake_host $(WAKE_STATE)
 
@@ -26,19 +25,16 @@ test/test_imgdiff: test/test_imgdiff.c $(CORE) $(HDRS)
 test/test_history: test/test_history.c $(CORE) $(HDRS)
 	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_history.c $(CORE) $(MINIZ) -lm
 
-# the wake algorithm: leakcam_wake unchanged, cameras and LEDs from test/wake_stub.c, run by
+# the wake algorithm: leakcam_wake unchanged, cameras and LEDs from test/wake_stub.c, the change
+# net's distance from test/change_stub.c (LEAKCAM_TEST_CHANGE), run by
 # test/test_wake.py against mock_server.py; test/fake_stream stands in for leakcam_stream -p
 WAKE_STATE := /tmp/leakcam_wake_test
-test/leakcam_wake_host: leakcam_wake.c netclient.c netclient.h test/wake_stub.c $(CORE) $(HDRS) led.h
+test/leakcam_wake_host: leakcam_wake.c netclient.c netclient.h test/wake_stub.c test/change_stub.c change.h $(CORE) $(HDRS) led.h
 	cc -O2 -Wall -Wextra -Werror -I. -DSTATE_DIR='"$(WAKE_STATE)"' -DSTREAM_PROG='"$(CURDIR)/test/fake_stream"' \
-	   -DNET_TIMEOUT_S=2 -o $@ leakcam_wake.c netclient.c test/wake_stub.c $(CORE) $(MINIZ) -lm
+	   -DNET_TIMEOUT_S=2 -o $@ leakcam_wake.c netclient.c test/wake_stub.c test/change_stub.c $(CORE) $(MINIZ) -lm
 
 test/fake_stream: test/fake_stream.c
 	cc -O2 -Wall -Wextra -Werror -DFAKE_STREAM_LOG='"$(WAKE_STATE).stream"' -o $@ test/fake_stream.c
-
-# image quality checks and LED step on synthetic frames
-test/test_imgqual_synth: test/test_imgqual_synth.c imgqual.c imgqual.h imgdiff.h
-	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_imgqual_synth.c imgqual.c -lm
 
 # the live clip: Enhanced RTMP v2 publish of H.265 + Opus to `ffmpeg -listen`, checked by ffprobe/ffmpeg
 test/test_rtmp: test/test_rtmp.c rtmp.c rtmp.h netclient.c netclient.h test/libopus.a
@@ -49,12 +45,8 @@ test/libopus.a: $(OPUS_SRC)
 	cd test/opus_obj && cc -O2 -w $(OPUS_DEFS) $(addprefix -I../../,$(OPUS_INC:-I%=%)) -c $(addprefix ../../,$(OPUS_SRC))
 	ar rcs $@ test/opus_obj/*.o && rm -rf test/opus_obj
 
-# measurement tool, needs leakcam PGM pairs (firmware/k230_nn/README.md section 5): not part of `test`
-test/test_imgqual: test/test_imgqual.c imgqual.c imgqual.h imgdiff.c imgdiff.h
-	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_imgqual.c imgqual.c imgdiff.c -lm
-
 clean:
-	rm -f test/test_imgdiff test/test_history test/test_imgqual test/test_imgqual_synth test/test_rtmp \
+	rm -f test/test_imgdiff test/test_history test/test_rtmp \
 	      test/leakcam_wake_host test/fake_stream test/libopus.a
 
 .PHONY: test clean
