@@ -34,6 +34,7 @@ REVISION = "34."
 DOC_TYPES = {".sldprt": 1, ".sldasm": 2, ".slddrw": 3}   # swDocPART, swDocASSEMBLY, swDocDRAWING
 SILENT = 1                              # swOpenDocOptions_Silent / swSaveAsOptions_Silent
 TEMPLATE_PART = 8                       # swUserPreferenceStringValue_e.swDefaultTemplatePart
+TEMPLATE_ASSEMBLY = 9                   # swDefaultTemplateAssembly
 
 # one thread owns COM and the SolidWorks object; everything goes through com()
 _com = concurrent.futures.ThreadPoolExecutor(max_workers=1, initializer=pythoncom.CoInitialize)
@@ -45,9 +46,12 @@ def com(fn):
 
 
 def get(obj, name):
-    """a zero-argument member: late binding hands some (RevisionNumber, GetTitle) over as
-    properties already read, others as methods still to call"""
+    """a zero-argument member: late binding hands some (RevisionNumber, GetMathUtility, GetFaces)
+    over as properties already read, others as methods still to call. A COM object that came back
+    is callable too (its default member) and must not be called."""
     v = getattr(obj, name)
+    if isinstance(v, win32com.client.CDispatch):
+        return v
     return v() if callable(v) else v
 
 
@@ -115,7 +119,11 @@ def open_document(path: str) -> str:
         else:
             model = app.LoadFile4(path, "r", app.GetImportFileData(path), err)
         if model is None:
-            raise RuntimeError(f"SolidWorks could not open {path} (error {err.value})")
+            # a STEP/IGES import builds on the default templates: a stale one fails with error 1
+            stale = [t for t in (app.GetUserPreferenceStringValue(i) for i in (TEMPLATE_PART, TEMPLATE_ASSEMBLY))
+                     if not os.path.exists(t)]
+            hint = f"; default template missing: {', '.join(stale)}" if stale else ""
+            raise RuntimeError(f"SolidWorks could not open {path} (error {err.value}){hint}")
         return f"opened {get(model, 'GetTitle')}"
     return com(run)
 
@@ -168,7 +176,13 @@ def run_python(code: str) -> str:
     zero-argument members (late binding returns some as values, some as methods), byref_int() for
     [out] long arguments, nothing() for a Nothing object argument, win32com, pythoncom. print() output is
     returned; assign `result` to return a value. Constants are numbers (see the SolidWorks API help,
-    swconst). Example: model.FeatureManager.FeatureExtrusion3(...).
+    swconst). Units are metres.
+
+    Found on SolidWorks 2026: zero-argument members may be properties (sw.GetMathUtility,
+    face.GetBox, feature.GetFaces, feature.Name) - read them with get(). Top Plane sketch (x, y) is
+    model (X, -Z). FeatureExtrusion3's third argument (Dir) reverses a boss, the second (Flip) does
+    not; FeatureCut4's first direction goes against the sketch normal. A start offset (T0 = 3)
+    goes along the normal. Sketch with SketchManager.AddToDB = True so points do not snap.
     """
     def run():
         out = io.StringIO()
