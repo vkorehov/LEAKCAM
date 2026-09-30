@@ -226,10 +226,10 @@ no server configured (/sdcard/leakcam/server) --------------> sleep 1 h
   | wifi=ok
 POST /v1/check?reason=&probe_mv=&bat_mv=&rh=&t=&nn=&thr=&cam<i>=, both reduced frames (+ views)
   |-- server not reached ------------------------------------> sleep 1 h
-  |-- {"leak":true}: leakcam_stream -p streams 5 s of H.265 + audio live (RTMP)
+  |-- {"leak":true}: leakcam_stream -p streams "video":<s> seconds of H.265 + audio live (RTMP)
   |                  from both cameras; nothing stored -------> sleep 10 min
   |-- {"leak":false}: the new frames go to the history ------> sleep 6 h
-  |   ("video":true: the same 5 s stream first, as asked for on the server)
+  |   ("video":<s>: the same stream first, when someone asked for a clip)
   (either answer may offer a change net: GET /v1/nn/<CRC>, stored for the next wake)
 ```
 
@@ -255,7 +255,7 @@ is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
 
 | Request | Body | Reply |
 |---|---|---|
-| `POST /v1/check?reason=<reasons>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>&nn=<CRC>&thr=<cam0>,<cam1>&cam<i>=<state>,<distance>[&sample=1]` (reasons joined by `+`, sent as `%2B`; state first, same, changed or light) | binary PGMs, 320x240, back to back: per camera its frame, then its history view where imgdiff saw a change | `{"leak":true}` or `{"leak":false}`, plus `"nn":"<CRC>","thr":[<cam0>,<cam1>]` when the server has another change net or thresholds, and `"video":true` when someone asked for a clip (streamed as for a leak) |
+| `POST /v1/check?reason=<reasons>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>&nn=<CRC>&thr=<cam0>,<cam1>&cam<i>=<state>,<distance>[&sample=1]` (reasons joined by `+`, sent as `%2B`; state first, same, changed or light) | binary PGMs, 320x240, back to back: per camera its frame, then its history view where imgdiff saw a change | `{"leak":true}` or `{"leak":false}`, plus `"nn":"<CRC>","thr":[<cam0>,<cam1>]` when the server has another change net or thresholds, and `"video":<seconds>` when the server wants a clip, for a leak or on request: its length is the server's (the board caps it at 300 s) |
 | `GET /v1/nn/<CRC>` | | the kmodel ([firmware/NN.txt](firmware/NN.txt) 3.4) |
 | RTMP `rtmp://<host>:1935/leakcam/cam<N>` (publish, to MediaMTX) | 5 s live: the camera's H.265 from an IDR (Enhanced RTMP) plus the microphone (Opus 16 kHz mono, E-RTMP v2); both cameras at once | the RTMP server's `NetStream.Publish.Start` |
 
@@ -389,11 +389,12 @@ capture (LEDs at 100 %, AE settled)
 ### 5.7 Streaming and audio (built, not run)
 
 - **Streaming (`leakcam_stream`).**
-  - Push mode (`-p host:port -t seconds`), used by `leakcam_wake` on a leak: both cameras live
+  - Push mode (`-p host:port -t seconds`), used by `leakcam_wake` when the server's answer asks
+    for a clip (`"video":<seconds>`, on a leak or on request; at most 300 s): both cameras live
     over RTMP to the server (port 1935, `leakcam/cam<N>`), each H.265 with the microphone: video
     is always with audio. The bench watches the same push on a PC (MediaMTX or `ffplay -listen`);
     there is no RTSP server on the board.
-  - Set for battery: 500 kbit/s and 15 fps per camera, one IDR per clip (a 5 s clip is about
+  - Set for battery: 500 kbit/s and 15 fps per camera, an IDR every 10 s, so one per short clip (a 5 s clip is about
     0.35 MB per camera). Bytes are Wi-Fi airtime and frames are ISP and encoder work.
   - Hardware end to end: each camera's VICAP/ISP channel is bound to its H.265 encoder
     (`kd_mpi_sys_bind`), so frames never pass through the CPU; it moves only the bitstream.

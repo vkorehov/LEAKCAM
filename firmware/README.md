@@ -150,7 +150,8 @@ mode stays off: between sessions the BL616 hibernates, which ends the associatio
   offline mode, 1280x960 binned), white and IR chains on during the shot (25 kHz PWM on
   GPIO61/GPIO60, `led_rtsmart.c`), frames reduced to 320x240 and compared with what the history
   shows (16x12 blocks, image-circle mask, gain normalised). Anything new goes to the server over
-  Wi-Fi; a leak adds 5 s of video, no leak stores the frames. The algorithm is in DESIGN.md 5.1.
+  Wi-Fi; the server says leak or not and how many seconds of video to stream (5 on a leak), no
+  leak stores the frames. The algorithm is in DESIGN.md 5.1.
 - History on the SPI NAND, because the K230 loses its RAM at every power-off: per camera a
   keyframe (whole 1280x960 luminance, deflate via the bundled miniz) and deltas holding only the changed 80x80 blocks;
   new keyframe on more than half the image changed or after 96 deltas; 32 MB quota per camera,
