@@ -21,7 +21,8 @@
  *      training data for the next net (firmware/NN.txt). The server decides from the images and
  *      the sensors together and answers {"leak":true} or {"leak":false}, plus
  *      "nn":"<CRC>","thr":[<cam0>,<cam1>] when it has another net or other thresholds for this
- *      board; the new kmodel comes from GET /v1/nn/<CRC> and is kept by nnstore.h;
+ *      board (the new kmodel comes from GET /v1/nn/<CRC> and is kept by nnstore.h), and
+ *      "video":true when someone asked for a clip: streamed as for a leak (5), leak or not;
  *   5. leak -> leakcam_stream streams 5 s of video with audio from both cameras live over RTMP
  *      (rtmp://<server>:1935/leakcam/cam<N>), then sleep;
  *      the frames are not stored, so every wake reports again until the server says no leak;
@@ -412,6 +413,10 @@ int main(int argc, char **argv)
         push_video(host);
         nn_update(host, port, reply);
         return finish(SLEEP_LEAK);
+    }
+    if (strstr(reply, "\"video\":true")) {
+        printf("video requested\n");
+        push_video(host);
     }
     store(f, n);
     nn_update(host, port, reply);
