@@ -24,6 +24,7 @@ import os
 import shutil
 import socket
 import tempfile
+import time
 import traceback
 
 import pythoncom
@@ -47,10 +48,37 @@ _sw = None
 _tlb = None                              # sldworks.tlb type infos, for typed()
 
 
-async def com(fn):
+BUSY_WAIT = 20.0                        # s a call waits for the COM thread before it gives up
+_busy = None                            # (what, since) of the call on the COM thread
+
+
+async def com(fn, what):
     """run fn on the COM thread without blocking the event loop: a long tool call must not hold up
-    the client's other requests (tools/list after a reconnect), or it times out and drops the server"""
-    return await asyncio.wrap_future(_com.submit(fn))
+    the client's other requests (tools/list after a reconnect), or it times out and drops the server.
+    One call at a time: while another runs (or hangs on a SolidWorks dialog), wait BUSY_WAIT, then
+    say what holds SolidWorks instead of queueing silently"""
+    t0 = time.monotonic()
+    while _busy is not None:
+        if time.monotonic() - t0 > BUSY_WAIT:
+            raise RuntimeError(busy_text() + "; this call was not started")
+        await asyncio.sleep(0.2)
+
+    def job():
+        global _busy
+        _busy = (what, time.monotonic())
+        try:
+            return fn()
+        finally:
+            _busy = None
+    return await asyncio.wrap_future(_com.submit(job))
+
+
+def busy_text():
+    b = _busy
+    if b is None:
+        return "SolidWorks is idle"
+    return (f"SolidWorks is busy with {b[0]} for {time.monotonic() - b[1]:.0f} s "
+            "(a long call, or a dialog open in SolidWorks that blocks it: close it there)")
 
 
 def get(obj, name):
@@ -174,6 +202,13 @@ mcp = FastMCP("solidworks")
 
 
 @mcp.tool()
+async def status() -> str:
+    """Whether SolidWorks is busy (and with what, for how long) - without touching SolidWorks, so it
+    answers while a call hangs."""
+    return busy_text()
+
+
+@mcp.tool()
 async def sw_info() -> str:
     """SolidWorks revision and the open document windows (title, path); documents loaded only as
     parts of an open assembly are counted, not listed."""
@@ -186,7 +221,7 @@ async def sw_info() -> str:
         if len(docs) > len(shown):
             lines.append(f"(+{len(docs) - len(shown)} documents loaded without a window)")
         return "\n".join(lines)
-    return await com(run)
+    return await com(run, "sw_info")
 
 
 @mcp.tool()
@@ -198,7 +233,7 @@ async def close_all() -> str:
         n = len(get(app, "GetDocuments") or ())
         app.CloseAllDocuments(True)
         return f"closed {n} documents"
-    return await com(run)
+    return await com(run, "close_all")
 
 
 @mcp.tool()
@@ -227,7 +262,7 @@ async def interference() -> str:
             return "\n".join(lines) or "no interference"
         finally:
             idm.Done()
-    return await com(run)
+    return await com(run, "interference")
 
 
 @mcp.tool()
@@ -247,7 +282,7 @@ async def open_document(path: str) -> str:
             hint = f"; default template missing: {', '.join(stale)}" if stale else ""
             raise RuntimeError(f"SolidWorks could not open {path} (error {err.value}){hint}")
         return f"opened {get(model, 'GetTitle')}"
-    return await com(run)
+    return await com(run, "open_document")
 
 
 @mcp.tool()
@@ -259,7 +294,7 @@ async def new_part() -> str:
         if model is None:
             raise RuntimeError("no default part template set in SolidWorks options")
         return f"new part {get(model, 'GetTitle')}"
-    return await com(run)
+    return await com(run, "new_part")
 
 
 @mcp.tool()
@@ -271,7 +306,7 @@ async def save_as(path: str) -> str:
         if not ok:
             raise RuntimeError(f"save failed (error {err.value}, warning {warn.value})")
         return f"saved {path}"
-    return await com(run)
+    return await com(run, "save_as")
 
 
 @mcp.tool()
@@ -287,7 +322,7 @@ async def snapshot(view: str = "*Isometric") -> Image:
             raise RuntimeError(f"snapshot failed (error {err.value})")
         with open(path, "rb") as f:
             return f.read()
-    return Image(data=await com(run), format="png")
+    return Image(data=await com(run, "snapshot"), format="png")
 
 
 @mcp.tool()
@@ -322,7 +357,7 @@ async def run_python(code: str) -> str:
         if "result" in env:
             out.write(f"result: {env['result']!r}\n")
         return out.getvalue() or "(no output)"
-    return await com(run)
+    return await com(run, f"run_python: {code.strip().splitlines()[0][:60] if code.strip() else ''}")
 
 
 def own_names():
@@ -337,11 +372,14 @@ def own_names():
 
 
 def main():
+    global BUSY_WAIT
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--host", default="0.0.0.0")
     ap.add_argument("--port", type=int, default=8000)
     ap.add_argument("--allow-host", action="append", default=[], help="another name clients use for this PC")
+    ap.add_argument("--busy-wait", type=float, default=BUSY_WAIT, help="s a call waits while SolidWorks is busy")
     a = ap.parse_args()
+    BUSY_WAIT = a.busy_wait
     for f in drop_makepy_cache():
         print("removed the early-binding cache", f, flush=True)
     names = own_names() | set(a.allow_host)
