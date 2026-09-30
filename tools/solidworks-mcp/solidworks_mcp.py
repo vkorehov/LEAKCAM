@@ -371,8 +371,18 @@ def own_names():
     return names
 
 
+def no_prompts():
+    """git (run through run_python) must never ask for a login: a GitHub popup or console prompt
+    waits forever and holds the COM thread. Without stored credentials it fails at once instead"""
+    os.environ["GIT_TERMINAL_PROMPT"] = "0"
+    os.environ["GCM_INTERACTIVE"] = "Never"
+    os.environ["GIT_ASKPASS"] = ""
+    os.environ["SSH_ASKPASS"] = ""
+
+
 def main():
     global BUSY_WAIT
+    no_prompts()
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--host", default="0.0.0.0")
     ap.add_argument("--port", type=int, default=8000)
