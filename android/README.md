@@ -1,5 +1,7 @@
 # LEAKCAM Setup (Android)
 
+The user experience, screen by screen and message by message: [APP.txt](APP.txt).
+
 Sets the Wi-Fi network a LEAKCAM uses. One screen: scan, pick the board, type the SSID and
 password, save. Android 8.0 (API 26) and later, no libraries beyond the Android framework.
 
