@@ -160,7 +160,7 @@ lines, asked, sleep = run("rtc", "wet", change="0.25")
 check(asked and sleep == 21600 and "sample" in last_query(), f"sample: {lines}")
 lines, asked, sleep = run("rtc", "wet", change="0.25")
 check(not asked and sleep == 21600, f"a second sample the same day: {lines}")
-nchecks += 2
+nchecks += 3
 
 # puddle, BL616 probe wet: server says leak -> 5 s video from both cameras, nothing stored
 lines, asked, sleep = run("leak", "wet")
@@ -170,13 +170,17 @@ check(calls == ["127.0.0.1:1935 5"], f"live stream to the server's RTMP ingest, 
 check(len(glob.glob(os.path.join(state, "hist0", "*"))) == 1, "a reported leak must not be stored")
 
 # a clip asked for on the server: streamed with the next report, leak or not, and only once
-urllib.request.urlopen(urllib.request.Request(f"http://127.0.0.1:{port}/v1/video", data=b"", method="POST")).read()
+urllib.request.urlopen(urllib.request.Request(f"http://127.0.0.1:{port}/v1/video?s=12", data=b"", method="POST")).read()
 lines, asked, sleep = run("humid", "dry", rh="87.0")
 calls = open(stream_log).read().split("\n")[:-1] if os.path.exists(stream_log) else []
-check(asked and sleep == 21600 and "video requested" in lines and len(calls) == 2, f"requested clip: {lines} {calls}")
+check(asked and sleep == 21600 and calls[1:] == ["127.0.0.1:1935 12"], f"requested clip, server's length: {lines} {calls}")
 lines, asked, sleep = run("humid", "dry", rh="87.0")
 calls = open(stream_log).read().split("\n")[:-1] if os.path.exists(stream_log) else []
-check("video requested" not in lines and len(calls) == 2, f"a request streams once: {lines} {calls}")
+check(len(calls) == 2, f"a request streams once: {lines} {calls}")
+urllib.request.urlopen(urllib.request.Request(f"http://127.0.0.1:{port}/v1/video?s=1000", data=b"", method="POST")).read()
+lines, asked, sleep = run("humid", "dry", rh="87.0")
+calls = open(stream_log).read().split("\n")[:-1] if os.path.exists(stream_log) else []
+check(calls[2:] == ["127.0.0.1:1935 300"], f"clip capped at 300 s: {calls}")
 nchecks += 2
 
 # still wet, Wi-Fi refused (no credentials): retry in an hour, nothing sent
@@ -223,6 +227,6 @@ check(asked and sleep == 3600, f"server down: {lines}")
 shutil.rmtree(out, ignore_errors=True)
 print(f"wake: FAIL ({fails})" if fails else
       "wake: same scene sleeps, light only sleeps (sampled once a day, sent along with alarms), net and "
-      "thresholds updated from the server, a requested clip streamed once, new scene asks Wi-Fi, leak -> video, no leak -> history, "
+      "thresholds updated from the server, the clip length from the server (capped), a requested clip streamed once, new scene asks Wi-Fi, leak -> video, no leak -> history, "
       "sensor alarm reported on a same scene, no Wi-Fi / no server -> retry")
 sys.exit(1 if fails else 0)

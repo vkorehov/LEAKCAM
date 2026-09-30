@@ -22,12 +22,13 @@
  *      the sensors together and answers {"leak":true} or {"leak":false}, plus
  *      "nn":"<CRC>","thr":[<cam0>,<cam1>] when it has another net or other thresholds for this
  *      board (the new kmodel comes from GET /v1/nn/<CRC> and is kept by nnstore.h), and
- *      "video":true when someone asked for a clip: streamed as for a leak (5), leak or not;
- *   5. leak -> leakcam_stream streams 5 s of video with audio from both cameras live over RTMP
- *      (rtmp://<server>:1935/leakcam/cam<N>), then sleep;
- *      the frames are not stored, so every wake reports again until the server says no leak;
- *   6. no leak -> the new frames go to the history (a delta of the changed blocks, or a
- *      keyframe) and sleep. Wi-Fi ends with the session: the BL616 stops it before power-off.
+ *      "video":<seconds> when the server wants a clip (for a leak, or asked for by someone);
+ *   5. "video":<s> -> leakcam_stream streams s seconds (at most VIDEO_MAX_S) of video with
+ *      audio from both cameras live over RTMP (rtmp://<server>:1935/leakcam/cam<N>). The
+ *      server decides whether and how long; the board has no clip length of its own;
+ *   6. leak -> sleep; the frames are not stored, so every wake reports again until the server
+ *      says no leak. No leak -> the new frames go to the history (a delta of the changed
+ *      blocks, or a keyframe) and sleep. Wi-Fi ends with the session: the BL616 stops it before power-off.
  *
  * The sensor values come from the BL616 (in WAKE) through the agent, always all four:
  * LEAKCAM_RH, LEAKCAM_T, LEAKCAM_PROBE_MV and LEAKCAM_BAT_MV (the K230's own ADC_1 reading). "sleep=<seconds>" on stdout picks the
@@ -65,7 +66,7 @@
 #ifndef NET_TIMEOUT_S
 #define NET_TIMEOUT_S  30                 /* association + DHCP after "wifi=ok" */
 #endif
-#define VIDEO_S        "5"
+#define VIDEO_MAX_S    300                /* a clip ends well before the agent's 600 s hook kill */
 
 #define SAMPLE_MARGIN  0.1f               /* a light-only distance this close to the threshold... */
 #define SAMPLE_EVERY_S 86400              /* ...is reported at most once a day */
@@ -300,14 +301,24 @@ static void sample_sent(void)
     }
 }
 
-/* 5 s of both cameras live to the server's RTMP ingest, by leakcam_stream's push mode */
-static void push_video(const char *host)
+/* the clip the server asks for: "video":<seconds> in reply, 0 = none */
+static int video_seconds(const char *reply)
 {
-    char target[80];
+    const char *v = strstr(reply, "\"video\":");
+    int s = v ? atoi(v + 8) : 0;
+    return s < 0 ? 0 : s > VIDEO_MAX_S ? VIDEO_MAX_S : s;
+}
+
+/* s seconds of both cameras live to the server's RTMP ingest, by leakcam_stream's push mode */
+static void push_video(const char *host, int s)
+{
+    char target[80], secs[12];
     snprintf(target, sizeof(target), "%s:%s", host, RTMP_PORT);
+    snprintf(secs, sizeof(secs), "%d", s);
+    printf("video %d s\n", s);
     pid_t pid = fork();
     if (pid == 0) {
-        execl(STREAM_PROG, STREAM_PROG, "-p", target, "-t", VIDEO_S, (char *)NULL);
+        execl(STREAM_PROG, STREAM_PROG, "-p", target, "-t", secs, (char *)NULL);
         _exit(127);
     }
     int status = 0;
@@ -408,15 +419,14 @@ int main(int argc, char **argv)
     }
     if (sample)
         sample_sent();
-    if (leak) {
+    if (leak)
         printf("leak reported\n");
-        push_video(host);
+    int video = video_seconds(reply);
+    if (video > 0)
+        push_video(host, video);
+    if (leak) {
         nn_update(host, port, reply);
         return finish(SLEEP_LEAK);
-    }
-    if (strstr(reply, "\"video\":true")) {
-        printf("video requested\n");
-        push_video(host);
     }
     store(f, n);
     nn_update(host, port, reply);
