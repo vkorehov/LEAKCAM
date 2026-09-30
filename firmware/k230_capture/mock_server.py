@@ -14,6 +14,8 @@ POST /v1/check?reason=<r>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>&nn=<CRC>&thr=
                             (default) a leak is what the BL616's probes say: the reason "leak",
                             or the probe node below 825 mV (wet). With --nn, the answer adds
                             "nn":"<CRC>","thr":[t0,t1] when the board's net or thresholds differ.
+POST /v1/video              asks for a clip: the next check answer adds "video":true, and the
+                            board streams as for a leak (bench: curl -X POST <host>:<port>/v1/video)
 GET /v1/nn/<CRC>            the --nn kmodel (CRC-32, 8 hex digits); each download leaves a file
                             nn-get-<n>.
 The leak video is not sent here: leakcam_stream publishes it live over RTMP to port 1935 of the
@@ -32,6 +34,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 counter = 0
+video_pending = False
 lock = threading.Lock()
 
 
@@ -88,7 +91,13 @@ class Handler(BaseHTTPRequestHandler):
         q = parse_qs(url.query)
         body = self.read_body()
         n = next_n()
-        if url.path == "/v1/check":
+        global video_pending
+        if url.path == "/v1/video":
+            with lock:
+                video_pending = True
+            print("video requested for the next check", flush=True)
+            self.reply({"video": True})
+        elif url.path == "/v1/check":
             reason = q.get("reason", [""])[0]
             mv = int(q["probe_mv"][0])
             pgms = split_pgms(body)
@@ -110,6 +119,10 @@ class Handler(BaseHTTPRequestHandler):
                   f"rh={q['rh'][0]} t={q['t'][0]} cameras={' '.join(cams)} nn={q['nn'][0]} "
                   f"{'sample ' if 'sample' in q else ''}-> leak={leak}", flush=True)
             answer = {"leak": leak}
+            with lock:
+                if video_pending and not leak:        # a leak streams anyway
+                    answer["video"] = True
+                video_pending = False
             if nn_model and (q["nn"][0] != nn_crc or q["thr"][0] != args.thr):
                 answer.update(nn=nn_crc, thr=[float(t) for t in args.thr.split(",")])
             self.reply(answer)
