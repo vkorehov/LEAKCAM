@@ -31,11 +31,11 @@ srv = subprocess.Popen([sys.executable, os.path.join(HERE, "..", "mock_server.py
 port = re.search(r"port (\d+)", srv.stdout.readline()).group(1)
 
 
-def run(reason, scene, answer="wifi=ok", probe_mv="1650", rh="45.5", t="21.3", bat="3712"):
+def run(reason, scene, answer="wifi=ok", probe_mv="1650", rh="45.5", t="21.3", bat="3712", change="1"):
     """one wake: (stdout lines, was Wi-Fi asked for, sleep seconds). The sensor values arrive as
-    the agent passes them from WAKE, always all four"""
+    the agent passes them from WAKE, always all four; change is the change net's distance"""
     env = dict(os.environ, LEAKCAM_TEST_SCENE=scene, LEAKCAM_PROBE_MV=probe_mv, LEAKCAM_RH=rh,
-               LEAKCAM_T=t, LEAKCAM_BAT_MV=bat)
+               LEAKCAM_T=t, LEAKCAM_BAT_MV=bat, LEAKCAM_TEST_CHANGE=change)
     p = subprocess.Popen([wake, reason], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE, text=True, env=env)
     lines, asked = [], False
@@ -95,6 +95,14 @@ stream_log = state + ".stream"                                      # test/fake_
 if os.path.exists(stream_log):
     os.remove(stream_log)
 
+# imgdiff sees a change, the change net calls it light: sleep, no Wi-Fi, the view stays dry
+lines, asked, sleep = run("rtc", "wet", change="0.1")
+check(not asked and sleep == 21600 and "cam 0: change net 0.100" in lines and "cam 0: same" in lines,
+      f"light only: {lines}")
+check(len(files("check-*")) == nchecks + 2 * 4, "nothing may be sent for a change of light")
+lines, asked, sleep = run("rtc", "wet", "wifi=fail,2", change="-1")
+check(asked and sleep == 3600 and "cam 0: changed" in lines, f"change net failed, must report: {lines}")
+
 # puddle, BL616 probe wet: server says leak -> 5 s video from both cameras, nothing stored
 lines, asked, sleep = run("leak", "wet")
 check(asked and sleep == 600 and "leak reported" in lines, f"leak: {lines}")
@@ -122,6 +130,6 @@ check(asked and sleep == 3600, f"server down: {lines}")
 
 shutil.rmtree(out, ignore_errors=True)
 print(f"wake: FAIL ({fails})" if fails else
-      "wake: same scene sleeps, new scene asks Wi-Fi, leak -> video, no leak -> history, "
+      "wake: same scene sleeps, light only sleeps, new scene asks Wi-Fi, leak -> video, no leak -> history, "
       "sensor alarm reported on a same scene, no Wi-Fi / no server -> retry")
 sys.exit(1 if fails else 0)
