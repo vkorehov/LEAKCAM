@@ -1,6 +1,7 @@
 /*
  * The smallest HTTP/1.1 client the wake needs, on POSIX sockets (SAL + lwIP on RT-Smart): one
- * request per connection, a fixed-length or chunked body, the reply read to the end.
+ * request per connection, a fixed-length body, the reply read to the end. rtmp.c uses its TCP
+ * connect and send too.
  *
  * The server's address is one line "<host> <port>" in <state dir>/server.
  */
@@ -17,11 +18,9 @@ int net_connect(const char *host, const char *port, int timeout_s);
 
 int net_send_all(int fd, const void *p, size_t n);
 
-/* request head; len < 0: chunked body, sent with http_chunk() */
+/* request head for a body of len bytes, sent after it with net_send_all() */
 int http_post(int fd, const char *host, const char *path, const char *type, long len);
 
-/* one chunk of a chunked body; n = 0 ends the body */
-int http_chunk(int fd, const void *p, size_t n);
 
 /* status code of the reply (-1 on error); its body, NUL-terminated and cut at cap - 1 */
 int http_reply(int fd, char *body, size_t cap);

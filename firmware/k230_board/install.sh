@@ -122,8 +122,8 @@ APP=$SDK/src/applications/leakcam
 rm -rf "$APP"; mkdir -p "$APP/src"
 cp "$CAP/rtsmart/Makefile" "$APP/Makefile"
 cp "$CAP/rtsmart/Kconfig.app" "$APP/Kconfig"
-( cd "$CAP" && cp -r --parents *.c *.cpp *.h third_party/miniz/miniz.c third_party/miniz/miniz.h \
-      third_party/miniz/LICENSE "$APP/src/" )
+( cd "$CAP" && cp -r --parents *.c *.h third_party/miniz/miniz.c third_party/miniz/miniz.h \
+      third_party/miniz/LICENSE third_party/opus "$APP/src/" )
 # the BL616 link agent, with the protocol header it shares with the BL616 firmware
 cp "$HERE/../k230_agent/leakcam_agent.c" "$HERE/../bl616/k230_link.h" "$APP/src/"
 grep -q 'CONFIG_APP_ENABLE_LEAKCAM' "$SDK/src/applications/apps.mk" ||

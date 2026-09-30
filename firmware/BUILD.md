@@ -275,7 +275,9 @@ Consoles, the retained event log (`evlog` on the BL616 console) and the JTAG deb
 
 ```
 make -C firmware/k230_capture test          # change detector, image history (miniz), image quality + LED step,
-                                            # the clip's FLV (ffprobe), the wake algorithm against mock_server.py
+                                            # H.265 + Opus RTMP publish to ffmpeg -listen (FFmpeg 7.1+:
+                                            # FFMPEG_BIN=<its bin dir>, else from PATH),
+                                            # the wake algorithm against mock_server.py
 make -C firmware/bl616/test                 # link protocol (seq/ACK/NAK codes/resends, trace), AHT20 maths,
                                             # always-on clock/state, retained event log, wifi_link.c (receive
                                             # filter, control channel, layout)

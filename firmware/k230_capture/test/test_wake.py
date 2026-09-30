@@ -91,28 +91,15 @@ check(asked and sleep == 600 and "leak reported" in lines, f"combined reasons, s
 lines, asked, sleep = run("leak", "dry")
 check(asked and sleep == 600 and "leak reported" in lines, f"probe wake, same scene: {lines}")
 check(len(files("check-*")) == nchecks + 2 * 4, "every sensor alarm must reach the server")
-for v in files("video-*"):
-    os.remove(v)
+stream_log = state + ".stream"                                      # test/fake_stream's calls
+if os.path.exists(stream_log):
+    os.remove(stream_log)
 
 # puddle, BL616 probe wet: server says leak -> 5 s video from both cameras, nothing stored
 lines, asked, sleep = run("leak", "wet")
 check(asked and sleep == 600 and "leak reported" in lines, f"leak: {lines}")
-def flv_tags(path):
-    """(video tags, audio tags) of an FLV, or None if it is not one"""
-    d = open(path, "rb").read()
-    if d[:3] != b"FLV":
-        return None
-    pos, counts = 13, {8: 0, 9: 0}
-    while pos + 11 <= len(d):
-        size = int.from_bytes(d[pos + 1:pos + 4], "big")
-        counts[d[pos]] = counts.get(d[pos], 0) + 1
-        pos += 11 + size + 4
-    return counts[9], counts[8]
-
-
-videos = files("video-*")
-check(len(videos) == 2 and all(flv_tags(v) == (4, 9) for v in videos),
-      f"video uploads: {[(v, flv_tags(v)) for v in videos]}")
+calls = open(stream_log).read().split("\n")[:-1] if os.path.exists(stream_log) else []
+check(calls == ["127.0.0.1:1935 5"], f"live stream to the server's RTMP ingest, 5 s: {calls}")
 check(len(glob.glob(os.path.join(state, "hist0", "*"))) == 1, "a reported leak must not be stored")
 
 # still wet, Wi-Fi refused (no credentials): retry in an hour, nothing sent

@@ -13,7 +13,8 @@
  *   4. POST /v1/check?reason=<reason>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C> with the
  *      reduced frame of every camera (PGM, one after the other); the server decides from the images and the
  *      sensors together and answers {"leak":true} or {"leak":false};
- *   5. leak -> leakcam_stream pushes 5 s of video with audio (FLV) from both cameras, then sleep;
+ *   5. leak -> leakcam_stream streams 5 s of video with audio from both cameras live over RTMP
+ *      (rtmp://<server>:1935/leakcam/cam<N>), then sleep;
  *      the frames are not stored, so every wake reports again until the server says no leak;
  *   6. no leak -> the new frames go to the history (a delta of the changed blocks, or a
  *      keyframe) and sleep. Wi-Fi ends with the session: the BL616 stops it before power-off.
@@ -45,6 +46,7 @@
 #define STATE_DIR      "/sdcard/leakcam"
 #define STREAM_PROG    "/sdcard/app/leakcam_stream"
 #endif
+#define RTMP_PORT      "1935"             /* the server's RTMP ingest, on the host of /v1/check */
 #define WIDTH          1280               /* OV5647 2x2 binned, full field of view */
 #define HEIGHT         960
 #define SETTLE_FRAMES  12                 /* ~0.3 s at 45 fps for AE/AWB */
@@ -166,11 +168,11 @@ static int server_check(const char *host, const char *port, const char *reason, 
     return rc;
 }
 
-/* 5 s of both cameras to the server, by leakcam_stream's push mode */
-static void push_video(const char *host, const char *port)
+/* 5 s of both cameras live to the server's RTMP ingest, by leakcam_stream's push mode */
+static void push_video(const char *host)
 {
     char target[80];
-    snprintf(target, sizeof(target), "%s:%s", host, port);
+    snprintf(target, sizeof(target), "%s:%s", host, RTMP_PORT);
     pid_t pid = fork();
     if (pid == 0) {
         execl(STREAM_PROG, STREAM_PROG, "-p", target, "-t", VIDEO_S, (char *)NULL);
@@ -257,7 +259,7 @@ int main(int argc, char **argv)
     }
     if (leak) {
         printf("leak reported\n");
-        push_video(host, port);
+        push_video(host);
         return finish(SLEEP_LEAK);
     }
     store(f, n);
