@@ -23,8 +23,16 @@ CAP_SRCS := leakcam_wake.c vicap_cap.c led_rtsmart.c netclient.c $(CORE)
 HIST_SRCS:= leakcam_hist.c $(CORE)
 CAP_OBJS := $(addprefix $(BUILD)/cap/, $(CAP_SRCS:.c=.o))
 HIST_OBJS:= $(addprefix $(BUILD)/hist/, $(HIST_SRCS:.c=.o))
-STREAM_OBJS := $(BUILD)/stream/leakcam_stream.o $(BUILD)/stream/rtsp_glue.o $(BUILD)/stream/netclient.o \
-               $(BUILD)/stream/flv.o
+# libopus 1.5.2 (third_party/opus, BSD), float build, from its own source lists
+OPUS_DIR := third_party/opus
+include $(SRC_ROOT)/$(OPUS_DIR)/celt_sources.mk $(SRC_ROOT)/$(OPUS_DIR)/silk_sources.mk \
+        $(SRC_ROOT)/$(OPUS_DIR)/opus_sources.mk
+OPUS_SRC := $(addprefix $(OPUS_DIR)/,$(CELT_SOURCES) $(SILK_SOURCES) $(SILK_SOURCES_FLOAT) \
+            $(OPUS_SOURCES) $(OPUS_SOURCES_FLOAT))
+OPUS     := -DOPUS_BUILD -DUSE_ALLOCA -DHAVE_LRINTF -DHAVE_LRINT \
+            $(addprefix -I$(SRC_ROOT)/$(OPUS_DIR)/,include celt silk silk/float)
+STREAM_SRCS := leakcam_stream.c rtmp.c netclient.c $(OPUS_SRC)
+STREAM_OBJS := $(addprefix $(BUILD)/stream/, $(STREAM_SRCS:.c=.o))
 AGENT_OBJS  := $(BUILD)/agent/leakcam_agent.o
 
 include $(SDK_RTSMART_SRC_DIR)/libs/mk/libmpp.mk
@@ -35,10 +43,6 @@ CFLAGS   := -march=rv64imafdcv -mabi=lp64d -mcmodel=medany -Os -std=gnu11
 CFLAGS   += $(MINIZ) -I$(SRC_ROOT) $(LIB_CFLAGS) -I$(SDK_SRC_ROOT_DIR)/include
 CFLAGS   += -include "generated/autoconf.h" -Wall -Wextra -ffunction-sections -fdata-sections
 LDFLAGS  := -T $(SDK_RTSMART_SRC_DIR)/libs/mk/link.lds --static -Wl,--gc-sections $(LIB_LDFLAGS) -lm
-# leakcam_stream: the SDK's RTSP server (librtsp_server.a + live555, in LIB_LDFLAGS) is C++
-CXXFLAGS := -march=rv64imafdcv -mabi=lp64d -mcmodel=medany -Os -std=c++20 -I$(SRC_ROOT) $(LIB_CFLAGS)
-CXXFLAGS += -I$(SDK_SRC_ROOT_DIR)/include -include "generated/autoconf.h" -Wall -Wextra
-CXXFLAGS += -ffunction-sections -fdata-sections
 
 .PHONY: all clean distclean
 all: $(CAPTURE) $(HIST) $(STREAM) $(AGENT)
@@ -59,7 +63,7 @@ $(HIST): $(HIST_OBJS)
 $(STREAM): $(STREAM_OBJS)
 	@echo "[LD] $@"
 	@mkdir -p $(dir $@)
-	$(Q)$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -lpthread -o $@
+	$(Q)$(CC) $(CFLAGS) $^ $(LDFLAGS) -lpthread -o $@
 	$(Q)$(STRIP) $@
 
 $(AGENT): $(AGENT_OBJS)
@@ -87,12 +91,7 @@ $(BUILD)/hist/%.o: $(SRC_ROOT)/%.c
 $(BUILD)/stream/%.o: $(SRC_ROOT)/%.c
 	@echo "[CC] $@"
 	@mkdir -p $(dir $@)
-	$(Q)$(CC) $(CFLAGS) -MD -MP -c $< -o $@
-
-$(BUILD)/stream/%.o: $(SRC_ROOT)/%.cpp
-	@echo "[CXX] $@"
-	@mkdir -p $(dir $@)
-	$(Q)$(CXX) $(CXXFLAGS) -MD -MP -c $< -o $@
+	$(Q)$(CC) $(CFLAGS) $(OPUS) -MD -MP -c $< -o $@
 
 clean:
 	@rm -f $(CAPTURE) $(HIST) $(STREAM) $(AGENT)

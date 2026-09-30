@@ -224,7 +224,7 @@ no server configured (/sdcard/leakcam/server) --------------> sleep 1 h
   | wifi=ok
 POST /v1/check?reason=&probe_mv=&bat_mv=&rh=&t=, both reduced frames
   |-- server not reached ------------------------------------> sleep 1 h
-  |-- {"leak":true}: leakcam_stream -p pushes 5 s of H.264 + audio (FLV)
+  |-- {"leak":true}: leakcam_stream -p streams 5 s of H.265 + audio live (RTMP)
   |                  from both cameras; nothing stored -------> sleep 10 min
   |-- {"leak":false}: the new frames go to the history ------> sleep 6 h
 ```
@@ -252,7 +252,7 @@ is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
 | Request | Body | Reply |
 |---|---|---|
 | `POST /v1/check?reason=<reasons>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>` (reasons joined by `+`, sent as `%2B`) | one binary PGM per camera, 320x240, back to back | `{"leak":true}` or `{"leak":false}` |
-| `POST /v1/video?cam=<N>` | chunked FLV, 5 s: the camera's H.264 from an IDR plus the microphone (G.711 mu-law 8 kHz mono); one per camera, at the same time | `{"bytes":<n>}` |
+| RTMP `rtmp://<host>:1935/leakcam/cam<N>` (publish, to MediaMTX) | 5 s live: the camera's H.265 from an IDR (Enhanced RTMP) plus the microphone (Opus 16 kHz mono, E-RTMP v2); both cameras at once | the RTMP server's `NetStream.Publish.Start` |
 
 ### 5.2 BL616 power manager ([firmware/README.md](firmware/README.md))
 
@@ -343,7 +343,7 @@ is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
   - It is a clean reimplementation: Bouffalo's Linux host driver is GPL.
 - **Control messages** (status, join, leave, scan) go on the USER virtual channel. They are
   defined once in `wifi_ctrl_proto.h`, shared by both sides.
-- **Throughput.** Plan for 10-25 Mbit/s: two H.264 streams fit, high-resolution MJPEG does not.
+- **Throughput.** Plan for 10-25 Mbit/s: two H.265 streams fit, high-resolution MJPEG does not.
 
 ### 5.6 Imaging pipeline per camera
 
@@ -386,21 +386,27 @@ capture (LEDs at 100 %, AE settled)
     puddle changes 1-3 of 300 cells. Needs int16 quantisation; must be trained.
   - **Focus and LED level.** No network is needed: classic signals (percentiles, clipping,
     Sobel sharpness ratio against the reference).
-- **Encoders.** H.264 only, one VENC channel per camera.
+- **Encoders.** H.265 (Main) only, one VENC channel per camera.
 
 ### 5.7 Streaming and audio (built, not run)
 
 - **Streaming (`leakcam_stream`).**
-  - Push mode (`-p host:port -t seconds`), used by `leakcam_wake` on a leak: H.264 of both
-    cameras with the microphone, one chunked POST per camera, each an FLV: video is always with
-    audio. No RTSP.
-  - Live mode, for the bench: RTSP per camera (`rtsp://<ip>:8554/cam0`, `/cam1`), H.264 1500
-    kbit/s, IDR every 2 s and on every new client, with the microphone as G711U.
-  - One VICAP channel per camera feeds its encoder, without copying frames.
+  - Push mode (`-p host:port -t seconds`), used by `leakcam_wake` on a leak: both cameras live
+    over RTMP to the server (port 1935, `leakcam/cam<N>`), each H.265 with the microphone: video
+    is always with audio. The bench watches the same push on a PC (MediaMTX or `ffplay -listen`);
+    there is no RTSP server on the board.
+  - Set for battery: 500 kbit/s and 15 fps per camera, one IDR per clip (a 5 s clip is about
+    0.35 MB per camera). Bytes are Wi-Fi airtime and frames are ISP and encoder work.
+  - Hardware end to end: each camera's VICAP/ISP channel is bound to its H.265 encoder
+    (`kd_mpi_sys_bind`), so frames never pass through the CPU; it moves only the bitstream.
 - **Audio, in every stream.**
-  - 8 kHz mono from the codec left input, G.711 mu-law: lossy, 64 kbit/s, next to no CPU. FLV
-    carries it with H.264 natively and is written as the frames come, with no file and no seek.
-  - The gain is set after the first enable, which resets it.
+  - 16 kHz mono from the codec left input, Opus at 24 kbit/s (bundled libopus, complexity 3, a
+    few percent of a core): wideband at a third of G.711's rate, and it plays on phones and in
+    browsers. No DTX, so quiet leaks are never dropped as silence. Carried as Enhanced RTMP v2
+    next to H.265; the server's ingest is MediaMTX, which takes both (the host test uses FFmpeg
+    7.1+).
+  - Quiet leaks: mic PGA 30 dB plus ALC analog +24 dB, all before the ADC; clips near 80 dB SPL.
+    The gains are set after the first enable, which resets them.
   - The MIC_BIAS default voltage is undocumented: measure it at C96 first (the mic needs at
     least 1.5 V).
 

@@ -8,8 +8,9 @@ POST /v1/check?reason=<r>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>
                             check-<n>-cam<i>.pgm. Answers {"leak":true|false}: with --leak
                             probe (default) a leak is what the BL616's probes say: the
                             reason "leak", or the probe node below 825 mV (wet).
-POST /v1/video?cam=<N>      chunked FLV (H.264 + G.711 mu-law 8 kHz), saved as video-<n>-cam<N>.flv.
-                            Answers {"bytes":<received>}.
+The leak video is not sent here: leakcam_stream publishes it live over RTMP to port 1935 of the
+same host, where the real server runs MediaMTX (for a bench: `ffmpeg -listen 1 -i
+rtmp://0.0.0.0:1935/leakcam/cam0`, FFmpeg 7.1+).
 
 On the device, /sdcard/leakcam/server holds "<host> <port>" of this server.
 """
@@ -56,15 +57,6 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def read_body(self):
-        if self.headers.get("Transfer-Encoding", "").lower() == "chunked":
-            data = bytearray()
-            while True:
-                size = int(self.rfile.readline().split(b";")[0], 16)
-                if size == 0:
-                    self.rfile.readline()
-                    return bytes(data)
-                data += self.rfile.read(size)
-                self.rfile.readline()
         return self.rfile.read(int(self.headers.get("Content-Length", 0)))
 
     def do_POST(self):
@@ -84,12 +76,6 @@ class Handler(BaseHTTPRequestHandler):
             print(f"check {n}: reason={reason} probe={mv} mV bat={q['bat_mv'][0]} mV "
                   f"rh={q['rh'][0]} t={q['t'][0]} cameras={len(pgms)} -> leak={leak}", flush=True)
             self.reply({"leak": leak})
-        elif url.path == "/v1/video":
-            cam = q.get("cam", ["0"])[0]
-            with open(os.path.join(args.dir, f"video-{n}-cam{cam}.flv"), "wb") as f:
-                f.write(body)
-            print(f"video {n}: cam{cam} {len(body)} bytes", flush=True)
-            self.reply({"bytes": len(body)})
         else:
             self.send_error(404)
 
