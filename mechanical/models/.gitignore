@@ -1,0 +1,4 @@
+# the repo root ignores *.txt and *.json (tool outputs); these are sources/cache
+!models.txt
+!easyeda/
+!easyeda/*.json
