@@ -1,0 +1,3 @@
+# the repo root ignores *.txt (tool outputs)
+!requirements.txt
+__pycache__/
