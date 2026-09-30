@@ -18,6 +18,9 @@ S2 is 2.19 mm from its centre, so the head is at most Ø4: ISO 7380 M2, Ø3.5).
 M = 0.001
 PATH = r"C:\hw\LEAKCAM\mechanical\enclosure\base.SLDPRT"
 
+PARTING = 4.7             # top face, where the cover sits: the probe wires' centre height
+OUTER_X = 19.55           # side faces: 0.8 mm in front of the USB-C receptacles (MacBook-style ports)
+POCKET_X = 18.45          # board pocket: 0.2 each side of the 36.5 board
 END_CAM = -39.5           # block end at the camera end: room for the flex loop (cavity to LOOP_END)
 END_ANT = 37.3            # block end at the antenna end
 LOOP_END = -37.5
@@ -38,6 +41,12 @@ LIP = 31.8                # lip over the antenna end of the board (edge at 32.5)
 RIB_IN = 3.0              # ribs reach 3 mm in under the board
 RIBS = {-1: [0.55, 38.9, 58.0], 1: [0.65, 59.5]}      # board y of the 1 mm ribs, per long edge (free
                                                        # of top-side parts incl. the SLIDE sweep)
+# USB-C receptacles (TYPE-C-31-M-12): wall side, mouth centre Z, front face X. Each sits in a notch in
+# the pocket wall (open upwards and SLIDE longer, so it passes while the board goes in), its front
+# 0.05 from a 0.8 mm skin with a stadium like its mouth; the plug's overmold stops on the flat side
+USB = [(-1, -14.30, -18.73), (1, -12.06, 18.61)]         # USBC2 (x 23.52), USBC1 (x 60.86)
+USB_Y = -1.65
+WIRES = [(-1, -2.5), (-1, -0.5), (1, -21.57), (1, -19.57), (1, 16.5), (1, 18.5)]   # probe wires: side, Z (Y 4.7, Ø1.0)
 
 
 def cz(y):                # camera y -> base Z
@@ -81,6 +90,47 @@ def below(y):                       # from Y y (< 0) down through the floor
     return cut(True, 1, 0, t0=3, start=-y, flip_start=True)
 
 
+def span(y0, y1=None):              # cut from Y y0 up to y1, or up through the top
+    t1, d = (1, 0) if y1 is None else (0, y1 - y0)
+    return fm.FeatureCut4(True, False, True, t1, 0, d * M, 0, False, False, False, False, 0, 0,
+                          False, False, False, False, False, True, True, False, False, False,
+                          3, y0 * M, False, False)
+
+
+def rrect(z, y, wz, hy, r):         # Right Plane profile: sketch (u, v) = model (-Z, Y)
+    u, v, a, b = -z, y, wz / 2, hy / 2
+    r = min(r, a, b)
+    L = lambda p, q: sm.CreateLine(p[0] * M, p[1] * M, 0, q[0] * M, q[1] * M, 0)
+    A = lambda c, p, q: sm.CreateArc(c[0] * M, c[1] * M, 0, p[0] * M, p[1] * M, 0, q[0] * M, q[1] * M, 0, 1)
+    if a - r > 1e-6:
+        L((u - a + r, v - b), (u + a - r, v - b)); L((u + a - r, v + b), (u - a + r, v + b))
+    if b - r > 1e-6:
+        L((u + a, v - b + r), (u + a, v + b - r)); L((u - a, v + b - r), (u - a, v - b + r))
+    A((u + a - r, v - b + r), (u + a - r, v - b), (u + a, v - b + r))
+    A((u + a - r, v + b - r), (u + a, v + b - r), (u + a - r, v + b))
+    A((u - a + r, v + b - r), (u - a + r, v + b), (u - a, v + b - r))
+    A((u - a + r, v - b + r), (u - a, v - b + r), (u - a + r, v - b))
+
+
+def side_cut(name, profile, x0, x1, expect):     # a profile on the Right Plane, cut through X x0..x1
+    model.ClearSelection2(True)
+    assert ext.SelectByID2("Right Plane", "PLANE", 0, 0, 0, False, 0, nothing(), 0)
+    sm.InsertSketch(True)
+    profile()
+    sm.InsertSketch(True)
+    if x0 >= 0:
+        up, start, flip = True, x0, False
+    else:
+        up, start, flip = False, -x1, True
+    f = fm.FeatureCut4(True, False, up, 0, 0, (x1 - x0) * M, 0, False, False, False, False, 0, 0,
+                       False, False, False, False, False, True, True, False, False, False,
+                       3, start * M, flip, False)
+    if f is None:
+        raise RuntimeError(f"{name}: feature failed")
+    f.Name = name
+    print(f"{name:26s} {fbox(f)}  expect {expect}")
+
+
 def fbox(f):
     bs = [[round(v * 1000, 2) for v in get(face, "GetBox")] for face in (get(f, "GetFaces") or ())]
     return [min(b[i] for b in bs) for i in range(3)] + [max(b[i] for b in bs) for i in range(3, 6)]
@@ -99,23 +149,31 @@ ribs = []
 for side, ys in RIBS.items():
     for y in ys:
         z0, z1 = max(y - 32.5 - 0.5, -32.8), y - 32.5 + 0.5
-        ribs.append((-18.85, z0, -18.25 + RIB_IN, z1) if side < 0 else (18.25 - RIB_IN, z0, 18.85, z1))
+        ribs.append((-POCKET_X, z0, -18.25 + RIB_IN, z1) if side < 0 else (18.25 - RIB_IN, z0, POCKET_X, z1))
 USB_PADS = [(11.75, -15.2, 17.25, -7.9),      # under the USBC1 shell (x 52.96-60.86, y 15.97-24.91)
             (-17.25, -17.4, -13.3, -10.1)]    # under the USBC2 shell (x 23.52-31.42, y 13.73-22.67), off the camera pocket
 
 sm.AddToDB = True
-feature("Block", dict(rects=[(-20.85, END_CAM, 20.85, END_ANT)]), lambda: boss(False, False, 3.1, -BOTTOM),
-        f"X +-20.85 Y {BOTTOM:.2f}..3.1 Z {END_CAM}..{END_ANT}")
-feature("Board pocket", dict(rects=[(-18.85, -32.8, 18.85, 32.8)]), lambda: cut(False, 0, 4.0, 1, 0),
-        "X +-18.85 Y -4..3.1 Z +-32.8")
-feature("Antenna end lip", dict(rects=[(-18.85, LIP, 18.85, 32.8)]), lambda: boss(True, False, 3.1),
-        f"Y 0..3.1 Z {LIP}..32.8")
+feature("Block", dict(rects=[(-OUTER_X, END_CAM, OUTER_X, END_ANT)]), lambda: boss(False, False, PARTING, -BOTTOM),
+        f"X +-{OUTER_X} Y {BOTTOM:.2f}..{PARTING} Z {END_CAM}..{END_ANT}")
+feature("Board pocket", dict(rects=[(-POCKET_X, -32.8, POCKET_X, 32.8)]), lambda: cut(False, 0, 4.0, 1, 0),
+        f"X +-{POCKET_X} Y -4..{PARTING} Z +-32.8")
+feature("Antenna end lip", dict(rects=[(-POCKET_X, LIP, POCKET_X, 32.8)]), lambda: boss(True, False, PARTING),
+        f"Y 0..{PARTING} Z {LIP}..32.8")
 feature("Antenna end slot", dict(rects=[(-18.4, LIP, 18.4, 34.8)]), lambda: cut(False, 0, 0.15, 0, 1.75),
         f"Y -0.15..1.75 Z {LIP}..34.8")
-feature("USB-C windows", dict(rects=[(-21.0, -20.8, -18.5, -7.8), (18.5, -18.56, 21.0, -5.56)]),
-        lambda: cut(False, 0, 5.13, 0, 1.87), "Y -5.13..1.87, USBC2 -X, USBC1 +X")
+feature("USB-C receptacle notches", dict(rects=[(front - 0.05, zc - 4.6, -POCKET_X + 0.01, zc + 4.6 + SLIDE) if s < 0 else
+                                                 (POCKET_X - 0.01, zc - 4.6, front + 0.05, zc + 4.6 + SLIDE) for s, zc, front in USB]),
+        lambda: span(-3.4), "fronts 0.05 from the skin, open upwards for the board going in")
+for s, zc, front in USB:
+    face = front + 0.05 * s
+    side_cut(f"USB-C mouth {'USBC2' if s < 0 else 'USBC1'}", lambda: rrect(zc, USB_Y, 9.1, 3.5, 1.75),
+             *sorted((face - 0.3 * s, (OUTER_X + 0.1) * s)), f"stadium 9.1 x 3.5 at Z {zc} Y {USB_Y}, skin {OUTER_X - abs(face):.2f}")
+feature("Probe wire half-slots", dict(rects=[((POCKET_X - 0.3 if s > 0 else -OUTER_X - 0.2), z - 0.55, (OUTER_X + 0.2 if s > 0 else -POCKET_X + 0.3), z + 0.55)
+                                             for s, z in WIRES]), lambda: span(PARTING - 0.55),
+        f"6 slots Y {PARTING - 0.55}..{PARTING}: the lower half of each wire hole")
 feature("J4 flex notch", dict(rects=[(-8.73, END_CAM - 0.2, 7.27, -32.5)]),
-        lambda: cut(True, 1, 0, up=True, t0=3, start=1.6), "Y 1.6..3.1 camera end")
+        lambda: cut(True, 1, 0, up=True, t0=3, start=1.6), f"Y 1.6..{PARTING} camera end")
 feature("Camera board pocket", dict(rects=[(-12.8, cz(-17.2), 12.8, cz(7.3))]), lambda: down(-LEDGE),
         f"X +-12.8 Y {LEDGE:.2f}")
 feature("Holder pocket", dict(rects=[(-7.3, CAM_Z - 6.8, 7.3, CAM_Z + 6.8)]), lambda: down(-(LEDGE - FLANGE)),
