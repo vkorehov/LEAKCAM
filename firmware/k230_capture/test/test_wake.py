@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import urllib.request
 import zlib
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -168,6 +169,16 @@ calls = open(stream_log).read().split("\n")[:-1] if os.path.exists(stream_log) e
 check(calls == ["127.0.0.1:1935 5"], f"live stream to the server's RTMP ingest, 5 s: {calls}")
 check(len(glob.glob(os.path.join(state, "hist0", "*"))) == 1, "a reported leak must not be stored")
 
+# a clip asked for on the server: streamed with the next report, leak or not, and only once
+urllib.request.urlopen(urllib.request.Request(f"http://127.0.0.1:{port}/v1/video", data=b"", method="POST")).read()
+lines, asked, sleep = run("humid", "dry", rh="87.0")
+calls = open(stream_log).read().split("\n")[:-1] if os.path.exists(stream_log) else []
+check(asked and sleep == 21600 and "video requested" in lines and len(calls) == 2, f"requested clip: {lines} {calls}")
+lines, asked, sleep = run("humid", "dry", rh="87.0")
+calls = open(stream_log).read().split("\n")[:-1] if os.path.exists(stream_log) else []
+check("video requested" not in lines and len(calls) == 2, f"a request streams once: {lines} {calls}")
+nchecks += 2
+
 # still wet, Wi-Fi refused (no credentials): retry in an hour, nothing sent
 lines, asked, sleep = run("rtc", "wet", "wifi=fail,2")
 check(asked and sleep == 3600, f"no Wi-Fi: {lines}")
@@ -212,6 +223,6 @@ check(asked and sleep == 3600, f"server down: {lines}")
 shutil.rmtree(out, ignore_errors=True)
 print(f"wake: FAIL ({fails})" if fails else
       "wake: same scene sleeps, light only sleeps (sampled once a day, sent along with alarms), net and "
-      "thresholds updated from the server, new scene asks Wi-Fi, leak -> video, no leak -> history, "
+      "thresholds updated from the server, a requested clip streamed once, new scene asks Wi-Fi, leak -> video, no leak -> history, "
       "sensor alarm reported on a same scene, no Wi-Fi / no server -> retry")
 sys.exit(1 if fails else 0)

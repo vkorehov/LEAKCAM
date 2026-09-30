@@ -229,6 +229,7 @@ POST /v1/check?reason=&probe_mv=&bat_mv=&rh=&t=&nn=&thr=&cam<i>=, both reduced f
   |-- {"leak":true}: leakcam_stream -p streams 5 s of H.265 + audio live (RTMP)
   |                  from both cameras; nothing stored -------> sleep 10 min
   |-- {"leak":false}: the new frames go to the history ------> sleep 6 h
+  |   ("video":true: the same 5 s stream first, as asked for on the server)
   (either answer may offer a change net: GET /v1/nn/<CRC>, stored for the next wake)
 ```
 
@@ -254,7 +255,7 @@ is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
 
 | Request | Body | Reply |
 |---|---|---|
-| `POST /v1/check?reason=<reasons>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>&nn=<CRC>&thr=<cam0>,<cam1>&cam<i>=<state>,<distance>[&sample=1]` (reasons joined by `+`, sent as `%2B`; state first, same, changed or light) | binary PGMs, 320x240, back to back: per camera its frame, then its history view where imgdiff saw a change | `{"leak":true}` or `{"leak":false}`, plus `"nn":"<CRC>","thr":[<cam0>,<cam1>]` when the server has another change net or thresholds |
+| `POST /v1/check?reason=<reasons>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>&nn=<CRC>&thr=<cam0>,<cam1>&cam<i>=<state>,<distance>[&sample=1]` (reasons joined by `+`, sent as `%2B`; state first, same, changed or light) | binary PGMs, 320x240, back to back: per camera its frame, then its history view where imgdiff saw a change | `{"leak":true}` or `{"leak":false}`, plus `"nn":"<CRC>","thr":[<cam0>,<cam1>]` when the server has another change net or thresholds, and `"video":true` when someone asked for a clip (streamed as for a leak) |
 | `GET /v1/nn/<CRC>` | | the kmodel ([firmware/NN.txt](firmware/NN.txt) 3.4) |
 | RTMP `rtmp://<host>:1935/leakcam/cam<N>` (publish, to MediaMTX) | 5 s live: the camera's H.265 from an IDR (Enhanced RTMP) plus the microphone (Opus 16 kHz mono, E-RTMP v2); both cameras at once | the RTMP server's `NetStream.Publish.Start` |
 
