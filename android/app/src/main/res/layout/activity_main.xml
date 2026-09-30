@@ -98,5 +98,13 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/send" />
+
+        <!-- after a check that may have failed only because of where the LEAKCAM is now -->
+        <Button
+            android:id="@+id/save_anyway"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/save_anyway"
+            android:visibility="gone" />
     </LinearLayout>
 </ScrollView>

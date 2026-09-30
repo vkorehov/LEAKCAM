@@ -15,6 +15,8 @@
 /* ---- FreeRTOS */
 typedef uint32_t TickType_t;
 #define pdMS_TO_TICKS(ms) ((TickType_t)(ms))
+#define taskENTER_CRITICAL() do { } while (0)
+#define taskEXIT_CRITICAL() do { } while (0)
 void vTaskDelay(TickType_t ticks);
 
 /* ---- lwIP */

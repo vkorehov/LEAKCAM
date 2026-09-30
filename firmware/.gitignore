@@ -17,3 +17,6 @@
 /k230_capture/test/libopus.a
 !/NN.txt
 !/DEBUG.txt
+/bl616/test/test_evlog
+/bl616/test/test_wifi_check
+/bl616/test/test_wifi_link_check_first
