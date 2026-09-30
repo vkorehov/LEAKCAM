@@ -18,7 +18,7 @@
     <string name="device_entry">%1$s   (%2$d dBm)</string>
 
     <!-- what to do now, in the box under the steps -->
-    <string name="help_plug">Plug the LEAKCAM into a USB charger or a computer with its USB-C cable. It can be set up only while it is on USB power: being able to plug it in proves it is yours, so nobody outside your home can pair with it. Then tap Find LEAKCAM.</string>
+    <string name="help_plug">Plug the LEAKCAM into a USB charger or a computer with its USB-C cable. It can be set up only while it is on USB power: someone has to plug it in first, so it cannot be paired while it runs on its battery. Then tap Find LEAKCAM.</string>
     <string name="help_scanning">Looking for LEAKCAM boards nearby…</string>
     <string name="help_none_found">No LEAKCAM found. Check that it is plugged into USB power and within a few metres, then tap Find LEAKCAM again.</string>
     <string name="help_none_found_location">No LEAKCAM found. Check that it is plugged into USB power and within a few metres, and that Location is on (this Android version needs it for Bluetooth scanning), then tap Find LEAKCAM again.</string>
@@ -46,7 +46,7 @@
     <string name="err_timeout">The LEAKCAM did not answer. Check it is still plugged into USB power and nearby, then try again. If a pairing request is still open on the phone, accept it first.</string>
     <string name="err_disconnected">The LEAKCAM disconnected (status %1$d). Keep it on USB power and nearby, then try again.</string>
     <string name="err_pairing_refused">Pairing did not go through.\n\n• Was the request declined, or did it time out? Try again and tap Pair.\n• Is the LEAKCAM on USB power? It refuses pairing on battery.</string>
-    <string name="err_pairing_stale">The LEAKCAM no longer recognises this phone (it was reset, or paired again elsewhere).\n\nOpen the phone\'s Bluetooth settings, tap %1$s, choose Forget (or Unpair), then tap Pair and save again.</string>
+    <string name="err_pairing_stale">The LEAKCAM no longer recognises this phone (it was reset, or paired again elsewhere).\n\nOpen the phone\'s Bluetooth settings, tap %1$s, choose Forget (or Unpair), then tap Pair, check and save again.</string>
     <!-- the LEAKCAM's own check of the network (firmware/bl616/wifi_check_calc.h) -->
     <string name="chk_not_found">The LEAKCAM cannot see \"%1$s\".\n\n• Check the name: upper and lower case count.\n• It must be a 2.4 GHz network.\n• The router may be out of reach from where the LEAKCAM is now. If you are setting it up elsewhere, use Save without checking.</string>
     <string name="chk_wrong_password">The router refused the password for \"%1$s\" (code %2$d). Check the password (upper and lower case count) and try again.</string>

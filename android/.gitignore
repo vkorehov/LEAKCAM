@@ -5,3 +5,4 @@ local.properties
 *.iml
 # the repo root ignores *.xml (Altium outputs); the app's manifest and resources are sources
 !*.xml
+!APP.txt
