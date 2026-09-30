@@ -99,6 +99,7 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
   advertising as `LEAKCAM-xxyy` with one service, `4c43a000-4c45-4b43-414d-000000000001`:
   SSID (...0002), passphrase (...0003), commit (...0004, write 0x01). All three need an encrypted
   link. The credentials are stored in easyflash on the BL616, which is the Wi-Fi device.
+  The phone side is the Android app in [android/](../android/README.md).
 - Pairing is LE Secure Connections Just Works (no display, no buttons) and is accepted only while
   USB power is present: plugging in is the proof of physical access.
 - The probes are still watched; a leak on USB starts a normal K230 session.
