@@ -97,8 +97,15 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
 ### USB / BLE mode
 - On boot, if PGOOD is low: FreeRTOS + BLE (bring-up as the SDK's `examples/btble/peripheral`),
   advertising as `LEAKCAM-xxyy` with one service, `4c43a000-4c45-4b43-414d-000000000001`:
-  SSID (...0002), passphrase (...0003), commit (...0004, write 0x01). All three need an encrypted
-  link. The credentials are stored in easyflash on the BL616, which is the Wi-Fi device.
+  SSID (...0002), passphrase (...0003), commit (...0004), status (...0005, read/notify). All need
+  an encrypted link. Commit 0x01 checks before it stores: the BL616 joins the network, gets an
+  address by DHCP and fetches `http://connectivitycheck.gstatic.com/generate_204` itself
+  (`wifi_check.c`; the K230 is off and no K230 session starts meanwhile, so the MAC's DHCP is
+  the BL616's), reports each step and the result on status (`wifi_check_calc.h`: wrong password,
+  network not found, no address, no DNS, no internet, login page), and stores only after the 204.
+  Commit 0x02 stores without checking. The credentials are stored in easyflash on the BL616,
+  which is the Wi-Fi device.
+  The phone side is the Android app in [android/](../android/README.md).
 - Pairing is LE Secure Connections Just Works (no display, no buttons) and is accepted only while
   USB power is present: plugging in is the proof of physical access.
 - The probes are still watched; a leak on USB starts a normal K230 session.
@@ -150,7 +157,8 @@ mode stays off: between sessions the BL616 hibernates, which ends the associatio
   offline mode, 1280x960 binned), white and IR chains on during the shot (25 kHz PWM on
   GPIO61/GPIO60, `led_rtsmart.c`), frames reduced to 320x240 and compared with what the history
   shows (16x12 blocks, image-circle mask, gain normalised). Anything new goes to the server over
-  Wi-Fi; a leak adds 5 s of video, no leak stores the frames. The algorithm is in DESIGN.md 5.1.
+  Wi-Fi; the server says leak or not and how many seconds of video to stream (5 on a leak), no
+  leak stores the frames. The algorithm is in DESIGN.md 5.1.
 - History on the SPI NAND, because the K230 loses its RAM at every power-off: per camera a
   keyframe (whole 1280x960 luminance, deflate via the bundled miniz) and deltas holding only the changed 80x80 blocks;
   new keyframe on more than half the image changed or after 96 deltas; 32 MB quota per camera,

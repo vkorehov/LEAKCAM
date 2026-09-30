@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textAppearance="@android:style/TextAppearance.Material.Headline" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/intro" />
+
+        <!-- the steps; MainActivity marks the current one -->
+        <TextView
+            android:id="@+id/step1"
+            style="@style/Step"
+            android:text="@string/step1" />
+
+        <TextView
+            android:id="@+id/step2"
+            style="@style/Step"
+            android:text="@string/step2" />
+
+        <TextView
+            android:id="@+id/step3"
+            style="@style/Step"
+            android:text="@string/step3" />
+
+        <TextView
+            android:id="@+id/step4"
+            style="@style/Step"
+            android:text="@string/step4" />
+
+        <!-- what to do now -->
+        <TextView
+            android:id="@+id/help"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@color/help_background"
+            android:lineSpacingExtra="2dp"
+            android:padding="12dp"
+            android:textAppearance="@android:style/TextAppearance.Material.Body1" />
+
+        <Button
+            android:id="@+id/scan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/scan" />
+
+        <RadioGroup
+            android:id="@+id/devices"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <EditText
+            android:id="@+id/ssid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="@string/ssid"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:maxLines="1" />
+
+        <EditText
+            android:id="@+id/password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/password"
+            android:importantForAutofill="no"
+            android:inputType="textPassword"
+            android:maxLines="1" />
+
+        <CheckBox
+            android:id="@+id/show_password"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/show_password" />
+
+        <Button
+            android:id="@+id/send"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/send" />
+
+        <!-- after a check that may have failed only because of where the LEAKCAM is now -->
+        <Button
+            android:id="@+id/save_anyway"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/save_anyway"
+            android:visibility="gone" />
+    </LinearLayout>
+</ScrollView>

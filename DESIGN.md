@@ -14,7 +14,7 @@ This file records what was decided and why. Details live in the documents it lin
 | K230 board port (boot, NAND, pins, kernel) | [firmware/k230_board/README.md](firmware/k230_board/README.md) |
 | Capture, history, streaming (video with audio) on RT-Smart | [firmware/k230_capture/rtsmart/README.md](firmware/k230_capture/rtsmart/README.md) |
 | Wi-Fi (BL616 NetHub + K230 SDIO driver) | [firmware/bl616/WIFI.md](firmware/bl616/WIFI.md) |
-| Neural networks, image quality | [firmware/k230_nn/README.md](firmware/k230_nn/README.md) |
+| Change net | [firmware/k230_nn/README.md](firmware/k230_nn/README.md) |
 | LED strips | [LED_STRIPS.txt](LED_STRIPS.txt) |
 | PCB stack and gerbers | [LAYERS.txt](LAYERS.txt), [FAB_NOTES.txt](FAB_NOTES.txt) |
 | Off-board parts (battery, NTC, cameras, cables) | [EXTERNAL_PARTS.md](EXTERNAL_PARTS.md) |
@@ -214,19 +214,23 @@ retried and backed off as a failed boot.
 ```
 capture both cameras (LEDs on for the shot, AE settled), reduce to 320x240
   |
-compare each camera with what its history shows (cam<N>.hist; none yet = new)
-  |-- same on every camera, and no sensor alarm -------------> sleep 6 h
+compare each camera with what its history shows (cam<N>.hist; none yet = new):
+imgdiff, then the change net where imgdiff saw a change (below the camera's threshold = light)
+  |-- same or light on every camera, and no sensor alarm ----> sleep 6 h
+  |   (once a day a light pair near its threshold is reported as a sample)
   | new, or a sensor alarm (probe wake, humidity alarm, probe node < 825 mV)
 no server configured (/sdcard/leakcam/server) --------------> sleep 1 h
   |
 "wifi" to the agent -> WIFI to the BL616 -> MMC0 probe
   |-- refused (no credentials, radio) or no card ------------> sleep 1 h
   | wifi=ok
-POST /v1/check?reason=&probe_mv=&bat_mv=&rh=&t=, both reduced frames
+POST /v1/check?reason=&probe_mv=&bat_mv=&rh=&t=&nn=&thr=&cam<i>=, both reduced frames (+ views)
   |-- server not reached ------------------------------------> sleep 1 h
-  |-- {"leak":true}: leakcam_stream -p pushes 5 s of H.264 + audio (FLV)
+  |-- {"leak":true}: leakcam_stream -p streams "video":<s> seconds of H.265 + audio live (RTMP)
   |                  from both cameras; nothing stored -------> sleep 10 min
   |-- {"leak":false}: the new frames go to the history ------> sleep 6 h
+  |   ("video":<s>: the same stream first, when someone asked for a clip)
+  (either answer may offer a change net: GET /v1/nn/<CRC>, stored for the next wake)
 ```
 
 - **Compared with the history, not with the last wake.** The history is what was last seen and
@@ -251,8 +255,9 @@ is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
 
 | Request | Body | Reply |
 |---|---|---|
-| `POST /v1/check?reason=<reasons>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>` (reasons joined by `+`, sent as `%2B`) | one binary PGM per camera, 320x240, back to back | `{"leak":true}` or `{"leak":false}` |
-| `POST /v1/video?cam=<N>` | chunked FLV, 5 s: the camera's H.264 from an IDR plus the microphone (G.711 mu-law 8 kHz mono); one per camera, at the same time | `{"bytes":<n>}` |
+| `POST /v1/check?reason=<reasons>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>&nn=<CRC>&thr=<cam0>,<cam1>&cam<i>=<state>,<distance>[&sample=1]` (reasons joined by `+`, sent as `%2B`; state first, same, changed or light) | binary PGMs, 320x240, back to back: per camera its frame, then its history view where imgdiff saw a change | `{"leak":true}` or `{"leak":false}`, plus `"nn":"<CRC>","thr":[<cam0>,<cam1>]` when the server has another change net or thresholds, and `"video":<seconds>` when the server wants a clip, for a leak or on request: its length is the server's (the board caps it at 300 s) |
+| `GET /v1/nn/<CRC>` | | the kmodel ([firmware/NN.txt](firmware/NN.txt) 3.4) |
+| RTMP `rtmp://<host>:1935/leakcam/cam<N>` (publish, to MediaMTX) | 5 s live: the camera's H.265 from an IDR (Enhanced RTMP) plus the microphone (Opus 16 kHz mono, E-RTMP v2); both cameras at once | the RTMP server's `NetStream.Publish.Start` |
 
 ### 5.2 BL616 power manager ([firmware/README.md](firmware/README.md))
 
@@ -267,7 +272,10 @@ is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
   humidity at or above 85 %RH at any wake starts a K230 session, every time, and the values
   ride in `WAKE`. The K230 decides leak or no leak and how long to sleep. The only state the
   BL616 keeps is the failed-boot count (for the retry back-off) and the USB-exit flag.
-- **USB mode.** On USB power the BL616 stays awake and advertises BLE for provisioning.
+- **USB mode.** On USB power the BL616 stays awake and advertises BLE for provisioning. The phone
+  side is the Android app in [android/](android/README.md): SSID and password on one screen.
+  Before it stores them the BL616 checks them itself: it joins, gets an address and reaches a
+  well-known internet URL, and the app shows which step failed.
   Unplugging returns it to the battery schedule.
 - **No recovery of its own.** A stopped heartbeat means the session is over, whatever the
   reason: the BL616 cuts the power (300 ms discharge wait included) and schedules the next wake.
@@ -343,21 +351,15 @@ is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
   - It is a clean reimplementation: Bouffalo's Linux host driver is GPL.
 - **Control messages** (status, join, leave, scan) go on the USER virtual channel. They are
   defined once in `wifi_ctrl_proto.h`, shared by both sides.
-- **Throughput.** Plan for 10-25 Mbit/s: two H.264 streams fit, high-resolution MJPEG does not.
+- **Throughput.** Plan for 10-25 Mbit/s: two H.265 streams fit, high-resolution MJPEG does not.
 
 ### 5.6 Imaging pipeline per camera
 
-Today `leakcam_wake` runs capture -> imgdiff against the history -> server (5.1). The plan adds
-on-device checks between capture and the server:
-
 ```
 capture (LEDs at 100 %, AE settled)
- -> image quality (imgqual.c): too dark / clipped -> LED step, recapture (max 2)
-                               sharpness < 0.35 x ref or contrast < 0.5 x ref -> INOPERATIONAL (lens)
- -> imgdiff vs the history view: low-threshold gate, its job is recall        (built)
- -> change net (feature maps vs stored reference embedding): no meaningful change -> done
- -> leak net (current vs dry base): P(inoperational) first, then severity
- -> server check, history                                                      (built)
+ -> imgdiff vs the history view: a low-threshold gate, its job is recall
+ -> change net on the KPU where imgdiff saw a change: light only -> not changed
+ -> anything changed, or a sensor alarm -> server check (leak / no leak), history
 ```
 
 - **Change detection (`imgdiff.c`).**
@@ -377,30 +379,36 @@ capture (LEDs at 100 %, AE settled)
 - **LED control.** Start at maximum current, because 2 m must be lit. Back off only when
   highlights clip. White and IR are independent; IR is useful only with the IR-cut filter
   removed.
-- **Neural networks** ([firmware/k230_nn/README.md](firmware/k230_nn/README.md)).
-  - **Leak net.** The leakcam U-Net plus a camera-failure branch. It compiles to a 275 KB
-    nncase 2.11 kmodel and matches TensorFlow in the K230 simulator. Its weights come from the
-    Pi USB camera, so it needs LEAKCAM data and a retrain. Use float32 input.
-  - **Change net.** MobileNetV2-0.35 feature maps at stride 16 (20x15 cells), compared per cell
-    against a reference embedding stored on NAND. Per-cell rather than global, because a small
-    puddle changes 1-3 of 300 cells. Needs int16 quantisation; must be trained.
-  - **Focus and LED level.** No network is needed: classic signals (percentiles, clipping,
-    Sobel sharpness ratio against the reference).
-- **Encoders.** H.264 only, one VENC channel per camera.
+- **Change net** ([firmware/NN.txt](firmware/NN.txt): design and retraining plan; `change.[ch]`).
+  - MobileNetV2-0.35 with frozen ImageNet weights up to stride 16: a 15x20x192 feature map of
+    the reduced frame, int16 kmodel (372 KB), 69 MMAC.
+  - Distance: the max over cells of (1 - cosine) between the history view and the current
+    frame. Per cell, because a small puddle changes 1-3 of 300 cells.
+  - Below 0.44, the largest distance of any lighting or AGC pair, the change is light only
+    and the wake sleeps without Wi-Fi. The history view stays, so a growing leak is still
+    compared with the dry floor.
+- **Encoders.** H.265 (Main) only, one VENC channel per camera.
 
 ### 5.7 Streaming and audio (built, not run)
 
 - **Streaming (`leakcam_stream`).**
-  - Push mode (`-p host:port -t seconds`), used by `leakcam_wake` on a leak: H.264 of both
-    cameras with the microphone, one chunked POST per camera, each an FLV: video is always with
-    audio. No RTSP.
-  - Live mode, for the bench: RTSP per camera (`rtsp://<ip>:8554/cam0`, `/cam1`), H.264 1500
-    kbit/s, IDR every 2 s and on every new client, with the microphone as G711U.
-  - One VICAP channel per camera feeds its encoder, without copying frames.
+  - Push mode (`-p host:port -t seconds`), used by `leakcam_wake` when the server's answer asks
+    for a clip (`"video":<seconds>`, on a leak or on request; at most 300 s): both cameras live
+    over RTMP to the server (port 1935, `leakcam/cam<N>`), each H.265 with the microphone: video
+    is always with audio. The bench watches the same push on a PC (MediaMTX or `ffplay -listen`);
+    there is no RTSP server on the board.
+  - Set for battery: 500 kbit/s and 15 fps per camera, an IDR every 10 s, so one per short clip (a 5 s clip is about
+    0.35 MB per camera). Bytes are Wi-Fi airtime and frames are ISP and encoder work.
+  - Hardware end to end: each camera's VICAP/ISP channel is bound to its H.265 encoder
+    (`kd_mpi_sys_bind`), so frames never pass through the CPU; it moves only the bitstream.
 - **Audio, in every stream.**
-  - 8 kHz mono from the codec left input, G.711 mu-law: lossy, 64 kbit/s, next to no CPU. FLV
-    carries it with H.264 natively and is written as the frames come, with no file and no seek.
-  - The gain is set after the first enable, which resets it.
+  - 16 kHz mono from the codec left input, Opus at 24 kbit/s (bundled libopus, complexity 3, a
+    few percent of a core): wideband at a third of G.711's rate, and it plays on phones and in
+    browsers. No DTX, so quiet leaks are never dropped as silence. Carried as Enhanced RTMP v2
+    next to H.265; the server's ingest is MediaMTX, which takes both (the host test uses FFmpeg
+    7.1+).
+  - Quiet leaks: mic PGA 30 dB plus ALC analog +24 dB, all before the ADC; clips near 80 dB SPL.
+    The gains are set after the first enable, which resets them.
   - The MIC_BIAS default voltage is undocumented: measure it at C96 first (the mic needs at
     least 1.5 V).
 
@@ -440,9 +448,7 @@ back to U13's GND pad beside MICPL; 1 µF 0402 fits better than the 0805 (footpr
   exists.
 - **LEAKCAM dataset.**
   - Fisheye captures from both cameras, white and IR, at several LED levels.
-  - Retrain the leak net (and replace its wall-band exposure reference) and train the change
-    net.
-  - Re-measure every threshold.
+  - Re-measure every threshold; retrain the change net as in [firmware/NN.txt](firmware/NN.txt).
 
 ## 8. Check first on the board
 
