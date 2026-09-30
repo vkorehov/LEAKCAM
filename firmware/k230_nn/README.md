@@ -38,7 +38,10 @@ capture -> imgdiff vs the history view
   wake, so nothing new is stored. A light-only frame does not enter the history, so a leak that
   grows is still measured against the dry floor.
 - The net runs only when imgdiff saw a change: two inferences, then 300 dot products of 192 on
-  the CPU. The kmodel is loaded on first use from `/sdcard/app/leakcam_change.kmodel`.
+  the CPU. The kmodel is loaded on first use: the newest update the server sent
+  (`/sdcard/leakcam/change.0|1`, with per-camera thresholds, `nnstore.h`), else the factory
+  `/sdcard/app/leakcam_change.kmodel` with `CHANGE_THRESHOLD`. Update and field data:
+  [../NN.txt](../NN.txt) section 3.
 - The link uses the SDK's prebuilt nncase 2.11 runtime (`libs/mk/libnncase.mk`), with no
   OpenCV. It adds about 5 MB to the static `leakcam_wake`.
 - The host test (`make test`) replaces the net with `test/change_stub.c`.

@@ -2,7 +2,6 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
-#include <fstream>
 
 #include <nncase/runtime/interpreter.h>
 #include <nncase/runtime/runtime_op_utility.h>
@@ -24,24 +23,6 @@ template <class T> T *host_ptr(runtime_tensor &t, map_access_t acc)
     return reinterpret_cast<T *>(buf.data());
 }
 
-bool load()
-{
-    std::ifstream ifs(CHANGE_KMODEL, std::ios::binary);
-    if (!ifs) {
-        fprintf(stderr, "change net: cannot open " CHANGE_KMODEL "\n");
-        return false;
-    }
-    net = new interpreter;
-    if (net->load_model(ifs).is_err()) {
-        fprintf(stderr, "change net: invalid kmodel\n");
-        return false;
-    }
-    auto in = host_runtime_tensor::create(net->input_desc(0).datatype, net->input_shape(0), hrt::pool_shared);
-    auto out = host_runtime_tensor::create(net->output_desc(0).datatype, net->output_shape(0), hrt::pool_shared);
-    return in.is_ok() && out.is_ok() && net->input_tensor(0, in.unwrap()).is_ok() &&
-           net->output_tensor(0, out.unwrap()).is_ok();
-}
-
 /* one frame in, its features (NHWC 15x20x192 float, in the output tensor) out */
 const float *features(const uint8_t *luma)
 {
@@ -55,11 +36,25 @@ const float *features(const uint8_t *luma)
 
 }  // namespace
 
+int change_load(const uint8_t *kmodel, size_t len)
+{
+    net = new interpreter;
+    if (net->load_model({ reinterpret_cast<const gsl::byte *>(kmodel), len }).is_err()) {
+        fprintf(stderr, "change net: invalid kmodel\n");
+        return -1;
+    }
+    auto in = host_runtime_tensor::create(net->input_desc(0).datatype, net->input_shape(0), hrt::pool_shared);
+    auto out = host_runtime_tensor::create(net->output_desc(0).datatype, net->output_shape(0), hrt::pool_shared);
+    if (in.is_err() || out.is_err() || net->input_tensor(0, in.unwrap()).is_err() ||
+        net->output_tensor(0, out.unwrap()).is_err()) {
+        fprintf(stderr, "change net: cannot create its tensors\n");
+        return -1;
+    }
+    return 0;
+}
+
 float change_distance(const uint8_t *ref, const uint8_t *cur)
 {
-    static bool ok = load();
-    if (!ok)
-        return -1;
     const size_t c = net->output_shape(0).back(), cells = compute_size(net->output_shape(0)) / c;
     static float *fr = new float[cells * c];
     const float *p = features(ref);

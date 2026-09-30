@@ -214,19 +214,22 @@ retried and backed off as a failed boot.
 ```
 capture both cameras (LEDs on for the shot, AE settled), reduce to 320x240
   |
-compare each camera with what its history shows (cam<N>.hist; none yet = new)
-  |-- same on every camera, and no sensor alarm -------------> sleep 6 h
+compare each camera with what its history shows (cam<N>.hist; none yet = new):
+imgdiff, then the change net where imgdiff saw a change (below the camera's threshold = light)
+  |-- same or light on every camera, and no sensor alarm ----> sleep 6 h
+  |   (once a day a light pair near its threshold is reported as a sample)
   | new, or a sensor alarm (probe wake, humidity alarm, probe node < 825 mV)
 no server configured (/sdcard/leakcam/server) --------------> sleep 1 h
   |
 "wifi" to the agent -> WIFI to the BL616 -> MMC0 probe
   |-- refused (no credentials, radio) or no card ------------> sleep 1 h
   | wifi=ok
-POST /v1/check?reason=&probe_mv=&bat_mv=&rh=&t=, both reduced frames
+POST /v1/check?reason=&probe_mv=&bat_mv=&rh=&t=&nn=&thr=&cam<i>=, both reduced frames (+ views)
   |-- server not reached ------------------------------------> sleep 1 h
   |-- {"leak":true}: leakcam_stream -p streams 5 s of H.265 + audio live (RTMP)
   |                  from both cameras; nothing stored -------> sleep 10 min
   |-- {"leak":false}: the new frames go to the history ------> sleep 6 h
+  (either answer may offer a change net: GET /v1/nn/<CRC>, stored for the next wake)
 ```
 
 - **Compared with the history, not with the last wake.** The history is what was last seen and
@@ -251,7 +254,8 @@ is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
 
 | Request | Body | Reply |
 |---|---|---|
-| `POST /v1/check?reason=<reasons>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>` (reasons joined by `+`, sent as `%2B`) | one binary PGM per camera, 320x240, back to back | `{"leak":true}` or `{"leak":false}` |
+| `POST /v1/check?reason=<reasons>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>&nn=<CRC>&thr=<cam0>,<cam1>&cam<i>=<state>,<distance>[&sample=1]` (reasons joined by `+`, sent as `%2B`; state first, same, changed or light) | binary PGMs, 320x240, back to back: per camera its frame, then its history view where imgdiff saw a change | `{"leak":true}` or `{"leak":false}`, plus `"nn":"<CRC>","thr":[<cam0>,<cam1>]` when the server has another change net or thresholds |
+| `GET /v1/nn/<CRC>` | | the kmodel ([firmware/NN.txt](firmware/NN.txt) 3.4) |
 | RTMP `rtmp://<host>:1935/leakcam/cam<N>` (publish, to MediaMTX) | 5 s live: the camera's H.265 from an IDR (Enhanced RTMP) plus the microphone (Opus 16 kHz mono, E-RTMP v2); both cameras at once | the RTMP server's `NetStream.Publish.Start` |
 
 ### 5.2 BL616 power manager ([firmware/README.md](firmware/README.md))
