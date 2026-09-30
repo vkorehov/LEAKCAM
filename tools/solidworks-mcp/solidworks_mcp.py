@@ -16,6 +16,7 @@ run_python executes code sent by the client on this PC. Anyone who can reach the
 anything here: allow only your own machine through the Windows firewall (README.md).
 """
 import argparse
+import asyncio
 import concurrent.futures
 import contextlib
 import io
@@ -46,8 +47,10 @@ _sw = None
 _tlb = None                              # sldworks.tlb type infos, for typed()
 
 
-def com(fn):
-    return _com.submit(fn).result()
+async def com(fn):
+    """run fn on the COM thread without blocking the event loop: a long tool call must not hold up
+    the client's other requests (tools/list after a reconnect), or it times out and drops the server"""
+    return await asyncio.wrap_future(_com.submit(fn))
 
 
 def get(obj, name):
@@ -171,7 +174,7 @@ mcp = FastMCP("solidworks")
 
 
 @mcp.tool()
-def sw_info() -> str:
+async def sw_info() -> str:
     """SolidWorks revision and the open document windows (title, path); documents loaded only as
     parts of an open assembly are counted, not listed."""
     def run():
@@ -183,11 +186,11 @@ def sw_info() -> str:
         if len(docs) > len(shown):
             lines.append(f"(+{len(docs) - len(shown)} documents loaded without a window)")
         return "\n".join(lines)
-    return com(run)
+    return await com(run)
 
 
 @mcp.tool()
-def close_all() -> str:
+async def close_all() -> str:
     """Close every document without saving (save_as first what should be kept): keeps SolidWorks'
     memory down, one window at a time."""
     def run():
@@ -195,11 +198,11 @@ def close_all() -> str:
         n = len(get(app, "GetDocuments") or ())
         app.CloseAllDocuments(True)
         return f"closed {n} documents"
-    return com(run)
+    return await com(run)
 
 
 @mcp.tool()
-def interference() -> str:
+async def interference() -> str:
     """Interference detection in the active assembly: each clash as its components, volume (mm3)
     and the bounding box of the overlap (mm, assembly coordinates). Touching faces do not count."""
     def run():
@@ -224,11 +227,11 @@ def interference() -> str:
             return "\n".join(lines) or "no interference"
         finally:
             idm.Done()
-    return com(run)
+    return await com(run)
 
 
 @mcp.tool()
-def open_document(path: str) -> str:
+async def open_document(path: str) -> str:
     """Open a .sldprt/.sldasm/.slddrw, or import a .step/.stp/.stl/.igs (e.g. the LEAKCAM board STEP)."""
     def run():
         app, ext = sw(), os.path.splitext(path)[1].lower()
@@ -244,11 +247,11 @@ def open_document(path: str) -> str:
             hint = f"; default template missing: {', '.join(stale)}" if stale else ""
             raise RuntimeError(f"SolidWorks could not open {path} (error {err.value}){hint}")
         return f"opened {get(model, 'GetTitle')}"
-    return com(run)
+    return await com(run)
 
 
 @mcp.tool()
-def new_part() -> str:
+async def new_part() -> str:
     """New part from the default part template; becomes the active document."""
     def run():
         app = sw()
@@ -256,11 +259,11 @@ def new_part() -> str:
         if model is None:
             raise RuntimeError("no default part template set in SolidWorks options")
         return f"new part {get(model, 'GetTitle')}"
-    return com(run)
+    return await com(run)
 
 
 @mcp.tool()
-def save_as(path: str) -> str:
+async def save_as(path: str) -> str:
     """Save the active document; the extension picks the format (.sldprt, .sldasm, .step, .stl, ...)."""
     def run():
         err, warn = byref_int(), byref_int()
@@ -268,11 +271,11 @@ def save_as(path: str) -> str:
         if not ok:
             raise RuntimeError(f"save failed (error {err.value}, warning {warn.value})")
         return f"saved {path}"
-    return com(run)
+    return await com(run)
 
 
 @mcp.tool()
-def snapshot(view: str = "*Isometric") -> Image:
+async def snapshot(view: str = "*Isometric") -> Image:
     """PNG of the active document in a named view (*Isometric, *Front, *Top, *Right, ...), zoomed to fit."""
     def run():
         model = active()
@@ -284,11 +287,11 @@ def snapshot(view: str = "*Isometric") -> Image:
             raise RuntimeError(f"snapshot failed (error {err.value})")
         with open(path, "rb") as f:
             return f.read()
-    return Image(data=com(run), format="png")
+    return Image(data=await com(run), format="png")
 
 
 @mcp.tool()
-def run_python(code: str) -> str:
+async def run_python(code: str) -> str:
     """Run Python against the SolidWorks API (anything the tools above do not cover).
 
     In scope: sw (the application), model (active document or None), get(obj, "Name") for
@@ -319,7 +322,7 @@ def run_python(code: str) -> str:
         if "result" in env:
             out.write(f"result: {env['result']!r}\n")
         return out.getvalue() or "(no output)"
-    return com(run)
+    return await com(run)
 
 
 def own_names():
