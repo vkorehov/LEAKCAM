@@ -7,12 +7,14 @@ designing the LEAKCAM cover around the board model (`mechanical/pcb/MIFA.step`,
 
 | Tool | Does |
 |---|---|
-| `sw_info` | SolidWorks revision, open documents |
+| `sw_info` | SolidWorks revision, open document windows (parts loaded by an assembly only counted) |
+| `close_all()` | close every document without saving |
 | `open_document(path)` | open `.sldprt/.sldasm/.slddrw`, or import `.step/.stp/.stl/.igs` |
 | `new_part()` | new part from the default template |
 | `save_as(path)` | save the active document; the extension picks the format (`.sldprt`, `.step`, `.stl`, ...) |
 | `snapshot(view)` | PNG of the active document in a named view (`*Isometric`, `*Front`, `*Top`, ...) |
-| `run_python(code)` | Python against the SolidWorks API: `sw`, `model`, `byref_int()`, `nothing()` in scope |
+| `interference()` | clashes in the active assembly: components, volume, overlap box |
+| `run_python(code)` | Python against the SolidWorks API: `sw`, `model`, `get()`, `byref_int()`, `nothing()`, `typed(obj, "IInterface")`, `members("IInterface")`, `transform(r9, t3)` in scope |
 
 Only SolidWorks 2026 (COM `SldWorks.Application.34`): it attaches to a running SolidWorks or
 starts one, and refuses other versions.
@@ -47,3 +49,7 @@ claude mcp add --transport http solidworks-mcp http://<PC IP>:8000/mcp
 ```
 
 Replace an older entry first with `claude mcp remove solidworks-mcp`.
+
+`typed()` and `interference()` bind early to SolidWorks' type library (`sldworks.tlb` next to
+`SLDWORKS.exe`); the first call generates its Python wrapper into win32com's `gen_py` cache, which
+takes a minute once.
