@@ -1,5 +1,5 @@
-LEAKCAM change net: design and retraining plan
-==============================================
+LEAKCAM change net: design, retraining plan and field teacher loop
+==================================================================
 
 The one neural net on the device. It runs on the K230D KPU inside leakcam_wake and answers
 one question: is the change imgdiff found a change of the scene, or only of the light? The
@@ -133,3 +133,59 @@ lighting false alarms, measured on LEAKCAM frames.
     matters next to boot and AE settling.
   - Measure on the board: KPU time per inference, wake time with and without the net, and
     the distance of the same pairs on hardware vs the simulator.
+
+
+3. Field teacher loop
+---------------------
+
+The KPU only runs models, so learning happens on the server: a large model there labels
+what the boards send, and the small change net is distilled from those labels.
+
+3.1 Labels from the field
+
+  - Every changed frame already reaches /v1/check with the history view. A large teacher on
+    the server (a segmentation net or a vision-language model, run on the pair) labels it per
+    cell: changed or light only, and leak or not.
+  - Real outcomes outrank the teacher: a probe or humidity alarm at the same time, the user's
+    answer in the app ("was this a leak?"), a scene that goes back to dry on later wakes.
+  - Every labelled pair goes into the dataset of section 2.1, same layout rules, tagged with
+    board, camera and room so the held-out split stays per board and per room.
+
+3.2 Seeing what the net vetoed
+
+  The teacher only sees what the device sends, and the misses worth learning from are the
+  frames the net called light only. So the device sends those too:
+  - piggyback: when Wi-Fi is up anyway (the other camera changed, a sensor alarm), the vetoed
+    frames of that wake go along to /v1/check, marked as vetoed, with their distance. No extra
+    connection.
+  - sample: at most one vetoed frame per camera per day with a distance near the threshold
+    (within 0.1) triggers its own report. Budget it in battery terms before enabling.
+  Without this the dataset only holds what the net already passes, and retraining cannot fix
+  its misses.
+
+3.3 Per-camera threshold
+
+  - The cheapest gain. The server keeps each camera's distances on pairs the teacher or the
+    outcome calls light only, and sets that camera's threshold just above their maximum
+    (never below the fleet value minus a fixed margin, never above 0.9).
+  - The threshold is data, not a firmware variant: one line per camera in
+    /sdcard/leakcam/change (for example "cam0 0.41"), sent back in the /v1/check answer and
+    stored by leakcam_wake. Missing or unreadable file: the value in change.h.
+
+3.4 Distillation and rollout
+
+  - Retrain as in sections 2.3-2.5 on the field set, with the teacher's per-cell labels as
+    soft targets and real outcomes as hard ones.
+  - Accept only on the held-out boards and rooms (section 2.4), never on data from the boards
+    the model will ship to next.
+  - One kmodel for the whole fleet, delivered with the OTA writer (open firmware work) as a
+    file replacement in /sdcard/app; the per-camera thresholds are recomputed for the new
+    model before it ships, because distances change with the weights.
+  - Keep the previous kmodel on the server; a bad rollout is undone by sending it again.
+
+3.5 Device changes this needs
+
+  - leakcam_wake: send vetoed frames when Wi-Fi is up, and read the threshold from
+    /sdcard/leakcam/change.
+  - /v1/check: accept vetoed frames and their distances; answer with the camera thresholds.
+  - The OTA writer, for the kmodel.
