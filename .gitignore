@@ -130,3 +130,6 @@ tools/jlcpcb-cart/package-lock.json
 *.mss
 *.lok
 *.tmpgrp
+
+# SolidWorks/Office lock files of open documents
+~$*
