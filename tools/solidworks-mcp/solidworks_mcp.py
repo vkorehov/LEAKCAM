@@ -326,8 +326,12 @@ async def snapshot(view: str = "*Isometric") -> Image:
 
 
 @mcp.tool()
-async def run_python(code: str) -> str:
+async def run_python(code: str, wait: bool = True) -> str:
     """Run Python against the SolidWorks API (anything the tools above do not cover).
+
+    wait=False: start it as a background job and return its id at once; job(id) gives its output
+    so far and whether it finished. For anything that may take more than a minute (loops over the
+    board's ~2000 bodies, big assemblies): the output survives a client that stops waiting.
 
     In scope: sw (the application), model (active document or None), get(obj, "Name") for
     zero-argument members (late binding returns some as values, some as methods), byref_int() for
@@ -343,8 +347,9 @@ async def run_python(code: str) -> str:
     not; FeatureCut4's first direction goes against the sketch normal. A start offset (T0 = 3)
     goes along the normal. Sketch with SketchManager.AddToDB = True so points do not snap.
     """
+    out = io.StringIO()
+
     def run():
-        out = io.StringIO()
         app = sw()
         env = {"sw": app, "model": app.ActiveDoc, "get": get, "byref_int": byref_int, "nothing": nothing,
                "typed": typed, "members": members, "transform": transform,
@@ -357,7 +362,33 @@ async def run_python(code: str) -> str:
         if "result" in env:
             out.write(f"result: {env['result']!r}\n")
         return out.getvalue() or "(no output)"
-    return await com(run, f"run_python: {code.strip().splitlines()[0][:60] if code.strip() else ''}")
+    what = f"run_python: {code.strip().splitlines()[0][:60] if code.strip() else ''}"
+    if wait:
+        return await com(run, what)
+    global _next_job
+    _next_job += 1
+    _jobs[_next_job] = (asyncio.create_task(com(run, what)), out, what, time.monotonic())
+    while len(_jobs) > 20:
+        _jobs.pop(min(_jobs))
+    return f"job {_next_job} started: {what}"
+
+
+_jobs = {}                              # id -> (task, output buffer, what, started)
+_next_job = 0
+
+
+@mcp.tool()
+async def job(id: int) -> str:
+    """A background run_python job (run_python(..., wait=False)): running or finished, and its
+    output so far."""
+    if id not in _jobs:
+        return f"no job {id} (kept: {sorted(_jobs) or 'none'})"
+    task, out, what, t0 = _jobs[id]
+    if not task.done():
+        return f"job {id} running for {time.monotonic() - t0:.0f} s: {what}\n{out.getvalue()}"
+    if task.exception() is not None:
+        return f"job {id} failed: {task.exception()}\n{out.getvalue()}"
+    return f"job {id} finished:\n{task.result()}"
 
 
 def own_names():
