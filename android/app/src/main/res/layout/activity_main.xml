@@ -23,6 +23,38 @@
             android:layout_marginTop="8dp"
             android:text="@string/intro" />
 
+        <!-- the steps; MainActivity marks the current one -->
+        <TextView
+            android:id="@+id/step1"
+            style="@style/Step"
+            android:text="@string/step1" />
+
+        <TextView
+            android:id="@+id/step2"
+            style="@style/Step"
+            android:text="@string/step2" />
+
+        <TextView
+            android:id="@+id/step3"
+            style="@style/Step"
+            android:text="@string/step3" />
+
+        <TextView
+            android:id="@+id/step4"
+            style="@style/Step"
+            android:text="@string/step4" />
+
+        <!-- what to do now -->
+        <TextView
+            android:id="@+id/help"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@color/help_background"
+            android:lineSpacingExtra="2dp"
+            android:padding="12dp"
+            android:textAppearance="@android:style/TextAppearance.Material.Body1" />
+
         <Button
             android:id="@+id/scan"
             android:layout_width="match_parent"
@@ -66,12 +98,5 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/send" />
-
-        <TextView
-            android:id="@+id/status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:textAppearance="@android:style/TextAppearance.Material.Body2" />
     </LinearLayout>
 </ScrollView>

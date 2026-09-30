@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -43,6 +44,9 @@ import java.util.UUID
  * service, connects, pairs (LE Secure Connections, Just Works: the board accepts pairing only on USB
  * power), then writes SSID, passphrase and commit (0x01), which stores both in the board's flash.
  * The board does not report whether the network works; it joins at its next wake.
+ *
+ * The screen walks through four steps (plug in, find, Wi-Fi, pair and save); the box under them
+ * says what to do now, and for pairing what the phone will show.
  */
 @SuppressLint("MissingPermission") // every Bluetooth call runs after permissionsGranted()
 class MainActivity : Activity() {
@@ -54,12 +58,20 @@ class MainActivity : Activity() {
         val COMMIT: UUID = UUID.fromString("4c43a000-4c45-4b43-414d-000000000004")
         const val MTU = 247              // the longest value, a 63-byte passphrase, in one write
         const val SCAN_MS = 10_000L
-        const val SEND_TIMEOUT_MS = 45_000L   // includes the user accepting the pairing dialog
+        const val SEND_TIMEOUT_MS = 60_000L   // includes the user reading and accepting the pairing request
         const val REQUEST_PERMISSIONS = 1
         const val REQUEST_ENABLE_BT = 2
+        const val STEP_PLUG = 1
+        const val STEP_FIND = 2
+        const val STEP_WIFI = 3
+        const val STEP_SAVE = 4
+        const val STEP_DONE = 5
+        val PAIRING_LOST = setOf(5, 6, 0x3D)  // HCI: authentication failure, key missing, MIC failure
     }
 
-    private lateinit var status: TextView
+    private lateinit var steps: List<TextView>
+    private lateinit var stepTexts: List<String>
+    private lateinit var help: TextView
     private lateinit var scanButton: Button
     private lateinit var sendButton: Button
     private lateinit var devices: RadioGroup
@@ -70,18 +82,23 @@ class MainActivity : Activity() {
     private val adapter: BluetoothAdapter? by lazy {
         (getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
     }
-    private val found = LinkedHashMap<String, BluetoothDevice>()   // address -> device
+    private val found = LinkedHashMap<String, Pair<BluetoothDevice, String>>()   // address -> device, name
     private var scanning = false
+    private var step = STEP_PLUG
 
     // one send at a time
     private var gatt: BluetoothGatt? = null
+    private var boardName = ""
+    private var wasBonded = false        // paired before this send: a pairing failure means a stale bond
     private var writes = ArrayDeque<Pair<UUID, ByteArray>>()
     private var bondReceiver: BroadcastReceiver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        status = findViewById(R.id.status)
+        steps = listOf(R.id.step1, R.id.step2, R.id.step3, R.id.step4).map { findViewById(it) }
+        stepTexts = steps.map { it.text.toString() }
+        help = findViewById(R.id.help)
         scanButton = findViewById(R.id.scan)
         sendButton = findViewById(R.id.send)
         devices = findViewById(R.id.devices)
@@ -102,8 +119,10 @@ class MainActivity : Activity() {
                 if (show) InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD else InputType.TYPE_TEXT_VARIATION_PASSWORD
             passwordField.setSelection(passwordField.text.length)
         }
+        devices.setOnCheckedChangeListener { _, _ -> if (!scanning && gatt == null) show(STEP_WIFI, R.string.help_wifi) }
         scanButton.setOnClickListener { if (ready()) startScan() }
         sendButton.setOnClickListener { if (ready()) send() }
+        show(STEP_PLUG, R.string.help_plug)
     }
 
     override fun onDestroy() {
@@ -111,6 +130,29 @@ class MainActivity : Activity() {
         finishSend(null)
         super.onDestroy()
     }
+
+    // ---------------- the steps and the help box ----------------
+
+    /** marks the steps before [current] done and [current] active, and says what to do now */
+    private fun showText(current: Int, text: String, error: Boolean) {
+        step = current
+        steps.forEachIndexed { i, v ->
+            val n = i + 1
+            v.text = if (n < current) "✓ ${stepTexts[i]}" else stepTexts[i]
+            v.setTextColor(getColor(when {
+                n < current -> R.color.step_done
+                n == current -> R.color.step_current
+                else -> R.color.step_todo
+            }))
+            v.setTypeface(null, if (n == current) Typeface.BOLD else Typeface.NORMAL)
+        }
+        help.text = text
+        help.setBackgroundColor(getColor(if (error) R.color.error_background else R.color.help_background))
+    }
+
+    private fun show(current: Int, res: Int, vararg args: Any) = showText(current, getString(res, *args), false)
+
+    private fun problem(current: Int, res: Int, vararg args: Any) = showText(current, getString(res, *args), true)
 
     // ---------------- permissions and Bluetooth on ----------------
 
@@ -127,7 +169,7 @@ class MainActivity : Activity() {
     private fun ready(): Boolean {
         val a = adapter
         if (a == null) {
-            say("This phone has no Bluetooth.")
+            problem(step, R.string.err_no_bluetooth)
             return false
         }
         if (!permissionsGranted()) {
@@ -135,6 +177,7 @@ class MainActivity : Activity() {
             return false
         }
         if (!a.isEnabled) {
+            problem(step, R.string.err_bluetooth_off)
             @Suppress("DEPRECATION")
             startActivityForResult(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), REQUEST_ENABLE_BT)
             return false
@@ -143,11 +186,12 @@ class MainActivity : Activity() {
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, results: IntArray) {
-        if (requestCode == REQUEST_PERMISSIONS)
-            say(if (permissionsGranted()) "Bluetooth allowed, tap again." else "Bluetooth permission is needed to find the LEAKCAM.")
+        if (requestCode != REQUEST_PERMISSIONS)
+            return
+        if (permissionsGranted()) show(step, R.string.err_permission_granted) else problem(step, R.string.err_permission)
     }
 
-    // ---------------- scan ----------------
+    // ---------------- step 2: find ----------------
 
     private val scanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -156,15 +200,14 @@ class MainActivity : Activity() {
 
         override fun onScanFailed(errorCode: Int) {
             main.post {
-                scanning = false
-                scanButton.isEnabled = true
-                say("Scan failed (error $errorCode). Turn Bluetooth off and on, then try again.")
+                stopScan()
+                problem(STEP_FIND, R.string.err_scan, errorCode)
             }
         }
     }
 
     private fun startScan() {
-        val scanner = adapter?.bluetoothLeScanner ?: return say("Bluetooth is not ready.")
+        val scanner = adapter?.bluetoothLeScanner ?: return problem(STEP_FIND, R.string.err_bluetooth_off)
         stopScan()
         found.clear()
         devices.removeAllViews()
@@ -173,13 +216,17 @@ class MainActivity : Activity() {
         scanner.startScan(listOf(filter), settings, scanCallback)
         scanning = true
         scanButton.isEnabled = false
-        say("Scanning...")
+        sendButton.isEnabled = false
+        show(STEP_FIND, R.string.help_scanning)
         main.postDelayed({
             stopScan()
-            say(if (found.isEmpty())
-                "No LEAKCAM found. It advertises only while plugged into USB power." +
-                    (if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) " Location must be on for scanning." else "")
-            else "Pick the LEAKCAM, enter the Wi-Fi network, then save.")
+            when {
+                found.isEmpty() -> problem(STEP_PLUG,
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) R.string.help_none_found_location
+                    else R.string.help_none_found)
+                found.size == 1 -> show(STEP_WIFI, R.string.help_wifi)
+                else -> show(STEP_WIFI, R.string.help_pick)
+            }
         }, SCAN_MS)
     }
 
@@ -189,14 +236,15 @@ class MainActivity : Activity() {
             adapter?.bluetoothLeScanner?.stopScan(scanCallback)
         scanning = false
         scanButton.isEnabled = true
+        sendButton.isEnabled = true
     }
 
     private fun addDevice(r: ScanResult) {
         val d = r.device
         if (found.containsKey(d.address))
             return
-        found[d.address] = d
         val name = r.scanRecord?.deviceName ?: d.name ?: "LEAKCAM"
+        found[d.address] = d to name
         devices.addView(RadioButton(this).apply {
             id = View.generateViewId()
             tag = d.address
@@ -206,28 +254,30 @@ class MainActivity : Activity() {
             devices.check(devices.getChildAt(0).id)
     }
 
-    // ---------------- send ----------------
+    // ---------------- steps 3 and 4: Wi-Fi, pair and save ----------------
 
     private fun send() {
         val address = devices.findViewById<RadioButton>(devices.checkedRadioButtonId)?.tag as String?
-        val device = address?.let { found[it] } ?: return say("Scan and pick a LEAKCAM first.")
+        val (device, name) = address?.let { found[it] } ?: return problem(STEP_FIND, R.string.err_pick)
         val ssid = ssidField.text.toString().toByteArray(Charsets.UTF_8)
         val psk = passwordField.text.toString().toByteArray(Charsets.UTF_8)
         if (ssid.isEmpty() || ssid.size > 32)
-            return say("The Wi-Fi name must be 1 to 32 bytes.")
+            return problem(STEP_WIFI, R.string.err_ssid)
         if (psk.isNotEmpty() && psk.size !in 8..63)
-            return say("The Wi-Fi password must be 8 to 63 characters (empty for an open network).")
+            return problem(STEP_WIFI, R.string.err_password)
         stopScan()
+        boardName = name
+        wasBonded = device.bondState == BluetoothDevice.BOND_BONDED
         writes = ArrayDeque(listOf(SSID to ssid, PSK to psk, COMMIT to byteArrayOf(1)))
         sendButton.isEnabled = false
         scanButton.isEnabled = false
-        say("Connecting to the LEAKCAM...")
-        main.postDelayed({ finishSend("No answer from the LEAKCAM. Is it still on USB power?") }, SEND_TIMEOUT_MS)
+        show(STEP_SAVE, R.string.help_connecting, name)
+        main.postDelayed({ fail(R.string.err_timeout) }, SEND_TIMEOUT_MS)
         gatt = device.connectGatt(this, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
     }
 
-    /** ends the send: message null = saved, otherwise the error to show */
-    private fun finishSend(error: String?) {
+    /** closes the connection and turns the buttons back on; then [done], if a send was running */
+    private fun finishSend(done: (() -> Unit)?) {
         main.removeCallbacksAndMessages(null)
         bondReceiver?.let { unregisterReceiver(it) }
         bondReceiver = null
@@ -241,22 +291,29 @@ class MainActivity : Activity() {
         gatt = null
         sendButton.isEnabled = true
         scanButton.isEnabled = true
-        if (wasSending && error != null)
-            say(error)
+        if (wasSending)
+            done?.invoke()
     }
+
+    private fun fail(res: Int, vararg args: Any) = finishSend { problem(STEP_SAVE, res, *args) }
+
+    /** a pairing that did not complete: declined or on battery, or a bond the board no longer has */
+    private fun pairingFailed() =
+        if (wasBonded) fail(R.string.err_pairing_stale, boardName) else fail(R.string.err_pairing_refused)
 
     private val gattCallback = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(g: BluetoothGatt, st: Int, newState: Int) {
             main.post {
                 if (g != gatt) return@post
-                when {
-                    newState == BluetoothProfile.STATE_CONNECTED -> {
-                        say("Connected, preparing...")
-                        if (!g.requestMtu(MTU))
-                            pairThenDiscover(g)
+                if (newState == BluetoothProfile.STATE_CONNECTED) {
+                    if (!g.requestMtu(MTU))
+                        pairThenDiscover(g)
+                } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                    when {
+                        bondReceiver != null -> pairingFailed()                  // dropped while pairing
+                        wasBonded && st in PAIRING_LOST -> pairingFailed()
+                        else -> fail(R.string.err_disconnected, st)
                     }
-                    newState == BluetoothProfile.STATE_DISCONNECTED ->
-                        finishSend("The LEAKCAM disconnected (status $st). Keep it on USB power and try again.")
                 }
             }
         }
@@ -268,10 +325,7 @@ class MainActivity : Activity() {
         override fun onServicesDiscovered(g: BluetoothGatt, st: Int) {
             main.post {
                 if (g != gatt) return@post
-                if (g.getService(SERVICE) == null)
-                    finishSend("This device has no LEAKCAM setup service.")
-                else
-                    writeNext(g)
+                if (g.getService(SERVICE) == null) fail(R.string.err_no_service) else writeNext(g)
             }
         }
 
@@ -280,10 +334,8 @@ class MainActivity : Activity() {
                 if (g != gatt) return@post
                 when (st) {
                     BluetoothGatt.GATT_SUCCESS -> writeNext(g)
-                    BluetoothGatt.GATT_INSUFFICIENT_AUTHENTICATION, BluetoothGatt.GATT_INSUFFICIENT_ENCRYPTION ->
-                        finishSend("Pairing did not complete. The LEAKCAM pairs only while on USB power. " +
-                            "If it was set up before, remove it from the phone's Bluetooth devices and try again.")
-                    else -> finishSend("The LEAKCAM refused the ${what(c.uuid)} (error $st).")
+                    BluetoothGatt.GATT_INSUFFICIENT_AUTHENTICATION, BluetoothGatt.GATT_INSUFFICIENT_ENCRYPTION -> pairingFailed()
+                    else -> fail(R.string.err_refused, what(c.uuid), st)
                 }
             }
         }
@@ -293,10 +345,11 @@ class MainActivity : Activity() {
     private fun pairThenDiscover(g: BluetoothGatt) {
         val device = g.device
         if (device.bondState == BluetoothDevice.BOND_BONDED) {
+            show(STEP_SAVE, R.string.help_already_paired, boardName)
             g.discoverServices()
             return
         }
-        say("Pairing: accept the pairing request on the phone.")
+        show(STEP_SAVE, R.string.help_pairing, boardName)
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(ctx: Context, intent: Intent) {
                 @Suppress("DEPRECATION")
@@ -304,11 +357,12 @@ class MainActivity : Activity() {
                 if (d?.address != device.address || g != gatt) return
                 when (intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.BOND_NONE)) {
                     BluetoothDevice.BOND_BONDED -> {
-                        say("Paired, sending...")
+                        unregisterReceiver(this)
+                        bondReceiver = null
+                        show(STEP_SAVE, R.string.help_sending)
                         g.discoverServices()
                     }
-                    BluetoothDevice.BOND_NONE ->
-                        finishSend("Pairing refused. Plug the LEAKCAM into USB power and try again.")
+                    BluetoothDevice.BOND_NONE -> pairingFailed()
                 }
             }
         }
@@ -325,14 +379,12 @@ class MainActivity : Activity() {
     private fun writeNext(g: BluetoothGatt) {
         val next = writes.removeFirstOrNull()
         if (next == null) {
-            val name = ssidField.text.toString()
-            finishSend(null)
-            say("Saved. The LEAKCAM will use \"$name\" from its next wake.")
+            val ssid = ssidField.text.toString()
+            finishSend { show(STEP_DONE, R.string.help_done, boardName, ssid) }
             return
         }
         val (uuid, value) = next
-        val c = g.getService(SERVICE)?.getCharacteristic(uuid)
-            ?: return finishSend("This LEAKCAM has no ${what(uuid)} setting.")
+        val c = g.getService(SERVICE)?.getCharacteristic(uuid) ?: return fail(R.string.err_no_service)
         val started = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             g.writeCharacteristic(c, value, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) == BluetoothStatusCodes.SUCCESS
         } else {
@@ -344,16 +396,12 @@ class MainActivity : Activity() {
             g.writeCharacteristic(c)
         }
         if (!started)
-            finishSend("Could not send the ${what(uuid)}.")
+            fail(R.string.err_write, what(uuid))
     }
 
-    private fun what(uuid: UUID) = when (uuid) {
-        SSID -> "Wi-Fi name"
-        PSK -> "Wi-Fi password"
-        else -> "save command"
-    }
-
-    private fun say(text: String) {
-        status.text = text
-    }
+    private fun what(uuid: UUID) = getString(when (uuid) {
+        SSID -> R.string.what_ssid
+        PSK -> R.string.what_psk
+        else -> R.string.what_commit
+    })
 }

@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="icon_background">#FF1565C0</color>
+    <color name="step_current">#FF1565C0</color>
+    <color name="step_done">#FF2E7D32</color>
+    <color name="step_todo">#FF9E9E9E</color>
+    <color name="help_background">#FFE3F2FD</color>
+    <color name="error_background">#FFFFEBEE</color>
 </resources>

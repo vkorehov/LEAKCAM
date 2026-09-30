@@ -5,16 +5,24 @@ password, save. Android 8.0 (API 26) and later, no libraries beyond the Android 
 
 ## Using it
 
-1. Plug the LEAKCAM into USB power. Only then does it advertise its setup service and accept
-   pairing: being able to plug it in is the proof of physical access.
-2. **Scan for LEAKCAM** lists every board in range as `LEAKCAM-xxyy` with its signal strength.
-3. Enter the Wi-Fi name and password (empty password for an open network), then
-   **Save to LEAKCAM**. Accept the pairing request the phone shows the first time.
-4. "Saved" means the board stored both in its flash. It does not test the network: it joins at
-   its next wake, and a wrong password shows as the board never reporting.
+The screen lists four steps and highlights the current one; the box under them says what to do
+now and, when something fails, why and what to try.
 
-If saving fails with a pairing error on a board that was set up before, remove it from the
-phone's Bluetooth devices (its bond was erased) and save again.
+1. **Plug the LEAKCAM into USB power.** Only then does it advertise its setup service and accept
+   pairing: being able to plug it in is the proof of physical access.
+2. **Find it.** *Find LEAKCAM* lists every board in range as `LEAKCAM-xxyy` with its signal
+   strength; the nearest usually has the strongest.
+3. **Enter your Wi-Fi network**: a 2.4 GHz one (the board has no 5 GHz radio); empty password
+   for an open network.
+4. **Pair and save.** The first time, the phone asks to pair with `LEAKCAM-xxyy`: tap Pair (or
+   Allow). There is no PIN, the board has no screen. If no dialog appears, the request is in the
+   notification shade. The app then writes the settings.
+
+"Done" means the board stored both in its flash. It does not test the network: it joins at its
+next scheduled check, and a wrong password shows as the board never reporting.
+
+If a board that was paired before was reset, the app says so and asks to remove it in the
+phone's Bluetooth settings (Forget) before saving again.
 
 ## What it sends
 
