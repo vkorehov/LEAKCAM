@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LEAKCAM Setup</string>
+    <string name="intro">Plug the LEAKCAM into USB power, scan, pick it, then enter the Wi-Fi network it should use.</string>
+    <string name="scan">Scan for LEAKCAM</string>
+    <string name="ssid">Wi-Fi name (SSID)</string>
+    <string name="password">Wi-Fi password</string>
+    <string name="show_password">Show password</string>
+    <string name="send">Save to LEAKCAM</string>
+    <string name="device_entry">%1$s   (%2$d dBm)</string>
+</resources>
