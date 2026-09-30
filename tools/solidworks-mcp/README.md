@@ -50,6 +50,7 @@ claude mcp add --transport http solidworks-mcp http://<PC IP>:8000/mcp
 
 Replace an older entry first with `claude mcp remove solidworks-mcp`.
 
-`typed()` and `interference()` bind early to SolidWorks' type library (`sldworks.tlb` next to
-`SLDWORKS.exe`); the first call generates its Python wrapper into win32com's `gen_py` cache, which
-takes a minute once.
+`typed()` and `interference()` read the interfaces' type info from SolidWorks' type library
+(`sldworks.tlb` next to `SLDWORKS.exe`); everything stays late-bound. The server deletes a makepy
+wrapper of that library from win32com's `gen_py` cache at start (an older version made one): while it
+is there, win32com hands SolidWorks objects out early-bound and `[out]` arguments break.

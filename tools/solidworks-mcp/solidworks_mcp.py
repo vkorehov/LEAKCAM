@@ -20,12 +20,14 @@ import concurrent.futures
 import contextlib
 import io
 import os
+import shutil
 import socket
 import tempfile
 import traceback
 
 import pythoncom
 import win32com.client
+import win32com.client.dynamic
 from win32com.client import gencache
 from mcp.server.fastmcp import FastMCP, Image
 from mcp.server.transport_security import TransportSecuritySettings
@@ -36,11 +38,12 @@ DOC_TYPES = {".sldprt": 1, ".sldasm": 2, ".slddrw": 3}   # swDocPART, swDocASSEM
 SILENT = 1                              # swOpenDocOptions_Silent / swSaveAsOptions_Silent
 TEMPLATE_PART = 8                       # swUserPreferenceStringValue_e.swDefaultTemplatePart
 TEMPLATE_ASSEMBLY = 9                   # swDefaultTemplateAssembly
+SLDWORKS_TLB = "83A33D31-27C5-11CE-BFD4-00400513BB57"   # sldworks.tlb LIBID
 
 # one thread owns COM and the SolidWorks object; everything goes through com()
 _com = concurrent.futures.ThreadPoolExecutor(max_workers=1, initializer=pythoncom.CoInitialize)
 _sw = None
-_tlb = None                              # makepy module of sldworks.tlb (early binding)
+_tlb = None                              # sldworks.tlb type infos, for typed()
 
 
 def com(fn):
@@ -58,8 +61,8 @@ def get(obj, name):
         # property, which is how late binding tries a name first
         obj._FlagAsMethod(name)
         return getattr(obj, name)()
-    if isinstance(v, (win32com.client.CDispatch, win32com.client.DispatchBaseClass)):
-        return v                            # a COM object (late- or early-bound), not a method
+    if isinstance(v, win32com.client.dynamic.CDispatch):
+        return v                            # a COM object (plain or typed()), not a method
     return v() if callable(v) else v
 
 
@@ -74,38 +77,58 @@ def nothing():
 
 
 def swtlb():
-    """the SolidWorks type library as a makepy module (generated once into win32com's gen_py cache)"""
+    """sldworks.tlb: its type infos by interface name"""
     global _tlb
     if _tlb is None:
-        path = os.path.join(get(sw(), "GetExecutablePath"), "sldworks.tlb")
-        attr = pythoncom.LoadTypeLib(path).GetLibAttr()          # (guid, lcid, syskind, major, minor, flags)
-        _tlb = gencache.EnsureModule(str(attr[0]), attr[1], attr[3], attr[4])
-        if _tlb is None:
-            raise RuntimeError(f"could not generate the type library wrapper for {path}")
+        tl = pythoncom.LoadTypeLib(os.path.join(get(sw(), "GetExecutablePath"), "sldworks.tlb"))
+        _tlb = {tl.GetDocumentation(i)[0]: tl.GetTypeInfo(i) for i in range(tl.GetTypeInfoCount())}
     return _tlb
 
 
-def typed(obj, interface):
-    """obj early-bound as a SolidWorks interface ("IInterference", "IMathUtility", "IBody2", ...):
-    late binding cannot reach members of objects that publish no type info (e.g. the body of an
-    interference); the typed object has every member of the interface with its real kind"""
-    cls = getattr(swtlb(), interface, None)
-    if cls is None:
+def typeinfo(interface):
+    ti = swtlb().get(interface)
+    if ti is None:
         raise AttributeError(f"sldworks.tlb has no interface {interface}")
-    ole = getattr(obj, "_oleobj_", obj)     # the raw PyIDispatch: a CDispatch wrapper breaks InvokeTypes
-    try:
-        ole = ole.QueryInterface(cls.CLSID, pythoncom.IID_IDispatch)
-    except pythoncom.com_error:
-        pass                                # plain IDispatch: SolidWorks' dispids match the interface
-    return cls(ole)
+    if ti.GetTypeAttr().typekind == pythoncom.TKIND_INTERFACE:     # a dual interface: its dispatch half
+        ti = ti.GetRefTypeInfo(ti.GetRefTypeOfImplType(-1))
+    return ti
+
+
+def typed(obj, interface):
+    """obj as a SolidWorks interface ("IInterference", "IMathUtility", "IBody2", ...), still late-bound
+    but with the interface's type info from sldworks.tlb: plain late binding cannot reach members
+    of objects that publish no type info (e.g. the body of an interference), the typed object has
+    every member with its real kind (property or method)"""
+    ole = getattr(obj, "_oleobj_", obj)     # the raw PyIDispatch
+    return win32com.client.dynamic.Dispatch(ole, interface, None, typeinfo(interface))
+
+
+_IDISPATCH = {"QueryInterface", "AddRef", "Release", "GetTypeInfoCount", "GetTypeInfo", "GetIDsOfNames", "Invoke"}
 
 
 def members(interface):
     """names of an interface's properties and methods, from the type library"""
-    cls = getattr(swtlb(), interface)
-    props = set(getattr(cls, "_prop_map_get_", {}))
-    meths = {n for n in dir(cls) if not n.startswith("_") and callable(getattr(cls, n)) and n not in props}
-    return sorted(props), sorted(meths)
+    ti = typeinfo(interface)
+    props, meths = set(), set()
+    for i in range(ti.GetTypeAttr().cFuncs):
+        fd = ti.GetFuncDesc(i)
+        name = ti.GetNames(fd.memid)[0]
+        (props if fd.invkind != pythoncom.INVOKE_FUNC else meths).add(name)
+    return sorted(props), sorted(meths - props - _IDISPATCH)
+
+
+def drop_makepy_cache():
+    """a former version of this server generated sldworks.tlb into win32com's shared gen_py cache;
+    while it is there, win32com hands every SolidWorks object out early-bound ([out] arguments turn
+    into return tuples, byref_int() fails): SolidWorks stays late-bound here, typed() is explicit"""
+    root = gencache.GetGeneratePath()
+    stale = [f for f in os.listdir(root) if f.upper().startswith(SLDWORKS_TLB)]
+    for f in stale:
+        path = os.path.join(root, f)
+        shutil.rmtree(path) if os.path.isdir(path) else os.remove(path)
+    if stale:
+        gencache.Rebuild(verbose=0)
+    return stale
 
 
 def transform(r, t):
@@ -196,7 +219,7 @@ def interference() -> str:
                 line = f"{names}: {ti.Volume * 1e9:.3f} mm3"
                 if body:
                     b = get(ti, body)
-                    line += f", box {[round(v * 1000, 3) for v in typed(b, 'IBody2').GetBodyBox()]}"
+                    line += f", box {[round(v * 1000, 3) for v in get(typed(b, 'IBody2'), 'GetBodyBox')]}"
                 lines.append(line)
             return "\n".join(lines) or "no interference"
         finally:
@@ -316,6 +339,8 @@ def main():
     ap.add_argument("--port", type=int, default=8000)
     ap.add_argument("--allow-host", action="append", default=[], help="another name clients use for this PC")
     a = ap.parse_args()
+    for f in drop_makepy_cache():
+        print("removed the early-binding cache", f, flush=True)
     names = own_names() | set(a.allow_host)
     mcp.settings.host, mcp.settings.port = a.host, a.port
     mcp.settings.transport_security = TransportSecuritySettings(
