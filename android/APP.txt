@@ -1,0 +1,159 @@
+LEAKCAM Setup app: user experience
+==================================
+
+What the user sees and does, screen state by screen state, and every message the app can show.
+The code is app/src/main/java/com/leakcam/setup/MainActivity.kt; all text is in
+app/src/main/res/values/strings.xml (names in [brackets] below). The board side is
+firmware/bl616/ble_pairing.h (BLE service) and firmware/bl616/wifi_check.c (the check).
+
+  goal        put the home Wi-Fi name and password on a LEAKCAM, and know it works
+  who         the owner, once per board (again after a router change or a reset)
+  phones      Android 8.0 and later, Bluetooth LE; no account, no internet needed on the phone
+  duration    about a minute, most of it the board's own check
+
+
+1. The screen
+-------------
+
+One scrolling screen, top to bottom:
+
+  LEAKCAM Setup                                            title
+  Connect your LEAKCAM to Wi-Fi in four steps. ...         [intro]
+  1. Plug the LEAKCAM into USB power                       the steps: done ones green with a
+  2. Find it                                               check mark, the current one blue and
+  3. Enter your Wi-Fi network                              bold, later ones grey
+  4. Pair, check and save
+  +----------------------------------------------------+
+  | what to do now                                     |   help box: light blue; light red when
+  +----------------------------------------------------+   something went wrong
+  [ Find LEAKCAM ]
+  ( ) LEAKCAM-1A2B   (-48 dBm)                             boards found, one radio button each
+  Wi-Fi name (SSID)
+  Wi-Fi password                  [ ] Show password
+  [ Pair, check and save ]
+  [ Save without checking ]                                only after some failed checks
+
+The help box is the only place the app talks to the user: no pop-ups of its own. The only
+dialogs are Android's (permission, Bluetooth on, pairing request).
+
+The buttons are disabled while a scan or a send is running, so nothing can be started twice.
+
+
+2. The flow
+-----------
+
+Step 1  Plug in                                                         [help_plug]
+  Shown at start. Explains USB-C to a charger or computer, and why: the board pairs only on USB
+  power, so it cannot be paired while it runs on its battery.
+
+Step 2  Find it (Find LEAKCAM)
+  - First tap: Android asks for Bluetooth access ("Nearby devices"; on Android 11 and older
+    Location, which BLE scanning needs there). Declined: [err_permission]. Allowed:
+    [err_permission_granted], tap again.
+  - Bluetooth off: Android's "turn on Bluetooth" dialog, and [err_bluetooth_off].
+  - Scanning for 10 s, [help_scanning]. Every board advertising the LEAKCAM setup service is
+    listed as "LEAKCAM-xxyy (RSSI dBm)"; the first one found is preselected.
+  - None found: back to step 1, [help_none_found] (or [help_none_found_location] on Android 11
+    and older, where Location must be on).
+  - One found: step 3, [help_wifi]. Several: step 3, [help_pick] (the strongest signal is
+    usually the nearest). Picking another board shows [help_wifi].
+
+Step 3  Enter your Wi-Fi network                                        [help_wifi]
+  - Says it must be 2.4 GHz (the board has no 5 GHz radio) and to pick the 2.4 GHz name if the
+    router shows one per band. Empty password = open network.
+  - Checked when the user taps Pair, check and save: name 1-32 bytes [err_ssid], password
+    empty or 8-63 characters [err_password]. No board picked: [err_pick].
+
+Step 4  Pair, check and save
+  a. Connecting to LEAKCAM-xxyy                                         [help_connecting]
+  b. Pairing, the first time only                                       [help_pairing]
+       The phone shows its own pairing request. The help box says: tap Pair (or Allow, OK),
+       there is no PIN (the board has no screen or buttons), the request may be in the
+       notification shade, pairing happens once and keeps the password encrypted.
+     Already paired: [help_already_paired]; then [help_sending].
+  c. The board checks the network itself (commit 0x01), about a minute at most:
+       joining the network                                              [help_check_join]
+       password accepted, getting an address (DHCP)                     [help_check_address]
+       checking the internet (connectivitycheck.gstatic.com)            [help_check_internet]
+  d. Done: all four steps checked                                       [help_done]
+       "joined <network>, reached the internet and stored the network. You can unplug it
+       now. It connects at its next scheduled check."
+
+Nothing is stored on the board unless the check passes, or the user chose Save without
+checking.
+
+
+3. When the check fails
+-----------------------
+
+The board tells the app which step failed. The app goes back to the step the user can fix
+(3 for anything about the name or password, 4 otherwise) and explains:
+
+  board result          message              step  Save without checking
+  network not seen      [chk_not_found]       3     yes
+  wrong password        [chk_wrong_password]  3     no
+  router refused        [chk_join_failed]     4     no
+  no address (DHCP)     [chk_no_address]      4     yes
+  names do not resolve  [chk_no_dns]          4     yes
+  no internet           [chk_no_internet]     4     yes
+  login page / filter   [chk_captive]         3     yes
+  board busy (leak)     [chk_busy]            4     no
+  flash write failed    [chk_save_failed]     4     no
+  anything else         [chk_unknown]         4     no
+
+"Save without checking" is offered only where the failure may be about where the board is at
+the moment (set up at a desk, installed elsewhere, or the internet briefly down). It stores the
+network unchecked (commit 0x02) and ends with [help_done_unchecked]: the board tries the
+network at its next check, and if it never reports it has to be set up again where the network
+reaches. A wrong password is never stored this way: the board would just never connect.
+
+Wrong password and router refused show the 802.11 code the router gave; a login page shows the
+HTTP answer. The codes are for support, the text does not depend on them.
+
+
+4. Connection and pairing problems
+----------------------------------
+
+  what happened                                        message
+  pairing declined, timed out, or board on battery    [err_pairing_refused]
+  paired before, but the board forgot this phone       [err_pairing_stale]: Bluetooth settings,
+    (reset, or paired again elsewhere)                   Forget LEAKCAM-xxyy, try again
+  connection dropped during the check                  [err_lost_during_check]: nothing stored
+  connection dropped at another point                  [err_disconnected] (with the status)
+  no answer for 60 s in any step                       [err_timeout], including "accept the
+                                                         pairing request if one is still open"
+  not a LEAKCAM in setup mode                          [err_no_service]
+  a write refused / could not be sent                  [err_refused] / [err_write]
+  phone without Bluetooth                              [err_no_bluetooth]
+
+The 60 s timeout starts again with every step the board reports, so a slow but progressing
+check never times out.
+
+A board whose check passed after the phone disconnected does not store the network: the app
+has already said nothing was stored, and the board keeps to that.
+
+
+5. Rules the text follows
+-------------------------
+
+- Say what to do next, not what went wrong inside: "Check the password", not "4-way handshake".
+- Name the physical thing: the USB-C cable, the notification shade, the phone's Bluetooth
+  settings, the router's 2.4 GHz network name.
+- One reason per failure, and only offer Save without checking where it can help.
+- Numbers only as a trailing code for support.
+- Everything the user reads is in strings.xml, so it can be translated.
+
+
+6. Not covered by the app
+-------------------------
+
+- Choosing the network from a list: the user types the name. A Wi-Fi scan on the phone would
+  need Location permission on every Android version.
+- The LEAKCAM server address: set on the board, not here.
+- Anything after setup (alarms, clips): other apps and the server.
+- A PIN on the pairing: the board uses Just Works pairing, accepted on USB power only
+  (firmware/bl616/ble_pairing.h). A per-board PIN would change step 4b to "enter the code on
+  the label".
+
+Not yet run on a phone with a real board: the texts and flow are built and lint-clean, the
+timings and the board's result codes are from the design, not measured.
