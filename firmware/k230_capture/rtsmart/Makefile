@@ -20,7 +20,7 @@ KMODEL   := $(SDK_APPS_IMAGE_DIR)/leakcam_change.kmodel
 AGENT    := $(SDK_APPS_IMAGE_DIR)/leakcam_agent
 
 CORE     := imgdiff.c refstore.c history.c third_party/miniz/miniz.c
-CAP_SRCS := leakcam_wake.c vicap_cap.c led_rtsmart.c netclient.c $(CORE)
+CAP_SRCS := leakcam_wake.c vicap_cap.c led_rtsmart.c netclient.c nnstore.c $(CORE)
 HIST_SRCS:= leakcam_hist.c $(CORE)
 CAP_OBJS := $(addprefix $(BUILD)/cap/, $(CAP_SRCS:.c=.o) change.o)
 HIST_OBJS:= $(addprefix $(BUILD)/hist/, $(HIST_SRCS:.c=.o))

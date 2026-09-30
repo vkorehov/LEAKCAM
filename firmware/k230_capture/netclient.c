@@ -1,6 +1,8 @@
+#define _GNU_SOURCE                    /* strcasestr */
 #include "netclient.h"
 
 #include <netdb.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -72,6 +74,32 @@ int http_post(int fd, const char *host, const char *path, const char *type, long
     int n = snprintf(head, sizeof(head), "POST %s HTTP/1.1\r\nHost: %s\r\nContent-Type: %s\r\n"
                  "Content-Length: %ld\r\nConnection: close\r\n\r\n", path, host, type, len);
     return n > 0 && n < (int)sizeof(head) ? net_send_all(fd, head, (size_t)n) : -1;
+}
+
+int http_get(int fd, const char *host, const char *path)
+{
+    char head[256];
+    int n = snprintf(head, sizeof(head), "GET %s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", path, host);
+    return n > 0 && n < (int)sizeof(head) ? net_send_all(fd, head, (size_t)n) : -1;
+}
+
+int http_reply_head(int fd, long *len)
+{
+    char buf[1024];
+    size_t used = 0;
+    /* a byte at a time, so nothing of the body is read here */
+    while (used < sizeof(buf) - 1 && (used < 4 || memcmp(buf + used - 4, "\r\n\r\n", 4) != 0)) {
+        if (recv(fd, buf + used, 1, 0) != 1)
+            return -1;
+        used++;
+    }
+    buf[used] = 0;
+    int status;
+    if (sscanf(buf, "HTTP/1.%*d %d", &status) != 1)
+        return -1;
+    const char *cl = strcasestr(buf, "\r\nContent-Length:");
+    *len = cl ? atol(cl + 17) : -1;
+    return status;
 }
 
 int http_reply(int fd, char *body, size_t cap)

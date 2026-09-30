@@ -26,12 +26,13 @@ test/test_history: test/test_history.c $(CORE) $(HDRS)
 	cc -O2 -Wall -Wextra -Werror -I. -o $@ test/test_history.c $(CORE) $(MINIZ) -lm
 
 # the wake algorithm: leakcam_wake unchanged, cameras and LEDs from test/wake_stub.c, the change
-# net's distance from test/change_stub.c (LEAKCAM_TEST_CHANGE), run by
+# net's distance from test/change_stub.c (LEAKCAM_TEST_CHANGE), the factory kmodel $(WAKE_STATE).kmodel, run by
 # test/test_wake.py against mock_server.py; test/fake_stream stands in for leakcam_stream -p
 WAKE_STATE := /tmp/leakcam_wake_test
-test/leakcam_wake_host: leakcam_wake.c netclient.c netclient.h test/wake_stub.c test/change_stub.c change.h $(CORE) $(HDRS) led.h
+test/leakcam_wake_host: leakcam_wake.c netclient.c netclient.h nnstore.c nnstore.h test/wake_stub.c test/change_stub.c change.h $(CORE) $(HDRS) led.h
 	cc -O2 -Wall -Wextra -Werror -I. -DSTATE_DIR='"$(WAKE_STATE)"' -DSTREAM_PROG='"$(CURDIR)/test/fake_stream"' \
-	   -DNET_TIMEOUT_S=2 -o $@ leakcam_wake.c netclient.c test/wake_stub.c test/change_stub.c $(CORE) $(MINIZ) -lm
+	   -DCHANGE_KMODEL='"$(WAKE_STATE).kmodel"' -DNET_TIMEOUT_S=2 \
+	   -o $@ leakcam_wake.c netclient.c nnstore.c test/wake_stub.c test/change_stub.c $(CORE) $(MINIZ) -lm
 
 test/fake_stream: test/fake_stream.c
 	cc -O2 -Wall -Wextra -Werror -DFAKE_STREAM_LOG='"$(WAKE_STATE).stream"' -o $@ test/fake_stream.c

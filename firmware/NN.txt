@@ -155,11 +155,13 @@ what the boards send, and the small change net is distilled from those labels.
 
   The teacher only sees what the device sends, and the misses worth learning from are the
   frames the net called light only. So the device sends those too:
-  - piggyback: when Wi-Fi is up anyway (the other camera changed, a sensor alarm), the vetoed
-    frames of that wake go along to /v1/check, marked as vetoed, with their distance. No extra
-    connection.
-  - sample: at most one vetoed frame per camera per day with a distance near the threshold
-    (within 0.1) triggers its own report. Budget it in battery terms before enabling.
+  - piggyback (built): when Wi-Fi is up anyway (the other camera changed, a sensor alarm),
+    every camera goes to /v1/check with its state (first, same, changed, light) and distance,
+    and wherever imgdiff saw a change the history view goes with the frame: the whole pair.
+    No extra connection.
+  - sample (built): a wake where a light-only distance came within SAMPLE_MARGIN (0.1) of the
+    camera's threshold reports on its own with sample=1, at most once a day (SAMPLE_EVERY_S,
+    the time of the last one in /sdcard/leakcam/sample). A failed sample is not retried.
   Without this the dataset only holds what the net already passes, and retraining cannot fix
   its misses.
 
@@ -168,9 +170,10 @@ what the boards send, and the small change net is distilled from those labels.
   - The cheapest gain. The server keeps each camera's distances on pairs the teacher or the
     outcome calls light only, and sets that camera's threshold just above their maximum
     (never below the fleet value minus a fixed margin, never above 0.9).
-  - The threshold is data, not a firmware variant: one line per camera in
-    /sdcard/leakcam/change (for example "cam0 0.41"), sent back in the /v1/check answer and
-    stored by leakcam_wake. Missing or unreadable file: the value in change.h.
+  - The threshold is data, not a firmware variant (built): the /v1/check answer carries
+    "thr":[<cam0>,<cam1>] with "nn":"<CRC>" whenever the board reported other values
+    (nn=<CRC>&thr=<cam0>,<cam1> in every check). leakcam_wake stores them with the kmodel
+    (3.4); with nothing stored, CHANGE_THRESHOLD in change.h for both cameras.
 
 3.4 Distillation and rollout
 
@@ -178,14 +181,23 @@ what the boards send, and the small change net is distilled from those labels.
     soft targets and real outcomes as hard ones.
   - Accept only on the held-out boards and rooms (section 2.4), never on data from the boards
     the model will ship to next.
-  - One kmodel for the whole fleet, delivered with the OTA writer (open firmware work) as a
-    file replacement in /sdcard/app; the per-camera thresholds are recomputed for the new
+  - One kmodel for the whole fleet. The per-camera thresholds are recomputed for the new
     model before it ships, because distances change with the weights.
-  - Keep the previous kmodel on the server; a bad rollout is undone by sending it again.
+  - Delivery (built, no OTA of the programs needed): the server answers /v1/check with the
+    new kmodel's CRC-32 and thresholds; leakcam_wake downloads GET /v1/nn/<CRC> after the
+    check (after the video on a leak), checks the CRC and saves kmodel and thresholds together
+    in two slots, /sdcard/leakcam/change.0 and .1 (nnstore.h: header with generation, lengths
+    and CRCs; tmp file, fsync, rename; the newest slot that checks wins). The next wake uses
+    it. A damaged slot falls back to the older one, then to the factory kmodel in /sdcard/app
+    with CHANGE_THRESHOLD, and the server's next answer offers the update again. Thresholds
+    for the same kmodel are stored without a download.
+  - Keep the previous kmodel on the server; a bad rollout is undone by offering it again.
+  - The input and output shapes are fixed by change.cc (uint8 1x240x320x1 in, the per-cell
+    feature map out); a retrained net that changes them (2.6) needs new firmware.
 
-3.5 Device changes this needs
+3.5 Still to build, on the server
 
-  - leakcam_wake: send vetoed frames when Wi-Fi is up, and read the threshold from
-    /sdcard/leakcam/change.
-  - /v1/check: accept vetoed frames and their distances; answer with the camera thresholds.
-  - The OTA writer, for the kmodel.
+  - Storage of the pairs with their query (mock_server.py keeps check-<n>-cam<i>.pgm,
+    -view.pgm and check-<n>.json as the model for it), board and camera identity, labels.
+  - The teacher, the per-camera threshold calculation and the distillation run.
+  - Board identity: /v1/check carries none yet; per-camera thresholds need one.
