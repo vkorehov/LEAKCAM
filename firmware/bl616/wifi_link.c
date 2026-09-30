@@ -55,7 +55,12 @@ static volatile uint8_t state = WCP_STATE_DOWN;
 static volatile bool want_link;     /* a join was asked for and not cancelled by WCP_LEAVE */
 static volatile bool host_seen;     /* the K230 has spoken since we booted */
 static volatile bool scan_pending;
-static bool booted;
+static bool lwip_up, wifi_up, bridge_up;   /* tcpip_init(); Wi-Fi task + fhost; NetHub + SDIO */
+static volatile uint8_t owner = WIFI_OWNER_NONE;
+static volatile bool local_only;            /* the credential check: every frame to lwIP here */
+static void (*volatile local_ev)(int code);
+static volatile bool mgmr_ready;
+static bool rejoin;                         /* a check dropped the bridge's association */
 
 /* ------------------------------------------------------------------ K230 side */
 
@@ -170,7 +175,18 @@ static void scan_done(void)
 
 static void wifi_event(async_input_event_t ev, void *priv)
 {
+    void (*check)(int) = local_ev;
+
     (void)priv;
+    if (ev->code == CODE_WIFI_ON_MGMR_DONE)
+        mgmr_ready = true;
+    if (check) {
+        /* the credential check owns the radio: its events, not the bridge's */
+        if (ev->code == CODE_WIFI_ON_INIT_DONE)
+            wifi_mgmr_task_start();
+        check((int)ev->code);
+        return;
+    }
     switch (ev->code) {
         case CODE_WIFI_ON_INIT_DONE:
             wifi_mgmr_task_start();
@@ -254,6 +270,8 @@ static nethub_wifi_rx_filter_action_t rx_filter(nethub_channel_t src, const stru
 
     (void)src;
     (void)ctx;
+    if (local_only)
+        return NETHUB_WIFI_RX_FILTER_LOCAL;
     if (p->len >= SIZEOF_ETH_HDR && eth->type == PP_HTONS(ETHTYPE_EAPOL))
         return NETHUB_WIFI_RX_FILTER_LOCAL;
     return NETHUB_WIFI_RX_FILTER_HOST;
@@ -277,17 +295,61 @@ static void sdio_pins_low_drive(void)
 
 /* ------------------------------------------------------------------ entry points */
 
+bool wifi_link_claim(enum wifi_owner who)
+{
+    bool ok;
+
+    taskENTER_CRITICAL();
+    ok = owner == WIFI_OWNER_NONE || owner == who;
+    if (ok)
+        owner = who;
+    taskEXIT_CRITICAL();
+    return ok;
+}
+
+void wifi_link_release(enum wifi_owner who)
+{
+    taskENTER_CRITICAL();
+    if (owner == who)
+        owner = WIFI_OWNER_NONE;
+    taskEXIT_CRITICAL();
+}
+
+/* Wi-Fi start as in the SDK's NetHub example, the rest follows from wifi_event(). Unlike there,
+ * the BLE exchange memory is kept (no GLB_Set_EM_Sel(GLB_WRAM160KB_EM0KB)): BLE runs next to
+ * Wi-Fi on USB power, as in examples/wifi/coex/wifi_ble */
+static void start_wifi(void)
+{
+    async_register_event_filter(EV_WIFI, wifi_event, NULL);
+    wifi_task_create();
+    vTaskDelay(pdMS_TO_TICKS(500));
+    fhost_init();
+    wifi_up = true;
+}
+
+static void start_lwip(void)
+{
+    if (!lwip_up) {
+        tcpip_init(NULL, NULL);
+        lwip_up = true;
+    }
+}
+
 int wifi_link_start(void)
 {
     int ret;
 
-    if (booted) {
+    if (bridge_up) {
         ret = mr_sdio_drv_lowpower_restore();    /* K230 powered up again: re-mux and resync */
         sdio_pins_low_drive();
+        if (rejoin) {
+            rejoin = false;
+            join_stored();
+        }
         return ret;
     }
 
-    tcpip_init(NULL, NULL);
+    start_lwip();
 
     /* NetHub first: the SDU must be answering by the time the K230's card detection runs */
     nethub_set_wifi_rx_filter(rx_filter, NULL);
@@ -298,22 +360,37 @@ int wifi_link_start(void)
     }
     sdio_pins_low_drive();
     nethub_vchan_user_recv_register(ctrl_rx, NULL);
+    bridge_up = true;
 
-    /* Wi-Fi start as in the SDK's NetHub example, the rest follows from wifi_event(). Unlike
-     * there, the BLE exchange memory is kept (no GLB_Set_EM_Sel(GLB_WRAM160KB_EM0KB)): BLE runs
-     * next to Wi-Fi on USB power, as in examples/wifi/coex/wifi_ble */
-    async_register_event_filter(EV_WIFI, wifi_event, NULL);
-    wifi_task_create();
-    vTaskDelay(pdMS_TO_TICKS(500));
-    fhost_init();
-    booted = true;
+    if (!wifi_up)
+        start_wifi();                /* joins from CODE_WIFI_ON_MGMR_DONE */
+    else if (mgmr_ready)
+        join_stored();               /* Wi-Fi came up earlier for a credential check */
     return 0;
+}
+
+void wifi_link_local_begin(void (*ev)(int code))
+{
+    local_only = true;
+    local_ev = ev;
+    start_lwip();
+    if (!wifi_up)
+        start_wifi();                /* ev gets CODE_WIFI_ON_MGMR_DONE */
+    else if (mgmr_ready)
+        ev(CODE_WIFI_ON_MGMR_DONE);
+}
+
+void wifi_link_local_end(void)
+{
+    local_ev = NULL;
+    local_only = false;
+    rejoin = bridge_up;          /* the check left the station disconnected */
 }
 
 void wifi_link_stop(void)
 {
     /* SDU off and its pads released; k230_power_off() then parks them in analog mode */
-    if (booted)
+    if (bridge_up)
         mr_sdio_drv_lowpower_prepare();
     /* the next K230 session starts unheard, like the first (see set_state()) */
     host_seen = false;

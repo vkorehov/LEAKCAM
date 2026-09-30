@@ -212,8 +212,8 @@ K230's 3V3, so it only appears while the K230 is on. Expect this order on the co
 2. `k230_read_toc`, then slot A loading.
 3. The OpenSBI banner.
 4. The RT-Smart `msh />` prompt.
-5. `ls /sdcard/app` should list `leakcam_agent`, `leakcam_wake`, `leakcam_hist` and
-   `leakcam_stream`. For a first real wake, write the server address to `/sdcard/leakcam/server`
+5. `ls /sdcard/app` should list `leakcam_agent`, `leakcam_wake`, `leakcam_hist`,
+   `leakcam_stream` and `leakcam_change.kmodel`. For a first real wake, write the server address to `/sdcard/leakcam/server`
    (`<host> <port>`) and run `python3 firmware/k230_capture/mock_server.py` on that host.
 
 **Not yet verified on hardware:**
@@ -274,11 +274,14 @@ Consoles, the retained event log (`evlog` on the BL616 console) and the JTAG deb
 ## 5. Host tests (no hardware)
 
 ```
-make -C firmware/k230_capture test          # change detector, image history (miniz), image quality + LED step,
-                                            # the clip's FLV (ffprobe), the wake algorithm against mock_server.py
+make -C firmware/k230_capture test          # change detector, image history (miniz),
+                                            # H.265 + Opus RTMP publish to ffmpeg -listen (FFmpeg 7.1+:
+                                            # FFMPEG_BIN=<its bin dir>, else from PATH),
+                                            # the wake algorithm against mock_server.py (change net stubbed)
 make -C firmware/bl616/test                 # link protocol (seq/ACK/NAK codes/resends, trace), AHT20 maths,
                                             # always-on clock/state, retained event log, wifi_link.c (receive
-                                            # filter, control channel, layout)
+                                            # filter, control channel, layout, radio owner, credential
+                                            # check's local mode), the check's result reading
 make -C firmware/k230_agent test            # agent link code against the BL616's over a lossy socket pair
 make -C firmware/k230_board/rtsmart/drivers/bl616_nethub/test   # K230 Wi-Fi driver on a simulated BL616 SDU
 make -C firmware/k230_capture clean; make -C firmware/bl616/test clean; make -C firmware/k230_agent clean

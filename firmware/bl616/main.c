@@ -353,6 +353,7 @@ static void session_task(void *arg)
         hr = aht20_finish(&rh, &t);
     env_take(hr, rh, t);
     run_session(WAKE_LEAK, &sleep_s, false);    /* K230 captures, then asks to be powered off */
+    wifi_link_release(WIFI_OWNER_K230);
     session_running = false;
     vTaskDelete(NULL);
 }
@@ -379,8 +380,12 @@ static void supervisor_task(void *arg)
          * never sleep here, so a level would restart the session for as long as it stays wet */
         bool wet = leak_is_wet();
         if (wet && !usb_was_wet && !session_running) {
-            session_running = true;
-            xTaskCreate(session_task, "k230", 2048, NULL, 2, NULL);
+            if (!wifi_link_claim(WIFI_OWNER_K230)) {
+                wet = false;            /* a BLE credential check has the radio: the edge waits */
+            } else {
+                session_running = true;
+                xTaskCreate(session_task, "k230", 2048, NULL, 2, NULL);
+            }
         }
         usb_was_wet = wet;
 

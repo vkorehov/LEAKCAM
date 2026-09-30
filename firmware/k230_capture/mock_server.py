@@ -2,14 +2,27 @@
 """Mock LEAKCAM server: what leakcam_wake and leakcam_stream talk to until the real one exists.
 
   mock_server.py [--port 8000] [--dir mock_out] [--leak probe|always|never]
+                 [--nn <kmodel> --thr <cam0>,<cam1>]
 
-POST /v1/check?reason=<r>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>
-                            body: one binary PGM per camera, back to back. Saved as
-                            check-<n>-cam<i>.pgm. Answers {"leak":true|false}: with --leak
-                            probe (default) a leak is what the BL616's probes say: the
-                            reason "leak", or the probe node below 825 mV (wet).
-POST /v1/video?cam=<N>      chunked FLV (H.264 + G.711 mu-law 8 kHz), saved as video-<n>-cam<N>.flv.
-                            Answers {"bytes":<received>}.
+POST /v1/check?reason=<r>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>&nn=<CRC>&thr=<t0>,<t1>
+               &cam<i>=<first|same|changed|light>,<distance>[&sample=1]
+                            body: binary PGMs back to back, per camera its frame, then its
+                            history view where the state is changed or light. Saved as
+                            check-<n>-cam<i>.pgm, check-<n>-cam<i>-view.pgm and the query as
+                            check-<n>.json: the pairs a teacher labels for the next change net
+                            (firmware/NN.txt). Answers {"leak":true|false}: with --leak probe
+                            (default) a leak is what the BL616's probes say: the reason "leak",
+                            or the probe node below 825 mV (wet); a leak answer asks for --video-s seconds of video
+                            ("video":<s>). With --nn, the answer adds
+                            "nn":"<CRC>","thr":[t0,t1] when the board's net or thresholds differ.
+POST /v1/video?s=<seconds>  asks for a clip: the next check answer adds "video":<seconds>, and
+                            the board streams that long, leak or not
+                            (bench: curl -X POST '<host>:<port>/v1/video?s=30')
+GET /v1/nn/<CRC>            the --nn kmodel (CRC-32, 8 hex digits); each download leaves a file
+                            nn-get-<n>.
+The leak video is not sent here: leakcam_stream publishes it live over RTMP to port 1935 of the
+same host, where the real server runs MediaMTX (for a bench: `ffmpeg -listen 1 -i
+rtmp://0.0.0.0:1935/leakcam/cam0`, FFmpeg 7.1+).
 
 On the device, /sdcard/leakcam/server holds "<host> <port>" of this server.
 """
@@ -18,10 +31,12 @@ import json
 import os
 import re
 import threading
+import zlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 counter = 0
+video_pending = 0                                  # seconds asked for, 0 = none
 lock = threading.Lock()
 
 
@@ -55,16 +70,22 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def do_GET(self):
+        m = re.fullmatch(r"/v1/nn/([0-9a-f]{8})", urlparse(self.path).path)
+        if not (m and nn_model and m.group(1) == nn_crc):
+            self.send_error(404)
+            return
+        n = next_n()
+        open(os.path.join(args.dir, f"nn-get-{n}"), "w").close()
+        print(f"nn {n}: kmodel {nn_crc} sent, {len(nn_model)} bytes", flush=True)
+        self.send_response(200)
+        self.send_header("Content-Type", "application/octet-stream")
+        self.send_header("Content-Length", str(len(nn_model)))
+        self.send_header("Connection", "close")
+        self.end_headers()
+        self.wfile.write(nn_model)
+
     def read_body(self):
-        if self.headers.get("Transfer-Encoding", "").lower() == "chunked":
-            data = bytearray()
-            while True:
-                size = int(self.rfile.readline().split(b";")[0], 16)
-                if size == 0:
-                    self.rfile.readline()
-                    return bytes(data)
-                data += self.rfile.read(size)
-                self.rfile.readline()
         return self.rfile.read(int(self.headers.get("Content-Length", 0)))
 
     def do_POST(self):
@@ -72,24 +93,43 @@ class Handler(BaseHTTPRequestHandler):
         q = parse_qs(url.query)
         body = self.read_body()
         n = next_n()
-        if url.path == "/v1/check":
+        global video_pending
+        if url.path == "/v1/video":
+            s = int(q.get("s", ["0"])[0])
+            with lock:
+                video_pending = s
+            print(f"video of {s} s requested for the next check", flush=True)
+            self.reply({"video": s})
+        elif url.path == "/v1/check":
             reason = q.get("reason", [""])[0]
             mv = int(q["probe_mv"][0])
             pgms = split_pgms(body)
-            for i, p in enumerate(pgms):
-                with open(os.path.join(args.dir, f"check-{n}-cam{i}.pgm"), "wb") as f:
-                    f.write(p)
+            cams, k = [], 0
+            while f"cam{len(cams)}" in q:
+                i = len(cams)
+                state, dist = q[f"cam{i}"][0].split(",")
+                names = [f"check-{n}-cam{i}.pgm"] + ([f"check-{n}-cam{i}-view.pgm"] if state in ("changed", "light") else [])
+                for name in names:
+                    with open(os.path.join(args.dir, name), "wb") as f:
+                        f.write(pgms[k])
+                    k += 1
+                cams.append(f"{state}/{dist}")
+            with open(os.path.join(args.dir, f"check-{n}.json"), "w") as f:
+                json.dump({key: v[0] for key, v in q.items()}, f)
             wet = "leak" in reason.split("+") or 0 <= mv < 825
             leak = args.leak == "always" or (args.leak == "probe" and wet)
             print(f"check {n}: reason={reason} probe={mv} mV bat={q['bat_mv'][0]} mV "
-                  f"rh={q['rh'][0]} t={q['t'][0]} cameras={len(pgms)} -> leak={leak}", flush=True)
-            self.reply({"leak": leak})
-        elif url.path == "/v1/video":
-            cam = q.get("cam", ["0"])[0]
-            with open(os.path.join(args.dir, f"video-{n}-cam{cam}.flv"), "wb") as f:
-                f.write(body)
-            print(f"video {n}: cam{cam} {len(body)} bytes", flush=True)
-            self.reply({"bytes": len(body)})
+                  f"rh={q['rh'][0]} t={q['t'][0]} cameras={' '.join(cams)} nn={q['nn'][0]} "
+                  f"{'sample ' if 'sample' in q else ''}-> leak={leak}", flush=True)
+            answer = {"leak": leak}
+            with lock:
+                video = video_pending or (args.video_s if leak else 0)
+                video_pending = 0
+            if video:
+                answer["video"] = video
+            if nn_model and (q["nn"][0] != nn_crc or q["thr"][0] != args.thr):
+                answer.update(nn=nn_crc, thr=[float(t) for t in args.thr.split(",")])
+            self.reply(answer)
         else:
             self.send_error(404)
 
@@ -102,7 +142,12 @@ if __name__ == "__main__":
     ap.add_argument("--port", type=int, default=8000)
     ap.add_argument("--dir", default="mock_out")
     ap.add_argument("--leak", choices=["probe", "always", "never"], default="probe")
+    ap.add_argument("--video-s", type=int, default=5, help="clip length asked for on a leak")
+    ap.add_argument("--nn", help="change net kmodel to offer to the boards")
+    ap.add_argument("--thr", default="0.44,0.44", help="its thresholds, camera 0 and 1, two decimals")
     args = ap.parse_args()
+    nn_model = open(args.nn, "rb").read() if args.nn else None
+    nn_crc = f"{zlib.crc32(nn_model):08x}" if nn_model else None
     os.makedirs(args.dir, exist_ok=True)
     srv = ThreadingHTTPServer(("0.0.0.0", args.port), Handler)
     print(f"mock server on port {srv.server_address[1]}, files in {args.dir}", flush=True)

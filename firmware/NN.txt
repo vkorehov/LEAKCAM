@@ -1,0 +1,203 @@
+LEAKCAM change net: design, retraining plan and field teacher loop
+==================================================================
+
+The one neural net on the device. It runs on the K230D KPU inside leakcam_wake and answers
+one question: is the change imgdiff found a change of the scene, or only of the light? The
+leak / no-leak decision stays with the server (/v1/check).
+
+  code        firmware/k230_capture/change.[ch]     (nncase 2.11 runtime, no OpenCV)
+  model       firmware/k230_capture/leakcam_change.kmodel -> /sdcard/app on the board
+  tools       firmware/k230_nn/make_embed.py        (host, TensorFlow: net, pairs, threshold)
+              firmware/k230_nn/compile_embed.py     (x86 container: int16 kmodel, sim vs TF)
+              firmware/k230_nn/README.md            (toolchain setup and commands)
+
+
+1. Design (what runs now)
+-------------------------
+
+Per camera, per wake:
+
+  capture -> reduce to 320x240 luma (imgdiff_reduce)
+          -> imgdiff vs the history view           same    -> not changed
+          -> changed: change net (view, current)   < 0.44  -> not changed (light only)
+                                                   >= 0.44 -> changed -> Wi-Fi -> server
+                                                   failed  -> changed (reported)
+
+Net
+  MobileNetV2-0.35 with its ImageNet weights, cut at block_13_expand_relu: stride 16,
+  192 channels, 98.5 k parameters, 69 MMAC. Not trained for this task.
+  Input: uint8 NHWC 1x240x320x1, the frame imgdiff already holds. Inside the graph, luma is
+  repeated to 3 channels and scaled to [-1, 1], so nncase preprocessing is only a cast.
+  Output: float 1x15x20x192 feature map.
+
+Decision
+  distance = max over the 300 cells of (1 - cosine(feature_ref, feature_cur))
+  Per cell, not one pooled vector: a small puddle touches 1-3 of 300 cells and pooling
+  averages it away. Max over cells keeps imgdiff's "any block" meaning.
+  CHANGE_THRESHOLD (change.h) = the largest distance of any lighting or AGC pair in
+  make_embed.py, rounded up: 0.44. No lighting-only pair crosses it.
+
+Reference
+  The history view, the same image imgdiff compares with. It is embedded again at every wake
+  that needs the net (2 inferences), so nothing new is stored. A light-only frame does not
+  enter the history, so a leak that grows is still measured against the dry floor.
+
+Quantisation
+  int16 PTQ, activations and weights, KLD calibration on 20 frames: 372 KB, distance within
+  0.0014 of TensorFlow on every check pair in the simulator. uint8 moved distances by up to
+  0.1, too much against a 0.44 threshold.
+
+Cost
+  The net runs only on wakes where imgdiff saw a change. KPU time is not measured yet (no
+  hardware); from the SDK's yolov8n figures, a few ms per inference. It adds about 5 MB to
+  the static leakcam_wake (the nncase runtime).
+
+Measured (make_embed.py, Pi-camera photos and nano-banana edits, not LEAKCAM frames)
+
+  pairs                                     n    above 0.44
+  lighting: gain 0.6-1.5, gamma 0.7-1.4     24    0 %
+  real dry captures minutes apart            5    0 %
+  wet vs dry base                           72   50 %
+  wet + lighting change                     72   42 %
+  small wet, severity <= 0.25                8   25 %
+  wipe (a real change)                      30   43 %
+
+Known limits
+  - Half of the synthetic wet pairs fall below the threshold and are not reported on that
+    wake. The probe and humidity alarms always go to the server regardless; a vetoed frame
+    keeps the dry reference, so a spreading leak crosses on a later wake.
+  - The threshold comes from another camera. LEAKCAM's fisheye OV5647, LED and IR light,
+    and AGC behaviour are not in the data.
+
+
+2. Retraining plan
+------------------
+
+Goal: the same job and the same device interface, with far better recall at zero
+lighting false alarms, measured on LEAKCAM frames.
+
+2.1 Data from LEAKCAM boards
+
+  - Both cameras, white and IR, LED from 100 % down the PWM back-off range, day and night
+    ambient, AGC settling and gamma changes: all of these are "same" pairs.
+  - Every pair taken as leakcam_wake takes it: the history view and the current frame,
+    320x240 after imgdiff_reduce. `leakcam_hist get <cam> <n> <out.pgm>` exports the views.
+  - Real wet tests in several rooms: water on tile, wood, concrete and carpet; small drops to
+    puddles; drying over hours. Mark the wet area per frame (mask), as ~/leakcam does with its
+    -mask.jpg siblings.
+  - Benign real changes (wipe, moved object, person, pet) are "changed": this net only says
+    "not just light"; what the change is stays the server's call.
+  - Keep ~/leakcam's layout rules: stages link, never copy; -base/-mask siblings; labels in
+    names.
+  - Keep a held-out set per board and per room. Never split pairs of one scene across train
+    and validation.
+
+2.2 Labels
+
+  - Per cell (15x20): changed if mask coverage is above a few % of the cell.
+  - Lighting and AGC pairs: every cell unchanged.
+  - Synthetic augmentation on top of real pairs: gain, gamma, noise, IR/white swap, LED-level
+    mix, vignetting of the fisheye circle. Apply the same transform only to the current frame.
+
+2.3 Model
+
+  - Backbone: the same MobileNetV2-0.35 to stride 16, ImageNet start. Freeze the early blocks
+    and fine-tune the last two.
+  - Projection: 1x1 conv to 64 channels, L2-normalised per cell.
+  - Head, per cell, on [|e_ref - e_cur|, e_ref * e_cur]: two 1x1 convs, then a sigmoid. The
+    output is a 15x20 change probability map; the device takes its max.
+  - All standard convolutions, so the KPU runs the whole net.
+  - Loss: per-cell binary cross-entropy, changed and unchanged cells balanced as in
+    ~/leakcam's model_dataset.balance().
+
+2.4 Acceptance, on the held-out LEAKCAM set
+
+  - Zero false "changed" on the lighting and AGC pairs, the same rule as today. The threshold
+    on the map max is set from those pairs.
+  - Recall on real wet pairs clearly above today's frozen net at that threshold, and on small
+    wet cells in particular. Report the table in section 1 again with the new numbers.
+  - kmodel vs TensorFlow in the nncase simulator on every check pair.
+
+2.5 Quantisation
+
+  Try uint8 first with the 64-d projection (smaller, faster). Keep it only if simulator
+  distances stay within 0.01 of TensorFlow on the check pairs; otherwise int16, as now.
+
+2.6 Deployment
+
+  - One change, no variant: new leakcam_change.kmodel, CHANGE_THRESHOLD, change.cc reading
+    the map max instead of computing cosines, and make_embed.py / compile_embed.py for the
+    new net. The old model and its code go in the same change.
+  - The reference stays the history view. Storing its embedding on NAND (15x20x64 int8,
+    19 KB per camera) would save one inference per wake; do it only if the measured KPU time
+    matters next to boot and AE settling.
+  - Measure on the board: KPU time per inference, wake time with and without the net, and
+    the distance of the same pairs on hardware vs the simulator.
+
+
+3. Field teacher loop
+---------------------
+
+The KPU only runs models, so learning happens on the server: a large model there labels
+what the boards send, and the small change net is distilled from those labels.
+
+3.1 Labels from the field
+
+  - Every changed frame already reaches /v1/check with the history view. A large teacher on
+    the server (a segmentation net or a vision-language model, run on the pair) labels it per
+    cell: changed or light only, and leak or not.
+  - Real outcomes outrank the teacher: a probe or humidity alarm at the same time, the user's
+    answer in the app ("was this a leak?"), a scene that goes back to dry on later wakes.
+  - Every labelled pair goes into the dataset of section 2.1, same layout rules, tagged with
+    board, camera and room so the held-out split stays per board and per room.
+
+3.2 Seeing what the net vetoed
+
+  The teacher only sees what the device sends, and the misses worth learning from are the
+  frames the net called light only. So the device sends those too:
+  - piggyback (built): when Wi-Fi is up anyway (the other camera changed, a sensor alarm),
+    every camera goes to /v1/check with its state (first, same, changed, light) and distance,
+    and wherever imgdiff saw a change the history view goes with the frame: the whole pair.
+    No extra connection.
+  - sample (built): a wake where a light-only distance came within SAMPLE_MARGIN (0.1) of the
+    camera's threshold reports on its own with sample=1, at most once a day (SAMPLE_EVERY_S,
+    the time of the last one in /sdcard/leakcam/sample). A failed sample is not retried.
+  Without this the dataset only holds what the net already passes, and retraining cannot fix
+  its misses.
+
+3.3 Per-camera threshold
+
+  - The cheapest gain. The server keeps each camera's distances on pairs the teacher or the
+    outcome calls light only, and sets that camera's threshold just above their maximum
+    (never below the fleet value minus a fixed margin, never above 0.9).
+  - The threshold is data, not a firmware variant (built): the /v1/check answer carries
+    "thr":[<cam0>,<cam1>] with "nn":"<CRC>" whenever the board reported other values
+    (nn=<CRC>&thr=<cam0>,<cam1> in every check). leakcam_wake stores them with the kmodel
+    (3.4); with nothing stored, CHANGE_THRESHOLD in change.h for both cameras.
+
+3.4 Distillation and rollout
+
+  - Retrain as in sections 2.3-2.5 on the field set, with the teacher's per-cell labels as
+    soft targets and real outcomes as hard ones.
+  - Accept only on the held-out boards and rooms (section 2.4), never on data from the boards
+    the model will ship to next.
+  - One kmodel for the whole fleet. The per-camera thresholds are recomputed for the new
+    model before it ships, because distances change with the weights.
+  - Delivery (built, no OTA of the programs needed): the server answers /v1/check with the
+    new kmodel's CRC-32 and thresholds; leakcam_wake downloads GET /v1/nn/<CRC> after the
+    check (after the video on a leak), checks the CRC and saves kmodel and thresholds together
+    in two slots, /sdcard/leakcam/change.0 and .1 (nnstore.h: header with generation, lengths
+    and CRCs; tmp file, fsync, rename; the newest slot that checks wins). The next wake uses
+    it. A damaged slot falls back to the older one, then to the factory kmodel in /sdcard/app
+    with CHANGE_THRESHOLD, and the server's next answer offers the update again. Thresholds
+    for the same kmodel are stored without a download.
+  - Keep the previous kmodel on the server; a bad rollout is undone by offering it again.
+  - The input and output shapes are fixed by change.cc (uint8 1x240x320x1 in, the per-cell
+    feature map out); a retrained net that changes them (2.6) needs new firmware.
+
+3.5 Still to build, on the server
+
+  - Storage of the pairs with their query (mock_server.py keeps check-<n>-cam<i>.pgm,
+    -view.pgm and check-<n>.json as the model for it), board and camera identity, labels.
+  - The teacher, the per-camera threshold calculation and the distillation run.
+  - Board identity: /v1/check carries none yet; per-camera thresholds need one.
