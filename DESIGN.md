@@ -272,7 +272,8 @@ is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
   humidity at or above 85 %RH at any wake starts a K230 session, every time, and the values
   ride in `WAKE`. The K230 decides leak or no leak and how long to sleep. The only state the
   BL616 keeps is the failed-boot count (for the retry back-off) and the USB-exit flag.
-- **USB mode.** On USB power the BL616 stays awake and advertises BLE for provisioning.
+- **USB mode.** On USB power the BL616 stays awake and advertises BLE for provisioning. The phone
+  side is the Android app in [android/](android/README.md): SSID and password on one screen.
   Unplugging returns it to the battery schedule.
 - **No recovery of its own.** A stopped heartbeat means the session is over, whatever the
   reason: the BL616 cuts the power (300 ms discharge wait included) and schedules the next wake.
