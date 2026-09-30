@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothStatusCodes
@@ -42,8 +43,10 @@ import java.util.UUID
  *
  * The board advertises the provisioning service while it is on USB power. The app scans for that
  * service, connects, pairs (LE Secure Connections, Just Works: the board accepts pairing only on USB
- * power), then writes SSID, passphrase and commit (0x01), which stores both in the board's flash.
- * The board does not report whether the network works; it joins at its next wake.
+ * power), subscribes to STATUS, then writes SSID, passphrase and commit. Commit 0x01 makes the
+ * board join the network, get an address and reach the internet before it stores anything; STATUS
+ * reports each step and the result (firmware/bl616/wifi_check_calc.h). Commit 0x02 stores without
+ * checking, for a board set up out of reach of its network.
  *
  * The screen walks through four steps (plug in, find, Wi-Fi, pair and save); the box under them
  * says what to do now, and for pairing what the phone will show.
@@ -56,9 +59,27 @@ class MainActivity : Activity() {
         val SSID: UUID = UUID.fromString("4c43a000-4c45-4b43-414d-000000000002")
         val PSK: UUID = UUID.fromString("4c43a000-4c45-4b43-414d-000000000003")
         val COMMIT: UUID = UUID.fromString("4c43a000-4c45-4b43-414d-000000000004")
+        val STATUS: UUID = UUID.fromString("4c43a000-4c45-4b43-414d-000000000005")
+        val CCC: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+        const val COMMIT_CHECK: Byte = 1
+        const val COMMIT_UNCHECKED: Byte = 2
+        // STATUS states, as in firmware/bl616/wifi_check_calc.h
+        const val WCHK_JOINING = 0x01
+        const val WCHK_ADDRESS = 0x02
+        const val WCHK_INTERNET = 0x03
+        const val WCHK_SAVED = 0x04
+        const val WCHK_NOT_FOUND = 0x10
+        const val WCHK_WRONG_PASSWORD = 0x11
+        const val WCHK_JOIN_FAILED = 0x12
+        const val WCHK_NO_ADDRESS = 0x13
+        const val WCHK_NO_DNS = 0x14
+        const val WCHK_NO_INTERNET = 0x15
+        const val WCHK_CAPTIVE = 0x16
+        const val WCHK_BUSY = 0x17
+        const val WCHK_SAVE_FAILED = 0x18
         const val MTU = 247              // the longest value, a 63-byte passphrase, in one write
         const val SCAN_MS = 10_000L
-        const val SEND_TIMEOUT_MS = 60_000L   // includes the user reading and accepting the pairing request
+        const val SEND_TIMEOUT_MS = 60_000L   // per step: pairing (the user reads and accepts), each check step
         const val REQUEST_PERMISSIONS = 1
         const val REQUEST_ENABLE_BT = 2
         const val STEP_PLUG = 1
@@ -74,6 +95,7 @@ class MainActivity : Activity() {
     private lateinit var help: TextView
     private lateinit var scanButton: Button
     private lateinit var sendButton: Button
+    private lateinit var saveAnywayButton: Button
     private lateinit var devices: RadioGroup
     private lateinit var ssidField: EditText
     private lateinit var passwordField: EditText
@@ -90,6 +112,9 @@ class MainActivity : Activity() {
     private var gatt: BluetoothGatt? = null
     private var boardName = ""
     private var wasBonded = false        // paired before this send: a pairing failure means a stale bond
+    private var checked = true           // this send asks the board to check the network first
+    private var committed = false        // commit written: STATUS reports from here on
+    private var ssidText = ""
     private var writes = ArrayDeque<Pair<UUID, ByteArray>>()
     private var bondReceiver: BroadcastReceiver? = null
 
@@ -101,6 +126,7 @@ class MainActivity : Activity() {
         help = findViewById(R.id.help)
         scanButton = findViewById(R.id.scan)
         sendButton = findViewById(R.id.send)
+        saveAnywayButton = findViewById(R.id.save_anyway)
         devices = findViewById(R.id.devices)
         ssidField = findViewById(R.id.ssid)
         passwordField = findViewById(R.id.password)
@@ -121,7 +147,8 @@ class MainActivity : Activity() {
         }
         devices.setOnCheckedChangeListener { _, _ -> if (!scanning && gatt == null) show(STEP_WIFI, R.string.help_wifi) }
         scanButton.setOnClickListener { if (ready()) startScan() }
-        sendButton.setOnClickListener { if (ready()) send() }
+        sendButton.setOnClickListener { if (ready()) send(true) }
+        saveAnywayButton.setOnClickListener { if (ready()) send(false) }
         show(STEP_PLUG, R.string.help_plug)
     }
 
@@ -256,7 +283,7 @@ class MainActivity : Activity() {
 
     // ---------------- steps 3 and 4: Wi-Fi, pair and save ----------------
 
-    private fun send() {
+    private fun send(check: Boolean) {
         val address = devices.findViewById<RadioButton>(devices.checkedRadioButtonId)?.tag as String?
         val (device, name) = address?.let { found[it] } ?: return problem(STEP_FIND, R.string.err_pick)
         val ssid = ssidField.text.toString().toByteArray(Charsets.UTF_8)
@@ -267,13 +294,23 @@ class MainActivity : Activity() {
             return problem(STEP_WIFI, R.string.err_password)
         stopScan()
         boardName = name
+        ssidText = ssidField.text.toString()
         wasBonded = device.bondState == BluetoothDevice.BOND_BONDED
-        writes = ArrayDeque(listOf(SSID to ssid, PSK to psk, COMMIT to byteArrayOf(1)))
+        checked = check
+        committed = false
+        val commit = if (check) COMMIT_CHECK else COMMIT_UNCHECKED
+        writes = ArrayDeque(listOf(SSID to ssid, PSK to psk, COMMIT to byteArrayOf(commit)))
         sendButton.isEnabled = false
         scanButton.isEnabled = false
+        saveAnywayButton.visibility = View.GONE
         show(STEP_SAVE, R.string.help_connecting, name)
-        main.postDelayed({ fail(R.string.err_timeout) }, SEND_TIMEOUT_MS)
+        armTimeout()
         gatt = device.connectGatt(this, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
+    }
+
+    private fun armTimeout() {
+        main.removeCallbacksAndMessages(null)
+        main.postDelayed({ fail(R.string.err_timeout) }, SEND_TIMEOUT_MS)
     }
 
     /** closes the connection and turns the buttons back on; then [done], if a send was running */
@@ -312,6 +349,7 @@ class MainActivity : Activity() {
                     when {
                         bondReceiver != null -> pairingFailed()                  // dropped while pairing
                         wasBonded && st in PAIRING_LOST -> pairingFailed()
+                        committed -> fail(R.string.err_lost_during_check)
                         else -> fail(R.string.err_disconnected, st)
                     }
                 }
@@ -325,8 +363,30 @@ class MainActivity : Activity() {
         override fun onServicesDiscovered(g: BluetoothGatt, st: Int) {
             main.post {
                 if (g != gatt) return@post
-                if (g.getService(SERVICE) == null) fail(R.string.err_no_service) else writeNext(g)
+                if (g.getService(SERVICE) == null) fail(R.string.err_no_service) else subscribe(g)
             }
+        }
+
+        override fun onDescriptorWrite(g: BluetoothGatt, d: BluetoothGattDescriptor, st: Int) {
+            main.post {
+                if (g != gatt) return@post
+                when (st) {
+                    BluetoothGatt.GATT_SUCCESS -> writeNext(g)
+                    BluetoothGatt.GATT_INSUFFICIENT_AUTHENTICATION, BluetoothGatt.GATT_INSUFFICIENT_ENCRYPTION -> pairingFailed()
+                    else -> fail(R.string.err_no_service)
+                }
+            }
+        }
+
+        override fun onCharacteristicChanged(g: BluetoothGatt, c: BluetoothGattCharacteristic, value: ByteArray) {
+            main.post { if (g == gatt && c.uuid == STATUS) onStatus(value) }
+        }
+
+        @Deprecated("Android 12 and older")
+        override fun onCharacteristicChanged(g: BluetoothGatt, c: BluetoothGattCharacteristic) {
+            @Suppress("DEPRECATION")
+            val value = c.value ?: return
+            main.post { if (g == gatt && c.uuid == STATUS) onStatus(value) }
         }
 
         override fun onCharacteristicWrite(g: BluetoothGatt, c: BluetoothGattCharacteristic, st: Int) {
@@ -376,14 +436,67 @@ class MainActivity : Activity() {
             device.createBond()
     }
 
+    /** STATUS notifications on, before anything is written: the check reports through them */
+    private fun subscribe(g: BluetoothGatt) {
+        val c = g.getService(SERVICE)?.getCharacteristic(STATUS) ?: return fail(R.string.err_no_service)
+        val d = c.getDescriptor(CCC) ?: return fail(R.string.err_no_service)
+        g.setCharacteristicNotification(c, true)
+        val value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+        val started = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            g.writeDescriptor(d, value) == BluetoothStatusCodes.SUCCESS
+        } else {
+            @Suppress("DEPRECATION")
+            d.value = value
+            @Suppress("DEPRECATION")
+            g.writeDescriptor(d)
+        }
+        if (!started)
+            fail(R.string.err_no_service)
+    }
+
+    /** the board's check: progress, then SAVED or a failure (nothing stored) */
+    private fun onStatus(v: ByteArray) {
+        if (!committed || v.isEmpty()) return
+        val state = v[0].toInt() and 0xff
+        val detail = if (v.size >= 3) (v[1].toInt() and 0xff) or ((v[2].toInt() and 0xff) shl 8) else 0
+        armTimeout()
+        when (state) {
+            WCHK_JOINING -> show(STEP_SAVE, R.string.help_check_join, ssidText)
+            WCHK_ADDRESS -> show(STEP_SAVE, R.string.help_check_address)
+            WCHK_INTERNET -> show(STEP_SAVE, R.string.help_check_internet)
+            WCHK_SAVED -> finishSend {
+                show(STEP_DONE, if (checked) R.string.help_done else R.string.help_done_unchecked, boardName, ssidText)
+            }
+            else -> {
+                // where the board is now may be the only problem: offer to store unchecked
+                val placeOnly = state in setOf(WCHK_NOT_FOUND, WCHK_NO_ADDRESS, WCHK_NO_DNS, WCHK_NO_INTERNET, WCHK_CAPTIVE)
+                finishSend {
+                    when (state) {
+                        WCHK_NOT_FOUND -> problem(STEP_WIFI, R.string.chk_not_found, ssidText)
+                        WCHK_WRONG_PASSWORD -> problem(STEP_WIFI, R.string.chk_wrong_password, ssidText, detail)
+                        WCHK_JOIN_FAILED -> problem(STEP_SAVE, R.string.chk_join_failed, detail)
+                        WCHK_NO_ADDRESS -> problem(STEP_SAVE, R.string.chk_no_address)
+                        WCHK_NO_DNS -> problem(STEP_SAVE, R.string.chk_no_dns)
+                        WCHK_NO_INTERNET -> problem(STEP_SAVE, R.string.chk_no_internet)
+                        WCHK_CAPTIVE -> problem(STEP_WIFI, R.string.chk_captive, detail)
+                        WCHK_BUSY -> problem(STEP_SAVE, R.string.chk_busy)
+                        WCHK_SAVE_FAILED -> problem(STEP_SAVE, R.string.chk_save_failed)
+                        else -> problem(STEP_SAVE, R.string.chk_unknown, state)
+                    }
+                    saveAnywayButton.visibility = if (placeOnly) View.VISIBLE else View.GONE
+                }
+            }
+        }
+    }
+
     private fun writeNext(g: BluetoothGatt) {
         val next = writes.removeFirstOrNull()
-        if (next == null) {
-            val ssid = ssidField.text.toString()
-            finishSend { show(STEP_DONE, R.string.help_done, boardName, ssid) }
-            return
-        }
+        if (next == null)
+            return                       // committed: the board reports on STATUS
+
         val (uuid, value) = next
+        if (uuid == COMMIT)
+            committed = true             // STATUS may answer before the write does (save, busy)
         val c = g.getService(SERVICE)?.getCharacteristic(uuid) ?: return fail(R.string.err_no_service)
         val started = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             g.writeCharacteristic(c, value, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) == BluetoothStatusCodes.SUCCESS

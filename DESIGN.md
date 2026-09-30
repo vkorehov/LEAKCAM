@@ -274,6 +274,8 @@ is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
   BL616 keeps is the failed-boot count (for the retry back-off) and the USB-exit flag.
 - **USB mode.** On USB power the BL616 stays awake and advertises BLE for provisioning. The phone
   side is the Android app in [android/](android/README.md): SSID and password on one screen.
+  Before it stores them the BL616 checks them itself: it joins, gets an address and reaches a
+  well-known internet URL, and the app shows which step failed.
   Unplugging returns it to the battery schedule.
 - **No recovery of its own.** A stopped heartbeat means the session is over, whatever the
   reason: the BL616 cuts the power (300 ms discharge wait included) and schedules the next wake.

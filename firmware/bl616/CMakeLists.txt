@@ -30,6 +30,7 @@ target_sources(app PRIVATE
                    ble_pairing.c
                    aht20.c
                    wifi_link.c
+                   wifi_check.c
                    )
 
 sdk_set_main_file(main.c)
