@@ -38,6 +38,9 @@ netsh advfirewall firewall add rule name="SolidWorks MCP" dir=in action=allow pr
 start.bat
 ```
 
+It first pulls the repo (`git pull --ff-only`, never asking for a login), so a restart runs the
+latest server.
+
 It prints the host names it accepts: requests must name this PC by its hostname or one of its IPv4
 addresses (the MCP library's DNS-rebinding guard). If you reach it by another name or address
 (a DNS alias, a VPN or NAT address), add it: `start.bat --allow-host myname`.
