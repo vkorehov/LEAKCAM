@@ -33,6 +33,12 @@ EXTRUDED = {
     "mems": "no EasyEDA model: extruded body 2.75 x 1.85 mm, 0.90 mm high (MSM381ACB026), standoff 0",
 }
 
+# parts without an EasyEDA model: the same package from another part number, tried in order
+STAND_INS = {
+    "C22459552": ["C6081229", "C2856804", "C54333867"],  # FPC 0.5 mm 22P 2.0 mm: SHOU HAN, XUNPU FPC-05F-22PH20, Minlenda
+    "C51928208": ["C48997089", "C4747982"],      # MSM381ACBA24, MSM381A3729H9BPC: MSM381 package
+}
+
 PARTS = [  # footprint in LEAKCAM.PcbLib, designators, LCSC
     ("TYPE-C-31-M-12", "USBC1 USBC2", "C165948"),
     ("FLEX_CON_22P", "J4 J5", "C22459552"),
@@ -79,10 +85,14 @@ def main():
     lines = ["footprint                 parts                     LCSC        model (EasyEDA title)"
              "                        offset x,y (mm)  z (mm)   rotation x,y,z"]
     for fp, des, lcsc in PARTS:
+        node, src = None, lcsc
         try:
-            d = json.loads(cached(lcsc))
-            shape = d["result"]["packageDetail"]["dataStr"]["shape"]
-            node = next((s for s in shape if s.startswith("SVGNODE~")), None)
+            for src in [lcsc] + STAND_INS.get(lcsc, []):
+                d = json.loads(cached(src))
+                shape = d["result"]["packageDetail"]["dataStr"]["shape"]
+                node = next((s for s in shape if s.startswith("SVGNODE~")), None)
+                if node:
+                    break
         except Exception as e:                       # noqa: BLE001 - report and go on
             lines.append(f"{fp:25s} {des[:25]:25s} {lcsc:11s} no footprint data ({e})")
             continue
@@ -107,7 +117,10 @@ def main():
         z = float(a.get("z", 0)) * mm
         place = (f"{dx:7.3f},{dy:7.3f}   {z:6.3f}" if fp in FROM_EASYEDA and abs(dx) < 10 and abs(dy) < 10
                  else "   align on the pads    ")
-        lines.append(f"{fp:25s} {des[:25]:25s} {lcsc:11s} {a.get('title', '')[:40]:40s} "
+        title = a.get("title", "") if src == lcsc else f"stand-in {src}: {a.get('title', '')}"
+        if src != lcsc:
+            place = "   align on the pads    "        # another part's footprint: its origin need not match
+        lines.append(f"{fp:25s} {des[:25]:25s} {lcsc:11s} {title[:40]:40s} "
                      f"{place}   {a.get('c_rotation', '0,0,0')}")
     open(os.path.join(HERE, "models.txt"), "w").write("\n".join(lines) + "\n")
     print("\n".join(lines))
