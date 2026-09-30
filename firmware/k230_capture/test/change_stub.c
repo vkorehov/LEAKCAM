@@ -3,6 +3,12 @@
 
 #include "change.h"
 
+int change_load(const uint8_t *kmodel, size_t len)
+{
+    (void)kmodel; (void)len;
+    return 0;
+}
+
 float change_distance(const uint8_t *ref, const uint8_t *cur)
 {
     (void)ref; (void)cur;
