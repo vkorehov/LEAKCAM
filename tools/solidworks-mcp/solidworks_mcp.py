@@ -92,7 +92,12 @@ def typed(obj, interface):
     cls = getattr(swtlb(), interface, None)
     if cls is None:
         raise AttributeError(f"sldworks.tlb has no interface {interface}")
-    return cls(obj)
+    ole = getattr(obj, "_oleobj_", obj)     # the raw PyIDispatch: a CDispatch wrapper breaks InvokeTypes
+    try:
+        ole = ole.QueryInterface(cls.CLSID, pythoncom.IID_IDispatch)
+    except pythoncom.com_error:
+        pass                                # plain IDispatch: SolidWorks' dispids match the interface
+    return cls(ole)
 
 
 def members(interface):
