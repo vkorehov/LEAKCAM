@@ -49,7 +49,13 @@ def get(obj, name):
     """a zero-argument member: late binding hands some (RevisionNumber, GetMathUtility, GetFaces)
     over as properties already read, others as methods still to call. A COM object that came back
     is callable too (its default member) and must not be called."""
-    v = getattr(obj, name)
+    try:
+        v = getattr(obj, name)
+    except pythoncom.com_error:
+        # a true method (face.GetSurface().IsCylinder): SolidWorks throws when it is read as a
+        # property, which is how late binding tries a name first
+        obj._FlagAsMethod(name)
+        return getattr(obj, name)()
     if isinstance(v, win32com.client.CDispatch):
         return v
     return v() if callable(v) else v
