@@ -26,6 +26,7 @@ import traceback
 
 import pythoncom
 import win32com.client
+from win32com.client import gencache
 from mcp.server.fastmcp import FastMCP, Image
 from mcp.server.transport_security import TransportSecuritySettings
 
@@ -39,6 +40,7 @@ TEMPLATE_ASSEMBLY = 9                   # swDefaultTemplateAssembly
 # one thread owns COM and the SolidWorks object; everything goes through com()
 _com = concurrent.futures.ThreadPoolExecutor(max_workers=1, initializer=pythoncom.CoInitialize)
 _sw = None
+_tlb = None                              # makepy module of sldworks.tlb (early binding)
 
 
 def com(fn):
@@ -56,8 +58,8 @@ def get(obj, name):
         # property, which is how late binding tries a name first
         obj._FlagAsMethod(name)
         return getattr(obj, name)()
-    if isinstance(v, win32com.client.CDispatch):
-        return v
+    if isinstance(v, (win32com.client.CDispatch, win32com.client.DispatchBaseClass)):
+        return v                            # a COM object (late- or early-bound), not a method
     return v() if callable(v) else v
 
 
@@ -69,6 +71,44 @@ def byref_int():
 def nothing():
     """a Nothing object argument (e.g. SaveAs ExportData)"""
     return win32com.client.VARIANT(pythoncom.VT_DISPATCH, None)
+
+
+def swtlb():
+    """the SolidWorks type library as a makepy module (generated once into win32com's gen_py cache)"""
+    global _tlb
+    if _tlb is None:
+        path = os.path.join(get(sw(), "GetExecutablePath"), "sldworks.tlb")
+        attr = pythoncom.LoadTypeLib(path).GetLibAttr()          # (guid, lcid, syskind, major, minor, flags)
+        _tlb = gencache.EnsureModule(str(attr[0]), attr[1], attr[3], attr[4])
+        if _tlb is None:
+            raise RuntimeError(f"could not generate the type library wrapper for {path}")
+    return _tlb
+
+
+def typed(obj, interface):
+    """obj early-bound as a SolidWorks interface ("IInterference", "IMathUtility", "IBody2", ...):
+    late binding cannot reach members of objects that publish no type info (e.g. the body of an
+    interference); the typed object has every member of the interface with its real kind"""
+    cls = getattr(swtlb(), interface, None)
+    if cls is None:
+        raise AttributeError(f"sldworks.tlb has no interface {interface}")
+    return cls(obj)
+
+
+def members(interface):
+    """names of an interface's properties and methods, from the type library"""
+    cls = getattr(swtlb(), interface)
+    props = set(getattr(cls, "_prop_map_get_", {}))
+    meths = {n for n in dir(cls) if not n.startswith("_") and callable(getattr(cls, n)) and n not in props}
+    return sorted(props), sorted(meths)
+
+
+def transform(r, t):
+    """a MathTransform from rotation rows r (9 values: images of the x, y, z axes) and translation t
+    in metres, e.g. for component.Transform2 = transform(...)"""
+    mu = typed(get(sw(), "GetMathUtility"), "IMathUtility")
+    data = [float(v) for v in list(r) + list(t)] + [1.0, 0.0, 0.0, 0.0]
+    return mu.CreateTransform(win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_R8, data))
 
 
 def sw():
@@ -104,13 +144,58 @@ mcp = FastMCP("solidworks")
 
 @mcp.tool()
 def sw_info() -> str:
-    """SolidWorks revision and the open documents (title, path)."""
+    """SolidWorks revision and the open document windows (title, path); documents loaded only as
+    parts of an open assembly are counted, not listed."""
     def run():
         app = sw()
         docs = get(app, "GetDocuments") or ()
+        shown = [d for d in docs if get(d, "Visible")]
         lines = [f"SolidWorks {get(app, 'RevisionNumber')}"]
-        lines += [f"{get(d, 'GetTitle')}  {get(d, 'GetPathName')}" for d in docs]
+        lines += [f"{get(d, 'GetTitle')}  {get(d, 'GetPathName')}" for d in shown]
+        if len(docs) > len(shown):
+            lines.append(f"(+{len(docs) - len(shown)} documents loaded without a window)")
         return "\n".join(lines)
+    return com(run)
+
+
+@mcp.tool()
+def close_all() -> str:
+    """Close every document without saving (save_as first what should be kept): keeps SolidWorks'
+    memory down, one window at a time."""
+    def run():
+        app = sw()
+        n = len(get(app, "GetDocuments") or ())
+        app.CloseAllDocuments(True)
+        return f"closed {n} documents"
+    return com(run)
+
+
+@mcp.tool()
+def interference() -> str:
+    """Interference detection in the active assembly: each clash as its components, volume (mm3)
+    and the bounding box of the overlap (mm, assembly coordinates). Touching faces do not count."""
+    def run():
+        model = active()
+        if get(model, "GetType") != DOC_TYPES[".sldasm"]:
+            raise RuntimeError("the active document is not an assembly")
+        idm = get(model, "InterferenceDetectionManager")
+        idm.TreatCoincidenceAsInterference = False
+        idm.IncludeMultibodyPartInterferences = False
+        props, meths = members("IInterference")
+        body = next((n for n in props + meths if "Body" in n and not n.startswith("I")), None)
+        try:
+            lines = []
+            for i in get(idm, "GetInterferences") or ():
+                ti = typed(i, "IInterference")
+                names = " / ".join(get(c, "Name2") for c in (ti.Components or ()))
+                line = f"{names}: {ti.Volume * 1e9:.3f} mm3"
+                if body:
+                    b = get(ti, body)
+                    line += f", box {[round(v * 1000, 3) for v in typed(b, 'IBody2').GetBodyBox()]}"
+                lines.append(line)
+            return "\n".join(lines) or "no interference"
+        finally:
+            idm.Done()
     return com(run)
 
 
@@ -180,7 +265,9 @@ def run_python(code: str) -> str:
 
     In scope: sw (the application), model (active document or None), get(obj, "Name") for
     zero-argument members (late binding returns some as values, some as methods), byref_int() for
-    [out] long arguments, nothing() for a Nothing object argument, win32com, pythoncom. print() output is
+    [out] long arguments, nothing() for a Nothing object argument, typed(obj, "IInterface") for an
+    early-bound object (members late binding cannot reach), members("IInterface") -> (properties,
+    methods), transform(r9, t3) for a MathTransform, win32com, pythoncom. print() output is
     returned; assign `result` to return a value. Constants are numbers (see the SolidWorks API help,
     swconst). Units are metres.
 
@@ -194,6 +281,7 @@ def run_python(code: str) -> str:
         out = io.StringIO()
         app = sw()
         env = {"sw": app, "model": app.ActiveDoc, "get": get, "byref_int": byref_int, "nothing": nothing,
+               "typed": typed, "members": members, "transform": transform,
                "win32com": win32com, "pythoncom": pythoncom,
                "print": lambda *a, **k: print(*a, **k, file=out)}
         try:
