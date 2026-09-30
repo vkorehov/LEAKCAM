@@ -22,6 +22,13 @@ host. RT-Smart sees an ordinary Wi-Fi station (`wlan0`); its lwIP owns the IP ad
 - **Receive filter:** NetHub's built-in policy keeps DHCP and ICMP on the BL616 and makes it the
   IP owner. `wifi_link.c` replaces it: EAPOL stays on the BL616, every other frame goes to the
   K230.
+- **The BLE credential check** (USB power only, `wifi_check.c`) is the one time the BL616 is an IP
+  host: it joins with `use_dhcp = 1`, resolves and fetches a probe URL, then stops its DHCP client
+  and leaves. The radio has one owner at a time (`wifi_link_claim()`): a check is refused during a
+  K230 session and a K230 session waits for a check. Wi-Fi comes up without NetHub for it (the
+  SDIO pads stay untouched with the K230 off); if a session had already started the bridge, the
+  filter passes every frame to the BL616 for the check, and the next session rejoins the stored
+  network.
 
 ## Protocol
 
@@ -151,4 +158,8 @@ Wi-Fi never starts by itself: only the K230's `WIFI` command starts it.
 - That the Wi-Fi manager's autoconnect retries after a failed first join and after a loss.
 - That `wifi_mgmr_sta_connect()` while already associated switches networks cleanly.
 - The 500 ms pause before `fhost_init()`: copied from the SDK example, reason not documented.
+- The credential check: which 802.11 status/reason codes the SDK's connect indication holds for
+  a wrong WPA2 or WPA3 key (`wchk_join_failure()` reads 14, 15, 16, 23 and status 15), that
+  `CODE_WIFI_ON_GOT_IP` arrives with NetHub not bootstrapped, BLE staying connected while Wi-Fi
+  joins (coexistence), and the timings (up to about a minute).
 - Throughput and latency; nothing is tuned. Each message costs 2-4 CMD52 plus one CMD53.

@@ -12,6 +12,7 @@
 #ifndef LEAKCAM_REFSTORE_H
 #define LEAKCAM_REFSTORE_H
 
+#include <stddef.h>
 #include <stdint.h>
 #include <time.h>
 
@@ -20,5 +21,13 @@ int refstore_load(const char *dir, int cam, uint8_t *img, time_t *taken);
 int refstore_save(const char *dir, int cam, const uint8_t *img, time_t taken);
 
 uint32_t refstore_crc32(const uint8_t *p, size_t n);
+
+/* the same two-slot scheme for other files (nnstore.c): */
+/* n bytes or -1 */
+int refstore_read_all(int fd, void *buf, size_t n);
+/* path := a then b, durably: tmp file, fsync, unlink, rename, directory fsync. UFFS (the RT-Smart
+ * NAND filesystem) refuses rename() onto an existing name, so the old file is unlinked first; a
+ * power cut in between loses only that file, which is why callers keep two slots. 0 or -1 */
+int refstore_replace(const char *dir, const char *path, const void *a, size_t na, const void *b, size_t nb);
 
 #endif

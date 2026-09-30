@@ -36,7 +36,7 @@ static void path_of(char *buf, size_t n, const char *dir, int cam, int slot)
     snprintf(buf, n, "%s/cam%d.hist.%d", dir, cam, slot);
 }
 
-static int read_all(int fd, void *buf, size_t n)
+int refstore_read_all(int fd, void *buf, size_t n)
 {
     uint8_t *p = buf;
     while (n) {
@@ -72,9 +72,9 @@ static int load_slot(const char *path, struct ref_header *h, uint8_t *img)
     int fd = open(path, O_RDONLY | O_CLOEXEC);
     if (fd < 0)
         return 1;
-    int ok = read_all(fd, h, sizeof(*h)) == 0 && h->magic == REF_MAGIC &&
+    int ok = refstore_read_all(fd, h, sizeof(*h)) == 0 && h->magic == REF_MAGIC &&
              h->version == REF_VERSION && h->width == IMGDIFF_W && h->height == IMGDIFF_H &&
-             h->payload_len == IMGDIFF_W * IMGDIFF_H && read_all(fd, img, h->payload_len) == 0 &&
+             h->payload_len == IMGDIFF_W * IMGDIFF_H && refstore_read_all(fd, img, h->payload_len) == 0 &&
              refstore_crc32(img, h->payload_len) == h->crc32;
     close(fd);
     if (!ok)
@@ -116,35 +116,14 @@ int refstore_load(const char *dir, int cam, uint8_t *img, time_t *taken)
     return load_best(dir, cam, img, taken, &gen, &slot);
 }
 
-/*
- * Write into the slot that does NOT hold the newest valid copy. UFFS (the RT-Smart NAND
- * filesystem) refuses rename() onto an existing name, so the old slot file is unlinked first;
- * a power cut between unlink and rename loses only that older slot, the newest copy stays.
- */
-int refstore_save(const char *dir, int cam, const uint8_t *img, time_t taken)
+int refstore_replace(const char *dir, const char *path, const void *a, size_t na, const void *b, size_t nb)
 {
-    static uint8_t cur[IMGDIFF_W * IMGDIFF_H];
-    uint32_t gen = 0;
-    int have = -1;
-    load_best(dir, cam, cur, NULL, &gen, &have);
-    int slot = have == 0 ? 1 : 0;
-
-    char path[256], tmp[272];
-    path_of(path, sizeof(path), dir, cam, slot);
+    char tmp[272];
     snprintf(tmp, sizeof(tmp), "%s.tmp", path);
-    struct ref_header h = {
-        .magic = REF_MAGIC, .version = REF_VERSION,
-        .width = IMGDIFF_W, .height = IMGDIFF_H,
-        .payload_len = IMGDIFF_W * IMGDIFF_H,
-        .taken = (int64_t)taken,
-        .crc32 = refstore_crc32(img, IMGDIFF_W * IMGDIFF_H),
-        .gen = have >= 0 ? gen + 1 : 1,
-    };
     int fd = open(tmp, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0644);
     if (fd < 0)
         return -1;
-    int ok = write_all(fd, &h, sizeof(h)) == 0 && write_all(fd, img, h.payload_len) == 0 &&
-             fsync(fd) == 0;
+    int ok = write_all(fd, a, na) == 0 && write_all(fd, b, nb) == 0 && fsync(fd) == 0;
     close(fd);
     if (ok && unlink(path) != 0 && errno != ENOENT)
         ok = 0;
@@ -158,4 +137,26 @@ int refstore_save(const char *dir, int cam, const uint8_t *img, time_t taken)
         close(dfd);
     }
     return 0;
+}
+
+/* write into the slot that does NOT hold the newest valid copy */
+int refstore_save(const char *dir, int cam, const uint8_t *img, time_t taken)
+{
+    static uint8_t cur[IMGDIFF_W * IMGDIFF_H];
+    uint32_t gen = 0;
+    int have = -1;
+    load_best(dir, cam, cur, NULL, &gen, &have);
+    int slot = have == 0 ? 1 : 0;
+
+    char path[256];
+    path_of(path, sizeof(path), dir, cam, slot);
+    struct ref_header h = {
+        .magic = REF_MAGIC, .version = REF_VERSION,
+        .width = IMGDIFF_W, .height = IMGDIFF_H,
+        .payload_len = IMGDIFF_W * IMGDIFF_H,
+        .taken = (int64_t)taken,
+        .crc32 = refstore_crc32(img, IMGDIFF_W * IMGDIFF_H),
+        .gen = have >= 0 ? gen + 1 : 1,
+    };
+    return refstore_replace(dir, path, &h, sizeof(h), img, h.payload_len);
 }
