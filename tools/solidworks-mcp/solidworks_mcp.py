@@ -44,6 +44,13 @@ def com(fn):
     return _com.submit(fn).result()
 
 
+def get(obj, name):
+    """a zero-argument member: late binding hands some (RevisionNumber, GetTitle) over as
+    properties already read, others as methods still to call"""
+    v = getattr(obj, name)
+    return v() if callable(v) else v
+
+
 def byref_int():
     """an [out] long argument for late-bound calls (errors, warnings)"""
     return win32com.client.VARIANT(pythoncom.VT_BYREF | pythoncom.VT_I4, 0)
@@ -59,7 +66,7 @@ def sw():
     global _sw
     if _sw is not None:
         try:
-            _sw.RevisionNumber()
+            get(_sw, "RevisionNumber")
             return _sw
         except pythoncom.com_error:
             _sw = None                      # SolidWorks was closed
@@ -67,7 +74,7 @@ def sw():
         app = win32com.client.GetActiveObject(PROGID)
     except pythoncom.com_error:
         app = win32com.client.Dispatch(PROGID)
-    rev = app.RevisionNumber()
+    rev = get(app, "RevisionNumber")
     if not rev.startswith(REVISION):
         raise RuntimeError(f"SolidWorks revision {rev} is not 2026 ({REVISION}x)")
     app.Visible = True
@@ -90,9 +97,9 @@ def sw_info() -> str:
     """SolidWorks revision and the open documents (title, path)."""
     def run():
         app = sw()
-        docs = app.GetDocuments() or ()
-        lines = [f"SolidWorks {app.RevisionNumber()}"]
-        lines += [f"{d.GetTitle()}  {d.GetPathName()}" for d in docs]
+        docs = get(app, "GetDocuments") or ()
+        lines = [f"SolidWorks {get(app, 'RevisionNumber')}"]
+        lines += [f"{get(d, 'GetTitle')}  {get(d, 'GetPathName')}" for d in docs]
         return "\n".join(lines)
     return com(run)
 
@@ -109,7 +116,7 @@ def open_document(path: str) -> str:
             model = app.LoadFile4(path, "r", app.GetImportFileData(path), err)
         if model is None:
             raise RuntimeError(f"SolidWorks could not open {path} (error {err.value})")
-        return f"opened {model.GetTitle()}"
+        return f"opened {get(model, 'GetTitle')}"
     return com(run)
 
 
@@ -121,7 +128,7 @@ def new_part() -> str:
         model = app.NewDocument(app.GetUserPreferenceStringValue(TEMPLATE_PART), 0, 0, 0)
         if model is None:
             raise RuntimeError("no default part template set in SolidWorks options")
-        return f"new part {model.GetTitle()}"
+        return f"new part {get(model, 'GetTitle')}"
     return com(run)
 
 
@@ -143,7 +150,7 @@ def snapshot(view: str = "*Isometric") -> Image:
     def run():
         model = active()
         model.ShowNamedView2(view, -1)
-        model.ViewZoomtofit2()
+        get(model, "ViewZoomtofit2")
         path = os.path.join(tempfile.gettempdir(), "solidworks_mcp_snapshot.png")
         err, warn = byref_int(), byref_int()
         if not model.Extension.SaveAs(path, 0, SILENT, nothing(), err, warn):
@@ -157,15 +164,16 @@ def snapshot(view: str = "*Isometric") -> Image:
 def run_python(code: str) -> str:
     """Run Python against the SolidWorks API (anything the tools above do not cover).
 
-    In scope: sw (the application), model (active document or None), byref_int() for [out] long
-    arguments, nothing() for a Nothing object argument, win32com, pythoncom. print() output is
+    In scope: sw (the application), model (active document or None), get(obj, "Name") for
+    zero-argument members (late binding returns some as values, some as methods), byref_int() for
+    [out] long arguments, nothing() for a Nothing object argument, win32com, pythoncom. print() output is
     returned; assign `result` to return a value. Constants are numbers (see the SolidWorks API help,
     swconst). Example: model.FeatureManager.FeatureExtrusion3(...).
     """
     def run():
         out = io.StringIO()
         app = sw()
-        env = {"sw": app, "model": app.ActiveDoc, "byref_int": byref_int, "nothing": nothing,
+        env = {"sw": app, "model": app.ActiveDoc, "get": get, "byref_int": byref_int, "nothing": nothing,
                "win32com": win32com, "pythoncom": pythoncom,
                "print": lambda *a, **k: print(*a, **k, file=out)}
         try:
