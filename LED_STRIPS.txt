@@ -115,7 +115,9 @@ can be switched and dimmed independently.
       hole, 3.0 mm head).
     - LED order along the strip: W - IR - (screw) - IR - W, centres at x = 4.5, 11, 25, 31.5 mm,
       so both colours are centred on the same spot.
-    - Wire pads at the strip ends, about 1.5 x 2 mm each, two per end.
+    - Wire pads: two 2-pin THT pads (J3/J6 .. J11/J12) in the middle, 16.0 and 17.6 mm from the
+      camera-end edge, 1.5 mm either side of the centre line; the wires leave from the strip back,
+      through a channel and notch in its clamp (mechanical/enclosure/led_strips.py).
     - The two strings pass the screw on an inner layer (insulated under a metal screw head);
       0.5 mm from the hole wall.
   Anti-rotation: one screw lets the strip turn. Print a 6.2 mm pocket or ribs that the strip sits
