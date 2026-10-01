@@ -1,3 +1,5 @@
 *
 !.gitignore
 !README.md
+!build_crimp.py
+!SPH-002T_wires.SLDPRT
