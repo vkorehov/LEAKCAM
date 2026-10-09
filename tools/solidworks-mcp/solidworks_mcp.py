@@ -177,8 +177,8 @@ def sw():
         try:
             get(_sw, "RevisionNumber")
             return _sw
-        except pythoncom.com_error:
-            _sw = None                      # SolidWorks was closed
+        except Exception:                   # SolidWorks was closed: the dead handle throws a com_error, and
+            _sw = None                      # get()'s retry as a method then an AttributeError
     try:
         app = win32com.client.GetActiveObject(PROGID)
     except pythoncom.com_error:
