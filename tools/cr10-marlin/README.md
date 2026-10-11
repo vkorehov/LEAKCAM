@@ -19,11 +19,12 @@ Built from the official example `config/examples/Creality/CR-10/CrealityV1`
 | Setting | Value | Why |
 |---|---|---|
 | FIX_MOUNTED_PROBE | on | inductive probe, no servo |
-| NOZZLE_TO_PROBE_OFFSET | { -47, -3, -1.65 } | measured from the old firmware: after G28 the nozzle stood at X197 Y153 with the probe over 150,150 (G30 agreed); Z offset from its M851 |
+| NOZZLE_TO_PROBE_OFFSET | { -47, -3, -1.95 } | X/Y measured from the old firmware: after G28 the nozzle stood at X197 Y153 with the probe over 150,150 (G30 agreed); Z by a paper test on the 80 °C bed (the old -1.65 left the first layer in the air) |
 | Z_MIN_ENDSTOP_INVERTING, Z_MIN_PROBE_ENDSTOP_INVERTING | true | the probe reads open far from the bed (M119 checked before the first homing) |
 | AUTO_BED_LEVELING_BILINEAR | on, 5 x 5 | follows a warped bed (the old 3-point only tilted a plane) |
 | Z_SAFE_HOMING | on | Z homes with the probe at the bed centre |
-| SLIM_LCD_MENUS | on | needed to fit in 130048 bytes (129240 used) |
+| X_BED_SIZE, PROBING_MARGIN (LEFT, BACK) | 300; 20 (22, 10) | the plate, measured with the nozzle, reaches 7.8 mm left of X0 and 10 mm past Y300; the mesh keeps 2 cm from its edges and is centred on it (the probe reaches X 273 at most) |
+| SLIM_LCD_MENUS | on | needed to fit in 130048 bytes |
 | EEPROM_SETTINGS | on (from the example) | M500 saves offsets and the mesh |
 
 Stock values kept: steps/mm 80 / 80 / 400 / 95 (X, Y, Z confirmed from the old firmware), 115200 baud,
@@ -46,7 +47,16 @@ avrdude -p m1284p -c arduino -P COM3 -b 115200 -D -U flash:w:firmware.hex:i
 ```
 
 After the first flash: `M502` then `M500` (initialise the EEPROM), and `M119` with the probe far from the bed
-must show `z_min: open` before any homing.
+must show `z_min: open` before any homing. The EEPROM keeps the probe offset and the mesh across reflashes of the
+same version (check with `M501`, `M851`).
+
+Z offset by a paper test: heat the bed (80 °C) and the nozzle (150 °C), then:
+
+1. `G28`, `M420 S1`, nozzle to X150 Y150, `M211 S0`.
+2. Lower in 0.05-0.1 mm steps until a sheet of paper still slides in but the nozzle holds it a little.
+3. `M851 Z<old offset + that step>`, `M211 S1`, `M500`.
+
+On 2026-10-11 this went -1.65 -> -1.95.
 
 Restore the old firmware: the same command with the backup file.
 

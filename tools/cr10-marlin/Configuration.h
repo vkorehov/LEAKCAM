@@ -1513,11 +1513,13 @@
  *     |    [-]    |
  *     O-- FRONT --+
  */
-#define NOZZLE_TO_PROBE_OFFSET { -47, -3, -1.65 }   // measured 2026-10-11 from the old firmware (G28/M114/G30)
+#define NOZZLE_TO_PROBE_OFFSET { -47, -3, -1.95 }   // X/Y from the old firmware (G28/M114/G30); Z by a paper test on the 80 C bed (2026-10-11)
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
-#define PROBING_MARGIN 10
+#define PROBING_MARGIN 20       // >= 2 cm from the plate's edges (user 2026-10-11; the plate measured with the nozzle
+#define PROBING_MARGIN_LEFT 22  // reaches 7.8 mm left of X0 and 10 mm past Y300): left 22 + 7.8 from its edge, as far
+#define PROBING_MARGIN_BACK 10  // in as the probe reaches on the right (X 320 - 47 = 273); back: Y 290
 
 // X and Y axis travel speed (mm/min) between probes
 #define XY_PROBE_FEEDRATE (133*60)
@@ -1726,14 +1728,14 @@
 // @section geometry
 
 // The size of the printable area
-#define X_BED_SIZE 300
+#define X_BED_SIZE 300   // the plate reaches 7.8 mm left of X0 (measured with the nozzle 2026-10-11)
 #define Y_BED_SIZE 300
 
 // Travel limits (linear=mm, rotational=°) after homing, corresponding to endstop positions.
 #define X_MIN_POS 0
 #define Y_MIN_POS 0
 #define Z_MIN_POS 0
-#define X_MAX_POS X_BED_SIZE + 20
+#define X_MAX_POS 320
 #define Y_MAX_POS Y_BED_SIZE
 #define Z_MAX_POS 400
 //#define I_MIN_POS 0
