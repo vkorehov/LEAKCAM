@@ -689,9 +689,9 @@
     #define DEFAULT_KI_LIST {   1.72,   1.72 }
     #define DEFAULT_KD_LIST {  73.96,  73.96 }
   #else
-    #define DEFAULT_KP  22.57
-    #define DEFAULT_KI   1.72
-    #define DEFAULT_KD  73.96
+    #define DEFAULT_KP  31.41   // M303 E0 S250 C8 on this hot end (2026-10-11)
+    #define DEFAULT_KI   2.72
+    #define DEFAULT_KD  90.70
   #endif
 #else
   #define BANG_MAX 255    // Limit hotend current while in bang-bang mode; 255=full current
@@ -777,9 +777,9 @@
   //#define PID_BED_DEBUG // Print Bed PID debug data to the serial port.
 
   // Stock CR-10 Bed Tuned for 70C
-  #define DEFAULT_BED_KP 426.68
-  #define DEFAULT_BED_KI 78.92
-  #define DEFAULT_BED_KD 576.71
+  #define DEFAULT_BED_KP 192.76   // M303 E-1 S80 C4 on the insulated bed (2026-10-11; C8 times out: about 10 min per cycle)
+  #define DEFAULT_BED_KI 35.12
+  #define DEFAULT_BED_KD 705.31
 
   // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
 #else
