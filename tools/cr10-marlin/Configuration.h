@@ -1513,7 +1513,7 @@
  *     |    [-]    |
  *     O-- FRONT --+
  */
-#define NOZZLE_TO_PROBE_OFFSET { -47, -3, -1.95 }   // X/Y from the old firmware (G28/M114/G30); Z by a paper test on the 80 C bed (2026-10-11)
+#define NOZZLE_TO_PROBE_OFFSET { -47, -3, -1.75 }   // X/Y from the old firmware (G28/M114/G30); Z by a paper test on the 80 C bed (new nozzle + PTFE-lined heat break, 2026-10-11)
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
