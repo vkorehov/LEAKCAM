@@ -24,6 +24,7 @@ Built from the official example `config/examples/Creality/CR-10/CrealityV1`
 | AUTO_BED_LEVELING_BILINEAR | on, 5 x 5 | follows a warped bed (the old 3-point only tilted a plane) |
 | Z_SAFE_HOMING | on | Z homes with the probe at the bed centre |
 | X_BED_SIZE, PROBING_MARGIN (LEFT, BACK) | 300; 20 (22, 10) | the plate, measured with the nozzle, reaches 7.8 mm left of X0 and 10 mm past Y300; the mesh keeps 2 cm from its edges and is centred on it (the probe reaches X 273 at most) |
+| DEFAULT_KP/KI/KD; DEFAULT_BED_KP/KI/KD | 31.41 / 2.72 / 90.70; 192.76 / 35.12 / 705.31 | PID autotune: `M303 E0 S250 C8 U1` (the hot end overshot 5 °C with the stock values) and `M303 E-1 S80 C4 U1`. The insulated bed needs about 10 min per cycle, and C8 runs into Marlin's autotune timeout |
 | SLIM_LCD_MENUS | on | needed to fit in 130048 bytes |
 | EEPROM_SETTINGS | on (from the example) | M500 saves offsets and the mesh |
 
