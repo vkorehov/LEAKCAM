@@ -76,8 +76,8 @@
 #if TEMP_SENSOR_0 == 1000
   #define HOTEND0_PULLUP_RESISTOR_OHMS    4700 // Pullup resistor
   #define HOTEND0_RESISTANCE_25C_OHMS   100000 // Resistance at 25C
-  #define HOTEND0_BETA                    3950 // Beta value
-  #define HOTEND0_SH_C_COEFF                 0 // Steinhart-Hart C coefficient
+  #define HOTEND0_BETA                    4630 // Beta + Steinhart-Hart C fitted to Marlin table 1 (EPCOS 100k) within 1.3 °C, 25-320 °C
+  #define HOTEND0_SH_C_COEFF       9.5729e-08 // Steinhart-Hart C coefficient
 #endif
 
 #if TEMP_SENSOR_1 == 1000
