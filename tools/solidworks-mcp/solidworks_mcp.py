@@ -28,6 +28,10 @@ import time
 import traceback
 
 import pythoncom
+import win32api
+import win32con
+import win32gui
+import win32process
 import win32com.client
 import win32com.client.dynamic
 from win32com.client import gencache
@@ -77,8 +81,55 @@ def busy_text():
     b = _busy
     if b is None:
         return "SolidWorks is idle"
-    return (f"SolidWorks is busy with {b[0]} for {time.monotonic() - b[1]:.0f} s "
-            "(a long call, or a dialog open in SolidWorks that blocks it: close it there)")
+    text = f"SolidWorks is busy with {b[0]} for {time.monotonic() - b[1]:.0f} s"
+    open_ = dialogs()
+    if open_:
+        return text + "; waiting on a dialog: " + "; ".join(describe(d) for d in open_) + " (dismiss_dialog closes it)"
+    return text + " (a long call; no SolidWorks dialog open)"
+
+
+def sw_pids():
+    """process ids of SLDWORKS.exe (window enumeration only: no COM, so it works while a call hangs)"""
+    pids = set()
+    for pid in win32process.EnumProcesses():
+        try:
+            h = win32api.OpenProcess(0x0410, False, pid)      # QUERY_INFORMATION | VM_READ
+            name = win32process.GetModuleFileNameEx(h, 0).replace("\\", "/").rsplit("/", 1)[-1].lower()
+        except Exception:
+            continue
+        if name == "sldworks.exe":
+            pids.add(pid)
+    return pids
+
+
+def dialogs():
+    """SolidWorks' open modal dialogs: [(hwnd, title, texts, buttons)]. A dialog (window class #32770)
+    shown by an API call waits for a click that no API call can give, and holds the COM thread"""
+    pids, found = sw_pids(), []
+
+    def child(h, acc):
+        cls, txt = win32gui.GetClassName(h), win32gui.GetWindowText(h).strip()
+        if txt and win32gui.IsWindowVisible(h):
+            acc[1 if cls == "Button" else 0].append(txt)
+        return True
+
+    def top(h, _):
+        if win32gui.IsWindowVisible(h) and win32gui.GetClassName(h) == "#32770" \
+                and win32process.GetWindowThreadProcessId(h)[1] in pids:
+            acc = ([], [])
+            with contextlib.suppress(Exception):
+                win32gui.EnumChildWindows(h, child, acc)
+            found.append((h, win32gui.GetWindowText(h), acc[0], acc[1]))
+        return True
+    if pids:
+        win32gui.EnumWindows(top, None)
+    return found
+
+
+def describe(d):
+    _, title, texts, buttons = d
+    words = " ".join(texts)[:200]
+    return f"'{title}'" + (f": {words}" if words else "") + (f" [buttons: {', '.join(buttons)}]" if buttons else "")
 
 
 def get(obj, name):
@@ -206,6 +257,97 @@ async def status() -> str:
     """Whether SolidWorks is busy (and with what, for how long) - without touching SolidWorks, so it
     answers while a call hangs."""
     return busy_text()
+
+
+@mcp.tool()
+async def dismiss_dialog(button: str = "Cancel") -> str:
+    """Close the dialogs SolidWorks shows (they block every call until clicked) by pressing the
+    named button (Cancel, No, OK, ...; '&' accelerators ignored), else closing the window. Works
+    while a call hangs: no COM. status names the open dialogs and their buttons."""
+    open_ = dialogs()
+    if not open_:
+        return "no SolidWorks dialog open"
+    done = []
+    for h, title, texts, buttons in open_:
+        hit = []
+
+        def find(c, _):
+            if win32gui.GetClassName(c) == "Button" and \
+                    win32gui.GetWindowText(c).replace("&", "").strip().lower() == button.lower():
+                hit.append(c)
+            return True
+        with contextlib.suppress(Exception):
+            win32gui.EnumChildWindows(h, find, None)
+        if hit:
+            win32gui.PostMessage(hit[0], win32con.BM_CLICK, 0, 0)
+            done.append(f"'{title}': pressed {button}")
+        else:
+            win32gui.PostMessage(h, win32con.WM_CLOSE, 0, 0)
+            done.append(f"'{title}': no {button} button (has {', '.join(buttons) or 'none'}), closed the window")
+    return "; ".join(done)
+
+
+@mcp.tool()
+async def import_part(step: str, path: str) -> str:
+    """Import a STEP/IGES/STL file and save it silently as SolidWorks files at path (.sldprt; a
+    STEP that holds an assembly needs .sldasm, its parts are saved next to it). The coordinates are
+    kept, so parts imported this way line up when new_assembly places them at the origin. The
+    document stays open as the active one."""
+    def run():
+        app, err = sw(), byref_int()
+        model = app.LoadFile4(step, "r", app.GetImportFileData(step), err)
+        if model is None:
+            raise RuntimeError(f"SolidWorks could not import {step} (error {err.value})")
+        kind = get(model, "GetType")
+        want = DOC_TYPES.get(os.path.splitext(path)[1].lower())
+        if want != kind:
+            raise RuntimeError(f"{step} imported as a {'part' if kind == 1 else 'assembly'}; "
+                               f"save it as {'.sldprt' if kind == 1 else '.sldasm'}")
+        e, w = byref_int(), byref_int()
+        if not model.Extension.SaveAs(path, 0, SILENT, nothing(), e, w):
+            raise RuntimeError(f"save failed (error {e.value}, warning {w.value})")
+        return f"imported {step} as {path}"
+    return await com(run, "import_part")
+
+
+@mcp.tool()
+async def new_assembly(parts: list[str], path: str) -> str:
+    """New assembly from saved parts/subassemblies (.sldprt/.sldasm paths), each placed with its
+    own origin at the assembly origin (so imported parts keep their positions), saved silently at
+    path (.sldasm) and left open as the active document. The first part is fixed, as in the GUI."""
+    def run():
+        app = sw()
+        tpl = app.GetUserPreferenceStringValue(TEMPLATE_ASSEMBLY)
+        if not os.path.exists(tpl):
+            raise RuntimeError(f"default assembly template missing: {tpl} (set it in SolidWorks options)")
+        opened = []
+        for p in parts:
+            ext = os.path.splitext(p)[1].lower()
+            if ext not in (".sldprt", ".sldasm") or not os.path.exists(p):
+                raise RuntimeError(f"not a saved part or assembly: {p}")
+            e = byref_int()
+            d = app.OpenDoc6(p, DOC_TYPES[ext], SILENT, "", e, byref_int())
+            if d is None:
+                raise RuntimeError(f"could not open {p} (error {e.value})")
+            opened.append(get(d, "GetTitle"))
+        asm = app.NewDocument(tpl, 0, 0, 0)
+        if asm is None:
+            raise RuntimeError("SolidWorks did not create the assembly")
+        names = []
+        for p in parts:
+            c = asm.AddComponent5(p, 0, "", False, "", 0, 0, 0)
+            if c is None:
+                raise RuntimeError(f"could not insert {p}")
+            names.append(get(c, "Name2"))
+        for t in opened:                      # the part windows; the assembly keeps them loaded
+            app.CloseDoc(t)
+        e, w = byref_int(), byref_int()
+        if not asm.Extension.SaveAs(path, 0, SILENT, nothing(), e, w):
+            raise RuntimeError(f"save failed (error {e.value}, warning {w.value})")
+        asm.ShowNamedView2("*Isometric", -1)
+        get(asm, "ViewZoomtofit2")
+        return f"assembly {path}: {', '.join(names)}"
+    return await com(run, "new_assembly")
 
 
 @mcp.tool()
@@ -344,7 +486,10 @@ async def run_python(code: str, wait: bool = True) -> str:
     Found on SolidWorks 2026: zero-argument members may be properties (sw.GetMathUtility,
     face.GetBox, feature.GetFaces, feature.Name) - read them with get(). Top Plane sketch (x, y) is
     model (X, -Z). FeatureExtrusion3's third argument (Dir) reverses a boss, the second (Flip) does
-    not; FeatureCut4's first direction goes against the sketch normal. A start offset (T0 = 3)
+    not; FeatureCut4's first direction goes against the sketch normal. Open and save with the
+    silent option (OpenDoc6 options 1, Extension.SaveAs options 1; SaveAs3's 2 is 'copy', not silent):
+    otherwise SolidWorks may show a dialog that blocks every call (status names it, dismiss_dialog
+    closes it); prefer import_part / new_assembly / save_as. A start offset (T0 = 3)
     goes along the normal. Sketch with SketchManager.AddToDB = True so points do not snap.
     """
     out = io.StringIO()
