@@ -28,9 +28,9 @@ Built from the official example `config/examples/Creality/CR-10/CrealityV1`
 | SLIM_LCD_MENUS | on | needed to fit in 130048 bytes |
 | EEPROM_SETTINGS | on (from the example) | M500 saves offsets and the mesh |
 
-Steps/mm 80 / 80 / 400 / **139.08**. X, Y, Z are confirmed from the old firmware. E is for the dual-gear extruder: the old firmware's
+Steps/mm 80 / 80 / 400 / **140**. X, Y, Z are confirmed from the old firmware. E is for the dual-gear extruder: the old firmware's
 backup has 142, not the example's 95, which gave a third too little plastic. Measured with the Bowden tube unhooked:
-200 mm commanded gave 204.2 mm, so 142 x 200 / 204.2 = 139.08. Also kept: 115200 baud, the stock LCD with the SD card.
+200 mm commanded gave 204.2 mm, so 142 x 200 / 204.2 = 139.08, set to 140. Also kept: 115200 baud, the stock LCD with the SD card.
 
 ## Build
 

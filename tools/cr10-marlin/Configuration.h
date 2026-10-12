@@ -1198,7 +1198,7 @@
  * Override with M92
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 400, 139.08 }   // E: dual-gear extruder, 200 mm out of the unhooked extruder measured 204.2 at 142 (2026-10-12)
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 400, 140 }   // E: dual-gear extruder; 200 mm out of the unhooked extruder measured 204.2 at 142, so 139.08, set to 140 (2026-10-12)
 
 /**
  * Default Max Feed Rate (linear=mm/s, rotational=°/s)
