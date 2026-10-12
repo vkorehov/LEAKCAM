@@ -24,7 +24,9 @@ Built from the official example `config/examples/Creality/CR-10/CrealityV1`
 | AUTO_BED_LEVELING_BILINEAR | on, 5 x 5 | follows a warped bed (the old 3-point only tilted a plane) |
 | Z_SAFE_HOMING | on | Z homes with the probe at the bed centre |
 | X_BED_SIZE, PROBING_MARGIN (LEFT, BACK) | 300; 20 (22, 10) | the plate, measured with the nozzle, reaches 7.8 mm left of X0 and 10 mm past Y300; the mesh keeps 2 cm from its edges and is centred on it (the probe reaches X 273 at most) |
-| HEATER_0_MAXTEMP; BED_MAXTEMP | 305; 130 | settable up to 290 °C nozzle (for PC, once the bimetal heat break is in) and 120 °C bed (insulated). The stock 100k thermistor's table ends at 320 °C and Marlin keeps a 15 °C overshoot margin, so 290 is this sensor's ceiling |
+| TEMP_SENSOR_0; HOTEND0_BETA, HOTEND0_SH_C_COEFF | 1000 (custom); 4630, 9.5729e-08 | Marlin's table 1 (EPCOS 100k) ends at 320 °C, too short for a 320 °C cutoff. The custom thermistor computes the same curve: beta and Steinhart-Hart C fitted to table 1, within 1.3 °C from 25 to 320 °C, so PID and calibration stay valid |
+| HEATER_0_MAXTEMP, HOTEND_OVERSHOOT; BED_MAXTEMP | 320, 20; 130 | nozzle settable up to 300 °C (only with an all-metal heat break; a PTFE liner stays at 240), bed up to 120 °C (insulated) |
+| SHOW_BOOTSCREEN | off | frees flash for the custom thermistor math |
 | DEFAULT_KP/KI/KD; DEFAULT_BED_KP/KI/KD | 31.41 / 2.72 / 90.70; 192.76 / 35.12 / 705.31 | PID autotune: `M303 E0 S250 C8 U1` (the hot end overshot 5 °C with the stock values) and `M303 E-1 S80 C4 U1`. The insulated bed needs about 10 min per cycle, and C8 runs into Marlin's autotune timeout |
 | SLIM_LCD_MENUS | on | needed to fit in 130048 bytes |
 | EEPROM_SETTINGS | on (from the example) | M500 saves offsets and the mesh |
