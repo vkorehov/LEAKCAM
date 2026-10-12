@@ -19,7 +19,7 @@ Built from the official example `config/examples/Creality/CR-10/CrealityV1`
 | Setting | Value | Why |
 |---|---|---|
 | FIX_MOUNTED_PROBE | on | inductive probe, no servo |
-| NOZZLE_TO_PROBE_OFFSET | { -47, -3, -1.75 } | X/Y measured from the old firmware: after G28 the nozzle stood at X197 Y153 with the probe over 150,150 (G30 agreed); Z by a paper test on the 80 °C bed (the old -1.65 left the first layer in the air) |
+| NOZZLE_TO_PROBE_OFFSET | { -47, -3, -1.85 } | X/Y measured from the old firmware: after G28 the nozzle stood at X197 Y153 with the probe over 150,150 (G30 agreed); Z by a paper test on the 80 °C bed (the old -1.65 left the first layer in the air) |
 | Z_MIN_ENDSTOP_INVERTING, Z_MIN_PROBE_ENDSTOP_INVERTING | true | the probe reads open far from the bed (M119 checked before the first homing) |
 | AUTO_BED_LEVELING_BILINEAR | on, 5 x 5 | follows a warped bed (the old 3-point only tilted a plane) |
 | Z_SAFE_HOMING | on | Z homes with the probe at the bed centre |
@@ -58,7 +58,7 @@ Z offset by a paper test: heat the bed (80 °C) and the nozzle (150 °C), then:
 2. Lower in 0.05-0.1 mm steps until a sheet of paper still slides in but the nozzle holds it a little.
 3. `M851 Z<old offset + that step>`, `M211 S1`, `M500`.
 
-On 2026-10-11 this went -1.65 -> -1.95; after the nozzle and heat-break swap it is -1.75 (the new tip sits 0.2 mm lower).
+On 2026-10-11 this went -1.65 -> -1.95; after the nozzle and heat-break swap -1.75; on 2026-10-12, after a fresh G29, -1.85.
 
 Restore the old firmware: the same command with the backup file.
 
