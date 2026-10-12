@@ -14,6 +14,10 @@ designing the LEAKCAM cover around the board model (`mechanical/pcb/MIFA.step`,
 | `save_as(path)` | save the active document; the extension picks the format (`.sldprt`, `.step`, `.stl`, ...) |
 | `snapshot(view)` | PNG of the active document in a named view (`*Isometric`, `*Front`, `*Top`, ...) |
 | `interference()` | clashes in the active assembly: components, volume, overlap box |
+| `import_part(step, path)` | import a STEP/IGES/STL and save it silently as `.sldprt` (coordinates kept) |
+| `new_assembly(parts, path)` | new assembly from saved parts, each at the origin, saved silently |
+| `status()` | idle or busy (with what); names an open SolidWorks dialog that blocks the call (no COM) |
+| `dismiss_dialog(button)` | press a button (default Cancel) in the blocking SolidWorks dialog, or close it |
 | `run_python(code)` | Python against the SolidWorks API: `sw`, `model`, `get()`, `byref_int()`, `nothing()`, `typed(obj, "IInterface")`, `members("IInterface")`, `transform(r9, t3)` in scope |
 
 Only SolidWorks 2026 (COM `SldWorks.Application.34`): it attaches to a running SolidWorks or
