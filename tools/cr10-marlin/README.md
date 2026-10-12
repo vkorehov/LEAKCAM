@@ -24,6 +24,7 @@ Built from the official example `config/examples/Creality/CR-10/CrealityV1`
 | AUTO_BED_LEVELING_BILINEAR | on, 5 x 5 | follows a warped bed (the old 3-point only tilted a plane) |
 | Z_SAFE_HOMING | on | Z homes with the probe at the bed centre |
 | X_BED_SIZE, PROBING_MARGIN (LEFT, BACK) | 300; 20 (22, 10) | the plate, measured with the nozzle, reaches 7.8 mm left of X0 and 10 mm past Y300; the mesh keeps 2 cm from its edges and is centred on it (the probe reaches X 273 at most) |
+| HEATER_0_MAXTEMP; BED_MAXTEMP | 305; 130 | settable up to 290 °C nozzle (for PC, once the bimetal heat break is in) and 120 °C bed (insulated). The stock 100k thermistor's table ends at 320 °C and Marlin keeps a 15 °C overshoot margin, so 290 is this sensor's ceiling |
 | DEFAULT_KP/KI/KD; DEFAULT_BED_KP/KI/KD | 31.41 / 2.72 / 90.70; 192.76 / 35.12 / 705.31 | PID autotune: `M303 E0 S250 C8 U1` (the hot end overshot 5 °C with the stock values) and `M303 E-1 S80 C4 U1`. The insulated bed needs about 10 min per cycle, and C8 runs into Marlin's autotune timeout |
 | SLIM_LCD_MENUS | on | needed to fit in 130048 bytes |
 | EEPROM_SETTINGS | on (from the example) | M500 saves offsets and the mesh |
@@ -60,7 +61,7 @@ Z offset by a paper test: heat the bed (80 °C) and the nozzle (150 °C), then:
 
 On 2026-10-11 this went -1.65 -> -1.95; after the nozzle and heat-break swap -1.75; on 2026-10-12, after a fresh G29, -1.85.
 
-Restore the old firmware: the same command with the backup file.
+`firmware.hex` here is the current build. Restore the old firmware: the same command with the backup file.
 
 ## Printing
 
