@@ -338,7 +338,10 @@ async def new_assembly(parts: list[str], path: str) -> str:
             c = asm.AddComponent5(p, 0, "", False, "", 0, 0, 0)
             if c is None:
                 raise RuntimeError(f"could not insert {p}")
+            # AddComponent5 puts the component's bounding-box centre at the point, not its origin
+            c.Transform2 = transform([1, 0, 0, 0, 1, 0, 0, 0, 1], [0, 0, 0])
             names.append(get(c, "Name2"))
+        get(asm, "EditRebuild3")
         for t in opened:                      # the part windows; the assembly keeps them loaded
             app.CloseDoc(t)
         e, w = byref_int(), byref_int()
