@@ -1,0 +1,39 @@
+{
+  "_comment": "Power bring-up probe points for the MIFA board (rev 1, fab 11a6a38). pad = component.pin on the rail; gnd = the GND pad next to it. Limits in volts (phases blank/flashed) and ohms (phase off). Generated from the fab ODB++ netlist; nominal values from the feedback dividers in POWER.SchDoc.",
+  "points": [
+    {"id": 1,  "rail": "VUSB",      "pad": "C2.1",   "gnd": "C2.2",   "side": "top", "nominal": 5.0,   "note": "USB-C 1 input to the charger"},
+    {"id": 2,  "rail": "BAT",       "pad": "C11.1",  "gnd": "C11.2",  "side": "top", "nominal": null,  "note": "battery terminal (JB1/JB2); 0 V or floating without a battery"},
+    {"id": 3,  "rail": "VBAT",      "pad": "C3.1",   "gnd": "C3.2",   "side": "top", "nominal": 4.4,   "note": "U1 BQ24072 output, feeds every regulator"},
+    {"id": 4,  "rail": "3V3_SLEEP", "pad": "C14.1",  "gnd": "C14.2",  "side": "top", "nominal": 3.31,  "note": "U5 TPS63802, always on (EN = VBAT); also on PR1.6"},
+    {"id": 5,  "rail": "K230_PWR",  "pad": "R19.2",  "gnd": "R19.1",  "side": "top", "nominal": null,  "note": "BL616 IO30 -> U6 EN (R51); R19 pulls it low while the BL616 is blank"},
+    {"id": 6,  "rail": "0V8",       "pad": "C18.1",  "gnd": "C18.2",  "side": "top", "nominal": 0.80,  "note": "U6 TPS62823, 0.6 x (1 + 33k/100k)"},
+    {"id": 7,  "rail": "3V3",       "pad": "C87.1",  "gnd": "C87.2",  "side": "top", "nominal": 3.31,  "note": "U8 TPS63802, enabled by U6 power-good"},
+    {"id": 8,  "rail": "1V8",       "pad": "C89.1",  "gnd": "C89.2",  "side": "top", "nominal": 1.78,  "note": "U10 TPS63802, 0.5 x (1 + 51k/20k), enabled by U6 power-good"},
+    {"id": 9,  "rail": "PG_1V8",    "pad": "R28.1",  "gnd": "C89.2",  "side": "top", "nominal": null,  "note": "U10 power-good -> U7 EN, pulled up to K230_PWR"},
+    {"id": 10, "rail": "1V1",       "pad": "C20.1",  "gnd": "C20.2",  "side": "top", "nominal": 1.10,  "note": "U7 TPS62823, 0.6 x (1 + 100k/120k), enabled by PG_1V8"},
+    {"id": 11, "rail": "RSTN",      "pad": "R30.2",  "gnd": "C23.2",  "side": "top", "nominal": null,  "note": "K230 reset: U7 power-good, pulled to 1V8; held low by the BL616 (Q4) until release"},
+    {"id": 12, "rail": "0V8_MIPI",  "pad": "C41.1",  "gnd": "C41.2",  "side": "top", "nominal": 0.80,  "note": "0V8 through FB3"},
+    {"id": 13, "rail": "1V8_MIPI",  "pad": "FB1.2",  "gnd": "C89.2",  "side": "top", "nominal": 1.78,  "note": "1V8 through FB1 (ferrite output pad)"},
+    {"id": 14, "rail": "1V8_DDR",   "pad": "FB2.2",  "gnd": "C89.2",  "side": "top", "nominal": 1.78,  "note": "1V8 through FB2 (ferrite output pad)"}
+  ],
+  "phases": {
+    "off": {
+      "title": "Power off, no USB, no battery: resistance from each rail to GND (multimeter in ohms)",
+      "check": {"VUSB": [20, null], "BAT": [20, null], "VBAT": [20, null], "3V3_SLEEP": [20, null], "0V8": [2, null], "3V3": [20, null], "1V8": [10, null], "1V1": [5, null]},
+      "unit": "ohm",
+      "hint": "Readings climb while the capacitors charge: note the value after ~3 s. Below the minimum = short, stop."
+    },
+    "blank": {
+      "title": "USB on USB-C 1, no battery, BL616 still blank: only VBAT and 3V3_SLEEP may be up",
+      "check": {"VUSB": [4.75, 5.25], "VBAT": [4.1, 4.6], "3V3_SLEEP": [3.2, 3.4], "K230_PWR": [null, 0.3], "0V8": [null, 0.1], "3V3": [null, 0.1], "1V8": [null, 0.1], "1V1": [null, 0.1]},
+      "unit": "V",
+      "hint": "Anything in the K230 group above 0.1 V means a rail is up without K230_PWR: stop and check U6/U8/U10/U7 enables."
+    },
+    "flashed": {
+      "title": "BL616 flashed (firmware/BUILD.md 4.3), EN pulsed: K230_PWR high, all five regulators up",
+      "check": {"VUSB": [4.75, 5.25], "VBAT": [4.1, 4.6], "3V3_SLEEP": [3.2, 3.4], "K230_PWR": [3.0, 3.4], "0V8": [0.76, 0.84], "3V3": [3.2, 3.4], "1V8": [1.71, 1.85], "PG_1V8": [3.0, 3.4], "1V1": [1.05, 1.15], "0V8_MIPI": [0.76, 0.84], "1V8_MIPI": [1.71, 1.85], "1V8_DDR": [1.71, 1.85], "RSTN": [null, 1.9]},
+      "unit": "V",
+      "hint": "The first boot keeps the rails on (debug build: up to 30 min waiting for the K230). RSTN reads ~0 V while the BL616 holds the K230 in reset, then ~1.8 V once released: both are fine. A chip with the wrong output, or one that gets hot: power off at once."
+    }
+  }
+}
