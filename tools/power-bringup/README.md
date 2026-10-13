@@ -20,8 +20,7 @@ python3 power_check.py all        # or: off | blank | flashed
 
 The script names every pad to probe, checks the reading against the limits and appends it to
 `power_check_<board>.csv`. The numbers in the pictures are the numbers it asks for. All probe
-points are on the **top** side (the regulators are on the bottom, [bottom.png](bottom.png), their
-output capacitors on top). Black lead on the black ring, red lead on the red ring.
+points are on the **top** side (the regulators are on the bottom, their output capacitors on top). Black lead on the black ring, red lead on the red ring.
 
 | Full top side | Power corner (zoom) |
 |---|---|
@@ -78,7 +77,7 @@ what confirms or rules that out.
 
 ## 2. Debug port PR1 (bottom side)
 
-![PR1](pr1_wiring.png)
+![bottom side wiring](hookup_bottom.png)
 
 PR1 is the BL616's own USB: no USB-serial bridge is needed, a USB cable is soldered to the pads.
 Cut a USB-A cable, solder **green D+ to pad 1, white D- to pad 2, black GND to pad 3**. Cut the red
@@ -127,9 +126,9 @@ or `pt_run`. Each test can be left out: set it to 0 in
 
 ## 4. Hand-soldered parts
 
-| Top side | Bottom side (seen from below) |
-|---|---|
-| ![hookup top](hookup_top.png) | ![hookup bottom](hookup_bottom.png) |
+![top side wiring](hookup_top.png)
+
+The bottom side (PR1 cable, leak probes, camera 2) is the picture in section 2.
 
 - **Battery** (503450 LiPo, [EXTERNAL_PARTS.md](../../EXTERNAL_PARTS.md)): cut the plug off,
   **measure which lead is positive**, solder it to JB1 pin 1 (BAT), the other to pin 2 (GND). No
@@ -150,9 +149,7 @@ The four strips (A..D, cut from the panel) carry 2 white + 2 IR LEDs each. **Eac
 series chain through all four strips**: 8 white LEDs on J1 (about 22 V from U14) and 8 IR LEDs on
 J2 (about 11 V from U15). Twist each go/return pair.
 
-![LED wiring on the board](led_wiring_board.png)
-
-![LED chains](led_wiring.png)
+The wires are in the top-side picture above.
 
 - IR pairs (J6, J8, J10, J12): pin 1 = + (traced to the LED anodes).
 - White pairs (J3, J7, J9, J11): pin 2 = + per the footprint's pin numbering. **Confirm before
@@ -164,8 +161,9 @@ J2 (about 11 V from U15). Twist each go/return pair.
 
 ## Files
 
-- `testpoints.json`: probe pads, limits per phase, and the hand-soldered parts table
+- `testpoints.json`: probe pads and limits per phase
 - `power_check.py`: the interactive multimeter check, writes the CSV log
-- `render_testpoints.py`: redraws every picture here from the ODB++ of the ordered board (git
+- `render_testpoints.py`: redraws the four pictures here (`top.png`, `top_power_zoom.png`,
+  `hookup_top.png`, `hookup_bottom.png`) from the ODB++ of the ordered board (git
   `11a6a38`), and refuses to draw if a probe pad is not on the net the table says
 - `bl616_powertest/`: the BL616 test firmware
