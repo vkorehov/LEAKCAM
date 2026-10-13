@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Draw the power bring-up probe points on the MIFA board, from the fab ODB++.
 
-  python3 render_testpoints.py [MIFA.tgz | git revision]   -> top.png, bottom.png next to this script
+  python3 render_testpoints.py [MIFA.tgz | git revision]   -> top.png, top_power_zoom.png,
+      hookup_top.png, hookup_bottom.png next to this script
 
 Reads "Project Outputs for LEAKCAM/MIFA.tgz" as committed in the fab package of the ordered board
 (git 11a6a38, rev 1; the working tree may already hold later layout changes) by default, checks
@@ -90,18 +91,17 @@ def outline(pcb):
     return pts
 
 
-def render(pcb, comps, points, side, out, region=None, px=PX, label=""):
+def render(pcb, comps, points, out, region=None, px=PX, label=""):
+    """the probe points on the top side (all of them are there)"""
     pts = outline(pcb)
     xs, ys = [p[0] for p in pts], [p[1] for p in pts]
     x0, x1, y0, y1 = region or (min(xs), max(xs), min(ys), max(ys))
     PX = px
-    flip = side == "bottom"            # bottom seen from below: mirror left-right
     W = int((x1 - x0) * PX) + 2 * MARGIN
     H = int((y1 - y0) * PX) + 160
 
     def P(x, y):
-        u = (x1 - x) if flip else (x - x0)
-        return MARGIN + u * PX, 110 + (y1 - y) * PX
+        return MARGIN + (x - x0) * PX, 110 + (y1 - y) * PX
 
     img = Image.new("RGB", (W, H), "white")
     d = ImageDraw.Draw(img)
@@ -113,8 +113,7 @@ def render(pcb, comps, points, side, out, region=None, px=PX, label=""):
         font = big = small = ImageFont.load_default()
     d.polygon([P(x, y) for x, y in pts], fill=(232, 240, 228), outline=(40, 90, 40))
     inside = lambda x, y: x0 - 0.5 <= x <= x1 + 0.5 and y0 - 0.5 <= y <= y1 + 0.5
-    copper = "top_layer" if side == "top" else "bottom_layer"
-    silk = "top_overlay" if side == "top" else "bottom_overlay"
+    copper, silk = "top_layer", "top_overlay"
     pads, _ = features(pcb, copper)
     for x, y, shape, w, h, ang in pads:
         if not inside(x, y):
@@ -137,7 +136,7 @@ def render(pcb, comps, points, side, out, region=None, px=PX, label=""):
     # reference labels for the parts that matter here
     for ref in ("U1", "U3", "U5", "U6", "U7", "U8", "U10", "U11", "PR1", "USBC1", "USBC2", "JB1", "JB2"):
         cp = comps.get(ref)
-        if not cp or cp["side"] != side:
+        if not cp or cp["side"] != "top":
             continue
         if not all(inside(x, y) for x, y, _ in cp["pins"].values()):
             continue
@@ -147,7 +146,7 @@ def render(pcb, comps, points, side, out, region=None, px=PX, label=""):
     # probe points: a ring on the rail pad, a small ring on its GND pad, a numbered label at the
     # side nearer to the pad, at the pad's height (labels pushed apart so they do not overlap)
     pos = lambda key, p: P(*comps[p[key].split(".")[0]]["pins"][p[key].split(".")[1]][:2])
-    mine = [p for p in points if p["side"] == side and inside(*comps[p["pad"].split(".")[0]]["pins"][p["pad"].split(".")[1]][:2])]
+    mine = [p for p in points if p["side"] == "top" and inside(*comps[p["pad"].split(".")[0]]["pins"][p["pad"].split(".")[1]][:2])]
     left = sorted((p for p in mine if pos("pad", p)[0] < W / 2), key=lambda p: pos("pad", p)[1])
     right = sorted((p for p in mine if pos("pad", p)[0] >= W / 2), key=lambda p: pos("pad", p)[1])
     for group, lx in ((left, 18), (right, W - MARGIN + 30)):
@@ -168,7 +167,7 @@ def render(pcb, comps, points, side, out, region=None, px=PX, label=""):
             d.text((x + 13, y - 13), str(p["id"]), fill=col, font=font, stroke_width=3, stroke_fill="white")
             d.text((lx, ly - 22), f"{p['id']}  {p['rail']}", fill=col, font=big)
             d.text((lx, ly + 8), f"+ {p['pad']}   GND {p['gnd']}", fill=(20, 20, 20), font=small)
-    title = f"MIFA rev 1 power bring-up, {side} side{label}" + (" (seen from below, mirrored)" if flip else "")
+    title = f"MIFA rev 1 power bring-up, top side{label}"
     d.text((W / 2, 30), title, fill=(0, 0, 0), font=big, anchor="mm")
     d.text((W / 2, 64), "red ring = probe (+), black ring = GND for the black lead; numbers match testpoints.json and power_check.py",
            fill=(60, 60, 60), font=small, anchor="mm")
@@ -176,7 +175,7 @@ def render(pcb, comps, points, side, out, region=None, px=PX, label=""):
     print("wrote", out, f"({len(mine)} probe points)")
 
 
-def render_hookup(pcb, comps, items, side, out):
+def render_hookup(pcb, comps, side, out):
     """the hand-wired parts drawn and wired to their real pads: battery, NTC, LED strips (top);
     USB cable on PR1, leak probes (bottom); camera ribbons and the B1 short; short names only"""
     pts = outline(pcb)
@@ -342,198 +341,6 @@ def render_hookup(pcb, comps, items, side, out):
     img.save(out)
     print("wrote", out)
 
-def draw_led_wiring(out):
-    """the two LED chains in series: J1 -> strips A..D white pairs -> J1, J2 -> IR pairs -> J2"""
-    W, H = 1700, 760
-    img = Image.new("RGB", (W, H), "white")
-    d = ImageDraw.Draw(img)
-    try:
-        f = ImageFont.truetype("DejaVuSans-Bold.ttf", 22)
-        fs = ImageFont.truetype("DejaVuSans-Bold.ttf", 15)
-    except OSError:
-        f = fs = ImageFont.load_default()
-    WHITE, IR, PCB, PAD = (225, 145, 0), (170, 20, 140), (232, 240, 228), (205, 170, 120)
-
-    def pad(x, y, n, sign, col):
-        d.ellipse((x - 13, y - 13, x + 13, y + 13), fill=PAD, outline=(90, 70, 40), width=2)
-        d.text((x, y), n, fill=(0, 0, 0), font=fs, anchor="mm")
-        d.text((x, y - 30), sign, fill=col, font=f, anchor="mm")
-
-    def led(x, y, col):
-        d.polygon([(x - 15, y - 14), (x - 15, y + 14), (x + 12, y)], fill=col)
-        d.line((x + 12, y - 14, x + 12, y + 14), fill=col, width=4)
-        for k in (0, 10):
-            d.line((x + 3 + k, y - 18, x + 11 + k, y - 29), fill=col, width=2)
-
-    def chain(y, col, jname, strips, plus, minus):
-        # board connector on the left: pin 1 = + out, pin 2 = return
-        d.rectangle((30, y - 95, 210, y + 135), fill=PCB, outline=(40, 90, 40), width=3)
-        d.text((120, y - 70), jname, fill=col, font=f, anchor="mm")
-        pad(170, y, "1", "+", col)
-        pad(170, y + 80, "2", "-", col)
-        x = 290
-        prev = (183, y)
-        for name, ref in strips:
-            d.rectangle((x, y - 75, x + 300, y + 45), fill=PCB, outline=(40, 90, 40), width=3)
-            d.text((x + 150, y - 55), f"{name}  {ref}", fill=(40, 90, 40), font=f, anchor="mm")
-            a, b = (x + 35, y), (x + 265, y)
-            pad(*a, plus, "+", col)
-            pad(*b, minus, "-", col)
-            d.line((a[0] + 13, y, b[0] - 13, y), fill=col, width=3)          # copper on the strip
-            led(x + 115, y, col)
-            led(x + 190, y, col)
-            d.line((prev[0], prev[1], a[0] - 13, y), fill=col, width=6)       # wire
-            prev = (b[0] + 13, y)
-            x += 350
-        # return wire from the last strip back to pin 2
-        d.line([prev, (prev[0] + 40, y), (prev[0] + 40, y + 80), (183, y + 80)], fill=col, width=6, joint="curve")
-
-    chain(140, WHITE, "J1 white", [("A", "J3"), ("B", "J7"), ("C", "J9"), ("D", "J11")], "2", "1")
-    chain(520, IR, "J2 IR", [("A", "J6"), ("B", "J8"), ("C", "J10"), ("D", "J12")], "1", "2")
-    img.save(out)
-    print("wrote", out)
-
-
-def draw_pr1(pcb, comps, out):
-    """PR1 (bottom side, seen from below): each pad named, USB cable and BOOT/EN buttons wired"""
-    pins = comps["PR1"]["pins"]
-    xs = [v[0] for v in pins.values()]
-    ys = [v[1] for v in pins.values()]
-    cx, cy = sum(xs) / 6, sum(ys) / 6
-    S, Wd, Hd = 66.0, 1500, 900
-    x_left = 360                                    # board area on the left
-    def P(x, y):                                    # mirrored (seen from below), PR1 in the middle of the board area
-        return x_left + (cx - x) * S, Hd / 2 + (cy - y) * S
-    img = Image.new("RGB", (Wd, Hd), "white")
-    d = ImageDraw.Draw(img)
-    try:
-        f = ImageFont.truetype("DejaVuSans-Bold.ttf", 22)
-        fs = ImageFont.truetype("DejaVuSans.ttf", 17)
-    except OSError:
-        f = fs = ImageFont.load_default()
-    d.rectangle((40, 60, 700, Hd - 30), fill=(232, 240, 228), outline=(40, 90, 40), width=3)
-    d.text((370, 30), "PR1, bottom side (seen from below)", fill=(40, 90, 40), font=f, anchor="mm")
-    pads, _ = features(pcb, "bottom_layer")
-    for x, y, shape, w, h, ang in pads:
-        if abs(x - cx) > 4.5 or abs(y - cy) > 6:
-            continue
-        px, py = P(x, y)
-        r = max(w, h) / 2 * S
-        if shape == "r":
-            d.ellipse((px - r, py - r, px + r, py + r), fill=(205, 170, 120))
-        else:
-            r2 = min(w, h) / 2 * S
-            d.rectangle((px - r2, py - r2, px + r2, py + r2), fill=(205, 170, 120))
-    names = {"1": ("D+", (0, 150, 0)), "2": ("D-", (90, 90, 90)), "3": ("GND", (0, 0, 0)),
-             "4": ("BOOT", (0, 90, 200)), "5": ("EN", (200, 100, 0)), "6": ("3V3_SLEEP", (200, 0, 0))}
-    pos = {}
-    for n, (x, y, _) in pins.items():
-        px, py = P(x, y)
-        pos[n] = (px, py)
-        d.ellipse((px - 16, py - 16, px + 16, py + 16), outline=(20, 70, 180), width=4)
-        d.text((px - 30, py), n, fill=(200, 30, 30), font=f, anchor="rm")
-        d.text((px + 6, py - 26), names[n][0], fill=names[n][1], font=f, anchor="lb")
-    # USB cable on the right: D+ green, D- white, GND black; VBUS red cut back and taped
-    ux = 1250
-    d.rectangle((ux, 330, ux + 200, 470), outline=(0, 0, 0), width=4)
-    d.text((ux + 100, 400), "USB-A to PC", fill=(0, 0, 0), font=f, anchor="mm")
-    for k, (n, col, label) in enumerate((("1", (0, 150, 0), "green D+"), ("2", (150, 150, 150), "white D-"),
-                                         ("3", (0, 0, 0), "black GND"))):
-        px, py = pos[n]
-        yy = 350 + k * 40
-        d.line([(px + 20, py), (1000 - k * 30, py), (1000 - k * 30, yy), (ux, yy)], fill=col, width=6)
-        d.text((ux - 10, yy - 14), label, fill=col, font=fs, anchor="rb")
-    d.line((ux, 470 - 10, 1120, 470 - 10), fill=(220, 0, 0), width=6)
-    d.text((1100, 470 - 10), "red VBUS: cut, tape", fill=(220, 0, 0), font=fs, anchor="rm")
-    # BOOT: a wire link from pad 4 to pad 6 (3V3_SLEEP) while flashing; EN: a wire on pad 5 whose
-    # free end is touched to GND (pad 3) for a moment = reset (dashed: not a permanent connection)
-    blue, orange = (0, 90, 200), (200, 100, 0)
-    (x6, y6), (x4, y4) = pos["6"], pos["4"]
-    d.line([(x6 - 18, y6), (230, y6), (230, y4), (x4 - 18, y4)], fill=blue, width=6)
-    d.text((215, (y6 + y4) / 2), "link 4-6:\nboot into\nflash mode", fill=blue, font=fs, anchor="rm")
-    (x5, y5), (x3, y3) = pos["5"], pos["3"]
-    d.line([(x5 + 18, y5), (600, y5), (600, (y5 + y3) / 2)], fill=orange, width=6)
-    yy = (y5 + y3) / 2
-    while yy < y3 - 10:
-        d.line((600, yy, 600, min(yy + 14, y3 - 10)), fill=orange, width=6)
-        yy += 26
-    d.ellipse((592, y3 - 18, 608, y3 - 2), outline=orange, width=3)
-    d.text((615, (y5 + y3) / 2), "touch 5 to GND\n= reset", fill=orange, font=fs, anchor="lm")
-    img.save(out)
-    print("wrote", out)
-
-def draw_led_wiring_board(pcb, comps, out):
-    """the LED chains drawn on the real panel: wires between the actual pads of J1/J2 and the strips"""
-    x0, x1, y0, y1 = -0.5, 46.5, 24.0, 52.0
-    S = 40.0
-    W, H = int((x1 - x0) * S) + 80, int((y1 - y0) * S) + 120
-    def P(x, y):
-        return 40 + (x - x0) * S, 80 + (y1 - y) * S
-    img = Image.new("RGB", (W, H), "white")
-    d = ImageDraw.Draw(img)
-    try:
-        f = ImageFont.truetype("DejaVuSans-Bold.ttf", 22)
-        fs = ImageFont.truetype("DejaVuSans-Bold.ttf", 18)
-    except OSError:
-        f = fs = ImageFont.load_default()
-    d.rectangle((*P(x0, y1), *P(x1, y0)), fill=(232, 240, 228))
-    inside = lambda x, y: x0 <= x <= x1 and y0 <= y <= y1
-    pads, _ = features(pcb, "top_layer")
-    for x, y, shape, w, h, ang in pads:
-        if not inside(x, y):
-            continue
-        if shape == "r":
-            cx, cy = P(x, y)
-            r = w / 2 * S
-            d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=(205, 170, 120))
-            continue
-        a = math.radians(ang)
-        c, s_ = math.cos(a), math.sin(a)
-        d.polygon([P(x + dx * c + dy * s_, y - dx * s_ + dy * c) for dx, dy in
-                   ((-w / 2, -h / 2), (w / 2, -h / 2), (w / 2, h / 2), (-w / 2, h / 2))], fill=(205, 170, 120))
-    _, sl = features(pcb, "top_overlay")
-    for xa, ya, xb, yb, wd in sl:
-        if inside(xa, ya) and inside(xb, yb):
-            d.line((P(xa, ya), P(xb, yb)), fill=(120, 120, 120), width=max(1, int(wd * S)))
-    WHITE, IR = (225, 145, 0), (170, 20, 140)
-    pin = lambda ref, n: P(*comps[ref]["pins"][n][:2])
-
-    def wire(a, b, col, bend):
-        (ax, ay), (bx, by) = a, b
-        # quadratic curve through a control point pushed sideways, so the wires stay apart
-        mx, my = (ax + bx) / 2, (ay + by) / 2 + bend
-        pts = [((1 - t) ** 2 * ax + 2 * (1 - t) * t * mx + t * t * bx,
-                (1 - t) ** 2 * ay + 2 * (1 - t) * t * my + t * t * by) for t in [k / 40 for k in range(41)]]
-        d.line(pts, fill=col, width=7, joint="curve")
-
-    white = [("J1", "1"), ("J3", "2"), ("J3", "1"), ("J7", "2"), ("J7", "1"), ("J9", "2"), ("J9", "1"),
-             ("J11", "2"), ("J11", "1"), ("J1", "2")]
-    ir = [("J2", "1"), ("J6", "1"), ("J6", "2"), ("J8", "1"), ("J8", "2"), ("J10", "1"), ("J10", "2"),
-          ("J12", "1"), ("J12", "2"), ("J2", "2")]
-    for chain, col, bend in ((white, WHITE, -150), (ir, IR, 150)):
-        for k in range(0, len(chain), 2):           # wires: board -> A+, A- -> B+, ..., D- -> board
-            a, b = pin(*chain[k]), pin(*chain[k + 1])
-            wire(a, b, col, bend if k in (0, len(chain) - 2) else bend * 0.35)
-    # pads, + and - marks
-    for chain, col in ((white, WHITE), (ir, IR)):
-        for k, (ref, n) in enumerate(chain):
-            x, y = pin(ref, n)
-            d.ellipse((x - 11, y - 11, x + 11, y + 11), fill=col, outline=(0, 0, 0), width=2)
-            sign = "+" if (ref in ("J1", "J2") and n == "1") or (ref not in ("J1", "J2") and k % 2 == 1) else "-"
-            d.text((x + 13, y - 15), sign, fill=col, font=f, stroke_width=3, stroke_fill="white")
-    for ref in ("J1", "J2", "J3", "J6", "J7", "J8", "J9", "J10", "J11", "J12"):
-        q = [P(*v[:2]) for v in comps[ref]["pins"].values()]
-        cx = sum(a for a, _ in q) / len(q)
-        cy = min(b for _, b in q)
-        d.text((cx, cy - 34), ref, fill=(30, 30, 30), font=fs, anchor="mm", stroke_width=3, stroke_fill="white")
-    for name, x in (("A", 2.5), ("B", 8.5), ("C", 14.5), ("D", 20.5)):
-        d.text(P(x, y1 - 1.2), name, fill=(40, 90, 40), font=f, anchor="mm")
-    d.text((W / 2, 36), "LED wiring, top side: white J1 -> A -> B -> C -> D -> J1, IR J2 -> A -> B -> C -> D -> J2",
-           fill=(0, 0, 0), font=fs, anchor="mm")
-    img.save(out)
-    print("wrote", out)
-
-
 def main():
     arg = sys.argv[1] if len(sys.argv) > 1 else FAB_REV
     if os.path.isfile(arg):
@@ -554,16 +361,11 @@ def main():
                 bad.append(f"{p['id']} {p['rail']}: {p[key]} is on {got}, expected {want}")
     if bad:
         raise SystemExit("probe table does not match the board:\n  " + "\n  ".join(bad))
-    for side in ("top", "bottom"):
-        render(pcb, comps, points, side, os.path.join(HERE, f"{side}.png"))
-    render(pcb, comps, points, "top", os.path.join(HERE, "top_power_zoom.png"), region=(43.0, 60.5, 24.0, 49.0),
+    render(pcb, comps, points, os.path.join(HERE, "top.png"))
+    render(pcb, comps, points, os.path.join(HERE, "top_power_zoom.png"), region=(43.0, 60.5, 24.0, 49.0),
            px=55.0, label=", power corner (zoom)")
-    draw_led_wiring(os.path.join(HERE, "led_wiring.png"))
-    draw_led_wiring_board(pcb, comps, os.path.join(HERE, "led_wiring_board.png"))
-    draw_pr1(pcb, comps, os.path.join(HERE, "pr1_wiring.png"))
-    hookup = json.load(open(os.path.join(HERE, "testpoints.json")))["hookup"]
     for side in ("top", "bottom"):
-        render_hookup(pcb, comps, hookup, side, os.path.join(HERE, f"hookup_{side}.png"))
+        render_hookup(pcb, comps, side, os.path.join(HERE, f"hookup_{side}.png"))
 
 
 if __name__ == "__main__":
