@@ -177,33 +177,35 @@ def render(pcb, comps, points, side, out, region=None, px=PX, label=""):
 
 
 def render_hookup(pcb, comps, items, side, out):
-    """hand-soldered parts and connectors: every pad ringed, pin 1 marked, a label at the side"""
+    """the hand-wired parts drawn and wired to their real pads: battery, NTC, LED strips (top);
+    USB cable on PR1, leak probes (bottom); camera ribbons and the B1 short; short names only"""
     pts = outline(pcb)
-    xs, ys = [p[0] for p in pts], [p[1] for p in pts]
-    x0, x1, y0, y1 = min(xs), max(xs), min(ys), max(ys)
+    bx0, bx1 = min(p[0] for p in pts), max(p[0] for p in pts)
+    by0, by1 = min(p[1] for p in pts), max(p[1] for p in pts)
     flip = side == "bottom"
-    LM, RM = 470, 700                       # label columns left and right of the board
-    W = int((x1 - x0) * PX) + LM + RM
-    H = int((y1 - y0) * PX) + 160
+    S = 24.0
+    LM, RM, TM, BM = 380, 520, 120, 860
+    W = int((bx1 - bx0) * S) + LM + RM
+    H = int((by1 - by0) * S) + TM + BM
 
     def P(x, y):
-        u = (x1 - x) if flip else (x - x0)
-        return LM + u * PX, 110 + (y1 - y) * PX
+        u = (bx1 - x) if flip else (x - bx0)
+        return LM + u * S, TM + (by1 - y) * S
 
     img = Image.new("RGB", (W, H), "white")
     d = ImageDraw.Draw(img)
     try:
-        font = ImageFont.truetype("DejaVuSans.ttf", 15)
-        big = ImageFont.truetype("DejaVuSans-Bold.ttf", 18)
-        title_f = ImageFont.truetype("DejaVuSans-Bold.ttf", 26)
+        f = ImageFont.truetype("DejaVuSans-Bold.ttf", 20)
+        fl = ImageFont.truetype("DejaVuSans-Bold.ttf", 26)
     except OSError:
-        font = big = title_f = ImageFont.load_default()
+        f = fl = ImageFont.load_default()
+    # the board as fabricated: outline, copper pads, silkscreen
     d.polygon([P(x, y) for x, y in pts], fill=(232, 240, 228), outline=(40, 90, 40))
     pads, _ = features(pcb, "top_layer" if side == "top" else "bottom_layer")
     for x, y, shape, w, h, ang in pads:
         if shape == "r":
             cx, cy = P(x, y)
-            r = w / 2 * PX
+            r = w / 2 * S
             d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=(205, 170, 120))
             continue
         a = math.radians(ang)
@@ -212,43 +214,133 @@ def render_hookup(pcb, comps, items, side, out):
                    ((-w / 2, -h / 2), (w / 2, -h / 2), (w / 2, h / 2), (-w / 2, h / 2))], fill=(205, 170, 120))
     _, sl = features(pcb, "top_overlay" if side == "top" else "bottom_overlay")
     for xa, ya, xb, yb, wd in sl:
-        d.line((P(xa, ya), P(xb, yb)), fill=(120, 120, 120), width=max(1, int(wd * PX)))
-    refs_of = lambda it: [it["ref"]] + it.get("also", []) + (["B1_N"] if it["ref"] == "B1_P" else [])
-    mine = [it for it in items if comps.get(it["ref"], {}).get("side") == side]
+        d.line((P(xa, ya), P(xb, yb)), fill=(150, 150, 150), width=max(1, int(wd * S)))
+    pin = lambda ref, n: P(*comps[ref]["pins"][n][:2])
 
-    def centre(it):
-        q = [P(*v[:2]) for r in refs_of(it) for v in comps[r]["pins"].values()]
-        return sum(a for a, _ in q) / len(q), sum(b for _, b in q) / len(q)
-    bx0, bx1 = LM, W - RM
-    left = sorted((it for it in mine if centre(it)[0] < (bx0 + bx1) / 2), key=lambda it: centre(it)[1])
-    right = sorted((it for it in mine if centre(it)[0] >= (bx0 + bx1) / 2), key=lambda it: centre(it)[1])
-    col = (20, 70, 180)
-    for group, lx, anchor_x in ((left, 10, LM - 12), (right, bx1 + 16, bx1 + 10)):
-        ys_ = [min(max(centre(it)[1], 120), H - 60) for it in group]
-        for _ in range(60):
-            for k in range(1, len(ys_)):
-                if ys_[k] - ys_[k - 1] < 50:
-                    m = (ys_[k] + ys_[k - 1]) / 2
-                    ys_[k - 1], ys_[k] = m - 25, m + 25
-            ys_ = [min(max(v, 120), H - 40) for v in ys_]
-        for it, ly in zip(group, ys_):
-            for ref in refs_of(it):
-                for pin, (x, y, _) in comps[ref]["pins"].items():
-                    cx, cy = P(x, y)
-                    d.ellipse((cx - 8, cy - 8, cx + 8, cy + 8), outline=col, width=3)
-                    if pin == "1" and len(comps[ref]["pins"]) > 1:
-                        d.text((cx + 9, cy - 20), "1", fill=(200, 30, 30), font=big, stroke_width=3, stroke_fill="white")
-            cx, cy = centre(it)
-            d.line((anchor_x, ly, cx, cy), fill=col, width=2)
-            d.text((lx, ly - 18), it["label"], fill=col, font=big)
-            if it["note"]:
-                d.text((lx, ly + 4), it["note"], fill=(40, 40, 40), font=font)
-    d.text((W / 2, 30), f"MIFA rev 1: hand-soldered parts and connectors, {side} side" + (" (seen from below, mirrored)" if flip else ""),
-           fill=(0, 0, 0), font=title_f, anchor="mm")
-    d.text((W / 2, 64), "blue rings = pads, red 1 = pin 1; the LED strips are the four panels on the left (cut apart by hand)",
-           fill=(60, 60, 60), font=font, anchor="mm")
+    def poly(pts_, col, width=6, dash=False):
+        if not dash:
+            d.line(pts_, fill=col, width=width, joint="curve")
+            return
+        for (xa, ya), (xb, yb) in zip(pts_, pts_[1:]):
+            n = max(1, int(math.hypot(xb - xa, yb - ya) / 16))
+            for k in range(0, n, 2):
+                d.line((xa + (xb - xa) * k / n, ya + (yb - ya) * k / n,
+                        xa + (xb - xa) * min(k + 1, n) / n, ya + (yb - ya) * min(k + 1, n) / n), fill=col, width=width)
+
+    def dot(p, col):
+        d.ellipse((p[0] - 9, p[1] - 9, p[0] + 9, p[1] + 9), fill=col, outline=(0, 0, 0), width=2)
+
+    def curve(a, b, col, bend, width=6):
+        (ax, ay), (bx_, by_) = a, b
+        mx, my = (ax + bx_) / 2, (ay + by_) / 2 + bend
+        q = [((1 - t) ** 2 * ax + 2 * (1 - t) * t * mx + t * t * bx_,
+              (1 - t) ** 2 * ay + 2 * (1 - t) * t * my + t * t * by_) for t in [k / 40 for k in range(41)]]
+        d.line(q, fill=col, width=width, joint="curve")
+
+    def camera(ref, label):
+        q = [pin(ref, n) for n in comps[ref]["pins"] if n.isdigit() and int(n) <= 22]
+        xa, xb = min(a for a, _ in q), max(a for a, _ in q)
+        ytop = max(b for _, b in q)
+        cx = (xa + xb) / 2
+        cam_w = 25 * S
+        cy0 = TM + (by1 - by0) * S + 160
+        # ribbon: 22-pin end in the connector, 15-pin end in the camera
+        d.polygon([(xa, ytop), (xb, ytop), (cx + 9 * S / 2, cy0), (cx - 9 * S / 2, cy0)], fill=(215, 175, 90), outline=(120, 90, 30))
+        for k in range(1, 8):
+            t = k / 8
+            d.line((xa + (cx - 9 * S / 2 - xa) * 0 + (xb - xa) * t, ytop, cx - 9 * S / 2 + 9 * S * t, cy0), fill=(160, 120, 50), width=1)
+        d.rounded_rectangle((cx - cam_w / 2, cy0, cx + cam_w / 2, cy0 + 24 * S), radius=8, fill=(30, 110, 60), outline=(0, 0, 0), width=2)
+        d.ellipse((cx - 5.5 * S, cy0 + 12 * S - 5.5 * S, cx + 5.5 * S, cy0 + 12 * S + 5.5 * S), fill=(20, 20, 20), outline=(90, 90, 90), width=3)
+        d.text((cx + cam_w / 2 + 16, cy0 + 12 * S), label, fill=(30, 110, 60), font=fl, anchor="lm")
+
+    if side == "top":
+        # LED chains on the strips (white J1, IR J2), each strip's - to the next strip's +
+        WHITE, IR = (225, 145, 0), (170, 20, 140)
+        white = [("J1", "1"), ("J3", "2"), ("J3", "1"), ("J7", "2"), ("J7", "1"), ("J9", "2"), ("J9", "1"),
+                 ("J11", "2"), ("J11", "1"), ("J1", "2")]
+        ir = [("J2", "1"), ("J6", "1"), ("J6", "2"), ("J8", "1"), ("J8", "2"), ("J10", "1"), ("J10", "2"),
+              ("J12", "1"), ("J12", "2"), ("J2", "2")]
+        for chain, col, bend in ((white, WHITE, -110), (ir, IR, 110)):
+            for k in range(0, len(chain), 2):
+                curve(pin(*chain[k]), pin(*chain[k + 1]), col, bend if k in (0, len(chain) - 2) else bend * 0.3)
+            for k, (ref, n) in enumerate(chain):
+                p = pin(ref, n)
+                dot(p, col)
+                plus = (ref in ("J1", "J2") and n == "1") or (ref not in ("J1", "J2") and k % 2 == 1)
+                d.text((p[0] + 10, p[1] - 26), "+" if plus else "-", fill=col, font=fl, stroke_width=3, stroke_fill="white")
+        for name, x in (("A", 2.5), ("B", 8.5), ("C", 14.5), ("D", 20.5)):
+            d.text((P(x, 0)[0], TM - 30), name, fill=(40, 90, 40), font=fl, anchor="mm")
+        d.text((LM - 20, P(0, 45.6)[1] - 40), "white", fill=WHITE, font=fl, anchor="rm")
+        d.text((LM - 20, P(0, 44.0)[1] + 40), "IR", fill=IR, font=fl, anchor="rm")
+        # battery cells in the right margin: red + to pin 1 (BAT), black - to pin 2 (GND); the cell's
+        # terminals are drawn in the same top-to-bottom order as the pads, so the leads never cross
+        bx = W - RM + 140
+        for ref, y_mm, dash, label in (("JB1", 37.0, False, "LiPo"), ("JB2", 22.0, True, "2nd LiPo (option)")):
+            p1, p2 = pin(ref, "1"), pin(ref, "2")
+            top = P(0, y_mm)[1]
+            box = (bx, top, bx + 300, top + 170)
+            if dash:
+                poly([(box[0], box[1]), (box[2], box[1]), (box[2], box[3]), (box[0], box[3]), (box[0], box[1])], (90, 110, 150), 3, True)
+            else:
+                d.rounded_rectangle(box, radius=14, fill=(190, 205, 225), outline=(60, 80, 120), width=3)
+            d.text(((box[0] + box[2]) / 2, box[3] - 40), label, fill=(40, 60, 100), font=fl, anchor="mm")
+            upper, lower = (p1, p2) if p1[1] < p2[1] else (p2, p1)
+            for k, q in enumerate((upper, lower)):
+                is_plus = q == p1
+                col = (220, 0, 0) if is_plus else (0, 0, 0)
+                ty = box[1] + 35 + k * 40
+                xr = bx - 60 - k * 30
+                poly([q, (xr, q[1]), (xr, ty), (box[0], ty)], col, 6, dash)
+                d.text((box[0] + 14, ty), "+" if is_plus else "-", fill=col, font=fl, anchor="lm")
+                dot(q, col)
+        # NTC bead glued to the first cell, two leads to JT (no polarity)
+        nt = (bx + 240, P(0, 37.0)[1] + 170)
+        for n, off in (("1", -6), ("2", 6)):
+            q = pin("JT", n)
+            poly([q, (q[0] + 30 + off, q[1]), (nt[0] + off, nt[1] + 60), (nt[0] + off, nt[1] + 8)], (90, 90, 90), 4)
+            dot(q, (90, 90, 90))
+        d.ellipse((nt[0] - 12, nt[1] - 12, nt[0] + 12, nt[1] + 12), fill=(20, 20, 20))
+        d.text((nt[0] + 24, nt[1] + 40), "NTC", fill=(60, 60, 60), font=fl, anchor="lm")
+        # B1: short for K230 USB boot (only when needed)
+        a, b = pin("B1_P", "1"), pin("B1_N", "1")
+        poly([a, (a[0] - 40, a[1]), (b[0] - 40, b[1]), b], (200, 0, 0), 5, True)
+        dot(a, (200, 0, 0)); dot(b, (200, 0, 0))
+        d.text((a[0] - 50, (a[1] + b[1]) / 2), "B1 short:\nK230 USB boot", fill=(200, 0, 0), font=f, anchor="rm")
+        camera("J5", "camera 1")
+    else:
+        # USB cable on PR1: green D+ 1, white D- 2, black GND 3, each straight out at its pad's height;
+        # red VBUS cut back and taped; 4-6 link = flash mode
+        ys_ = [pin("PR1", n)[1] for n in "123"]
+        ux, uy0, uy1 = W - RM + 220, min(ys_) - 50, max(ys_) + 50
+        d.rectangle((ux, uy0, ux + 200, uy1), fill=(240, 240, 240), outline=(0, 0, 0), width=4)
+        d.text((ux + 100, (uy0 + uy1) / 2), "USB-A\nto PC", fill=(0, 0, 0), font=fl, anchor="mm")
+        for n, col in (("1", (0, 150, 0)), ("2", (160, 160, 160)), ("3", (0, 0, 0))):
+            q = pin("PR1", n)
+            poly([q, (ux, q[1])], col, 6)
+            dot(q, col)
+        d.line((ux - 60, uy0 + 12, ux, uy0 + 12), fill=(220, 0, 0), width=6)
+        d.rectangle((ux - 72, uy0 + 4, ux - 58, uy0 + 20), fill=(40, 40, 40))
+        for n, col in (("4", (0, 90, 200)), ("5", (200, 100, 0)), ("6", (200, 0, 0))):
+            dot(pin("PR1", n), col)
+        a, b = pin("PR1", "4"), pin("PR1", "6")
+        poly([a, (a[0] - 45, a[1]), (b[0] - 45, b[1]), b], (0, 90, 200), 5, True)
+        d.text((a[0] - 55, (a[1] + b[1]) / 2), "4-6: flash mode", fill=(0, 90, 200), font=f, anchor="rm")
+        for n, lab in zip("123456", ("D+", "D-", "GND", "BOOT", "EN", "3V3")):
+            q = pin("PR1", n)
+            d.text((q[0] + 14, q[1] - 14), f"{n} {lab}", fill=(0, 0, 0), font=f, anchor="lb", stroke_width=3, stroke_fill="white")
+        # leak probes: a 2-wire lead from each connector to a pair of probe pins (no polarity)
+        for k, ref in enumerate(("S3", "S2", "S1")):
+            q1, q2 = sorted((pin(ref, "1"), pin(ref, "2")), key=lambda q: q[1])   # upper pad to the upper pin
+            px_, py_ = 70, (q1[1] + q2[1]) / 2
+            for q, off in ((q1, -14), (q2, 14)):
+                poly([q, (q[0] - 40, q[1]), (px_ + 60, py_ + off), (px_ + 10, py_ + off)], (30, 80, 200), 5)
+                dot(q, (30, 80, 200))
+                d.rectangle((px_ - 40, py_ + off - 4, px_ + 10, py_ + off + 4), fill=(170, 170, 170), outline=(80, 80, 80))
+            d.text((px_ - 40, py_ - 40), f"probe {ref[1]}", fill=(30, 80, 200), font=fl, anchor="lm")
+        camera("J4", "camera 2")
+    d.text((W / 2, 40), f"MIFA rev 1, {side} side" + (" (seen from below)" if flip else ""), fill=(0, 0, 0), font=fl, anchor="mm")
     img.save(out)
-    print("wrote", out, f"({len(mine)} parts)")
+    print("wrote", out)
 
 def draw_led_wiring(out):
     """the two LED chains in series: J1 -> strips A..D white pairs -> J1, J2 -> IR pairs -> J2"""
