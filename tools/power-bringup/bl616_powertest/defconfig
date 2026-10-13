@@ -1,0 +1,12 @@
+# LEAKCAM BL616 power-up test: FreeRTOS + SDK shell on the USB CDC console (PR1). No Wi-Fi/BLE.
+# The USB console needs FreeRTOS, the shell and CherryUSB's CDC-ACM class; without any of them
+# Kconfig drops CONFIG_BSP_CONSOLE_USB_CDC silently and the console falls back to UART0 = the
+# K230 link pins (check build/generated/autoconfig.h).
+CONFIG_FREERTOS                 =y
+CONFIG_SHELL                    =y
+CONFIG_CHERRYUSB                =y
+CONFIG_CHERRYUSB_OSAL           ="freertos"
+CONFIG_CHERRYUSB_DEVICE         =y
+CONFIG_CHERRYUSB_DEVICE_CDC     =y
+CONFIG_CHERRYUSB_DEVICE_CDC_ACM =y
+CONFIG_BSP_CONSOLE_USB_CDC      =y
