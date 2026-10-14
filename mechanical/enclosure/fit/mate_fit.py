@@ -395,6 +395,7 @@ e, w = byref_int(), byref_int()
 m = sw.OpenDoc6(ASM, 2, 1, "", e, w)
 C = comps(m)
 say(f"opened in {time.time() - t0:.0f} s, {len(C)} components")
+start = {n: xfm(c) for n, c in C.items()}       # the design positions: checked again after the final rebuild
 # fresh start: no mates, everything at its design position (base frame), only the base fixed
 old = []
 f = get(m, "FirstFeature")
@@ -443,5 +444,9 @@ for n in list(missing):                  # no fit faces: hold them by their orig
 left = [n for n in C if n != FIXED and n not in done and n not in missing and (not ONLY or n in ONLY)]
 say(f"mated {len(done)}, not fully: {missing}, not handled: {left}")
 m.ForceRebuild3(False)
+# a distance mate has two solutions and SolidWorks may pick the other one only at the rebuild (the cameras
+# flipped across the base's top plane, 2026-10-14): every part must still be where it started
+off = [n for n, c in C.items() if moved(c, start[n]) > MOVE_TOL]
+say(f"after the rebuild, moved: {off or 'none'}")
 e, w = byref_int(), byref_int()
 say(f"saved: {m.Save3(1, e, w)} ({time.time() - t0:.0f} s)")
