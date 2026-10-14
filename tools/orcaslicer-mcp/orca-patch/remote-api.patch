@@ -1,8 +1,16 @@
 diff --git a/src/slic3r/GUI/RemoteAPI/RemoteAPIController.cpp b/src/slic3r/GUI/RemoteAPI/RemoteAPIController.cpp
-index c299cf007f..f1507cdec7 100644
+index c299cf007f..06b34d1a76 100644
 --- a/src/slic3r/GUI/RemoteAPI/RemoteAPIController.cpp
 +++ b/src/slic3r/GUI/RemoteAPI/RemoteAPIController.cpp
-@@ -1546,6 +1546,98 @@ Response Controller::handle_put_height_range(uint64_t id, const std::string &bod
+@@ -9,6 +9,7 @@
+ #include "slic3r/GUI/PartPlate.hpp"
+ #include "slic3r/GUI/Plater.hpp"
+ #include "libslic3r/Model.hpp"    // M4b: ModelObject/ModelInstance for GET /objects
++#include "libslic3r/Format/STL.hpp"     // modifier meshes (POST /objects/{id}/modifier)
+ #include "slic3r/GUI/NotificationManager.hpp" // in-app change notifications
+ #include "libslic3r/AppConfig.hpp"             // remote_api_notify toggle
+ #include "slic3r/GUI/Tab.hpp"
+@@ -1546,6 +1547,98 @@ Response Controller::handle_put_height_range(uint64_t id, const std::string &bod
      return { 200, r };
  }
  
@@ -101,7 +109,7 @@ index c299cf007f..f1507cdec7 100644
  // Shared: parse {"type","name"} and resolve the collection. Returns nullptr collection on bad type.
  static PresetCollection *api_preset_collection(const std::string &type_s)
  {
-@@ -1772,6 +1864,22 @@ Response Controller::handle_plate_render(const std::string &target)
+@@ -1772,6 +1865,41 @@ Response Controller::handle_plate_render(const std::string &target)
  }
  
  
@@ -121,18 +129,38 @@ index c299cf007f..f1507cdec7 100644
 +    return a;
 +}
 +
++// Modifier volumes of an object: name, settings and box in plate mm.
++static nlohmann::json modifiers_json(const ModelObject *mo)
++{
++    nlohmann::json a = nlohmann::json::array();
++    if (mo->instances.empty()) return a;
++    const Transform3d inst = mo->instances.front()->get_matrix();
++    for (size_t i = 0; i < mo->volumes.size(); ++i) {
++        const ModelVolume *v = mo->volumes[i];
++        if (!v->is_modifier()) continue;
++        const BoundingBoxf3 bb = v->mesh().transformed_bounding_box(inst * v->get_matrix());
++        nlohmann::json cfg = nlohmann::json::object();
++        const DynamicPrintConfig vc = v->config.get();
++        for (const std::string &k : vc.keys()) cfg[k] = vc.opt_serialize(k);
++        a.push_back({{"index", i}, {"name", v->name}, {"config", cfg},
++                     {"min", {bb.min.x(), bb.min.y(), bb.min.z()}}, {"max", {bb.max.x(), bb.max.y(), bb.max.z()}}});
++    }
++    return a;
++}
++
  Response Controller::handle_get_objects()
  {
      nlohmann::json r = run_on_ui([]() -> nlohmann::json {
-@@ -1825,6 +1933,7 @@ Response Controller::handle_get_objects()
+@@ -1825,6 +1953,8 @@ Response Controller::handle_get_objects()
                      rngs.push_back({{"min_z", kv.first.first}, {"max_z", kv.first.second},
                                      {"layer_height", kv.second.has("layer_height") ? kv.second.opt_float("layer_height") : 0.0}});
                  o["height_ranges"] = rngs;
 +                o["support_volumes"] = support_volumes_json(mo);
++                o["modifiers"] = modifiers_json(mo);
              }
              objects.push_back(std::move(o));
          }
-@@ -1928,6 +2037,89 @@ Response Controller::handle_duplicate_object(uint64_t id)
+@@ -1928,6 +2058,174 @@ Response Controller::handle_duplicate_object(uint64_t id)
      return { 200, r };
  }
  
@@ -219,10 +247,95 @@ index c299cf007f..f1507cdec7 100644
 +    return { 200, r };
 +}
 +
++// POST /api/v1/objects/{id}/modifier
++//   body {"mesh_path": "C:\\...\\x.stl", "config": {"fuzzy_skin": "none", ...}, "name": "..."}
++//   The mesh (STL, coordinates in plate mm) becomes a modifier volume of the object with those
++//   settings, as the object list's Add modifier -> Load, but placed where the file says.
++Response Controller::handle_add_modifier(uint64_t id, const std::string &body)
++{
++    nlohmann::json in = nlohmann::json::parse(body);
++    if (!in.is_object() || !in.contains("mesh_path") || !in["mesh_path"].is_string())
++        return { 400, {{"error", "missing_fields"}, {"detail", "mesh_path (STL in plate mm), config {key: value}"}} };
++    if (!in.contains("config") || !in["config"].is_object() || in["config"].empty())
++        return { 400, {{"error", "missing_fields"}, {"detail", "config: the modifier's settings, at least one"}} };
++    const std::string path = in["mesh_path"].get<std::string>();
++    const std::string name = in.value("name", std::string("Modifier"));
++    const nlohmann::json changes = in["config"];
++
++    Model loaded;
++    if (!load_stl(path.c_str(), &loaded) || loaded.objects.empty() || loaded.objects.front()->volumes.empty())
++        return { 422, {{"error", "mesh_not_loaded"}, {"detail", path}} };
++    TriangleMesh mesh = loaded.objects.front()->volumes.front()->mesh();
++    if (mesh.empty())
++        return { 422, {{"error", "mesh_empty"}, {"detail", path}} };
++
++    nlohmann::json r = run_on_ui([id, name, changes, mesh]() mutable -> nlohmann::json {
++        Plater *plater = wxGetApp().plater();
++        int idx = find_object_index(plater->model(), id);
++        if (idx < 0) { api_notify("Object not found", true); return {{"error", "unknown_object"}}; }
++        ModelObject *mo = plater->model().objects[idx];
++        if (mo->instances.empty()) return {{"error", "no_instance"}};
++        // The settings first: an unknown or refused key adds nothing (same rules as PUT /objects/{id}/config).
++        DynamicPrintConfig cfg;
++        nlohmann::json errors = nlohmann::json::object();
++        const bool allow_sensitive = sensitive_writes_allowed();
++        for (auto it = changes.begin(); it != changes.end(); ++it) {
++            const std::string &key = it.key();
++            if (print_config_def.get(key) == nullptr) { errors[key] = "unknown_key"; continue; }
++            if (!allow_sensitive && is_sensitive_config_key(key)) { errors[key] = "blocked_by_remote_api_policy"; continue; }
++            try { cfg.set_deserialize_strict(key, json_value_to_config_string(it.value())); }
++            catch (const std::exception &e) { errors[key] = e.what(); }
++        }
++        if (!errors.empty()) return {{"error", "bad_config"}, {"errors", errors}};
++        plater->take_snapshot("Add modifier");
++        // Kept as loaded (no centring), under the inverse instance matrix: world = file coordinates.
++        ModelVolume *nv = mo->add_volume(std::move(mesh), ModelVolumeType::PARAMETER_MODIFIER, false);
++        nv->set_transformation(mo->instances.front()->get_matrix().inverse());
++        nv->name = name;
++        cfg.set_key_value("extruder", new ConfigOptionInt(0));
++        nv->config.assign_config(std::move(cfg));
++        wxGetApp().obj_list()->reorder_volumes_and_get_selection(idx);
++        plater->get_partplate_list().notify_instance_update(idx, 0);
++        plater->changed_object(idx);
++        api_notify("Added modifier '" + name + "' to '" + mo->name + "'");
++        return {{"id", id}, {"modifiers", modifiers_json(mo)}};
++    });
++    if (r.contains("error"))
++        return { r["error"] == "unknown_object" ? 404 : 422, r };
++    return { 200, r };
++}
++
++// DELETE /api/v1/objects/{id}/modifier[?name=...]: remove the object's modifiers (all, or by name)
++Response Controller::handle_delete_modifiers(uint64_t id, const std::string &name)
++{
++    nlohmann::json r = run_on_ui([=]() -> nlohmann::json {
++        Plater *plater = wxGetApp().plater();
++        int idx = find_object_index(plater->model(), id);
++        if (idx < 0) { api_notify("Object not found", true); return {{"error", "unknown_object"}}; }
++        ModelObject *mo = plater->model().objects[idx];
++        std::vector<size_t> doomed;
++        for (size_t i = 0; i < mo->volumes.size(); ++i)
++            if (mo->volumes[i]->is_modifier() && (name.empty() || mo->volumes[i]->name == name))
++                doomed.push_back(i);
++        if (!doomed.empty()) {
++            plater->take_snapshot("Delete modifiers");
++            for (auto it = doomed.rbegin(); it != doomed.rend(); ++it)
++                mo->delete_volume(*it);
++            wxGetApp().obj_list()->reorder_volumes_and_get_selection(idx);
++            plater->get_partplate_list().notify_instance_update(idx, 0);
++            plater->changed_object(idx);
++            api_notify("Removed " + std::to_string(doomed.size()) + " modifier(s) from '" + mo->name + "'");
++        }
++        return {{"id", id}, {"deleted", doomed.size()}, {"modifiers", modifiers_json(mo)}};
++    });
++    if (r.contains("error")) return { 404, r };
++    return { 200, r };
++}
++
  Response Controller::handle_put_object_config(uint64_t id, const std::string &body)
  {
      nlohmann::json in = nlohmann::json::parse(body); // parse_error -> 400 in dispatch
-@@ -2347,6 +2539,11 @@ Response Controller::dispatch(const Request &req)
+@@ -2347,6 +2645,11 @@ Response Controller::dispatch(const Request &req)
          if (is("POST", "/api/v1/orient"))       return handle_orient();
          if (is("GET",  "/api/v1/jobs/status"))  return handle_jobs_status();
          if (is("GET",  "/api/v1/plates"))       return handle_get_plates();
@@ -234,10 +347,20 @@ index c299cf007f..f1507cdec7 100644
          if (is("POST", "/api/v1/plates")) {
              try { return handle_create_plate(req.body); }
              catch (const nlohmann::json::parse_error &) { return { 400, {{"error", "invalid_json"}} }; }
-@@ -2405,6 +2602,16 @@ Response Controller::dispatch(const Request &req)
+@@ -2405,6 +2708,26 @@ Response Controller::dispatch(const Request &req)
                      try { return handle_put_layer_height(oid, req.body); }
                      catch (const nlohmann::json::parse_error &) { return { 400, {{"error", "invalid_json"}} }; }
                  }
++                if (req.method == "POST" && action == "modifier") {
++                    try { return handle_add_modifier(oid, req.body); }
++                    catch (const nlohmann::json::parse_error &) { return { 400, {{"error", "invalid_json"}} }; }
++                }
++                if (req.method == "DELETE" && action == "modifier") {
++                    std::string q = t.find('?') == std::string::npos ? std::string() : t.substr(t.find('?') + 1), name;
++                    size_t k = q.find("name=");
++                    if (k != std::string::npos) name = url_decode(q.substr(k + 5, q.find('&', k) == std::string::npos ? std::string::npos : q.find('&', k) - k - 5));
++                    return handle_delete_modifiers(oid, name);
++                }
 +                if (req.method == "POST" && action == "support_volume") {
 +                    try { return handle_add_support_volume(oid, req.body); }
 +                    catch (const nlohmann::json::parse_error &) { return { 400, {{"error", "invalid_json"}} }; }
@@ -252,13 +375,15 @@ index c299cf007f..f1507cdec7 100644
                      try { return handle_put_height_range(oid, req.body); }
                      catch (const nlohmann::json::parse_error &) { return { 400, {{"error", "invalid_json"}} }; }
 diff --git a/src/slic3r/GUI/RemoteAPI/RemoteAPIController.hpp b/src/slic3r/GUI/RemoteAPI/RemoteAPIController.hpp
-index e672895c57..e57e6b113f 100644
+index e672895c57..3991b49e84 100644
 --- a/src/slic3r/GUI/RemoteAPI/RemoteAPIController.hpp
 +++ b/src/slic3r/GUI/RemoteAPI/RemoteAPIController.hpp
-@@ -79,6 +79,10 @@ private:
+@@ -79,6 +79,12 @@ private:
      Response handle_select_plate(int index);                // plates: POST /plates/{i}/select
      Response handle_delete_plate(int index);                // plates: DELETE /plates/{i}
      Response handle_put_object_plate(uint64_t id, const std::string &body); // plates: POST /objects/{id}/plate
++    Response handle_add_modifier(uint64_t id, const std::string &body);         // POST /objects/{id}/modifier
++    Response handle_delete_modifiers(uint64_t id, const std::string &name);      // DELETE /objects/{id}/modifier
 +    Response handle_add_support_volume(uint64_t id, const std::string &body);   // POST /objects/{id}/support_volume
 +    Response handle_delete_support_volumes(uint64_t id, const std::string &type); // DELETE /objects/{id}/support_volume
 +    Response handle_get_plate_custom_gcode();                   // GET /plate/custom_gcode
