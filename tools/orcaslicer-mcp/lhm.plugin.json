@@ -202,6 +202,14 @@
       "description": "Override the layer height over a Z band of one object (e.g. 0 to 5 mm printed at 0.1 mm for finer detail near the base). Passing the same min_z and max_z again updates that band's height; clear=True removes every band on the object."
     },
     {
+      "name": "add_support_volume",
+      "description": "Add a support blocker or enforcer box to one object: the same volume as the object list's \"Add support blocker / enforcer -> Box\", placed by plate coordinates. Use a blocker to keep supports off a visible outside face while the inside keeps its supports (e.g. a box round one outer corner from Z 0)."
+    },
+    {
+      "name": "delete_support_volumes",
+      "description": "Remove the support blocker/enforcer boxes of one object (all of them, or one kind). Re-slice afterwards. Needs an OrcaSlicer build with /support_volume."
+    },
+    {
       "name": "set_layer_gcode",
       "description": "Set layer G-code markers on the current plate: the same list as the preview layer slider's \"Add custom G-code\" and \"Add pause\", stored in the project and shown on the slider, so Print plate in OrcaSlicer reproduces it."
     },

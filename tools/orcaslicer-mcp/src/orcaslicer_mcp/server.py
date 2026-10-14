@@ -883,6 +883,44 @@ async def set_height_range(
 
 
 @mcp.tool()
+async def add_support_volume(
+    object_id: Annotated[int, Field(description="Integer id of the target object, from list_objects.")],
+    kind: Annotated[Literal["blocker", "enforcer"], Field(description="blocker: no support inside the box; enforcer: support wherever the box meets an overhang.")],
+    box_min: Annotated[list[float], Field(description="Box corner [x, y, z] in plate mm (the same frame as list_objects' bbox_min/bbox_max).")],
+    box_max: Annotated[list[float], Field(description="Opposite corner [x, y, z] in plate mm; larger than box_min on every axis.")],
+) -> dict:
+    """Add a support blocker or enforcer box to one object: the same volume as the object
+    list's "Add support blocker / enforcer -> Box", placed by plate coordinates. Use a blocker
+    to keep supports off a visible outside face while the inside keeps its supports (e.g. a box
+    round one outer corner from Z 0). It moves with the object afterwards.
+
+    Supports must be enabled (enable_support) for an enforcer to matter. Re-slice and check
+    with render_plate(view="preview"). list_objects shows the boxes under support_volumes;
+    remove them with delete_support_volumes. Needs an OrcaSlicer build with /support_volume."""
+    if len(box_min) != 3 or len(box_max) != 3:
+        return {"error": "box_min and box_max need three values [x, y, z]"}
+    try:
+        async with _client() as c:
+            return await c.add_support_volume(object_id, kind, box_min, box_max)
+    except ApiError as e:
+        return _m4_err(e, "the /objects/{id}/support_volume route")
+
+
+@mcp.tool()
+async def delete_support_volumes(
+    object_id: Annotated[int, Field(description="Integer id of the target object, from list_objects.")],
+    kind: Annotated[Literal["blocker", "enforcer"] | None, Field(description="Only this kind; omit to remove both.")] = None,
+) -> dict:
+    """Remove the support blocker/enforcer boxes of one object (all of them, or one kind).
+    Re-slice afterwards. Needs an OrcaSlicer build with /support_volume."""
+    try:
+        async with _client() as c:
+            return await c.delete_support_volumes(object_id, kind)
+    except ApiError as e:
+        return _m4_err(e, "the /objects/{id}/support_volume route")
+
+
+@mcp.tool()
 async def set_layer_gcode(
     items: Annotated[list[dict], Field(description=(
         "The complete list of markers for the current plate; it replaces what is there, [] clears it. "
@@ -1436,6 +1474,8 @@ _TOOL_ANNOTATIONS: dict[str, tuple[str, bool, bool]] = {
     "set_layer_height": ("Set layer height", False, False),
     "set_height_range": ("Set height-range config", False, False),
     "set_layer_gcode": ("Set layer G-code markers", False, False),
+    "add_support_volume": ("Add support blocker/enforcer box", False, False),
+    "delete_support_volumes": ("Delete support blocker/enforcer boxes", False, True),
     "get_layer_gcode": ("List layer G-code markers", True, False),
     "rename_preset": ("Rename preset", False, False),
     "save_preset": ("Save preset (overwrites stored settings)", False, True),
