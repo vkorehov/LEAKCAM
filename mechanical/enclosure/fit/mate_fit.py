@@ -311,6 +311,45 @@ def mate_screw(m, C, screw, cache):
     return False
 
 
+def mate_origin_planes(m, C, child):
+    """a part with no fit faces (glued cells, cameras, lenses, plugs, wires): its origin planes at their
+    actual offsets from the base's. Only for parts turned by multiples of 90 degrees."""
+    R, t = xfm(C[child])
+    before = (R, t)
+    asm = get(m, "GetTitle").rsplit(".", 1)[0]
+    base_plane = {0: "Right Plane", 1: "Top Plane", 2: "Front Plane"}
+    made = []
+    for k, own in ((0, "Right Plane"), (1, "Top Plane"), (2, "Front Plane")):
+        row = R[3 * k:3 * k + 3]
+        j = max(range(3), key=lambda i: abs(row[i]))
+        if abs(abs(row[j]) - 1) > 1e-6:
+            delete_mates(m, made)
+            say(f"  {child}: turned off the axes, no origin-plane mates")
+            return False
+        d = abs(t[j])
+        for flip in (False, True):
+            m.ClearSelection2(True)
+            m.Extension.SelectByID2(f"{own}@{child}@{asm}", "PLANE", 0, 0, 0, False, 1, nothing(), 0)
+            m.Extension.SelectByID2(f"{base_plane[j]}@{FIXED}@{asm}", "PLANE", 0, 0, 0, True, 1, nothing(), 0)
+            err = byref_int()
+            kind = 0 if d < 1e-6 else 5
+            mt = m.AddMate5(kind, 2, flip, d / 1000, d / 1000, d / 1000, 0, 0, 0, 0, 0, False, False, 0, err)
+            m.ClearSelection2(True)
+            if mt is None or err.value != 1:
+                continue
+            _n[0] += 1
+            nm = f"{_n[0]:03d} {child} - {FIXED}: {own} at {d:.3f} (no fit faces)"
+            mt.Name = nm
+            if moved(C[child], before) > MOVE_TOL:
+                delete_mates(m, [nm])
+                continue
+            made.append(nm)
+            break
+    ok = len(made) == 3
+    say(f"  {child}: {len(made)} origin-plane mates" + ("" if ok else " (incomplete)"))
+    return ok
+
+
 def board_substrate(c):
     """MIFA's substrate: the body whose box is the board's (reading boxes is quick, faces are not)"""
     for b in c.GetBodies2(0) or []:
@@ -368,7 +407,11 @@ for child, hosts in HOSTS.items():
 for n in sorted(C):
     if n.startswith("ISO7380") and (not ONLY or n in ONLY):
         (done if mate_screw(m, C, n, cache) else missing).append(n)
-left = [n for n in C if n != FIXED and n not in done and n not in missing]
+for n in list(missing):                  # no fit faces: hold them by their origin planes where they are
+    if mate_origin_planes(m, C, n):
+        missing.remove(n)
+        done.append(n)
+left = [n for n in C if n != FIXED and n not in done and n not in missing and (not ONLY or n in ONLY)]
 say(f"mated {len(done)}, not fully: {missing}, not handled: {left}")
 m.ForceRebuild3(False)
 e, w = byref_int(), byref_int()
