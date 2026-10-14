@@ -15,7 +15,7 @@ REBATE_T, REBATE_H = 0.85, 1.2                  # base rebate: width into the wa
 LIP_T, LIP_H = REBATE_T - LIP_CLEAR, REBATE_H - LIP_CLEAR
 SEAM_SCREWS = [(x, z) for z in (-37.0, 35.8) for x in (-11.8, 11.8)]   # X, Z: 1 mm of material round every hole (board pocket end 32.8, J4 flex X -9.1..8.4)
 SCREW_SEAT, SCREW_L, HEAD_H = -6.0, 16.0, 1.1   # counterbore floor (the base is shallow at the ends), M2x16 button head
-SCREW_CB, SCREW_HOLE, SCREW_PILOT = 1.9, 1.05, 0.8  # radii (the -X hole 0.05 off the flex loop at X -9.1)
+SCREW_CB, SCREW_HOLE, SCREW_PILOT = 1.9, 1.1, 0.8   # radii: hole 0.2 round the M2 (Ø2.2), pilot Ø1.6
 
 
 def top_span(rects=(), circles=(), ya=0.0, yb=0.0, boss=False):
