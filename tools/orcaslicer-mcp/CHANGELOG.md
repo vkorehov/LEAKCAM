@@ -8,6 +8,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ## [Unreleased]
 
 ### Added
+- `add_modifier` adds a modifier volume to an object from an STL in plate coordinates, carrying its own settings (checked like `set_object_config`): the object list's "Add modifier -> Load", placed where the file says. For example fuzzy skin on a whole part but off round a mating lip. `delete_modifiers` removes them (all or by name), and `list_objects` shows them under `modifiers`. Needs an OrcaSlicer build with the `/objects/{id}/modifier` route.
 - `add_support_volume` puts a support blocker or enforcer box on an object at plate coordinates, the same volume as the object list's "Add support blocker / enforcer -> Box". A blocker keeps supports off a visible outside face while the inside keeps its own. `delete_support_volumes` removes them, and `list_objects` shows them under `support_volumes`. Needs an OrcaSlicer build with the `/objects/{id}/support_volume` route.
 - `set_layer_gcode` and `get_layer_gcode` set and read the plate's layer markers (custom G-code or a pause at a height), the list the preview's layer slider edits. Custom markers are guarded like the other G-code keys (`layer_custom_gcode` in `ORCA_MCP_ALLOW_KEYS`). Needs an OrcaSlicer build with the `/plate/custom_gcode` route.
 

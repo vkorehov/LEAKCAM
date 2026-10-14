@@ -190,6 +190,17 @@ class OrcaClient:
         body = {"clear": True} if clear else {"min_z": min_z, "max_z": max_z, "layer_height": layer_height}
         return await self._request("PUT", f"/api/v1/objects/{obj_id}/height_range", json=body)
 
+    async def add_modifier(self, obj_id: int, mesh_path: str, config: dict, name: str | None = None) -> dict:
+        await self._guard_config(config)
+        body = {"mesh_path": mesh_path, "config": config}
+        if name:
+            body["name"] = name
+        return await self._request("POST", f"/api/v1/objects/{obj_id}/modifier", json=body)
+
+    async def delete_modifiers(self, obj_id: int, name: str | None = None) -> dict:
+        return await self._request("DELETE", f"/api/v1/objects/{obj_id}/modifier",
+                                   params={"name": name} if name else None)
+
     async def add_support_volume(self, obj_id: int, kind: str, box_min: list[float], box_max: list[float]) -> dict:
         body = {"type": kind, "min": list(box_min), "max": list(box_max)}
         return await self._request("POST", f"/api/v1/objects/{obj_id}/support_volume", json=body)
