@@ -202,6 +202,14 @@
       "description": "Override the layer height over a Z band of one object (e.g. 0 to 5 mm printed at 0.1 mm for finer detail near the base). Passing the same min_z and max_z again updates that band's height; clear=True removes every band on the object."
     },
     {
+      "name": "add_modifier",
+      "description": "Add a modifier volume to one object from a mesh: the object list's \"Add modifier -> Load\", placed by the file's own plate coordinates, carrying the given settings."
+    },
+    {
+      "name": "delete_modifiers",
+      "description": "Remove modifier volumes from one object (all, or those with the given name). Support blockers/enforcers are not touched (delete_support_volumes). Re-slice afterwards."
+    },
+    {
       "name": "add_support_volume",
       "description": "Add a support blocker or enforcer box to one object: the same volume as the object list's \"Add support blocker / enforcer -> Box\", placed by plate coordinates. Use a blocker to keep supports off a visible outside face while the inside keeps its supports (e.g. a box round one outer corner from Z 0)."
     },

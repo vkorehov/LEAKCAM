@@ -883,6 +883,42 @@ async def set_height_range(
 
 
 @mcp.tool()
+async def add_modifier(
+    object_id: Annotated[int, Field(description="Integer id of the target object, from list_objects.")],
+    mesh_path: Annotated[str, Field(description="STL on the OrcaSlicer host whose coordinates are plate mm (the frame of list_objects' bbox_min/bbox_max): the modifier sits exactly there.")],
+    config: Annotated[dict, Field(description="Settings inside the modifier, e.g. {\"fuzzy_skin\": \"none\"} or {\"wall_loops\": 5}. Region settings only (walls, infill, fuzzy skin, ...).")],
+    name: Annotated[str | None, Field(description="Name shown in the object list; also what delete_modifiers can remove by.")] = None,
+) -> dict:
+    """Add a modifier volume to one object from a mesh: the object list's "Add modifier -> Load",
+    placed by the file's own plate coordinates, carrying the given settings. Use it to change a
+    setting in one region only, e.g. fuzzy skin on the whole part but off on a mating lip
+    ({"fuzzy_skin": "none"} in a mesh round the lip).
+
+    Settings are checked like set_object_config (unknown or protected keys add nothing).
+    list_objects shows the object's modifiers; remove them with delete_modifiers. Re-slice
+    afterwards. Needs an OrcaSlicer build with /objects/{id}/modifier."""
+    try:
+        async with _client() as c:
+            return await c.add_modifier(object_id, mesh_path, config, name)
+    except ApiError as e:
+        return _m4_err(e, "the /objects/{id}/modifier route")
+
+
+@mcp.tool()
+async def delete_modifiers(
+    object_id: Annotated[int, Field(description="Integer id of the target object, from list_objects.")],
+    name: Annotated[str | None, Field(description="Only modifiers with this name; omit to remove all of them.")] = None,
+) -> dict:
+    """Remove modifier volumes from one object (all, or those with the given name). Support
+    blockers/enforcers are not touched (delete_support_volumes). Re-slice afterwards."""
+    try:
+        async with _client() as c:
+            return await c.delete_modifiers(object_id, name)
+    except ApiError as e:
+        return _m4_err(e, "the /objects/{id}/modifier route")
+
+
+@mcp.tool()
 async def add_support_volume(
     object_id: Annotated[int, Field(description="Integer id of the target object, from list_objects.")],
     kind: Annotated[Literal["blocker", "enforcer"], Field(description="blocker: no support inside the box; enforcer: support wherever the box meets an overhang.")],
@@ -1474,6 +1510,8 @@ _TOOL_ANNOTATIONS: dict[str, tuple[str, bool, bool]] = {
     "set_layer_height": ("Set layer height", False, False),
     "set_height_range": ("Set height-range config", False, False),
     "set_layer_gcode": ("Set layer G-code markers", False, False),
+    "add_modifier": ("Add modifier from a mesh", False, False),
+    "delete_modifiers": ("Delete modifiers", False, True),
     "add_support_volume": ("Add support blocker/enforcer box", False, False),
     "delete_support_volumes": ("Delete support blocker/enforcer boxes", False, True),
     "get_layer_gcode": ("List layer G-code markers", True, False),
