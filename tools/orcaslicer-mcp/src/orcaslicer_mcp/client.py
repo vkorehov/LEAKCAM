@@ -190,6 +190,16 @@ class OrcaClient:
         body = {"clear": True} if clear else {"min_z": min_z, "max_z": max_z, "layer_height": layer_height}
         return await self._request("PUT", f"/api/v1/objects/{obj_id}/height_range", json=body)
 
+    async def get_layer_gcode(self) -> dict:
+        return await self._request("GET", "/api/v1/plate/custom_gcode")
+
+    async def set_layer_gcode(self, items: list[dict]) -> dict:
+        # A custom marker puts raw G-code into the print, the same risk as the *_gcode keys:
+        # it is guarded under the pseudo key "layer_custom_gcode" (allow it in ORCA_MCP_ALLOW_KEYS).
+        if any(i.get("type", "custom") == "custom" for i in items) and sensitive_keys({"layer_custom_gcode": 1}):
+            raise BlockedKey(["layer_custom_gcode"])
+        return await self._request("PUT", "/api/v1/plate/custom_gcode", json={"items": items})
+
     async def get_gcode(self) -> bytes:
         try:
             resp = await self._http.get("/api/v1/gcode")
