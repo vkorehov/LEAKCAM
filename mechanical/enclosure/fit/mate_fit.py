@@ -100,8 +100,11 @@ def faces(c, bodies=None):
                                 box=[min(q[i] for q in cs) for i in range(3)] + [max(q[i] for q in cs) for i in range(3)]))
             elif get(s, "IsCylinder"):
                 p = get(s, "CylinderParams")
+                bx = [v * 1000 for v in get(f, "GetBox")]
+                cs = [to_asm(R, t, [bx[3 * i], bx[1 + 3 * j], bx[2 + 3 * k]]) for i in (0, 1) for j in (0, 1) for k in (0, 1)]
                 out.append(dict(kind="cyl", f=f, o=to_asm(R, t, [x * 1000 for x in p[:3]]), ax=rot(R, list(p[3:6])),
-                                r=p[6] * 1000, area=get(f, "GetArea") * 1e6))
+                                r=p[6] * 1000, area=get(f, "GetArea") * 1e6,
+                                box=[min(q[i] for q in cs) for i in range(3)] + [max(q[i] for q in cs) for i in range(3)]))
     return out
 
 
@@ -281,12 +284,16 @@ def mate_screw(m, C, screw, cache):
             tt = sum(v[i] * ax[i] for i in range(3))
             if math.sqrt(max(0.0, sum(x * x for x in v) - tt * tt)) > 0.05:
                 continue
+            if not all(min(shank["box"][i + 3], b["box"][i + 3]) - max(shank["box"][i], b["box"][i]) > 0.1 for i in range(3)):
+                continue                     # coaxial but elsewhere (the pilot of the other camera on the same axis)
             before = xfm(C[screw])
             mt = mate_faces(m, shank["f"], b["f"], 1, 0.0, f"{screw} in {h}: concentric", lock=True)
             if mt is None:
                 continue
             # the head's underside on its seat: the screw plane facing the host at gap 0 or the nearest
-            seat = facing([f for f in F if f["kind"] == "plane"], [f for f in sum((cache[k] for k in SCREW_HOSTS if k in cache), []) if f["kind"] == "plane"], 0.6)
+            near = [k for k in SCREW_HOSTS if k in cache]
+            seat = facing([f for f in F if f["kind"] == "plane"], [f for k in near for f in cache[k] if f["kind"] == "plane"
+                                                                    and all(min(f["box"][i + 3], shank["box"][i + 3] + 3) - max(f["box"][i], shank["box"][i] - 3) > 0 for i in range(3))], 0.6)
             seat = [s for s in seat if abs(abs(sum(s[1]["n"][i] * ax[i] for i in range(3))) - 1) < 1e-4]
             seat.sort(key=lambda s: (abs(s[0]), -s[1]["area"]))
             mt2 = None
