@@ -181,9 +181,19 @@ def adds_direction(ns, n):
 
 
 def delete_mates(m, names):
+    """by the mate feature itself: SelectByID2 cannot select names with ':' (failed trials stayed, 2026-10-14)"""
     for nm in names:
+        f = m.FeatureByName(nm)
         m.ClearSelection2(True)
-        if m.Extension.SelectByID2(nm, "MATE", 0, 0, 0, False, 0, nothing(), 0):
+        if f is not None and typed(f, "IFeature").Select2(False, 0):
+            m.EditDelete()
+    m.ClearSelection2(True)
+
+
+def delete_component_mates(m, c):
+    for x in list(get(c, "GetMates") or []):
+        m.ClearSelection2(True)
+        if typed(x, "IFeature").Select2(False, 0):
             m.EditDelete()
     m.ClearSelection2(True)
 
@@ -319,7 +329,13 @@ def mate_origin_planes(m, C, child):
     asm = get(m, "GetTitle").rsplit(".", 1)[0]
     base_plane = {0: "Right Plane", 1: "Top Plane", 2: "Front Plane"}
     made = []
-    for k, own in ((0, "Right Plane"), (1, "Top Plane"), (2, "Front Plane")):
+    refs = []                                # the part's own first three planes: Front, Top, Right (any names)
+    f = get(C[child].GetModelDoc2, "FirstFeature")
+    while f and len(refs) < 3:
+        if get(f, "GetTypeName2") == "RefPlane":
+            refs.append(get(f, "Name"))
+        f = get(f, "GetNextFeature")
+    for k, own in ((0, refs[2]), (1, refs[1]), (2, refs[0])):
         row = R[3 * k:3 * k + 3]
         j = max(range(3), key=lambda i: abs(row[i]))
         if abs(abs(row[j]) - 1) > 1e-6:
