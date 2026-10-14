@@ -133,3 +133,4 @@ tools/jlcpcb-cart/package-lock.json
 
 # SolidWorks/Office lock files of open documents
 ~$*
+__pycache__/
