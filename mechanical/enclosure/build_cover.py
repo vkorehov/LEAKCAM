@@ -46,13 +46,14 @@ RISER_TOP, FLEX_RAMP = 21.19, (-30.0, -17.9)            # the J4 riser stays low
 MIC = (15.32, -29.94)                                   # U13 port hole (57.57, 2.56), opens on the board back
 MIC_SLOT = 1.2                                          # a slot through the cradle from the port to its +X side,
 MIC_TOP = 6.0                                           # out through a slot in the cover's +X wall, seam up to here
-CRADLE_BOTTOM = PARTING + 0.05                          # the cell cradle (cradle.SLDPRT), on the board back
-CRADLE_Z0, CRADLE_Z1 = -33.55, 21.65                    # its ends: 1 mm borders beyond the cell groove
-CRADLE_X = POCKET_X - 0.05
+CRADLE_BOTTOM = PARTING + 0.2                           # the cell cradle (cradle.SLDPRT), 0.2 over the base's seam face
+CELL_POCKET_Z = (-33.6, 21.7)                           # the cover's cell pocket ends (the printed cover: unchanged)
+CRADLE_Z0, CRADLE_Z1 = CELL_POCKET_Z[0] + 0.2, CELL_POCKET_Z[1] - 0.2   # its ends: 0.2 inside the cover's pocket
+CRADLE_X = POCKET_X - 0.2                               # 0.2 off the pockets' side walls (base and cover)
 SOLDER_SLOT = (15.9, -8.4, CRADLE_X + 0.1, 2.9)         # over JB1/JB2/JT (board x 59.25, y 26.4-34.4): cell wires and the
                                                         # NTC film (5.0 max wide, centred on JT at Z -5.34) go up
 RAILS = [(16.4, CRADLE_X), (-CRADLE_X, -16.4)]          # alignment rails into the base pocket at the camera end (2 mm)
-RAIL_Z, RAIL_BOTTOM = (-32.75, -28.75), 2.7
+RAIL_Z, RAIL_BOTTOM = (-32.6, -28.75), 2.7                # 0.2 off the base pocket's end (Z -32.8)
 BOARD_HOLE = (-15.64, -6.64)                            # main board Ø2.6 hole: the board screw holds the cradle
 SCREW_HEAD_FLOOR = BED - 1.25                           # its button head (1.1) 0.15 under the flat cell, 0.6 cradle under it
 
@@ -114,7 +115,7 @@ S_POCKETS = [(-POCKET_X, -4.75, -9.2, 1.75),       # S2 (x 25.2-32.8, y 28.05-33
 
 sm.AddToDB = True
 form_start("cover")
-feature("Cell pocket", dict(rects=[(-POCKET_X, CRADLE_Z0 - 0.05, POCKET_X, CRADLE_Z1 + 0.05)]), lambda: span(PARTING, CELL_TOP + 0.2),
+feature("Cell pocket", dict(rects=[(-POCKET_X, CELL_POCKET_Z[0], POCKET_X, CELL_POCKET_Z[1])]), lambda: span(PARTING, CELL_TOP + 0.2),
         f"open to the seam: the cells, on their cradle on the board, go in from below")
 feature("J4 flex riser", dict(rects=[(FLEX_X[0], -37.5, FLEX_X[1], -32.7)]), lambda: span(PARTING, RISER_TOP),
         f"Y {PARTING}..{RISER_TOP:.2f} Z -37.5..-32.7")
