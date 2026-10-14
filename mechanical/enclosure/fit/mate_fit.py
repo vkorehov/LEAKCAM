@@ -190,12 +190,25 @@ def delete_mates(m, names):
     m.ClearSelection2(True)
 
 
-def delete_component_mates(m, c):
-    for x in list(get(c, "GetMates") or []):
-        m.ClearSelection2(True)
-        if typed(x, "IFeature").Select2(False, 0):
-            m.EditDelete()
-    m.ClearSelection2(True)
+def delete_component_mates(m, name):
+    """every mate that involves the component (walking the mate folder: the mates a component hands out cannot be selected)"""
+    doomed = []
+    f = get(m, "FirstFeature")
+    while f:
+        if get(f, "GetTypeName2") == "MateGroup":
+            s = get(f, "GetFirstSubFeature")
+            while s:
+                try:
+                    mt = typed(get(s, "GetSpecificFeature2"), "IMate2")
+                    who = [get(typed(mt.MateEntity(i), "IMateEntity2").ReferenceComponent, "Name2") for i in range(mt.GetMateEntityCount())]
+                    if name in who:
+                        doomed.append(get(s, "Name"))
+                except Exception:
+                    pass
+                s = get(s, "GetNextSubFeature")
+        f = get(f, "GetNextFeature")
+    delete_mates(m, doomed)
+    return len(doomed)
 
 
 def moved(c, before):
