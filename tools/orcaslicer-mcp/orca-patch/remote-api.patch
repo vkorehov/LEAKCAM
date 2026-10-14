@@ -1,0 +1,268 @@
+diff --git a/src/slic3r/GUI/RemoteAPI/RemoteAPIController.cpp b/src/slic3r/GUI/RemoteAPI/RemoteAPIController.cpp
+index c299cf007f..f1507cdec7 100644
+--- a/src/slic3r/GUI/RemoteAPI/RemoteAPIController.cpp
++++ b/src/slic3r/GUI/RemoteAPI/RemoteAPIController.cpp
+@@ -1546,6 +1546,98 @@ Response Controller::handle_put_height_range(uint64_t id, const std::string &bod
+     return { 200, r };
+ }
+ 
++// Layer G-code markers of the current plate: the same list the preview's layer
++// slider edits ("Add custom G-code", "Add pause"), stored in the project.
++static nlohmann::json plate_custom_gcode_json(const Model &model)
++{
++    nlohmann::json a = nlohmann::json::array();
++    for (const auto &it : model.get_curr_plate_custom_gcodes().gcodes) {
++        nlohmann::json o = {{"print_z", it.print_z}};
++        switch (it.type) {
++        case CustomGCode::Custom:      o["type"] = "custom"; o["gcode"] = it.extra; break;
++        case CustomGCode::PausePrint:  o["type"] = "pause";  o["message"] = it.extra; break;
++        case CustomGCode::ColorChange: o["type"] = "color_change"; o["color"] = it.color; break;
++        case CustomGCode::ToolChange:  o["type"] = "tool_change"; o["extruder"] = it.extruder; break;
++        case CustomGCode::Template:    o["type"] = "template"; break;
++        default:                       o["type"] = "unknown"; break;
++        }
++        a.push_back(o);
++    }
++    return a;
++}
++
++// GET /api/v1/plate/custom_gcode -> {"plate": i, "items": [{"print_z", "type", ...}]}
++Response Controller::handle_get_plate_custom_gcode()
++{
++    nlohmann::json r = run_on_ui([]() -> nlohmann::json {
++        Plater *plater = wxGetApp().plater();
++        return {{"plate", plater->get_partplate_list().get_curr_plate_index()},
++                {"items", plate_custom_gcode_json(plater->model())}};
++    });
++    return { 200, r };
++}
++
++// PUT /api/v1/plate/custom_gcode
++//   body {"items": [{"print_z": z, "type": "custom", "gcode": "M104 S220"}
++//                 | {"print_z": z, "type": "pause", "message": "..."}]}
++//   Replaces the current plate's markers; an empty list clears them.
++Response Controller::handle_put_plate_custom_gcode(const std::string &body)
++{
++    nlohmann::json in = nlohmann::json::parse(body);
++    if (!in.is_object() || !in.contains("items") || !in["items"].is_array())
++        return { 400, {{"error", "missing_fields"}, {"detail", "items: array"}} };
++    std::vector<CustomGCode::Item> items;
++    for (const auto &j : in["items"]) {
++        if (!j.is_object() || !j.contains("print_z") || !j["print_z"].is_number())
++            return { 400, {{"error", "bad_item"}, {"detail", "each item needs a numeric print_z"}} };
++        CustomGCode::Item it;
++        it.print_z  = j["print_z"].get<double>();
++        it.extruder = 1;
++        std::string type = j.value("type", "custom");
++        if (!(it.print_z > 0.0))
++            return { 400, {{"error", "bad_item"}, {"detail", "print_z must be > 0"}} };
++        if (type == "custom") {
++            if (!j.contains("gcode") || !j["gcode"].is_string() || j["gcode"].get<std::string>().empty())
++                return { 400, {{"error", "bad_item"}, {"detail", "custom needs non-empty gcode"}} };
++            it.type  = CustomGCode::Custom;
++            it.extra = j["gcode"].get<std::string>();
++        } else if (type == "pause") {
++            it.type  = CustomGCode::PausePrint;
++            it.extra = j.value("message", std::string());
++        } else
++            return { 400, {{"error", "bad_item"}, {"detail", "type must be custom or pause"}} };
++        items.push_back(it);
++    }
++    std::sort(items.begin(), items.end());
++    for (size_t i = 1; i < items.size(); ++i)
++        if (std::abs(items[i].print_z - items[i - 1].print_z) < EPSILON)
++            return { 400, {{"error", "duplicate_print_z"}, {"print_z", items[i].print_z}} };
++
++    // Custom markers put raw G-code into the print: the same policy as the *_gcode config keys.
++    bool has_custom = std::any_of(items.begin(), items.end(),
++                                  [](const CustomGCode::Item &it) { return it.type == CustomGCode::Custom; });
++    if (has_custom && !run_on_ui([]() -> nlohmann::json { return sensitive_writes_allowed(); }).get<bool>())
++        return { 403, {{"error", "blocked_by_remote_api_policy"},
++                       {"detail", "custom G-code markers need 'allow sensitive' in the Remote API preferences"}} };
++
++    nlohmann::json r = run_on_ui([items]() -> nlohmann::json {
++        Plater *plater = wxGetApp().plater();
++        Model  &model  = plater->model();
++        int plate_idx = plater->get_partplate_list().get_curr_plate_index();
++        CustomGCode::Info &info = model.plates_custom_gcodes[plate_idx];
++        info.gcodes = items;
++        if (info.mode == CustomGCode::Undef)
++            info.mode = CustomGCode::SingleExtruder;
++        // Same follow-up as the slider's tick change: the plate's G-code is stale.
++        if (PartPlate *plate = plater->get_partplate_list().get_curr_plate())
++            plate->update_slice_result_valid_state(false);
++        plater->set_plater_dirty(true);
++        api_notify("Set " + std::to_string(items.size()) + " layer G-code marker(s) on plate " + std::to_string(plate_idx + 1));
++        return {{"plate", plate_idx}, {"items", plate_custom_gcode_json(model)}};
++    });
++    return { 200, r };
++}
++
+ // Shared: parse {"type","name"} and resolve the collection. Returns nullptr collection on bad type.
+ static PresetCollection *api_preset_collection(const std::string &type_s)
+ {
+@@ -1772,6 +1864,22 @@ Response Controller::handle_plate_render(const std::string &target)
+ }
+ 
+ 
++// Support blockers/enforcers of an object (its volumes of those types), boxes in plate mm.
++static nlohmann::json support_volumes_json(const ModelObject *mo)
++{
++    nlohmann::json a = nlohmann::json::array();
++    if (mo->instances.empty()) return a;
++    const Transform3d inst = mo->instances.front()->get_matrix();
++    for (size_t i = 0; i < mo->volumes.size(); ++i) {
++        const ModelVolume *v = mo->volumes[i];
++        if (!v->is_support_modifier()) continue;
++        const BoundingBoxf3 bb = v->mesh().transformed_bounding_box(inst * v->get_matrix());
++        a.push_back({{"index", i}, {"type", v->is_support_blocker() ? "blocker" : "enforcer"}, {"name", v->name},
++                     {"min", {bb.min.x(), bb.min.y(), bb.min.z()}}, {"max", {bb.max.x(), bb.max.y(), bb.max.z()}}});
++    }
++    return a;
++}
++
+ Response Controller::handle_get_objects()
+ {
+     nlohmann::json r = run_on_ui([]() -> nlohmann::json {
+@@ -1825,6 +1933,7 @@ Response Controller::handle_get_objects()
+                     rngs.push_back({{"min_z", kv.first.first}, {"max_z", kv.first.second},
+                                     {"layer_height", kv.second.has("layer_height") ? kv.second.opt_float("layer_height") : 0.0}});
+                 o["height_ranges"] = rngs;
++                o["support_volumes"] = support_volumes_json(mo);
+             }
+             objects.push_back(std::move(o));
+         }
+@@ -1928,6 +2037,89 @@ Response Controller::handle_duplicate_object(uint64_t id)
+     return { 200, r };
+ }
+ 
++// POST /api/v1/objects/{id}/support_volume
++//   body {"type":"blocker"|"enforcer","min":[x,y,z],"max":[x,y,z]}: a box in plate mm, the same
++//   volume as the object list's Add support blocker/enforcer -> Box, placed by coordinates
++Response Controller::handle_add_support_volume(uint64_t id, const std::string &body)
++{
++    nlohmann::json in = nlohmann::json::parse(body);
++    if (!in.is_object()) return { 400, {{"error", "body_must_be_object"}} };
++    const std::string type = in.value("type", std::string());
++    if (type != "blocker" && type != "enforcer")
++        return { 400, {{"error", "bad_type"}, {"detail", "type: blocker | enforcer"}} };
++    auto read_vec = [&in](const char *k, Vec3d &out) {
++        if (!in.contains(k) || !in[k].is_array() || in[k].size() != 3) return false;
++        out = Vec3d(in[k][0].get<double>(), in[k][1].get<double>(), in[k][2].get<double>());
++        return true;
++    };
++    Vec3d lo, hi;
++    if (!read_vec("min", lo) || !read_vec("max", hi))
++        return { 400, {{"error", "missing_fields"}, {"detail", "min [x,y,z] and max [x,y,z] in plate mm"}} };
++    if (!((hi - lo).minCoeff() > 0.0))
++        return { 400, {{"error", "bad_box"}, {"detail", "need max > min on every axis"}} };
++
++    nlohmann::json r = run_on_ui([=]() -> nlohmann::json {
++        Plater *plater = wxGetApp().plater();
++        int idx = find_object_index(plater->model(), id);
++        if (idx < 0) { api_notify("Object not found", true); return {{"error", "unknown_object"}}; }
++        ModelObject *mo = plater->model().objects[idx];
++        if (mo->instances.empty()) return {{"error", "no_instance"}};
++        const ModelInstance *mi = mo->instances.front();
++        const bool blocker = type == "blocker";
++        plater->take_snapshot(blocker ? "Add support blocker" : "Add support enforcer");
++        const Vec3d size = hi - lo;
++        ModelVolume *nv = mo->add_volume(TriangleMesh(its_make_cube(size.x(), size.y(), size.z())),
++                                         blocker ? ModelVolumeType::SUPPORT_BLOCKER : ModelVolumeType::SUPPORT_ENFORCER);
++        // As ObjectList::load_generic_subobject: aligned with the bed (the instance's rotation and
++        // scale undone), then its centre put on the box centre instead of the bounding-box corner.
++        const Transform3d inv = mi->get_transformation().get_matrix_no_offset().inverse();
++        nv->set_transformation(inv);
++        nv->set_offset(inv * (0.5 * (lo + hi) - mi->get_offset()));
++        nv->name = blocker ? "Generic-Support Blocker" : "Generic-Support Enforcer";
++        nv->config.set_key_value("extruder", new ConfigOptionInt(0));
++        nv->source.is_from_builtin_objects = true;
++        wxGetApp().obj_list()->reorder_volumes_and_get_selection(idx);
++        plater->get_partplate_list().notify_instance_update(idx, 0);
++        plater->changed_object(idx);
++        api_notify(std::string(blocker ? "Added a support blocker to '" : "Added a support enforcer to '") + mo->name + "'");
++        return {{"id", id}, {"support_volumes", support_volumes_json(mo)}};
++    });
++    if (r.contains("error"))
++        return { r["error"] == "unknown_object" ? 404 : 422, r };
++    return { 200, r };
++}
++
++// DELETE /api/v1/objects/{id}/support_volume[?type=blocker|enforcer]: remove them (all by default)
++Response Controller::handle_delete_support_volumes(uint64_t id, const std::string &type)
++{
++    if (!type.empty() && type != "blocker" && type != "enforcer")
++        return { 400, {{"error", "bad_type"}, {"detail", "type: blocker | enforcer (or none for both)"}} };
++    nlohmann::json r = run_on_ui([=]() -> nlohmann::json {
++        Plater *plater = wxGetApp().plater();
++        int idx = find_object_index(plater->model(), id);
++        if (idx < 0) { api_notify("Object not found", true); return {{"error", "unknown_object"}}; }
++        ModelObject *mo = plater->model().objects[idx];
++        std::vector<size_t> doomed;
++        for (size_t i = 0; i < mo->volumes.size(); ++i) {
++            const ModelVolume *v = mo->volumes[i];
++            if (v->is_support_modifier() && (type.empty() || (type == "blocker") == v->is_support_blocker()))
++                doomed.push_back(i);
++        }
++        if (!doomed.empty()) {
++            plater->take_snapshot("Delete support volumes");
++            for (auto it = doomed.rbegin(); it != doomed.rend(); ++it)
++                mo->delete_volume(*it);
++            wxGetApp().obj_list()->reorder_volumes_and_get_selection(idx);
++            plater->get_partplate_list().notify_instance_update(idx, 0);
++            plater->changed_object(idx);
++            api_notify("Removed " + std::to_string(doomed.size()) + " support volume(s) from '" + mo->name + "'");
++        }
++        return {{"id", id}, {"deleted", doomed.size()}, {"support_volumes", support_volumes_json(mo)}};
++    });
++    if (r.contains("error")) return { 404, r };
++    return { 200, r };
++}
++
+ Response Controller::handle_put_object_config(uint64_t id, const std::string &body)
+ {
+     nlohmann::json in = nlohmann::json::parse(body); // parse_error -> 400 in dispatch
+@@ -2347,6 +2539,11 @@ Response Controller::dispatch(const Request &req)
+         if (is("POST", "/api/v1/orient"))       return handle_orient();
+         if (is("GET",  "/api/v1/jobs/status"))  return handle_jobs_status();
+         if (is("GET",  "/api/v1/plates"))       return handle_get_plates();
++        if (is("GET",  "/api/v1/plate/custom_gcode")) return handle_get_plate_custom_gcode();
++        if (is("PUT",  "/api/v1/plate/custom_gcode")) {
++            try { return handle_put_plate_custom_gcode(req.body); }
++            catch (const nlohmann::json::parse_error &) { return { 400, {{"error", "invalid_json"}} }; }
++        }
+         if (is("POST", "/api/v1/plates")) {
+             try { return handle_create_plate(req.body); }
+             catch (const nlohmann::json::parse_error &) { return { 400, {{"error", "invalid_json"}} }; }
+@@ -2405,6 +2602,16 @@ Response Controller::dispatch(const Request &req)
+                     try { return handle_put_layer_height(oid, req.body); }
+                     catch (const nlohmann::json::parse_error &) { return { 400, {{"error", "invalid_json"}} }; }
+                 }
++                if (req.method == "POST" && action == "support_volume") {
++                    try { return handle_add_support_volume(oid, req.body); }
++                    catch (const nlohmann::json::parse_error &) { return { 400, {{"error", "invalid_json"}} }; }
++                }
++                if (req.method == "DELETE" && action == "support_volume") {
++                    std::string q = t.find('?') == std::string::npos ? std::string() : t.substr(t.find('?') + 1), type;
++                    size_t k = q.find("type=");
++                    if (k != std::string::npos) type = q.substr(k + 5, q.find('&', k) == std::string::npos ? std::string::npos : q.find('&', k) - k - 5);
++                    return handle_delete_support_volumes(oid, type);
++                }
+                 if (req.method == "PUT" && action == "height_range") {
+                     try { return handle_put_height_range(oid, req.body); }
+                     catch (const nlohmann::json::parse_error &) { return { 400, {{"error", "invalid_json"}} }; }
+diff --git a/src/slic3r/GUI/RemoteAPI/RemoteAPIController.hpp b/src/slic3r/GUI/RemoteAPI/RemoteAPIController.hpp
+index e672895c57..e57e6b113f 100644
+--- a/src/slic3r/GUI/RemoteAPI/RemoteAPIController.hpp
++++ b/src/slic3r/GUI/RemoteAPI/RemoteAPIController.hpp
+@@ -79,6 +79,10 @@ private:
+     Response handle_select_plate(int index);                // plates: POST /plates/{i}/select
+     Response handle_delete_plate(int index);                // plates: DELETE /plates/{i}
+     Response handle_put_object_plate(uint64_t id, const std::string &body); // plates: POST /objects/{id}/plate
++    Response handle_add_support_volume(uint64_t id, const std::string &body);   // POST /objects/{id}/support_volume
++    Response handle_delete_support_volumes(uint64_t id, const std::string &type); // DELETE /objects/{id}/support_volume
++    Response handle_get_plate_custom_gcode();                   // GET /plate/custom_gcode
++    Response handle_put_plate_custom_gcode(const std::string &body); // PUT /plate/custom_gcode
+ 
+     // Mutate m_slice under the lock and broadcast a snapshot (event_name) to WS clients.
+     void set_slice_state(const std::function<void(SliceState&)> &mut, const char *event_name);
