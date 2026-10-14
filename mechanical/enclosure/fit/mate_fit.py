@@ -51,6 +51,7 @@ SCREW_HOSTS = ["base-1", "cover-1", "cradle-1", "led_clamp_1-38", "led_clamp_2-3
 BOARD_SIZE = (36.5, 1.6, 65.0)          # the board substrate's box (mm): picked out of MIFA's bodies by it
 
 log = []
+_pid = {}                                # face handle -> persistent id (fresh())
 
 
 def say(s):
@@ -82,6 +83,7 @@ def faces(c, bodies=None):
     for b in (bodies if bodies is not None else c.GetBodies2(0) or []):
         for f in get(b, "GetFaces") or []:
             s = get(f, "GetSurface")
+            _pid[id(f)] = m.Extension.GetPersistReference3(f)
             if get(s, "IsPlane"):
                 p = get(s, "PlaneParams")
                 n = list(p[:3])
@@ -137,10 +139,20 @@ def add_mate(m, kind, dist, name, lock=False):
     return name
 
 
+def fresh(m, f):
+    """the face again from its persistent id: a rebuild disconnects the handles read before it"""
+    try:
+        get(f, "GetArea")
+        return f
+    except Exception:
+        pid = _pid.get(id(f))
+        return m.Extension.GetObjectByPersistReference3(pid, byref_int()) if pid is not None else f
+
+
 def mate_faces(m, fa, fb, kind, dist, name, lock=False):
     m.ClearSelection2(True)
-    typed(fa, "IEntity").Select2(False, 1)
-    typed(fb, "IEntity").Select2(True, 1)
+    typed(fresh(m, fa), "IEntity").Select2(False, 1)
+    typed(fresh(m, fb), "IEntity").Select2(True, 1)
     return add_mate(m, kind, dist, name, lock)
 
 
@@ -193,10 +205,8 @@ def mate_planes(m, C, child, hosts, cache, own=None):
             gaps.append((h, g))
             if independent(ns):
                 break
-        m.ForceRebuild3(False)
         if made and moved(C[child], before) > 1e-6:
             delete_mates(m, made)
-            m.ForceRebuild3(False)
             say(f"  {child}: MOVED by its mates {gaps}: mates removed")
             return False
         if independent(ns):
@@ -235,10 +245,8 @@ def mate_screw(m, C, screw, cache):
                 g = seat[0][0]
                 mt2 = mate_faces(m, seat[0][1]["f"], seat[0][2]["f"], 0 if abs(g) < 0.005 else 5, 0.0 if abs(g) < 0.005 else g,
                                  f"{screw} head: " + ("seated" if abs(g) < 0.005 else f"{g:.2f}"))
-            m.ForceRebuild3(False)
             if moved(C[screw], before) > 1e-6:
                 delete_mates(m, [x for x in (mt, mt2) if x is not None])
-                m.ForceRebuild3(False)
                 say(f"  {screw}: MOVED: mates removed")
                 return False
             say(f"  {screw}: concentric with the Ø{2 * b['r']:.2f} pilot in {h}" + (f", head {seat[0][0]}" if seat else ", NO head seat"))
@@ -299,5 +307,6 @@ for n in sorted(C):
         (done if mate_screw(m, C, n, cache) else missing).append(n)
 left = [n for n in C if n != FIXED and n not in done and n not in missing]
 say(f"mated {len(done)}, not fully: {missing}, not handled: {left}")
+m.ForceRebuild3(False)
 e, w = byref_int(), byref_int()
 say(f"saved: {m.Save3(1, e, w)} ({time.time() - t0:.0f} s)")
