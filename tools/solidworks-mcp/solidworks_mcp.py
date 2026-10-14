@@ -23,7 +23,9 @@ import io
 import os
 import shutil
 import socket
+import sys
 import tempfile
+import threading
 import time
 import traceback
 
@@ -85,6 +87,8 @@ def busy_text():
     open_ = dialogs()
     if open_:
         return text + "; waiting on a dialog: " + "; ".join(describe(d) for d in open_) + " (dismiss_dialog closes it)"
+    if b[0].startswith("run_python"):
+        return text + " (a long call; no SolidWorks dialog open; stop ends it)"
     return text + " (a long call; no SolidWorks dialog open)"
 
 
@@ -471,7 +475,7 @@ async def snapshot(view: str = "*Isometric") -> Image:
 
 
 @mcp.tool()
-async def run_python(code: str, wait: bool = True) -> str:
+async def run_python(code: str, wait: bool = True, timeout: float | None = None) -> str:
     """Run Python against the SolidWorks API (anything the tools above do not cover).
 
     wait=False: start it as a background job and return its id at once; job(id) gives its output
@@ -494,8 +498,13 @@ async def run_python(code: str, wait: bool = True) -> str:
     otherwise SolidWorks may show a dialog that blocks every call (status names it, dismiss_dialog
     closes it); prefer import_part / new_assembly / save_as. A start offset (T0 = 3)
     goes along the normal. Sketch with SketchManager.AddToDB = True so points do not snap.
+
+    timeout: seconds before the code is stopped (default 120 waiting, 900 as a job). The stop
+    tool ends it sooner. Either ends it between two lines of the code: a SolidWorks call already
+    running finishes first, and the output so far is kept.
     """
     out = io.StringIO()
+    limit = timeout if timeout is not None else (120 if wait else 900)
 
     def run():
         app = sw()
@@ -503,8 +512,12 @@ async def run_python(code: str, wait: bool = True) -> str:
                "typed": typed, "members": members, "transform": transform,
                "win32com": win32com, "pythoncom": pythoncom,
                "print": lambda *a, **k: print(*a, **k, file=out)}
+        _stop.clear()
         try:
-            exec(code, env)
+            with stoppable(time.monotonic() + limit):
+                exec(code, env)
+        except Stopped as e:
+            out.write(f"stopped: {e}\n")
         except Exception:
             out.write(traceback.format_exc())
         if "result" in env:
@@ -523,6 +536,53 @@ async def run_python(code: str, wait: bool = True) -> str:
 
 _jobs = {}                              # id -> (task, output buffer, what, started)
 _next_job = 0
+_stop = threading.Event()               # set by stop: the running run_python ends at its next line
+
+
+class Stopped(BaseException):        # not caught by the code's own "except Exception"
+    pass
+
+
+@contextlib.contextmanager
+def stoppable(deadline):
+    """trace the code run_python execs (compiled as "<string>") line by line and raise Stopped once
+    stop was called or the deadline passed; other frames run untraced. A loop over thousands of
+    faces once held the COM thread for 20 minutes and only a server restart ended it"""
+    def tracer(frame, event, arg):
+        if frame.f_code.co_filename != "<string>":
+            return None
+        return line
+
+    def line(frame, event, arg):
+        if event == "line":
+            if _stop.is_set():
+                raise Stopped("stop was called")
+            if time.monotonic() > deadline:
+                raise Stopped("timeout reached")
+        return line
+    sys.settrace(tracer)
+    try:
+        yield
+    finally:
+        sys.settrace(None)
+
+
+@mcp.tool()
+async def stop() -> str:
+    """End the run_python that holds SolidWorks (waiting or a background job), without waiting for
+    it: it stops between two lines of its code, keeps its output so far, and frees SolidWorks for the
+    next call. Other tools (an open or a save in progress) are not stopped; status shows what runs."""
+    b = _busy
+    if b is None:
+        return "SolidWorks is idle: nothing to stop"
+    if not b[0].startswith("run_python"):
+        return busy_text() + "; only run_python can be stopped"
+    _stop.set()
+    for _ in range(50):
+        await asyncio.sleep(0.2)
+        if _busy is not b:
+            return f"stopped {b[0]} after {time.monotonic() - b[1]:.0f} s"
+    return busy_text() + "; stop is set: it ends when the SolidWorks call in progress returns"
 
 
 @mcp.tool()
