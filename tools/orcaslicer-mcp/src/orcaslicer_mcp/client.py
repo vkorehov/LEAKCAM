@@ -190,6 +190,14 @@ class OrcaClient:
         body = {"clear": True} if clear else {"min_z": min_z, "max_z": max_z, "layer_height": layer_height}
         return await self._request("PUT", f"/api/v1/objects/{obj_id}/height_range", json=body)
 
+    async def add_support_volume(self, obj_id: int, kind: str, box_min: list[float], box_max: list[float]) -> dict:
+        body = {"type": kind, "min": list(box_min), "max": list(box_max)}
+        return await self._request("POST", f"/api/v1/objects/{obj_id}/support_volume", json=body)
+
+    async def delete_support_volumes(self, obj_id: int, kind: str | None = None) -> dict:
+        return await self._request("DELETE", f"/api/v1/objects/{obj_id}/support_volume",
+                                   params={"type": kind} if kind else None)
+
     async def get_layer_gcode(self) -> dict:
         return await self._request("GET", "/api/v1/plate/custom_gcode")
 

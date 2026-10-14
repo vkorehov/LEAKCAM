@@ -7,6 +7,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+- `add_support_volume` puts a support blocker or enforcer box on an object at plate coordinates, the same volume as the object list's "Add support blocker / enforcer -> Box". A blocker keeps supports off a visible outside face while the inside keeps its own. `delete_support_volumes` removes them, and `list_objects` shows them under `support_volumes`. Needs an OrcaSlicer build with the `/objects/{id}/support_volume` route.
+- `set_layer_gcode` and `get_layer_gcode` set and read the plate's layer markers (custom G-code or a pause at a height), the list the preview's layer slider edits. Custom markers are guarded like the other G-code keys (`layer_custom_gcode` in `ORCA_MCP_ALLOW_KEYS`). Needs an OrcaSlicer build with the `/plate/custom_gcode` route.
+
 ## [0.1.16] - 2026-10-09
 
 ### Fixed
