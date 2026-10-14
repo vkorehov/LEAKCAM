@@ -15,7 +15,7 @@ CAV_X, FLOOR, REAR = (-3.25, -1.25), 1.88, -3.43
 Z0 = REAR + 0.13                                    # the crimp's rear end
 INSUL, LINK, COND, BOX = 1.48, 2.86, 3.69, 5.7      # along it from the rear
 BASE_T, BOX_W, BOX_H = 0.2, 1.5, 2.08
-WIRE_D, STRANDS_D, WIRE_OUT = 1.0, 0.5, 12.0
+WIRE_D, STRANDS_D, WIRE_OUT = 1.0, 0.5, 0.5     # wires to just past the plug rear: their run to the leg is in enclosure/fit/probe_legs
 WIRE_C = FLOOR + BASE_T + WIRE_D / 2                # wire centre height
 
 model = sw.NewDocument(sw.GetUserPreferenceStringValue(8), 0, 0, 0)

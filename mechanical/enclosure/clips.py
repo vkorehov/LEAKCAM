@@ -1,45 +1,47 @@
-"""Seam lip and its snap tabs, shared by build_base.py and build_cover.py (prepended like led_strips.py).
+"""Seam lip, seam screws, shared by build_base.py and build_cover.py (prepended to either).
 
-The cover's lip runs round the whole seam inside the walls' thickness, its inner face flush with the
-pocket, and sits in a rebate in the base's wall tops: the walls cannot wobble. Designed with 0.2
-clearance (the printer adds about 0.2), printed it is tight. It is broken only where something
-crosses the seam (the cover passes the gaps: the probe wires, the J4 flex riser).
-
-Eight mini snap clips are the lip itself, taller at those places: one piece with the lip and the wall,
-printed continuously. A bead on each clip's outer face snaps into a groove in the base's wall, the
-clip bending inwards into a flex room (the usual cantilever-and-bead click). Four at the ends (thick end
-walls, 0.3 beads: X +-13 at the camera end beside the J4 flex riser, X +-4 at the antenna end between
-the screws), four on the long sides (1.1 walls: 0.15 beads, 0.3 wall left at the
-groove). Opening: a knife in the seam and force. Four M2x20 thread-forming screws from the base's
-bottom hold it for good: heads in counterbores under the J4 flex loop's floor (Y -10), clearance holes
-up through the base, pilots in the cover. The same X at both ends, where the bottom is flat (|X| <
-12.19, inside the LED chamfers) and clear of the flex loop and riser; 1 mm of plastic from the
-counterbores to the end faces.
-
-Profiles of the end clips are drawn on the Right Plane (sketch u, v = model -Z, Y) and extruded across
-X, of the side clips on the Front Plane (u, v = model X, Y) along Z; lip and rebate on the Top Plane
-(sketch x, y = model X, -Z).
+The cover's lip (0.65 x 1.0) runs round the whole seam inside the walls' thickness, its inner face flush
+with the pocket, and sits in a rebate in the base's wall tops: the walls cannot wobble. Designed with 0.2
+clearance (the printer adds about 0.2), printed it is tight. It is broken only where something crosses the
+seam. No snap clips or guide pins (user, 2026-10-10): the lip locates the cover; four M2x16 thread-forming screws from the base's
+bottom hold the parts: heads in counterbores, clearance holes up through the base, pilots in the cover.
+Lip and rebate are drawn on the Top Plane (sketch x, y = model X, -Z).
 """
-import math
+import json, math, os
 LIP_CLEAR = 0.2
 SEAM_Z = (-33.6, 32.8)                          # the lip's inner outline at the ends: the cover's cell pocket end (camera),
                                                 # the base's board pocket end (antenna); the sides at the pockets' X +-18.45
-REBATE_T, REBATE_H = 0.65, 1.0                  # base rebate: width into the wall, depth below the seam
+REBATE_T, REBATE_H = 0.85, 1.2                  # base rebate: width into the wall, depth below the seam (lip 0.65 x 1.0)
 LIP_T, LIP_H = REBATE_T - LIP_CLEAR, REBATE_H - LIP_CLEAR
-TAB_W, TAB_H = 6.0, 3.0                         # snap clips: width, height below the seam
-TAB_X = {-1: (-13.0, 13.0), 1: (-4.0, 4.0)}     # end clips' X centres: camera end, antenna end
-BEAD = 0.3                                      # bead height over the end clips' face
-TAB_Z, TAB_W_SIDE, BEAD_SIDE = (-26.4, 7.5), 3.8, 0.15   # side clips (both sides): Z centres, width, bead; clear of
-                                                # USB-C notches, S1-S3 plugs and the mic slot
-FLEX = 0.5                                      # room for the tab to bend inwards
-SEAM_SCREWS = [(x, z) for z in (-36.6, 34.4) for x in (-10.2, 10.2)]   # X, Z: counterbores to X 12.1, 1.0 from the ends
-SCREW_SEAT, SCREW_L, HEAD_H = -10.0, 20.0, 1.1  # counterbore floor (below the flex loop, Y -9.5), M2x20 button head
+SEAM_SCREWS = [(x, z) for z in (-37.0, 35.8) for x in (-11.8, 11.8)]   # X, Z: 1 mm of material round every hole (board pocket end 32.8, J4 flex X -9.1..8.4)
+SCREW_SEAT, SCREW_L, HEAD_H = -6.0, 16.0, 1.1   # counterbore floor (the base is shallow at the ends), M2x16 button head
 SCREW_CB, SCREW_HOLE, SCREW_PILOT = 1.9, 1.05, 0.8  # radii (the -X hole 0.05 off the flex loop at X -9.1)
 
 
-def tp_feature(name, rects, y0, y1, boss, expect, circles=()):
+def top_span(rects=(), circles=(), ya=0.0, yb=0.0, boss=False):
+    """rectangles (x0, z0, x1, z1) / circles (x, z, r) on the Top Plane, bossed or cut over Y ya..yb"""
+    model.ClearSelection2(True)
+    assert ext.SelectByID2("Top Plane", "PLANE", 0, 0, 0, False, 0, nothing(), 0)
+    sm.InsertSketch(True)
+    for x0, z0, x1, z1 in rects:
+        sm.CreateCornerRectangle(x0 * M, -z0 * M, 0, x1 * M, -z1 * M, 0)
+    for x, z, r in circles:
+        sm.CreateCircleByRadius(x * M, -z * M, 0, r * M)
+    sm.InsertSketch(True)
+    if boss:
+        return fm.FeatureExtrusion3(True, False, False, 0, 0, (yb - ya) * M, 0, False, False, False, False, 0, 0,
+                                    False, False, False, False, True, True, True, 3, abs(ya) * M, ya < 0)
+    return fm.FeatureCut4(True, False, True, 0, 0, (yb - ya) * M, 0, False, False, False, False, 0, 0,
+                          False, False, False, False, False, True, True, False, False, False,
+                          3, abs(ya) * M, ya < 0, False)
+
+
+
+
+def tp_feature(name, rects, y0, y1, boss, expect, circles=(), optional=False):
     """rectangles (x0, z0, x1, z1) and circles (x, z, r) on the Top Plane, from Y y0 up to y1: a boss
-    or a cut (uses the build script's model, sm, fm, ext, fbox)"""
+    or a cut (uses the build script's model, sm, fm, ext, fbox); optional: a cut that finds no material
+    (SolidWorks refuses it) is reported and skipped"""
     model.ClearSelection2(True)
     assert ext.SelectByID2("Top Plane", "PLANE", 0, 0, 0, False, 0, nothing(), 0)
     sm.InsertSketch(True)
@@ -56,6 +58,9 @@ def tp_feature(name, rects, y0, y1, boss, expect, circles=()):
                            False, False, False, False, False, True, True, False, False, False,
                            3, abs(y0) * M, y0 < 0, False)
     if f is None:
+        if optional:
+            print(f"{name:26s} nothing to cut here: skipped")
+            return None
         raise RuntimeError(f"{name}: feature failed")
     f.Name = name
     print(f"{name:26s} {fbox(f)}  expect {expect}")
@@ -104,33 +109,10 @@ def fp_feature(name, xy, z0, z1, boss, expect):
     print(f"{name:26s} {fbox(f)}  expect {expect}")
 
 
-def clips(pocket_x, z_cam, z_ant):
-    """each clip: name, the profile maker (polygon in its plane from (w, y) points), w of the lip's inner
-    face, bead, extrusion span; w is outwards (along Z at the ends, along X on the sides)"""
-    out = []
-    for e, w_in in ((-1, -z_cam), (1, z_ant)):
-        for xc in TAB_X[e]:
-            out.append((f"{'camera' if e < 0 else 'antenna'} end X {xc:+.0f}", rp_feature,
-                        lambda pts, e=e: [(e * w, y) for w, y in pts], w_in, BEAD, (xc - TAB_W / 2, xc + TAB_W / 2)))
-    for s in (-1, 1):
-        for zc in TAB_Z:
-            out.append((f"{'+X' if s > 0 else '-X'} side Z {zc:+.1f}", fp_feature,
-                        lambda pts, s=s: [(s * w, y) for w, y in pts], pocket_x, BEAD_SIDE, (zc - TAB_W_SIDE / 2, zc + TAB_W_SIDE / 2)))
-    return out
-
-
 def ring(pocket_x, z_cam, z_ant, t, inset=0.0):
     """outer and inner rectangle of the band t wide outside (X +-pocket_x, Z z_cam..z_ant)"""
     return [(-pocket_x - t, z_cam - t, pocket_x + t, z_ant + t),
             (-pocket_x + inset, z_cam + inset, pocket_x - inset, z_ant - inset)]
-
-
-def tab_profile(w_in, bead):
-    """the clip with its bead as (w, y) points"""
-    w_out = w_in + LIP_T
-    bot = PARTING - TAB_H
-    return [(w_in, PARTING + 0.01), (w_out, PARTING + 0.01), (w_out, bot + 1.4), (w_out + bead, bot + 0.9),
-            (w_out + bead, bot + 0.7), (w_out, bot + 0.2), (w_out, bot), (w_in, bot)]
 
 
 def seam_cover_features(pocket_x, z_cam, z_ant, side_gaps, end_gaps):
@@ -142,38 +124,22 @@ def seam_cover_features(pocket_x, z_cam, z_ant, side_gaps, end_gaps):
     gaps += [((x0, z_ant - 0.1, x1, z_ant + LIP_T + 0.1) if e > 0 else (x0, z_cam - LIP_T - 0.1, x1, z_cam + 0.1))
              for e, xs in end_gaps.items() for x0, x1 in xs]
     tp_feature("Seam lip gaps", gaps, PARTING - LIP_H - 0.1, PARTING, False, f"{len(gaps)}: what crosses the seam")
-    for name, feat, plane, w_in, bead, (a0, a1) in clips(pocket_x, z_cam, z_ant):
-        feat(f"Snap clip {name}", plane(tab_profile(w_in, bead)), a0, a1, True, f"{TAB_H} below the seam, bead {bead}")
 
 
-def seam_base_features(pocket_x, z_cam, z_ant, pocket_end=32.8):
-    """pocket_end: |Z| of the base's board pocket ends; a clip's flex room merges into it rather than
-    leave a wall under 0.6"""
+def seam_base_features(pocket_x, z_cam, z_ant):
+    """the rebate for the cover's lip"""
     tp_feature("Seam rebate", ring(pocket_x, z_cam, z_ant, REBATE_T, inset=0.01), PARTING - REBATE_H, PARTING + 0.1, False,
                f"{REBATE_T} x {REBATE_H} round the seam: the cover's lip, no wobble")
-    bot = PARTING - TAB_H - LIP_CLEAR
-    gy = PARTING - TAB_H
-    for name, feat, plane, w_in, bead, (a0, a1) in clips(pocket_x, z_cam, z_ant):
-        w_wall = w_in + REBATE_T
-        a0, a1 = a0 - LIP_CLEAR, a1 + LIP_CLEAR
-        w0 = w_in - FLEX
-        if feat is rp_feature and 0 < w0 - pocket_end < 0.6:      # the camera end: no 0.3 ledge to the pocket
-            w0 = pocket_end - 0.01
-        feat(f"Snap clip pocket {name}", plane([(w0, bot), (w_wall, bot), (w_wall, PARTING + 0.1),
-                                                (w0, PARTING + 0.1)]),
-             a0, a1, False, f"the clip and {FLEX} flex room, from Y {bot:.1f}")
-        w_deep = w_in + LIP_T + bead + LIP_CLEAR
-        feat(f"Snap groove {name}", plane([(w_wall - 0.01, gy + 0.5), (w_deep, gy + 0.5), (w_deep, gy + 1.1),
-                                           (w_wall - 0.01, gy + 1.1 + (w_deep - w_wall + 0.01))]),   # 45 deg top: no ledge
-             a0, a1, False, f"catches the bead, wall left {abs(w_in) + 1.1 - (w_in + LIP_T + bead + LIP_CLEAR):.2f}" if feat is fp_feature
-             else "catches the bead")
+    fills = [((pocket_x - 0.01, z0, pocket_x + REBATE_T + 0.05, z1) if side > 0 else (-pocket_x - REBATE_T - 0.05, z0, -pocket_x + 0.01, z1))
+             for side, z0, z1 in REBATE_FILL]
+    tp_feature("Seam rebate fills", fills, PARTING - REBATE_H - 0.01, PARTING, True, f"{len(fills)}: flush where the cover has no lip")
 
 
-def seam_screw_base_features(bottom):
+def seam_screw_base_features(bottom, optional=False):
     tp_feature("Seam screw counterbores", [], bottom - 0.1, SCREW_SEAT, False, f"from the bottom to Y {SCREW_SEAT}",
-               circles=[(x, z, SCREW_CB) for x, z in SEAM_SCREWS])
+               circles=[(x, z, SCREW_CB) for x, z in SEAM_SCREWS], optional=optional)
     tp_feature("Seam screw holes", [], SCREW_SEAT - 0.01, PARTING + 0.1, False, "clearance up through the base",
-               circles=[(x, z, SCREW_HOLE) for x, z in SEAM_SCREWS])
+               circles=[(x, z, SCREW_HOLE) for x, z in SEAM_SCREWS], optional=optional)
 
 
 def seam_screw_cover_features():
@@ -190,27 +156,15 @@ def seam_screws():
 # --- the probe wires' plugs: JST PHR-2 (SPH-002T-P0.5S crimps) in the S2B-PH-K-S side-entry headers S1-S3.
 # Seated, a PHR-2 ends 8.26 past its header's pins (JST models: the pins' board legs 1.35 in front of
 # the header's back, the plug's front on the header's stop 2.75 further, the plug 6.86 long), which is
-# inside the 1.1 side wall: its rear flange (5.8 wide, 4.5 high from 0.3 over the board back) sits in a
-# pocket in the wall, under a 0.5 bulge on the outside (bevelled 30 deg top and bottom: no supports;
-# kept small, next to the USB-C cable plugs).
-# The wires lie on the crimps' base strips (JST KRD-05353-4: the insulation barrel on the cavity floor,
-# 1.48 below the pin axis, the wire's bottom 0.2 over it) and run straight out through U-slots in the
-# base whose floor is at that height, so any insulation 0.8-1.5 leaves straight. Outside, a gland per
-# plug (split by the seam, 30 deg faces to print without supports, R0.4 corners) carries the slots on
-# 2.6 further; the cover's half lies over the wires, and a tongue per wire drops into the slot over
-# its whole length (wall and gland): its saddle is the wire's own top arc (insulation 1.0) 0.2 lower,
-# so it presses the wire round its upper half all along. The wires are the device's legs:
-# they bend down out of the gland over an R0.6 round on the slot floor (no kink), the tongue's tip
-# is rounded too; the cover's half takes the load the legs push up with.
+# inside the old 1.1 side wall: its rear flange (5.8 wide, 4.5 high from 0.3 over the board back) sits
+# in a pocket in the wall.
+# The wires (standard crimped, flexible) run from the plug's rear in a groove in the base, open to the
+# parting (laid in, the cover closes it), to a star of the outer form on the parting line, and out through
+# a tube laid in its seat there (half in each part, clamped): the probe leg. form_model.py legs, cut here
+# by legs_cut.
 PLUGS = [(1, 10.972, -20.567), (1, 10.8, 17.5), (-1, -10.8, -1.5)]   # S1, S3, S2: wall side, pins X, Z middle
 PLUG_REACH, PLUG_W, PLUG_Y = 8.26, 5.8, (1.895, 6.395)               # seated rear past the pins, flange, Y span
-PLUG_PITCH, WIRE_FLOOR, WIRE_SLOT = 2.0, 3.405, 1.2                  # wires: Z pitch, bottom height, slot width (1.0 wire)
-BULGE, PLUG_CLEAR = 0.5, 0.2
-GLAND_L, GLAND_W, GLAND_R = 2.6, 5.2, 0.4                         # gland: length out of the bulge, width, corners
-GLAND_UNDER, BEND_R, TIP_R = 1.0, 0.6, 0.4                        # plastic under the slots, the exit's rounds
-SLOPE = math.tan(math.radians(30))                                # bulge and gland faces: 30 deg (prints, clears USB-C plugs)
-BULGE_MARGIN = 0.2                                                # bulge past the flange pocket in Z
-WIRE_D, GRIP = 1.0, 0.2                                            # wire (insulation), press of the saddles
+PLUG_CLEAR = 0.2
 
 
 def plug_rear(pins_x, side):
@@ -223,67 +177,27 @@ def plug_pocket(side, pins_x, zc, outer_x):
     return (side * (outer_x - 1.2), side * x1), (zc - PLUG_W / 2 - PLUG_CLEAR, zc + PLUG_W / 2 + PLUG_CLEAR)
 
 
+LIP_OFF = [(1, -22.9, 32.7)]      # no lip: +X beside the battery plate and S3: the cover is cut back to its band, the base
+                                 # open or a 45 deg side fill there (fit 10-10c/d), up to the antenna-end seam wall
+REBATE_FILL = LIP_OFF                            # the rebate filled flush wherever the cover has no lip
+
+
 def plug_gaps(pocket_x):
     """the lip's gaps over the plugs, {side: [(z0, z1)]}"""
     out = {}
     for side, px, zc in PLUGS:
         out.setdefault(side, []).append((zc - PLUG_W / 2 - PLUG_CLEAR - 0.1, zc + PLUG_W / 2 + PLUG_CLEAR + 0.1))
+    for side, z0, z1 in LIP_OFF:
+        out.setdefault(side, []).append((z0, z1))
+    for side, zs in out.items():                     # overlapping rectangles make a bad sketch: merged
+        m = []
+        for z0, z1 in sorted(zs):
+            if m and z0 <= m[-1][1]:
+                m[-1] = (m[-1][0], max(m[-1][1], z1))
+            else:
+                m.append((z0, z1))
+        out[side] = m
     return out
-
-
-def bulge_profile(side, outer_x, y0, y1, bevel_lo, bevel_hi):
-    """XY polygon of a bulge between y0 and y1, bevelled 45 deg where asked"""
-    xi, xo = side * (outer_x - 0.01), side * (outer_x + BULGE)
-    return [(xi, y0 - (BULGE * SLOPE if bevel_lo else 0)), (xo, y0), (xo, y1), (xi, y1 + (BULGE * SLOPE if bevel_hi else 0))]
-
-
-def rp_circle(name, z, y, r, x0, x1, boss, expect):
-    """a circle (Z, Y) on the Right Plane, extruded through X x0..x1"""
-    model.ClearSelection2(True)
-    assert ext.SelectByID2("Right Plane", "PLANE", 0, 0, 0, False, 0, nothing(), 0)
-    sm.InsertSketch(True)
-    sm.CreateCircleByRadius(-z * M, y * M, 0, r * M)
-    sm.InsertSketch(True)
-    if boss:
-        f = fm.FeatureExtrusion3(True, False, False, 0, 0, (x1 - x0) * M, 0, False, False, False, False, 0, 0,
-                                 False, False, False, False, True, True, True, 3, abs(x0) * M, x0 < 0)
-    else:
-        f = fm.FeatureCut4(True, False, True, 0, 0, (x1 - x0) * M, 0, False, False, False, False, 0, 0,
-                           False, False, False, False, False, True, True, False, False, False,
-                           3, abs(x0) * M, x0 < 0, False)
-    if f is None:
-        raise RuntimeError(f"{name}: feature failed")
-    f.Name = name
-    print(f"{name:26s} {fbox(f)}  expect {expect}")
-
-
-def gland(part, side, zc, nm, outer_x):
-    """the gland's half below (base) or above (cover) the seam"""
-    x0, x1 = outer_x + BULGE - 0.01, outer_x + BULGE + GLAND_L
-    hw, r = GLAND_W / 2, GLAND_R
-    sx = lambda a, b: (side * a, side * b) if side > 0 else (side * b, side * a)
-    ys = (WIRE_FLOOR - GLAND_UNDER - (x1 - x0) * SLOPE - 0.1, PARTING) if part == "base" else (PARTING, PARTING + 0.6 + (x1 - x0) * SLOPE + 0.2)
-    for i, (xa, xb, w) in enumerate(((x0, x1 - r, hw), (x0, x1, hw - r))):
-        a, b = sx(xa, xb)
-        tp_feature(f"Gland {nm} {i}", [(a, zc - w, b, zc + w)], *ys, True, "")
-    tp_feature(f"Gland corners {nm}", [], *ys, True, f"R{r}", circles=[(side * (x1 - r), zc + k * (hw - r), r) for k in (-1, 1)])
-    # the 30 deg face: under the base half, over the cover half (each prints without supports)
-    if part == "base":
-        lo = WIRE_FLOOR - GLAND_UNDER                           # under the slots' floor at the gland's end
-        tri = [(x0, lo - (x1 - x0) * SLOPE), (x1 + 0.2, lo + 0.2 * SLOPE), (x1 + 0.2, ys[0] - 0.5), (x0, ys[0] - 0.5)]
-    else:
-        hi = PARTING + 0.6                                      # 0.6 over the seam at the gland's end
-        tri = [(x0, hi + (x1 - x0) * SLOPE), (x1 + 0.2, hi - 0.2 * SLOPE), (x1 + 0.2, ys[1] + 0.5), (x0, ys[1] + 0.5)]
-    fp_feature(f"Gland face {nm}", [(side * x, y) for x, y in tri], zc - hw - 0.1, zc + hw + 0.1, False, "30 deg")
-
-
-def exit_round(outer_x, y, r, d):
-    """(|X|, Y) polygon cutting a quarter round of radius r on the edge at the gland's end, at height y,
-    turning down (d -1, the slot floor) or up (d +1, the tongue's tip)"""
-    x1 = outer_x + BULGE + GLAND_L
-    cx, cy = x1 - r, y + d * r
-    arc = [(cx + r * math.sin(math.radians(t)), cy - d * r * math.cos(math.radians(t))) for t in range(0, 91, 10)]
-    return arc + [(x1 + 0.3, cy), (x1 + 0.3, y - d * 0.1), (cx, y - d * 0.1)]
 
 
 def plug_features(part, outer_x):
@@ -292,36 +206,139 @@ def plug_features(part, outer_x):
     for side, px, zc in PLUGS:
         nm = f"{'+X' if side > 0 else '-X'} Z {zc:+.1f}"
         (xa, xb), (z0, z1) = plug_pocket(side, px, zc, outer_x)
-        zb = (z0 - BULGE_MARGIN, z1 + BULGE_MARGIN)               # the wall beside the pocket holds its sides
-        if part == "base":
-            fp_feature(f"Plug bulge {nm}", bulge_profile(side, outer_x, lo, PARTING, True, False), *zb, True,
-                       f"{BULGE} out, wall behind the flange {outer_x + BULGE - abs(plug_rear(px, side)) - PLUG_CLEAR:.2f}")
-            ys = (lo, PARTING + 0.1)
-        else:
-            fp_feature(f"Plug bulge {nm}", bulge_profile(side, outer_x, PARTING, hi, False, True), *zb, True,
-                       f"{BULGE} out")
-            ys = (PARTING - 0.1, hi)
+        ys = (lo, PARTING + 0.1) if part == "base" else (PARTING - 0.1, hi)
         fp_feature(f"Plug flange pocket {nm}", [(xa, ys[0]), (xb, ys[0]), (xb, ys[1]), (xa, ys[1])], z0, z1, False,
                    f"the PHR-2's rear to X {plug_rear(px, side):.2f}, {PLUG_CLEAR} clear")
-        gland(part, side, zc, nm, outer_x)
-        if part == "cover":                                     # a tongue with a saddle on each wire
-            wire_c = WIRE_FLOOR + WIRE_D / 2
-            for zw in (zc - PLUG_PITCH / 2, zc + PLUG_PITCH / 2):
-                ta, tb = sorted((side * (abs(xb) + 0.07), side * (outer_x + BULGE + GLAND_L)))
-                tw = WIRE_SLOT / 2 - PLUG_CLEAR
-                r = WIRE_D / 2
-                yb = wire_c - GRIP + math.sqrt(r * r - tw * tw) - 0.05     # under the saddle's edges
-                tp_feature(f"Wire tongue {nm} {zw:+.2f}", [(ta, zw - tw, tb, zw + tw)],
-                           yb, PARTING + 0.01, True, "into the base's slot, over the whole length")
-                rp_circle(f"Wire saddle {nm} {zw:+.2f}", zw, wire_c - GRIP, r,
-                          ta - 0.1, tb + 0.1, False, f"the wire's arc, {GRIP} into it, below the seam")
-                fp_feature(f"Wire tongue tip {nm} {zw:+.2f}", [(side * x, y) for x, y in exit_round(outer_x, yb, TIP_R, 1)],
-                           zw - WIRE_SLOT / 2, zw + WIRE_SLOT / 2, False, f"R{TIP_R}")
-        if part == "base":
-            xw = (xa, side * (outer_x + BULGE + GLAND_L + 0.2))
-            for zw in (zc - PLUG_PITCH / 2, zc + PLUG_PITCH / 2):
-                fp_feature(f"Probe wire slot {nm} {zw:+.2f}", [(xw[0], WIRE_FLOOR - 0.1), (xw[1], WIRE_FLOOR - 0.1),
-                                                               (xw[1], PARTING + 0.1), (xw[0], PARTING + 0.1)],
-                           zw - WIRE_SLOT / 2, zw + WIRE_SLOT / 2, False, f"U-slot from Y {WIRE_FLOOR - 0.1:.2f}, the cover closes it")
-                fp_feature(f"Wire bend {nm} {zw:+.2f}", [(side * x, y) for x, y in exit_round(outer_x, WIRE_FLOOR - 0.1, BEND_R, -1)],
-                           zw - WIRE_SLOT / 2, zw + WIRE_SLOT / 2, False, f"R{BEND_R} on the slot floor at the exit")
+
+
+# --- the outer form (form_model.py, frozen), split along its own edges: each part starts as its piece
+# (<part>_outer.step: inside the old block the parting is the flat seam at PARTING); exits are cut out to
+# SKIN_OUT, past its skin, and the part is trimmed to its piece at the end
+FORM_STEP = r"C:\hw\LEAKCAM\mechanical\enclosure\{}_outer.step"   # the form's piece for each part
+LEGS_STEP = r"C:\hw\LEAKCAM\mechanical\enclosure\legs_{}.step"   # the probe legs' wire channels and tube bores
+LEDS_STEP = r"C:\hw\LEAKCAM\mechanical\enclosure\leds_{}.step"   # the LED strips' seats and LED holes
+SHELL_STEP = r"C:\hw\LEAKCAM\mechanical\enclosure\shell_{}.step"   # the hollow (form_model.py): all but the skin and structures
+SKIN_OUT = 40.0
+BODY_SUBTRACT = 15902                                             # swBodyOperationType_e
+
+
+def form_body(path):
+    """a copy of the form's solid (or another STEP's) as a new body of this part"""
+    title = get(model, "GetTitle")
+    data = sw.GetImportFileData(path)
+    e = byref_int()
+    src = sw.LoadFile4(path, "r", data if data is not None else nothing(), e)
+    if src is None:
+        raise RuntimeError(f"import of {path} failed: {e.value}")
+    bodies = [typed(b_, "IBody2").Copy() for b_ in src.GetBodies2(0, False)]
+    sw.CloseDoc(get(src, "GetTitle"))
+    sw.ActivateDoc3(title, False, 0, byref_int())
+    for body in bodies:
+        f = typed(model, "IPartDoc").CreateFeatureFromBody3(body, False, 0)
+        if f is None:
+            raise RuntimeError(f"body from {path} failed")
+    return f
+
+
+def form_start(part):
+    """the part's piece of the form as its first body"""
+    form_body(FORM_STEP.format(part)).Name = "Outer form piece"
+    print(f"{'Outer form piece':26s} {[round(v * 1000, 2) for v in model.GetPartBox(True)]}")
+
+
+def form_trim(part):
+    """everything outside the form off (cut-outs and bosses made past the skin): a box body less a copy
+    of the form is the outside, the part less the outside is the part (Combine's intersect does not run
+    here, subtract does)"""
+    import pythoncom, win32com.client
+    which = part
+    pd = typed(model, "IPartDoc")
+    names = lambda: {get(typed(b_, "IBody2"), "Name"): b_ for b_ in pd.GetBodies2(0, False)}
+    part = names()
+    if len(part) != 1:
+        raise RuntimeError(f"form trim: {len(part)} bodies before")
+    form_body(FORM_STEP.format(which))
+    form = {k: v for k, v in names().items() if k not in part}
+    model.ClearSelection2(True)
+    assert ext.SelectByID2("Top Plane", "PLANE", 0, 0, 0, False, 0, nothing(), 0)
+    sm.InsertSketch(True)
+    sm.CreateCornerRectangle(-0.1, -0.1, 0, 0.1, 0.1, 0)
+    sm.InsertSketch(True)
+    bx = fm.FeatureExtrusion3(False, False, False, 0, 0, 0.1, 0.1, False, False, False, False, 0, 0,
+                              False, False, False, False, False, True, True, 0, 0, False)     # not merged: own body
+    if bx is None:
+        raise RuntimeError("form trim: box failed")
+    box = {k: v for k, v in names().items() if k not in part and k not in form}
+    arr = lambda b_: win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_DISPATCH, [b_])
+    c1 = fm.InsertCombineFeature(BODY_SUBTRACT, list(box.values())[0], arr(list(form.values())[0]))
+    if c1 is None:
+        raise RuntimeError("form trim: outside failed")
+    c1.Name = "Outside of the form"
+    outside = [v for k, v in names().items() if k not in part][0]
+    c2 = fm.InsertCombineFeature(BODY_SUBTRACT, list(part.values())[0], arr(outside))
+    if c2 is None:
+        raise RuntimeError("form trim failed")
+    c2.Name = "Trimmed to the outer form"
+    print("trimmed to the form:", len(pd.GetBodies2(0, False)), "body", [round(v * 1000, 2) for v in model.GetPartBox(True)])
+
+
+def cut_bodies(path, name):
+    """the bodies of a form_model.py STEP off the part"""
+    import pythoncom, win32com.client
+    pd = typed(model, "IPartDoc")
+    names = lambda: {get(typed(b_, "IBody2"), "Name"): b_ for b_ in pd.GetBodies2(0, False)}
+    main = names()
+    form_body(path)
+    tools = [v for k, v in names().items() if k not in main]
+    f = fm.InsertCombineFeature(BODY_SUBTRACT, list(main.values())[0],
+                                win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_DISPATCH, tools))
+    if f is None:
+        raise RuntimeError(f"{name} failed")
+    f.Name = name
+    print(f"{name}: {len(tools)} off,", len(pd.GetBodies2(0, False)), "body left")
+
+
+def legs_cut(part):
+    """the probe legs (form_model.py legs_<part>.step): the wire channels and the tube's bore"""
+    cut_bodies(LEGS_STEP.format(part), "Probe leg channels (form_model.py)")
+
+
+def leds_cut(part):
+    """the LED strips (form_model.py leds_<part>.step): each strip's seat in the skin, its LEDs' square holes"""
+    if os.path.exists(LEDS_STEP.format(part)):
+        cut_bodies(LEDS_STEP.format(part), "LED strip seats (form_model.py)")
+
+
+def shell_cut(part):
+    """the hollow off the part: form_model.py's shell_<part>.step (everything inside the 2 mm skin but a band
+    along the parting, the simple structures of form_params.json keep_<part> and walls round the legs'
+    channels)"""
+    import pythoncom, win32com.client
+    p = SHELL_STEP.format(part)
+    if not os.path.exists(p):
+        print("no shell yet:", p)
+        return
+    pd = typed(model, "IPartDoc")
+    names = lambda: {get(typed(b_, "IBody2"), "Name"): b_ for b_ in pd.GetBodies2(0, False)}
+    main = names()
+    if len(main) != 1:
+        raise RuntimeError(f"shell: {len(main)} bodies before")
+    form_body(p)
+    tools = [v for k, v in names().items() if k not in main]
+    f = fm.InsertCombineFeature(BODY_SUBTRACT, list(main.values())[0],
+                                win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_DISPATCH, tools))
+    if f is None:
+        raise RuntimeError("shell cut failed")
+    f.Name = "Shell: the hollow off (form_model.py)"
+    bodies = pd.GetBodies2(0, False)
+    if len(bodies) > 1:                        # bits the hollow cut loose (left between two cuts): off
+        size = lambda b_: (lambda q: (q[3] - q[0]) * (q[4] - q[1]) * (q[5] - q[2]))(get(typed(b_, "IBody2"), "GetBodyBox"))
+        loose = sorted(bodies, key=size)[:-1]
+        model.ClearSelection2(True)
+        for b_ in loose:
+            print("  loose piece removed:", [round(v * 1000, 2) for v in get(typed(b_, "IBody2"), "GetBodyBox")])
+            typed(b_, "IBody2").Select2(True, None)
+        d = fm.InsertDeleteBody2(False)
+        if d:
+            d.Name = "Loose bits of the shell removed"
+    print(f"shell: {len(tools)} hollow bodies off,", len(pd.GetBodies2(0, False)), "body left")

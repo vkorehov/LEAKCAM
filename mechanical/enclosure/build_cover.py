@@ -1,16 +1,17 @@
 """Build mechanical/enclosure/cover.SLDPRT: the ABS top part over the board, the two cells and the
-top camera. Run on the SolidWorks PC, after led_strips.py and clips.py (LED strip chamfers, slots and holes; seam lip and snap clips), through the solidworks-mcp run_python tool (it provides sw,
+top camera. Run on the SolidWorks PC, after clips.py (seam lip, seam screws), through the solidworks-mcp run_python tool (it provides sw,
 get, nothing, byref_int), like build_base.py, whose coordinates it shares:
 
   main board (MIFA.step x, y, z) -> X = x - 42.25, Y = -z, Z = y - 32.5; board back at Y 1.6
-  cells (LiPo_503450) lie on the board back, 34.5 across, protection-board end at the board's
-    camera-end edge (Z -32.5), far end Z 20.6 (board y 53.1, short of the antenna at y ~55)
+  cells (LiPo_503450, measured 53.0 x 35.0 x 5.3 with protection board and wires) lie on the board
+    back, protection-board end at the board's camera-end edge (Z -32.5), far end Z 20.5 (board y 53.0,
+    short of the antenna at y ~55)
   top camera (Arducam_B0370 x, y, z) -> X = x, Y = CAM2_BACK - z, Z = y + 1.1 + CAM_Z
     back to back with the bottom camera on the same axis, lens up through the top
 
 The cover sits on the base's top face (Y 4.7, the probe wires' centre height). Assembly: cells in their bed; top camera into its
 pocket with four M2 screws from its back into the cover; J4 flex from the board up the camera-end
-riser, over the cells into the camera connector; cover onto the base, probe wires into their slots, its ribs on the board's antenna end.
+riser, over the cells into the camera connector; probe wires laid into their channels and tubes glued in; cover onto the base.
 """
 M = 0.001
 PATH = r"C:\hw\LEAKCAM\mechanical\enclosure\cover.SLDPRT"
@@ -20,23 +21,28 @@ CAM_Z = (END_CAM + END_ANT) / 2
 PARTING = 4.7                                           # base top face: the probe wires' centre height
 OUTER_X, POCKET_X = 19.55, 18.45                        # as the base
 BED = 6.6                                               # cells' lowest point: 0.2 over S1-S3 (4.8 on the board back)
-CELL_BODY = BED + 0.54                                  # the cell body sits 0.54 above its protection-board end
-CELL_GAP = 0.0                                          # the cells touch at their protection boards (6.0 thick there, the
-                                                        # 5.0 bodies 1.0 apart: glue and the NTC film, 0.7)
+CELL_T, CELL_W, CELL_L = 5.3, 35.0, 53.0                # measured overall, protection board and wire ends included
+CELL_GAP = 0.7                                          # between the cells: the NTC film (0.7) and glue
 # the film NTC (mechanical/ntc/MF55_NTC.SLDPRT) is soldered into JT through the battery pad slot, its leads
-# up the lower cell's +X side, bent over it: the head lies in the cells' 1.5 glue gap; the cell wires pass outside
-CELL_TOP = BED + 6.0 + CELL_GAP + 6.0                   # 18.6
+# up the lower cell's +X side, bent over it: the head lies in the cells' gap; the cell wires pass outside
+CELL_TOP = BED + CELL_T + CELL_GAP + CELL_T             # 17.9
 PCM_END = -32.5 + 10.2                                  # protection board: Z -32.5 .. -22.3
 HEADS = 1.9                                             # screw heads on the camera back over the cells: the holder screws (M2 pan, 1.6) + 0.3
-CAM2_BACK = CELL_TOP + HEADS                            # 20.2
+CAM2_BACK = CELL_TOP + HEADS                            # 19.8: right over the cells (holder screw heads 0.3 off); the form's
+                                                        # crater is round the lens there (lens_raise_mm 0); estimated lens
 CAM_T, FLANGE, BARREL, CEIL = 2.38232, 3.0, 2.2, 1.82   # as the bottom camera and the base floor
 LEDGE = CAM2_BACK + CAM_T                               # camera board lens-side face rests here
 BARREL_END = LEDGE + FLANGE + BARREL
-TOP = BARREL_END + CEIL                                 # 29.6
+TOP = BARREL_END + CEIL                                 # 33.9: the old top over the barrel
 LENS_THREAD = 12.5 / 2
+LENS_BORE = 8.1                                         # past the old top: round the lens body (Ø15), up to the crater
+CAM_PILOT = 3.5                                         # camera screw pilot depth: M2x5 through the 2.4 board leaves 2.6 of
+                                                        # thread, 0.9 spare; >= 1 mm of plastic past the tip
 CAM_SCREWS = [(10.5, -7.52), (-10.5, -7.52), (10.5, 4.98), (-10.5, 4.98)]   # camera x, y of its Ø2.2 holes
 FLEX_X = (-9.1, 8.4)                                    # J4 (x 33.8-49.3) and the camera FFC, as the base channel
 FLEX_TOP = CAM2_BACK + 4.39 + 0.3                       # over the camera's FFC connector
+RISER_TOP, FLEX_RAMP = 21.19, (-30.0, -17.9)            # the J4 riser stays low (the form is low at the end: 3.5 over the
+                                                        # cells), then the ramp up to the camera's connector, Z
 MIC = (15.32, -29.94)                                   # U13 port hole (57.57, 2.56), opens on the board back
 MIC_SLOT = 1.2                                          # a slot through the cradle from the port to its +X side,
 MIC_TOP = 6.0                                           # out through a slot in the cover's +X wall, seam up to here
@@ -45,17 +51,10 @@ CRADLE_Z0, CRADLE_Z1 = -33.55, 21.65                    # its ends: 1 mm borders
 CRADLE_X = POCKET_X - 0.05
 SOLDER_SLOT = (15.9, -8.4, CRADLE_X + 0.1, 2.9)         # over JB1/JB2/JT (board x 59.25, y 26.4-34.4): cell wires and the
                                                         # NTC film (5.0 max wide, centred on JT at Z -5.34) go up
-RAILS = [(17.3, CRADLE_X), (-CRADLE_X, -17.3)]          # alignment rails into the base pocket at the camera end
+RAILS = [(16.4, CRADLE_X), (-CRADLE_X, -16.4)]          # alignment rails into the base pocket at the camera end (2 mm)
 RAIL_Z, RAIL_BOTTOM = (-32.75, -28.75), 2.7
 BOARD_HOLE = (-15.64, -6.64)                            # main board Ø2.6 hole: the board screw holds the cradle
-# room for the seam's snap clips to bend in, 1.2 deep into the cradle; merged into the neighbouring
-# cuts where less than 0.6 mm would be left (the mic slot, the J4 cut)
-CLIP_ROOM = [(CRADLE_X - 1.2, MIC[1] - MIC_SLOT / 2, CRADLE_X + 0.1, TAB_Z[0] + TAB_W_SIDE / 2 + 0.5),   # +X: into the mic slot
-             (-CRADLE_X - 0.1, TAB_Z[0] - TAB_W_SIDE / 2 - 0.5, -CRADLE_X + 1.2, TAB_Z[0] + TAB_W_SIDE / 2 + 0.5)] + \
-            [(x0, TAB_Z[1] - TAB_W_SIDE / 2 - 0.5, x1, TAB_Z[1] + TAB_W_SIDE / 2 + 0.5)
-             for x0, x1 in ((CRADLE_X - 1.2, CRADLE_X + 0.1), (-CRADLE_X - 0.1, -CRADLE_X + 1.2))] + \
-            [(TAB_X[-1][1] - TAB_W / 2 - 0.5, CRADLE_Z0 - 0.1, TAB_X[-1][1] + TAB_W / 2 + 0.5, CRADLE_Z0 + 1.0),
-             (TAB_X[-1][0] - TAB_W / 2 - 0.5, CRADLE_Z0 - 0.1, FLEX_X[0] + 0.1, CRADLE_Z0 + 1.0)]   # -X: into the J4 cut
+SCREW_HEAD_FLOOR = BED - 1.25                           # its button head (1.1) 0.15 under the flat cell, 0.6 cradle under it
 
 
 def cz(y):                # camera y -> base Z
@@ -106,21 +105,24 @@ def feature(name, geo, make, expect):
     print(f"{name:26s} {fbox(f)}  expect {expect}")
 
 
+TONGUES = [(CRADLE_X - 0.01, 2.9, 23.39, 5.1), (CRADLE_X - 0.01, 9.9, 23.39, 14.25)]   # the battery plate's +X tongues: the
+                                                        # cover drops over them (its slots, form_params user_cuts)
+FOOT_X0 = -17.75          # the board screw foot's -X edge: 1.0 round the Ø2.2 hole (S2's wire run passes over the tray)
 S_POCKETS = [(-POCKET_X, -4.75, -9.2, 1.75),       # S2 (x 25.2-32.8, y 28.05-33.95) with its plug to X -18.2
              (9.4, -23.82, POCKET_X, -17.32),      # S1 (x 51.87-59.47, y 8.98-14.88), plug to X 18.37
              (9.2, 14.25, POCKET_X, CRADLE_Z1 + 0.1)]   # S3 (x 51.7-59.3, y 47.05-52.95), out through the cradle's end
 
 sm.AddToDB = True
-feature("Block", dict(rects=[(-OUTER_X, END_CAM, OUTER_X, END_ANT)]), lambda: block(PARTING, TOP),
-        f"X +-{OUTER_X} Y {PARTING}..{TOP:.2f} Z {END_CAM}..{END_ANT}")
+form_start("cover")
 feature("Cell pocket", dict(rects=[(-POCKET_X, CRADLE_Z0 - 0.05, POCKET_X, CRADLE_Z1 + 0.05)]), lambda: span(PARTING, CELL_TOP + 0.2),
-        f"open to the seam: the cells, on their cradle on the board, go in from below; X +-{POCKET_X} for the LED strips")
-feature("LED clamp ear ways", dict(rects=[(12.7, 20.7, 18.0, STRIP_Z1 + 0.1 + EAR_L), (-18.0, 20.7, -12.7, STRIP_Z1 + 0.1 + EAR_L)]),
-        lambda: span(PARTING, CELL_TOP + 0.2), "the clamps' antenna-end ears go up beside the cell pocket's end")
-feature("J4 flex riser", dict(rects=[(FLEX_X[0], -37.5, FLEX_X[1], -32.7)]), lambda: span(PARTING, FLEX_TOP),
-        f"Y {PARTING}..{FLEX_TOP:.2f} Z -37.5..-32.7")
-feature("Flex channel over the cells", dict(rects=[(FLEX_X[0], -37.5, FLEX_X[1], cz(-16.6))]),
-        lambda: span(CELL_TOP + 0.2, FLEX_TOP), f"Y {CELL_TOP + 0.2:.1f}..{FLEX_TOP:.2f}")
+        f"open to the seam: the cells, on their cradle on the board, go in from below")
+feature("J4 flex riser", dict(rects=[(FLEX_X[0], -37.5, FLEX_X[1], -32.7)]), lambda: span(PARTING, RISER_TOP),
+        f"Y {PARTING}..{RISER_TOP:.2f} Z -37.5..-32.7")
+feature("Flex channel over the cells", dict(rects=[(FLEX_X[0], -37.5, FLEX_X[1], FLEX_RAMP[0])]),
+        lambda: span(CELL_TOP + 0.2, RISER_TOP), f"Y {CELL_TOP + 0.2:.1f}..{RISER_TOP:.2f}")
+rp_feature("Flex channel ramp", [(FLEX_RAMP[0], CELL_TOP + 0.2), (FLEX_RAMP[0], RISER_TOP), (FLEX_RAMP[1], FLEX_TOP),
+                                 (cz(-16.6), FLEX_TOP), (cz(-16.6), CELL_TOP + 0.2)], FLEX_X[0], FLEX_X[1], False,
+           f"up to the camera's connector, Y {FLEX_TOP:.2f} at Z {FLEX_RAMP[1]}")
 feature("Camera board pocket", dict(rects=[(-12.8, cz(-17.2), 12.8, cz(7.3))]), lambda: span(CELL_TOP + 0.2, LEDGE),
         f"X +-12.8 Y ..{LEDGE:.2f}")
 feature("Holder pocket", dict(rects=[(-7.3, CAM_Z - 6.8, 7.3, CAM_Z + 6.8)]), lambda: span(LEDGE - 0.1, LEDGE + FLANGE),
@@ -132,54 +134,39 @@ feature("Camera FFC pocket", dict(rects=[(-9.1, cz(-17.9), 9.1, cz(-12.1))]), la
 feature("Barrel hole", dict(circles=[(0, CAM_Z, 7.3)]), lambda: span(CELL_TOP + 0.2, BARREL_END),
         f"R 7.3 Y ..{BARREL_END:.2f}")
 feature("Lens thread hole", dict(circles=[(0, CAM_Z, LENS_THREAD)]), lambda: span(BARREL_END - 0.1),
-        f"R {LENS_THREAD} Y {BARREL_END:.2f}..{TOP:.2f}")
-feature("Camera screw pilots", dict(circles=[(x, cz(y), 0.8) for x, y in CAM_SCREWS]), lambda: span(LEDGE - 0.1, LEDGE + 4.5),
-        f"4x Ø1.6 Y {LEDGE:.2f}..{LEDGE + 4.5:.2f} (M2x5 thread-forming, button head)")
-feature("Board hold-down ribs", dict(rects=[(x - 1.0, 27.5, x + 1.0, 29.5) for x in (-12.0, 0.0, 12.0)]),
-        lambda: block(1.65, PARTING + 0.1), "press on the board back at its antenna end (no parts there)")
-feature("Mic slot", dict(rects=[(POCKET_X - 0.1, MIC[1] - MIC_SLOT / 2, OUTER_X + 0.2, MIC[1] + MIC_SLOT / 2)]),
+        f"R {LENS_THREAD} Y {BARREL_END:.2f}..")
+feature("Lens bore", dict(circles=[(0, CAM_Z, LENS_BORE)]), lambda: span(TOP), f"R {LENS_BORE} from Y {TOP:.2f} out: the lens body")
+feature("Camera screw pilots", dict(circles=[(x, cz(y), 0.8) for x, y in CAM_SCREWS]), lambda: span(LEDGE - 0.1, LEDGE + CAM_PILOT),
+        f"4x Ø1.6 Y {LEDGE:.2f}..{LEDGE + CAM_PILOT:.2f} (M2x5 thread-forming, button head)")
+feature("Mic slot", dict(rects=[(POCKET_X - 0.1, MIC[1] - MIC_SLOT / 2, SKIN_OUT, MIC[1] + MIC_SLOT / 2)]),
         lambda: span(PARTING, MIC_TOP), f"the cradle's mic slot out through the +X wall, Y {PARTING}..{MIC_TOP}, open to the seam")
-# cells: in the cradle's groove below, ribs at the ends and (outside the LED strips' way down) the
-# camera-end sides, the LED clamps on top; glued to the cradle and to each other, the NTC's film between them.
-# The ribs start over the cradle's face
-CELL_X, CELL_Z0, CELL_Z1 = 17.25, -32.5, 20.6
-BODY_TOP = CELL_TOP - 0.46                              # the upper cell's body top: its protection board stands 0.46 over it
-RIM = BED + 0.05                                        # just over the cradle's flat face
-feature("Cell side rib", dict(rects=[(-POCKET_X, -28.75, -CELL_X, -27.25)]),
-        lambda: block(RIM, CELL_TOP + 0.2), f"camera end, X -{POCKET_X}..-{CELL_X} (further along, the LED strips' way in)")
-feature("Cell side rib, +X", dict(rects=[(CELL_X, -28.75, POCKET_X, -27.25)]),
-        lambda: block(CELL_TOP - 6.0 + 0.4, CELL_TOP + 0.2), "the upper cell only: the cell wires run along the lower one, under it")
-feature("Cell end ribs, far end", dict(rects=[(x - 0.75, CELL_Z1, x + 0.75, CRADLE_Z1 + 0.05) for x in (-10.0, 0.0, 10.0)]),
-        lambda: block(RIM, CELL_TOP + 0.2), "3")
-feature("Cell end ribs, camera end", dict(rects=[(x - 0.75, CRADLE_Z0 - 0.05, x + 0.75, CELL_Z0) for x in (-14.0,)]),
-        lambda: block(RIM, CELL_TOP + 0.2), "-X of the J4 riser: +X of it the cell wires run along the end face")
-TOP_PADS = [(-10.0, 11.0), (0.0, 11.0), (10.0, 11.0), (-10.0, 18.0), (0.0, 18.0), (10.0, 18.0),   # beyond the camera pocket
-            (-10.6, -20.5), (10.6, -20.5)]                                                    # beside the flex channel
-feature("Cell top pads", dict(rects=[(x - 1.0, z - 1.0, x + 1.0, z + 1.0) for x, z in TOP_PADS]),
-        lambda: block(BODY_TOP, CELL_TOP + 0.2), f"{len(TOP_PADS)} pads down to Y {BODY_TOP:.2f}: on the upper cell's body, it cannot move")
+# the cover holds neither the cells nor the board (the cells are glued to the cradle and to each other,
+# the NTC's film between them; the board screw holds board and cradle): no ribs or pads on them
+seam_screw_cover_features()
+seam_screw_base_features(-SKIN_OUT, optional=True)   # where the cover's end caps come down past the seam, the screws
+                                                    # pass them (none where the seam is flat at the screws)
+plug_features("cover", OUTER_X)
+form_trim("cover")
+# the lip hangs below the seam, outside the cover's piece of the form: after the trim
 seam_cover_features(POCKET_X, *SEAM_Z, side_gaps=plug_gaps(POCKET_X),
                     end_gaps={-1: [(FLEX_X[0] - 0.2, FLEX_X[1] + 0.2)]})   # the probe plugs; the J4 flex up its riser
-seam_screw_cover_features()
-plug_features("cover", OUTER_X)
-led_strip_features(1, TOP, OUTER_X, END_CAM, END_ANT, CELL_TOP + 0.2)
+legs_cut("cover")
+leds_cut("cover")
+shell_cut("cover")
 sm.AddToDB = False
 
 print("part box:", [round(v * 1000, 2) for v in model.GetPartBox(True)])
 err, warn = byref_int(), byref_int()
 print("saved:", ext.SaveAs(PATH, 0, 1, nothing(), err, warn), err.value)
 
-# the strip clamps: one part for both sides (built for +X; the -X one is it turned 180 degrees about
-# the vertical through the strip's middle), its face 0.2 past the cell pocket's ceiling onto the cell
-CLAMPS = r"C:\hw\LEAKCAM\mechanical\enclosure"
-build_clamp(CLAMPS + r"\clamp_cover.SLDPRT", 1, 1, TOP, OUTER_X, CELL_TOP + 0.2, 0.2,
-            wire_z=[(WIRE_Z[0], STRIP_Z0 + STRIP_Z1 - WIRE_Z[0])])   # the -X copy turned: its pads at the mirrored Z
+PARTS = r"C:\hw\LEAKCAM\mechanical\enclosure"
 
 
 # the cell cradle: a tray on the board back under the cells, fitted before them (they are soldered to
-# the board and glued to it and to each other, then the cover goes over). The lower cell sits in its
-# 0.5 mm groove; the tray has room for S1-S3 and their plugs, J4 and its flex, an open slot over the
+# the board and glued to it and to each other, then the cover goes over). The lower cell lies on its
+# flat face; the tray has room for S1-S3 and their plugs, J4 and its flex, an open slot over the
 # battery and NTC pads (cell wires and the NTC film up beside the cells, soldered with the cradle on) and
-# a slot from the mic port out to its +X side, and room at the seam's snap clips to bend in. Held by the board screw (M2x10 through its foot, the board and the base clamp's boss), located
+# a slot from the mic port out to its +X side. Held by the board screw (M2x8 through its foot and the board into the base's boss), located
 # by two rails at the camera end that drop inside the base pocket's walls.
 def build_cradle(path):
     global model, sm, fm, ext
@@ -194,12 +181,16 @@ def build_cradle(path):
         ("J4 and its flex", dict(rects=[(FLEX_X[0], CRADLE_Z0 - 0.1, FLEX_X[1], -26.8)]), (CRADLE_BOTTOM - 0.1, rim + 0.1), False),
         ("Battery and NTC pad slot", dict(rects=[SOLDER_SLOT]), (CRADLE_BOTTOM - 0.1, rim + 0.1), False),
         ("Alignment rails", dict(rects=[(x0, RAIL_Z[0], x1, RAIL_Z[1]) for x0, x1 in RAILS]), (RAIL_BOTTOM, CRADLE_BOTTOM + 0.01), True),
-        ("Board screw foot", dict(circles=[(*BOARD_HOLE, 2.0)]), (1.6, CRADLE_BOTTOM + 0.01), True),
+        ("Board screw foot", dict(rects=[(FOOT_X0, BOARD_HOLE[1] - 2.1, BOARD_HOLE[0] + 2.1, BOARD_HOLE[1] + 2.1)]),
+         (1.6, CRADLE_BOTTOM + 0.01), True),                                     # square, under the tray
         ("Board screw hole", dict(circles=[(*BOARD_HOLE, 1.1)]), (1.5, rim + 0.1), False),
-        ("Board screw counterbore", dict(circles=[(*BOARD_HOLE, 1.95)]), (CELL_BODY - 1.2, rim + 0.1), False),
+        ("Board screw counterbore", dict(circles=[(*BOARD_HOLE, 1.95)]), (SCREW_HEAD_FLOOR, rim + 0.1), False),
         ("Mic slot", dict(rects=[(MIC[0] - MIC_SLOT / 2, MIC[1] - MIC_SLOT / 2, CRADLE_X + 0.1, MIC[1] + MIC_SLOT / 2)]),
          (CRADLE_BOTTOM - 0.1, rim + 0.1), False),
-        ("Snap clip room", dict(rects=CLIP_ROOM), (CRADLE_BOTTOM - 0.1, rim + 0.1), False),
+        ("Web by the S2 pocket", dict(rects=[(BOARD_HOLE[0] - 1.95, BOARD_HOLE[1], BOARD_HOLE[0] + 1.95, -4.75)]),
+         (SCREW_HEAD_FLOOR, rim + 0.1), False),   # the counterbore widened to the S2 pocket: tangent, its depth only
+        ("-X edge for the S2 wires", dict(rects=[(-CRADLE_X - 0.1, 1.75, -17.2, CRADLE_Z1 + 0.1)]), (CRADLE_BOTTOM - 0.1, rim + 0.1), False),   # fit Sketch3 (10-10)
+        ("+X tongues", dict(rects=TONGUES), (CRADLE_BOTTOM, rim), True),   # fit Sketch4 (10-10): into the cover's slots opposite the screw
     ]
     for name, geo, (ya, yb), boss in parts:
         f = top_span(ya=ya, yb=yb, boss=boss, **geo)
@@ -215,4 +206,4 @@ def build_cradle(path):
     model, sm, fm, ext = keep
 
 
-build_cradle(CLAMPS + r"\cradle.SLDPRT")
+build_cradle(PARTS + r"\cradle.SLDPRT")
