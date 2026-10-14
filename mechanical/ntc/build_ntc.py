@@ -6,16 +6,16 @@ Datasheet (approval sheet JK/JXJ190509017-A): polyimide film 5.0 max wide, 0.7 m
 overall; legs bare for 5 +-1, 0.5 x 0.15, 2.0 pitch; chip 2.5 from the tip.
 
 Modelled as fitted, in base frame axes with the origin at JT's centre (X 17.0, Y 0, Z -5.34): legs
-bent to JT's 1.6 pitch and soldered, the film up the lower cell's +X side, bent over it, into the
-cells' 1.0 body gap (Y 12.14..13.14) with the upper cell glued on top.
+bent to JT's 1.6 pitch and soldered, the film up the lower cell's +X side (X 17.5, the cells 35.0 wide as measured), bent over it, into
+the cells' 0.7 gap (Y 11.9..12.6) with the upper cell glued on top.
 """
 M = 0.001
 PATH = r"C:\hw\LEAKCAM\mechanical\ntc\MF55_NTC.SLDPRT"
 FILM_W, FILM_T, FILM_L = 5.0, 0.7, 20.0
 LEG_W, LEG_T, LEG_PITCH = 0.5, 0.15, 1.6
 FILM_Y0 = 5.6                                   # film starts: the legs' 5 less ~1 through the board
-GAP_Y = 12.64                                   # middle of the cells' body gap
-X_SIDE = -0.2                                   # film's inner face: 0.05 off the lower cell body (X 16.75)
+GAP_Y = 6.6 + 5.3 + 0.35                        # middle of the cells' gap (BED + CELL_T + CELL_GAP / 2)
+X_SIDE = 0.55                                   # film's inner face: 0.05 off the lower cell's side (X 17.5)
 UP = GAP_Y + FILM_T / 2 - FILM_Y0               # film running up the side
 IN = FILM_L - UP                                # and in between the cells
 
@@ -38,6 +38,8 @@ def top_box(name, rects, y0, y1):     # Top Plane: sketch (x, y) = model (X, -Z)
 
 top_box("Legs", [(-LEG_T / 2, z - LEG_W / 2, LEG_T / 2, z + LEG_W / 2) for z in (-LEG_PITCH / 2, LEG_PITCH / 2)],
         0.0, FILM_Y0 + 0.5)
+top_box("Leg bend to the film", [(-LEG_T / 2, z - LEG_W / 2, X_SIDE + 0.1, z + LEG_W / 2) for z in (-LEG_PITCH / 2, LEG_PITCH / 2)],
+        FILM_Y0, FILM_Y0 + 0.5)
 top_box("Film up the cell side", [(X_SIDE, -FILM_W / 2, X_SIDE + FILM_T, FILM_W / 2)], FILM_Y0, GAP_Y + FILM_T / 2)
 top_box("Film between the cells", [(X_SIDE + FILM_T - IN, -FILM_W / 2, X_SIDE, FILM_W / 2)],
         GAP_Y - FILM_T / 2, GAP_Y + FILM_T / 2)
