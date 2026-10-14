@@ -13,7 +13,7 @@ Creality CR-10 (300 x 300 x 400) with an inductive probe on the Z-min input.
 ## Configuration
 
 Built from the official example `config/examples/Creality/CR-10/CrealityV1`
-(MarlinFirmware/Configurations, branch release-2.1.2.8). `Configuration_adv.h` is unchanged.
+(MarlinFirmware/Configurations, branch release-2.1.2.8). `Configuration_adv.h` differs only in the fan options below.
 `Configuration.h` changes:
 
 | Setting | Value | Why |
@@ -27,6 +27,7 @@ Built from the official example `config/examples/Creality/CR-10/CrealityV1`
 | TEMP_SENSOR_0; HOTEND0_BETA, HOTEND0_SH_C_COEFF | 1000 (custom); 4630, 9.5729e-08 | Marlin's table 1 (EPCOS 100k) ends at 320 °C, too short for a 320 °C cutoff. The custom thermistor computes the same curve: beta and Steinhart-Hart C fitted to table 1, within 1.3 °C from 25 to 320 °C, so PID and calibration stay valid |
 | HEATER_0_MAXTEMP, HOTEND_OVERSHOOT; BED_MAXTEMP | 320, 20; 130 | nozzle settable up to 300 °C (only with an all-metal heat break; a PTFE liner stays at 240), bed up to 120 °C (insulated) |
 | SHOW_BOOTSCREEN | off | frees flash for the custom thermistor math |
+| FAN_MIN_PWM; FAN_KICKSTART_TIME, FAN_KICKSTART_POWER (Configuration_adv.h) | 51; 100 ms, 255 | the 5015 part-cooling blower stalls below 20 % (S51): M106 1..255 is mapped onto 20..100 %, 0 stays off, and every start from standstill gets 100 ms at full power |
 | DEFAULT_KP/KI/KD; DEFAULT_BED_KP/KI/KD | 31.41 / 2.72 / 90.70; 192.76 / 35.12 / 705.31 | PID autotune: `M303 E0 S250 C8 U1` (the hot end overshot 5 °C with the stock values) and `M303 E-1 S80 C4 U1`. The insulated bed needs about 10 min per cycle, and C8 runs into Marlin's autotune timeout |
 | SLIM_LCD_MENUS | on | needed to fit in 130048 bytes |
 | EEPROM_SETTINGS | on (from the example) | M500 saves offsets and the mesh |
