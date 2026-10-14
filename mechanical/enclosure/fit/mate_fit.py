@@ -186,8 +186,12 @@ def delete_mates(m, names):
 
 
 def moved(c, before):
+    """how far the mates moved the part: 0 when it stayed (rotation entries scaled so 1e-5 counts as 0.01 mm)"""
     R, t = xfm(c)
-    return max(abs(x - y) for x, y in zip(R + t, before[0] + before[1]))
+    return max([abs(x - y) * 1000 for x, y in zip(R, before[0])] + [abs(x - y) for x, y in zip(t, before[1])])
+
+
+MOVE_TOL = 0.01                          # mm
 
 
 def mate_planes(m, C, child, hosts, cache, own=None):
@@ -219,7 +223,7 @@ def mate_planes(m, C, child, hosts, cache, own=None):
             gaps.append((h, g))
             if independent(ns):
                 break
-        if made and moved(C[child], before) > 1e-6:
+        if made and moved(C[child], before) > MOVE_TOL:
             delete_mates(m, made)
             say(f"  {child}: MOVED by its mates {gaps}: mates removed")
             return False
@@ -227,6 +231,37 @@ def mate_planes(m, C, child, hosts, cache, own=None):
             odd = [f"{h} {g}" for h, g in gaps if 0.005 < g < 0.195]
             say(f"  {child}: {len(made)} mates {[(h, g) for h, g in gaps]}" + (f"  BELOW 0.2: {odd}" if odd else ""))
             return True
+        if ns and maxgap == 3.0:
+            # the rest from round fits: a concentric pair fixes the two directions across its axis
+            cyl = [(a, b, h) for h in hosts for a in F1 if a["kind"] == "cyl" for b in cache[h] if b["kind"] == "cyl"
+                   and abs(abs(sum(a["ax"][i] * b["ax"][i] for i in range(3))) - 1) < 1e-4]
+            for a, b, h in sorted(cyl, key=lambda x: -min(x[0]["area"], x[1]["area"])):
+                v = [b["o"][i] - a["o"][i] for i in range(3)]
+                tt = sum(v[i] * a["ax"][i] for i in range(3))
+                if math.sqrt(max(0.0, sum(x * x for x in v) - tt * tt)) > 0.02:
+                    continue
+                gain = [q for q in ([1, 0, 0], [0, 1, 0], [0, 0, 1]) if abs(sum(q[i] * a["ax"][i] for i in range(3))) < 0.1]
+                trial = list(ns)
+                for q in gain:
+                    if adds_direction(trial, q):
+                        trial.append(q)
+                if len(trial) == len(ns):
+                    continue
+                mt = mate_faces(m, a["f"], b["f"], 1, 0.0, f"{child} - {h}: concentric r{a['r']:.2f}/{b['r']:.2f}", lock=True)
+                if mt is None:
+                    continue
+                made.append(mt)
+                ns = trial
+                gaps.append((h, f"concentric r{b['r']:.2f}"))
+                if independent(ns):
+                    break
+            if made and moved(C[child], before) > MOVE_TOL:
+                delete_mates(m, made)
+                say(f"  {child}: MOVED by its mates {gaps}: mates removed")
+                return False
+            if independent(ns):
+                say(f"  {child}: {len(made)} mates {gaps}")
+                return True
         delete_mates(m, made)
     say(f"  {child}: not enough facing faces (found {len(ns)} directions)")
     return False
@@ -259,7 +294,7 @@ def mate_screw(m, C, screw, cache):
                 g = seat[0][0]
                 mt2 = mate_faces(m, seat[0][1]["f"], seat[0][2]["f"], 0 if abs(g) < 0.005 else 5, 0.0 if abs(g) < 0.005 else g,
                                  f"{screw} head: " + ("seated" if abs(g) < 0.005 else f"{g:.2f}"))
-            if moved(C[screw], before) > 1e-6:
+            if moved(C[screw], before) > MOVE_TOL:
                 delete_mates(m, [x for x in (mt, mt2) if x is not None])
                 say(f"  {screw}: MOVED: mates removed")
                 return False
@@ -295,6 +330,9 @@ while f:
             old.append(get(s, "Name"))
             s = get(s, "GetNextSubFeature")
     f = get(f, "GetNextFeature")
+ONLY = globals().get("ONLY")             # run with ONLY = [...]: redo just those parts, keep the other mates
+if ONLY:
+    old = [nm for nm in old if any(f" {o} " in f" {nm} " or nm.split(" ", 1)[-1].startswith(o) for o in ONLY)]
 delete_mates(m, old)
 say(f"deleted {len(old)} old mates")
 for n, c in C.items():
@@ -303,21 +341,25 @@ for n, c in C.items():
         typed(c, "IEntity").Select2(False, 0)
         m.UnfixComponent()
 cache, done, missing = {}, [], []
-sub = board_substrate(C["MIFA-1"])
-if sub is None:
+sub = board_substrate(C["MIFA-1"]) if not ONLY or "MIFA-1" in ONLY else True
+if sub is True:
+    done.append("MIFA-1")
+elif sub is None:
     say("  MIFA-1: substrate body not found")
     missing.append("MIFA-1")
 else:
     cache["MIFA-1"] = faces(C["MIFA-1"], [sub])          # hosts that need the board see only its substrate
     (done if mate_planes(m, C, "MIFA-1", ["base-1", "cradle-1"], cache, own=cache["MIFA-1"]) else missing).append("MIFA-1")
 for child, hosts in HOSTS.items():
+    if ONLY and child not in ONLY:
+        continue
     if child not in C:
         say(f"  {child}: not in the assembly")
         continue
     (done if mate_planes(m, C, child, hosts, cache) else missing).append(child)
     say(f"    ({time.time() - t0:.0f} s)")
 for n in sorted(C):
-    if n.startswith("ISO7380"):
+    if n.startswith("ISO7380") and (not ONLY or n in ONLY):
         (done if mate_screw(m, C, n, cache) else missing).append(n)
 left = [n for n in C if n != FIXED and n not in done and n not in missing]
 say(f"mated {len(done)}, not fully: {missing}, not handled: {left}")
