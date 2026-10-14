@@ -4,6 +4,7 @@ Our additions to the Remote API of the MaxEllis OrcaSlicer fork, which the MCP t
 
 - `GET/PUT /api/v1/plate/custom_gcode`: layer markers (custom G-code or a pause at a height): `set_layer_gcode`, `get_layer_gcode`
 - `POST/DELETE /api/v1/objects/{id}/support_volume`: support blocker/enforcer boxes: `add_support_volume`, `delete_support_volumes`
+- `POST/DELETE /api/v1/objects/{id}/modifier`: modifier volumes from an STL in plate mm, with their own settings: `add_modifier`, `delete_modifiers`
 
 `remote-api.patch` applies to `v2.4.2-mcp.13`. Build from the fork's newest release each time:
 
