@@ -157,10 +157,24 @@ def mate_faces(m, fa, fb, kind, dist, name, lock=False):
 
 
 def independent(ns):
+    """three of the chosen normals span space: the part can neither slide nor turn"""
     if len(ns) < 3:
         return False
     a, b, c = ns[:3]
     return abs(a[0] * (b[1] * c[2] - b[2] * c[1]) - a[1] * (b[0] * c[2] - b[2] * c[0]) + a[2] * (b[0] * c[1] - b[1] * c[0])) > 0.2
+
+
+def adds_direction(ns, n):
+    """n is worth a mate only if it constrains a new direction: not parallel to one chosen, and once two
+    are chosen, out of their plane"""
+    if any(abs(sum(n[i] * q[i] for i in range(3))) > 0.95 for q in ns):
+        return False
+    if len(ns) == 2:
+        a, b = ns
+        c = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]
+        lc = math.sqrt(sum(x * x for x in c)) or 1.0
+        return abs(sum(n[i] * c[i] for i in range(3))) / lc > 0.2
+    return len(ns) < 3
 
 
 def delete_mates(m, names):
@@ -193,7 +207,7 @@ def mate_planes(m, C, child, hosts, cache, own=None):
         made, ns, gaps = [], [], []
         for g, a, b, h in cand:
             n = a["n"]
-            if any(abs(sum(n[i] * q[i] for i in range(3))) > 0.95 for q in ns):
+            if not adds_direction(ns, n):
                 continue
             kind = 0 if abs(g) < 0.005 else 5
             nm = f"{child} - {h}: " + ("contact" if kind == 0 else f"{g:.2f}")
