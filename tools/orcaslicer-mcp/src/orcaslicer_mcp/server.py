@@ -883,6 +883,39 @@ async def set_height_range(
 
 
 @mcp.tool()
+async def set_layer_gcode(
+    items: Annotated[list[dict], Field(description=(
+        "The complete list of markers for the current plate; it replaces what is there, [] clears it. "
+        "Each item: {\"print_z\": mm, \"type\": \"custom\", \"gcode\": \"M104 S220\"} or "
+        "{\"print_z\": mm, \"type\": \"pause\", \"message\": \"...\"}."))],
+) -> dict:
+    """Set layer G-code markers on the current plate: the same list as the preview layer
+    slider's "Add custom G-code" and "Add pause", stored in the project and shown on the
+    slider, so Print plate in OrcaSlicer reproduces it. A marker runs at the start of the layer
+    nearest its print_z (e.g. a temperature change from 2.0 mm up).
+
+    Custom markers are raw G-code: they need "layer_custom_gcode" in ORCA_MCP_ALLOW_KEYS and
+    the slicer's own 'allow sensitive' Remote API preference. Re-slice afterwards; read the
+    current list with get_layer_gcode. Needs an OrcaSlicer build with /plate/custom_gcode."""
+    try:
+        async with _client() as c:
+            return await c.set_layer_gcode(items)
+    except ApiError as e:
+        return _m4_err(e, "the /plate/custom_gcode route")
+
+
+@mcp.tool()
+async def get_layer_gcode() -> dict:
+    """List the current plate's layer G-code markers (custom G-code, pauses, colour changes)
+    as set on the preview layer slider or with set_layer_gcode. Read-only."""
+    try:
+        async with _client() as c:
+            return await c.get_layer_gcode()
+    except ApiError as e:
+        return _m4_err(e, "the /plate/custom_gcode route")
+
+
+@mcp.tool()
 async def get_preset_config(type: str, name: str) -> dict:
     """Read the full settings of a named preset without selecting it.
     type = print|filament|printer."""
@@ -1402,6 +1435,8 @@ _TOOL_ANNOTATIONS: dict[str, tuple[str, bool, bool]] = {
     "select_preset": ("Select preset", False, False),
     "set_layer_height": ("Set layer height", False, False),
     "set_height_range": ("Set height-range config", False, False),
+    "set_layer_gcode": ("Set layer G-code markers", False, False),
+    "get_layer_gcode": ("List layer G-code markers", True, False),
     "rename_preset": ("Rename preset", False, False),
     "save_preset": ("Save preset (overwrites stored settings)", False, True),
     "edit_preset": ("Edit preset (overwrites stored settings)", False, True),
