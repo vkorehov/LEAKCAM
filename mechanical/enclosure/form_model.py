@@ -35,6 +35,8 @@ cover mirrors the base point-wise (not by a plane) - order in the disorder.
 import argparse, json, math, os
 import numpy as np
 import build123d as b
+from OCP.BRepBuilderAPI import BRepBuilderAPI_Transform
+from OCP.TopLoc import TopLoc_Location
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 X0, X1, YB, YS, YT, Z0, Z1 = -19.55, 19.55, -14.2, 4.7, 29.9, -39.5, 37.3      # the old block (base | cover at YS)
@@ -756,7 +758,9 @@ def main():
         # for the assembly (pcb/LEDS.SLDPRT placed per strip frame, the clamps in place)
         cfg = P["leds"]
         for i, fr in enumerate([f_ for f_ in led_frames if "clamp" in f_], 1):       # each in place (assembly at identity)
-            b.export_step(fr["clamp"], os.path.join(a.out, f"led_clamp_{i}.step"))
+            w_ = fr["clamp"].solids()[0].wrapped                 # the placement baked in: a placed shape is an assembly in SolidWorks
+            w_ = BRepBuilderAPI_Transform(w_.Located(TopLoc_Location()), w_.Location().Transformation(), True).Shape()
+            b.export_step(b.Solid(w_), os.path.join(a.out, f"led_clamp_{i}.step"))
         poses = []
         for fr in [f_ for f_ in led_frames if "side" in f_]:     # the strips that got a clamp
             sd = fr["side"]
