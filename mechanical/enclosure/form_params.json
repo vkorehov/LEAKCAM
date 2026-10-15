@@ -712,8 +712,8 @@
    "note": "vertical screw holes (X, Z, hole radius): the seam screws, the board screw, the camera screws; reach: how far the bore may run on past the glued length; parts: boxes the tubes must clear (the main board)",
    "parts": [
     [
-     -18.25,
-     18.25,
+     -18.45,
+     18.45,
      0.0,
      1.6,
      -32.5,
@@ -726,8 +726,8 @@
  },
  "leds": {
   "board": [
-   37.0,
-   5.0,
+   37.2,
+   5.6,
    1.6
   ],
   "leds_at": [
@@ -940,8 +940,8 @@
   "clamp": {
    "x": 0.0,
    "boss_y": [
-    4.5,
-    4.9
+    4.8,
+    5.2
    ],
    "boss_r": 1.8,
    "gap": 0.2,
