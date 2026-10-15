@@ -1,16 +1,18 @@
 diff --git a/src/slic3r/GUI/RemoteAPI/RemoteAPIController.cpp b/src/slic3r/GUI/RemoteAPI/RemoteAPIController.cpp
-index c299cf007f..06b34d1a76 100644
+index c299cf007f..30d32a29d1 100644
 --- a/src/slic3r/GUI/RemoteAPI/RemoteAPIController.cpp
 +++ b/src/slic3r/GUI/RemoteAPI/RemoteAPIController.cpp
-@@ -9,6 +9,7 @@
+@@ -8,7 +8,9 @@
+ #include "slic3r/GUI/GUI_App.hpp"
  #include "slic3r/GUI/PartPlate.hpp"
  #include "slic3r/GUI/Plater.hpp"
++#include "slic3r/GUI/MainFrame.hpp"   // POST /app/quit
  #include "libslic3r/Model.hpp"    // M4b: ModelObject/ModelInstance for GET /objects
 +#include "libslic3r/Format/STL.hpp"     // modifier meshes (POST /objects/{id}/modifier)
  #include "slic3r/GUI/NotificationManager.hpp" // in-app change notifications
  #include "libslic3r/AppConfig.hpp"             // remote_api_notify toggle
  #include "slic3r/GUI/Tab.hpp"
-@@ -1546,6 +1547,98 @@ Response Controller::handle_put_height_range(uint64_t id, const std::string &bod
+@@ -1546,6 +1548,98 @@ Response Controller::handle_put_height_range(uint64_t id, const std::string &bod
      return { 200, r };
  }
  
@@ -109,7 +111,7 @@ index c299cf007f..06b34d1a76 100644
  // Shared: parse {"type","name"} and resolve the collection. Returns nullptr collection on bad type.
  static PresetCollection *api_preset_collection(const std::string &type_s)
  {
-@@ -1772,6 +1865,41 @@ Response Controller::handle_plate_render(const std::string &target)
+@@ -1772,6 +1866,41 @@ Response Controller::handle_plate_render(const std::string &target)
  }
  
  
@@ -151,7 +153,7 @@ index c299cf007f..06b34d1a76 100644
  Response Controller::handle_get_objects()
  {
      nlohmann::json r = run_on_ui([]() -> nlohmann::json {
-@@ -1825,6 +1953,8 @@ Response Controller::handle_get_objects()
+@@ -1825,6 +1954,8 @@ Response Controller::handle_get_objects()
                      rngs.push_back({{"min_z", kv.first.first}, {"max_z", kv.first.second},
                                      {"layer_height", kv.second.has("layer_height") ? kv.second.opt_float("layer_height") : 0.0}});
                  o["height_ranges"] = rngs;
@@ -160,10 +162,21 @@ index c299cf007f..06b34d1a76 100644
              }
              objects.push_back(std::move(o));
          }
-@@ -1928,6 +2058,174 @@ Response Controller::handle_duplicate_object(uint64_t id)
+@@ -1928,6 +2059,192 @@ Response Controller::handle_duplicate_object(uint64_t id)
      return { 200, r };
  }
  
++// POST /api/v1/app/quit: close OrcaSlicer as File -> Exit does, but without the save-project question (the
++// project is discarded). A killed process leaves its backup behind and the next start asks to restore it.
++Response Controller::handle_quit()
++{
++    wxGetApp().CallAfter([]() {
++        if (MainFrame *mf = wxGetApp().mainframe)
++            mf->Close(true);   // force: no veto, so no confirm dialogs
++    });
++    return { 202, {{"quitting", true}} };
++}
++
 +// POST /api/v1/objects/{id}/support_volume
 +//   body {"type":"blocker"|"enforcer","min":[x,y,z],"max":[x,y,z]}: a box in plate mm, the same
 +//   volume as the object list's Add support blocker/enforcer -> Box, placed by coordinates
@@ -265,7 +278,8 @@ index c299cf007f..06b34d1a76 100644
 +    Model loaded;
 +    if (!load_stl(path.c_str(), &loaded) || loaded.objects.empty() || loaded.objects.front()->volumes.empty())
 +        return { 422, {{"error", "mesh_not_loaded"}, {"detail", path}} };
-+    TriangleMesh mesh = loaded.objects.front()->volumes.front()->mesh();
++    // the object's mesh with its volumes' transforms: loading centres a volume's mesh and keeps the shift in the volume
++    TriangleMesh mesh = loaded.objects.front()->raw_mesh();   // mesh() needs an instance; a loaded file has none yet
 +    if (mesh.empty())
 +        return { 422, {{"error", "mesh_empty"}, {"detail", path}} };
 +
@@ -288,9 +302,15 @@ index c299cf007f..06b34d1a76 100644
 +        }
 +        if (!errors.empty()) return {{"error", "bad_config"}, {"errors", errors}};
 +        plater->take_snapshot("Add modifier");
-+        // Kept as loaded (no centring), under the inverse instance matrix: world = file coordinates.
-+        ModelVolume *nv = mo->add_volume(std::move(mesh), ModelVolumeType::PARAMETER_MODIFIER, false);
-+        nv->set_transformation(mo->instances.front()->get_matrix().inverse());
++        // Placed as handle_add_support_volume places its box (that one slices; an uncentred mesh under the
++        // inverse instance matrix was listed but ignored by the slicer): centred mesh, aligned with the bed,
++        // its centre moved to where the file has it.
++        const ModelInstance *mi = mo->instances.front();
++        const Vec3d centre = mesh.bounding_box().center();
++        ModelVolume *nv = mo->add_volume(std::move(mesh), ModelVolumeType::PARAMETER_MODIFIER);
++        const Transform3d inv = mi->get_transformation().get_matrix_no_offset().inverse();
++        nv->set_transformation(inv);
++        nv->set_offset(inv * (centre - mi->get_offset()));
 +        nv->name = name;
 +        cfg.set_key_value("extruder", new ConfigOptionInt(0));
 +        nv->config.assign_config(std::move(cfg));
@@ -335,10 +355,11 @@ index c299cf007f..06b34d1a76 100644
  Response Controller::handle_put_object_config(uint64_t id, const std::string &body)
  {
      nlohmann::json in = nlohmann::json::parse(body); // parse_error -> 400 in dispatch
-@@ -2347,6 +2645,11 @@ Response Controller::dispatch(const Request &req)
+@@ -2347,6 +2664,12 @@ Response Controller::dispatch(const Request &req)
          if (is("POST", "/api/v1/orient"))       return handle_orient();
          if (is("GET",  "/api/v1/jobs/status"))  return handle_jobs_status();
          if (is("GET",  "/api/v1/plates"))       return handle_get_plates();
++        if (is("POST", "/api/v1/app/quit"))     return handle_quit();
 +        if (is("GET",  "/api/v1/plate/custom_gcode")) return handle_get_plate_custom_gcode();
 +        if (is("PUT",  "/api/v1/plate/custom_gcode")) {
 +            try { return handle_put_plate_custom_gcode(req.body); }
@@ -347,7 +368,7 @@ index c299cf007f..06b34d1a76 100644
          if (is("POST", "/api/v1/plates")) {
              try { return handle_create_plate(req.body); }
              catch (const nlohmann::json::parse_error &) { return { 400, {{"error", "invalid_json"}} }; }
-@@ -2405,6 +2708,26 @@ Response Controller::dispatch(const Request &req)
+@@ -2405,6 +2728,26 @@ Response Controller::dispatch(const Request &req)
                      try { return handle_put_layer_height(oid, req.body); }
                      catch (const nlohmann::json::parse_error &) { return { 400, {{"error", "invalid_json"}} }; }
                  }
@@ -375,15 +396,16 @@ index c299cf007f..06b34d1a76 100644
                      try { return handle_put_height_range(oid, req.body); }
                      catch (const nlohmann::json::parse_error &) { return { 400, {{"error", "invalid_json"}} }; }
 diff --git a/src/slic3r/GUI/RemoteAPI/RemoteAPIController.hpp b/src/slic3r/GUI/RemoteAPI/RemoteAPIController.hpp
-index e672895c57..3991b49e84 100644
+index e672895c57..31719d2253 100644
 --- a/src/slic3r/GUI/RemoteAPI/RemoteAPIController.hpp
 +++ b/src/slic3r/GUI/RemoteAPI/RemoteAPIController.hpp
-@@ -79,6 +79,12 @@ private:
+@@ -79,6 +79,13 @@ private:
      Response handle_select_plate(int index);                // plates: POST /plates/{i}/select
      Response handle_delete_plate(int index);                // plates: DELETE /plates/{i}
      Response handle_put_object_plate(uint64_t id, const std::string &body); // plates: POST /objects/{id}/plate
 +    Response handle_add_modifier(uint64_t id, const std::string &body);         // POST /objects/{id}/modifier
 +    Response handle_delete_modifiers(uint64_t id, const std::string &name);      // DELETE /objects/{id}/modifier
++    Response handle_quit();                                                      // POST /app/quit
 +    Response handle_add_support_volume(uint64_t id, const std::string &body);   // POST /objects/{id}/support_volume
 +    Response handle_delete_support_volumes(uint64_t id, const std::string &type); // DELETE /objects/{id}/support_volume
 +    Response handle_get_plate_custom_gcode();                   // GET /plate/custom_gcode
