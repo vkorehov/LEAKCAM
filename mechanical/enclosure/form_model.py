@@ -719,6 +719,22 @@ def main():
         base = base + (prism & form0)
         cover = cover - prism
     base, cover, form = base.solids()[0].clean(), cover.solids()[0].clean(), form.solids()[0].clean()   # coplanar faces merged
+    # the cover seats on the flat seam (Y YS) only: every other shared face of the split (the slopes and steps where it
+    # follows the form's edges) gets seam_clear_mm off the cover's side, the fit clearance the printer needs (user,
+    # 2026-10-14: 0.2 everywhere two parts meet; 2026-10-15: "make seam perfect"); the base is unchanged
+    clear = P["parting"].get("seam_clear_mm", 0.2)
+    slabs = []
+    for f in base.faces():
+        n = f.normal_at(f.center())
+        if abs(n.Y) > 0.999 or cover.distance_to(f.center()) > 0.01:
+            continue                                             # the flat seam, or not on the split
+        slabs.append(b.extrude(f, amount=clear, dir=n))          # outward from the base: into the cover
+    if slabs:
+        cut = slabs[0]
+        for s_ in slabs[1:]:
+            cut = cut + s_
+        cover = (cover - cut).solids()[0].clean()
+    report["parting_clearance"] = {"faces": len(slabs), "mm": clear}
     b.export_step(form, os.path.join(a.out, "form_outer.step"))
     b.export_step(base, os.path.join(a.out, "base_outer.step"))          # each SolidWorks part starts from its piece
     b.export_step(cover, os.path.join(a.out, "cover_outer.step"))
