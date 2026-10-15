@@ -167,7 +167,7 @@
     -6.15
    ],
    [
-    -18.45,
+    -18.65,
     -13.64,
     -4.5,
     0.0,
@@ -436,7 +436,7 @@
    ],
    [
     -60.0,
-    -18.45,
+    -18.65,
     -4.0,
     4.7,
     -32.95,
@@ -452,7 +452,7 @@
    ],
    [
     -60.0,
-    -18.45,
+    -18.65,
     -4.0,
     4.7,
     24.5,
@@ -467,7 +467,7 @@
     -30.85
    ],
    [
-    18.45,
+    18.65,
     60.0,
     -4.0,
     4.7,
@@ -483,7 +483,7 @@
     28.0
    ],
    [
-    18.45,
+    18.65,
     60.0,
     -4.0,
     3.5,
@@ -492,8 +492,8 @@
    ]
   ],
   "band_open_base": [
-   -18.45,
-   18.45,
+   -18.65,
+   18.65,
    -32.8,
    32.8
   ],
@@ -502,7 +502,7 @@
     "name": "fit 10-10b..d Sketch7/5/3-6: +X wall beside the battery plate and the S3 plug: one 45 deg face from the pocket wall to the skin (prints without support), solid above (roofed tongue slots), open below (the band too); its height clears strip 4's and clamp 4's ways in; Z 20.9 (the S3 plug pocket's end)..32.7 (S3 bore, the cover dips below the seam) open down to the skin, no lip there; from Z -22.9 (the S1 plug pocket's end, fit 10-11 Sketch1)",
     "part": "base",
     "side": 1,
-    "x0": 18.45,
+    "x0": 18.65,
     "z": [
      -22.9,
      32.7
