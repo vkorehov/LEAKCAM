@@ -20,7 +20,8 @@ PATH = r"C:\hw\LEAKCAM\mechanical\enclosure\base.SLDPRT"
 
 PARTING = 4.7             # top face, where the cover sits: the probe wires' centre height
 OUTER_X = 19.55           # side faces: 0.8 mm in front of the USB-C receptacles (MacBook-style ports)
-POCKET_X = 18.45          # board pocket: 0.2 each side of the 36.5 board
+POCKET_X = 18.45          # the seam's ring (rebate for the cover's lip): as designed for the 36.5 board
+BOARD_X = 18.65           # board pocket: 0.2 each side of the board as made (36.9 x 64.9 measured, 36.5 x 65 designed)
 END_CAM = -39.5           # block end at the camera end: room for the flex loop (cavity to LOOP_END)
 END_ANT = 37.3            # block end at the antenna end
 LOOP_END = -37.5
@@ -152,14 +153,14 @@ ribs = []
 for side, ys in RIBS.items():
     for y in ys:
         z0, z1 = max(y - 32.5 - 1.0, -32.8), y - 32.5 + 1.0                # 2 mm: no thin standing ribs
-        ribs.append((-POCKET_X, z0, -18.25 + RIB_IN, z1) if side < 0 else (18.25 - RIB_IN, z0, POCKET_X, z1))
+        ribs.append((-BOARD_X, z0, -18.25 + RIB_IN, z1) if side < 0 else (18.25 - RIB_IN, z0, BOARD_X, z1))
 
 sm.AddToDB = True
 form_start("base")
-feature("Board pocket", dict(rects=[(-POCKET_X, -32.8, POCKET_X, 32.8)]), lambda: cut(False, 0, 4.0, 1, 0),
-        f"X +-{POCKET_X} Y -4..{PARTING} Z +-32.8")
-feature("USB-C receptacle notches", dict(rects=[(front - 0.05, zc - 4.6, -POCKET_X + 0.01, zc + 4.6) if s < 0 else
-                                                 (POCKET_X - 0.01, zc - 4.6, front + 0.05, zc + 4.6) for s, zc, front in USB]),
+feature("Board pocket", dict(rects=[(-BOARD_X, -32.8, BOARD_X, 32.8)]), lambda: cut(False, 0, 4.0, 1, 0),
+        f"X +-{BOARD_X} Y -4..{PARTING} Z +-32.8")
+feature("USB-C receptacle notches", dict(rects=[(front - 0.05, zc - 4.6, -BOARD_X + 0.01, zc + 4.6) if s < 0 else
+                                                 (BOARD_X - 0.01, zc - 4.6, front + 0.05, zc + 4.6) for s, zc, front in USB]),
         lambda: span(-3.4), "fronts 0.05 from the skin, open upwards for the board going in")
 for s, zc, front in USB:
     face = front + 0.05 * s
@@ -202,8 +203,8 @@ for nm, r in (("USBC1 shell pad", (CX0, -15.2, 17.25, -7.9)), ("USBC2 shell pad"
     f = top_span(rects=[r], ya=-4.01, yb=-3.25, boss=True); f.Name = nm
     print(f"{nm:26s} {fbox(f)}")
 RIB_Z = 38.9 - 32.5
-f = top_span(rects=[(-POCKET_X, RIB_Z - 1.0, -15.25, RIB_Z + 1.0)], ya=-4.01, yb=0.0, boss=True); f.Name = "Board rib, y 38.9"   # 2 mm, from the side
-f = top_span(rects=[(-POCKET_X, BOARD_HOLE[1] - 2.0, BOARD_HOLE[0] + 2.0, BOARD_HOLE[1] + 2.0)], ya=-4.01, yb=0.0, boss=True)
+f = top_span(rects=[(-BOARD_X, RIB_Z - 1.0, -15.25, RIB_Z + 1.0)], ya=-4.01, yb=0.0, boss=True); f.Name = "Board rib, y 38.9"   # 2 mm, from the side
+f = top_span(rects=[(-BOARD_X, BOARD_HOLE[1] - 2.0, BOARD_HOLE[0] + 2.0, BOARD_HOLE[1] + 2.0)], ya=-4.01, yb=0.0, boss=True)
 f.Name = "Board screw boss"                             # square, out to the pocket's side (prints from the wall)
 f = top_span(circles=[(*BOARD_HOLE, 0.8)], ya=-3.5, yb=0.1); f.Name = "Board screw pilot"     # its block starts at -4.5
 print(f"{'Board screw boss':26s} {fbox(f)}  M2x8 thread-forming through the cradle and the board")

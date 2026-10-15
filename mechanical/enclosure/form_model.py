@@ -48,7 +48,7 @@ KEEP = [(-18.45, 18.45, 4.7, 18.8, -33.6, 21.7),       # cells and cradle on the
         (-9.1, 8.4, 4.7, 23.4, -30.0, -24.0),          # up the ramp
         (-9.1, 8.4, 4.7, 24.9, -24.0, -16.6),          # to the top camera's connector (Y 24.5)
         (-13.6, 13.6, 4.7, 11.7, -38.8, -35.2), (-13.6, 13.6, 4.7, 11.7, 34.0, 37.6),   # seam screw pilots (1 mm past)
-        (-18.45, 18.45, -4.0, 4.7, -32.8, 32.8),       # main board, parts down to Y -3.25
+        (-18.65, 18.65, -4.0, 4.7, -32.8, 32.8),       # main board (36.9 as made), parts down to Y -3.25
         (-19.1, 19.1, 1.5, 4.7, -34.25, 33.45),        # the seam's lip
         (-19.55, 19.55, -5.3, 1.5, -21.0, -5.5),       # USB-C receptacles (to Y -5.0), mouths 0.8 in the flat sides
         (-12.8, 12.8, -12.4, -4.0, -17.2, 7.3),        # bottom camera: board, holder, 5 mm floor round its pilots
@@ -398,7 +398,7 @@ def legs(form, cfg, grow=0.0, blocks=()):
 
 
 def leds(form, base, cover, P, avoid):
-    """the LED strips (pcb/LEDS: 37 x 5 x 1.6, LEDs at LEDS_AT along it, 3.5 cubes 0.76 tall, domes), two per
+    """the LED strips (pcb/LEDS: 37 x 5 x 1.6 designed, 37.2 x 5.6 as made (cfg board), LEDs at LEDS_AT along it, 3.5 cubes 0.76 tall, domes), two per
     lens on crater facets facing apart, each as far from the lens as it fits: recessed in the skin, the
     board's front cfg skin under the facet (the cubes flush in square holes, only the domes out), every
     dome under the lens's view line, in one part, cfg margin off the facet's edges, cfg star_clear off the
