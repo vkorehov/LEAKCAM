@@ -295,6 +295,7 @@ def cut_bodies(path, name):
     if f is None:
         raise RuntimeError(f"{name} failed")
     f.Name = name
+    drop_loose(pd, f"Loose bits of {name} removed")
     print(f"{name}: {len(tools)} off,", len(pd.GetBodies2(0, False)), "body left")
 
 
@@ -330,15 +331,20 @@ def shell_cut(part):
     if f is None:
         raise RuntimeError("shell cut failed")
     f.Name = "Shell: the hollow off (form_model.py)"
-    bodies = pd.GetBodies2(0, False)
-    if len(bodies) > 1:                        # bits the hollow cut loose (left between two cuts): off
-        size = lambda b_: (lambda q: (q[3] - q[0]) * (q[4] - q[1]) * (q[5] - q[2]))(get(typed(b_, "IBody2"), "GetBodyBox"))
-        loose = sorted(bodies, key=size)[:-1]
-        model.ClearSelection2(True)
-        for b_ in loose:
-            print("  loose piece removed:", [round(v * 1000, 2) for v in get(typed(b_, "IBody2"), "GetBodyBox")])
-            typed(b_, "IBody2").Select2(True, None)
-        d = fm.InsertDeleteBody2(False)
-        if d:
-            d.Name = "Loose bits of the shell removed"
+    drop_loose(pd, "Loose bits of the shell removed")       # bits the hollow cut loose (left between two cuts)
     print(f"shell: {len(tools)} hollow bodies off,", len(pd.GetBodies2(0, False)), "body left")
+
+
+def drop_loose(pd, name):
+    """every body but the biggest off: bits a cut left loose (a leg channel past the lip leaves a speck)"""
+    bodies = pd.GetBodies2(0, False)
+    if len(bodies) < 2:
+        return
+    size = lambda b_: (lambda q: (q[3] - q[0]) * (q[4] - q[1]) * (q[5] - q[2]))(get(typed(b_, "IBody2"), "GetBodyBox"))
+    model.ClearSelection2(True)
+    for b_ in sorted(bodies, key=size)[:-1]:
+        print("  loose piece removed:", [round(v * 1000, 2) for v in get(typed(b_, "IBody2"), "GetBodyBox")])
+        typed(b_, "IBody2").Select2(True, None)
+    d = fm.InsertDeleteBody2(False)
+    if d:
+        d.Name = name
