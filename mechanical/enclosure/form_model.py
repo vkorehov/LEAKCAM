@@ -410,6 +410,7 @@ def leds(form, base, cover, P, avoid):
     from matplotlib.path import Path
     cfg = P["leds"]
     L, W, T = cfg["board"]
+    LEDS_L = 37.0                                   # the designed strip: leds_at counts from its end (the real one is longer)
     k = math.tan(math.radians(P["crater"]["slope_deg"]))
     stars = [np.array(pl["star"]) for pl in P["legs"]["plugs"]]
     av = np.array(avoid)
@@ -454,7 +455,7 @@ def leds(form, base, cover, P, avoid):
                     seg = [cen + xd * t for t in np.linspace(-L / 2, L / 2, 15)]
                     if min(np.linalg.norm(p - s_) for p in seg for s_ in stars) < cfg["star_clear"]:
                         why["star"] += 1; continue
-                tops = [cen + (x - L / 2) * xd + y * yd + n * cfg["dome"] for x in cfg["leds_at"] for y in (-1.75, 1.75)]
+                tops = [cen + (x - LEDS_L / 2) * xd + y * yd + n * cfg["dome"] for x in cfg["leds_at"] for y in (-1.75, 1.75)]
                 if max(math.degrees(math.atan2(v * (q[1] - GLASS_RIM[v]), math.hypot(q[0], q[2] - LENS_Z) - 5.5)) for q in tops) > -P["crater"]["slope_deg"]:
                     why["view"] += 1; continue
                 # the board's volume and the reach behind it
@@ -485,7 +486,8 @@ def leds(form, base, cover, P, avoid):
             loc = b.Location(b.Plane(origin=tuple(map(float, cen)), x_dir=tuple(map(float, xd)), z_dir=tuple(map(float, n))))
             seat = loc * b.Pos(0, 0, -cfg["skin"]) * b.Box(L + 0.4, W + 0.4, cfg["skin"] + T + cfg["reach"] - cfg["skin"],
                                                          align=(b.Align.CENTER, b.Align.CENTER, b.Align.MAX))
-            holes = [loc * b.Pos(x - L / 2, 0, 0.1) * b.Box(cfg["cube"] + 0.1, cfg["cube"] + 0.1, cfg["skin"] + 0.2,
+            hole = cfg["cube"] + 2 * 0.2                   # 0.2 round the LED body (the printer closes holes by ~0.2)
+            holes = [loc * b.Pos(x - LEDS_L / 2, 0, 0.1) * b.Box(hole, hole, cfg["skin"] + 0.2,
                                                             align=(b.Align.CENTER, b.Align.CENTER, b.Align.MAX)) for x in cfg["leds_at"]]
             cuts[part] += [seat] + holes
             frames.append({"part": part, "o": cen, "x": xd, "y": yd, "n": n})
