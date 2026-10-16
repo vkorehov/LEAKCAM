@@ -413,9 +413,10 @@ for n in list(missing):                  # no fit faces: hold them by their orig
     if mate_origin_planes(m, C, n):
         missing.remove(n)
         done.append(n)
+asm_name = get(m, "GetTitle").rsplit(".", 1)[0]
 for n in list(missing):                  # turned off the axes: fixed where it is
     m.ClearSelection2(True)
-    if typed(C[n], "IComponent2").Select4(False, nothing(), False):
+    if m.Extension.SelectByID2(f"{n}@{asm_name}", "COMPONENT", 0, 0, 0, False, 0, nothing(), 0):
         m.FixComponent()
         say(f"  {n}: fixed in place")
         missing.remove(n)
