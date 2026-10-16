@@ -383,16 +383,18 @@ def render_led_wiring(pcb, comps, out):
     m = pin(WHITE_PADS[3], "1")
     wires.append(("white", "D  J11 pin 1 (-)", "J1 pin 2 (-)",
                   [m, (m[0], WL1), (45.5, WL1), (45.5, J1m[1]), J1m]))
-    a = pin(IR_PADS[0], "1")
-    wires.append(("IR", "J2 pin 1 (+)", "A  J6 pin 1 (+)",
-                  [J2p, (J2p[0], IL2), (a[0] - 0.8, IL2), (a[0] - 0.8, a[1]), a]))
+    # IR: pin 2 = + (the JNJ footprint names its anode pad "1" and its cathode pad "3": pin 2 of the
+    # wire pad reaches the anode side). Pin 1 leaves sideways (right of the pad), then down to the lane.
+    a = pin(IR_PADS[0], "2")
+    wires.append(("IR", "J2 pin 1 (+)", "A  J6 pin 2 (+)",
+                  [J2p, (J2p[0], IL2), (a[0], IL2), a]))
     for k in range(3):
-        m, p_ = pin(IR_PADS[k], "2"), pin(IR_PADS[k + 1], "1")
-        wires.append(("IR", f"{'ABCD'[k]}  {IR_PADS[k]} pin 2 (-)", f"{'ABCD'[k + 1]}  {IR_PADS[k + 1]} pin 1 (+)",
-                      [m, (m[0], IL1), (p_[0] - 0.8, IL1), (p_[0] - 0.8, p_[1]), p_]))
-    m = pin(IR_PADS[3], "2")
-    wires.append(("IR", "D  J12 pin 2 (-)", "J2 pin 2 (-)",
-                  [m, (m[0], IL1), (44.7, IL1), (44.7, J2m[1] - 1.0), (J2m[0], J2m[1] - 1.0), J2m]))
+        m, p_ = pin(IR_PADS[k], "1"), pin(IR_PADS[k + 1], "2")
+        wires.append(("IR", f"{'ABCD'[k]}  {IR_PADS[k]} pin 1 (-)", f"{'ABCD'[k + 1]}  {IR_PADS[k + 1]} pin 2 (+)",
+                      [m, (m[0] + 1.5, m[1]), (m[0] + 1.5, IL1), (p_[0], IL1), p_]))
+    m = pin(IR_PADS[3], "1")
+    wires.append(("IR", "D  J12 pin 1 (-)", "J2 pin 2 (-)",
+                  [m, (m[0] + 1.5, m[1]), (m[0] + 1.5, IL1), (44.7, IL1), (44.7, J2m[1] - 1.0), (J2m[0], J2m[1] - 1.0), J2m]))
 
     def dashed(q, width):
         for (xa, ya), (xb, yb) in zip(q, q[1:]):
@@ -414,7 +416,7 @@ def render_led_wiring(pcb, comps, out):
         d.text((mx, my), str(num), fill=(0, 0, 0), font=f, anchor="mm")
     # pads: white dots, the pad name and + / - next to each
     for ref, n, sign in ([(r, "2", "+") for r in WHITE_PADS] + [(r, "1", "-") for r in WHITE_PADS] +
-                         [(r, "1", "+") for r in IR_PADS] + [(r, "2", "-") for r in IR_PADS] +
+                         [(r, "2", "+") for r in IR_PADS] + [(r, "1", "-") for r in IR_PADS] +
                          [("J1", "1", "+"), ("J1", "2", "-"), ("J2", "1", "+"), ("J2", "2", "-")]):
         cx, cy = P(*pin(ref, n))
         d.ellipse((cx - 12, cy - 12, cx + 12, cy + 12), fill="white", outline=(0, 0, 0), width=4)
@@ -443,7 +445,8 @@ def render_led_wiring(pcb, comps, out):
         x_ = LM + col * (W - 2 * LM) / 2
         d.text((x_, yy), f"{num:>2}.  {a_}  ->  {b_}", fill=(0, 0, 0), font=ft, anchor="lm")
     y += 5 * 38 + 20
-    for line in ("Twist each wire with the one going back the other way; keep the wires short.",
+    for line in ("IR: pin 2 is + on every strip. Wired with pin 1 as + (first version of this sheet)? Swap the two wires at J2.",
+                 "Twist each wire with the one going back the other way; keep the wires short.",
                  "Before wiring: 6.5 V / 2 mA across one strip's white pair lights both LEDs faintly in the right",
                  "polarity only (IR pair: 3.5 V / 2 mA, look with a phone camera). A reversed chain gets the boost voltage."):
         d.text((LM, y), line, fill=(0, 0, 0), font=ft, anchor="lm")
