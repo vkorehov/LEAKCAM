@@ -198,6 +198,3 @@ can be switched and dimmed independently.
   - Update the PCB from the schematic in Altium (R66 3.0R C23157, R68 1.5R C22769) and
     re-export Pick Place: BOM_ASSEMBLY.csv / PickPlace_MIFA.csv still carry 4.7R / 10R.
   - Draw the strips into the schematic and panel (footprint per section 4).
-  - Strip rev 2: "+" and "-" on the silkscreen at every wire pad and a square pin 1 (rev 1 has only
-    J3 .. J12; the IR polarity was documented backwards once, see tools/power-bringup/README.md), and
-    number the JNJ footprint's pads like its datasheet (anode pad is "1", cathode "3" now).
