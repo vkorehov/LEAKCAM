@@ -149,7 +149,9 @@ The four strips (A..D, cut from the panel) carry 2 white + 2 IR LEDs each. **Eac
 series chain through all four strips**: 8 white LEDs on J1 (about 22 V from U14) and 8 IR LEDs on
 J2 (about 11 V from U15). Twist each go/return pair.
 
-The wires are in the top-side picture above.
+![LED strip wiring](led_wiring.png)
+
+The wires, numbered in soldering order (made to print in black and white: white chain solid, IR dashed).
 
 - IR pairs (J6, J8, J10, J12): pin 1 = + (traced to the LED anodes).
 - White pairs (J3, J7, J9, J11): pin 2 = + per the footprint's pin numbering. **Confirm before
@@ -163,7 +165,7 @@ The wires are in the top-side picture above.
 
 - `testpoints.json`: probe pads and limits per phase
 - `power_check.py`: the interactive multimeter check, writes the CSV log
-- `render_testpoints.py`: redraws the four pictures here (`top.png`, `top_power_zoom.png`,
-  `hookup_top.png`, `hookup_bottom.png`) from the ODB++ of the ordered board (git
+- `render_testpoints.py`: redraws the five pictures here (`top.png`, `top_power_zoom.png`,
+  `hookup_top.png`, `hookup_bottom.png`, `led_wiring.png`) from the ODB++ of the ordered board (git
   `11a6a38`), and refuses to draw if a probe pad is not on the net the table says
 - `bl616_powertest/`: the BL616 test firmware

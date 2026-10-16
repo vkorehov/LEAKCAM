@@ -2,7 +2,7 @@
 """Draw the power bring-up probe points on the MIFA board, from the fab ODB++.
 
   python3 render_testpoints.py [MIFA.tgz | git revision]   -> top.png, top_power_zoom.png,
-      hookup_top.png, hookup_bottom.png next to this script
+      hookup_top.png, hookup_bottom.png, led_wiring.png next to this script
 
 Reads "Project Outputs for LEAKCAM/MIFA.tgz" as committed in the fab package of the ordered board
 (git 11a6a38, rev 1; the working tree may already hold later layout changes) by default, checks
@@ -253,24 +253,6 @@ def render_hookup(pcb, comps, side, out):
         d.text((cx + cam_w / 2 + 16, cy0 + 12 * S), label, fill=(30, 110, 60), font=fl, anchor="lm")
 
     if side == "top":
-        # LED chains on the strips (white J1, IR J2), each strip's - to the next strip's +
-        WHITE, IR = (225, 145, 0), (170, 20, 140)
-        white = [("J1", "1"), ("J3", "2"), ("J3", "1"), ("J7", "2"), ("J7", "1"), ("J9", "2"), ("J9", "1"),
-                 ("J11", "2"), ("J11", "1"), ("J1", "2")]
-        ir = [("J2", "1"), ("J6", "1"), ("J6", "2"), ("J8", "1"), ("J8", "2"), ("J10", "1"), ("J10", "2"),
-              ("J12", "1"), ("J12", "2"), ("J2", "2")]
-        for chain, col, bend in ((white, WHITE, -110), (ir, IR, 110)):
-            for k in range(0, len(chain), 2):
-                curve(pin(*chain[k]), pin(*chain[k + 1]), col, bend if k in (0, len(chain) - 2) else bend * 0.3)
-            for k, (ref, n) in enumerate(chain):
-                p = pin(ref, n)
-                dot(p, col)
-                plus = (ref in ("J1", "J2") and n == "1") or (ref not in ("J1", "J2") and k % 2 == 1)
-                d.text((p[0] + 10, p[1] - 26), "+" if plus else "-", fill=col, font=fl, stroke_width=3, stroke_fill="white")
-        for name, x in (("A", 2.5), ("B", 8.5), ("C", 14.5), ("D", 20.5)):
-            d.text((P(x, 0)[0], TM - 30), name, fill=(40, 90, 40), font=fl, anchor="mm")
-        d.text((LM - 20, P(0, 45.6)[1] - 40), "white", fill=WHITE, font=fl, anchor="rm")
-        d.text((LM - 20, P(0, 44.0)[1] + 40), "IR", fill=IR, font=fl, anchor="rm")
         # battery cells in the right margin: red + to pin 1 (BAT), black - to pin 2 (GND); the cell's
         # terminals are drawn in the same top-to-bottom order as the pads, so the leads never cross
         bx = W - RM + 140
@@ -341,6 +323,135 @@ def render_hookup(pcb, comps, side, out):
     img.save(out)
     print("wrote", out)
 
+
+def render_led_wiring(pcb, comps, out):
+    """the LED strip wires on the top side, for printing in black and white: white chain solid, IR dashed,
+    each wire in its own lane (white above the pad rows, IR below, the long ones further out) and every
+    strip pad entered from its left, so no two wires cross or run on top of each other; numbered in
+    soldering order, with the list under the picture"""
+    X0, X1, Y0, Y1, S = -3.0, 49.0, 24.5, 51.5, 36.0
+    LM, TM, TABLE = 40, 110, 560
+    W, H = int((X1 - X0) * S) + 2 * LM, int((Y1 - Y0) * S) + TM + TABLE
+
+    def P(x, y):
+        return LM + (x - X0) * S, TM + (Y1 - y) * S
+
+    img = Image.new("RGB", (W, H), "white")
+    d = ImageDraw.Draw(img)
+    try:
+        f = ImageFont.truetype("DejaVuSans-Bold.ttf", 24)
+        fl = ImageFont.truetype("DejaVuSans-Bold.ttf", 32)
+        ft = ImageFont.truetype("DejaVuSans.ttf", 26)
+    except OSError:
+        f = fl = ft = ImageFont.load_default()
+    # the board, light: outline, pads, silkscreen
+    d.polygon([P(x, y) for x, y in outline(pcb)], fill=(246, 246, 246), outline=(160, 160, 160))
+    pads, _ = features(pcb, "top_layer")
+    for x, y, shape, w, h, ang in pads:
+        if not (X0 < x < X1 and Y0 < y < Y1):
+            continue
+        if shape == "r":
+            cx, cy = P(x, y)
+            r = w / 2 * S
+            d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=(222, 222, 222))
+            continue
+        a = math.radians(ang)
+        c, s_ = math.cos(a), math.sin(a)
+        d.polygon([P(x + dx * c + dy * s_, y - dx * s_ + dy * c) for dx, dy in
+                   ((-w / 2, -h / 2), (w / 2, -h / 2), (w / 2, h / 2), (-w / 2, h / 2))], fill=(222, 222, 222))
+    _, sl = features(pcb, "top_overlay")
+    for xa, ya, xb, yb, wd in sl:
+        if X0 < min(xa, xb) and max(xa, xb) < X1 and Y0 < min(ya, yb) and max(ya, yb) < Y1:
+            d.line((P(xa, ya), P(xb, yb)), fill=(205, 205, 205), width=max(1, int(wd * S)))
+    d.rectangle((0, P(0, Y0)[1], W, H), fill="white")            # nothing of the board past the drawing
+    d.rectangle((0, 0, LM, H), fill="white")
+    d.rectangle((0, 0, W, TM - 10), fill="white")
+    pin = lambda ref, n: comps[ref]["pins"][n][:2]
+
+    WHITE_PADS, IR_PADS = ("J3", "J7", "J9", "J11"), ("J6", "J8", "J10", "J12")
+    # lanes (mm): white above the pad rows, IR below; the start wires one lane further out
+    WL1, WL2, IL1, IL2 = 48.1, 49.3, 42.6, 41.4
+    J1p, J1m, J2p, J2m = pin("J1", "1"), pin("J1", "2"), pin("J2", "1"), pin("J2", "2")
+    wires = []                                      # (number, chain, from, to, points)
+    a = pin(WHITE_PADS[0], "2")
+    wires.append(("white", "J1 pin 1 (+)", "A  J3 pin 2 (+)",
+                  [J1p, (46.2, J1p[1]), (46.2, WL2), (a[0] - 1.0, WL2), (a[0] - 1.0, a[1]), a]))
+    for k in range(3):
+        m, p_ = pin(WHITE_PADS[k], "1"), pin(WHITE_PADS[k + 1], "2")
+        wires.append(("white", f"{'ABCD'[k]}  {WHITE_PADS[k]} pin 1 (-)", f"{'ABCD'[k + 1]}  {WHITE_PADS[k + 1]} pin 2 (+)",
+                      [m, (m[0], WL1), (p_[0] - 1.0, WL1), (p_[0] - 1.0, p_[1]), p_]))
+    m = pin(WHITE_PADS[3], "1")
+    wires.append(("white", "D  J11 pin 1 (-)", "J1 pin 2 (-)",
+                  [m, (m[0], WL1), (45.5, WL1), (45.5, J1m[1]), J1m]))
+    a = pin(IR_PADS[0], "1")
+    wires.append(("IR", "J2 pin 1 (+)", "A  J6 pin 1 (+)",
+                  [J2p, (J2p[0], IL2), (a[0] - 0.8, IL2), (a[0] - 0.8, a[1]), a]))
+    for k in range(3):
+        m, p_ = pin(IR_PADS[k], "2"), pin(IR_PADS[k + 1], "1")
+        wires.append(("IR", f"{'ABCD'[k]}  {IR_PADS[k]} pin 2 (-)", f"{'ABCD'[k + 1]}  {IR_PADS[k + 1]} pin 1 (+)",
+                      [m, (m[0], IL1), (p_[0] - 0.8, IL1), (p_[0] - 0.8, p_[1]), p_]))
+    m = pin(IR_PADS[3], "2")
+    wires.append(("IR", "D  J12 pin 2 (-)", "J2 pin 2 (-)",
+                  [m, (m[0], IL1), (44.7, IL1), (44.7, J2m[1] - 1.0), (J2m[0], J2m[1] - 1.0), J2m]))
+
+    def dashed(q, width):
+        for (xa, ya), (xb, yb) in zip(q, q[1:]):
+            n = max(1, int(math.hypot(xb - xa, yb - ya) / 14))
+            for k in range(0, n, 2):
+                d.line((xa + (xb - xa) * k / n, ya + (yb - ya) * k / n, xa + (xb - xa) * min(k + 1, n) / n,
+                        ya + (yb - ya) * min(k + 1, n) / n), fill=(0, 0, 0), width=width)
+    for num, (chain, _, _, pts_) in enumerate(wires, 1):
+        q = [P(*p_) for p_ in pts_]
+        if chain == "white":
+            d.line(q, fill=(0, 0, 0), width=6, joint="curve")
+        else:
+            dashed(q, 6)
+        seg = max(zip(q, q[1:]), key=lambda s2: math.hypot(s2[1][0] - s2[0][0], s2[1][1] - s2[0][1]))
+        mx, my = (seg[0][0] + seg[1][0]) / 2, (seg[0][1] + seg[1][1]) / 2
+        if num in (1, 6):                            # the long start wires: their number near the far end
+            mx = (seg[0][0] + 3 * seg[1][0]) / 4
+        d.ellipse((mx - 20, my - 20, mx + 20, my + 20), fill="white", outline=(0, 0, 0), width=3)
+        d.text((mx, my), str(num), fill=(0, 0, 0), font=f, anchor="mm")
+    # pads: white dots, the pad name and + / - next to each
+    for ref, n, sign in ([(r, "2", "+") for r in WHITE_PADS] + [(r, "1", "-") for r in WHITE_PADS] +
+                         [(r, "1", "+") for r in IR_PADS] + [(r, "2", "-") for r in IR_PADS] +
+                         [("J1", "1", "+"), ("J1", "2", "-"), ("J2", "1", "+"), ("J2", "2", "-")]):
+        cx, cy = P(*pin(ref, n))
+        d.ellipse((cx - 12, cy - 12, cx + 12, cy + 12), fill="white", outline=(0, 0, 0), width=4)
+        d.text((cx + 15, cy), sign, fill=(0, 0, 0), font=fl, anchor="lm", stroke_width=4, stroke_fill="white")
+    for ref in WHITE_PADS + IR_PADS:
+        cx, cy = P(*comps[ref]["pins"]["1"][:2])
+        d.text((cx, cy - 34), ref, fill=(0, 0, 0), font=f, anchor="mm", stroke_width=4, stroke_fill="white")
+    x_, y_ = J1p
+    d.text(P(x_ - 1.6, y_ - 1.3), "J1 white", fill=(0, 0, 0), font=f, anchor="mm", stroke_width=4, stroke_fill="white")
+    x_, y_ = J2m
+    d.text(P(x_ - 1.0, y_), "J2 IR", fill=(0, 0, 0), font=f, anchor="rm", stroke_width=4, stroke_fill="white")
+    for k, name in enumerate("ABCD"):
+        d.text(P(2.5 + 6 * k, 50.6), name, fill=(0, 0, 0), font=fl, anchor="mm")
+    d.text((W / 2, 40), "LED strip wiring (top side): white J1 > A > B > C > D > J1,  IR J2 > A > B > C > D > J2",
+           fill=(0, 0, 0), font=fl, anchor="mm")
+    # legend and the wire list
+    y = TM + (Y1 - Y0) * S + 30
+    d.line((LM, y + 16, LM + 90, y + 16), fill=(0, 0, 0), width=6)
+    d.text((LM + 105, y + 16), "white chain (8 white LEDs, ~22 V)", fill=(0, 0, 0), font=ft, anchor="lm")
+    dashed([(LM + 760, y + 16), (LM + 850, y + 16)], 6)
+    d.text((LM + 865, y + 16), "IR chain (8 IR LEDs, ~11 V)", fill=(0, 0, 0), font=ft, anchor="lm")
+    y += 60
+    for num, (chain, a_, b_, _) in enumerate(wires, 1):
+        col = 0 if num <= 5 else 1
+        yy = y + ((num - 1) % 5) * 38
+        x_ = LM + col * (W - 2 * LM) / 2
+        d.text((x_, yy), f"{num:>2}.  {a_}  ->  {b_}", fill=(0, 0, 0), font=ft, anchor="lm")
+    y += 5 * 38 + 20
+    for line in ("Twist each wire with the one going back the other way; keep the wires short.",
+                 "Before wiring: 6.5 V / 2 mA across one strip's white pair lights both LEDs faintly in the right",
+                 "polarity only (IR pair: 3.5 V / 2 mA, look with a phone camera). A reversed chain gets the boost voltage."):
+        d.text((LM, y), line, fill=(0, 0, 0), font=ft, anchor="lm")
+        y += 36
+    img.save(out)
+    print("wrote", out)
+
+
 def main():
     arg = sys.argv[1] if len(sys.argv) > 1 else FAB_REV
     if os.path.isfile(arg):
@@ -366,6 +477,7 @@ def main():
            px=55.0, label=", power corner (zoom)")
     for side in ("top", "bottom"):
         render_hookup(pcb, comps, side, os.path.join(HERE, f"hookup_{side}.png"))
+    render_led_wiring(pcb, comps, os.path.join(HERE, "led_wiring.png"))
 
 
 if __name__ == "__main__":
