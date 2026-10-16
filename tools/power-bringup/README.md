@@ -165,6 +165,26 @@ The wires, numbered in soldering order (made to print in black and white: white 
 - The LEDs are driven by the K230 (PWM), so the chains are tested with the K230 firmware
   (`leakcam_capture -b`), not from the BL616.
 
+#### Test record: rev 1 strips, 2026-10-16
+
+The four strips are wired as in the picture (IR chain J2 + > D > C > B > A > J2 -), and each whole chain was
+checked from a bench supply, raised until the LEDs light.
+
+| Chain | LEDs in series | Lights from | Per LED | Running point (LED_STRIPS.txt) |
+|-------|----------------|-------------|---------|--------------------------------|
+| White (J1) | 8 | 19.6 V | 2.45 V | ~22 V at 64 mA |
+| IR (J2) | 8 | 10.0 V | 1.25 V | ~11 V at 133 mA |
+
+- **Result: pass.** All 16 LEDs light, both chains are continuous through all four strips, and every strip's
+  pads have + on pin 2.
+- **Thresholds are as expected** for a white and an 850 nm LED (about 2.5 V and 1.2-1.3 V each). The running
+  points are 2-3 V higher, well under the TPS61161's 38 V over-voltage limit, so the drivers regulate normally.
+- **IR was first wired reversed** (pin 1 as +, from the first version of this page), so the chain did not light.
+  It was corrected by swapping the two wires at J2. During the first check one IR pair saw up to 14 V in
+  reverse (about 7 V per LED, over their 5 V rating); all IR LEDs light now.
+- **Still to do:** drive both chains from the board with `leakcam_capture -b` (white and IR separately and
+  dimmed), and check the brightness against section 8 of LED_STRIPS.txt.
+
 ## Files
 
 - `testpoints.json`: probe pads and limits per phase
