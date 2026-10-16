@@ -383,18 +383,18 @@ def render_led_wiring(pcb, comps, out):
     m = pin(WHITE_PADS[3], "1")
     wires.append(("white", "D  J11 pin 1 (-)", "J1 pin 2 (-)",
                   [m, (m[0], WL1), (45.5, WL1), (45.5, J1m[1]), J1m]))
-    # IR: pin 2 = + (the JNJ footprint names its anode pad "1" and its cathode pad "3": pin 2 of the
-    # wire pad reaches the anode side). Pin 1 leaves sideways (right of the pad), then down to the lane.
-    a = pin(IR_PADS[0], "2")
-    wires.append(("IR", "J2 pin 1 (+)", "A  J6 pin 2 (+)",
-                  [J2p, (J2p[0], IL2), (a[0], IL2), a]))
-    for k in range(3):
-        m, p_ = pin(IR_PADS[k], "1"), pin(IR_PADS[k + 1], "2")
-        wires.append(("IR", f"{'ABCD'[k]}  {IR_PADS[k]} pin 1 (-)", f"{'ABCD'[k + 1]}  {IR_PADS[k + 1]} pin 2 (+)",
-                      [m, (m[0] + 1.5, m[1]), (m[0] + 1.5, IL1), (p_[0], IL1), p_]))
-    m = pin(IR_PADS[3], "1")
-    wires.append(("IR", "D  J12 pin 1 (-)", "J2 pin 2 (-)",
-                  [m, (m[0] + 1.5, m[1]), (m[0] + 1.5, IL1), (44.7, IL1), (44.7, J2m[1] - 1.0), (J2m[0], J2m[1] - 1.0), J2m]))
+    # IR, as built: pin 2 = + on every strip (the JNJ footprint names its anode pad "1", its cathode pad "3").
+    # The hop wires join one strip's pin 2 to the next one's pin 1, so the current runs J2 + > D > C > B > A > J2 -.
+    a = pin(IR_PADS[3], "2")
+    wires.append(("IR", "J2 pin 1 (+)", "D  J12 pin 2 (+)",
+                  [J2p, (J2p[0], IL1), (a[0], IL1), a]))
+    for k in (2, 1, 0):
+        m, p_ = pin(IR_PADS[k + 1], "1"), pin(IR_PADS[k], "2")
+        wires.append(("IR", f"{'ABCD'[k + 1]}  {IR_PADS[k + 1]} pin 1 (-)", f"{'ABCD'[k]}  {IR_PADS[k]} pin 2 (+)",
+                      [m, (m[0] - 0.8, m[1]), (m[0] - 0.8, IL1), (p_[0], IL1), p_]))
+    m = pin(IR_PADS[0], "1")
+    wires.append(("IR", "A  J6 pin 1 (-)", "J2 pin 2 (-)",
+                  [m, (m[0] - 0.8, m[1]), (m[0] - 0.8, IL2), (J2m[0], IL2), J2m]))
 
     def dashed(q, width):
         for (xa, ya), (xb, yb) in zip(q, q[1:]):
@@ -430,7 +430,7 @@ def render_led_wiring(pcb, comps, out):
     d.text(P(x_ - 1.0, y_), "J2 IR", fill=(0, 0, 0), font=f, anchor="rm", stroke_width=4, stroke_fill="white")
     for k, name in enumerate("ABCD"):
         d.text(P(2.5 + 6 * k, 50.6), name, fill=(0, 0, 0), font=fl, anchor="mm")
-    d.text((W / 2, 40), "LED strip wiring (top side): white J1 > A > B > C > D > J1,  IR J2 > A > B > C > D > J2",
+    d.text((W / 2, 40), "LED strip wiring (top side): white J1 > A > B > C > D > J1,  IR J2 > D > C > B > A > J2",
            fill=(0, 0, 0), font=fl, anchor="mm")
     # legend and the wire list
     y = TM + (Y1 - Y0) * S + 30
@@ -445,7 +445,7 @@ def render_led_wiring(pcb, comps, out):
         x_ = LM + col * (W - 2 * LM) / 2
         d.text((x_, yy), f"{num:>2}.  {a_}  ->  {b_}", fill=(0, 0, 0), font=ft, anchor="lm")
     y += 5 * 38 + 20
-    for line in ("IR: pin 2 is + on every strip. Wired with pin 1 as + (first version of this sheet)? Swap the two wires at J2.",
+    for line in ("+ is pin 2 on every strip pad (white and IR); the board itself has no +/- marks.",
                  "Twist each wire with the one going back the other way; keep the wires short.",
                  "Before wiring: 6.5 V / 2 mA across one strip's white pair lights both LEDs faintly in the right",
                  "polarity only (IR pair: 3.5 V / 2 mA, look with a phone camera). A reversed chain gets the boost voltage."):

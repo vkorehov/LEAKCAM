@@ -155,9 +155,8 @@ The wires, numbered in soldering order (made to print in black and white: white 
 
 - IR pairs (J6, J8, J10, J12): **pin 2 = +**, pin 1 = - (measured on the rev 1 strips, 2026-10-16).
   The JNJ footprint does not number its pads like the datasheet: its anode pad (right) is "1", the
-  cathode pad (left) "3", the centre "2". This page first said pin 1 = +, reading pad "1" as the
-  datasheet's pad 1 (cathode); IR chains wired that way are reversed end to end: swap the two wires
-  at J2 (pin 1 <-> pin 2) and they are right (the chain then runs D -> A, which changes nothing).
+  cathode pad (left) "3", the centre "2". The IR chain as built runs J2 + > D > C > B > A > J2 -
+  (the picture shows it so).
 - The board has no +/- marks at the wire pads (only J3 .. J12, J1, J2) and no square pin 1.
 - White pairs (J3, J7, J9, J11): pin 2 = + (Xinglight footprint: cathode pad "1" left, anode "2"
   right). **Confirm before wiring**: a bench supply at 6.5 V with a 2 mA limit across one strip's white pair lights both LEDs
