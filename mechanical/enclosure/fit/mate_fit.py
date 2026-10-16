@@ -7,7 +7,8 @@ It deletes all mates and makes them again from the parts as they are placed (the
   contact faces (gap 0)          -> coincident
   clearance fits (gap 0.2)       -> distance 0.2: the mate states the clearance
   other facing faces up to 3 mm  -> distance as built (cells, NTC film, plugs, LED strips)
-  screws                         -> concentric with their pilot (rotation locked) + head on its seat
+  parts without a clearance fit  -> their origin planes where they are (cells, cameras, lenses, plugs, wires, legs,
+                                    screws: user 2026-10-16); one turned off the axes (tilted clamp screws) fixed in place
 
 Every part must end where it was: a part that moves, or a mate SolidWorks refuses, is reported and its
 mates are removed. A clearance fit below 0.2 shows up as a gap that is neither 0 nor >= 0.2 (listed).
@@ -52,7 +53,6 @@ HOSTS = {
 NO_FIT = ["LiPo_503450_1000mAh-1", "LiPo_503450_1000mAh-2", "MF55_NTC-1", "Arducam_B0370_OV5647_M12-1",
           "Arducam_B0370_OV5647_M12-2", "M12_fisheye_222-1", "M12_fisheye_222-2", "USB_Type-C_Plug-1", "USB_Type-C_Plug-2",
           "SPH-002T_wires-1", "SPH-002T_wires-2", "SPH-002T_wires-3", "probe_legs-1"]
-SCREW_HOSTS = ["base-1", "cover-1", "cradle-1", "led_clamp_1-38", "led_clamp_2-38", "led_clamp_3-38", "led_clamp_4-5"]
 BOARD_SIZE = (36.5, 1.6, 65.0)          # the board substrate's box (mm): picked out of MIFA's bodies by it
 
 log = []
@@ -190,12 +190,15 @@ def adds_direction(ns, n):
 
 
 def delete_mates(m, names):
-    """by the mate feature itself: SelectByID2 cannot select names with ':' (failed trials stayed, 2026-10-14)"""
+    """by the mate feature itself (SelectByID2 cannot select names with ':', failed trials stayed, 2026-10-14),
+    all selected, one delete (one by one took 1.2 s a mate)"""
+    m.ClearSelection2(True)
     for nm in names:
         f = m.FeatureByName(nm)
-        m.ClearSelection2(True)
-        if f is not None and typed(f, "IFeature").Select2(False, 0):
-            m.EditDelete()
+        if f is not None:
+            typed(f, "IFeature").Select2(True, 0)
+    if names:
+        m.EditDelete()
     m.ClearSelection2(True)
 
 
@@ -302,51 +305,6 @@ def mate_planes(m, C, child, hosts, cache, own=None):
     return False
 
 
-def mate_screw(m, C, screw, cache):
-    F = faces(C[screw])
-    r0 = min(f["r"] for f in F if f["kind"] == "cyl")
-    shanks = [f for f in F if f["kind"] == "cyl" and f["r"] < r0 + 0.01]   # the thread: split into several faces
-    o, ax = shanks[0]["o"], shanks[0]["ax"]
-    sb = [min(f["box"][i] for f in shanks) for i in range(3)] + [max(f["box"][i + 3] for f in shanks) for i in range(3)]
-    for h in SCREW_HOSTS:
-        if h not in cache:
-            cache[h] = faces(C[h])
-        for b in cache[h]:
-            if b["kind"] != "cyl" or b["r"] > 1.0 or abs(abs(sum(ax[i] * b["ax"][i] for i in range(3))) - 1) > 1e-4:
-                continue
-            v = [b["o"][i] - o[i] for i in range(3)]
-            tt = sum(v[i] * ax[i] for i in range(3))
-            if math.sqrt(max(0.0, sum(x * x for x in v) - tt * tt)) > 0.05:
-                continue
-            inside = [f for f in shanks if all(min(f["box"][i + 3], b["box"][i + 3]) - max(f["box"][i], b["box"][i]) > 0.1 for i in range(3))]
-            if not inside:
-                continue                     # coaxial but elsewhere (the pilot of the other camera on the same axis)
-            shank = max(inside, key=lambda f: f["area"])
-            before = xfm(C[screw])
-            mt = mate_faces(m, shank["f"], b["f"], 1, 0.0, f"{screw} in {h}: concentric", lock=True)
-            if mt is None:
-                continue
-            # the head's underside on its seat: the screw plane facing the host at gap 0 or the nearest
-            near = [k for k in SCREW_HOSTS if k in cache]
-            seat = facing([f for f in F if f["kind"] == "plane"], [f for k in near for f in cache[k] if f["kind"] == "plane"
-                                                                    and all(min(f["box"][i + 3], sb[i + 3] + 3) - max(f["box"][i], sb[i] - 3) > 0 for i in range(3))], 0.6)
-            seat = [s for s in seat if abs(abs(sum(s[1]["n"][i] * ax[i] for i in range(3))) - 1) < 1e-4]
-            seat.sort(key=lambda s: (abs(s[0]), -s[1]["area"]))
-            mt2 = None
-            if seat:
-                g = seat[0][0]
-                mt2 = mate_faces(m, seat[0][1]["f"], seat[0][2]["f"], 0 if abs(g) < 0.005 else 5, 0.0 if abs(g) < 0.005 else g,
-                                 f"{screw} head: " + ("seated" if abs(g) < 0.005 else f"{g:.2f}"))
-            if moved(C[screw], before) > MOVE_TOL:
-                delete_mates(m, [x for x in (mt, mt2) if x is not None])
-                say(f"  {screw}: MOVED: mates removed")
-                return False
-            say(f"  {screw}: concentric with the Ø{2 * b['r']:.2f} pilot in {h}" + (f", head {seat[0][0]}" if seat else ", NO head seat"))
-            return mt2 is not None
-    say(f"  {screw}: no pilot found")
-    return False
-
-
 def mate_origin_planes(m, C, child):
     """a part with no fit faces (glued cells, cameras, lenses, plugs, wires): its origin planes at their
     actual offsets from the base's. Only for parts turned by multiples of 90 degrees."""
@@ -450,13 +408,19 @@ for child, hosts in HOSTS.items():
         continue
     (done if mate_planes(m, C, child, hosts, cache) else missing).append(child)
     say(f"    ({time.time() - t0:.0f} s)")
-for n in sorted(C):
-    if n.startswith("ISO7380") and (not ONLY or n in ONLY):
-        (done if mate_screw(m, C, n, cache) else missing).append(n)
+missing += [n for n in sorted(C) if n.startswith("ISO7380") and (not ONLY or n in ONLY)]   # screws: no fit to state
 for n in list(missing):                  # no fit faces: hold them by their origin planes where they are
     if mate_origin_planes(m, C, n):
         missing.remove(n)
         done.append(n)
+for n in list(missing):                  # turned off the axes: fixed where it is
+    m.ClearSelection2(True)
+    if typed(C[n], "IComponent2").Select4(False, nothing(), False):
+        m.FixComponent()
+        say(f"  {n}: fixed in place")
+        missing.remove(n)
+        done.append(n)
+    m.ClearSelection2(True)
 left = [n for n in C if n != FIXED and n not in done and n not in missing and (not ONLY or n in ONLY)]
 say(f"mated {len(done)}, not fully: {missing}, not handled: {left}")
 m.ForceRebuild3(False)
