@@ -47,6 +47,11 @@ HOSTS = {
     "LEDS-150": ["led_clamp_2-38", "cover-1", "base-1"],
     "LEDS-151": ["led_clamp_4-5", "base-1", "cover-1"],
 }
+# no clearance fit to state (user, 2026-10-14: cells glued, cameras, lenses, USB plugs; the probe legs are a tight fit):
+# held by their origin planes where they are, without reading their faces (thousands each: most of the run time)
+NO_FIT = ["LiPo_503450_1000mAh-1", "LiPo_503450_1000mAh-2", "MF55_NTC-1", "Arducam_B0370_OV5647_M12-1",
+          "Arducam_B0370_OV5647_M12-2", "M12_fisheye_222-1", "M12_fisheye_222-2", "USB_Type-C_Plug-1", "USB_Type-C_Plug-2",
+          "SPH-002T_wires-1", "SPH-002T_wires-2", "SPH-002T_wires-3", "probe_legs-1"]
 SCREW_HOSTS = ["base-1", "cover-1", "cradle-1", "led_clamp_1-38", "led_clamp_2-38", "led_clamp_3-38", "led_clamp_4-5"]
 BOARD_SIZE = (36.5, 1.6, 65.0)          # the board substrate's box (mm): picked out of MIFA's bodies by it
 
@@ -77,34 +82,38 @@ def rot(R, v):
 
 
 def faces(c, bodies=None):
-    """planar faces (outward normal, offset, box) and cylinders (origin, axis, radius), assembly mm"""
+    """planar faces (outward normal, offset, box) and cylinders (origin, axis, radius), assembly mm.
+    Typed calls (IBody2/IFace2/ISurface type info): late binding looks every name up again and costs ~12 ms a
+    call, ~200 ms a face; typed ~40 ms. IFace2.Normal is the outward normal of a planar face (zero otherwise)."""
     R, t = xfm(c)
+    ext = typed(m.Extension, "IModelDocExtension")
     out = []
     for b in (bodies if bodies is not None else c.GetBodies2(0) or []):
-        for f in get(b, "GetFaces") or []:
-            s = get(f, "GetSurface")
-            _pid[id(f)] = m.Extension.GetPersistReference3(f)
-            if get(s, "IsPlane"):
-                p = get(s, "PlaneParams")
-                n = list(p[:3])
-                if get(f, "FaceInSurfaceSense"):      # late-bound, the sense reads inverted: this makes n outward
-                    n = [-x for x in n]
-                a = get(f, "GetArea") * 1e6
-                if a < 0.2:
+        for f in typed(b, "IBody2").GetFaces() or []:
+            tf = typed(f, "IFace2")
+            a = tf.GetArea() * 1e6
+            if a < 0.2:
+                continue
+            n = list(tf.Normal or (0, 0, 0))
+            if any(abs(x) > 1e-9 for x in n):
+                kind = "plane"
+            else:
+                s = typed(tf.GetSurface(), "ISurface")
+                if not s.IsCylinder():
                     continue
-                bx = [v * 1000 for v in get(f, "GetBox")]
-                cs = [to_asm(R, t, [bx[3 * i], bx[1 + 3 * j], bx[2 + 3 * k]]) for i in (0, 1) for j in (0, 1) for k in (0, 1)]
+                kind = "cyl"
+            _pid[id(f)] = ext.GetPersistReference3(f)
+            bx = [v * 1000 for v in tf.GetBox()]
+            cs = [to_asm(R, t, [bx[3 * i], bx[1 + 3 * j], bx[2 + 3 * k]]) for i in (0, 1) for j in (0, 1) for k in (0, 1)]
+            box = [min(q[i] for q in cs) for i in range(3)] + [max(q[i] for q in cs) for i in range(3)]
+            if kind == "plane":
                 n = rot(R, n)
-                pt = to_asm(R, t, [x * 1000 for x in p[3:6]])
-                out.append(dict(kind="plane", f=f, n=n, d=sum(n[i] * pt[i] for i in range(3)), area=a,
-                                box=[min(q[i] for q in cs) for i in range(3)] + [max(q[i] for q in cs) for i in range(3)]))
-            elif get(s, "IsCylinder"):
-                p = get(s, "CylinderParams")
-                bx = [v * 1000 for v in get(f, "GetBox")]
-                cs = [to_asm(R, t, [bx[3 * i], bx[1 + 3 * j], bx[2 + 3 * k]]) for i in (0, 1) for j in (0, 1) for k in (0, 1)]
+                pt = to_asm(R, t, [x * 1000 for x in tf.GetClosestPointOn(0.0, 0.0, 0.0)[:3]])
+                out.append(dict(kind="plane", f=f, n=n, d=sum(n[i] * pt[i] for i in range(3)), area=a, box=box))
+            else:
+                p = s.CylinderParams
                 out.append(dict(kind="cyl", f=f, o=to_asm(R, t, [x * 1000 for x in p[:3]]), ax=rot(R, list(p[3:6])),
-                                r=p[6] * 1000, area=get(f, "GetArea") * 1e6,
-                                box=[min(q[i] for q in cs) for i in range(3)] + [max(q[i] for q in cs) for i in range(3)]))
+                                r=p[6] * 1000, area=a, box=box))
     return out
 
 
@@ -431,6 +440,9 @@ for child, hosts in HOSTS.items():
         continue
     if child not in C:
         say(f"  {child}: not in the assembly")
+        continue
+    if child in NO_FIT:
+        missing.append(child)                    # origin planes below
         continue
     (done if mate_planes(m, C, child, hosts, cache) else missing).append(child)
     say(f"    ({time.time() - t0:.0f} s)")
