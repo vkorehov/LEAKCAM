@@ -1,0 +1,5 @@
+LEAKCAM rev 1 bugs (boards ordered 2026-09-29, fab 11a6a38)
+One folder per bug: bugs/bug-NNN/README.md (symptom, cause, solution, workarounds) + its pictures.
+
+ID       Found       Status                     Title
+bug-001  2026-10-17  open, workaround on bench  U1 is BQ24072T: battery never charges (TS has no bias)
