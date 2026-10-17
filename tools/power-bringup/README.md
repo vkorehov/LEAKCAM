@@ -108,20 +108,30 @@ timer (TMR R21 47 k).
 
 | # | Rail | Measured | Limit | |
 |---|---|---|---|---|
-| 1 | VUSB | (pending) | 4.75 .. 5.25 V | |
-| 2 | BAT | (pending) | above the cell, rising to 4.20 V | |
-| 3 | VBAT | (pending) | BAT + ~0.2 V | |
-| 4 | 3V3_SLEEP | (pending) | 3.2 .. 3.4 V | |
-| | D1 (charging) | (pending) | on, then off when full | |
+| 1 | VUSB | 5.2 V | 4.75 .. 5.25 V | pass |
+| 2 | BAT | 3.9 V, not rising | above the cell, rising to 4.20 V | **fail** |
+| 3 | VBAT | 4.2 V | BAT + ~0.2 V | (U1 regulates OUT, not charging) |
+| 4 | 3V3_SLEEP | (not measured) | 3.2 .. 3.4 V | |
+| | D1 (charging) | on | on, then off when full | (on in a TS fault too) |
+
+Result: **fail, no charging**: [bug-001](../../bugs/bug-001/README.md) (U1 is the BQ24072T; its TS input has no
+internal bias, so the NTC alone reads "hot"). Retest after the workaround there.
 
 ## 2. Debug port PR1 (bottom side)
 
 ![bottom side wiring](hookup_bottom.png)
 
+![PR1 debug cable, zoom](hookup_debug.png)
+
 PR1 is the BL616's own USB: no USB-serial bridge is needed, a USB cable is soldered to the pads.
 Cut a USB-A cable, solder **green D+ to pad 1, white D- to pad 2, black GND to pad 3**. Cut the red
 VBUS wire back and tape it: the board powers the BL616 itself (USB-C 1 or the battery); pad 6 is the
 board's 3V3_SLEEP, an output.
+
+A **USB-C cable** (for a Mac or any USB-C port) has a fifth wire, usually yellow: CC. A USB-C port stays off until it
+sees 5.1 k from CC to GND, so fit **5.1 k (4.7 .. 5.6 k) between the yellow and the black wire**; D+/D-/GND as above,
+red VBUS still cut and taped (the port turns on 5 V once CC is terminated). Without it the Mac shows nothing. A
+USB-C to USB-A adapter or a hub on the computer side does this itself. On macOS the port is `/dev/cu.usbmodem*`.
 
 - **Boot into flash mode**: link pad 4 (BOOT) to pad 6 (3V3_SLEEP), then touch pad 5 (EN) to GND
   (pad 3) for a moment and let go. The ROM enumerates as `Bouffalo CDC` (349b:6160), `/dev/ttyACM0`.
@@ -141,7 +151,9 @@ make flash COMX=/dev/ttyACM0      # BL616 in flash mode (above); then remove the
 
 On an arm64 host the RISC-V toolchain (x86-64 only) runs in the `k230-rtos-sdk-build:arm64-x86tc`
 container from [firmware/BUILD.md](../../firmware/BUILD.md) section 2.2, which `make` starts; the
-SDK sits next to LEAKCAM (`~/k230d-hw/bouffalo_sdk`). Flashing runs natively (`BLFlashCommand-arm`).
+SDK sits next to LEAKCAM (`~/k230d-hw/bouffalo_sdk`). `make flash` runs in the same container with the
+x86-64 `BLFlashCommand-ubuntu` (the SDK's `BLFlashCommand-arm` is 32-bit armhf and does not start on an arm64-only
+host). Without the `dialout` group: `sudo setfacl -m u:$USER:rw /dev/ttyACM0` (again after each re-plug).
 
 Rails start **off**; nothing switches until you type. Commands:
 
