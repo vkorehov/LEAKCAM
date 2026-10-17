@@ -92,17 +92,20 @@ def outline(pcb):
     return pts
 
 
-def render(pcb, comps, points, out, region=None, px=PX, label="", gap=64):
-    """the probe points on the top side (all of them are there); returns {id: (label x, label y)}, gap = px between labels"""
+def render(pcb, comps, points, out, region=None, px=PX, label="", gap=64, side="top"):
+    """the probe points on one side (bottom: seen from below, mirrored); returns {id: (label x, label y)},
+    gap = px between labels"""
     pts = outline(pcb)
     xs, ys = [p[0] for p in pts], [p[1] for p in pts]
     x0, x1, y0, y1 = region or (min(xs), max(xs), min(ys), max(ys))
+    region = (x0, x1, y0, y1)
     PX = px
     W = int((x1 - x0) * PX) + 2 * MARGIN
     H = int((y1 - y0) * PX) + 160
 
     def P(x, y):
-        return MARGIN + (x - x0) * PX, 110 + (y1 - y) * PX
+        u = (x1 - x) if side == "bottom" else (x - x0)
+        return MARGIN + u * PX, 110 + (y1 - y) * PX
 
     img = Image.new("RGB", (W, H), "white")
     d = ImageDraw.Draw(img)
@@ -114,7 +117,7 @@ def render(pcb, comps, points, out, region=None, px=PX, label="", gap=64):
         font = big = small = ImageFont.load_default()
     d.polygon([P(x, y) for x, y in pts], fill=(232, 240, 228), outline=(40, 90, 40))
     inside = lambda x, y: x0 - 0.5 <= x <= x1 + 0.5 and y0 - 0.5 <= y <= y1 + 0.5
-    copper, silk = "top_layer", "top_overlay"
+    copper, silk = ("top_layer", "top_overlay") if side == "top" else ("bottom_layer", "bottom_overlay")
     pads, _ = features(pcb, copper)
     for x, y, shape, w, h, ang in pads:
         if not inside(x, y):
@@ -137,7 +140,7 @@ def render(pcb, comps, points, out, region=None, px=PX, label="", gap=64):
     # reference labels for the parts that matter here
     for ref in ("U1", "U3", "U5", "U6", "U7", "U8", "U10", "U11", "PR1", "USBC1", "USBC2", "JB1", "JB2"):
         cp = comps.get(ref)
-        if not cp or cp["side"] != "top":
+        if not cp or cp["side"] != side:
             continue
         if not all(inside(x, y) for x, y, _ in cp["pins"].values()):
             continue
@@ -147,7 +150,7 @@ def render(pcb, comps, points, out, region=None, px=PX, label="", gap=64):
     # probe points: a ring on the rail pad, a small ring on its GND pad, a numbered label at the
     # side nearer to the pad, at the pad's height (labels pushed apart so they do not overlap)
     pos = lambda key, p: P(*comps[p[key].split(".")[0]]["pins"][p[key].split(".")[1]][:2])
-    mine = [p for p in points if p["side"] == "top" and inside(*comps[p["pad"].split(".")[0]]["pins"][p["pad"].split(".")[1]][:2])]
+    mine = [p for p in points if p["side"] == side and inside(*comps[p["pad"].split(".")[0]]["pins"][p["pad"].split(".")[1]][:2])]
     left = sorted((p for p in mine if pos("pad", p)[0] < W / 2), key=lambda p: pos("pad", p)[1])
     right = sorted((p for p in mine if pos("pad", p)[0] >= W / 2), key=lambda p: pos("pad", p)[1])
     placed = {}
@@ -170,7 +173,7 @@ def render(pcb, comps, points, out, region=None, px=PX, label="", gap=64):
             d.text((x + 13, y - 13), str(p["id"]), fill=col, font=font, stroke_width=3, stroke_fill="white")
             d.text((lx, ly - 22), f"{p['id']}  {p['rail']}", fill=col, font=big)
             d.text((lx, ly + 8), f"+ {p['pad']}   GND {p['gnd']}", fill=(20, 20, 20), font=small)
-    title = f"MIFA rev 1 power bring-up, top side{label}"
+    title = f"MIFA rev 1 power bring-up, {side} side{' (seen from below)' if side == 'bottom' else ''}{label}"
     d.text((W / 2, 30), title, fill=(0, 0, 0), font=big, anchor="mm")
     d.text((W / 2, 64), "red ring = probe (+), black ring = GND for the black lead; numbers match testpoints.json and power_check.py",
            fill=(60, 60, 60), font=small, anchor="mm")
@@ -328,10 +331,10 @@ def render_hookup(pcb, comps, side, out):
     print("wrote", out)
 
 
-def render_points_sheet(pcb, comps, points, out, region, px, label, required, notes=()):
+def render_points_sheet(pcb, comps, points, out, region, px, label, required, notes=(), side="top"):
     """a test step's probe points only, zoomed, with the required reading under each label and notes under the
     picture (the sheets printed for the battery-only and charging tests)"""
-    placed = render(pcb, comps, points, out, region=region, px=px, label=label, gap=100)
+    placed = render(pcb, comps, points, out, region=region, px=px, label=label, gap=100, side=side)
     im = Image.open(out)
     W, H = im.size
     new = Image.new("RGB", (W + 330, H + 60 + 45 * len(notes)), "white")
@@ -571,6 +574,19 @@ def main():
                         ("Type pt_on in the BL616 console first (rails on, K230 held in reset); pt_off switches them off.",
                          "Any rail wrong, or a chip getting hot: pt_off (or unplug the battery) at once.",
                          "Black lead on the black ring (GND) next to each point; any GND pad works."))
+    # the K230 boot straps (BOOT0 = 1, BOOT1 = 0: SPI NAND), bottom side; not in testpoints.json (no rail)
+    straps = [{"id": "B0", "rail": "BOOT0", "pad": "R64.1", "gnd": "R31.2", "side": "bottom"},
+              {"id": "B1", "rail": "BOOT1", "pad": "R31.1", "gnd": "R31.2", "side": "bottom"}]
+    render_points_sheet(pcb, comps, straps, os.path.join(HERE, "boot_straps.png"), (30.0, 44.0, 12.0, 26.0), 60.0,
+                        ", K230 boot straps", {"B0": "~1.8 V (R64 to 1V8)", "B1": "~0 V (R31 to GND)"},
+                        ("K230 on (pt_on). BOOT0 = 1, BOOT1 = 0 selects SPI NAND (BPI K230D-Zero strap table).",
+                         "BOOT1 high: the ROM tries an SD card instead and falls back to USB."), side="bottom")
+    # the same two points on the whole bottom side, to find the spot (the zoom alone has no landmarks)
+    render_points_sheet(pcb, comps, straps, os.path.join(HERE, "boot_straps_board.png"), None, 22.0,
+                        ", K230 boot straps (where)", {"B0": "~1.8 V", "B1": "~0 V"},
+                        ("Bottom side, seen from below: camera connector J4 at the bottom edge, leak connector S1 left of it.",
+                         "The straps are the small resistor pair labelled R64: above the via field, left of R11 / D2, below R6 / R61."),
+                        side="bottom")
     render_ts_fix(pcb, comps, os.path.join(REPO, "bugs", "bug-001", "workaround_47k.png"))
     render_led_wiring(pcb, comps, os.path.join(HERE, "led_wiring.png"))
 

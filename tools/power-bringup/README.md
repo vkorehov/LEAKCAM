@@ -138,7 +138,15 @@ its CC wire). Probe points and required readings in `k230_rails.png`.
 
 | [k230_hello](k230_hello) from SRAM over USB (`make run`, nothing written to the NAND) | `LEAKCAM K230 hello: running from SRAM, hart 0`, then `status n=... mcycle=...` once a second (800 M cycles apart: the core runs at 800 MHz from the ROM); K230_ALIVE toggles in `pt_status` | pass |
 
-Result: all four K230 rails good, the K230 boots its ROM and runs our code from SRAM, the debug UART works; charging (bug-001) and USB-C attach with the rails on
+| Full image flashed to NAND (pad check OK), reset | ROM: `boot failed with exit code 13` (= file error in the boot medium, Canaan FAQ). BOOT1 read 0.5 V with IO27 parked; driven low now (`pt_boot1`), ~0 V: still 13 | **fail** |
+| Plain SPL (`fn_u-boot-spl.bin`) written over the EVB `swap_fn` one at offset 0 | `U-Boot SPL 2022.10`, DDR training `Firmware run has completed 2667`, `Winbond SPI NAND was found`, `OpenSBI v0.9`; then silent (K230_ALIVE static) | SPL + DDR pass; OpenSBI/RT-Smart open |
+
+Boot straps: [boot_straps_board.png](boot_straps_board.png) (where), [boot_straps.png](boot_straps.png) (zoom).
+`pt_boot1 high` + `pt_hold` + `pt_run` puts a flashed K230 into USB boot (the ROM tries an SD card, fails,
+and drops to USB): no B1 short needed for re-flashing.
+
+Result: all four K230 rails good, the K230 boots its ROM and runs our code from SRAM, the debug UART works;
+the SPL boots from NAND and DDR trains; OpenSBI stops after its first line; charging (bug-001) and USB-C attach with the rails on
 (bug-002) still open.
 
 ## 2. Debug port PR1 (bottom side)
