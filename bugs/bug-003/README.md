@@ -69,6 +69,6 @@ the 1.8 V input threshold (~0.65 x 1.8 V) after ~1.05 x RC = ~1 s, when the PMU 
 runs, so it sees a clean rising level and wakes. The K230 first touches the PMU after SPL + DDR training,
 ~1.5-2 s after reset, so the edge comes in time. 4.7 uF ~0.5 s, 22 uF ~2.3 s (too close to the first access).
 
-**Fallback:** the K230 must not touch the PMU: `BOARD_NOT_SUPPORT_HW_RTC`
-(64-pad pin table, no PMU RTC; as Canaan's ATK-DNK230D board does). The time then comes from the BL616 alone, which already sends it in its WAKE frame.
-Not applied yet: decided after the scope check.
+**Applied (2026-10-17): the K230 does not touch the PMU:** `BOARD_NOT_SUPPORT_HW_RTC`
+(64-pad pin table, no PMU RTC; as Canaan's ATK-DNK230D board does). The time then comes from the BL616 alone, which already sends it in its WAKE frame; the kernel uses the
+software RTC (`RT_USING_SOFT_RTC`). No rework, no extra boot time. The INT4 test above only confirms the cause.
