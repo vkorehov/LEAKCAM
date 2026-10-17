@@ -4,7 +4,8 @@
   python3 power_check.py off       power off: rail-to-GND resistance (shorts)
   python3 power_check.py blank     USB on, BL616 still blank: only VBAT and 3V3_SLEEP up
   python3 power_check.py flashed   BL616 flashed: K230_PWR high, all five regulators up
-  python3 power_check.py all       the three phases in order, stopping at the first failure
+  python3 power_check.py battery   battery on JB1, no USB: BAT, VBAT, 3V3_SLEEP up, the K230 rails off
+  python3 power_check.py all       the four phases in order, stopping at the first failure
 
 For each point it names the pads to probe (see top.png / top_power_zoom.png, numbers match),
 reads the value you type, checks it against testpoints.json and appends it to
@@ -18,13 +19,14 @@ import os
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ORDER = ("off", "blank", "flashed")
+ORDER = ("off", "blank", "flashed", "battery")
 STEPS = {
     "off": "Unplug USB and the battery. Black lead on the GND pad, red on the rail pad.",
     "blank": "Plug USB-C 1 (USBC1, the charger input), no battery. Do not connect PR1 yet.",
     "flashed": "Flash the BL616 through PR1 (firmware/BUILD.md section 4.3: BOOT held, EN pulsed,\n"
                "  make flash COMX=/dev/ttyACM0), release BOOT, pulse EN. Measure within the first\n"
                "  minutes: the first boot keeps the rails on while it waits for the K230.",
+    "battery": "Unplug USB. The cell on JB1 (README section 4), its voltage measured first.",
 }
 
 

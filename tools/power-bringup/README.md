@@ -41,18 +41,18 @@ BL616 IO30 = K230_PWR (R19 100k pull-down: low while the BL616 is blank)
 
 ### Limits
 
-| # | Rail | + pad | GND pad | off: ohms to GND | blank BL616 | rails on |
-|---|---|---|---|---|---|---|
-| 1 | VUSB | C2.1 | C2.2 | >= 20 | 4.75 .. 5.25 V | 4.75 .. 5.25 V |
-| 2 | BAT | C11.1 | C11.2 | >= 20 | (no battery) | (no battery) |
-| 3 | VBAT | C3.1 | C3.2 | >= 20 | 4.1 .. 4.6 V | 4.1 .. 4.6 V |
-| 4 | 3V3_SLEEP | C14.1 | C14.2 | >= 20 | 3.2 .. 3.4 V | 3.2 .. 3.4 V |
-| 5 | K230_PWR | R19.2 | R19.1 | | <= 0.3 V | 3.0 .. 3.4 V |
-| 6 | 0V8 | C18.1 | C18.2 | >= 2 | <= 0.1 V | 0.76 .. 0.84 V |
-| 7 | 3V3 | C87.1 | C87.2 | >= 20 | <= 0.1 V | 3.2 .. 3.4 V |
-| 8 | 1V8 | C89.1 | C89.2 | >= 10 | <= 0.1 V | 1.71 .. 1.85 V |
-| 9 | PG_1V8 | R28.1 | C89.2 | | | 3.0 .. 3.4 V |
-| 10 | 1V1 | C20.1 | C20.2 | >= 5 | <= 0.1 V | 1.05 .. 1.15 V |
+| # | Rail | + pad | GND pad | off: ohms to GND | blank BL616 | rails on | battery only |
+|---|---|---|---|---|---|---|---|
+| 1 | VUSB | C2.1 | C2.2 | >= 20 | 4.75 .. 5.25 V | 4.75 .. 5.25 V | <= 0.3 V |
+| 2 | BAT | C11.1 | C11.2 | >= 20 | (no battery) | (no battery) | the cell, 3.0 .. 4.25 V |
+| 3 | VBAT | C3.1 | C3.2 | >= 20 | 4.1 .. 4.6 V | 4.1 .. 4.6 V | BAT - ~0.1 V |
+| 4 | 3V3_SLEEP | C14.1 | C14.2 | >= 20 | 3.2 .. 3.4 V | 3.2 .. 3.4 V | 3.2 .. 3.4 V |
+| 5 | K230_PWR | R19.2 | R19.1 | | <= 0.3 V | 3.0 .. 3.4 V | <= 0.3 V |
+| 6 | 0V8 | C18.1 | C18.2 | >= 2 | <= 0.1 V | 0.76 .. 0.84 V | <= 0.1 V |
+| 7 | 3V3 | C87.1 | C87.2 | >= 20 | <= 0.1 V | 3.2 .. 3.4 V | <= 0.1 V |
+| 8 | 1V8 | C89.1 | C89.2 | >= 10 | <= 0.1 V | 1.71 .. 1.85 V | <= 0.1 V |
+| 9 | PG_1V8 | R28.1 | C89.2 | | | 3.0 .. 3.4 V | |
+| 10 | 1V1 | C20.1 | C20.2 | >= 5 | <= 0.1 V | 1.05 .. 1.15 V | <= 0.1 V |
 | 11 | RSTN | R30.2 | C23.2 | | | ~0 V (held) or ~1.8 V (released) |
 | 12 | 0V8_MIPI | C41.1 | C41.2 | | | 0.76 .. 0.84 V |
 | 13 | 1V8_MIPI | FB1.2 | C89.2 | | | 1.71 .. 1.85 V |
@@ -67,6 +67,9 @@ battery.
   the capacitors charge; take it after about 3 s. Below the minimum is a short: stop.
 - **blank**: USB on USB-C 1, no battery, nothing on PR1. R19 holds K230_PWR low, so only **VBAT and
   3V3_SLEEP** are up. Any K230 rail above 0.1 V means a regulator runs without its enable: stop.
+- **battery only** (`battery` in the script): USB unplugged, the cell on JB1. The charger passes the cell
+  to VBAT, so **BAT, VBAT and 3V3_SLEEP** are up and the K230 rails off (unless the BL616 firmware has
+  switched them on). VUSB reads ~0 V.
 - **rails on** (`flashed` in the script): with the test firmware, `pt_on` drives K230_PWR high and
   the chain brings up **0V8, then 3V3 and 1V8, then 1V1**. The product firmware does the same on
   its first boot. RSTN is ~0 V while the K230 is held in reset and ~1.8 V once released.
