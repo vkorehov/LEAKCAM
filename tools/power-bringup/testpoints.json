@@ -207,6 +207,49 @@
       "unit": "V",
       "hint": "Anything in the K230 group above 0.1 V means a rail is up without K230_PWR: stop and check U6/U8/U10/U7 enables."
     },
+    "battery": {
+      "title": "Battery on JB1, no USB: the always-on part runs from the cell, the K230 rails are off",
+      "check": {
+        "VUSB": [
+          null,
+          0.3
+        ],
+        "BAT": [
+          3.0,
+          4.25
+        ],
+        "VBAT": [
+          3.0,
+          4.25
+        ],
+        "3V3_SLEEP": [
+          3.2,
+          3.4
+        ],
+        "K230_PWR": [
+          null,
+          0.3
+        ],
+        "0V8": [
+          null,
+          0.1
+        ],
+        "3V3": [
+          null,
+          0.1
+        ],
+        "1V8": [
+          null,
+          0.1
+        ],
+        "1V1": [
+          null,
+          0.1
+        ]
+      },
+      "unit": "V",
+      "hint": "VBAT within ~0.1 V of BAT (the charger's battery switch). K230 rails above 0.1 V: the BL616 firmware has switched them on (fine if it is meant to), otherwise a regulator runs without its enable: stop."
+    },
     "flashed": {
       "title": "BL616 flashed (firmware/BUILD.md 4.3), EN pulsed: K230_PWR high, all five regulators up",
       "check": {
