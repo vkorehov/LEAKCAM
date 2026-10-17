@@ -136,7 +136,9 @@ its CC wire). Probe points and required readings in `k230_rails.png`.
 
 | Debug serial on USBC2 | `1a86:7523 CH340` on `/dev/ttyUSB0`; `pt_hold` + `pt_run`: the K230 ROM prints `boot failed with exit code 13` at 115200 (blank NAND) and enumerates again as `29f1:0230` | pass |
 
-Result: all four K230 rails good, the K230 boots its ROM, the debug UART works; charging (bug-001) and USB-C attach with the rails on
+| [k230_hello](k230_hello) from SRAM over USB (`make run`, nothing written to the NAND) | `LEAKCAM K230 hello: running from SRAM, hart 0`, then `status n=... mcycle=...` once a second (800 M cycles apart: the core runs at 800 MHz from the ROM); K230_ALIVE toggles in `pt_status` | pass |
+
+Result: all four K230 rails good, the K230 boots its ROM and runs our code from SRAM, the debug UART works; charging (bug-001) and USB-C attach with the rails on
 (bug-002) still open.
 
 ## 2. Debug port PR1 (bottom side)
@@ -196,6 +198,23 @@ The BL616 sees the switched 3V3 through the SDIO pull-ups (read as inputs only, 
 0V8 is implied (3V3's regulator is enabled by 0V8's power-good); 1V8 and 1V1 need the multimeter
 or `pt_run`. Each test can be left out: set it to 0 in
 [tests.h](bl616_powertest/tests.h) and rebuild.
+
+### K230 hello (no NAND needed)
+
+[k230_hello/](k230_hello): 0.8 KB of bare-metal RISC-V that the boot ROM loads into SRAM over USB-C 1 and runs:
+a status line per second on the debug UART (USB-C 2, `/dev/ttyUSB0`, 115200) and a heartbeat on K230_ALIVE.
+For checking a board's K230 before the NAND holds anything.
+
+```
+cd k230_hello
+make                 # builds in the K230 build container
+make run             # K230 in USB boot mode (29f1:0230; after pt_on + pt_run on a blank NAND)
+```
+
+In this state UART0 register reads return 0 (writes work), so the program paces characters by time rather
+than polling THRE. The flasher (`k230_flash_cli`) is x86-64 only; `make run` runs it in the build container
+with `timeout` inside the container: a `timeout` around `docker run` only kills the client and leaves the
+container holding the K230's USB.
 
 ## 4. Hand-soldered parts
 
