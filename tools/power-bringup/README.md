@@ -78,6 +78,19 @@ A rail at the wrong voltage, or a regulator that gets hot: power off at once. Th
 first boards showed U5 (3V3_SLEEP) and U6/U7 (0V8/1V1) slightly off their pads; these checks are
 what confirms or rules that out.
 
+### Test record: battery only, 2026-10-17
+
+Rev 1 board, the cell on JB1 (3.9 V), USB unplugged.
+
+| # | Rail | Measured | Limit | |
+|---|---|---|---|---|
+| 2 | BAT | ~3.9 V | the cell | pass |
+| 3 | VBAT | ~3.9 V | BAT - ~0.1 V | pass |
+| 4 | 3V3_SLEEP | 3.298 V | 3.2 .. 3.4 V (3.31 nominal) | pass |
+
+**Result: pass.** U5 (TPS63802) regulates from the battery. That is one of the parts the X-ray showed slightly
+off its pads, and it works. The charger U1 passes the cell to VBAT.
+
 ## 2. Debug port PR1 (bottom side)
 
 ![bottom side wiring](hookup_bottom.png)
