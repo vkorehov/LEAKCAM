@@ -80,7 +80,12 @@ what confirms or rules that out.
 
 ### Test record: battery only, 2026-10-17
 
-Rev 1 board, the cell on JB1 (3.9 V), USB unplugged.
+Rev 1 board, the cell on JB1 (3.9 V), USB unplugged. Wired from `hookup_battery.png` (the cells and the
+thermistor) and probed at the points in `battery_only.png`.
+
+| Wiring | Probe points |
+|---|---|
+| ![battery wiring](hookup_battery.png) | ![battery only](battery_only.png) |
 
 | # | Rail | Measured | Limit | |
 |---|---|---|---|---|
@@ -90,6 +95,24 @@ Rev 1 board, the cell on JB1 (3.9 V), USB unplugged.
 
 **Result: pass.** U5 (TPS63802) regulates from the battery. That is one of the parts the X-ray showed slightly
 off its pads, and it works. The charger U1 passes the cell to VBAT.
+
+### Test record: charging from USB-C 1, 2026-10-17
+
+The cell on JB1 (3.9 V) and the thermistor on JT, USB on USB-C 1. Probe points and required readings in
+`charging.png`: VUSB 4.75 .. 5.25 V, BAT above the cell and rising to 4.20 V, VBAT about 0.2 V above BAT,
+3V3_SLEEP 3.2 .. 3.4 V. The red LED D1 (bottom side, by U1) is on while the cell charges (U1 /CHG). The
+charger is set to about 0.89 A (ISET R7 1 k), with a 1.0 A input limit (ILIM R5 1.5 k) and a 6.3 h safety
+timer (TMR R21 47 k).
+
+![charging](charging.png)
+
+| # | Rail | Measured | Limit | |
+|---|---|---|---|---|
+| 1 | VUSB | (pending) | 4.75 .. 5.25 V | |
+| 2 | BAT | (pending) | above the cell, rising to 4.20 V | |
+| 3 | VBAT | (pending) | BAT + ~0.2 V | |
+| 4 | 3V3_SLEEP | (pending) | 3.2 .. 3.4 V | |
+| | D1 (charging) | (pending) | on, then off when full | |
 
 ## 2. Debug port PR1 (bottom side)
 
@@ -183,7 +206,7 @@ The wires, numbered in soldering order (made to print in black and white: white 
 
 #### Test record: rev 1 strips, 2026-10-16
 
-The four strips are wired as in the picture (IR chain J2 + > D > C > B > A > J2 -), and each whole chain was
+The four strips are wired as in `led_wiring.png` above (IR chain J2 + > D > C > B > A > J2 -), and each whole chain was
 checked from a bench supply, raised until the LEDs light.
 
 | Chain | LEDs in series | Lights from | Per LED | Running point (LED_STRIPS.txt) |
@@ -205,7 +228,8 @@ checked from a bench supply, raised until the LEDs light.
 
 - `testpoints.json`: probe pads and limits per phase
 - `power_check.py`: the interactive multimeter check, writes the CSV log
-- `render_testpoints.py`: redraws the five pictures here (`top.png`, `top_power_zoom.png`,
-  `hookup_top.png`, `hookup_bottom.png`, `led_wiring.png`) from the ODB++ of the ordered board (git
+- `render_testpoints.py`: redraws the pictures here: probe points (`top.png`, `top_power_zoom.png`), wiring
+  (`hookup_top.png`, `hookup_bottom.png`, `hookup_battery.png`, `led_wiring.png`) and the sheets used in the
+  test records (`battery_only.png`, `charging.png`) from the ODB++ of the ordered board (git
   `11a6a38`), and refuses to draw if a probe pad is not on the net the table says
 - `bl616_powertest/`: the BL616 test firmware
