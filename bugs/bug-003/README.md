@@ -28,8 +28,8 @@ Two differences from the BPI reference:
 
 **Next:** scope on Y1 with the K230 rails on (`pt_on`): ~32.768 kHz expected about 1 s after 1V8 comes up
 (the oscillator is analog, in the RTC domain; it needs no software). Probe XTAL_32K_OUT (Y1 pin 2 / C34) with a
-10x probe; a probe on XTAL_32K_IN can stop a 32 kHz crystal. No oscillation: check the crystal, its orientation
-and the load capacitors. Oscillating: the PMU wants its supply before the core (point 2).
+10x probe; a probe on XTAL_32K_IN can stop a 32 kHz crystal. No oscillation: check the crystal's solder joints
+and the load capacitors (a 2-pad 32 kHz crystal has no polarity). Oscillating: the PMU wants its supply before the core (point 2).
 
 ## Solution (rev 2)
 
