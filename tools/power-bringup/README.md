@@ -117,6 +117,26 @@ timer (TMR R21 47 k).
 Result: **fail, no charging**: [bug-001](../../bugs/bug-001/README.md) (U1 is the BQ24072T; its TS input has no
 internal bias, so the NTC alone reads "hot"). Retest after the workaround there.
 
+### Test record: K230 rails and K230 boot ROM, 2026-10-17
+
+The cell on JB1, the BL616 test firmware from section 3 on PR1 (console over USB, the PR1 cable with 6.7 k on
+its CC wire). Probe points and required readings in `k230_rails.png`.
+
+![K230 rails](k230_rails.png)
+
+| Step | Result | |
+|---|---|---|
+| `pt_status` (rails off) | K230 rails off, reset held; leak node 1649 mV dry; AHT20 53.9 %RH, 25.8 C | pass |
+| `pt_on` | `3V3 up 1.726 ms after K230_PWR` (estimate ~3 ms; soft start) | pass |
+| K230_PWR, 0V8, 3V3, 1V8, 1V1, RSTN, 0V8_MIPI, 1V8_MIPI, 1V8_DDR | all within the limits on the sheet (multimeter) | pass |
+| PG_1V8 | not probed (pad too small); implied: 1V1 is up and U7 only starts on PG_1V8 | pass |
+| `pt_off` | `3V3 gone 12 ms` (expected 56-82 ms through RD1/RD2: faster, to look at) | note |
+| USB-C 1 to a Mac with the rails on | VUSB ~2.2 V, the Mac never turns on VBUS: [bug-002](../../bugs/bug-002/README.md) | **fail** |
+| `pt_off`, cable in, `pt_on`, `pt_run` | VUSB 5 V (PGOOD low); the K230 ROM enumerates: `29f1:0230 Canaan K230 USB Boot Device` | pass |
+
+Result: all four K230 rails good and the K230 boots its ROM; charging (bug-001) and USB-C attach with the rails on
+(bug-002) still open.
+
 ## 2. Debug port PR1 (bottom side)
 
 ![bottom side wiring](hookup_bottom.png)
