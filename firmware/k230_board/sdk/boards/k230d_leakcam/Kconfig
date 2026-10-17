@@ -1,3 +1,7 @@
-# LEAKCAM board options: none. The hardware RTC (PMU, RT_USING_RTC_PMU in the kernel config) is
-# used, so BOARD_NOT_SUPPORT_HW_RTC stays unset and the pin mux has 72 entries (PMU pads
-# IO64-IO71 included).
+# LEAKCAM board options. The K230's PMU is not used (bugs/bug-003: on rev 1 it sits on the switched 1V8
+# and never wakes, and any access to it hangs the K230; the BL616 keeps the time anyway): no PMU RTC, and
+# the pin mux has 64 entries (PMU pads IO64-IO71 left alone).
+if BOARD_K230D_LEAKCAM
+    config BOARD_NOT_SUPPORT_HW_RTC
+        def_bool y
+endif

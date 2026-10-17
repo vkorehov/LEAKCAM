@@ -110,18 +110,6 @@ const board_pinmux_cfg_t board_pinmux_cfg[FPIOA_PIN_MAX_NUM] = {
 """
 
 FOOTER = """
-#if FPIOA_PIN_MAX_NUM > 64   /* 72 with the PMU RTC in use */
-    /* PMU IO: not used on LEAKCAM (INT4 is the R45 cold-start pull-up), left as GPIO like
-     * Canaan's K230D boards */
-    [64] = PMU_GPIO(GPIO64),
-    [65] = PMU_GPIO(GPIO65),
-    [66] = PMU_GPIO(GPIO66),
-    [67] = PMU_GPIO(GPIO67),
-    [68] = PMU_GPIO(GPIO68),
-    [69] = PMU_GPIO(GPIO69),
-    [70] = PMU_GPIO(GPIO70),
-    [71] = PMU_GPIO(GPIO71),
-#endif
 };
 /* clang-format on */
 
