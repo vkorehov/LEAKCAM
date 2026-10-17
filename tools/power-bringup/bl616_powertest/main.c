@@ -18,6 +18,9 @@
  * I2C    pt_i2c [scan]     AHT20 reading (0x38), or a scan of the whole bus (IO28/IO29, 3V3_SLEEP)
  * USB    pt_usb            USB cable on USB-C 1 (BQ24072 PGOOD); plugging and unplugging is reported
  * LEAK   pt_leak           probe node (IO20, ADC) and the probe resistance across S1..S3
+ * BOOT1  pt_boot1 low|high|park   IO27 -> RBT1 10k -> K230 BOOT1. Low at start: with IO27 parked, BOOT1 read
+ *                          0.5 V on rev 1 (2026-10-17), at the 1.8 V bank's VIL, and the ROM did not boot the
+ *                          NAND. High = the ROM's SD-card path, which fails into USB boot (re-flashing).
  */
 #include <stdbool.h>
 #include <stdint.h>
@@ -47,7 +50,7 @@
 #include "bflb_adc.h"
 #endif
 
-#define PIN_BOOT1_FORCE   GPIO_PIN_27              /* IO27 -> RBT1 10k -> K230 BOOT1: left parked */
+#define PIN_BOOT1_FORCE   GPIO_PIN_27              /* IO27 -> RBT1 10k -> K230 BOOT1: driven low (NAND boot) */
 
 static struct bflb_device_s *gpio;
 static SemaphoreHandle_t hw;                       /* commands and the monitor share the peripherals */
@@ -59,6 +62,10 @@ static void park(uint8_t pin)
     /* analog: no output, no input buffer (a half-powered pull-up cannot cause shoot-through) */
     bflb_gpio_init(gpio, pin, GPIO_ANALOG | GPIO_FLOAT | GPIO_DRV_0);
 }
+
+enum boot1_mode { BOOT1_LOW, BOOT1_HIGH, BOOT1_PARK };
+static enum boot1_mode boot1 = BOOT1_PARK;
+static const char *const boot1_name[] = { "low (NAND boot)", "HIGH (ROM tries SD, then USB boot)", "parked (floating)" };
 
 /* ---------------------------------------------------------------- K230 power ---- */
 static const uint8_t sense_pins[] = { PIN_SD_D0, PIN_SD_D1, PIN_SD_D2, PIN_SD_D3, PIN_SD_CMD };
@@ -273,6 +280,7 @@ static void print_status(bool line)
 #endif
     printf("K230_PWR    : %s\r\n", rails_on ? "HIGH (rails commanded on)" : "low (rails off)");
     printf("K230 reset  : %s\r\n", reset_held ? "held (Q4 on)" : "released");
+    printf("K230 BOOT1  : IO27 %s\r\n", boot1_name[boot1]);
     printf("3V3 switched: %s (%u of %u SDIO pull-ups high; K230_ALIVE %s)\r\n",
            n >= SENSE_UP ? "UP" : n == 0 ? "off" : "PARTIAL - check", n, SENSE_ALL,
            bflb_gpio_read(gpio, PIN_K230_ALIVE) ? "high" : "low");
@@ -501,7 +509,7 @@ static void background_task(void *arg)
         if (console_open && !shown) {
             vTaskDelay(pdMS_TO_TICKS(300));
             printf("\r\nLEAKCAM BL616 board test, " __DATE__ " " __TIME__ "\r\n"
-                   "commands: pt_status pt_mon"
+                   "commands: pt_status pt_mon pt_boot1"
 #if PT_TEST_POWER
                    " pt_on pt_off pt_run pt_hold pt_cycle"
 #endif
@@ -560,6 +568,39 @@ static void background_task(void *arg)
     }
 }
 
+static void boot1_set(enum boot1_mode m)
+{
+    if (m == BOOT1_PARK) {
+        park(PIN_BOOT1_FORCE);
+    } else {
+        bflb_gpio_init(gpio, PIN_BOOT1_FORCE, GPIO_OUTPUT | GPIO_FLOAT | GPIO_DRV_0);
+        if (m == BOOT1_HIGH)
+            bflb_gpio_set(gpio, PIN_BOOT1_FORCE);
+        else
+            bflb_gpio_reset(gpio, PIN_BOOT1_FORCE);
+    }
+    boot1 = m;
+}
+
+static int cmd_boot1(int argc, char **argv)
+{
+    if (argc > 1) {
+        if (!strcmp(argv[1], "low"))
+            boot1_set(BOOT1_LOW);
+        else if (!strcmp(argv[1], "high"))
+            boot1_set(BOOT1_HIGH);
+        else if (!strcmp(argv[1], "park"))
+            boot1_set(BOOT1_PARK);
+        else {
+            printf("usage: pt_boot1 low|high|park\r\n");
+            return -1;
+        }
+    }
+    printf("K230 BOOT1  : IO27 %s; the ROM reads it at reset (pt_hold, pt_run)\r\n", boot1_name[boot1]);
+    return 0;
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_boot1, pt_boot1, K230 BOOT1 strap: low | high | park);
+
 static void pins_init(void)
 {
     gpio = bflb_device_get_by_name("gpio");
@@ -573,7 +614,7 @@ static void pins_init(void)
     park(PIN_LINK_TX);
     park(PIN_LINK_RX);
     park(PIN_SD_CLK);
-    park(PIN_BOOT1_FORCE);
+    boot1_set(BOOT1_LOW);
     park(PIN_LEAK_SENS);           /* 1.65 V dry: between VIL and VIH, analog only */
     for (unsigned i = 0; i < SENSE_ALL; i++)
         bflb_gpio_init(gpio, sense_pins[i], GPIO_INPUT | GPIO_FLOAT | GPIO_SMT_EN);
