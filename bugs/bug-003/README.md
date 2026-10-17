@@ -60,6 +60,16 @@ supply (a small LDO from VBAT, as the BPI board does from VBUS), up before the c
 
 ## Workaround (rev 1 boards)
 
-The K230 must not touch the PMU: `BOARD_NOT_SUPPORT_HW_RTC` (64-pad pin table, no PMU RTC; as Canaan's
+**Test first (no parts):** `pt_on` (K230 held in reset), wait 5 s, short INT4 (R45's pad on the K230 side) to GND
+for ~1 s, let go, then `pt_run`. Booting past the PMU = the power-up-order theory holds. Where:
+[int4_edge_board.png](int4_edge_board.png), zoom [int4_edge.png](int4_edge.png). R45's other pad is 1V8: never short it.
+
+**Fix: delay INT4 with a capacitor.** 10 uF from INT4 (R45's K230-side pad) to GND: with R45 (100 k) INT4 crosses
+the 1.8 V input threshold (~0.65 x 1.8 V) after ~1.05 x RC = ~1 s, when the PMU is powered and its 32 kHz clock
+runs, so it sees a clean rising level and wakes. The K230 first touches the PMU after SPL + DDR training,
+~1.5-2 s after reset, so the edge comes in time. 4.7 uF ~0.5 s, 22 uF ~2.3 s (too close to the first access).
+
+**Fallback:** the K230 must not touch the PMU: `BOARD_NOT_SUPPORT_HW_RTC`
+ (64-pad pin table, no PMU RTC; as Canaan's
 ATK-DNK230D board does). The time then comes from the BL616 alone, which already sends it in its WAKE frame.
 Not applied yet: decided after the scope check.

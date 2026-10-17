@@ -587,6 +587,17 @@ def main():
                         ("Bottom side, seen from below: camera connector J4 at the bottom edge, leak connector S1 left of it.",
                          "The straps are the small resistor pair labelled R64: above the via field, left of R11 / D2, below R6 / R61."),
                         side="bottom")
+    # bug-003 test: a rising edge on the K230 PMU's INT4 (R45 100k to 1V8) while the K230 is powered and held in reset
+    int4 = [{"id": "I4", "rail": "INT4", "pad": "R45.1", "gnd": "R48.2", "side": "bottom"}]
+    int4_req = {"I4": "~1.8 V (then short to GND 1 s)"}
+    int4_notes = ("pt_on (K230 held in reset), wait 5 s, touch INT4 (R45 pad on the K230 side) to GND for ~1 s, let go,",
+                  "then pt_run: the PMU should wake on that rising edge (bugs/bug-003). The other R45 pad is 1V8: never short it.")
+    render_points_sheet(pcb, comps, int4, os.path.join(REPO, "bugs", "bug-003", "int4_edge.png"), (37.0, 47.0, 16.5, 25.0),
+                        70.0, ", K230 PMU INT4 (bug-003)", int4_req, int4_notes, side="bottom")
+    render_points_sheet(pcb, comps, int4, os.path.join(REPO, "bugs", "bug-003", "int4_edge_board.png"), None, 22.0,
+                        ", K230 PMU INT4 (where)", int4_req,
+                        ("Bottom side, seen from below: camera connector J4 at the bottom edge. R45 sits right of the boot",
+                         "straps (R64 pair), above the K230 via field, left of R11 / D2."), side="bottom")
     render_ts_fix(pcb, comps, os.path.join(REPO, "bugs", "bug-001", "workaround_47k.png"))
     render_led_wiring(pcb, comps, os.path.join(HERE, "led_wiring.png"))
 
