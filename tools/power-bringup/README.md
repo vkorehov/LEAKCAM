@@ -134,7 +134,9 @@ its CC wire). Probe points and required readings in `k230_rails.png`.
 | USB-C 1 to a Mac with the rails on | VUSB ~2.2 V, the Mac never turns on VBUS: [bug-002](../../bugs/bug-002/README.md) | **fail** |
 | `pt_off`, cable in, `pt_on`, `pt_run` | VUSB 5 V (PGOOD low); the K230 ROM enumerates: `29f1:0230 Canaan K230 USB Boot Device` | pass |
 
-Result: all four K230 rails good and the K230 boots its ROM; charging (bug-001) and USB-C attach with the rails on
+| Debug serial on USBC2 | `1a86:7523 CH340` on `/dev/ttyUSB0`; `pt_hold` + `pt_run`: the K230 ROM prints `boot failed with exit code 13` at 115200 (blank NAND) and enumerates again as `29f1:0230` | pass |
+
+Result: all four K230 rails good, the K230 boots its ROM, the debug UART works; charging (bug-001) and USB-C attach with the rails on
 (bug-002) still open.
 
 ## 2. Debug port PR1 (bottom side)
