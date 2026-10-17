@@ -31,10 +31,32 @@ Two differences from the BPI reference:
 10x probe; a probe on XTAL_32K_IN can stop a 32 kHz crystal. No oscillation: check the crystal's solder joints
 and the load capacitors (a 2-pad 32 kHz crystal has no polarity). Oscillating: the PMU wants its supply before the core (point 2).
 
+## What the documents say (checked 2026-10-17)
+
+- **PMU User Guide:** "be sure to wake up the PMU module through any INT, otherwise the kernel will be stuck when
+  initializing the driver" - this symptom exactly.
+- **Hardware Design Guide (dev):** on a cold start the PMU only enables "the long press interrupt of INT0 and the
+  high-level input interrupt of INT4"; "INT4 needs to be pulled up to the PMU power supply"; "AVDD1P8_RTC must not
+  be powered up later than AVDD1P8_LDO" (met: same net); 32.768 kHz, 20 ppm, 1.8 V.
+- **Crystal:** `Q13FC13500004` = FC-135, CL 12.5 pF, ESR <= 70 kOhm, +-20 ppm. C33/C34 2 x 20 pF = 10 pF + ~2-4 pF
+  stray: matches. Same part and caps as the BL616's Y3, whose RTC runs.
+- No public report of the same hang found; every Canaan/community board found powers the PMU always-on.
+
+| | LEAKCAM rev 1 | BPI K230D-Zero |
+|---|---|---|
+| INT4 (F14) | R45 100 k to switched 1V8 | pull-up to VDD_1V8_RTC (always on) |
+| AVDD1P8_RTC/LDO (D12/D11) | switched 1V8 | VDD_1V8_RTC (always-on LDO) |
+| OUT0 / OUT1 | not connected | OUT0 drives a regulator enable |
+
+**Leading theory:** INT4, the PMU supply and the core all rise together from the switched 1V8, so the PMU never
+sees INT4 as a wake event (no edge, or sampled before its 32 kHz clock runs), stays asleep, and the first register
+access blocks. Scope check: Y1 (XTAL_32K_OUT) oscillating and INT4 at 1.8 V with the rails on = crystal cleared,
+cause = power-up order.
+
 ## Solution (rev 2)
 
-To be decided by the cause: crystal/load-capacitor fix, or AVDD1P8_RTC/LDO on an always-on 1.8 V supply
-(e.g. a small LDO from VBAT, as the BPI board does from VBUS).
+To be decided by the scope check. Most likely: AVDD1P8_RTC/LDO and the INT4 pull-up on an always-on 1.8 V
+supply (a small LDO from VBAT, as the BPI board does from VBUS), up before the core rails.
 
 ## Workaround (rev 1 boards)
 
