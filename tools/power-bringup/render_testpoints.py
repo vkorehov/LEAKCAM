@@ -2,7 +2,8 @@
 """Draw the power bring-up probe points on the MIFA board, from the fab ODB++.
 
   python3 render_testpoints.py [MIFA.tgz | git revision]   -> top.png, top_power_zoom.png,
-      hookup_top.png, hookup_bottom.png, led_wiring.png next to this script
+      hookup_top.png, hookup_bottom.png, hookup_battery.png, led_wiring.png, battery_only.png,
+      charging.png next to this script
 
 Reads "Project Outputs for LEAKCAM/MIFA.tgz" as committed in the fab package of the ordered board
 (git 11a6a38, rev 1; the working tree may already hold later layout changes) by default, checks
@@ -324,6 +325,32 @@ def render_hookup(pcb, comps, side, out):
     print("wrote", out)
 
 
+def render_points_sheet(pcb, comps, points, out, region, px, label, required, notes=()):
+    """a test step's probe points only, zoomed, with the required reading under each label and notes under the
+    picture (the sheets printed for the battery-only and charging tests)"""
+    x0, x1, y0, y1 = region
+    render(pcb, comps, points, out, region=region, px=px, label=label)
+    im = Image.open(out)
+    W, H = im.size
+    new = Image.new("RGB", (W + 330, H + 60 + 45 * len(notes)), "white")
+    new.paste(im, (0, 0))
+    d = ImageDraw.Draw(new)
+    try:
+        fb = ImageFont.truetype("DejaVuSans-Bold.ttf", 26)
+        f = ImageFont.truetype("DejaVuSans.ttf", 26)
+    except OSError:
+        fb = f = ImageFont.load_default()
+    for p in points:
+        ref, pn = p["pad"].split(".")
+        x, y = comps[ref]["pins"][pn][:2]
+        px_, py_ = MARGIN + (x - x0) * px, 110 + (y1 - y) * px
+        lx = 18 if px_ < W / 2 else W - MARGIN + 30
+        d.text((lx, py_ + 32), "required " + required[p["id"]], fill=(0, 0, 0), font=fb, stroke_width=5, stroke_fill="white")
+    for i, line in enumerate(notes):
+        d.text((20, H + 30 + i * 45), line, fill=(0, 0, 0), font=f)
+    new.save(out)
+
+
 def render_led_wiring(pcb, comps, out):
     """the LED strip wires on the top side, for printing in black and white: white chain solid, IR dashed,
     each wire in its own lane (white above the pad rows, IR below, the long ones further out) and every
@@ -480,6 +507,18 @@ def main():
            px=55.0, label=", power corner (zoom)")
     for side in ("top", "bottom"):
         render_hookup(pcb, comps, side, os.path.join(HERE, f"hookup_{side}.png"))
+    # the battery and NTC corner of hookup_top.png, enlarged: the sheet printed for wiring the cells
+    Image.open(os.path.join(HERE, "hookup_top.png")).crop((1560, 740, 2320, 1360)).resize((1520, 1240)).save(
+        os.path.join(HERE, "hookup_battery.png"))
+    by_id = {p["id"]: p for p in points}
+    render_points_sheet(pcb, comps, [by_id[i] for i in (2, 3, 4)], os.path.join(HERE, "battery_only.png"),
+                        (49.0, 60.5, 28.0, 40.0), 80.0, ", battery only (no USB): 3 points",
+                        {2: "the cell, 3.0 - 4.25 V", 3: "BAT - ~0.1 V", 4: "3.2 - 3.4 V"})
+    render_points_sheet(pcb, comps, [by_id[i] for i in (1, 2, 3, 4)], os.path.join(HERE, "charging.png"),
+                        (48.0, 60.5, 23.5, 40.0), 70.0, ", charging from USB-C 1",
+                        {1: "4.75 - 5.25 V", 2: "> the cell, rising to 4.20 V", 3: "BAT + ~0.2 V (4.1 - 4.4 V)", 4: "3.2 - 3.4 V"},
+                        ("Charging: the red LED D1 (bottom side, under U1's left edge) is on; it goes out when the cell is full.",
+                         "Charge current ~0.89 A. U1 gets warm (~1 W). Cell hot (> 45 C) or swelling: unplug USB at once."))
     render_led_wiring(pcb, comps, os.path.join(HERE, "led_wiring.png"))
 
 
