@@ -3,7 +3,7 @@
 
   python3 render_testpoints.py [MIFA.tgz | git revision]   -> top.png, top_power_zoom.png,
       hookup_top.png, hookup_bottom.png, hookup_battery.png, hookup_debug.png, led_wiring.png, battery_only.png,
-      charging.png next to this script, and bugs/bug-001/workaround_47k.png
+      charging.png, k230_rails.png next to this script, and bugs/bug-001/workaround_47k.png
 
 Reads "Project Outputs for LEAKCAM/MIFA.tgz" as committed in the fab package of the ordered board
 (git 11a6a38, rev 1; the working tree may already hold later layout changes) by default, checks
@@ -92,8 +92,8 @@ def outline(pcb):
     return pts
 
 
-def render(pcb, comps, points, out, region=None, px=PX, label=""):
-    """the probe points on the top side (all of them are there)"""
+def render(pcb, comps, points, out, region=None, px=PX, label="", gap=64):
+    """the probe points on the top side (all of them are there); returns {id: (label x, label y)}, gap = px between labels"""
     pts = outline(pcb)
     xs, ys = [p[0] for p in pts], [p[1] for p in pts]
     x0, x1, y0, y1 = region or (min(xs), max(xs), min(ys), max(ys))
@@ -150,15 +150,17 @@ def render(pcb, comps, points, out, region=None, px=PX, label=""):
     mine = [p for p in points if p["side"] == "top" and inside(*comps[p["pad"].split(".")[0]]["pins"][p["pad"].split(".")[1]][:2])]
     left = sorted((p for p in mine if pos("pad", p)[0] < W / 2), key=lambda p: pos("pad", p)[1])
     right = sorted((p for p in mine if pos("pad", p)[0] >= W / 2), key=lambda p: pos("pad", p)[1])
+    placed = {}
     for group, lx in ((left, 18), (right, W - MARGIN + 30)):
         ys_ = [min(max(pos("pad", p)[1], 120), H - 60) for p in group]
-        for _ in range(50):                     # relax: keep 64 px between labels
+        for _ in range(200):                    # relax: keep gap px between labels
             for k in range(1, len(ys_)):
-                if ys_[k] - ys_[k - 1] < 64:
+                if ys_[k] - ys_[k - 1] < gap:
                     m = (ys_[k] + ys_[k - 1]) / 2
-                    ys_[k - 1], ys_[k] = m - 32, m + 32
+                    ys_[k - 1], ys_[k] = m - gap / 2, m + gap / 2
             ys_ = [min(max(v, 120), H - 60) for v in ys_]
         for p, ly in zip(group, ys_):
+            placed[p["id"]] = (lx, ly)
             x, y = pos("pad", p)
             gx, gy = pos("gnd", p)
             col = (200, 30, 30)
@@ -174,6 +176,7 @@ def render(pcb, comps, points, out, region=None, px=PX, label=""):
            fill=(60, 60, 60), font=small, anchor="mm")
     img.save(out)
     print("wrote", out, f"({len(mine)} probe points)")
+    return placed
 
 
 def render_hookup(pcb, comps, side, out):
@@ -328,8 +331,7 @@ def render_hookup(pcb, comps, side, out):
 def render_points_sheet(pcb, comps, points, out, region, px, label, required, notes=()):
     """a test step's probe points only, zoomed, with the required reading under each label and notes under the
     picture (the sheets printed for the battery-only and charging tests)"""
-    x0, x1, y0, y1 = region
-    render(pcb, comps, points, out, region=region, px=px, label=label)
+    placed = render(pcb, comps, points, out, region=region, px=px, label=label, gap=100)
     im = Image.open(out)
     W, H = im.size
     new = Image.new("RGB", (W + 330, H + 60 + 45 * len(notes)), "white")
@@ -341,11 +343,8 @@ def render_points_sheet(pcb, comps, points, out, region, px, label, required, no
     except OSError:
         fb = f = ImageFont.load_default()
     for p in points:
-        ref, pn = p["pad"].split(".")
-        x, y = comps[ref]["pins"][pn][:2]
-        px_, py_ = MARGIN + (x - x0) * px, 110 + (y1 - y) * px
-        lx = 18 if px_ < W / 2 else W - MARGIN + 30
-        d.text((lx, py_ + 32), "required " + required[p["id"]], fill=(0, 0, 0), font=fb, stroke_width=5, stroke_fill="white")
+        lx, ly = placed[p["id"]]
+        d.text((lx, ly + 28), "required " + required[p["id"]], fill=(0, 0, 0), font=fb, stroke_width=5, stroke_fill="white")
     for i, line in enumerate(notes):
         d.text((20, H + 30 + i * 45), line, fill=(0, 0, 0), font=f)
     new.save(out)
@@ -564,6 +563,14 @@ def main():
                         {1: "4.75 - 5.25 V", 2: "> the cell, rising to 4.20 V", 3: "BAT + ~0.2 V (4.1 - 4.4 V)", 4: "3.2 - 3.4 V"},
                         ("Charging: the red LED D1 (bottom side, under U1's left edge) is on; it goes out when the cell is full.",
                          "Charge current ~0.89 A. U1 gets warm (~1 W). Cell hot (> 45 C) or swelling: unplug USB at once."))
+    render_points_sheet(pcb, comps, [by_id[i] for i in range(5, 15)], os.path.join(HERE, "k230_rails.png"),
+                        (37.0, 60.5, 9.0, 48.5), 34.0, ", K230 rails after pt_on",
+                        {5: "3.0 - 3.4 V", 6: "0.76 - 0.84 V", 7: "3.2 - 3.4 V", 8: "1.71 - 1.85 V", 9: "3.0 - 3.4 V",
+                         10: "1.05 - 1.15 V", 11: "~0 V (reset held)", 12: "0.76 - 0.84 V", 13: "1.71 - 1.85 V",
+                         14: "1.71 - 1.85 V"},
+                        ("Type pt_on in the BL616 console first (rails on, K230 held in reset); pt_off switches them off.",
+                         "Any rail wrong, or a chip getting hot: pt_off (or unplug the battery) at once.",
+                         "Black lead on the black ring (GND) next to each point; any GND pad works."))
     render_ts_fix(pcb, comps, os.path.join(REPO, "bugs", "bug-001", "workaround_47k.png"))
     render_led_wiring(pcb, comps, os.path.join(HERE, "led_wiring.png"))
 
