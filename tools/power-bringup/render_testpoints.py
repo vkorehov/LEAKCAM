@@ -2,8 +2,8 @@
 """Draw the power bring-up probe points on the MIFA board, from the fab ODB++.
 
   python3 render_testpoints.py [MIFA.tgz | git revision]   -> top.png, top_power_zoom.png,
-      hookup_top.png, hookup_bottom.png, hookup_battery.png, led_wiring.png, battery_only.png,
-      charging.png next to this script
+      hookup_top.png, hookup_bottom.png, hookup_battery.png, hookup_debug.png, led_wiring.png, battery_only.png,
+      charging.png next to this script, and bugs/bug-001/workaround_47k.png
 
 Reads "Project Outputs for LEAKCAM/MIFA.tgz" as committed in the fab package of the ordered board
 (git 11a6a38, rev 1; the working tree may already hold later layout changes) by default, checks
@@ -351,6 +351,48 @@ def render_points_sheet(pcb, comps, points, out, region, px, label, required, no
     new.save(out)
 
 
+def render_ts_fix(pcb, comps, out):
+    """the rev 1 charging workaround (bugs/bug-001): U1 is the BQ24072T, whose TS has no internal bias; one leaded 47 k
+    from VUSB (C2 pad 1) to TS (JT pin 1) biases the NTC into the charge window"""
+    region = (50.5, 60.6, 23.0, 31.5)
+    x0, x1, y0, y1 = region
+    px = 90.0
+    render(pcb, comps, [], out, region=region, px=px, label=", charging fix: 47 k VUSB - TS")
+    im = Image.open(out)
+    W, H = im.size
+    notes = ("Fit a leaded 47 k (1/4 W, 1 % or 5 %) from C2 pad 1 (VUSB) to JT pin 1 (TS); NTC stays on JT.",
+             "C2 pad 2 next to it is GND: solder on the outer end of pad 1 only, sleeve the lead.",
+             "Check with USB in: TS (JT 1 to JT 2) ~0.9 V at 25 C; charging between 0.65 and 1.3 V (14 - 36 C, B3435).",
+             "Then BAT rises from the cell voltage and D1 stays on until the cell is full.")
+    new = Image.new("RGB", (W, H + 60 + 45 * len(notes)), "white")
+    new.paste(im, (0, 0))
+    d = ImageDraw.Draw(new)
+    d.rectangle((420, 54, W - 420, 74), fill=(232, 240, 228))  # no probe rings here: drop render()'s legend
+    try:
+        fb = ImageFont.truetype("DejaVuSans-Bold.ttf", 26)
+        f = ImageFont.truetype("DejaVuSans.ttf", 26)
+    except OSError:
+        fb = f = ImageFont.load_default()
+    P = lambda x, y: (MARGIN + (x - x0) * px, 110 + (y1 - y) * px)
+    pin = lambda ref, n: P(*comps[ref]["pins"][n][:2])
+    vusb, ts, gnd = pin("C2", "1"), pin("JT", "1"), pin("JT", "2")
+    # the resistor drawn above the board between its two pads: leads down to the pads, body in the middle
+    lift = 150
+    a, b = (vusb[0], vusb[1] - lift), (ts[0], ts[1] - lift)
+    d.line((vusb, a, b, ts), fill=(0, 0, 0), width=5, joint="curve")
+    mx, my = (a[0] + b[0]) / 2, a[1] + (b[1] - a[1]) / 2
+    d.rounded_rectangle((mx - 90, my - 26, mx + 90, my + 26), radius=12, fill=(255, 255, 255), outline=(0, 0, 0), width=4)
+    d.text((mx, my), "47 k", fill=(0, 0, 0), font=fb, anchor="mm")
+    for q, lab, anchor, dx in ((vusb, "C2 pad 1 = VUSB", "rm", -60), (ts, "JT 1 = TS", "lm", 60), (gnd, "JT 2 = GND", "lm", 60)):
+        d.ellipse((q[0] - 11, q[1] - 11, q[0] + 11, q[1] + 11), outline=(0, 0, 0), width=4)
+        d.text((q[0] + dx, q[1] + 45), lab, fill=(0, 0, 0), font=fb, anchor=anchor, stroke_width=5, stroke_fill="white")
+    g2 = pin("C2", "2")
+    d.text((g2[0] + 20, g2[1] + 45), "pad 2 = GND", fill=(0, 0, 0), font=fb, anchor="lm", stroke_width=5, stroke_fill="white")
+    for i, line in enumerate(notes):
+        d.text((20, H + 30 + i * 45), line, fill=(0, 0, 0), font=f)
+    new.save(out)
+
+
 def render_led_wiring(pcb, comps, out):
     """the LED strip wires on the top side, for printing in black and white: white chain solid, IR dashed,
     each wire in its own lane (white above the pad rows, IR below, the long ones further out) and every
@@ -510,6 +552,9 @@ def main():
     # the battery and NTC corner of hookup_top.png, enlarged: the sheet printed for wiring the cells
     Image.open(os.path.join(HERE, "hookup_top.png")).crop((1560, 740, 2320, 1360)).resize((1520, 1240)).save(
         os.path.join(HERE, "hookup_battery.png"))
+    # the PR1 corner of hookup_bottom.png with the USB cable, enlarged: the sheet printed for wiring the debug cable
+    Image.open(os.path.join(HERE, "hookup_bottom.png")).crop((820, 360, 2290, 790)).resize((2058, 602)).save(
+        os.path.join(HERE, "hookup_debug.png"))
     by_id = {p["id"]: p for p in points}
     render_points_sheet(pcb, comps, [by_id[i] for i in (2, 3, 4)], os.path.join(HERE, "battery_only.png"),
                         (49.0, 60.5, 28.0, 40.0), 80.0, ", battery only (no USB): 3 points",
@@ -519,6 +564,7 @@ def main():
                         {1: "4.75 - 5.25 V", 2: "> the cell, rising to 4.20 V", 3: "BAT + ~0.2 V (4.1 - 4.4 V)", 4: "3.2 - 3.4 V"},
                         ("Charging: the red LED D1 (bottom side, under U1's left edge) is on; it goes out when the cell is full.",
                          "Charge current ~0.89 A. U1 gets warm (~1 W). Cell hot (> 45 C) or swelling: unplug USB at once."))
+    render_ts_fix(pcb, comps, os.path.join(REPO, "bugs", "bug-001", "workaround_47k.png"))
     render_led_wiring(pcb, comps, os.path.join(HERE, "led_wiring.png"))
 
 
