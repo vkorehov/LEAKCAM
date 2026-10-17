@@ -70,6 +70,5 @@ runs, so it sees a clean rising level and wakes. The K230 first touches the PMU 
 ~1.5-2 s after reset, so the edge comes in time. 4.7 uF ~0.5 s, 22 uF ~2.3 s (too close to the first access).
 
 **Fallback:** the K230 must not touch the PMU: `BOARD_NOT_SUPPORT_HW_RTC`
- (64-pad pin table, no PMU RTC; as Canaan's
-ATK-DNK230D board does). The time then comes from the BL616 alone, which already sends it in its WAKE frame.
+(64-pad pin table, no PMU RTC; as Canaan's ATK-DNK230D board does). The time then comes from the BL616 alone, which already sends it in its WAKE frame.
 Not applied yet: decided after the scope check.
