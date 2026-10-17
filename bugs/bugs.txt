@@ -4,3 +4,4 @@ One folder per bug: bugs/bug-NNN/README.md (symptom, cause, solution, workaround
 ID       Found       Status                     Title
 bug-001  2026-10-17  open, workaround on bench  U1 is BQ24072T: battery never charges (TS has no bias)
 bug-002  2026-10-17  open, cause to confirm     K230 rails on: ~2.2 V back-fed into VUSB, USB-C hosts never turn on VBUS
+bug-003  2026-10-17  open, scope check next     K230 PMU block hangs on any access: RT-Smart stops at pin mux (IO64) / RTC
