@@ -10,6 +10,7 @@ Readings: [tools/power-bringup/README.md](../../tools/power-bringup/README.md).
 5. [K230 NAND flashing](05-k230-nand-flashing.md)
 6. [K230 NAND boot (SPL)](06-k230-nand-boot-spl.md)
 7. [RT-Smart boot](07-k230-rtsmart-boot.md)
+8. [LED chains](08-led-chains.md)
 
 **Always:**
 - Build host = VMware VM on a Mac: every re-enumerated USB device needs "connect to Linux" on the Mac.

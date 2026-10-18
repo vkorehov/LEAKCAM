@@ -598,6 +598,23 @@ def main():
                         ", K230 PMU INT4 (where)", int4_req,
                         ("Bottom side, seen from below: camera connector J4 at the bottom edge. R45 sits right of the boot",
                          "straps (R64 pair), above the K230 via field, left of R11 / D2."), side="bottom")
+    # LED drivers: boost outputs and the white driver's CTRL, to tell an open chain from a driver that does not switch
+    leddrv = [{"id": "W", "rail": "J1.1 white out", "pad": "J1.1", "gnd": "R3.2", "side": "top"},
+              {"id": "C", "rail": "LED_CTL2 (U14 CTRL)", "pad": "R3.1", "gnd": "R3.2", "side": "top"},
+              {"id": "I", "rail": "J2.1 IR out", "pad": "J2.1", "gnd": "R3.2", "side": "top"}]
+    render_points_sheet(pcb, comps, leddrv, os.path.join(HERE, "led_drivers.png"), (40.5, 51.5, 25.0, 36.0), 70.0,
+                        ", LED drivers", {"W": "~22 V lit / 35-38 V open / ~VBAT idle", "C": "~1.6 V at 50 % duty",
+                                          "I": "~VBAT (IR off)"},
+                        ("White on: pwm_set pwm 1 40000 20000 + pwm_enable pwm 1 (50 %, ~33 mA max).",
+                         "W ~VBAT and C ~1.6 V: U14 not switching. W 35-38 V: white chain open (LED reversed / joint)."))
+    # white chain return: J1 pin 2 -> R66 (3R current sense, bottom) -> GND
+    r66 = [{"id": "S", "rail": "R66 J1 side", "pad": "R66.2", "gnd": "R66.1", "side": "bottom"},
+           {"id": "J", "rail": "J1.2 white -", "pad": "J1.2", "gnd": "R66.1", "side": "bottom"}]
+    render_points_sheet(pcb, comps, r66, os.path.join(HERE, "r66_white_return.png"), (40.5, 51.0, 26.0, 34.0), 80.0,
+                        ", white chain return (R66)", {"S": "S-GND ~3 ohm (power off)", "J": "J-S ~0 ohm"},
+                        ("Power off. Ohmmeter: S to GND pad ~3 ohm (R66), J1 pin 2 (J) to S ~0 ohm.",
+                         "Open at S-GND: reflow or replace R66 (3R 0603, LCSC C23157). Open J-S: J1 pin 2 joint or trace."),
+                        side="bottom")
     render_ts_fix(pcb, comps, os.path.join(REPO, "bugs", "bug-001", "workaround_47k.png"))
     render_led_wiring(pcb, comps, os.path.join(HERE, "led_wiring.png"))
 

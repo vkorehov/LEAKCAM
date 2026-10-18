@@ -149,6 +149,19 @@ Result: all four K230 rails good, the K230 boots its ROM and runs our code from 
 the SPL boots from NAND and DDR trains; OpenSBI stops after its first line; charging (bug-001) and USB-C attach with the rails on
 (bug-002) still open.
 
+### Test record: LED chains driven by the K230, 2026-10-18
+
+RT-Smart shell on USB-C 2: `pwm_disable pwm <other>`, `pwm_set pwm <ch> 40000 <pulse ns>`, `pwm_enable pwm <ch>`
+(channel 1 = white = U14/J1, channel 0 = IR = U15/J2; 25 kHz; I = duty x 0.2 V / R_FB: white 66.7 mA,
+IR 133 mA at 100 %; LEDs rated 350 mA / 1 A). Probe sheets: `led_drivers.png`, `r66_white_return.png`.
+
+| Step | Result | |
+|---|---|---|
+| White 10 % / 50 % | nothing: J1 + at 37 V (open chain); lit while an ohmmeter bridged J1 pin 2 to GND: J1 pin 2 not joined to its pad / the R66 track (bottom). Resoldered | fixed |
+| White 10 % (~7 mA), 50 % (~33 mA) | all lit, brighter at 50 % | pass |
+| IR 10 % (~13 mA), 50 % (~67 mA) | lit (phone camera), brighter at 50 % | pass |
+| Enabling one channel with the other never configured | the other chain lit at full current: the shared PWM counter starts while that channel's compare is still 0 (reset value). Shell: disable the other channel first; firmware: `led_set()` now disables before it enables | fixed (firmware) |
+
 ## 2. Debug port PR1 (bottom side)
 
 ![bottom side wiring](hookup_bottom.png)
