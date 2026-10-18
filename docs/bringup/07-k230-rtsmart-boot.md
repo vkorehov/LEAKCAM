@@ -7,3 +7,7 @@
 - **Link error** -> pins.py footer cut also removed the camera-LED init -> restored.
 - **Fault in AI2D driver** -> Canaan's `ai_2d_log()` drops its arguments -> install.sh turns that log off.
 - **/sdcard empty, agent not found** -> SDK never mounts the NAND -> install.sh adds UFFS mounts (nand0 /bin, nand1 /sdcard).
+- **/sdcard mount fails ("First page is clean in a non-erased block ?")** -> a block with a sealed-but-not-dirty
+  first-page tag; mounted once on a fresh chip, fails after re-flashing over used blocks; a full-size (176M)
+  image did not help -> open (OOB layout of flasher vs kernel suspected). `/bin` mounts fine.
+- **"Too many pending bad blocks"** -> UFFS cleanup queue (4) overflowed by unclean pages; no bad-block marking -> harmless.
