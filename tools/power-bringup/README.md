@@ -211,7 +211,7 @@ Probe sheet: `mic.png`.
 | Quiet room (> 100 Hz) | -42 dBFS (mic self-noise at 54 dB gain) | |
 | Claps / speech at the port | up to -7 dBFS, 35 dB over the floor; claps clip at 54 dB; no dropouts, no repeated lines, no seams at buffer boundaries | pass |
 | Codec power-up | first ~2 s clipped (input capacitor charging) | expected |
-| Playback in the VM | stutters, also a synthetic tone: VMware audio, not the board; play on the Mac | |
+| Playback | in the VM it stutters, also a synthetic tone (VMware audio); on the Mac the recording plays cleanly | pass |
 
 Recording: `mic_at_port_2026-10-18.wav` (10 s after the settling, 100 Hz high-pass, normalised).
 Open: gain (54 dB clips claps; PGA 20 dB gives 10 dB headroom); MIC_BIAS 1.4 V is below the mic's 1.8 V
