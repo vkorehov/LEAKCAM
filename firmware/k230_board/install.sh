@@ -110,18 +110,80 @@ grep -q 'LEAKCAM: UFFS mounts' "$MNT" || { echo "UFFS mount patch not applied"; 
 # buffers and marked good blocks bad). Replaced by patches/spinand_isbusy.c: real-time limit, two
 # consecutive "ready" reads.
 SPN=$RTT/drivers/extdrv/spinand/spinand.c
-grep -q 'LEAKCAM: wait on real time' "$SPN" || python3 - "$SPN" "$HERE/rtsmart/patches/spinand_isbusy.c" <<'PY'
+python3 - "$SPN" "$HERE/rtsmart/patches/spinand_isbusy.c" <<'PY'
 import sys
 p, f = sys.argv[1], sys.argv[2]; s = open(p).read()
 head = 'int spinand_isbusy(struct aic_spinand *flash, uint8_t *status)\n{\n'
+tail = '    return SR & 0x1 ? -SPINAND_ERR_TIMEOUT : 0;\n}\n'
 i = s.index(head)
-j = s.index('    return SR & 0x1 ? -SPINAND_ERR_TIMEOUT : 0;\n}\n', i)
+j = s.index(tail, i)
 old = s[i:j]
-assert s.count(head) == 1 and 'cnt = 1000' in old, 'spinand.c changed, cannot apply the busy-wait patch'
-j += len('    return SR & 0x1 ? -SPINAND_ERR_TIMEOUT : 0;\n}\n')
-open(p, 'w').write(s[:i] + open(f).read() + s[j:])
+# Canaan's original or an earlier LEAKCAM version: replaced every run, so edits to the patch apply
+assert s.count(head) == 1 and ('cnt = 1000' in old or 'LEAKCAM: wait on real time' in old), \
+    'spinand.c changed, cannot apply the busy-wait patch'
+open(p, 'w').write(s[:i] + open(f).read() + s[j + len(tail):])
 PY
 grep -q 'LEAKCAM: wait on real time' "$SPN" || { echo "busy-wait patch not applied"; exit 1; }
+
+# poll(): RT-Thread's poll_do() never clears pt->triggered, so after one wake-up whose event leaves
+# the fd not ready, poll_wait_timeout() skips the wait and poll() re-checks in a busy loop until the
+# fd becomes ready, ignoring its timeout. The agent's poll() on the hook's stdout pipe spun at
+# priority 25 from the moment the hook exited (the pipe's close wakes its readers): every user
+# program, the NAND reads in it (26 KB/s instead of MB/s) and the idle thread starved (rev 1,
+# 2026-10-18). Clear the flag before each check and wait only for the rest of the timeout.
+POLL=$SDK/src/rtsmart/rtsmart/kernel/rt-thread/components/dfs/src/poll.c
+grep -q 'LEAKCAM: poll re-arm' "$POLL" || python3 - "$POLL" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = ('    while (1)\n'
+     '    {\n'
+     '        pf = fds;\n'
+     '        num = 0;\n')
+b = ('    /* LEAKCAM: poll re-arm: a wake-up without a ready fd sleeps again for the rest of msec */\n'
+     '    rt_tick_t deadline = msec > 0 ? rt_tick_get() + rt_tick_from_millisecond(msec) : 0;\n'
+     '\n'
+     '    while (1)\n'
+     '    {\n'
+     '        pf = fds;\n'
+     '        num = 0;\n'
+     '        pt->triggered = 0;\n')
+c = ('        if (poll_wait_timeout(pt, msec))\n'
+     '            istimeout = 1;\n')
+d = ('        int wait = msec;\n'
+     '        if (msec > 0)\n'
+     '        {\n'
+     '            rt_int32_t left = (rt_int32_t)(deadline - rt_tick_get());\n'
+     '            if (left <= 0)\n'
+     '                break;\n'
+     '            wait = (int)((rt_int64_t)left * 1000 / RT_TICK_PER_SECOND);\n'
+     '            if (wait == 0)\n'
+     '                wait = 1;\n'
+     '        }\n'
+     '        if (poll_wait_timeout(pt, wait))\n'
+     '            istimeout = 1;\n')
+assert s.count(a) == 1 and s.count(c) == 1, 'poll.c changed, cannot apply the poll re-arm patch'
+open(p, 'w').write(s.replace(a, b).replace(c, d))
+PY
+grep -q 'LEAKCAM: poll re-arm' "$POLL" || { echo "poll patch not applied"; exit 1; }
+
+# pipe poll: no POLLHUP when the last writer closed, so poll() never reported the end of a child's
+# output (POSIX: POLLHUP once no writer is left; read() then returns 0)
+PIPE=$SDK/src/rtsmart/rtsmart/kernel/rt-thread/components/drivers/src/pipe.c
+grep -q 'LEAKCAM: pipe POLLHUP' "$PIPE" || python3 - "$PIPE" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = ('        if (rt_ringbuffer_data_len(pipe->fifo) != 0)\n'
+     '        {\n'
+     '            mask |= POLLIN;\n'
+     '        }\n')
+b = a + ('        else if (pipe->writer == 0)\n'
+         '        {\n'
+         '            mask |= POLLHUP;    /* LEAKCAM: pipe POLLHUP, no writer left: end of file */\n'
+         '        }\n')
+assert s.count(a) == 1, 'pipe.c changed, cannot apply the POLLHUP patch'
+open(p, 'w').write(s.replace(a, b))
+PY
+grep -q 'LEAKCAM: pipe POLLHUP' "$PIPE" || { echo "pipe patch not applied"; exit 1; }
 
 # /bin/config.txt: Canaan's gen_config writes "auto_resize=y" (resize the SD card's data partition), and
 # with no SD card the kernel prints "config command failed (-1)" at every boot. LEAKCAM has no SD card:

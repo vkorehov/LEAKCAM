@@ -6,13 +6,16 @@ int spinand_isbusy(struct aic_spinand *flash, uint8_t *status)
      * right after the page-read command, the confirm read then sees BUSY (0x01), and the page read
      * was abandoned without data: UFFS took the -1 as "ECC corrected", used stale buffers, refreshed
      * blocks, failed its write verifies and marked good blocks bad. 20 ms covers a block erase
-     * (10 ms max). */
+     * (10 ms max). The deadline is taken before each status read: a user program's NAND read runs at
+     * user priority and can lose the CPU for 20+ ms (another thread's time slice), and a timeout
+     * judged on a read from before that pause stalled UFFS reads from user programs. */
     const uint64_t t0 = cpu_ticks();
     const uint64_t limit = (uint64_t)TIMER_CLK_FREQ / 50;
     uint8_t SR = 0xFF;
     int result;
 
     while (1) {
+        const int expired = cpu_ticks() - t0 > limit;
         result = spinand_read_status(flash, &SR);
         if (result != SPINAND_SUCCESS)
             return result;
@@ -23,7 +26,7 @@ int spinand_isbusy(struct aic_spinand *flash, uint8_t *status)
             if (!(SR & 0x1))
                 break;
         }
-        if (cpu_ticks() - t0 > limit) {
+        if (expired) {
             LOG_W("spinand timeout.\n");
             break;
         }

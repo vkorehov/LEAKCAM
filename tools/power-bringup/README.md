@@ -186,8 +186,36 @@ From the K230 shell (`cp`, `df`, `rm`, `hexdump`; `echo` only appends to existin
 | Read speed (`/sdcard` -> RAM `/tmp`), 5,180,912 B | 0.55 s = **9.4 MB/s** (3 runs, identical) | |
 | Write speed (RAM `/tmp` -> `/sdcard`), 5,180,912 B | 2.82 s = **1.8 MB/s** (2 runs, identical) | |
 | Byte-exact: 100,376-byte copy written on the nearly full disk, hexdump vs original | 6274 / 6274 lines identical, again after a power cycle | pass |
+| Read from a user program (`leakcam_stream`, 64 KB `read()`s), 5,180,912 B | before the poll patch: 195 s (26 KB/s, the agent spinning at priority 25); after: 0.41 s = **12.7 MB/s** | pass |
 
 Dump with a quiet console: right after boot the agent's `READY not answered` lines interleave with `hexdump`.
+
+### Test record: microphone U13 (MSM381ACB026) on the K230 inner codec, 2026-10-18
+
+Board on USB-C 1 (VBAT 4.25 V), K230 from NAND. `leakcam_stream -m <s> -o /tmp/mic.raw -x` (levels per
+0.5 s, samples as hex over the console). 16 kHz, 16-bit mono, codec left input, PGA 30 dB + ALC 24 dB.
+Probe sheet: `mic.png`.
+
+| Point | Net | Measured (recording running) |
+|---|---|---|
+| V, C96.1 | mic VDD after FB4 | 1.4 V |
+| B, FB4.2 | K230 MIC_BIAS (A4) | 1.4 V |
+| O, C97.1 | mic output (DC bias) | 0.8 V |
+
+| Test | Result | |
+|---|---|---|
+| First run | hung: no VB pool for the AI frames; pool added | fixed |
+| Recording, NAND afterwards | flat -10 dBFS noise, tones 294/882 Hz; NAND and shell stalled afterwards. Cause: kernel `poll()` busy loop (agent at priority 25), see docs/bringup/11; patched | fixed |
+| NAND between every audio step (`-n`, temporary) | 5 MB read 0.41 s before, during and after audio; CPU stalls <= 0.13 ms | pass |
+| Clicks | 349 of 399 jumps on 64-byte boundaries, 60 repeated 64-byte lines: stale cache lines; cached + flushed frame view | fixed |
+| Quiet room (> 100 Hz) | -42 dBFS (mic self-noise at 54 dB gain) | |
+| Claps / speech at the port | up to -7 dBFS, 35 dB over the floor; claps clip at 54 dB; no dropouts, no repeated lines, no seams at buffer boundaries | pass |
+| Codec power-up | first ~2 s clipped (input capacitor charging) | expected |
+| Playback in the VM | stutters, also a synthetic tone: VMware audio, not the board; play on the Mac | |
+
+Recording: `mic_at_port_2026-10-18.wav` (10 s after the settling, 100 Hz high-pass, normalised).
+Open: gain (54 dB clips claps; PGA 20 dB gives 10 dB headroom); MIC_BIAS 1.4 V is below the mic's 1.8 V
+characterisation point, sensitivity still fine.
 
 ## 2. Debug port PR1 (bottom side)
 

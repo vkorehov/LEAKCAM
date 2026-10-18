@@ -13,6 +13,7 @@ Readings: [tools/power-bringup/README.md](../../tools/power-bringup/README.md).
 8. [LED chains](08-led-chains.md)
 9. [K230-BL616 UART link](09-uart-link.md)
 10. [NAND fill and speed](10-nand-fill-speed.md)
+11. [Microphone](11-microphone.md)
 
 ## Status (rev 1, 2026-10-18)
 
@@ -26,10 +27,10 @@ Readings: [tools/power-bringup/README.md](../../tools/power-bringup/README.md).
 | K230 code from SRAM (k230_hello) | pass | |
 | NAND flash + boot (SPL, DDR 2667, OpenSBI, RT-Smart) | pass | plain SPL; `flash_nand.sh` erases first |
 | UFFS /bin + /sdcard, agent starts | pass | busy-wait patch, UFFS mounts |
-| NAND persistence, full disk, speed | pass | read 9.4 MB/s, write 1.8 MB/s; byte-exact after power cycle |
+| NAND persistence, full disk, speed | pass | read 9.4 MB/s (shell), 12.7 MB/s (user program, after the poll fix), write 1.8 MB/s; byte-exact after power cycle |
 | K230 PMU / RTC | worked around | bug-003: no PMU, soft RTC |
 | White + IR LED chains | pass | J1 pin 2 joint fixed; `led_set()` order fix |
-| Microphone (U13 MSM381, K230 inner codec) | not run yet | `leakcam_stream -m <s>` built; waits for a charged cell (no flashing at 2.9 V) |
+| Microphone (U13 MSM381, K230 inner codec) | pass | claps/speech -7 dBFS over a -42 dBFS floor at 54 dB; clips on claps (gain to choose); MIC_BIAS 1.4 V; poll/pipe kernel patches, audio cache fix |
 | Cameras | not tested | not delivered |
 | K230 <-> BL616 UART link | pass | both directions, 115200; `READY not answered` = test firmware sends no ACK |
 | Leak probes (BL616 ADC, IO20) | pass (dry node) | wet test and the value in the WAKE frame to the K230: with the product BL616 firmware |

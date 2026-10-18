@@ -615,6 +615,15 @@ def main():
                         ("Power off. Ohmmeter: S to GND pad ~3 ohm (R66), J1 pin 2 (J) to S ~0 ohm.",
                          "Open at S-GND: reflow or replace R66 (3R 0603, LCSC C23157). Open J-S: J1 pin 2 joint or trace."),
                         side="bottom")
+    # microphone U13: its supply (C96, after FB4) and the K230 MIC_BIAS side of FB4; output via C97 to MIC_PL
+    mic = [{"id": "V", "rail": "mic VDD (C96)", "pad": "C96.1", "gnd": "C96.2", "side": "top"},
+           {"id": "B", "rail": "MIC_BIAS (FB4)", "pad": "FB4.2", "gnd": "C96.2", "side": "top"},
+           {"id": "O", "rail": "mic out (C97)", "pad": "C97.1", "gnd": "C96.2", "side": "top"}]
+    render_points_sheet(pcb, comps, mic, os.path.join(HERE, "mic.png"), (49.5, 60.5, 0.5, 9.5), 70.0,
+                        ", microphone U13", {"V": "~1.4 V (measured)", "B": "~1.4 V (measured)",
+                                             "O": "~0.8 V (measured)"},
+                        ("Measure while a recording runs (leakcam_stream -m 30 -o /tmp/mic.raw).",
+                         "V ~0 V: MIC_BIAS is off, the mic is unpowered."))
     render_ts_fix(pcb, comps, os.path.join(REPO, "bugs", "bug-001", "workaround_47k.png"))
     render_led_wiring(pcb, comps, os.path.join(HERE, "led_wiring.png"))
 

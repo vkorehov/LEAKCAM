@@ -3,9 +3,13 @@
  * with audio: H.265 (Main) per camera plus the microphone as Opus, over Enhanced RTMP (rtmp.h).
  *
  *   leakcam_stream -p <host>:<port> -t <seconds>     (run by leakcam_wake for the clip the server asks for)
- *   leakcam_stream -m <seconds>                      microphone check, no cameras: the same mic setup,
+ *   leakcam_stream -m <seconds> [-o <file>] [-x] [-g <pga>,<alc>]
+ *                                                    microphone check, no cameras: the same mic setup,
  *                                                    level per 0.5 s on stdout, raw 16 kHz s16le mono
- *                                                    in /sdcard/mic.raw (bring-up and service)
+ *                                                    in <file> (default /sdcard/mic.raw); -x prints it
+ *                                                    as hex afterwards ("micx <offset> <32 bytes>", the
+ *                                                    way off the board over the console); -g overrides
+ *                                                    the gains (PGA 0/6/20/30 dB, ALC -18..28.5 dB)
  *
  * Each camera is published as rtmp://<host>:<port>/leakcam/cam<N>, starting on an IDR; both carry
  * the same microphone track. Exit 0 when both streams stayed up to the end. For the bench, point
@@ -129,6 +133,21 @@ static int vb_setup(void)
         fprintf(stderr, "vb init failed\n");
         return -1;
     }
+    /* the AI takes its frame buffers from a VB pool: without one kd_mpi_ai_get_frame() never
+     * returns (rev 1, 2026-10-18: the mic check hung after the codec power-up). As
+     * examples/mpp/sample_audio: frame x 4 B x 2, 4 KiB aligned, no-cache; one block per queued
+     * frame plus two */
+    k_vb_pool_config pool;
+    memset(&pool, 0, sizeof(pool));
+    pool.blk_cnt = AUDIO_QUEUE + 2;
+    pool.blk_size = VB_ALIGN_UP(AUDIO_FRAME * 4 * 2, 4096);
+    pool.mode = VB_REMAP_MODE_NOCACHE;
+    k_u32 audio_pool = (k_u32)kd_mpi_vb_create_pool(&pool);
+    if (audio_pool == VB_INVALID_POOLID) {
+        fprintf(stderr, "vb: audio pool failed\n");
+        kd_mpi_vb_exit();
+        return -1;
+    }
     return 0;
 }
 
@@ -239,6 +258,8 @@ static void *venc_thread(void *arg)
 
 /* ------------------------------------------------------------------ microphone */
 
+static k_u32 mic_pga = MIC_PGA_DB;
+static float mic_alc = MIC_ALC_DB;
 /* the inner codec's left input is the mic (the SDK's names are the EVB's: "left" is its headset
  * jack). Order as src/rtsmart/examples/mpp/sample_audio: pub attr -> enable (the first enable
  * powers the codec up, ~2 s, and resets its gains) -> enable chn -> gains */
@@ -263,8 +284,8 @@ static int mic_open(void)
         return -1;
     }
     int fd = open("/dev/acodec_device", O_RDWR);
-    k_u32 pga = MIC_PGA_DB;
-    float alc = MIC_ALC_DB;
+    k_u32 pga = mic_pga;
+    float alc = mic_alc;
     if (fd < 0 || ioctl(fd, k_acodec_set_gain_micl, &pga) || ioctl(fd, k_acodec_set_alc_gain_micl, &alc))
         fprintf(stderr, "mic: gain not set\n");
     if (fd >= 0)
@@ -290,6 +311,17 @@ static void mic_close(void)
     g_opus = NULL;
 }
 
+/* an AI frame as the CPU sees it: the audio driver leaves parts of each frame in the data cache, and
+ * a non-cached view read 64-byte lines of an older frame (clicks on 32-sample boundaries, rev 1,
+ * 2026-10-18). A cached view, flushed first, reads what the driver wrote. */
+static const int16_t *frame_map(const k_audio_frame *fr)
+{
+    void *p = kd_mpi_sys_mmap_cached(fr->phys_addr, fr->len);
+    if (p)
+        kd_mpi_sys_mmz_flush_cache(fr->phys_addr, p, fr->len);
+    return p;
+}
+
 /* 40 ms frames to every camera's stream, stamped by the samples sent from the moment the cameras
  * started, so audio and video share one clock */
 static void *audio_thread(void *arg)
@@ -302,7 +334,7 @@ static void *audio_thread(void *arg)
         k_audio_frame fr;
         if (kd_mpi_ai_get_frame(AI_DEV, AI_CHN, &fr, 100))
             continue;
-        const int16_t *p = kd_mpi_sys_mmap(fr.phys_addr, fr.len);
+        const int16_t *p = frame_map(&fr);
         bool whole = p && fr.len == sizeof(pcm);
         if (whole)
             memcpy(pcm, p, sizeof(pcm));
@@ -330,14 +362,15 @@ static void *audio_thread(void *arg)
 
 /* microphone check: the stream's own mic setup, levels per 0.5 s (RMS, peak, DC in dBFS / counts)
  * and the raw samples in /sdcard/mic.raw; the first ~2 s are the codec powering up */
-#define MIC_RAW "/sdcard/mic.raw"
+static const char *mic_raw = "/sdcard/mic.raw";
+static bool mic_hex;
 static int mic_test(int seconds)
 {
     if (mic_open())
         return 1;
-    FILE *raw = fopen(MIC_RAW, "wb");
+    FILE *raw = fopen(mic_raw, "wb");
     if (!raw)
-        fprintf(stderr, "mic: cannot write %s\n", MIC_RAW);
+        fprintf(stderr, "mic: cannot write %s\n", mic_raw);
     const int per_report = AUDIO_RATE / 2;
     double sum2 = 0, sum = 0, all2 = 0;
     int peak = 0, n = 0, all_n = 0, frames = 0, short_frames = 0;
@@ -346,7 +379,7 @@ static int mic_test(int seconds)
         k_audio_frame fr;
         if (kd_mpi_ai_get_frame(AI_DEV, AI_CHN, &fr, 200))
             continue;
-        const int16_t *p = kd_mpi_sys_mmap(fr.phys_addr, fr.len);
+        const int16_t *p = frame_map(&fr);
         if (p) {
             int cnt = (int)(fr.len / sizeof(int16_t));
             if (fr.len != AUDIO_FRAME * sizeof(int16_t))
@@ -378,9 +411,23 @@ static int mic_test(int seconds)
     if (raw)
         fclose(raw);
     mic_close();
+    if (mic_hex && raw && (raw = fopen(mic_raw, "rb"))) {
+        unsigned char b[32];
+        size_t got;
+        long off = 0;
+        while ((got = fread(b, 1, sizeof(b), raw)) > 0) {
+            printf("micx %08lx ", off);
+            for (size_t i = 0; i < got; i++)
+                printf("%02x", b[i]);
+            printf("\n");
+            off += (long)got;
+        }
+        fclose(raw);
+        printf("micx end %ld\n", off);
+    }
     printf("mic: %d frames (%d not %d samples), %.1f s, overall rms %.1f dBFS, raw %s\n", frames,
            short_frames, AUDIO_FRAME, all_n / (double)AUDIO_RATE,
-           all_n ? 20 * log10(sqrt(all2 / all_n) / 32768 + 1e-12) : -999.0, raw ? MIC_RAW : "not written");
+           all_n ? 20 * log10(sqrt(all2 / all_n) / 32768 + 1e-12) : -999.0, raw ? mic_raw : "not written");
     return frames ? 0 : 1;
 }
 
@@ -445,12 +492,22 @@ int main(int argc, char **argv)
     int seconds = 0, mic_seconds = 0, status = 0, opt;
     bool mic_on = false, bound[NCAM] = { false }, streaming = false;
     char host[64] = "", port[8] = "";
-    while ((opt = getopt(argc, argv, "p:t:m:")) != -1) {
+    while ((opt = getopt(argc, argv, "p:t:m:o:xg:")) != -1) {
         if (opt == 'p' && sscanf(optarg, "%63[^:]:%7s", host, port) == 2)
             continue;
         if (opt == 't' && (seconds = atoi(optarg)) > 0)
             continue;
         if (opt == 'm' && (mic_seconds = atoi(optarg)) > 0)
+            continue;
+        if (opt == 'o') {
+            mic_raw = optarg;
+            continue;
+        }
+        if (opt == 'x') {
+            mic_hex = true;
+            continue;
+        }
+        if (opt == 'g' && sscanf(optarg, "%u,%f", &mic_pga, &mic_alc) == 2)
             continue;
         host[0] = 0;
         mic_seconds = 0;
@@ -464,7 +521,7 @@ int main(int argc, char **argv)
         return status;
     }
     if (!host[0] || seconds <= 0) {
-        fprintf(stderr, "usage: %s -p host:port -t seconds | -m seconds\n", argv[0]);
+        fprintf(stderr, "usage: %s -p host:port -t seconds | -m seconds [-o file] [-x] [-g pga,alc]\n", argv[0]);
         return 2;
     }
     signal(SIGINT, on_sig);

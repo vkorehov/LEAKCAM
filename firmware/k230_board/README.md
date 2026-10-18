@@ -57,9 +57,14 @@ handler; a full linux/amd64 container fails under qemu-user (bison/m4 crash).
   `mkuffs`, which rejects spare sizes above 64.
 - `drivers/extdrv/spinand/spinand.c` (RT-Smart): `spinand_isbusy()` replaced by
   `rtsmart/patches/spinand_isbusy.c` (real-time limit, two "ready" reads in a row); the original
-  abandoned page reads and UFFS marked good blocks bad (rev 1, docs/bringup/07).
+  abandoned page reads and UFFS marked good blocks bad (rev 1, docs/bringup/07). Replaced on every
+  run of `install.sh`, so edits to the patch file apply.
 - `drivers/interdrv/gnne/ai2d_dev.c`: AI2D log off (its log function drops its arguments: boot fault).
 - `app_canmv/mnt.c`: UFFS mounts, nand0 on /bin and nand1 on /sdcard (the SDK mounts no NAND).
+- `components/dfs/src/poll.c` (RT-Thread): `poll()` clears its wake flag before each check and sleeps
+  for the rest of its timeout. The original busy-looped after any wake-up that left the fd not ready;
+  the agent spun at priority 25 once its hook exited and starved every user program (docs/bringup/11).
+- `components/drivers/src/pipe.c` (RT-Thread): a pipe's `poll()` reports POLLHUP once no writer is left.
 - `src/rtsmart/gen_config`: `config.txt` gets `board=leakcam` instead of the SD-card `auto_resize=y`.
 - Deletes `output/k230d_rtos_leakcam_defconfig/rtsmart/kernel/board/pinmux.o`: `pinmux.c`
   includes the board file through a macro that scons does not track.
