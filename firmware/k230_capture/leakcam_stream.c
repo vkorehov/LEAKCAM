@@ -3,6 +3,9 @@
  * with audio: H.265 (Main) per camera plus the microphone as Opus, over Enhanced RTMP (rtmp.h).
  *
  *   leakcam_stream -p <host>:<port> -t <seconds>     (run by leakcam_wake for the clip the server asks for)
+ *   leakcam_stream -m <seconds>                      microphone check, no cameras: the same mic setup,
+ *                                                    level per 0.5 s on stdout, raw 16 kHz s16le mono
+ *                                                    in /sdcard/mic.raw (bring-up and service)
  *
  * Each camera is published as rtmp://<host>:<port>/leakcam/cam<N>, starting on an IDR; both carry
  * the same microphone track. Exit 0 when both streams stayed up to the end. For the bench, point
@@ -21,6 +24,7 @@
  * Not run on hardware yet (no boards, and the BL616 Wi-Fi driver is still to come).
  */
 #include <fcntl.h>
+#include <math.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdbool.h>
@@ -324,6 +328,62 @@ static void *audio_thread(void *arg)
     return NULL;
 }
 
+/* microphone check: the stream's own mic setup, levels per 0.5 s (RMS, peak, DC in dBFS / counts)
+ * and the raw samples in /sdcard/mic.raw; the first ~2 s are the codec powering up */
+#define MIC_RAW "/sdcard/mic.raw"
+static int mic_test(int seconds)
+{
+    if (mic_open())
+        return 1;
+    FILE *raw = fopen(MIC_RAW, "wb");
+    if (!raw)
+        fprintf(stderr, "mic: cannot write %s\n", MIC_RAW);
+    const int per_report = AUDIO_RATE / 2;
+    double sum2 = 0, sum = 0, all2 = 0;
+    int peak = 0, n = 0, all_n = 0, frames = 0, short_frames = 0;
+    uint64_t end = now_ms() + (uint64_t)seconds * 1000;
+    while (now_ms() < end) {
+        k_audio_frame fr;
+        if (kd_mpi_ai_get_frame(AI_DEV, AI_CHN, &fr, 200))
+            continue;
+        const int16_t *p = kd_mpi_sys_mmap(fr.phys_addr, fr.len);
+        if (p) {
+            int cnt = (int)(fr.len / sizeof(int16_t));
+            if (fr.len != AUDIO_FRAME * sizeof(int16_t))
+                short_frames++;
+            if (raw)
+                fwrite(p, sizeof(int16_t), (size_t)cnt, raw);
+            for (int i = 0; i < cnt; i++) {
+                int v = p[i];
+                sum += v;
+                sum2 += (double)v * v;
+                if (abs(v) > peak)
+                    peak = abs(v);
+                if (++n == per_report) {
+                    double rms = sqrt(sum2 / n), dc = sum / n;
+                    printf("mic %5.1f s: rms %6.1f dBFS, peak %6.1f dBFS (%5d), dc %+7.1f\n",
+                           (all_n + n) / (double)AUDIO_RATE, 20 * log10((rms + 1e-9) / 32768),
+                           20 * log10((peak + 1e-9) / 32768), peak, dc);
+                    all2 += sum2;
+                    all_n += n;
+                    sum = sum2 = 0;
+                    peak = n = 0;
+                }
+            }
+            kd_mpi_sys_munmap((void *)p, fr.len);
+            frames++;
+        }
+        kd_mpi_ai_release_frame(AI_DEV, AI_CHN, &fr);
+    }
+    if (raw)
+        fclose(raw);
+    mic_close();
+    printf("mic: %d frames (%d not %d samples), %.1f s, overall rms %.1f dBFS, raw %s\n", frames,
+           short_frames, AUDIO_FRAME, all_n / (double)AUDIO_RATE,
+           all_n ? 20 * log10(sqrt(all2 / all_n) / 32768 + 1e-12) : -999.0, raw ? MIC_RAW : "not written");
+    return frames ? 0 : 1;
+}
+
 /* ------------------------------------------------------------------ VICAP */
 
 static int vicap_setup(int cam)
@@ -382,19 +442,29 @@ static void on_sig(int sig) { (void)sig; g_run = 0; }
 
 int main(int argc, char **argv)
 {
-    int seconds = 0, status = 0, opt;
+    int seconds = 0, mic_seconds = 0, status = 0, opt;
     bool mic_on = false, bound[NCAM] = { false }, streaming = false;
     char host[64] = "", port[8] = "";
-    while ((opt = getopt(argc, argv, "p:t:")) != -1) {
+    while ((opt = getopt(argc, argv, "p:t:m:")) != -1) {
         if (opt == 'p' && sscanf(optarg, "%63[^:]:%7s", host, port) == 2)
             continue;
         if (opt == 't' && (seconds = atoi(optarg)) > 0)
             continue;
+        if (opt == 'm' && (mic_seconds = atoi(optarg)) > 0)
+            continue;
         host[0] = 0;
+        mic_seconds = 0;
         break;
     }
+    if (mic_seconds > 0) {
+        if (vb_setup())
+            return 1;
+        status = mic_test(mic_seconds);
+        kd_mpi_vb_exit();
+        return status;
+    }
     if (!host[0] || seconds <= 0) {
-        fprintf(stderr, "usage: %s -p host:port -t seconds\n", argv[0]);
+        fprintf(stderr, "usage: %s -p host:port -t seconds | -m seconds\n", argv[0]);
         return 2;
     }
     signal(SIGINT, on_sig);

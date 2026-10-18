@@ -19,7 +19,7 @@ Readings: [tools/power-bringup/README.md](../../tools/power-bringup/README.md).
 | Subsystem | State | Notes |
 |---|---|---|
 | Battery rails, 3V3_SLEEP | pass | |
-| Charging | **blocked** | bug-001 (BQ24072T): 47 k VUSB-TS to fit |
+| Charging | **blocked** | bug-001 (BQ24072T): 47 k VUSB-TS to fit; cell drained to 2.9 V on 2026-10-18, D1 now off (charger timer/pre-charge state) |
 | USB-C power with K230 on | **open** | bug-002: plug USB before `pt_on` |
 | BL616 flash, USB console, AHT20, leak ADC | pass | |
 | K230 rails, boot ROM, debug UART | pass | |
@@ -29,6 +29,7 @@ Readings: [tools/power-bringup/README.md](../../tools/power-bringup/README.md).
 | NAND persistence, full disk, speed | pass | read 9.4 MB/s, write 1.8 MB/s; byte-exact after power cycle |
 | K230 PMU / RTC | worked around | bug-003: no PMU, soft RTC |
 | White + IR LED chains | pass | J1 pin 2 joint fixed; `led_set()` order fix |
+| Microphone (U13 MSM381, K230 inner codec) | not run yet | `leakcam_stream -m <s>` built; waits for a charged cell (no flashing at 2.9 V) |
 | Cameras | not tested | not delivered |
 | K230 <-> BL616 UART link | pass | both directions, 115200; `READY not answered` = test firmware sends no ACK |
 | Leak probes (BL616 ADC, IO20) | pass (dry node) | wet test and the value in the WAKE frame to the K230: with the product BL616 firmware |
