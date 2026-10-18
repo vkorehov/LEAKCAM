@@ -55,6 +55,12 @@ handler; a full linux/amd64 container fails under qemu-user (bison/m4 crash).
   bytes 2-15, 18-31, 34-47, 50-63), and UFFS allocates 64-byte spare buffers for 2 KiB pages while
   using `ecc_size = oob_size - 32`. With 64 the geometry is the tested K230 EVB one and matches
   `mkuffs`, which rejects spare sizes above 64.
+- `drivers/extdrv/spinand/spinand.c` (RT-Smart): `spinand_isbusy()` replaced by
+  `rtsmart/patches/spinand_isbusy.c` (real-time limit, two "ready" reads in a row); the original
+  abandoned page reads and UFFS marked good blocks bad (rev 1, docs/bringup/07).
+- `drivers/interdrv/gnne/ai2d_dev.c`: AI2D log off (its log function drops its arguments: boot fault).
+- `app_canmv/mnt.c`: UFFS mounts, nand0 on /bin and nand1 on /sdcard (the SDK mounts no NAND).
+- `src/rtsmart/gen_config`: `config.txt` gets `board=leakcam` instead of the SD-card `auto_resize=y`.
 - Deletes `output/k230d_rtos_leakcam_defconfig/rtsmart/kernel/board/pinmux.o`: `pinmux.c`
   includes the board file through a macro that scons does not track.
 - `drivers/extdrv/Kconfig` (RT-Smart): one `source` line for `drivers/extdrv/bl616_nethub/Kconfig`.
