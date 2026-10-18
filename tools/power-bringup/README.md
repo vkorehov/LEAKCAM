@@ -162,6 +162,17 @@ IR 133 mA at 100 %; LEDs rated 350 mA / 1 A). Probe sheets: `led_drivers.png`, `
 | IR 10 % (~13 mA), 50 % (~67 mA) | lit (phone camera), brighter at 50 % | pass |
 | Enabling one channel with the other never configured | the other chain lit at full current: the shared PWM counter starts while that channel's compare is still 0 (reset value). Shell: disable the other channel first; firmware: `led_set()` now disables before it enables | fixed (firmware) |
 
+### Test record: K230 <-> BL616 UART link, 2026-10-18
+
+K230 UART1 (IO40 TX, IO41 RX, `/dev/uart1`) to BL616 UART0 (IO22 RX, IO21 TX), 115200 8N1.
+
+| Direction | How | Result | |
+|---|---|---|---|
+| K230 -> BL616 | BL616 `pt_uart on`, K230 reset: the agent sends `READY` | `$1,READY*FC` .. `$13,READY*0F` received, checksums intact; each frame 5x (the agent resends up to LINK_TRIES while no ACK comes) | pass |
+| BL616 -> K230 | BL616 sends one line per second; K230 `cat /dev/uart1` | `LEAKCAM BL616 uart test 27` .. `40`, consecutive, none lost | pass |
+
+`cat /dev/uart1` blocks and ignores Ctrl-C in RT-Smart's shell: reset the K230 (`pt_hold`, `pt_run`) to get the prompt back.
+
 ## 2. Debug port PR1 (bottom side)
 
 ![bottom side wiring](hookup_bottom.png)

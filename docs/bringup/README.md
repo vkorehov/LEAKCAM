@@ -11,6 +11,7 @@ Readings: [tools/power-bringup/README.md](../../tools/power-bringup/README.md).
 6. [K230 NAND boot (SPL)](06-k230-nand-boot-spl.md)
 7. [RT-Smart boot](07-k230-rtsmart-boot.md)
 8. [LED chains](08-led-chains.md)
+9. [K230-BL616 UART link](09-uart-link.md)
 
 ## Status (rev 1, 2026-10-18)
 
@@ -27,7 +28,7 @@ Readings: [tools/power-bringup/README.md](../../tools/power-bringup/README.md).
 | K230 PMU / RTC | worked around | bug-003: no PMU, soft RTC |
 | White + IR LED chains | pass | J1 pin 2 joint fixed; `led_set()` order fix |
 | Cameras | not tested | not delivered |
-| K230 <-> BL616 UART link | not tested | agent: `READY not answered` (test firmware on BL616) |
+| K230 <-> BL616 UART link | pass | both directions, 115200; `READY not answered` = test firmware sends no ACK |
 | Leak probes from the K230 | not tested | |
 | Wi-Fi through the BL616 | not tested | |
 
