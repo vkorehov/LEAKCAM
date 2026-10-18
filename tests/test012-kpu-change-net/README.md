@@ -16,7 +16,9 @@ fixed input, time and NaN count).
 
 **Open.** The KPU, its clock and power and the runtime work; our int16 kmodel does not run correctly on the chip.
 Next: a uint8 / int16-activation-int8-weight variant to see whether int16 quantisation is the cause, and the repo
-kmodel through the simulator again.
+kmodel through the simulator again. A first attempt (simulator check of the repo kmodel + a uint8 compile,
+in the `run_x86.sh` container) printed nothing in 20 min and qemu left a core dump at start: rerun it in the
+background without a time limit, starting with `./run_x86.sh compile_embed.py` as documented.
 
 Found on the way: `change_distance()` returned 0 ("light only, sleep") for NaN features, because NaN fails every
 comparison: a broken net would have hidden every change. Fixed in `change.cc`: a non-finite distance returns -1
