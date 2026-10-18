@@ -2,8 +2,8 @@
 """Draw the power bring-up probe points on the MIFA board, from the fab ODB++.
 
   python3 render_testpoints.py [MIFA.tgz | git revision]   -> top.png, top_power_zoom.png,
-      hookup_top.png, hookup_bottom.png, hookup_battery.png, hookup_debug.png, led_wiring.png, battery_only.png,
-      charging.png, k230_rails.png next to this script, and bugs/bug-001/workaround_47k.png
+      hookup_top.png, hookup_bottom.png, hookup_battery.png, hookup_debug.png, led_wiring.png next to this
+      script, each test's probe sheets in its tests/testNNN/ folder, and bugs/bug-001/workaround_47k.png
 
 Reads "Project Outputs for LEAKCAM/MIFA.tgz" as committed in the fab package of the ordered board
 (git 11a6a38, rev 1; the working tree may already hold later layout changes) by default, checks
@@ -24,6 +24,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
+TESTS = os.path.join(REPO, "tests")                  # per-test sheets go into their test folder
 FAB_REV = "11a6a38"              # fab package of rev 1 (ordered 2026-09-29)
 ODB_PATH = "Project Outputs for LEAKCAM/MIFA.tgz"
 PX = 22.0                       # pixels per mm
@@ -558,15 +559,15 @@ def main():
     Image.open(os.path.join(HERE, "hookup_bottom.png")).crop((820, 360, 2290, 790)).resize((2058, 602)).save(
         os.path.join(HERE, "hookup_debug.png"))
     by_id = {p["id"]: p for p in points}
-    render_points_sheet(pcb, comps, [by_id[i] for i in (2, 3, 4)], os.path.join(HERE, "battery_only.png"),
+    render_points_sheet(pcb, comps, [by_id[i] for i in (2, 3, 4)], os.path.join(TESTS, "test001-power-and-charging", "battery_only.png"),
                         (49.0, 60.5, 28.0, 40.0), 80.0, ", battery only (no USB): 3 points",
                         {2: "the cell, 3.0 - 4.25 V", 3: "BAT - ~0.1 V", 4: "3.2 - 3.4 V"})
-    render_points_sheet(pcb, comps, [by_id[i] for i in (1, 2, 3, 4)], os.path.join(HERE, "charging.png"),
+    render_points_sheet(pcb, comps, [by_id[i] for i in (1, 2, 3, 4)], os.path.join(TESTS, "test001-power-and-charging", "charging.png"),
                         (48.0, 60.5, 23.5, 40.0), 70.0, ", charging from USB-C 1",
                         {1: "4.75 - 5.25 V", 2: "> the cell, rising to 4.20 V", 3: "BAT + ~0.2 V (4.1 - 4.4 V)", 4: "3.2 - 3.4 V"},
                         ("Charging: the red LED D1 (bottom side, under U1's left edge) is on; it goes out when the cell is full.",
                          "Charge current ~0.89 A. U1 gets warm (~1 W). Cell hot (> 45 C) or swelling: unplug USB at once."))
-    render_points_sheet(pcb, comps, [by_id[i] for i in range(5, 15)], os.path.join(HERE, "k230_rails.png"),
+    render_points_sheet(pcb, comps, [by_id[i] for i in range(5, 15)], os.path.join(TESTS, "test003-k230-rails-and-usb-boot", "k230_rails.png"),
                         (37.0, 60.5, 9.0, 48.5), 34.0, ", K230 rails after pt_on",
                         {5: "3.0 - 3.4 V", 6: "0.76 - 0.84 V", 7: "3.2 - 3.4 V", 8: "1.71 - 1.85 V", 9: "3.0 - 3.4 V",
                          10: "1.05 - 1.15 V", 11: "~0 V (reset held)", 12: "0.76 - 0.84 V", 13: "1.71 - 1.85 V",
@@ -577,12 +578,12 @@ def main():
     # the K230 boot straps (BOOT0 = 1, BOOT1 = 0: SPI NAND), bottom side; not in testpoints.json (no rail)
     straps = [{"id": "B0", "rail": "BOOT0", "pad": "R64.1", "gnd": "R31.2", "side": "bottom"},
               {"id": "B1", "rail": "BOOT1", "pad": "R31.1", "gnd": "R31.2", "side": "bottom"}]
-    render_points_sheet(pcb, comps, straps, os.path.join(HERE, "boot_straps.png"), (30.0, 44.0, 12.0, 26.0), 60.0,
+    render_points_sheet(pcb, comps, straps, os.path.join(TESTS, "test006-k230-nand-boot-spl", "boot_straps.png"), (30.0, 44.0, 12.0, 26.0), 60.0,
                         ", K230 boot straps", {"B0": "~1.8 V (R64 to 1V8)", "B1": "~0 V (R31 to GND)"},
                         ("K230 on (pt_on). BOOT0 = 1, BOOT1 = 0 selects SPI NAND (BPI K230D-Zero strap table).",
                          "BOOT1 high: the ROM tries an SD card instead and falls back to USB."), side="bottom")
     # the same two points on the whole bottom side, to find the spot (the zoom alone has no landmarks)
-    render_points_sheet(pcb, comps, straps, os.path.join(HERE, "boot_straps_board.png"), None, 22.0,
+    render_points_sheet(pcb, comps, straps, os.path.join(TESTS, "test006-k230-nand-boot-spl", "boot_straps_board.png"), None, 22.0,
                         ", K230 boot straps (where)", {"B0": "~1.8 V", "B1": "~0 V"},
                         ("Bottom side, seen from below: camera connector J4 at the bottom edge, leak connector S1 left of it.",
                          "The straps are the small resistor pair labelled R64: above the via field, left of R11 / D2, below R6 / R61."),
@@ -602,7 +603,7 @@ def main():
     leddrv = [{"id": "W", "rail": "J1.1 white out", "pad": "J1.1", "gnd": "R3.2", "side": "top"},
               {"id": "C", "rail": "LED_CTL2 (U14 CTRL)", "pad": "R3.1", "gnd": "R3.2", "side": "top"},
               {"id": "I", "rail": "J2.1 IR out", "pad": "J2.1", "gnd": "R3.2", "side": "top"}]
-    render_points_sheet(pcb, comps, leddrv, os.path.join(HERE, "led_drivers.png"), (40.5, 51.5, 25.0, 36.0), 70.0,
+    render_points_sheet(pcb, comps, leddrv, os.path.join(TESTS, "test008-led-chains", "led_drivers.png"), (40.5, 51.5, 25.0, 36.0), 70.0,
                         ", LED drivers", {"W": "~22 V lit / 35-38 V open / ~VBAT idle", "C": "~1.6 V at 50 % duty",
                                           "I": "~VBAT (IR off)"},
                         ("White on: pwm_set pwm 1 40000 20000 + pwm_enable pwm 1 (50 %, ~33 mA max).",
@@ -610,7 +611,7 @@ def main():
     # white chain return: J1 pin 2 -> R66 (3R current sense, bottom) -> GND
     r66 = [{"id": "S", "rail": "R66 J1 side", "pad": "R66.2", "gnd": "R66.1", "side": "bottom"},
            {"id": "J", "rail": "J1.2 white -", "pad": "J1.2", "gnd": "R66.1", "side": "bottom"}]
-    render_points_sheet(pcb, comps, r66, os.path.join(HERE, "r66_white_return.png"), (40.5, 51.0, 26.0, 34.0), 80.0,
+    render_points_sheet(pcb, comps, r66, os.path.join(TESTS, "test008-led-chains", "r66_white_return.png"), (40.5, 51.0, 26.0, 34.0), 80.0,
                         ", white chain return (R66)", {"S": "S-GND ~3 ohm (power off)", "J": "J-S ~0 ohm"},
                         ("Power off. Ohmmeter: S to GND pad ~3 ohm (R66), J1 pin 2 (J) to S ~0 ohm.",
                          "Open at S-GND: reflow or replace R66 (3R 0603, LCSC C23157). Open J-S: J1 pin 2 joint or trace."),
@@ -619,7 +620,7 @@ def main():
     mic = [{"id": "V", "rail": "mic VDD (C96)", "pad": "C96.1", "gnd": "C96.2", "side": "top"},
            {"id": "B", "rail": "MIC_BIAS (FB4)", "pad": "FB4.2", "gnd": "C96.2", "side": "top"},
            {"id": "O", "rail": "mic out (C97)", "pad": "C97.1", "gnd": "C96.2", "side": "top"}]
-    render_points_sheet(pcb, comps, mic, os.path.join(HERE, "mic.png"), (49.5, 60.5, 0.5, 9.5), 70.0,
+    render_points_sheet(pcb, comps, mic, os.path.join(TESTS, "test011-microphone", "mic.png"), (49.5, 60.5, 0.5, 9.5), 70.0,
                         ", microphone U13", {"V": "~1.4 V (measured)", "B": "~1.4 V (measured)",
                                              "O": "~0.8 V (measured)"},
                         ("Measure while a recording runs (leakcam_stream -m 30 -o /tmp/mic.raw).",

@@ -72,6 +72,10 @@ float change_distance(const uint8_t *ref, const uint8_t *cur)
             ab += x * y, aa += x * x, bb += y * y;
         }
         float d = 1.0f - ab / (std::sqrt(aa * bb) + 1e-6f);
+        if (!std::isfinite(d)) {      /* NaN fails every comparison: it would read as "light only" */
+            fprintf(stderr, "change net: non-finite features\n");
+            return -1;
+        }
         worst = d > worst ? d : worst;
     }
     return worst;

@@ -1,6 +1,6 @@
 # bug-002: K230 rails on back-feed VUSB, USB-C hosts refuse to power the board
 
-Found 2026-10-17 in the K230 rail bring-up (tools/power-bringup, k230_rails.png). Board: MIFA rev 1 (fab 11a6a38).
+Found 2026-10-17 in the K230 rail bring-up (tests/test003-k230-rails-and-usb-boot, k230_rails.png). Board: MIFA rev 1 (fab 11a6a38).
 
 ## Symptom
 

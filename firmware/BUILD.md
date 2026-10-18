@@ -198,7 +198,7 @@ $LEAKCAM/firmware/k230_board/flash_nand.sh ~/k230_rtos_sdk     # K230 in USB boo
   then write every partition of the `.kdimg` at its offset (TOC included; the empty `ota_meta`
   means slot A).
 - **Why the erase.** The burn loader does not erase what an image does not cover; UFFS then finds
-  leftover blocks and refuses the partition (rev 1, `docs/bringup/07-k230-rtsmart-boot.md`).
+  leftover blocks and refuses the partition (rev 1, `tests/test007-rtsmart-boot`).
 - **Afterwards.** No auto-reboot: set BOOT1 low again (BL616 test firmware: `pt_boot1 low`,
   `pt_hold`, `pt_run`) and the K230 boots from the NAND.
 

@@ -1,6 +1,6 @@
 # bug-001: U1 is BQ24072T, battery never charges
 
-Found 2026-10-17 in the charging bring-up (tools/power-bringup, charging.png). Board: MIFA rev 1 (fab 11a6a38).
+Found 2026-10-17 in the charging bring-up (tests/test001-power-and-charging, charging.png). Board: MIFA rev 1 (fab 11a6a38).
 
 ## Symptom
 
@@ -69,7 +69,7 @@ With USB in:
 - BAT rises from the cell voltage toward 4.20 V;
 - D1 stays on until the cell is full.
 
-Record the readings in the charging test record in tools/power-bringup/README.md.
+Record the readings in tests/test001-power-and-charging/README.md.
 
 ## Lesson
 

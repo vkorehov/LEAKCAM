@@ -1,6 +1,6 @@
 # bug-003: any access to the K230 PMU block hangs the K230
 
-Found 2026-10-17 in the first NAND boot (tools/power-bringup README, K230 test record). Board: MIFA rev 1 (fab 11a6a38).
+Found 2026-10-17 in the first NAND boot (tests/test006-k230-nand-boot-spl, tests/test007-rtsmart-boot). Board: MIFA rev 1 (fab 11a6a38).
 
 ## Symptom
 

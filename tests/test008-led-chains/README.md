@@ -1,0 +1,38 @@
+# test008: LED chains (white U14/J1, IR U15/J2)
+
+Wiring: [led_wiring.png](../../tools/power-bringup/led_wiring.png); design: [LED_STRIPS.txt](../../LED_STRIPS.txt).
+
+## Strips on a bench supply, 2026-10-16
+
+Each whole chain (8 LEDs through all four strips) from a bench supply, raised until the LEDs light.
+
+| Chain | LEDs | Lights from | Per LED | Running point |
+|---|---|---|---|---|
+| White (J1) | 8 | 19.6 V | 2.45 V | ~22 V at 64 mA |
+| IR (J2) | 8 | 10.0 V | 1.25 V | ~11 V at 133 mA |
+
+**Pass.** All 16 LEDs light, every strip has + on pin 2. IR was first wired reversed (from an earlier version of
+the wiring page); swapped at J2. One IR pair saw up to 14 V in reverse (~7 V per LED, rated 5 V); all light now.
+
+## Driven by the K230, 2026-10-18
+
+RT-Smart shell: `pwm_disable pwm <other>`, `pwm_set pwm <ch> 40000 <pulse ns>`, `pwm_enable pwm <ch>` (channel 1 =
+white, channel 0 = IR; 25 kHz; I = duty x 0.2 V / R_FB: white 66.7 mA, IR 133 mA at 100 %; LEDs rated 350 mA / 1 A).
+Probe sheets: [led_drivers.png](led_drivers.png), [r66_white_return.png](r66_white_return.png).
+
+| Step | Result | |
+|---|---|---|
+| White 10 % / 50 % | nothing; J1 + at 37 V (open chain); J1 pin 2 not joined to its pad / the R66 track. Resoldered | fixed |
+| White 10 % (~7 mA), 50 % (~33 mA) | all lit, brighter at 50 % | pass |
+| IR 10 % (~13 mA), 50 % (~67 mA) | lit (phone camera), brighter at 50 % | pass |
+| One channel enabled, the other never configured | the other chain lit at full current | fixed (firmware) |
+
+**Pass.** Brightness at 2-3 m: with the cameras.
+
+## Obstacles
+
+- **White never lit; J1 + at 37 V** -> open chain; LEDs came on while an ohmmeter bridged J1 pin 2 to GND -> J1 pin 2
+  (white -) not joined to its pad / the 2 mm bottom track to R66 -> resoldered.
+- **The "wrong" chain lit** -> PWM0..2 share one counter; a channel's output is high while the counter is at or above
+  its compare register, 0 after reset -> shell: disable the other channel first; firmware `led_set()` disables the
+  off channels before enabling.

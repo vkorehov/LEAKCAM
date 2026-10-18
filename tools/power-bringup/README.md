@@ -1,7 +1,8 @@
-# Bring-up: MIFA rev 1
+# Bring-up tools: MIFA rev 1
 
-Everything for the first power-on of a new board: what to solder by hand, how to wire the debug
-port, the rail checks with a multimeter, and a small BL616 test firmware.
+The tools for the first power-on of a new board: what to solder by hand, how to wire the debug
+port, the rail checks with a multimeter, and a small BL616 test firmware. Test records, readings and
+results: [tests/](../../tests/README.md).
 
 **Order**
 
@@ -77,145 +78,6 @@ battery.
 A rail at the wrong voltage, or a regulator that gets hot: power off at once. The X-ray of the
 first boards showed U5 (3V3_SLEEP) and U6/U7 (0V8/1V1) slightly off their pads; these checks are
 what confirms or rules that out.
-
-### Test record: battery only, 2026-10-17
-
-Rev 1 board, the cell on JB1 (3.9 V), USB unplugged. Wired from `hookup_battery.png` (the cells and the
-thermistor) and probed at the points in `battery_only.png`.
-
-| Wiring | Probe points |
-|---|---|
-| ![battery wiring](hookup_battery.png) | ![battery only](battery_only.png) |
-
-| # | Rail | Measured | Limit | |
-|---|---|---|---|---|
-| 2 | BAT | ~3.9 V | the cell | pass |
-| 3 | VBAT | ~3.9 V | BAT - ~0.1 V | pass |
-| 4 | 3V3_SLEEP | 3.298 V | 3.2 .. 3.4 V (3.31 nominal) | pass |
-
-**Result: pass.** U5 (TPS63802) regulates from the battery. That is one of the parts the X-ray showed slightly
-off its pads, and it works. The charger U1 passes the cell to VBAT.
-
-### Test record: charging from USB-C 1, 2026-10-17
-
-The cell on JB1 (3.9 V) and the thermistor on JT, USB on USB-C 1. Probe points and required readings in
-`charging.png`: VUSB 4.75 .. 5.25 V, BAT above the cell and rising to 4.20 V, VBAT about 0.2 V above BAT,
-3V3_SLEEP 3.2 .. 3.4 V. The red LED D1 (bottom side, by U1) is on while the cell charges (U1 /CHG). The
-charger is set to about 0.89 A (ISET R7 1 k), with a 1.0 A input limit (ILIM R5 1.5 k) and a 6.3 h safety
-timer (TMR R21 47 k).
-
-![charging](charging.png)
-
-| # | Rail | Measured | Limit | |
-|---|---|---|---|---|
-| 1 | VUSB | 5.2 V | 4.75 .. 5.25 V | pass |
-| 2 | BAT | 3.9 V, not rising | above the cell, rising to 4.20 V | **fail** |
-| 3 | VBAT | 4.2 V | BAT + ~0.2 V | (U1 regulates OUT, not charging) |
-| 4 | 3V3_SLEEP | (not measured) | 3.2 .. 3.4 V | |
-| | D1 (charging) | on | on, then off when full | (on in a TS fault too) |
-
-Result: **fail, no charging**: [bug-001](../../bugs/bug-001/README.md) (U1 is the BQ24072T; its TS input has no
-internal bias, so the NTC alone reads "hot"). Retest after the workaround there.
-
-### Test record: K230 rails and K230 boot ROM, 2026-10-17
-
-The cell on JB1, the BL616 test firmware from section 3 on PR1 (console over USB, the PR1 cable with 6.7 k on
-its CC wire). Probe points and required readings in `k230_rails.png`.
-
-![K230 rails](k230_rails.png)
-
-| Step | Result | |
-|---|---|---|
-| `pt_status` (rails off) | K230 rails off, reset held; leak node 1649 mV dry; AHT20 53.9 %RH, 25.8 C | pass |
-| `pt_on` | `3V3 up 1.726 ms after K230_PWR` (estimate ~3 ms; soft start) | pass |
-| K230_PWR, 0V8, 3V3, 1V8, 1V1, RSTN, 0V8_MIPI, 1V8_MIPI, 1V8_DDR | all within the limits on the sheet (multimeter) | pass |
-| PG_1V8 | not probed (pad too small); implied: 1V1 is up and U7 only starts on PG_1V8 | pass |
-| `pt_off` | `3V3 gone 12 ms` (expected 56-82 ms through RD1/RD2: faster, to look at) | note |
-| USB-C 1 to a Mac with the rails on | VUSB ~2.2 V, the Mac never turns on VBUS: [bug-002](../../bugs/bug-002/README.md) | **fail** |
-| `pt_off`, cable in, `pt_on`, `pt_run` | VUSB 5 V (PGOOD low); the K230 ROM enumerates: `29f1:0230 Canaan K230 USB Boot Device` | pass |
-
-| Debug serial on USBC2 | `1a86:7523 CH340` on `/dev/ttyUSB0`; `pt_hold` + `pt_run`: the K230 ROM prints `boot failed with exit code 13` at 115200 (blank NAND) and enumerates again as `29f1:0230` | pass |
-
-| [k230_hello](k230_hello) from SRAM over USB (`make run`, nothing written to the NAND) | `LEAKCAM K230 hello: running from SRAM, hart 0`, then `status n=... mcycle=...` once a second (800 M cycles apart: the core runs at 800 MHz from the ROM); K230_ALIVE toggles in `pt_status` | pass |
-
-| Full image flashed to NAND (pad check OK), reset | ROM: `boot failed with exit code 13` (= file error in the boot medium, Canaan FAQ). BOOT1 read 0.5 V with IO27 parked; driven low now (`pt_boot1`), ~0 V: still 13 | **fail** |
-| Plain SPL (`fn_u-boot-spl.bin`) written over the EVB `swap_fn` one at offset 0 | `U-Boot SPL 2022.10`, DDR training `Firmware run has completed 2667`, `Winbond SPI NAND was found`, `OpenSBI v0.9`; then silent (K230_ALIVE static) | SPL + DDR pass; OpenSBI/RT-Smart open |
-
-Boot straps: [boot_straps_board.png](boot_straps_board.png) (where), [boot_straps.png](boot_straps.png) (zoom).
-`pt_boot1 high` + `pt_hold` + `pt_run` puts a flashed K230 into USB boot (the ROM tries an SD card, fails,
-and drops to USB): no B1 short needed for re-flashing.
-
-Result: all four K230 rails good, the K230 boots its ROM and runs our code from SRAM, the debug UART works;
-the SPL boots from NAND and DDR trains; OpenSBI stops after its first line; charging (bug-001) and USB-C attach with the rails on
-(bug-002) still open.
-
-### Test record: LED chains driven by the K230, 2026-10-18
-
-RT-Smart shell on USB-C 2: `pwm_disable pwm <other>`, `pwm_set pwm <ch> 40000 <pulse ns>`, `pwm_enable pwm <ch>`
-(channel 1 = white = U14/J1, channel 0 = IR = U15/J2; 25 kHz; I = duty x 0.2 V / R_FB: white 66.7 mA,
-IR 133 mA at 100 %; LEDs rated 350 mA / 1 A). Probe sheets: `led_drivers.png`, `r66_white_return.png`.
-
-| Step | Result | |
-|---|---|---|
-| White 10 % / 50 % | nothing: J1 + at 37 V (open chain); lit while an ohmmeter bridged J1 pin 2 to GND: J1 pin 2 not joined to its pad / the R66 track (bottom). Resoldered | fixed |
-| White 10 % (~7 mA), 50 % (~33 mA) | all lit, brighter at 50 % | pass |
-| IR 10 % (~13 mA), 50 % (~67 mA) | lit (phone camera), brighter at 50 % | pass |
-| Enabling one channel with the other never configured | the other chain lit at full current: the shared PWM counter starts while that channel's compare is still 0 (reset value). Shell: disable the other channel first; firmware: `led_set()` now disables before it enables | fixed (firmware) |
-
-### Test record: K230 <-> BL616 UART link, 2026-10-18
-
-K230 UART1 (IO40 TX, IO41 RX, `/dev/uart1`) to BL616 UART0 (IO22 RX, IO21 TX), 115200 8N1.
-
-| Direction | How | Result | |
-|---|---|---|---|
-| K230 -> BL616 | BL616 `pt_uart on`, K230 reset: the agent sends `READY` | `$1,READY*FC` .. `$13,READY*0F` received, checksums intact; each frame 5x (the agent resends up to LINK_TRIES while no ACK comes) | pass |
-| BL616 -> K230 | BL616 sends one line per second; K230 `cat /dev/uart1` | `LEAKCAM BL616 uart test 27` .. `40`, consecutive, none lost | pass |
-
-`cat /dev/uart1` blocks and ignores Ctrl-C in RT-Smart's shell: reset the K230 (`pt_hold`, `pt_run`) to get the prompt back.
-
-### Test record: K230 NAND / UFFS persistence, full disk and speed, 2026-10-18
-
-From the K230 shell (`cp`, `df`, `rm`, `hexdump`; `echo` only appends to existing files, so new files start with `cp`).
-`/sdcard` = nand1, UFFS, 169 MB free when empty.
-
-| Test | Result | |
-|---|---|---|
-| Write a file, power-cycle the K230 (`pt_off`, `pt_on`, `pt_run`), read it | 953 bytes, marker intact | pass |
-| Fill with 5,180,912-byte copies | 33 copies (171 MB) to 3.8 MB free, no errors; NAND-to-NAND copy 4.5 s, then 3.4 s each | pass |
-| Copy past full | `Write file data failed`, partial file, last 128 KB block kept in reserve; other files intact | pass |
-| Read speed (`/sdcard` -> RAM `/tmp`), 5,180,912 B | 0.55 s = **9.4 MB/s** (3 runs, identical) | |
-| Write speed (RAM `/tmp` -> `/sdcard`), 5,180,912 B | 2.82 s = **1.8 MB/s** (2 runs, identical) | |
-| Byte-exact: 100,376-byte copy written on the nearly full disk, hexdump vs original | 6274 / 6274 lines identical, again after a power cycle | pass |
-| Read from a user program (`leakcam_stream`, 64 KB `read()`s), 5,180,912 B | before the poll patch: 195 s (26 KB/s, the agent spinning at priority 25); after: 0.41 s = **12.7 MB/s** | pass |
-
-Dump with a quiet console: right after boot the agent's `READY not answered` lines interleave with `hexdump`.
-
-### Test record: microphone U13 (MSM381ACB026) on the K230 inner codec, 2026-10-18
-
-Board on USB-C 1 (VBAT 4.25 V), K230 from NAND. `leakcam_stream -m <s> -o /tmp/mic.raw -x` (levels per
-0.5 s, samples as hex over the console). 16 kHz, 16-bit mono, codec left input, PGA 30 dB + ALC 24 dB.
-Probe sheet: `mic.png`.
-
-| Point | Net | Measured (recording running) |
-|---|---|---|
-| V, C96.1 | mic VDD after FB4 | 1.4 V |
-| B, FB4.2 | K230 MIC_BIAS (A4) | 1.4 V |
-| O, C97.1 | mic output (DC bias) | 0.8 V |
-
-| Test | Result | |
-|---|---|---|
-| First run | hung: no VB pool for the AI frames; pool added | fixed |
-| Recording, NAND afterwards | flat -10 dBFS noise, tones 294/882 Hz; NAND and shell stalled afterwards. Cause: kernel `poll()` busy loop (agent at priority 25), see docs/bringup/11; patched | fixed |
-| NAND between every audio step (`-n`, temporary) | 5 MB read 0.41 s before, during and after audio; CPU stalls <= 0.13 ms | pass |
-| Clicks | 349 of 399 jumps on 64-byte boundaries, 60 repeated 64-byte lines: stale cache lines; cached + flushed frame view | fixed |
-| Quiet room (> 100 Hz) | -42 dBFS (mic self-noise at 54 dB gain) | |
-| Claps / speech at the port | up to -7 dBFS, 35 dB over the floor; claps clip at 54 dB; no dropouts, no repeated lines, no seams at buffer boundaries | pass |
-| Codec power-up | first ~2 s clipped (input capacitor charging) | expected |
-| Playback | in the VM it stutters, also a synthetic tone (VMware audio); on the Mac the recording plays cleanly | pass |
-
-Recording: `mic_at_port_2026-10-18.wav` (10 s after the settling, 100 Hz high-pass, normalised).
-Open: gain (54 dB clips claps; PGA 20 dB gives 10 dB headroom); MIC_BIAS 1.4 V is below the mic's 1.8 V
-characterisation point, sensitivity still fine.
 
 ## 2. Debug port PR1 (bottom side)
 
@@ -333,32 +195,13 @@ The wires, numbered in soldering order (made to print in black and white: white 
 - The LEDs are driven by the K230 (PWM), so the chains are tested with the K230 firmware
   (`leakcam_capture -b`), not from the BL616.
 
-#### Test record: rev 1 strips, 2026-10-16
-
-The four strips are wired as in `led_wiring.png` above (IR chain J2 + > D > C > B > A > J2 -), and each whole chain was
-checked from a bench supply, raised until the LEDs light.
-
-| Chain | LEDs in series | Lights from | Per LED | Running point (LED_STRIPS.txt) |
-|-------|----------------|-------------|---------|--------------------------------|
-| White (J1) | 8 | 19.6 V | 2.45 V | ~22 V at 64 mA |
-| IR (J2) | 8 | 10.0 V | 1.25 V | ~11 V at 133 mA |
-
-- **Result: pass.** All 16 LEDs light, both chains are continuous through all four strips, and every strip's
-  pads have + on pin 2.
-- **Thresholds are as expected** for a white and an 850 nm LED (about 2.5 V and 1.2-1.3 V each). The running
-  points are 2-3 V higher, well under the TPS61161's 38 V over-voltage limit, so the drivers regulate normally.
-- **IR was first wired reversed** (pin 1 as +, from the first version of this page), so the chain did not light.
-  It was corrected by swapping the two wires at J2. During the first check one IR pair saw up to 14 V in
-  reverse (about 7 V per LED, over their 5 V rating); all IR LEDs light now.
-- **Still to do:** drive both chains from the board with `leakcam_capture -b` (white and IR separately and
-  dimmed), and check the brightness against section 8 of LED_STRIPS.txt.
-
 ## Files
 
 - `testpoints.json`: probe pads and limits per phase
 - `power_check.py`: the interactive multimeter check, writes the CSV log
 - `render_testpoints.py`: redraws the pictures here: probe points (`top.png`, `top_power_zoom.png`), wiring
-  (`hookup_top.png`, `hookup_bottom.png`, `hookup_battery.png`, `led_wiring.png`) and the sheets used in the
-  test records (`battery_only.png`, `charging.png`) from the ODB++ of the ordered board (git
-  `11a6a38`), and refuses to draw if a probe pad is not on the net the table says
+  (`hookup_top.png`, `hookup_bottom.png`, `hookup_battery.png`, `hookup_debug.png`, `led_wiring.png`), and each
+  test's probe sheets into its `tests/testNNN-*/` folder, from the ODB++ of the ordered board (git `11a6a38`);
+  it refuses to draw if a probe pad is not on the net the table says
 - `bl616_powertest/`: the BL616 test firmware
+- `k230_hello/`: bare-metal K230 check from SRAM (no NAND needed)
