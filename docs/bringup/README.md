@@ -12,6 +12,7 @@ Readings: [tools/power-bringup/README.md](../../tools/power-bringup/README.md).
 7. [RT-Smart boot](07-k230-rtsmart-boot.md)
 8. [LED chains](08-led-chains.md)
 9. [K230-BL616 UART link](09-uart-link.md)
+10. [NAND fill and speed](10-nand-fill-speed.md)
 
 ## Status (rev 1, 2026-10-18)
 
@@ -25,6 +26,7 @@ Readings: [tools/power-bringup/README.md](../../tools/power-bringup/README.md).
 | K230 code from SRAM (k230_hello) | pass | |
 | NAND flash + boot (SPL, DDR 2667, OpenSBI, RT-Smart) | pass | plain SPL; `flash_nand.sh` erases first |
 | UFFS /bin + /sdcard, agent starts | pass | busy-wait patch, UFFS mounts |
+| NAND persistence, full disk, speed | pass | read 9.4 MB/s, write 1.8 MB/s; byte-exact after power cycle |
 | K230 PMU / RTC | worked around | bug-003: no PMU, soft RTC |
 | White + IR LED chains | pass | J1 pin 2 joint fixed; `led_set()` order fix |
 | Cameras | not tested | not delivered |

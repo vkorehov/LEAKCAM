@@ -173,6 +173,22 @@ K230 UART1 (IO40 TX, IO41 RX, `/dev/uart1`) to BL616 UART0 (IO22 RX, IO21 TX), 1
 
 `cat /dev/uart1` blocks and ignores Ctrl-C in RT-Smart's shell: reset the K230 (`pt_hold`, `pt_run`) to get the prompt back.
 
+### Test record: K230 NAND / UFFS persistence, full disk and speed, 2026-10-18
+
+From the K230 shell (`cp`, `df`, `rm`, `hexdump`; `echo` only appends to existing files, so new files start with `cp`).
+`/sdcard` = nand1, UFFS, 169 MB free when empty.
+
+| Test | Result | |
+|---|---|---|
+| Write a file, power-cycle the K230 (`pt_off`, `pt_on`, `pt_run`), read it | 953 bytes, marker intact | pass |
+| Fill with 5,180,912-byte copies | 33 copies (171 MB) to 3.8 MB free, no errors; NAND-to-NAND copy 4.5 s, then 3.4 s each | pass |
+| Copy past full | `Write file data failed`, partial file, last 128 KB block kept in reserve; other files intact | pass |
+| Read speed (`/sdcard` -> RAM `/tmp`), 5,180,912 B | 0.55 s = **9.4 MB/s** (3 runs, identical) | |
+| Write speed (RAM `/tmp` -> `/sdcard`), 5,180,912 B | 2.82 s = **1.8 MB/s** (2 runs, identical) | |
+| Byte-exact: 100,376-byte copy written on the nearly full disk, hexdump vs original | 6274 / 6274 lines identical, again after a power cycle | pass |
+
+Dump with a quiet console: right after boot the agent's `READY not answered` lines interleave with `hexdump`.
+
 ## 2. Debug port PR1 (bottom side)
 
 ![bottom side wiring](hookup_bottom.png)
