@@ -69,6 +69,42 @@ open(p, 'w').write(s.replace(a, b))
 PY
 grep -q 'LEAKCAM: UFFS user OOB' "$PORT" || { echo "OOB patch not applied"; exit 1; }
 
+# AI2D driver log off: Canaan's ai_2d_log() calls rt_kprintf(fmt) without passing its arguments, so
+# "<ai_2d> %s OK" reads a stray register as the string and the kernel faults at boot (Load Access Fault
+# at 0x20 in rt_strlen, rev 1, 2026-10-18). Their boards survive by luck or build with RT_FASTBOOT.
+AI2D=$RTT/drivers/interdrv/gnne/ai2d_dev.c
+grep -q 'LEAKCAM: AI2D log off' "$AI2D" || python3 - "$AI2D" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = '#define AI2D_LOG_ENABLE\n'
+b = '/* LEAKCAM: AI2D log off (ai_2d_log drops its arguments and faults on "%s") */\n'
+assert s.count(a) == 1, 'ai2d_dev.c changed, cannot apply the log patch'
+open(p, 'w').write(s.replace(a, b))
+PY
+grep -q 'LEAKCAM: AI2D log off' "$AI2D" || { echo "AI2D patch not applied"; exit 1; }
+
+# UFFS on the SPI NAND: nothing in the SDK mounts it (Canaan's mnt.c mounts rom + tmp, and their
+# /sdcard is an SD card). Without this /bin and /sdcard are the empty romfs folders and the boot
+# script finds no /sdcard/app/leakcam_agent (rev 1, 2026-10-18; a manual mount works).
+MNT=$RTT/app_canmv/mnt.c
+grep -q 'LEAKCAM: UFFS mounts' "$MNT" || python3 - "$MNT" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = ('  if (dfs_mount(RT_NULL, "/dev/shm", "tmp", 0, 0) != 0) {\n'
+     '    rt_kprintf("Dir /dev/shm mount failed!\\n");\n'
+     '  }\n')
+b = a + ('\n#ifdef RT_USING_DFS_UFFS\n'
+         '  /* LEAKCAM: UFFS mounts, the NAND partitions of spinand_port.c (nand0 = bin, nand1 = sdcard) */\n'
+         '  if (dfs_mount("nand0", "/bin", "uffs", 0, 0) != 0)\n'
+         '    rt_kprintf("Dir /bin (nand0, uffs) mount failed!\\n");\n'
+         '  if (dfs_mount("nand1", "/sdcard", "uffs", 0, 0) != 0)\n'
+         '    rt_kprintf("Dir /sdcard (nand1, uffs) mount failed!\\n");\n'
+         '#endif\n')
+assert s.count(a) == 1, 'mnt.c changed, cannot apply the UFFS mount patch'
+open(p, 'w').write(s.replace(a, b))
+PY
+grep -q 'LEAKCAM: UFFS mounts' "$MNT" || { echo "UFFS mount patch not applied"; exit 1; }
+
 # BL616 Wi-Fi driver (NetHub over SDIO): sources + the control protocol header shared with the
 # BL616 firmware; extdrv/SConscript picks up every subfolder, Kconfig needs one source line
 DRV=$RTT/drivers/extdrv/bl616_nethub
