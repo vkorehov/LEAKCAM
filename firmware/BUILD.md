@@ -182,7 +182,7 @@ console.
 | Situation | What to do |
 |---|---|
 | Blank NAND (first flash) | Plug USB-C 1 into the PC and power the K230. The NAND boot fails by itself and the ROM enumerates as `29f1:0230`. |
-| NAND holds an image | Short test points **B1_P/B1_N** while the K230 powers up; release after it enumerates. That sets BOOT1 = 1, so the ROM tries MMC0, which is the BL616's SDIO and has no card. The boot fails and the ROM drops to USB. |
+| NAND holds an image | BL616 test firmware: `pt_boot1 high`, `pt_hold`, `pt_run` (or short B1_P/B1_N while the K230 powers up). BOOT1 = 1 makes the ROM try an SD card ("boot failed with exit code 19") and drop to USB. |
 | Running RT-Smart | Not implemented yet. The plan is for the agent to ask the BL616 to power-cycle the K230 with BOOT1 driven high; this needs the rev 1 IO27 -> 10k -> BOOT1 resistor. |
 
 **The K230 has power only when the BL616 turns it on.** A board whose BL616 is blank keeps the
@@ -191,17 +191,16 @@ K230 off and in reset (R19 pulls K230_PWR low, Q4 holds RSTN). So flash the BL61
 ### 3.3 Flash
 
 ```
-cd ~/k230_rtos_sdk/tools
-python3 k230_flash.py --list-devices
-python3 k230_flash.py -m SPI_NAND -f ../output/k230d_rtos_leakcam_defconfig/LEAKCAM_K230D_rtsmart_local_nncase_v2.11.0.kdimg
+$LEAKCAM/firmware/k230_board/flash_nand.sh ~/k230_rtos_sdk     # K230 in USB boot mode (3.2)
 ```
 
-The CLI underneath is `k230_flash_cli -m SPI_NAND -f <image.kdimg> --auto-reboot`.
-
-- **What it writes.** It writes every partition at its offset, including the TOC. The empty
-  `ota_meta` means slot A.
-- **Afterwards.** With `--auto-reboot` (the wrapper's default) the K230 restarts from the NAND.
-  With the strapping back at 1/0, that happens by itself once B1 is released.
+- **What it does.** The pad check, then `k230_flash_cli` in the build container: erase 0 .. 248M,
+  then write every partition of the `.kdimg` at its offset (TOC included; the empty `ota_meta`
+  means slot A).
+- **Why the erase.** The burn loader does not erase what an image does not cover; UFFS then finds
+  leftover blocks and refuses the partition (rev 1, `docs/bringup/07-k230-rtsmart-boot.md`).
+- **Afterwards.** No auto-reboot: set BOOT1 low again (BL616 test firmware: `pt_boot1 low`,
+  `pt_hold`, `pt_run`) and the K230 boots from the NAND.
 
 ### 3.4 First boot, on the console
 

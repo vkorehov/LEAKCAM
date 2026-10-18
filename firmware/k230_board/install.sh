@@ -105,6 +105,40 @@ open(p, 'w').write(s.replace(a, b))
 PY
 grep -q 'LEAKCAM: UFFS mounts' "$MNT" || { echo "UFFS mount patch not applied"; exit 1; }
 
+# SPI-NAND busy wait: Canaan's spinand_isbusy() abandoned page reads when its confirm read of the
+# status still showed BUSY (rev 1, 2026-10-18: random "busy timeout, status 0x01", UFFS then used stale
+# buffers and marked good blocks bad). Replaced by patches/spinand_isbusy.c: real-time limit, two
+# consecutive "ready" reads.
+SPN=$RTT/drivers/extdrv/spinand/spinand.c
+grep -q 'LEAKCAM: wait on real time' "$SPN" || python3 - "$SPN" "$HERE/rtsmart/patches/spinand_isbusy.c" <<'PY'
+import sys
+p, f = sys.argv[1], sys.argv[2]; s = open(p).read()
+head = 'int spinand_isbusy(struct aic_spinand *flash, uint8_t *status)\n{\n'
+i = s.index(head)
+j = s.index('    return SR & 0x1 ? -SPINAND_ERR_TIMEOUT : 0;\n}\n', i)
+old = s[i:j]
+assert s.count(head) == 1 and 'cnt = 1000' in old, 'spinand.c changed, cannot apply the busy-wait patch'
+j += len('    return SR & 0x1 ? -SPINAND_ERR_TIMEOUT : 0;\n}\n')
+open(p, 'w').write(s[:i] + open(f).read() + s[j:])
+PY
+grep -q 'LEAKCAM: wait on real time' "$SPN" || { echo "busy-wait patch not applied"; exit 1; }
+
+# /bin/config.txt: Canaan's gen_config writes "auto_resize=y" (resize the SD card's data partition), and
+# with no SD card the kernel prints "config command failed (-1)" at every boot. LEAKCAM has no SD card:
+# write one key the kernel does not know ("board=leakcam", ignored silently; an empty file is left out
+# of the UFFS image and a missing one prints "open /bin/config.txt failed"). The option itself stays on:
+# app_canmv/main.c does not compile without it (format_data_partition).
+GEN=$SDK/src/rtsmart/gen_config
+grep -q 'LEAKCAM: empty config.txt' "$GEN" || python3 - "$GEN" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = 'cat <<EOF > ${SDK_BUILD_IMAGES_DIR}/bin/config.txt\nauto_resize=$CONFIG_RT_AUTO_RESIZE_PARTITION\nEOF\n'
+b = '# LEAKCAM: empty config.txt (no SD card, nothing to resize); one unknown key, ignored\necho board=leakcam > ${SDK_BUILD_IMAGES_DIR}/bin/config.txt\n'
+assert s.count(a) == 1, 'gen_config changed, cannot apply the config.txt patch'
+open(p, 'w').write(s.replace(a, b))
+PY
+grep -q 'LEAKCAM: empty config.txt' "$GEN" || { echo "config.txt patch not applied"; exit 1; }
+
 # BL616 Wi-Fi driver (NetHub over SDIO): sources + the control protocol header shared with the
 # BL616 firmware; extdrv/SConscript picks up every subfolder, Kconfig needs one source line
 DRV=$RTT/drivers/extdrv/bl616_nethub
