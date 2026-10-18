@@ -29,7 +29,7 @@ Readings: [tools/power-bringup/README.md](../../tools/power-bringup/README.md).
 | White + IR LED chains | pass | J1 pin 2 joint fixed; `led_set()` order fix |
 | Cameras | not tested | not delivered |
 | K230 <-> BL616 UART link | pass | both directions, 115200; `READY not answered` = test firmware sends no ACK |
-| Leak probes from the K230 | not tested | |
+| Leak probes (BL616 ADC, IO20) | pass (dry node) | wet test and the value in the WAKE frame to the K230: with the product BL616 firmware |
 | Wi-Fi through the BL616 | not tested | |
 
 **Always:**
