@@ -19,7 +19,7 @@ Built from the official example `config/examples/Creality/CR-10/CrealityV1`
 | Setting | Value | Why |
 |---|---|---|
 | FIX_MOUNTED_PROBE | on | inductive probe, no servo |
-| NOZZLE_TO_PROBE_OFFSET | { -47, -3, -1.85 } | X/Y measured from the old firmware: after G28 the nozzle stood at X197 Y153 with the probe over 150,150 (G30 agreed); Z by a paper test on the 80 °C bed (the old -1.65 left the first layer in the air) |
+| NOZZLE_TO_PROBE_OFFSET | { -47, -3, -2.15 } | X/Y measured from the old firmware: after G28 the nozzle stood at X197 Y153 with the probe over 150,150 (G30 agreed); Z by a paper test on the 80 °C bed (the old -1.65 left the first layer in the air) |
 | Z_MIN_ENDSTOP_INVERTING, Z_MIN_PROBE_ENDSTOP_INVERTING | true | the probe reads open far from the bed (M119 checked before the first homing) |
 | AUTO_BED_LEVELING_BILINEAR | on, 5 x 5 | follows a warped bed (the old 3-point only tilted a plane) |
 | Z_SAFE_HOMING | on | Z homes with the probe at the bed centre |
@@ -28,7 +28,7 @@ Built from the official example `config/examples/Creality/CR-10/CrealityV1`
 | HEATER_0_MAXTEMP, HOTEND_OVERSHOOT; BED_MAXTEMP | 320, 20; 130 | nozzle settable up to 300 °C (only with an all-metal heat break; a PTFE liner stays at 240), bed up to 120 °C (insulated) |
 | SHOW_BOOTSCREEN | off | frees flash for the custom thermistor math |
 | FAN_MIN_PWM; FAN_KICKSTART_TIME, FAN_KICKSTART_POWER (Configuration_adv.h) | 51; 100 ms, 255 | the 5015 part-cooling blower stalls below 20 % (S51): M106 1..255 is mapped onto 20..100 %, 0 stays off, and every start from standstill gets 100 ms at full power |
-| DEFAULT_KP/KI/KD; DEFAULT_BED_KP/KI/KD | 31.41 / 2.72 / 90.70; 192.76 / 35.12 / 705.31 | PID autotune: `M303 E0 S250 C8 U1` (the hot end overshot 5 °C with the stock values) and `M303 E-1 S80 C4 U1`. The insulated bed needs about 10 min per cycle, and C8 runs into Marlin's autotune timeout |
+| DEFAULT_KP/KI/KD; DEFAULT_BED_KP/KI/KD | 28.20 / 2.61 / 76.25; 192.76 / 35.12 / 705.31 | PID autotune: hot end `M303 E0 S230 C8 U1` on 2026-10-19 after the bi-metal heat break, silicone sock and new heatsink fan (holding 230 °C took a bias of ~200-214/255, ~80 % power: check that the heatsink fan does not blow on the block; was 31.41 / 2.72 / 90.70 from `M303 E0 S250 C8 U1`), bed `M303 E-1 S80 C4 U1`. The insulated bed needs about 10 min per cycle, and C8 runs into Marlin's autotune timeout |
 | SLIM_LCD_MENUS | on | needed to fit in 130048 bytes |
 | EEPROM_SETTINGS | on (from the example) | M500 saves offsets and the mesh |
 
@@ -62,7 +62,9 @@ Z offset by a paper test: heat the bed (80 °C) and the nozzle (150 °C), then:
 2. Lower in 0.05-0.1 mm steps until a sheet of paper still slides in but the nozzle holds it a little.
 3. `M851 Z<old offset + that step>`, `M211 S1`, `M500`.
 
-On 2026-10-11 this went -1.65 -> -1.95; after the nozzle and heat-break swap -1.75; on 2026-10-12, after a fresh G29, -1.85.
+On 2026-10-11 this went -1.65 -> -1.95; after the nozzle and heat-break swap -1.75; on 2026-10-12, after a fresh G29, -1.85;
+on 2026-10-19, after the bi-metal (Ti + Cu) heat break and a new heatsink fan, fresh G29: paper drag at -2.05, set to -2.15
+(the user wants more squish). EEPROM holds it (M501 + M851 checked), the G29 mesh too.
 
 `firmware.hex` here is the current build. Restore the old firmware: the same command with the backup file.
 

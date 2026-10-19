@@ -689,9 +689,9 @@
     #define DEFAULT_KI_LIST {   1.72,   1.72 }
     #define DEFAULT_KD_LIST {  73.96,  73.96 }
   #else
-    #define DEFAULT_KP  31.41   // M303 E0 S250 C8 on this hot end (2026-10-11)
-    #define DEFAULT_KI   2.72
-    #define DEFAULT_KD  90.70
+    #define DEFAULT_KP  28.20   // M303 E0 S230 C8: bi-metal heat break, silicone sock, new heatsink fan (2026-10-19)
+    #define DEFAULT_KI   2.61
+    #define DEFAULT_KD  76.25
   #endif
 #else
   #define BANG_MAX 255    // Limit hotend current while in bang-bang mode; 255=full current
@@ -1513,7 +1513,7 @@
  *     |    [-]    |
  *     O-- FRONT --+
  */
-#define NOZZLE_TO_PROBE_OFFSET { -47, -3, -1.85 }   // X/Y from the old firmware (G28/M114/G30); Z by a paper test on the 80 C bed after a fresh G29 (2026-10-12)
+#define NOZZLE_TO_PROBE_OFFSET { -47, -3, -2.15 }   // X/Y from the old firmware (G28/M114/G30); Z by a paper test on the 80 C bed after a fresh G29, bi-metal heat break (2026-10-19)
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
