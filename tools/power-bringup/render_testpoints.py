@@ -626,6 +626,18 @@ def main():
                         ("Measure while a recording runs (leakcam_stream -m 30 -o /tmp/mic.raw).",
                          "V ~0 V: MIC_BIAS is off, the mic is unpowered."))
     render_ts_fix(pcb, comps, os.path.join(REPO, "bugs", "bug-001", "workaround_47k.png"))
+    # bug-002: D3 (PRTR5V0U2F) VCC pin 5 on VUSB back-feeds the CH340 D+ pull-up; pin 5 reaches VUSB through a via at
+    # its pad edge (inner + bottom layer), so no track to cut: D3 out, data lines bridged
+    d3 = [{"id": "5", "rail": "VUSB: leave open", "pad": "D3.5", "gnd": "D3.2", "side": "top"},
+          {"id": "1-6", "rail": "D+ : bridge pad 1 - pad 6", "pad": "D3.1", "gnd": "D3.6", "side": "top"},
+          {"id": "3-4", "rail": "D- : bridge pad 3 - pad 4", "pad": "D3.3", "gnd": "D3.4", "side": "top"}]
+    render_points_sheet(pcb, comps, d3, os.path.join(REPO, "bugs", "bug-002", "d3_rework.png"), (32.4, 36.0, 16.4, 20.1), 260.0,
+                        ", bug-002 fix: D3 out, D+/D- bridged",
+                        {"5": "no wire", "1-6": "short wire or solder bridge",
+                         "3-4": "short wire or solder bridge"},
+                        ("Remove D3 (PRTR5V0U2F, SOT886, near USBC2) with hot air. Bridge pad 1 to pad 6 (D+) and pad 3 to pad 4 (D-).",
+                         "Leave pad 5 (VUSB) and pad 2 (GND) bare. Check: no short between the bridges, D+/D- not to VUSB/GND.",
+                         "Then rails on, no USB cable: VUSB (C2 pad 1) ~0 V instead of ~2.2 V. The debug USB loses its ESD clamp."))
     render_led_wiring(pcb, comps, os.path.join(HERE, "led_wiring.png"))
 
 
