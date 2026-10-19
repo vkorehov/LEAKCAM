@@ -131,6 +131,7 @@ Rails start **off**; nothing switches until you type. Commands:
 | `pt_i2c [scan]` | AHT20 humidity/temperature, or a scan of I2C0 | `0x38` |
 | `pt_usb` | USB cable on USB-C 1 (BQ24072 PGOOD); plug/unplug is reported live | |
 | `pt_leak` | leak node (IO20, ADC) and the resistance across S1..S3 | dry ~1650 mV; a 100k across S1 reads ~100 kohm |
+| `pt_sdio watch [s]` / `drive <hex>` / `park` | SDIO lines to K230 MMC0: edge counts while the K230 probes; CMD/D0-D3 driven (bit 0 CMD .. bit 4 D3, rails on only) for the K230 to read | CLK and CMD toggle; every pattern read back (tests/test013) |
 
 The BL616 sees the switched 3V3 through the SDIO pull-ups (read as inputs only, never driven);
 0V8 is implied (3V3's regulator is enabled by 0V8's power-good); 1V8 and 1V1 need the multimeter

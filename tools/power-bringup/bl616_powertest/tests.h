@@ -10,6 +10,7 @@
 #define PT_TEST_I2C    1   /* pt_i2c: bus scan and AHT20 humidity/temperature (3V3_SLEEP, always on)   */
 #define PT_TEST_USB    1   /* pt_usb: USB cable detection (BQ24072 PGOOD), change reported live         */
 #define PT_TEST_LEAK   1   /* pt_leak: leak probe node voltage and probe resistance (S1..S3)            */
+#define PT_TEST_SDIO   1   /* pt_sdio: SDIO lines to K230 MMC0: edges while it probes, driven patterns  */
 
 #if PT_TEST_UART && !PT_TEST_POWER
 #error "PT_TEST_UART needs PT_TEST_POWER: the link pins may only be driven while the K230 3V3 is up"

@@ -18,6 +18,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | [test010 NAND persistence, full disk, speed](test010-nand-fill-speed/README.md) | 2026-10-18 | pass |
 | [test011 microphone](test011-microphone/README.md) | 2026-10-18 | pass |
 | [test012 KPU change net](test012-kpu-change-net/README.md) | 2026-10-18/19 | pass: int8 net, 0.5 ms per inference, threshold 0.43 |
+| [test013 SDIO wiring](test013-sdio-wiring/README.md) | 2026-10-19 | pass: CLK, CMD, D0-D3 both directions, no shorts |
 
 ## Status by subsystem (2026-10-18)
 
@@ -36,7 +37,8 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | Microphone | pass: -7 dBFS claps over a -42 dBFS floor at 54 dB | test011 |
 | KPU (change net) | pass: int8 on the KPU, 4.4 ms per check, same decisions as TensorFlow (int16 ran 40 layers on the CPU: 6.3 s) | test012 |
 | Cameras | not tested: not delivered | |
-| Leak probes wet, Wi-Fi through the BL616 | not tested: with the product BL616 firmware | |
+| SDIO wiring K230 <-> BL616 | pass | test013 |
+| Leak probes wet, Wi-Fi through the BL616, SDIO speed | not tested: with the product BL616 firmware | |
 
 **Always:**
 - Build host = VMware VM on a Mac: every re-enumerated USB device needs "connect to Linux" on the Mac.

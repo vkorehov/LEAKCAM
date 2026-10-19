@@ -490,6 +490,76 @@ static int cmd_leak(int argc, char **argv)
 SHELL_CMD_EXPORT_ALIAS(cmd_leak, pt_leak, leak probe node and resistance);
 #endif
 
+#if PT_TEST_SDIO
+/* --------------------------------------------------------------- SDIO lines ---- */
+/* The SDIO wiring to K230 MMC0 without the SDIO device firmware: watch counts edges while the K230
+ * probes the bus (CLK and CMD from the K230); drive puts a pattern on CMD and D0..D3 for the K230 to
+ * read in its SD host's present-state register. All pins are below 32: one register read per sample */
+static const uint8_t sdio_pins[] = { PIN_SD_CLK, PIN_SD_CMD, PIN_SD_D0, PIN_SD_D1, PIN_SD_D2, PIN_SD_D3 };
+static const char *const sdio_name[] = { "CLK", "CMD", "D0", "D1", "D2", "D3" };
+#define SDIO_N ((unsigned)sizeof(sdio_pins))
+
+static void sdio_park(void)
+{
+    park(PIN_SD_CLK);
+    for (unsigned i = 0; i < SENSE_ALL; i++)
+        bflb_gpio_init(gpio, sense_pins[i], GPIO_INPUT | GPIO_FLOAT | GPIO_SMT_EN);
+}
+
+static int cmd_sdio(int argc, char **argv)
+{
+    if (argc >= 2 && strcmp(argv[1], "watch") == 0) {
+        uint32_t secs = argc >= 3 ? (uint32_t)atoi(argv[2]) : 10, mask = 0, edges[SDIO_N] = { 0 };
+        for (unsigned i = 0; i < SDIO_N; i++) {
+            bflb_gpio_init(gpio, sdio_pins[i], GPIO_INPUT | GPIO_FLOAT | GPIO_SMT_EN);
+            mask |= 1u << sdio_pins[i];
+        }
+        printf("watching CLK CMD D0-D3 for %lu s (start the K230 probe now)\r\n", (unsigned long)secs);
+        uint32_t last = bflb_gpio_pin0_31_read(gpio) & mask;
+        uint64_t t0 = bflb_mtimer_get_time_us(), loops = 0;
+        while (bflb_mtimer_get_time_us() - t0 < (uint64_t)secs * 1000000u) {
+            uint32_t v = bflb_gpio_pin0_31_read(gpio) & mask, ch = v ^ last;
+            if (ch)
+                for (unsigned i = 0; i < SDIO_N; i++)
+                    edges[i] += (ch >> sdio_pins[i]) & 1u;
+            last = v;
+            loops++;
+        }
+        for (unsigned i = 0; i < SDIO_N; i++)
+            printf("  %-3s edges %8lu  now %s\r\n", sdio_name[i], (unsigned long)edges[i],
+                   (last >> sdio_pins[i]) & 1u ? "high" : "low");
+        printf("  %lu samples/s (edges faster than half that are undercounted)\r\n", (unsigned long)(loops / (secs ? secs : 1)));
+        sdio_park();
+        return 0;
+    }
+    if (argc >= 3 && strcmp(argv[1], "drive") == 0) {
+        if (!rails_on) {
+            printf("K230 rails off: pt_on first (driving its unpowered pads would back-power them)\r\n");
+            return 0;
+        }
+        unsigned v = (unsigned)strtoul(argv[2], NULL, 16);      /* bit 0 CMD, bit 1 D0 .. bit 4 D3 */
+        for (unsigned i = 1; i < SDIO_N; i++) {
+            bflb_gpio_init(gpio, sdio_pins[i], GPIO_OUTPUT | GPIO_FLOAT | GPIO_DRV_0);
+            if ((v >> (i - 1)) & 1u)
+                bflb_gpio_set(gpio, sdio_pins[i]);
+            else
+                bflb_gpio_reset(gpio, sdio_pins[i]);
+        }
+        printf("driving CMD=%u D0=%u D1=%u D2=%u D3=%u (pt_sdio park to release)\r\n", v & 1, (v >> 1) & 1,
+               (v >> 2) & 1, (v >> 3) & 1, (v >> 4) & 1);
+        return 0;
+    }
+    if (argc >= 2 && strcmp(argv[1], "park") == 0) {
+        sdio_park();
+        printf("SDIO lines released (inputs, CLK parked)\r\n");
+        return 0;
+    }
+    printf("pt_sdio watch [s] | drive <hex: bit0 CMD, bit1 D0 .. bit4 D3> | park\r\n");
+    return 0;
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_sdio, pt_sdio, SDIO wiring: watch [s] | drive <hex> | park);
+#endif
+
 /* ---------------------------------------------------------------- tasks ---- */
 /* CherryUSB's weak hook: a terminal opening the PR1 console raises DTR */
 void usbd_cdc_acm_set_dtr(uint8_t busid, uint8_t intf, bool dtr)
