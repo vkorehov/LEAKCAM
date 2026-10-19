@@ -44,7 +44,8 @@ device. R63 (30 k, VUSB to K230 B7) is a third, weaker path.
 - **The CH340 counts too** (2026-10-19): with the CH340 (USB-C 2) attached, the K230's USB boot device on USB-C 1
   never reached the Mac (no VMware popup), though the ROM was in USB boot (`exit code 19`). Order that works: CH340
   unplugged, USB-C 1 in, then `pt_on`, `pt_run`; CH340 back after the boot device is attached.
-- **Rework (rev 1): D3 out, D+/D- bridged** ([d3_rework.png](d3_rework.png)). There is no track to cut: in the fab
+- **Rework (rev 1, not applied: not worth it, the plug order above is enough; user 2026-10-19): D3 out, D+/D-
+  bridged** ([d3_rework.png](d3_rework.png)). There is no track to cut: in the fab
   ODB++ (11a6a38) D3 pin 5 meets a VUSB via at its pad edge (34.77, 18.22) that continues on mid-layer 3 (0.76 mm) and
   the bottom layer, so the break has to be at the part. Remove D3 (PRTR5V0U2F, SOT886) with hot air, bridge pad 1 to
   pad 6 (D+) and pad 3 to pad 4 (D-) (the part passes them straight through), leave pad 5 (VUSB) and pad 2 (GND) bare.
