@@ -71,6 +71,13 @@ With USB in:
 
 Record the readings in tests/test001-power-and-charging/README.md.
 
+**Result of workaround A (2026-10-19): it charges.** TS 0.88 V with the 47 k fitted; with the cell above the
+pre-charge range BAT rose 3.64 -> 3.71 V on the board charger (test001). The cell first had to be lifted on a bench
+supply: after the drain to 2.9 V the charger's battery detection did not see it (D1 flash, BAT jumping). The current
+was estimated at only ~0.2-0.3 A, likely U1's thermal regulation (~1.4 W in the QFN-16 at a low cell voltage); measure
+it as V(R7) / 2.5. End of charge (4.20 V, D1 off) to confirm. Rev 2: also consider a switching charger or a lower ISET
+for less heat.
+
 ## Lesson
 
 For every chip, check the exact orderable suffix against the datasheet its circuit was drawn from. The symbol's datasheet field names that datasheet.

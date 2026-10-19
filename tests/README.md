@@ -25,7 +25,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | Subsystem | State | Test |
 |---|---|---|
 | Battery rails, 3V3_SLEEP | pass | test001 |
-| Charging | **blocked**: bug-001, 47 k VUSB-TS to fit; cell at 2.9 V | test001 |
+| Charging | pass with the bug-001 47 k (BAT 3.64 -> 3.71 V); end of charge to confirm; ~0.2-0.3 A (thermal) | test001 |
 | USB-C power with K230 on | **open**: bug-002, plug USB before `pt_on` | test003 |
 | BL616 flash, USB console, AHT20, leak ADC (dry) | pass | test002 |
 | K230 rails, boot ROM, debug UART, code from SRAM | pass | test003, test004 |

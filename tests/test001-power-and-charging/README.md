@@ -31,6 +31,23 @@ set to ~0.89 A (ISET R7 1 k), 1.0 A input limit (ILIM R5 1.5 k), 6.3 h timer (TM
 
 **Fail: no charging**, [bug-001](../../bugs/bug-001/README.md). Retest after the 47 k workaround.
 
+## Charging with the 47 k workaround, 2026-10-19
+
+47 k fitted from C2 pad 1 (VUSB) to JT pin 1 (TS) ([workaround_47k.png](../../bugs/bug-001/workaround_47k.png)).
+USB on USB-C 1, K230 off.
+
+| Step | Result | |
+|---|---|---|
+| TS (JT 1 to JT 2) | 0.88 V: inside the 0.65-1.3 V charge window (~26 C) | pass |
+| First try, cell at 2.9 V | D1 flashes and goes off, BAT jumps: the charger's battery detection, no cell seen on BAT (deep-discharged cell) | |
+| Cell lifted on a bench supply, then board charger | bench run: 2.2 A falling to 1.6 A at 4.3 V (too much: use 4.20 V, <= 0.5 A); rest voltage after it 3.54-3.56 V | |
+| Board charger, cell at ~3.56 V rest | BAT 3.64 V, then 3.71 V: charging | **pass** |
+| Charge current | ~0.2-0.3 A estimated (BAT - rest = 0.08 V over ~0.3-0.45 ohm), below the 0.89 A set point: likely U1's thermal regulation, ~1.4 W at (5.2 - 3.6) V x 0.89 A | note |
+
+**Pass: the board charges** with the 47 k. Open: the end of charge (BAT 4.20 V, D1 off; overnight, 2026-10-19/20)
+and the real current: V(R7) to GND / 2.5 = charge current in A (ISET monitor, V_ISET = I_charge / 400 x R_ISET,
+datasheet SLUS810 eq. 3), no wire cut needed.
+
 ## Obstacles
 
 - **No charging** -> U1 is BQ24072**T** (no internal TS bias), circuit drawn for the plain BQ24072 -> rev 1: 47 k
@@ -38,4 +55,9 @@ set to ~0.89 A (ISET R7 1 k), 1.0 A input limit (ILIM R5 1.5 k), 6.3 h timer (TM
 - **Wrong NTC window** -> assumed B3950, part is B3435 -> take constants from EXTERNAL_PARTS.md.
 - **Cell drained to 2.9 V after a day of bring-up** -> no charging and hours without USB power (bug-002 before it
   was understood) -> K230 rails off; charge the cell off the board (4.2 V, 100 mA below 3.0 V) or fit the 47 k.
+- **D1 flashes and goes off, BAT jumps (with the 47 k)** -> the charger sees no cell (battery detection cycling) after
+  the deep discharge -> lift the cell on a bench supply first (4.20 V, <= 0.5 A; 4.3 V / 2.2 A was too much), then
+  the board charger takes over.
+- **Charge current looks low** -> a linear charger at a low cell voltage throttles for heat -> read V(R7) / 2.5 instead
+  of guessing from voltages.
   No K230 flashing at 2.9 V (brown-out during a NAND write). D1 went off: charger timer / pre-charge state.
