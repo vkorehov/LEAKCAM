@@ -45,6 +45,9 @@ capture -> imgdiff vs the history view
 - The link uses the SDK's prebuilt nncase 2.11 runtime (`libs/mk/libnncase.mk`), with no
   OpenCV. It adds about 5 MB to the static `leakcam_wake`.
 - The host test (`make test`) replaces the net with `test/change_stub.c`.
+- Load kmodels through a stream (`interpreter::load_model(std::istream&)`): from a memory span the runtime runs
+  the caller's heap pages in place and the KPU reads garbage. The int16 net is correct on the chip but takes 6.3 s
+  per inference; 8-bit variants take 0.5 ms (tests/test012).
 
 ## Threshold and measured recall
 

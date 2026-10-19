@@ -2,6 +2,8 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <istream>
+#include <streambuf>
 
 #include <nncase/runtime/interpreter.h>
 #include <nncase/runtime/runtime_op_utility.h>
@@ -36,10 +38,34 @@ const float *features(const uint8_t *luma)
 
 }  // namespace
 
+/* a read-only stream over the kmodel bytes */
+struct membuf : std::streambuf {
+    membuf(const uint8_t *p, size_t n)
+    {
+        char *b = reinterpret_cast<char *>(const_cast<uint8_t *>(p));
+        setg(b, b, b + n);
+    }
+    pos_type seekoff(off_type off, std::ios_base::seekdir dir, std::ios_base::openmode) override
+    {
+        char *t = dir == std::ios_base::beg ? eback() + off : dir == std::ios_base::cur ? gptr() + off : egptr() + off;
+        if (t < eback() || t > egptr())
+            return pos_type(off_type(-1));
+        setg(eback(), t, egptr());
+        return pos_type(t - eback());
+    }
+    pos_type seekpos(pos_type pos, std::ios_base::openmode m) override { return seekoff(off_type(pos), std::ios_base::beg, m); }
+};
+
 int change_load(const uint8_t *kmodel, size_t len)
 {
     net = new interpreter;
-    if (net->load_model({ reinterpret_cast<const gsl::byte *>(kmodel), len }).is_err()) {
+    /* through a stream, as Canaan's samples load: from a stream the runtime copies the model into its
+     * own buffers, which the KPU reaches. From a memory span it runs the caller's heap pages in place,
+     * and the KPU (physical addresses) read garbage: NaN or constant features, the int16 net hit the
+     * KPU's 6 s timeout (rev 1, 2026-10-19) */
+    membuf mb(kmodel, len);
+    std::istream is(&mb);
+    if (net->load_model(is).is_err()) {
         fprintf(stderr, "change net: invalid kmodel\n");
         return -1;
     }

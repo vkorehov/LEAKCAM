@@ -22,7 +22,7 @@ extern "C" {
 #endif
 #define CHANGE_THRESHOLD 0.44f          /* the factory model's, both cameras (k230_nn/make_embed.py) */
 
-/* the kmodel, kept by the caller until exit (the runtime does not copy it): 0, or -1 (logged) */
+/* the kmodel bytes; loaded through a stream, so the runtime copies them into memory the KPU reaches: 0, or -1 (logged) */
 int change_load(const uint8_t *kmodel, size_t len);
 /* both frames IMGDIFF_W x IMGDIFF_H luma, as imgdiff_reduce() gives them, after change_load().
  * The distance, or -1 (logged) if the net cannot run */

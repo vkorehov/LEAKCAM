@@ -17,7 +17,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | [test009 K230 <-> BL616 UART link](test009-uart-link/README.md) | 2026-10-18 | pass |
 | [test010 NAND persistence, full disk, speed](test010-nand-fill-speed/README.md) | 2026-10-18 | pass |
 | [test011 microphone](test011-microphone/README.md) | 2026-10-18 | pass |
-| [test012 KPU change net](test012-kpu-change-net/README.md) | 2026-10-18 | **open**: KPU works, our kmodel gives NaN |
+| [test012 KPU change net](test012-kpu-change-net/README.md) | 2026-10-18/19 | KPU pass; int16 net 6.3 s, 8-bit 0.5 ms: **quantisation to choose** |
 
 ## Status by subsystem (2026-10-18)
 
@@ -34,7 +34,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | K230 <-> BL616 UART link | pass | test009 |
 | NAND persistence, full disk, speed | pass: read 9.4 MB/s (shell) / 12.7 MB/s (user program), write 1.8 MB/s | test010 |
 | Microphone | pass: -7 dBFS claps over a -42 dBFS floor at 54 dB | test011 |
-| KPU (change net) | **open** | test012 |
+| KPU (change net) | KPU pass (stream loading, regulator config); **open**: int16 6.3 s vs 8-bit 0.5 ms (±0.06) | test012 |
 | Cameras | not tested: not delivered | |
 | Leak probes wet, Wi-Fi through the BL616 | not tested: with the product BL616 firmware | |
 

@@ -41,5 +41,8 @@ device. R63 (30 k, VUSB to K230 B7) is a third, weaker path.
 ## Workaround (rev 1 boards)
 
 - **Plug USB in before the K230 rails come up**, or use a plain 5 V charger. Once VUSB is at 5 V the source stays on.
+- **The CH340 counts too** (2026-10-19): with the CH340 (USB-C 2) attached, the K230's USB boot device on USB-C 1
+  never reached the Mac (no VMware popup), though the ROM was in USB boot (`exit code 19`). Order that works: CH340
+  unplugged, USB-C 1 in, then `pt_on`, `pt_run`; CH340 back after the boot device is attached.
 - Bench: lift D3 pin 5 (VCC) off its pad. The debug data still passes (the lines run through pins 1-6 and 3-4);
   only the clamp to VCC is lost. Untested.
