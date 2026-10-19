@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""x86-64 container side: data/embed_b1.tflite (make_embed.py) -> the int16 kmodel
+"""x86-64 container side: data/embed_b1.tflite (make_embed.py) -> the int8 kmodel
 firmware/k230_capture/leakcam_change.kmodel, then the change distance of the check pairs on the
 nncase simulator vs TensorFlow.
 
 Input is the reduced luma frame leakcam_wake already holds (uint8 NHWC 1x240x320x1); the net's
 own Rescaling layer maps it to [-1, 1], so nncase preprocess only casts uint8 -> float. Output is
-the float 1x15x20x192 feature map. int16 PTQ (activations and weights): uint8 moves the distance
-of a pair by up to 0.1, int16 by 0.001.
+the float 1x15x20x192 feature map. int8 PTQ (activations and weights): on the KPU 0.5 ms per inference.
+int16 is closer to TensorFlow (0.001) but the K230 runs part of it on the CPU: 6.3 s per inference on the
+chip (tests/test012). The threshold comes from int8 distances measured on the KPU, not from TensorFlow.
 Usage: ./run_x86.sh compile_embed.py      (compile about 1 min under qemu, simulation a few more)
 """
 import os
@@ -48,8 +49,8 @@ def main():
     ptq = nncase.PTQTensorOptions()
     ptq.samples_count = 20
     ptq.calibrate_method = "Kld"
-    ptq.quant_type = "int16"
-    ptq.w_quant_type = "int16"
+    ptq.quant_type = "int8"
+    ptq.w_quant_type = "int8"
     ptq.set_tensor_data([[c[None]] for c in cal[:20]])
     comp.use_ptq(ptq)
     t0 = time.time()

@@ -2,7 +2,7 @@
  * The change net on the KPU: is what imgdiff saw a real change of the scene, or only light?
  *
  * leakcam_change.kmodel (firmware/k230_nn) is MobileNetV2-0.35 with its ImageNet weights up to
- * block_13_expand_relu, int16: the reduced luma frame (IMGDIFF_W x IMGDIFF_H) in, a 15x20x192
+ * block_13_expand_relu, int8: the reduced luma frame (IMGDIFF_W x IMGDIFF_H) in, a 15x20x192
  * feature map out. The distance of two frames is the max over the 300 cells of (1 - cosine) of
  * their features. Below the camera's threshold (CHANGE_THRESHOLD, or the one the server sent with
  * an update, nnstore.h) the change is light only and the wake goes back to sleep.
@@ -20,7 +20,8 @@ extern "C" {
 #ifndef CHANGE_KMODEL                  /* the host test points it elsewhere */
 #define CHANGE_KMODEL    "/sdcard/app/leakcam_change.kmodel"   /* the factory model */
 #endif
-#define CHANGE_THRESHOLD 0.44f          /* the factory model's, both cameras (k230_nn/make_embed.py) */
+#define CHANGE_THRESHOLD 0.43f          /* the factory int8 model's, both cameras: the largest lighting/AGC
+                                           pair distance of make_embed.py's pairs, measured on the KPU */
 
 /* the kmodel bytes; loaded through a stream, so the runtime copies them into memory the KPU reaches: 0, or -1 (logged) */
 int change_load(const uint8_t *kmodel, size_t len);

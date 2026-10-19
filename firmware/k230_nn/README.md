@@ -16,10 +16,12 @@ Design rationale and the retraining plan: [../NN.txt](../NN.txt).
 - Output: the 15x20x192 feature map, float.
 - Decision: the distance between two frames is the maximum over the 300 cells of (1 - cosine)
   of their features. A small puddle changes 1-3 cells, and a pooled global vector would average
-  that away. Below `CHANGE_THRESHOLD` (0.44) the change counts as light only.
-- Quantisation: int16 PTQ (activations and weights), KLD calibration on 20 frames.
-  `leakcam_change.kmodel` is 372 KB. On the check pairs the simulator's distance is within
-  0.002 of TensorFlow. uint8 moves it by up to 0.1, which is too much against this threshold.
+  that away. Below `CHANGE_THRESHOLD` (0.43) the change counts as light only.
+- Quantisation: int8 PTQ (activations and weights), KLD calibration on 20 frames.
+  `leakcam_change.kmodel` is 211 KB, 0.5 ms per inference on the KPU (4.4 ms per check with the 300
+  cosines). Against TensorFlow: mean 0.031, max 0.15 per pair, the same decisions (table below).
+  int16 stays within 0.002 of TensorFlow but runs part of the net on the CPU: 6.3 s per inference
+  (tests/test012), unusable on a wake.
 
 ## On the device
 
@@ -29,8 +31,8 @@ Design rationale and the retraining plan: [../NN.txt](../NN.txt).
 capture -> imgdiff vs the history view
   same                        -> not changed
   changed -> change net (history view, current frame)
-      distance <  0.44        -> not changed (light only)
-      distance >= 0.44        -> changed -> Wi-Fi -> server
+      distance <  0.43        -> not changed (light only)
+      distance >= 0.43        -> changed -> Wi-Fi -> server
       net failed (-1)         -> changed (reported)
 ```
 
@@ -46,23 +48,23 @@ capture -> imgdiff vs the history view
   OpenCV. It adds about 5 MB to the static `leakcam_wake`.
 - The host test (`make test`) replaces the net with `test/change_stub.c`.
 - Load kmodels through a stream (`interpreter::load_model(std::istream&)`): from a memory span the runtime runs
-  the caller's heap pages in place and the KPU reads garbage. The int16 net is correct on the chip but takes 6.3 s
-  per inference; 8-bit variants take 0.5 ms (tests/test012).
+  the caller's heap pages in place and the KPU reads garbage (tests/test012).
 
 ## Threshold and measured recall
 
-`make_embed.py` sets the threshold to the largest distance of any "same" pair, so no lighting
-or AGC pair crosses it. Pairs are built from `~/leakcam` and prepared as `imgdiff_reduce()`
-prepares the K230 frame:
+The threshold is the largest distance of any "same" pair, so no lighting or AGC pair crosses it.
+Pairs come from `make_embed.py` (`~/leakcam`, prepared as `imgdiff_reduce()` prepares the K230
+frame); the int8 column is the factory kmodel on the KPU (rev 1 board, 2026-10-19, all 219 pairs),
+the TensorFlow column `make_embed.py`'s own:
 
-| Pair kind | n | max or p50 distance | above 0.44 |
+| Pair kind | n | int8 on the KPU, above 0.43 | TensorFlow, above 0.44 |
 |---|---|---|---|
-| light: real dry frame vs itself at gain 0.6-1.5, gamma 0.7-1.4, noise | 24 | max 0.431 | 0 % |
-| realdry: real dry captures minutes apart | 5 | max 0.348 | 0 % |
-| wet: leak/dissolved vs its dry base | 72 | p50 0.441 | 50 % |
-| wet + light change | 72 | p50 0.428 | 42 % |
-| small wet, severity ≤ 0.25 | 8 | p50 0.262 | 25 % |
-| wipe: a real change | 30 | p50 0.422 | 43 % |
+| light: real dry frame vs itself at gain 0.6-1.5, gamma 0.7-1.4, noise | 24 | max 0.400, 0 % | max 0.431, 0 % |
+| realdry: real dry captures minutes apart | 5 | max 0.425, 0 % | max 0.348, 0 % |
+| wet: leak/dissolved vs its dry base | 72 | p50 0.432, 51 % | p50 0.441, 50 % |
+| wet + light change | 72 | p50 0.419, 40 % | p50 0.428, 42 % |
+| small wet, severity ≤ 0.25 | 8 | p50 0.244, 25 % | p50 0.262, 25 % |
+| wipe: a real change | 30 | p50 0.435, 53 % | p50 0.422, 43 % |
 
 About half of the synthetic wet pairs fall below the threshold and are not reported at that
 wake. Two things limit the cost:
@@ -78,7 +80,7 @@ The pairs are Pi-camera photos and nano-banana edits, not LEAKCAM fisheye frames
 | File | What it does |
 |---|---|
 | `make_embed.py` | host, TF: builds `data/embed_b1.tflite`, the pairs and their distances, prints the table above and the threshold |
-| `compile_embed.py` | x86 container: tflite -> int16 `../k230_capture/leakcam_change.kmodel`, then simulator vs TF on the check pairs |
+| `compile_embed.py` | x86 container: tflite -> int8 `../k230_capture/leakcam_change.kmodel`, then simulator vs TF on the check pairs |
 | `run_x86.sh` | runs a script in amd64 `python:3.11-slim` under `qemu11/.../qemu-x86_64`, with `pyenv/` and `dotnet/`; mounts `firmware/` |
 
 `data/`, `build/`, `pyenv/`, `dotnet/`, `qemu11/` and `keras_home/` are generated and not in git.
