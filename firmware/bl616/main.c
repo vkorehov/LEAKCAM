@@ -40,6 +40,9 @@
 #include "k230_link.h"
 #include "leak_wake.h"
 #include "usb_power.h"
+#ifndef LEAKCAM_RELEASE
+#include "shell.h"
+#endif
 #include "wifi_link.h"
 
 #define BOOT_TIMEOUT_MS      90000   /* SPI NAND boot + RT-Smart + agent start; measure and tighten */
@@ -405,6 +408,28 @@ static void supervisor_task(void *arg)
         vTaskDelay(pdMS_TO_TICKS(200));
     }
 }
+
+#ifndef LEAKCAM_RELEASE
+/* bench (debug builds): a K230 session on demand, as a wet probe edge starts one on USB power */
+static int cmd_session(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    if (!usb_present()) {
+        printf("session: USB power only\r\n");
+    } else if (session_running) {
+        printf("session: one is running\r\n");
+    } else if (!wifi_link_claim(WIFI_OWNER_K230)) {
+        printf("session: a BLE credential check has the radio\r\n");
+    } else {
+        session_running = true;
+        xTaskCreate(session_task, "k230", 2048, NULL, 2, NULL);
+        printf("session: K230 starting (its console is USBC2)\r\n");
+    }
+    return 0;
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_session, session, start a K230 session on USB power (debug builds));
+#endif
 
 static void usb_mode(uint32_t pf, bool first_boot)
 {
