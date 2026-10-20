@@ -75,6 +75,13 @@ the K230 held in reset, then released: SPL, DDR 2667, NAND, `OpenSBI v0.9`, then
 level at R45 pad 1 (~1.8 V expected), and Y1 (XTAL_32K_OUT, C34) on the scope; with both fine, the PMU supply on the
 switched 1V8 is left (rev 2: always-on 1.8 V).
 
+**INT4 too weak (found 2026-10-20):** with the rails on, INT4 (R45 pad 1) read **0.3 V** while R45's other pad was
+1.8 V: the K230's INT4 pad pulls down with ~20 kOhm, against which R45 = 100 k cannot make a high level. The references:
+K230 EVB ties INT4 directly to RTC_1V8 (0 Ohm + jumper, "power on by INT4 high level"); BPI CanMV-K230D-Zero uses R7
+10 k to VDD_1V8_RTC. Rework: R45 bridged with solder (INT4 = 1V8). **Result: still the same hang after OpenSBI.**
+Rev 2 anyway: INT4 tied to the PMU's 1.8 V (or <= 4.7 k). Next: confirm INT4 = 1.8 V with the bridge, and Y1
+(XTAL_32K_OUT) on the scope; then the PMU supply (AVDD1P8_RTC/LDO on the switched 1V8, always-on on both references).
+
 **Applied (2026-10-17): the K230 does not touch the PMU:** `BOARD_NOT_SUPPORT_HW_RTC`
 (64-pad pin table, no PMU RTC; as Canaan's ATK-DNK230D board does). The time then comes from the BL616 alone, which already sends it in its WAKE frame; the kernel uses the
 software RTC (`RT_USING_SOFT_RTC`). No rework, no extra boot time. The INT4 test above only confirms the cause.
