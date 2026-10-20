@@ -1,3 +1,4 @@
 # the repo root ignores *.txt (tool outputs)
 !requirements.txt
 __pycache__/
+solidworks_mcp.log

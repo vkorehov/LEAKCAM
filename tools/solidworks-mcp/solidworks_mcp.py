@@ -56,6 +56,38 @@ _tlb = None                              # sldworks.tlb type infos, for typed()
 
 BUSY_WAIT = 20.0                        # s a call waits for the COM thread before it gives up
 _busy = None                            # (what, since) of the call on the COM thread
+_com_ident = None                       # the COM thread's id: its Python stack, read while a call hangs
+_code = []                              # the lines of the run_python code running ("<string>" in its stack)
+LOG = os.environ.get("SOLIDWORKS_MCP_LOG") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "solidworks_mcp.log")
+
+
+def log(msg):
+    """one line per event in solidworks_mcp.log next to this file (a hang left nothing to read, 2026-10-20)"""
+    try:
+        with open(LOG, "a", encoding="utf-8") as f:
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S ") + msg.replace("\n", "\n    ") + "\n")
+    except OSError:
+        pass
+
+
+def com_stack():
+    """where the COM thread is now (innermost last): the run_python line and the calls under it.
+    No COM: works while a call hangs (a job sat 48 min in one call nobody could name, 2026-10-20)"""
+    fr = sys._current_frames().get(_com_ident)
+    if fr is None:
+        return ""
+    st = traceback.extract_stack(fr)
+    first = next((i for i, f in enumerate(st) if f.filename == "<string>"), None)
+    me = os.path.abspath(__file__)
+    st = st[first:] if first is not None else [f for f in st if os.path.abspath(f.filename) == me][-3:]
+    lines = []
+    for f in st:
+        if f.filename == "<string>":
+            src = _code[f.lineno - 1].strip() if 0 < f.lineno <= len(_code) else ""
+            lines.append(f"  run_python line {f.lineno}: {src}")
+        elif not (os.path.abspath(f.filename) == me and f.name in ("line", "tracer")):    # the stop tracer itself
+            lines.append(f"  {os.path.basename(f.filename)}:{f.lineno} {f.name}: {(f.line or '').strip()}")
+    return "\n".join(lines[-8:])
 
 
 async def com(fn, what):
@@ -70,10 +102,17 @@ async def com(fn, what):
         await asyncio.sleep(0.2)
 
     def job():
-        global _busy
+        global _busy, _com_ident
+        _com_ident = threading.get_ident()
         _busy = (what, time.monotonic())
+        log(f"start {what}")
         try:
-            return fn()
+            r = fn()
+            log(f"end   {what} ({time.monotonic() - _busy[1]:.1f} s)")
+            return r
+        except BaseException as e:
+            log(f"error {what} ({time.monotonic() - _busy[1]:.1f} s): {e!r}")
+            raise
         finally:
             _busy = None
     return await asyncio.wrap_future(_com.submit(job))
@@ -87,9 +126,11 @@ def busy_text():
     open_ = dialogs()
     if open_:
         return text + "; waiting on a dialog: " + "; ".join(describe(d) for d in open_) + " (dismiss_dialog closes it)"
+    st = com_stack()
+    st = f"\nnow in (innermost last):\n{st}" if st else ""
     if b[0].startswith("run_python"):
-        return text + " (a long call; no SolidWorks dialog open; stop ends it)"
-    return text + " (a long call; no SolidWorks dialog open)"
+        return text + " (a long call; no SolidWorks dialog open; stop ends it)" + st
+    return text + " (a long call; no SolidWorks dialog open)" + st
 
 
 def sw_pids():
@@ -513,6 +554,7 @@ async def run_python(code: str, wait: bool = True, timeout: float | None = None)
                "win32com": win32com, "pythoncom": pythoncom,
                "print": lambda *a, **k: print(*a, **k, file=out)}
         _stop.clear()
+        _code[:] = code.splitlines()
         try:
             with stoppable(time.monotonic() + limit):
                 exec(code, env)
@@ -522,6 +564,7 @@ async def run_python(code: str, wait: bool = True, timeout: float | None = None)
             out.write(traceback.format_exc())
         if "result" in env:
             out.write(f"result: {env['result']!r}\n")
+        log(f"output of {what}:\n{out.getvalue()[-4000:]}")
         return out.getvalue() or "(no output)"
     what = f"run_python: {code.strip().splitlines()[0][:60] if code.strip() else ''}"
     if wait:
