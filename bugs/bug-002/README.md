@@ -52,3 +52,25 @@ device. R63 (30 k, VUSB to K230 B7) is a third, weaker path.
   Check: rails on, no USB cable: VUSB ~0 V instead of ~2.2 V. Only the debug USB loses its ESD clamp.
 - Alternative: lift only D3 pin 5. The clamp stays (the PRTR5V0U2F's Zener sits between its internal VCC node and
   GND), but one pin of a 1 x 1.45 mm SOT886 is hard to lift.
+
+## Battery drain (found with this bug, 2026-10-20)
+
+Firmware cannot fix the back-feed: while VUSB sits at ~2.2 V (below the BQ24072's 3.3 V UVLO) PGOOD stays high,
+so the BL616 does not even see the plug. The source turns VBUS on once a session ends and 3V3 drops, so on battery
+charging only waits for the current session.
+
+The real risk is the cell: the BQ24072 has no discharge cutoff (on battery its BAT-FET stays on) and U5
+(TPS63802, EN on VBAT) runs down to ~1.8 V, so the BL616 and anything left on drain the cell until its
+protection board trips. Recharge from there is slow or impossible: below VBAT(SC) 1.6-2.0 V the charger sources
+only ~7.5 mA, below VLOWV 2.9-3.1 V it pre-charges at 10 %. Rev 1 has no battery input on the BL616 (the VBAT/3
+divider R59/R61 goes to K230 ADC_1 only, on the K230's 3V3), so it cannot stop in time.
+
+**Rework (rev 1): battery sense on PGOOD** ([bat_sense_rework.png](bat_sense_rework.png), where:
+[bat_sense_board.png](bat_sense_board.png)). R23 (100 k PGOOD pull-up to 3V3_SLEEP) out; 1.3 M + 1.0 M in series
+across C50 (VBAT / GND), the junction wired to R23 pad 2. PGOOD is open drain: with USB out IO3 reads
+VBAT x 0.435 (4.25 V -> 1.85 V, 3.0 V -> 1.30 V; ADC 2.0 V reference, ~1 mV of battery per step), with USB in
+PGOOD pulls it to ~0 V. Costs 1.8 uA, only without USB.
+
+**Firmware (BL616, product and test):** USB detect = IO3 below 0.5 V (ACOMP0, still the HBN plug wake). Battery
+from IO3 whenever USB is out, before every K230 power-on and during sessions. Below the cutoff: K230 off, then
+hibernate with only the USB wake (no RTC, no leak wake) until USB is plugged.

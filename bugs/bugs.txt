@@ -3,5 +3,5 @@ One folder per bug: bugs/bug-NNN/README.md (symptom, cause, solution, workaround
 
 ID       Found       Status                     Title
 bug-001  2026-10-17  worked around (47 k)     U1 is BQ24072T: battery never charges (TS has no bias); 47 k fitted, charges to full
-bug-002  2026-10-17  open, cause to confirm     K230 rails on: ~2.2 V back-fed into VUSB, USB-C hosts never turn on VBUS
+bug-002  2026-10-17  open, cause to confirm     K230 rails on: ~2.2 V back-fed into VUSB, USB-C hosts never turn on VBUS; battery sense rework (cell drain)
 bug-003  2026-10-17  solved (R45 bridged)      K230 PMU block hangs on any access: INT4 only 0.3 V (100 k pull-up too weak); INT4 = 1V8 boots
