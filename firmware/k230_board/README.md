@@ -120,11 +120,11 @@ handler; a full linux/amd64 container fails under qemu-user (bison/m4 crash).
   Wi-Fi), lwIP + SAL + WLAN framework, NTP, ADC and TS (the SDK's pm and audio code link against
   them), UFFS on SPI NAND, PWM, UART, I2C0/I2C4.
 - **OpenSBI from source**.
-- **Clock: software RTC, no PMU** (`RT_USING_SOFT_RTC`, device `rtc`, `BOARD_NOT_SUPPORT_HW_RTC`). The
-  agent sets it from the time in the BL616's `WAKE` frame at every boot (the BL616's HBN RTC keeps the time
-  across K230 power-offs). The K230's PMU is never touched: on rev 1 it sits on the switched 1V8 and does not
-  wake, and the first access to it hangs the K230 ([bug-003](../../bugs/bug-003/README.md)). The pin mux has
-  64 entries; the PMU pads IO64-IO71 are left alone.
+- **Clock: hardware RTC in the PMU** (`RT_USING_RTC_PMU`, 32.768 kHz crystal Y1; no `BOARD_NOT_SUPPORT_HW_RTC`,
+  so the pin mux has 72 entries with the PMU pads IO64-IO71). The agent sets it from the time in the BL616's
+  `WAKE` frame at every boot (the BL616's HBN RTC keeps the time across K230 power-offs).
+  **Rev 1 boards need R45 bridged** (INT4 = 1V8, [bug-003](../../bugs/bug-003/README.md)): with the 100 k
+  pull-up INT4 sits at 0.3 V, the PMU never wakes and the K230 hangs right after `OpenSBI v0.9`.
 - **NAND layout (256 MiB, 2048 + 128 B pages):** SPL 0 / 512K, TOC 896K, ota_meta 1M, U-Boot 2M,
   env 4M, RT-Smart slot A 5M and slot B 25M (20M each), `/bin` UFFS 48-68M, `/sdcard` UFFS 72-248M
   (image history, 2 x 32 MiB quota), last 8 MiB free. `genimage-spinand.cfg`, `spinand_parts.h`

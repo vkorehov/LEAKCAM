@@ -12,7 +12,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | [test004 K230 hello from SRAM](test004-k230-hello-from-sram/README.md) | 2026-10-17 | pass |
 | [test005 K230 NAND flashing](test005-k230-nand-flashing/README.md) | 2026-10-17 | pass |
 | [test006 K230 NAND boot (SPL)](test006-k230-nand-boot-spl/README.md) | 2026-10-17 | pass |
-| [test007 RT-Smart boot](test007-rtsmart-boot/README.md) | 2026-10-18 | pass; PMU worked around (bug-003) |
+| [test007 RT-Smart boot](test007-rtsmart-boot/README.md) | 2026-10-18/20 | pass; PMU RTC with R45 bridged (bug-003) |
 | [test008 LED chains](test008-led-chains/README.md) | 2026-10-16/18 | pass |
 | [test009 K230 <-> BL616 UART link](test009-uart-link/README.md) | 2026-10-18 | pass |
 | [test010 NAND persistence, full disk, speed](test010-nand-fill-speed/README.md) | 2026-10-18 | pass |
@@ -30,7 +30,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | BL616 flash, USB console, AHT20, leak ADC (dry) | pass | test002 |
 | K230 rails, boot ROM, debug UART, code from SRAM | pass | test003, test004 |
 | NAND flash + boot (SPL, DDR 2667, OpenSBI, RT-Smart), UFFS | pass | test005-007 |
-| K230 PMU / RTC | worked around: bug-003, no PMU, soft RTC | test007 |
+| K230 PMU / RTC | pass: R45 bridged (bug-003), PMU RTC in use | test007 |
 | White + IR LED chains | pass | test008 |
 | K230 <-> BL616 UART link | pass | test009 |
 | NAND persistence, full disk, speed | pass: read 9.4 MB/s (shell) / 12.7 MB/s (user program), write 1.8 MB/s | test010 |

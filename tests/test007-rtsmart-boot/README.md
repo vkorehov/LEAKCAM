@@ -4,7 +4,7 @@ From NAND: SPL -> OpenSBI -> RT-Smart, UFFS on /bin and /sdcard, the agent start
 
 | Step | Result | |
 |---|---|---|
-| Kernel after `OpenSBI v0.9` | hung at pin 64 / RTC init: [bug-003](../../bugs/bug-003/README.md) (PMU) | worked around (no PMU) |
+| Kernel after `OpenSBI v0.9` | hung at pin 64 / RTC init: [bug-003](../../bugs/bug-003/README.md) (PMU) | fixed (R45 bridged) |
 | Kernel boot | fault in the AI2D driver log | fixed (log off) |
 | /bin, /sdcard | not mounted by the SDK | fixed (UFFS mounts) |
 | /sdcard | mount failures, random bad blocks | fixed (busy-wait patch) |
@@ -16,8 +16,8 @@ From NAND: SPL -> OpenSBI -> RT-Smart, UFFS on /bin and /sdcard, the agent start
 
 - **Silent after "OpenSBI v0.9"** -> OpenSBI is quiet; the kernel hung -> found with temporary markers
   (`rt_hw_console_output`, prints via OpenSBI) in the SDK, reverted after.
-- **Hang at pin 64 / RTC** -> the PMU never wakes (supply + INT4 on switched 1V8) -> no PMU:
-  `BOARD_NOT_SUPPORT_HW_RTC`, soft RTC.
+- **Hang at pin 64 / RTC** -> INT4 at 0.3 V (R45 100 k against the pad's ~20 kOhm pull-down), the PMU never wakes ->
+  R45 bridged (INT4 = 1V8); the PMU RTC is used (2026-10-20, [bug-003](../../bugs/bug-003/README.md)).
 - **Link error** -> the pins.py footer cut also removed the camera-LED init -> restored.
 - **Fault in AI2D driver** -> Canaan's `ai_2d_log()` drops its arguments -> install.sh turns that log off.
 - **/sdcard empty, agent not found** -> the SDK never mounts the NAND -> install.sh adds UFFS mounts (nand0 /bin, nand1 /sdcard).

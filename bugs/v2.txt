@@ -25,14 +25,8 @@ From the rev 1 bugs
    (lower ISET) with a longer timer (TMR), so a charge from empty ends well inside the timer.
 5. bug-002: no data line may lift VUSB: ESD arrays' VCC from their own connector's VBUS (or ESD parts
    without a VCC pin); check R63 / K230 B7. With item 3 the CH340X path is gone; D5 on USBC1 stays.
-6. bug-003 (solved on rev 1 by INT4 = 1V8): either keep the PMU (INT4 tied to its 1.8 V, keep Y1), or leave it
-   unused (software RTC, the BL616 keeps the time) and remove what only it needs:
-   - remove Y1 (32.768 kHz crystal) and its load caps C33/C34: only the PMU/RTC uses that clock;
-   - remove the PMU pull-ups R6 (INT0), R20 (INT1); INT4 (R45) only if the PMU stays unused. If the PMU is used:
-     INT4 tied to the PMU's 1.8 V (K230 EVB) or <= 4.7 k: the INT4 pad pulls down ~20 kOhm, R45 100 k gave 0.3 V;
-   - keep AVDD1P8_RTC / AVDD1P8_LDO (D12/D11) powered from 1V8: the current K230 design guide says
-     the PMU supplies "must be powered if not in use";
-   - CLK32K768_XIN (D15): tie to GND through a resistor, XOUT (D16) open (the guide gives no rule for
-     an unused 32 kHz input; do not leave the oscillator input floating).
+6. bug-003: INT4 (ball F14) tied directly to the PMU's 1.8 V, or a pull-up of 4.7 k or less (not 100 k: the
+   INT4 pad pulls down ~20 kOhm, rev 1 had 0.3 V and the PMU never woke). The PMU RTC is used: keep Y1 and
+   C33/C34.
 7. K230 BOOT1: read 0.5 V with the BL616's IO27 floating (at the 1.8 V bank's VIL). Stronger pull-down
    (R31 lower than 10 k) or IO27 driven low by the BL616 from reset (the test firmware does now).

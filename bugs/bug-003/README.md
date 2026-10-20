@@ -1,92 +1,31 @@
-# bug-003: any access to the K230 PMU block hangs the K230
+# bug-003: K230 hangs on the first PMU access (INT4 pull-up too weak)
 
-**Solved 2026-10-20:** INT4 had only 0.3 V (R45 100 k against the pad's ~20 kOhm pull-down), so the PMU never got
-its cold-start wake level. Rev 1: bridge R45 (INT4 = 1V8). Rev 2: INT4 tied to the PMU's 1.8 V or <= 4.7 k.
-
-Found 2026-10-17 in the first NAND boot (tests/test006-k230-nand-boot-spl, tests/test007-rtsmart-boot). Board: MIFA rev 1 (fab 11a6a38).
+Found 2026-10-17, solved 2026-10-20. Board: MIFA rev 1 (fab 11a6a38). Tests: [test007](../../tests/test007-rtsmart-boot/README.md).
 
 ## Symptom
 
-The boot runs ROM -> SPL (DDR trains at 2667, NAND found, TOC read) -> `OpenSBI v0.9` (built quiet: its only line)
--> RT-Smart, then goes silent: no kernel banner, no K230_ALIVE heartbeat, nothing at any baud rate.
+The boot runs ROM -> SPL (DDR 2667, NAND) -> `OpenSBI v0.9`, then RT-Smart stops without a word: at the pin mux of
+IO64 (the first PMU pad) or at the PMU RTC driver. No K230_ALIVE heartbeat.
 
-Diagnostic prints (temporary, SDK only) narrowed it down:
-- the kernel runs: `primary_cpu_entry`, BSS, `entry()`, `rt_hw_board_init`: MMU on, heap, IRQ, tick: all printed;
-- `board_pinmux_init()` sets the bank voltage of pins 0..63, then hangs on **pin 64**, the first PMU pad
-  (IO64..IO71 are in the PMU register block, `0x91000000 + 0x80`);
-- with pins 64..71 skipped, the kernel continues: `heap: [...]`, `page: [...]`, the RT-Smart logo, then hangs
-  again where the drivers start (the hardware RTC, `RT_USING_RTC_PMU`, is in the same PMU block).
+## Cause
 
-Canaan's K230D boards (BPI CanMV-K230D-Zero, the base of this port) use the same 72-pad table and the PMU RTC,
-so the PMU is accessible on a correctly working K230D.
+The PMU wakes at power-up only on a **high level on INT4** (ball F14); until then every access to its registers blocks.
+On rev 1 INT4 has **R45 = 100 k** to 1V8, and the K230's INT4 pad pulls down with about 20 kOhm: INT4 measured
+**0.3 V** with the rails on (R45's other pad 1.8 V). The PMU never woke.
 
-## Cause (to find)
+The references pull INT4 up hard: Canaan's K230 EVB ties it straight to RTC_1V8 (0 Ohm, "power on by INT4 high
+level"), the BPI CanMV-K230D-Zero uses R7 = 10 k.
 
-Two differences from the BPI reference:
-1. **32.768 kHz crystal Y1** (Epson FC-135, `Q13FC13500004`, top side; C33/C34 20 pF to GND; XTAL_32K_IN/OUT on
-   K230 balls D15/D16). The PMU logic runs from it; with no 32 kHz clock its registers may never answer.
-2. **PMU supply.** AVDD1P8_RTC and AVDD1P8_LDO (balls D12/D11) are on the switched **1V8** rail, so the PMU
-   powers up together with the core. On the BPI board they are on VDD_1V8_RTC, an always-on LDO (XC6206) that
-   is up before everything else.
+## Fix
 
-**Next:** scope on Y1 with the K230 rails on (`pt_on`): ~32.768 kHz expected about 1 s after 1V8 comes up
-(the oscillator is analog, in the RTC domain; it needs no software). Probe XTAL_32K_OUT (Y1 pin 2 / C34) with a
-10x probe; a probe on XTAL_32K_IN can stop a 32 kHz crystal. No oscillation: check the crystal's solder joints
-and the load capacitors (a 2-pad 32 kHz crystal has no polarity). Oscillating: the PMU wants its supply before the core (point 2).
+- **Rev 1:** bridge R45 with solder (INT4 = 1V8) and cover it with epoxy: [int4_bridge.png](int4_bridge.png), where on
+  the board [int4_bridge_board.png](int4_bridge_board.png). Check: R45 pad 1 reads 1.8 V with the rails on.
+  Our rev 1 boards always carry this fix; the firmware assumes it.
+- **Rev 2:** INT4 tied to the PMU's 1.8 V, or a pull-up of 4.7 k or less (bugs/v2.txt item 6).
+- **Firmware:** the PMU RTC is used (`RT_USING_RTC_PMU`, 72-pad pin table). A board without the bridge hangs after
+  `OpenSBI v0.9`.
 
-## What the documents say (checked 2026-10-17)
+## Verified (2026-10-20)
 
-- **PMU User Guide:** "be sure to wake up the PMU module through any INT, otherwise the kernel will be stuck when
-  initializing the driver" - this symptom exactly.
-- **Hardware Design Guide (dev):** on a cold start the PMU only enables "the long press interrupt of INT0 and the
-  high-level input interrupt of INT4"; "INT4 needs to be pulled up to the PMU power supply"; "AVDD1P8_RTC must not
-  be powered up later than AVDD1P8_LDO" (met: same net); 32.768 kHz, 20 ppm, 1.8 V.
-- **Crystal:** `Q13FC13500004` = FC-135, CL 12.5 pF, ESR <= 70 kOhm, +-20 ppm. C33/C34 2 x 20 pF = 10 pF + ~2-4 pF
-  stray: matches. Same part and caps as the BL616's Y3, whose RTC runs.
-- No public report of the same hang found; every Canaan/community board found powers the PMU always-on.
-
-| | LEAKCAM rev 1 | BPI K230D-Zero |
-|---|---|---|
-| INT4 (F14) | R45 100 k to switched 1V8 | pull-up to VDD_1V8_RTC (always on) |
-| AVDD1P8_RTC/LDO (D12/D11) | switched 1V8 | VDD_1V8_RTC (always-on LDO) |
-| OUT0 / OUT1 | not connected | OUT0 drives a regulator enable |
-
-**Leading theory:** INT4, the PMU supply and the core all rise together from the switched 1V8, so the PMU never
-sees INT4 as a wake event (no edge, or sampled before its 32 kHz clock runs), stays asleep, and the first register
-access blocks. Scope check: Y1 (XTAL_32K_OUT) oscillating and INT4 at 1.8 V with the rails on = crystal cleared,
-cause = power-up order.
-
-## Solution (rev 2)
-
-To be decided by the scope check. Most likely: AVDD1P8_RTC/LDO and the INT4 pull-up on an always-on 1.8 V
-supply (a small LDO from VBAT, as the BPI board does from VBUS), up before the core rails.
-
-## Workaround (rev 1 boards)
-
-**Test first (no parts):** `pt_on` (K230 held in reset), wait 5 s, short INT4 (R45's pad on the K230 side) to GND
-for ~1 s, let go, then `pt_run`. Booting past the PMU = the power-up-order theory holds. Where:
-[int4_edge_board.png](int4_edge_board.png), zoom [int4_edge.png](int4_edge.png). R45's other pad is 1V8: never short it.
-
-**Fix: delay INT4 with a capacitor.** 10 uF from INT4 (R45's K230-side pad) to GND: with R45 (100 k) INT4 crosses
-the 1.8 V input threshold (~0.65 x 1.8 V) after ~1.05 x RC = ~1 s, when the PMU is powered and its 32 kHz clock
-runs, so it sees a clean rising level and wakes. The K230 first touches the PMU after SPL + DDR training,
-~1.5-2 s after reset, so the edge comes in time. 4.7 uF ~0.5 s, 22 uF ~2.3 s (too close to the first access).
-
-**Tested 2026-10-20: 10 uF on INT4 does not fix it.** 10 uF from R45 pad 1 (INT4) to GND, a test image with the
-PMU used again (no `BOARD_NOT_SUPPORT_HW_RTC`, `RT_USING_RTC_PMU`, 72-pad pin table; SDK copy only), rails off/on with
-the K230 held in reset, then released: SPL, DDR 2667, NAND, `OpenSBI v0.9`, then silent, the same hang. Next: INT4
-level at R45 pad 1 (~1.8 V expected), and Y1 (XTAL_32K_OUT, C34) on the scope; with both fine, the PMU supply on the
-switched 1V8 is left (rev 2: always-on 1.8 V).
-
-**INT4 too weak (found 2026-10-20):** with the rails on, INT4 (R45 pad 1) read **0.3 V** while R45's other pad was
-1.8 V: the K230's INT4 pad pulls down with ~20 kOhm, against which R45 = 100 k cannot make a high level. The references:
-K230 EVB ties INT4 directly to RTC_1V8 (0 Ohm + jumper, "power on by INT4 high level"); BPI CanMV-K230D-Zero uses R7
-10 k to VDD_1V8_RTC. Rework: R45 bridged with solder (INT4 = 1V8). First try still hung (the bridge was not making
-contact); **re-soldered, INT4 measured 1.8 V: the K230 boots with the PMU** (`rtc driver register OK`, pin mux past
-IO64-71, `msh />`, agent session complete; 10 s rails off before the test).
-Rev 2 anyway: INT4 tied to the PMU's 1.8 V (or <= 4.7 k). Next: confirm INT4 = 1.8 V with the bridge, and Y1
-(XTAL_32K_OUT) on the scope; then the PMU supply (AVDD1P8_RTC/LDO on the switched 1V8, always-on on both references).
-
-**Applied (2026-10-17): the K230 does not touch the PMU:** `BOARD_NOT_SUPPORT_HW_RTC`
-(64-pad pin table, no PMU RTC; as Canaan's ATK-DNK230D board does). The time then comes from the BL616 alone, which already sends it in its WAKE frame; the kernel uses the
-software RTC (`RT_USING_SOFT_RTC`). No rework, no extra boot time. The INT4 test above only confirms the cause.
+R45 bridged, INT4 1.8 V, rails off 10 s, cold start: `rtc driver register OK`, the pin mux past IO64-IO71, `msh />`, the
+agent's session runs to the end. Repeated after re-seating the bridge: same.
