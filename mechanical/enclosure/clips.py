@@ -13,7 +13,8 @@ SEAM_Z = (-33.6, 32.8)                          # the lip's inner outline at the
                                                 # the base's board pocket end (antenna); the sides at the pockets' X +-18.45
 REBATE_T, REBATE_H = 0.85, 1.2                  # base rebate: width into the wall, depth below the seam (lip 0.65 x 1.0)
 LIP_T, LIP_H = REBATE_T - LIP_CLEAR, REBATE_H - LIP_CLEAR
-SEAM_SCREWS = [(x, z) for z in (-37.0, 35.8) for x in (-11.8, 11.8)]   # X, Z: 1 mm of material round every hole (board pocket end 32.8, J4 flex X -9.1..8.4)
+SEAM_SCREWS = [(x, z) for z in (-37.0, 35.2) for x in (-11.8, 11.8)]   # X, Z: 1 mm of material round every hole (board pocket end 32.8, J4 flex X -9.1..8.4);
+                                                                                 # 35.2: the cover's antenna end slab >= 1.4, counterbores 0.1 inside flat_rects (37.2)
 SCREW_SEAT, SCREW_L, HEAD_H = -6.0, 16.0, 1.1   # counterbore floor (the base is shallow at the ends), M2x16 button head
 SCREW_CB, SCREW_HOLE, SCREW_PILOT = 1.9, 1.1, 0.8   # radii: hole 0.2 round the M2 (Ø2.2), pilot Ø1.6
 

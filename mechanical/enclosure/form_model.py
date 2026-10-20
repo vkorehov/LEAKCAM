@@ -220,8 +220,12 @@ def form_solid(P, report):
 def parting(form, cfg):
     """(base, cover, sheet): the form split along a loop of its own edges (cfg["loop"]), every face whole
     in one part. The sheet: flat at cfg["seam_y"] inside the inner outline (the lip, clips and screws stay
-    as they are), from there straight to cfg["edge_mm"] inside the loop along the bisector of the two faces
-    meeting there (no knife edge on either part), and cfg["past_skin_mm"] out through the skin"""
+    as they are), from there straight to a point inside the loop, then to the loop along the bisector of the
+    two faces meeting there (no knife edge on either part), and cfg["past_skin_mm"] out through the skin. The inner point PI
+    sits cfg["rim_mm"] from both faces of the fold, so neither part's wall thins out towards the edge (the
+    cover's end caps printed as a 1.3 mm wedge melting into a curve, user 2026-10-20: >= 1.2, the base gives way):
+    on a loop vertex from every face meeting there, between two vertices the sheet stays that far from both
+    (planar) faces of the edge"""
     loop = np.array(cfg["loop"], float)
     V = [np.array([v.X, v.Y, v.Z]) for v in form.vertices()]
     loop = np.array([min(V, key=lambda q: np.linalg.norm(q - p)) for p in loop])        # exact form vertices
@@ -244,13 +248,14 @@ def parting(form, cfg):
 
     faces_v = [(np.array([[v.X, v.Y, v.Z] for v in fc.vertices()]), fc) for fc in form.faces()]
     has = lambda vs, p: (np.linalg.norm(vs - p, axis=1) < 0.05).any()
-    seg_b = []
+    seg_b, seg_in = [], []
     for i in range(len(loop)):
         adj = [fc for vs, fc in faces_v if has(vs, loop[i]) and has(vs, loop[(i + 1) % len(loop)])]
         if len(adj) != 2:
             raise RuntimeError(f"parting loop edge {i}: {len(adj)} faces")
-        nb = -sum(np.array([fc.normal_at().X, fc.normal_at().Y, fc.normal_at().Z]) for fc in adj)
-        seg_b.append(unit(nb))
+        na, nb_ = (np.array([fc.normal_at().X, fc.normal_at().Y, fc.normal_at().Z]) for fc in adj)
+        seg_b.append(unit(-(na + nb_)))
+        seg_in.append(-(na + nb_) / (1 + na @ nb_))      # PL + rim * this: rim from both faces of the fold
     vb = [unit(seg_b[i - 1] + seg_b[i]) for i in range(len(loop))]
     la = [math.atan2(p[1] - C[1], p[0] - C[0]) for p in lxz]
     snap = {}                                   # an outline corner within 8 deg of a loop vertex: one ray, Q on the corner
@@ -275,8 +280,16 @@ def parting(form, cfg):
             q = np.array(snap[th], float)
         p = np.array([p2[0], loop[j][1] + s2 * (loop[(j + 1) % len(loop)][1] - loop[j][1]), p2[1]])
         bb = unit((1 - s2) * vb[j] + s2 * vb[(j + 1) % len(loop)])
-        dep = min(cfg["edge_mm"], 0.5 * (t2 - t) / max(math.hypot(bb[0], bb[2]), 0.2))
-        Q.append((q[0], YS_, q[1])); PI.append(p + bb * dep); PL.append(p); PO.append(p - bb * cfg["past_skin_mm"])
+        pin = seg_in[j] * cfg["rim_mm"]
+        if min(s2, 1 - s2) < 1e-6:                   # on a loop vertex: rim from every face meeting there
+            vx = loop[j] if s2 < 0.5 else loop[(j + 1) % len(loop)]
+            A = np.array([[fc.normal_at().X, fc.normal_at().Y, fc.normal_at().Z] for vs, fc in faces_v if has(vs, vx)])
+            pin = np.linalg.lstsq(A, -cfg["rim_mm"] * np.ones(len(A)), rcond=None)[0]
+        room = 0.8 * (t2 - t)                       # PI stays between the loop and the flat (no fold-back)
+        if math.hypot(pin[0], pin[2]) > room:
+            pin = pin * room / math.hypot(pin[0], pin[2])
+            print(f"parting: ray {math.degrees(th):.1f} deg, rim {cfg['rim_mm']} shortened to the room ({room:.2f})")
+        Q.append((q[0], YS_, q[1])); PI.append(p + pin); PL.append(p); PO.append(p - bb * cfg["past_skin_mm"])
     Vv = lambda p: b.Vector(*map(float, p))
     tri = lambda *ps: b.Face(b.Wire.make_polygon([Vv(x) for x in ps], close=True))
     sheet = [b.Face(b.Wire.make_polygon([Vv(q) for q in Q], close=True))]
@@ -513,7 +526,7 @@ def leds(form, base, cover, P, avoid):
         piece = cover if part == "cover" else base
         P_ = lambda x, y, z: o + xd * x + yd * y + n * z
         band_ = bands[part]
-        free = lambda pts, within=None: (not any(in_avoid_one(np.array(pts), k_) for k_ in avoid)) and \
+        free = lambda pts, within=None, av_=None: (not any(in_avoid_one(np.array(pts), k_) for k_ in (avoid if av_ is None else av_))) and \
             all((within or piece).is_inside(b.Vector(*map(float, q))) for q in (pts if within else pts[::7])) and \
             (within is None or not any(band_.is_inside(b.Vector(*map(float, q))) for q in pts))
         # the plate over the whole strip, its tongue out past one end into a slot block standing on the skin
@@ -524,7 +537,13 @@ def leds(form, base, cover, P, avoid):
             x0_, x1_ = L / 2 + 0.3, L / 2 + 0.3 + sb
             return [P_(sA * x_, y, -z) for x_ in np.arange(x0_, x1_ + 0.01, 0.5)
                     for y in np.arange(-(Wp / 2 + 1.5), Wp / 2 + 1.51, 0.5) for z in np.arange(2.2, back + c["plate_t"] + 1.5 + 0.01, 0.5)]
-        ends_ok = [sA for sA in (1, -1) if free(block_pts(sA), piece)]   # (it may merge into the skin)
+        def slot_pts(sA):
+            return [P_(sA * x_, y, -z) for x_ in np.arange(L / 2 + 0.2, L / 2 + 0.3 + sl_ + 0.01, 0.25)
+                    for y in np.arange(-(Wp / 2 + 0.2), Wp / 2 + 0.21, 0.25) for z in np.arange(back - 0.2, back + c["plate_t"] + 0.21, 0.2)]
+        real = avoid[:len(P["leds"]["avoid"])]                # the block is solid: it may merge into the kept screw blocks,
+        ends_ok = [sA for sA in (1, -1)                       # its slot (a cut) may not; both may merge into the skin
+                   if free(block_pts(sA), piece, real)
+                   and not any(in_avoid_one(np.array(slot_pts(sA)), k_) for k_ in avoid)]
         sA = ends_ok[0] if ends_ok else 0
         x34 = -sA * L / 4                                    # the screw 3/4 of the strip from the slot
         tried = []

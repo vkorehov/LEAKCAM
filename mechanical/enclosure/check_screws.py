@@ -17,7 +17,7 @@ WALL = 1.0
 
 # the screws (base frame mm): name, part(s), axis entry point, axis direction (into the material),
 # sections [(from, to, radius)] in mm along the axis from the entry point, blind end or through
-SEAM = [(x, z) for z in (-37.0, 35.8) for x in (-11.8, 11.8)]          # clips.py SEAM_SCREWS
+SEAM = [(x, z) for z in (-37.0, 35.2) for x in (-11.8, 11.8)]          # clips.py SEAM_SCREWS
 CAM = [(10.5, -7.52), (-10.5, -7.52), (10.5, 4.98), (-10.5, 4.98)]     # camera holes (X, Z)
 BOARD_HOLE = (-15.64, -6.64)
 
