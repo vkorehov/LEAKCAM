@@ -1,5 +1,8 @@
 # bug-003: any access to the K230 PMU block hangs the K230
 
+**Solved 2026-10-20:** INT4 had only 0.3 V (R45 100 k against the pad's ~20 kOhm pull-down), so the PMU never got
+its cold-start wake level. Rev 1: bridge R45 (INT4 = 1V8). Rev 2: INT4 tied to the PMU's 1.8 V or <= 4.7 k.
+
 Found 2026-10-17 in the first NAND boot (tests/test006-k230-nand-boot-spl, tests/test007-rtsmart-boot). Board: MIFA rev 1 (fab 11a6a38).
 
 ## Symptom
@@ -78,7 +81,9 @@ switched 1V8 is left (rev 2: always-on 1.8 V).
 **INT4 too weak (found 2026-10-20):** with the rails on, INT4 (R45 pad 1) read **0.3 V** while R45's other pad was
 1.8 V: the K230's INT4 pad pulls down with ~20 kOhm, against which R45 = 100 k cannot make a high level. The references:
 K230 EVB ties INT4 directly to RTC_1V8 (0 Ohm + jumper, "power on by INT4 high level"); BPI CanMV-K230D-Zero uses R7
-10 k to VDD_1V8_RTC. Rework: R45 bridged with solder (INT4 = 1V8). **Result: still the same hang after OpenSBI.**
+10 k to VDD_1V8_RTC. Rework: R45 bridged with solder (INT4 = 1V8). First try still hung (the bridge was not making
+contact); **re-soldered, INT4 measured 1.8 V: the K230 boots with the PMU** (`rtc driver register OK`, pin mux past
+IO64-71, `msh />`, agent session complete; 10 s rails off before the test).
 Rev 2 anyway: INT4 tied to the PMU's 1.8 V (or <= 4.7 k). Next: confirm INT4 = 1.8 V with the bridge, and Y1
 (XTAL_32K_OUT) on the scope; then the PMU supply (AVDD1P8_RTC/LDO on the switched 1V8, always-on on both references).
 
