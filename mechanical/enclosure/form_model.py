@@ -571,7 +571,7 @@ def leds(form, base, cover, P, avoid):
         cuts[part].append(pilot)
         fr["screw"] = P_(xc, yb, -top - 1.1)               # its head's top (ISO 7380 M2: 1.1 high)
         # the clamp, in place: plate + rib along the strip, the ear from the board's far edge to past the
-        # boss, the boss's room under the ear, the screw's hole, the wire pads' channel across the middle
+        # boss, the boss's room under the ear, the screw's hole, the wire pads' notches at both sides of the middle
         y0, y1 = sorted((-side * (W / 2), yb + side * max(c["boss_r"], ring)))
         mid = (xa + xb) / 2
         plate = b.Pos(mid, 0, -back - c["plate_t"] / 2) * b.Box(xb - xa, Wp, c["plate_t"])
@@ -593,6 +593,8 @@ def leds(form, base, cover, P, avoid):
         room = b.Pos(xc, yb, -(bt - c["gap"] + 1.0) / 2) * b.Box(2 * he + 1, 2 * c["boss_r"] + 0.6, bt - c["gap"] + 1.0)
         hole = b.Pos(xc, yb, -top / 2) * b.Cylinder(1.1, top + 1)
         wires = b.Pos(0, 0, -back - c["wire_channel"] / 2 + 0.01) * b.Box(c["wire_gap"], W + 2 * max(c["boss_y"]) + 6, c["wire_channel"] + 0.02)
+        wires -= b.Pos(0, 0, -back - c["wire_channel"] / 2) * b.Box(c["wire_gap"] + 1, c["wire_keep"], c["wire_channel"] + 1)   # the middle keeps
+        # touching the board (no bridge, user 2026-10-20): the wires leave through the two side notches only
         clamp_ = loc * ((plate + rib + ear) - room - hole - wires)
         fr["clamp"] = clamp_.clean()
         g, wi, sd = 0.3, cfg["clamp_way"], sl_ + 0.5           # its envelope, 0.3 grown; its way in: down along -n

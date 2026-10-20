@@ -946,6 +946,7 @@
    "boss_r": 1.8,
    "gap": 0.2,
    "wire_gap": 6.8,
+      "wire_keep": 1.2,
    "wire_channel": 1.6,
    "shift": 4.0,
    "ear_len": 6.0,
