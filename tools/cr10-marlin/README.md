@@ -28,7 +28,7 @@ Built from the official example `config/examples/Creality/CR-10/CrealityV1`
 | HEATER_0_MAXTEMP, HOTEND_OVERSHOOT; BED_MAXTEMP | 320, 20; 130 | nozzle settable up to 300 °C (only with an all-metal heat break; a PTFE liner stays at 240), bed up to 120 °C (insulated) |
 | SHOW_BOOTSCREEN | off | frees flash for the custom thermistor math |
 | FAN_MIN_PWM; FAN_KICKSTART_TIME, FAN_KICKSTART_POWER (Configuration_adv.h) | 51; 100 ms, 255 | the 5015 part-cooling blower stalls below 20 % (S51): M106 1..255 is mapped onto 20..100 %, 0 stays off, and every start from standstill gets 100 ms at full power |
-| DEFAULT_KP/KI/KD; DEFAULT_BED_KP/KI/KD | 28.20 / 2.61 / 76.25; 192.76 / 35.12 / 705.31 | PID autotune: hot end `M303 E0 S230 C8 U1` on 2026-10-19 after the bi-metal heat break, silicone sock and new heatsink fan (holding 230 °C took a bias of ~200-214/255, ~80 % power: check that the heatsink fan does not blow on the block; was 31.41 / 2.72 / 90.70 from `M303 E0 S250 C8 U1`), bed `M303 E-1 S80 C4 U1`. The insulated bed needs about 10 min per cycle, and C8 runs into Marlin's autotune timeout |
+| DEFAULT_KP/KI/KD; DEFAULT_BED_KP/KI/KD | 30.30 / 2.82 / 81.29; 192.76 / 35.12 / 705.31 | PID autotune: hot end `M303 E0 S230 C8 U1` on 2026-10-20 with the bi-metal heat break, silicone sock, new heatsink fan and a Kapton air baffle under the fan outlet: holding 230 °C takes ~58 % (bias ~144/255; ~80 % without the baffle on 2026-10-19), 25 -> 230 °C in 164 s. Bed `M303 E-1 S80 C4 U1`. The insulated bed needs about 10 min per cycle, and C8 runs into Marlin's autotune timeout |
 | SLIM_LCD_MENUS | on | needed to fit in 130048 bytes |
 | EEPROM_SETTINGS | on (from the example) | M500 saves offsets and the mesh |
 

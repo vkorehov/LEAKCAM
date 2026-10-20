@@ -689,9 +689,9 @@
     #define DEFAULT_KI_LIST {   1.72,   1.72 }
     #define DEFAULT_KD_LIST {  73.96,  73.96 }
   #else
-    #define DEFAULT_KP  28.20   // M303 E0 S230 C8: bi-metal heat break, silicone sock, new heatsink fan (2026-10-19)
-    #define DEFAULT_KI   2.61
-    #define DEFAULT_KD  76.25
+    #define DEFAULT_KP  30.30   // M303 E0 S230 C8: bi-metal heat break, silicone sock, new heatsink fan, Kapton air baffle (2026-10-20)
+    #define DEFAULT_KI   2.82
+    #define DEFAULT_KD  81.29
   #endif
 #else
   #define BANG_MAX 255    // Limit hotend current while in bang-bang mode; 255=full current
