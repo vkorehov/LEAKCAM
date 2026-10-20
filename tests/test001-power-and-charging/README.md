@@ -43,10 +43,12 @@ USB on USB-C 1, K230 off.
 | Cell lifted on a bench supply, then board charger | bench run: 2.2 A falling to 1.6 A at 4.3 V (too much: use 4.20 V, <= 0.5 A); rest voltage after it 3.54-3.56 V | |
 | Board charger, cell at ~3.56 V rest | BAT 3.64 V, then 3.71 V: charging | **pass** |
 | Charge current | ~0.2-0.3 A estimated (BAT - rest = 0.08 V over ~0.3-0.45 ohm), below the 0.89 A set point: likely U1's thermal regulation, ~1.4 W at (5.2 - 3.6) V x 0.89 A | note |
+| End of charge (2026-10-20) | D1 off; cell 4.15 V at rest; about 6 h from ~3.56 V (not watched in between) | **pass** |
 
-**Pass: the board charges** with the 47 k. Open: the end of charge (BAT 4.20 V, D1 off; overnight, 2026-10-19/20)
-and the real current: V(R7) to GND / 2.5 = charge current in A (ISET monitor, V_ISET = I_charge / 400 x R_ISET,
-datasheet SLUS810 eq. 3), no wire cut needed.
+**Pass: the board charges to full** with the 47 k (D1 off, 4.15 V at rest). Note: ~6 h is close to the 6.3 h
+safety timer (TMR R21 47 k), which also turns D1 off when it expires; 4.15 V at rest says the cell was full, but a cell
+starting near empty may hit the timer at this low current. Not measured yet: the real current, V(R7) to GND / 2.5 =
+charge current in A (ISET monitor, V_ISET = I_charge / 400 x R_ISET, datasheet SLUS810 eq. 3), no wire cut needed.
 
 ## Obstacles
 

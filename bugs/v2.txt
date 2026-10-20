@@ -20,6 +20,9 @@ Debug console
 From the rev 1 bugs
 -------------------
 4. bug-001: U1 BQ24072RGTR (C140288), not the T variant: the NTC on TS works as drawn.
+   Charge time: on rev 1 a full charge took ~6 h at ~0.2-0.3 A (U1, a linear charger, throttles for heat:
+   ~1.4 W at a low cell voltage), close to the 6.3 h safety timer. Choose a switching charger, or less heat
+   (lower ISET) with a longer timer (TMR), so a charge from empty ends well inside the timer.
 5. bug-002: no data line may lift VUSB: ESD arrays' VCC from their own connector's VBUS (or ESD parts
    without a VCC pin); check R63 / K230 B7. With item 3 the CH340X path is gone; D5 on USBC1 stays.
 6. bug-003: K230 PMU not used (software RTC, the BL616 keeps the time). Once rev 1 is proven to run

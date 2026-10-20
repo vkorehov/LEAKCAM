@@ -6,7 +6,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 
 | Test | Date | Result |
 |---|---|---|
-| [test001 power and charging](test001-power-and-charging/README.md) | 2026-10-17 | battery rails pass; **charging fail** (bug-001) |
+| [test001 power and charging](test001-power-and-charging/README.md) | 2026-10-17/20 | pass: battery rails; charging with the bug-001 47 k |
 | [test002 BL616 flash and console](test002-bl616-flash-and-console/README.md) | 2026-10-17 | pass |
 | [test003 K230 rails and USB boot](test003-k230-rails-and-usb-boot/README.md) | 2026-10-17 | pass; USB-C attach with rails on: bug-002 |
 | [test004 K230 hello from SRAM](test004-k230-hello-from-sram/README.md) | 2026-10-17 | pass |
@@ -25,7 +25,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | Subsystem | State | Test |
 |---|---|---|
 | Battery rails, 3V3_SLEEP | pass | test001 |
-| Charging | pass with the bug-001 47 k (BAT 3.64 -> 3.71 V); end of charge to confirm; ~0.2-0.3 A (thermal) | test001 |
+| Charging | pass with the bug-001 47 k: full in ~6 h (4.15 V, D1 off); ~0.2-0.3 A (thermal), close to the 6.3 h timer | test001 |
 | USB-C power with K230 on | **open**: bug-002, plug USB before `pt_on` | test003 |
 | BL616 flash, USB console, AHT20, leak ADC (dry) | pass | test002 |
 | K230 rails, boot ROM, debug UART, code from SRAM | pass | test003, test004 |
