@@ -44,6 +44,7 @@ USB on USB-C 1, K230 off.
 | Board charger, cell at ~3.56 V rest | BAT 3.64 V, then 3.71 V: charging | **pass** |
 | Charge current | ~0.2-0.3 A estimated (BAT - rest = 0.08 V over ~0.3-0.45 ohm), below the 0.89 A set point: likely U1's thermal regulation, ~1.4 W at (5.2 - 3.6) V x 0.89 A | note |
 | End of charge (2026-10-20) | D1 off; cell 4.15 V at rest; about 6 h from ~3.56 V (not watched in between) | **pass** |
+| USB replugged at 4.15 V | D1 flashes once, then off: the cell is above the ~4.10 V recharge threshold, so the charger reports done at once. The overnight charge therefore ended by termination, not on the 6.3 h timer | pass |
 
 **Pass: the board charges to full** with the 47 k (D1 off, 4.15 V at rest). Note: ~6 h is close to the 6.3 h
 safety timer (TMR R21 47 k), which also turns D1 off when it expires; 4.15 V at rest says the cell was full, but a cell

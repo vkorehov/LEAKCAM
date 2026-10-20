@@ -76,7 +76,8 @@ pre-charge range BAT rose 3.64 -> 3.71 V on the board charger (test001). The cel
 supply: after the drain to 2.9 V the charger's battery detection did not see it (D1 flash, BAT jumping). The current
 was estimated at only ~0.2-0.3 A, likely U1's thermal regulation (~1.4 W in the QFN-16 at a low cell voltage); measure
 it as V(R7) / 2.5. End of charge confirmed 2026-10-20: D1 off, cell 4.15 V at rest after ~6 h from ~3.56 V. ~6 h is close to the
-6.3 h safety timer (TMR R21 47 k): from a near-empty cell the low current could end on the timer instead. Rev 2: a
+6.3 h safety timer (TMR R21 47 k); a replug at 4.15 V only flashed D1 (above the ~4.10 V recharge threshold), so this
+charge ended by termination. From a near-empty cell the low current could still end on the timer instead. Rev 2: a
 switching charger, or less heat in U1 (lower ISET, or a longer timer), so a full charge finishes well inside the timer.
 
 ## Lesson
