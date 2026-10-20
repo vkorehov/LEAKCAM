@@ -397,8 +397,9 @@ def render_ts_fix(pcb, comps, out):
 
 
 def render_bat_sense(pcb, comps, out):
-    """the rev 1 battery sense rework (bugs/bug-002): R23 (PGOOD pull-up to 3V3_SLEEP) out, a 1.3 M / 1.0 M divider
-    from VBAT across C50 with its middle wired to R23 pad 2, so the BL616 reads the battery on IO3 while USB is out"""
+    """the rev 1 battery sense rework (bugs/bug-002): R23 (PGOOD pull-up to 3V3_SLEEP) out, a 680 k / 510 k divider
+    from VBAT across C50 with 100 nF on its middle, wired to R23 pad 2, so the BL616 reads the battery on IO3 while
+    USB is out"""
     region = (40.6, 49.2, 39.4, 47.6)
     x0, x1, y0, y1 = region
     px = 110.0
@@ -406,9 +407,10 @@ def render_bat_sense(pcb, comps, out):
     im = Image.open(out)
     W, H = im.size
     notes = ("1. Remove R23 (100 k, 0402). Pad 1 (3V3_SLEEP) stays bare; pad 2 is PGOOD = BL616 IO3.",
-             "2. 1.3 M and 1.0 M (1 %) in series from C50 pad 1 (VBAT) to C50 pad 2 (GND): 1.3 M on the VBAT side.",
-             "3. Thin insulated wire from the junction of the two resistors to R23 pad 2. Optional: 100 nF junction - C50 pad 2.",
-             "Check, USB out: R23 pad 2 = VBAT x 0.435 (cell 3.8 V -> 1.65 V). USB in: ~0 V (PGOOD low).",
+             "2. 680 k and 510 k (1 %) in series from C50 pad 1 (VBAT) to C50 pad 2 (GND): 680 k on the VBAT side.",
+             "3. 100 nF from the junction to C50 pad 2 (GND): required (the ADC samples from it, not through the 290 k).",
+             "4. Thin insulated wire from the junction to R23 pad 2.",
+             "Check, USB out: R23 pad 2 = VBAT x 0.429 (cell 3.8 V -> 1.63 V). USB in: ~0 V (PGOOD low).",
              "Firmware reads the battery there whenever USB is out; USB detect threshold 0.5 V (bugs/bug-002).")
     new = Image.new("RGB", (W, H + 60 + 45 * len(notes)), "white")
     new.paste(im, (0, 0))
@@ -432,7 +434,12 @@ def render_bat_sense(pcb, comps, out):
     j = ((a[0] + b[0]) / 2, a[1] - 60)
     d.line((vbat, a, j), fill=(0, 0, 0), width=5, joint="curve")
     d.line((gnd, b, j), fill=(0, 0, 0), width=5, joint="curve")
-    for (u, v), lab in (((vbat, a), "1.3 M"), ((gnd, b), "1.0 M")):
+    c = (b[0] - 190, b[1])                                  # the 100 nF: its own leads, left of the 510 k
+    d.line((j, c, (c[0], gnd[1] - 45), (gnd[0] - 12, gnd[1] - 45), gnd), fill=(0, 0, 0), width=5, joint="curve")
+    mx, my = c[0], (c[1] + gnd[1] - 45) / 2
+    d.rounded_rectangle((mx - 75, my - 24, mx + 75, my + 24), radius=12, fill=(255, 245, 210), outline=(0, 0, 0), width=4)
+    d.text((mx, my), "100 nF", fill=(0, 0, 0), font=fb, anchor="mm")
+    for (u, v), lab in (((vbat, a), "680 k"), ((gnd, b), "510 k")):
         mx, my = (u[0] + v[0]) / 2, (u[1] + v[1]) / 2
         d.rounded_rectangle((mx - 70, my - 24, mx + 70, my + 24), radius=12, fill=(255, 255, 255), outline=(0, 0, 0), width=4)
         d.text((mx, my), lab, fill=(0, 0, 0), font=fb, anchor="mm")

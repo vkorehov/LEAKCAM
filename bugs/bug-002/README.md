@@ -66,10 +66,12 @@ only ~7.5 mA, below VLOWV 2.9-3.1 V it pre-charges at 10 %. Rev 1 has no battery
 divider R59/R61 goes to K230 ADC_1 only, on the K230's 3V3), so it cannot stop in time.
 
 **Rework (rev 1): battery sense on PGOOD** ([bat_sense_rework.png](bat_sense_rework.png), where:
-[bat_sense_board.png](bat_sense_board.png)). R23 (100 k PGOOD pull-up to 3V3_SLEEP) out; 1.3 M + 1.0 M in series
-across C50 (VBAT / GND), the junction wired to R23 pad 2. PGOOD is open drain: with USB out IO3 reads
-VBAT x 0.435 (4.25 V -> 1.85 V, 3.0 V -> 1.30 V; ADC 2.0 V reference, ~1 mV of battery per step), with USB in
-PGOOD pulls it to ~0 V. Costs 1.8 uA, only without USB.
+[bat_sense_board.png](bat_sense_board.png)). R23 (100 k PGOOD pull-up to 3V3_SLEEP) out; 680 k + 510 k in series
+across C50 (VBAT / GND), 100 nF from the junction to GND (required: the
+ADC samples from it, not through the divider's 290 k), the junction wired to R23 pad 2. PGOOD is open drain: with USB out IO3 reads
+VBAT x 0.429 (4.25 V -> 1.82 V, 3.0 V -> 1.29 V; ADC 2.0 V reference, ~1 mV of battery per step), with USB in
+PGOOD pulls it to ~0 V. Costs 3.5 uA, only without USB. Check after the rework: BL616 reading vs a meter at two cell voltages
+(within ~20 mV; more means pin leakage through the 290 k: then 390 k / 300 k).
 
 **Firmware (BL616, product and test):** USB detect = IO3 below 0.5 V (ACOMP0, still the HBN plug wake). Battery
 from IO3 whenever USB is out, before every K230 power-on and during sessions. Below the cutoff: K230 off, then
