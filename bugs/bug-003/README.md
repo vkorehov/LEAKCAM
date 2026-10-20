@@ -69,6 +69,12 @@ the 1.8 V input threshold (~0.65 x 1.8 V) after ~1.05 x RC = ~1 s, when the PMU 
 runs, so it sees a clean rising level and wakes. The K230 first touches the PMU after SPL + DDR training,
 ~1.5-2 s after reset, so the edge comes in time. 4.7 uF ~0.5 s, 22 uF ~2.3 s (too close to the first access).
 
+**Tested 2026-10-20: 10 uF on INT4 does not fix it.** 10 uF from R45 pad 1 (INT4) to GND, a test image with the
+PMU used again (no `BOARD_NOT_SUPPORT_HW_RTC`, `RT_USING_RTC_PMU`, 72-pad pin table; SDK copy only), rails off/on with
+the K230 held in reset, then released: SPL, DDR 2667, NAND, `OpenSBI v0.9`, then silent, the same hang. Next: INT4
+level at R45 pad 1 (~1.8 V expected), and Y1 (XTAL_32K_OUT, C34) on the scope; with both fine, the PMU supply on the
+switched 1V8 is left (rev 2: always-on 1.8 V).
+
 **Applied (2026-10-17): the K230 does not touch the PMU:** `BOARD_NOT_SUPPORT_HW_RTC`
 (64-pad pin table, no PMU RTC; as Canaan's ATK-DNK230D board does). The time then comes from the BL616 alone, which already sends it in its WAKE frame; the kernel uses the
 software RTC (`RT_USING_SOFT_RTC`). No rework, no extra boot time. The INT4 test above only confirms the cause.
