@@ -397,7 +397,7 @@ def render_ts_fix(pcb, comps, out):
 
 
 def render_bat_sense(pcb, comps, out):
-    """the rev 1 battery sense rework (bugs/bug-002): R23 (PGOOD pull-up to 3V3_SLEEP) out, a 680 k / 510 k divider
+    """the rev 1 battery sense rework (bugs/bug-004): R23 (PGOOD pull-up to 3V3_SLEEP) out, a 680 k / 510 k divider
     from VBAT across C50 with 100 nF on its middle, wired to R23 pad 2, so the BL616 reads the battery on IO3 while
     USB is out"""
     region = (40.6, 49.2, 39.4, 47.6)
@@ -411,7 +411,7 @@ def render_bat_sense(pcb, comps, out):
              "3. 100 nF from the junction to C50 pad 2 (GND): required (the ADC samples from it, not through the 290 k).",
              "4. Thin insulated wire from the junction to R23 pad 2.",
              "Check, USB out: R23 pad 2 = VBAT x 0.429 (cell 3.8 V -> 1.63 V). USB in: ~0 V (PGOOD low).",
-             "Firmware reads the battery there whenever USB is out; USB detect threshold 0.5 V (bugs/bug-002).")
+             "Firmware reads the battery there whenever USB is out; USB detect threshold 0.5 V (bugs/bug-004).")
     new = Image.new("RGB", (W, H + 60 + 45 * len(notes)), "white")
     new.paste(im, (0, 0))
     d = ImageDraw.Draw(new)
@@ -700,11 +700,11 @@ def main():
                          "Leave pad 5 (VUSB) and pad 2 (GND) bare. Check: no short between the bridges, D+/D- not to VUSB/GND.",
                          "Then rails on, no USB cable: VUSB (C2 pad 1) ~0 V instead of ~2.2 V. The debug USB loses its ESD clamp."))
     render_led_wiring(pcb, comps, os.path.join(HERE, "led_wiring.png"))
-    # bug-002 battery sense: the BL616 reads VBAT on IO3 (PGOOD) while USB is out
-    render_bat_sense(pcb, comps, os.path.join(REPO, "bugs", "bug-002", "bat_sense_rework.png"))
+    # bug-004 battery sense: the BL616 reads VBAT on IO3 (PGOOD) while USB is out
+    render_bat_sense(pcb, comps, os.path.join(REPO, "bugs", "bug-004", "bat_sense_rework.png"))
     bat = [{"id": "C50", "rail": "divider at C50", "pad": "C50.1", "gnd": "C50.2", "side": "top"},
            {"id": "R23", "rail": "remove", "pad": "R23.2", "gnd": "R23.1", "side": "top"}]
-    render_points_sheet(pcb, comps, bat, os.path.join(REPO, "bugs", "bug-002", "bat_sense_board.png"), None, 22.0,
+    render_points_sheet(pcb, comps, bat, os.path.join(REPO, "bugs", "bug-004", "bat_sense_board.png"), None, 22.0,
                         ", battery sense rework (where)", {"C50": "VBAT / GND pads", "R23": "pad 2 = PGOOD: wire"},
                         ("Top side. R23 is right of the BL616 module (U11), just below C109 / R72 (leak divider);",
                          "C50 (U8's input cap) is down and to the right of it, left of C105."))
