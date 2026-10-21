@@ -98,4 +98,10 @@ n/a for the reading itself (Q1 switches the divider only while the K230 runs: ~1
 - **CH340 re-enumerated (VMware popup) when USB-C 1 was plugged back at 19:41**, its own cable (USB-C 2) in all
   the time, K230 running, BL616 not reset -> not explained. U2 runs from the switched 3V3 (bug-002), so it stayed
   up on battery; a candidate is a short dip on VBAT/3V3 when U1 switches OUT from the cell to the input -> connect
-  in VMware again; watch for it on the next USB plug with the K230 running.
+  in VMware again.
+  **Repeated 19:51** (dmesg + both consoles logged): unplug USB-C 1 -> nothing (BL616 "unplugged", CH340 stays);
+  plug -> the CH340 drops at once (USB disconnect, then a new device 10 s later); BL616 only logs "plugged in", no
+  reset; K230 at msh afterwards (a reboot of it not ruled out: its console was gone during the drop). Reproducible.
+  Candidates: (a) D3's VCC is VUSB, back-fed to ~2.2 V from U2's D+ while unplugged (bug-002); the step to 5 V on
+  plug couples into D+/D- and the host sees a disconnect; (b) a dip on the switched 3V3 that resets U2. Both go
+  away in rev 2 (U2 on USBC2's VBUS, D3 VCC off VUSB: bugs/v2.txt 3/5). Scope 3V3 (U2 VCC) and D+ on the plug to tell.
