@@ -43,9 +43,9 @@ HOSTS = {
     "led_clamp_2-38": ["cover-1", "base-1"],
     "led_clamp_3-38": ["base-1", "cover-1"],
     "led_clamp_4-5": ["base-1", "cover-1"],
-    "LEDS-148": ["led_clamp_3-38", "base-1", "cover-1"],
-    "LEDS-149": ["led_clamp_1-38", "cover-1", "base-1"],
-    "LEDS-150": ["led_clamp_2-38", "cover-1", "base-1"],
+    "LEDS-148": ["led_clamp_1-38", "cover-1", "base-1"],      # by where each sits (component box vs leds.pinned)
+    "LEDS-149": ["led_clamp_2-38", "cover-1", "base-1"],
+    "LEDS-150": ["led_clamp_3-38", "base-1", "cover-1"],
     "LEDS-151": ["led_clamp_4-5", "base-1", "cover-1"],
 }
 # no clearance fit to state (user, 2026-10-14: cells glued, cameras, lenses, USB plugs; the probe legs are a tight fit):
@@ -382,11 +382,12 @@ if ONLY:
     old = [nm for nm in old if any(f" {o} " in f" {nm} " or nm.split(" ", 1)[-1].startswith(o) for o in ONLY)]
 delete_mates(m, old)
 say(f"deleted {len(old)} old mates")
+asm_name = get(m, "GetTitle").rsplit(".", 1)[0]
 for n, c in C.items():
-    if n != FIXED and get(c, "IsFixed"):
+    if n != FIXED and get(c, "IsFixed"):            # by name: IEntity.Select2 on a component is "Member not found"
         m.ClearSelection2(True)
-        typed(c, "IEntity").Select2(False, 0)
-        m.UnfixComponent()
+        if m.Extension.SelectByID2(f"{n}@{asm_name}", "COMPONENT", 0, 0, 0, False, 0, nothing(), 0):
+            m.UnfixComponent()
 cache, done, missing = {}, [], []
 sub = board_substrate(C["MIFA-1"]) if not ONLY or "MIFA-1" in ONLY else True
 if sub is True:
@@ -413,7 +414,6 @@ for n in list(missing):                  # no fit faces: hold them by their orig
     if mate_origin_planes(m, C, n):
         missing.remove(n)
         done.append(n)
-asm_name = get(m, "GetTitle").rsplit(".", 1)[0]
 for n in list(missing):                  # turned off the axes: fixed where it is
     m.ClearSelection2(True)
     if m.Extension.SelectByID2(f"{n}@{asm_name}", "COMPONENT", 0, 0, 0, False, 0, nothing(), 0):
