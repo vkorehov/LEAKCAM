@@ -14,3 +14,12 @@ Before the cameras arrive: the two camera I2C buses and the CAM_IO1 lines must b
 ## Pass
 
 Buses idle high, scans end cleanly, CAM_IO1 low, connector supplies as designed.
+
+
+## Boot time
+
+I2C bus init and sensor probe time without cameras (part of today's boot).
+
+## Battery energy
+
+Current with the cameras powered but idle (their standby draw while the K230 runs).

@@ -14,3 +14,12 @@ lenses, EXTERNAL_PARTS.md; Arducam B0370 format on J4/CSI0 and J5/CSI2).
 5. In the enclosure: lens openings clear, LED light not leaking into the lenses.
 
 Speed (frame rate, I2C clock) is test019; the encoder with real frames test026; the whole leak path test103.
+
+
+## Boot time
+
+Sensor init to first frame, both cameras (adds to every session that captures).
+
+## Battery energy
+
+Battery current per camera capturing, with white and IR LEDs on; energy per capture of both cameras.

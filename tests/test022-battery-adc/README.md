@@ -26,3 +26,12 @@ K230 running (BL616 test firmware: `pt_on`, `pt_run`), K230 console (USBC2), met
 
 ADC within +-30 mV of the meter's VBAT (after a one-point correction if it is a constant offset), noise <= 10 mV
 between reads.
+
+
+## Boot time
+
+n/a: one conversion during the session (not at boot).
+
+## Battery energy
+
+n/a for the reading itself (Q1 switches the divider only while the K230 runs: ~14 uA then, nothing while off); the test gives the voltage the energy audit (test104) logs.

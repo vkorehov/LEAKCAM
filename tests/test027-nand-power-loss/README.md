@@ -15,3 +15,12 @@ can cut the rails. UFFS is log-structured; this proves it on rev 1.
 ## Pass
 
 100 random power cuts: every mount succeeds, no fsynced file lost or corrupt, no space leak.
+
+
+## Boot time
+
+Mount time after an unclean power cut (UFFS recovery may scan more) vs a clean mount.
+
+## Battery energy
+
+n/a: a robustness test (the energy of writes is test016).

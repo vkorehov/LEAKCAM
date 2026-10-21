@@ -2,8 +2,9 @@
 
 Status: **planned** (2026-10-21): after the product BL616 firmware runs (hibernate, real sessions).
 
-Fills [ENERGY.txt](../../ENERGY.txt): every consumer and every kind of wake measured, the budget per day and month,
-and the expected battery life with one and with two cells.
+Adds up the per-part figures that every low-level test records (section "Battery energy" in each) in
+[ENERGY.txt](../../ENERGY.txt), and checks the sum against a multi-day run. It finds no bottleneck itself: those
+show in the low-level tests (user, 2026-10-21).
 
 ## Steps
 
@@ -20,3 +21,12 @@ and the expected battery life with one and with two cells.
 ## Pass
 
 ENERGY.txt filled with measured figures; the budget and the long run agree within ~20 %; battery life recorded.
+
+
+## Boot time
+
+The boot's share of the daily energy (test021 x wakes per day).
+
+## Battery energy
+
+This test is the audit: ENERGY.txt filled, battery life.

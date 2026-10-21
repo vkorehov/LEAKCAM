@@ -12,6 +12,16 @@ firmware [bl616_powertest](../../tools/power-bringup/bl616_powertest).
 
 **Pass.** Wet leak test and Wi-Fi: with the product BL616 firmware (later).
 
+
+
+## Boot time
+
+BL616 boot to its first useful step (USB console up, or the battery path's decision) - test020 covers the BL616 wake path.
+
+## Battery energy
+
+n/a: flashing and the console run from USB power.
+
 ## Obstacles
 
 - **USB-C cable not detected** -> a USB-C port needs 5.1 k CC-GND -> resistor on the yellow CC wire (6.7 k works).

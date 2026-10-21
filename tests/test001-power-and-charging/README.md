@@ -51,6 +51,16 @@ safety timer (TMR R21 47 k), which also turns D1 off when it expires; 4.15 V at 
 starting near empty may hit the timer at this low current. Not measured yet: the real current, V(R7) to GND / 2.5 =
 charge current in A (ISET monitor, V_ISET = I_charge / 400 x R_ISET, datasheet SLUS810 eq. 3), no wire cut needed.
 
+
+
+## Boot time
+
+Not recorded (before the boot rule, 2026-10-21). If re-run: rails-on time (3V3 up 1.7 ms after K230_PWR, measured in test003's pt_on) and RSTN delay: the floor of every boot.
+
+## Battery energy
+
+Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: the battery-only rails' quiescent current (BL616 running the test firmware, K230 rails off and on); charging is from USB, n/a.
+
 ## Obstacles
 
 - **No charging** -> U1 is BQ24072**T** (no internal TS bias), circuit drawn for the plain BQ24072 -> rev 1: 47 k

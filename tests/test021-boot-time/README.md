@@ -33,3 +33,12 @@ timestamps (skill k230-rtsmart-hangs `console_record.py`, K230 console on the CH
 ## Pass
 
 Recorded per step; the biggest steps named as candidates to shorten.
+
+
+## Boot time
+
+This test is the boot time measurement.
+
+## Battery energy
+
+Battery current through the boot, per step (scope over a shunt in the battery lead): energy per boot = the fixed cost of every wake. Also after each speed change (NAND clock, DDR 3200).

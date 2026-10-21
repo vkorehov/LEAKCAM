@@ -10,6 +10,16 @@ USB-C 1 (`make run`), nothing written to the NAND.
 
 **Pass.**
 
+
+
+## Boot time
+
+n/a: a bring-up step outside the product boot.
+
+## Battery energy
+
+n/a: a one-off bring-up step, no product activity.
+
 ## Obstacles
 
 - **Loader format** -> `--custom-loader` takes a raw binary at 0x80360000, no header.

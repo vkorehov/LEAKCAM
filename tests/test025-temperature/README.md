@@ -15,3 +15,12 @@ enclosure closed.
 
 Readings plausible (idle a few C above room temperature, monotonic warm-up), and under worst-case load well below
 the K230's limit (datasheet); note the margin for the enclosure.
+
+
+## Boot time
+
+n/a (the TS read is in the session); boot temperature recorded at READY.
+
+## Battery energy
+
+The current at each load step logged next to the temperature (self-heating follows power).

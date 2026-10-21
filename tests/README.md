@@ -1,7 +1,13 @@
 # LEAKCAM rev 1 board tests
 
 One folder per test, in bring-up order (001-099: one interface or chip; 100+: high level, the product's whole flow): setup, readings, result, and the obstacles met (problem -> cause -> fix),
-with the test's own probe sheets and recordings. Board bugs: [bugs/](../bugs/bugs.txt). Rev 2: [bugs/v2.txt](../bugs/v2.txt).
+with the test's own probe sheets and recordings. **Every test records battery energy** (section "Battery energy"): the
+tested activity's average battery current and duration, and its energy per operation (uAh and mJ), measured on
+battery only (USB-C 1 out) with a meter in the battery lead (steady states) or a shunt and scope (short events); "n/a"
+with the reason where the battery is not involved. The figures feed [ENERGY.txt](../ENERGY.txt). **Every test records boot time** too (section "Boot time"): what the tested part adds to
+the K230's power-on -> READY (its driver init, mount, probe, load) or to the BL616's wake path, from test021's
+timestamped milestones; "n/a" where the part is not touched at boot. Energy and boot time are measured per part, in
+the low-level tests, so a bottleneck shows where it is; the 100+ tests only add them up. Board bugs: [bugs/](../bugs/bugs.txt). Rev 2: [bugs/v2.txt](../bugs/v2.txt).
 Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello): [tools/power-bringup](../tools/power-bringup/README.md).
 
 | Test | Date | Result |

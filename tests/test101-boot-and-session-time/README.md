@@ -16,3 +16,12 @@ stopping, power-off. With test102 it decides the battery cost of a wake.
 
 Recorded: rails-on -> READY (median, max), and what dominates it (DDR training, NAND read, mounts); first
 candidates to shorten.
+
+
+## Boot time
+
+Boot is test021; this test adds the session after READY.
+
+## Battery energy
+
+Energy per whole session (with test102): the number the budget multiplies by the wakes per day.

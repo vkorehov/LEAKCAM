@@ -12,6 +12,16 @@ From NAND: SPL -> OpenSBI -> RT-Smart, UFFS on /bin and /sdcard, the agent start
 
 **Pass.**
 
+
+
+## Boot time
+
+Not recorded (before the boot rule, 2026-10-21). If re-run: OpenSBI -> RT-Smart banner -> msh (now part of test021).
+
+## Battery energy
+
+Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: superseded by test021 (boot energy) and test101 (session).
+
 ## Obstacles
 
 - **Silent after "OpenSBI v0.9"** -> OpenSBI is quiet; the kernel hung -> found with temporary markers

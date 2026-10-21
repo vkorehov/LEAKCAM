@@ -10,6 +10,16 @@ Boot straps: [boot_straps_board.png](boot_straps_board.png) (where), [boot_strap
 
 **Pass:** SPL boots from NAND, DDR trains at 2667. The kernel after OpenSBI: test007.
 
+
+
+## Boot time
+
+Not recorded (before the boot rule, 2026-10-21). If re-run: ROM -> SPL banner and SPL DDR training time (now part of test021).
+
+## Battery energy
+
+Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: superseded by test021 (boot energy).
+
 ## Obstacles
 
 - **"boot failed with exit code 13"** = file error in the boot medium (19 = no medium) -> the ROM reads the NAND.

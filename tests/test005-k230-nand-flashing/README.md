@@ -11,6 +11,16 @@ Every flash: [firmware/k230_board/flash_nand.sh](../../firmware/k230_board/flash
 
 **Pass.**
 
+
+
+## Boot time
+
+n/a: flashing.
+
+## Battery energy
+
+n/a: flashing runs from USB power.
+
 ## Obstacles
 
 - **x86-only `k230_flash_cli`** -> run in the container with `--privileged -v /dev/bus/usb`.

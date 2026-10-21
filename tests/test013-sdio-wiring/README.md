@@ -15,6 +15,16 @@ NetHub driver's probe (`/dev/bl616` ioctl 0x4c01).
 **Pass.** Next: the BL616 SDIO device firmware, enumeration, Wi-Fi, and the bus speed raised to the fastest clock
 that runs without CRC errors.
 
+
+
+## Boot time
+
+n/a: a wiring check.
+
+## Battery energy
+
+n/a: a wiring check.
+
 ## Obstacles
 
 - **K230 MMC0 pads are dedicated, not GPIO** (no `pinRead`) -> the SD host's present-state register shows the live

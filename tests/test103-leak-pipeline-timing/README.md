@@ -15,3 +15,12 @@ with everything running together.
 ## Pass
 
 Recorded timeline; the longest step named; the leak-to-video time within what the user expects.
+
+
+## Boot time
+
+Boot share of the leak-to-video time (test021).
+
+## Battery energy
+
+Energy per leak event, wake to clip uploaded and power-off.

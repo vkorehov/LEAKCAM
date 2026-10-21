@@ -16,3 +16,12 @@ encoder can be fed synthetic frames, so speed and memory can be measured before 
 
 Both channels hold 15 fps with margin, memory leaves room for the change net and the network stack, the stream
 decodes and keeps the rate and IDR interval.
+
+
+## Boot time
+
+Encoder / media stack init time (VB pools, VENC) at boot or at first use.
+
+## Battery energy
+
+Battery current with one and two encoder channels running; energy per second of clip (two cameras, 15 fps).

@@ -14,3 +14,12 @@ After the cameras arrive (OV5647 on CSI0 / CSI2, I2C0 / I2C4).
 ## Pass
 
 Both cameras at the design rate with no dropped frames for 10 min; I2C clean at the configured clock.
+
+
+## Boot time
+
+Sensor probe and init time at boot, both sensors (without cameras the probes fail: their timeout is in today's boot).
+
+## Battery energy
+
+Battery current with one and two sensors streaming (vs K230 idle); energy per second of capture and per still.

@@ -14,3 +14,12 @@ flash path achieves, and its total time, as a reference for production programmi
 ## Pass
 
 Figures recorded (K230 writes 3.7-5.5 MB/s seen 2026-10-21); a production flash time per board.
+
+
+## Boot time
+
+n/a: flashing.
+
+## Battery energy
+
+n/a: flashing runs from USB power.

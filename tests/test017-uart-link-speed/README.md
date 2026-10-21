@@ -17,3 +17,12 @@ Latency matters (a session waits on each ACK, 300 ms resend timeout); throughput
 
 Latency and error-free limit recorded; the product keeps 115200 unless a faster rate is clean with margin and buys
 session time.
+
+
+## Boot time
+
+Time from RT-Smart up to READY acknowledged at each baud (link handshake share of the boot).
+
+## Battery energy
+
+Session time saved by a faster baud x the K230's session current = energy saved per wake (the link itself draws next to nothing).

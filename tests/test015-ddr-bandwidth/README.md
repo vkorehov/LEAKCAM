@@ -15,3 +15,12 @@ camera pipeline can do at once.
 ## Pass
 
 Recorded MB/s per case; the drop under concurrent load; no errors (compare with test024's stress).
+
+
+## Boot time
+
+The DDR clock's effect on boot: training time at 2667 vs 3200 MT/s (SPL), from test021's timestamps.
+
+## Battery energy
+
+Battery current during each bench (copy, read, write) vs idle; energy per GB moved. With test024 at 3200 MT/s: does the faster clock cost more per GB or save by finishing sooner?

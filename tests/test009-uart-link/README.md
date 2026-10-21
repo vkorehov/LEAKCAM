@@ -9,6 +9,16 @@ K230 UART1 (IO40 TX, IO41 RX, `/dev/uart1`) to BL616 UART0 (IO22 RX, IO21 TX), 1
 
 **Pass.**
 
+
+
+## Boot time
+
+The agent's READY on the link marks the end of the boot (test021's last milestone); link init itself negligible.
+
+## Battery energy
+
+n/a: the link's own current is negligible next to the K230 running; its time cost is test017.
+
 ## Obstacles
 
 - **Each READY 5 times** -> by design: the agent resends while no ACK comes (the test firmware sends none).

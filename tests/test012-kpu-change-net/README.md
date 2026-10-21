@@ -47,6 +47,16 @@ the product image with it boots and the agent ends its session normally.
 
 **Pass.**
 
+
+
+## Boot time
+
+Not recorded (before the boot rule, 2026-10-21). If re-run: KPU power-up and kmodel load time (at boot or at first use in the session).
+
+## Battery energy
+
+Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: extra current during inference vs idle; energy per change check (4.4 ms per check).
+
 ## Obstacles
 
 - **First inference hangs** -> KPU never powered: `pm_core_init()` fails without `CONFIG_RT_USING_REGULATOR` ->

@@ -18,3 +18,12 @@ A meter or USB power meter in the battery lead (board on battery only), or a shu
 ## Pass
 
 Recorded figures; energy per wake and the number of wakes a 1000 mAh cell allows.
+
+
+## Boot time
+
+Boot energy per wake from test021's timing x its current.
+
+## Battery energy
+
+This test is the energy measurement of a session; its figures go into ENERGY.txt.

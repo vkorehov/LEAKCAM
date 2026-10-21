@@ -17,3 +17,12 @@ limit) to the BL616's 2.4 GHz radio. Needs the product BL616 firmware (open on r
 ## Pass
 
 TCP up >= 2 x the two streams' rate with margin at the install distance; no RTMP drops; figures recorded.
+
+
+## Boot time
+
+Time from the WIFI request to associated, DHCP and NTP (paid in every networked session after the boot).
+
+## Battery energy
+
+Battery current: Wi-Fi join (energy per join, paid on every networked session), idle associated, sending; energy per MB uploaded.

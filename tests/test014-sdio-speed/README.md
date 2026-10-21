@@ -35,6 +35,16 @@ Order: BL616 `pt_off`, `pt_boot1 low`, `pt_on`, `pt_sdu on`, `pt_run`; K230 `bl6
 NetHub's credit header back (the bench now drops echoes), the resets the watchdog starved by the bench's busy wait:
 both in the test code, not the bus.
 
+
+
+## Boot time
+
+Not recorded (before the boot rule, 2026-10-21). If re-run: SDIO card scan and attach time (bl616_scan: card bound) - done at WIFI time in a session, not at boot.
+
+## Battery energy
+
+Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: BL616 + K230 current while transferring vs idle; energy per MB over SDIO (part of every upload).
+
 ## Obstacles
 
 - **Product BL616 firmware does not reach its USB console on rev 1**, even reduced to `board_init()` + scheduler (a

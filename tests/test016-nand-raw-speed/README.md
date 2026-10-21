@@ -17,3 +17,12 @@ it into the NAND itself and UFFS, and checks the SPI clock's headroom.
 
 Raw vs file system figures recorded; the fastest clock that verifies over the whole image area 10 times is the
 setting, or the current one is shown to be the limit.
+
+
+## Boot time
+
+The NAND clock's effect on boot: SPL kernel load and UFFS mount time at each clock (test021 milestones).
+
+## Battery energy
+
+Battery current during raw reads, programs, erases at each NAND clock; energy per MB read and per MB written, and how it changes with the clock (faster clock, shorter on-time).

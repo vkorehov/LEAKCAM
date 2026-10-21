@@ -14,6 +14,16 @@ K230 shell (`cp`, `df`, `rm`, `hexdump`). `/sdcard` = nand1, UFFS, 169 MB free w
 
 **Pass.**
 
+
+
+## Boot time
+
+Not recorded (before the boot rule, 2026-10-21). If re-run: the UFFS mount time of /sdcard and /bin, empty and full (a full /sdcard may mount slower: tree build scans blocks).
+
+## Battery energy
+
+Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: extra current while reading and writing /sdcard vs idle; energy per MB written (clips) and read.
+
 ## Obstacles
 
 - **`echo` cannot create files** -> msh `echo` opens without O_CREAT -> create with `cp` first.

@@ -15,3 +15,12 @@ session when the edges stop for 2 s. Without it a product session never ends (or
 ## Pass
 
 Edges at 1 Hz +-10 % while the agent runs, none after it stops; low with the rails off.
+
+
+## Boot time
+
+Time from RT-Smart to the first heartbeat edge (the agent's start).
+
+## Battery energy
+
+n/a: one GPIO toggling every 500 ms.

@@ -16,3 +16,12 @@ This test runs a pattern memory test over most of the free RAM for a long time.
 ## Pass
 
 0 errors over >= 1 h and >= 5 cold starts; no reset (a silent reset = watchdog: the test must sleep between passes).
+
+
+## Boot time
+
+Each DDR setting's training time (with test015), cold starts recorded.
+
+## Battery energy
+
+Battery current at 2667 and 3200 MT/s under the same load: the cost of the faster DDR per second, against the time it saves (test015, test021).

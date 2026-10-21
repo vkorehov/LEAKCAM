@@ -25,6 +25,16 @@ Probe sheet: [mic.png](mic.png).
 high-pass, normalised). Gain stays 54 dB for now (PGA 20 dB would give 10 dB headroom). MIC_BIAS 1.4 V is below
 the mic's 1.8 V characterisation point; sensitivity is fine.
 
+
+
+## Boot time
+
+Codec/audio init time at boot, if any is done at boot (else at first use: then its start-up time when the hook needs it).
+
+## Battery energy
+
+Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: extra current with the codec and mic recording vs idle (mA, per second of clip).
+
 ## Obstacles
 
 - **Mic check hung after the codec power-up** -> the AI takes its frames from a VB pool and none existed ->

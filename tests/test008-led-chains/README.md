@@ -29,6 +29,16 @@ Probe sheets: [led_drivers.png](led_drivers.png), [r66_white_return.png](r66_whi
 
 **Pass.** Brightness at 2-3 m: with the cameras.
 
+
+
+## Boot time
+
+n/a for boot (the LED drivers are idle until used); PWM init time is in test021's driver init if visible.
+
+## Battery energy
+
+Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: battery current with white and IR at 25/50/100 % duty; mA per chain at full on (the clip lighting cost per second).
+
 ## Obstacles
 
 - **White never lit; J1 + at 37 V** -> open chain; LEDs came on while an ohmmeter bridged J1 pin 2 to GND -> J1 pin 2
