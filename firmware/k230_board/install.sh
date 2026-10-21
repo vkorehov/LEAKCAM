@@ -249,6 +249,21 @@ grep -q 'k230d_leakcam.dtb' "$UB/arch/riscv/dts/Makefile" ||
         "$UB/arch/riscv/dts/Makefile"
 grep -q 'k230d_leakcam.dtb' "$UB/arch/riscv/dts/Makefile" || { echo "could not register the dtb"; exit 1; }
 
+# ISP tuning files: the SDK copies every ov5647-* resolution (3.3 MB) into /bin; the product runs 1280x960 only.
+# UFFS mount time follows the used pages, so the other four sets cost ~85 ms per boot (tests/test021, 2026-10-21).
+ISPMK=$SDK/src/rtsmart/mpp/userapps/src/sensor/Makefile
+grep -q 'LEAKCAM: ov5647 1280x960 only' "$ISPMK" || python3 - "$ISPMK" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = 'ISP_SENSOR_CONFIG_PATTERNS += $(if $(filter y,$(CONFIG_MPP_ENABLE_SENSOR_OV5647)),ov5647-*)\n'
+b = ('# LEAKCAM: ov5647 1280x960 only (the binned mode the cameras run)\n'
+     'ISP_SENSOR_CONFIG_PATTERNS += $(if $(filter y,$(CONFIG_MPP_ENABLE_SENSOR_OV5647)),ov5647-1280x960*)\n')
+assert s.count(a) == 1, 'sensor Makefile changed, cannot apply the ISP files patch'
+open(p, 'w').write(s.replace(a, b))
+PY
+grep -q 'LEAKCAM: ov5647 1280x960 only' "$ISPMK" || { echo "ISP files patch not applied"; exit 1; }
+rm -f "$SDK"/output/*/images/bin/ov5647-*                  # earlier builds' sets: the rule only adds files
+
 # 4. the LEAKCAM apps (capture, history, stream): Makefile + Kconfig, sources copied into ./src
 APP=$SDK/src/applications/leakcam
 rm -rf "$APP"; mkdir -p "$APP/src"

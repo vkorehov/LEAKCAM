@@ -447,6 +447,15 @@ back to U13's GND pad beside MICPL; 1 µF 0402 fits better than the 0805 (footpr
 
 ## 7. Open firmware work
 
+- **Full sensor resolution (decided 2026-10-21, refactor later).** The cameras are to run at the OV5647's native
+  2592x1944 instead of the 1280x960 binned mode the code uses now (WIDTH/HEIGHT in leakcam_wake.c and
+  leakcam_stream.c; the trimmed /bin keeps the 1280x960 ISP set until then). What it touches:
+  - ISP set 2592x1944 in /bin (install.sh pattern); sensor mode ~15 fps max at full resolution (2-lane MIPI).
+  - DDR: NV12 frame 7.6 MB; 2 cameras x 3 VICAP buffers + encoder references ~60-75 MB of 128 MB: size the pools.
+  - History keyframe ~3-5 MB per camera (quota 4 MB too small, >= 6 MB); references 2 x 2 x ~5 MB.
+  - /sdcard ~40 MB of data -> 64 MiB; UFFS mount time follows used pages: ~+0.8 s per wake (tests/test021).
+  - imgdiff grid and mask constants (80x80 blocks, 16x12), change-net input scaling, encoder bitrate.
+  - Option noted: capture and clips at full resolution, history/references stored at 1280x960 (boot stays ~0.64 s).
 - **The real server.** Replace the mock; same two requests. Add authentication and TLS.
 - **Run on hardware.** The agent, `leakcam_wake` and the push mode are built and tested on the
   host only.
