@@ -1,6 +1,6 @@
 # test021: K230 boot time
 
-Status: **planned** (2026-10-21).
+Status: **first measurement** (2026-10-21): 1.00 s reset release -> app init; msh prompt and READY not timed yet.
 
 Every wake powers the K230 up from cold, so its boot time is paid on every session (the whole session: test101).
 Not measured yet: the test firmware does not time it and the product BL616 firmware (which logs "READY <ms> after
@@ -35,17 +35,42 @@ timestamps (skill k230-rtsmart-hangs `console_record.py`, K230 console on the CH
 Recorded per step; the biggest steps named as candidates to shorten.
 
 
-## Metrics (to fill on every run: skill leakcam-test-metrics)
+## Results (2026-10-21)
+
+The kernel times itself: `rdtime` (27 MHz) counts from the K230's reset release (a crash reboot restarts it too), and
+temporary init hooks record it at the end of each RT-Thread init level (`boot_times`,
+[leakcam_bench.c](../test016-nand-raw-speed/leakcam_bench.c)). The CH340 console attaches too late for the first lines
+(it is powered from the switched 3V3, bug-002), so no host timing is needed.
+
+| Step (after reset release) | Boot 1 (cold) | Boot 2 (crash reboot) | Step |
+|---|---|---|---|
+| ROM, SPL, DDR training, OpenSBI -> kernel init | 0.230 s | 0.234 s | 230 ms |
+| board, prev, device, component init | 0.285 s | 0.278 s | 50 ms |
+| **env init: /bin + /sdcard UFFS mounts** | **0.980 s** | **0.973 s** | **695 ms** |
+| app init done | 1.003 s | 0.997 s | 23 ms |
+| msh prompt, agent READY | not timed | | |
+
+**The UFFS mounts are 70 % of the boot to app init**: first lever. Then the NAND clock (80 MHz, test016) for the
+mount reads and the kernel load. Still to time: main/msh and the agent's READY (needs the product BL616 or a K230-side
+hook), and 5 cold boots (each costs a VMware click for the CH340).
+
+## Metrics (2026-10-21, bench image)
+
+Setup (2026-10-21): USB-C 1 the only power path (USB-C 2 VBUS cut, PR1 VBUS cut), meter (10 A range, 0.1 mA
+shown) in its VBUS; cell charged (D1 off). VBAT not measured: P uses 3.8 V nominal (`energy.py --vbat 3.8`).
+Board floor: rails off, BL616 awake on USB 60.5 mA; rails on, K230 in reset 86.3 mA; K230 at msh idle (agent running,
+READY not answered by the test firmware) 204 mA. A mA-range meter (2-5 ohm) reset the board; an earlier meter had a
+burned mA fuse: readings from before the swap are void.
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
-| This part's boot share | not measured yet | - | |
-| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
-| boot steps (SPL, DDR, OpenSBI, RT-Smart, mounts, READY) | not measured yet | NAND 100 MHz, DDR 3200 (SPEEDS.txt 3) | % of the top |
-| Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
-| Power, energy per operation | not measured yet | - | scripts/energy.py |
-| Per day | not measured yet | ENERGY.txt line | n per day |
+| Boot, reset release -> app init (2 boots) | 1.00 s (0.997-1.003) | target: to set | longest step: UFFS mounts 0.70 s |
+| This part's boot share | - | - | (the boot is this test) |
+| Test run time | 1 command; setup: reflash (USB boot) ~5 min with clicks | - | |
+| NAND clock in the boot | 50 MHz | 80 MHz stable (test016) | |
+| Current: rails in reset / boot peak / msh idle | 86.3 / ~227 / 204 mA | - | USB-C 1 VBUS |
+| Power, energy per boot (to app init) | ~215 mA x 1.0 s = 0.82 J, 60 uAh | - | 3.8 V nominal |
+| Per day | 4 report sessions: 0.24 mAh/day (boot to app init only) | ENERGY.txt 3 | 0.7 % of 1000 mAh / month |
 
 ## Boot time
 

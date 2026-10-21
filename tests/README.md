@@ -27,13 +27,13 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | [test012 KPU change net](test012-kpu-change-net/README.md) | 2026-10-18/19 | pass: int8 net, 0.5 ms per inference, threshold 0.43 |
 | [test013 SDIO wiring](test013-sdio-wiring/README.md) | 2026-10-19 | pass: CLK, CMD, D0-D3 both directions, no shorts |
 | [test014 SDIO speed](test014-sdio-speed/README.md) | 2026-10-21 | pass: 50 MHz 4-bit, bus 21 MB/s, end to end 9.4 MB/s, no CRC errors; soak 56 runs / 109 MB clean |
-| [test015 DDR bandwidth](test015-ddr-bandwidth/README.md) | | planned |
-| [test016 NAND raw speed and SPI clock](test016-nand-raw-speed/README.md) | | planned |
+| [test015 DDR bandwidth](test015-ddr-bandwidth/README.md) | | pass at 2667: 4.05/4.08 GB/s, CPU 1600 MHz |
+| [test016 NAND raw speed and SPI clock](test016-nand-raw-speed/README.md) | | pass 50 + 80 MHz (20.6 MB/s), 100 MHz fails |
 | [test017 UART link speed and latency](test017-uart-link-speed/README.md) | | planned |
 | [test018 USB boot and flashing speed](test018-usb-flash-speed/README.md) | | planned |
 | [test019 camera CSI and I2C speed](test019-camera-csi-i2c/README.md) | | planned |
 | [test020 BL616 internal timing](test020-bl616-internal-timing/README.md) | | planned |
-| [test021 K230 boot time](test021-boot-time/README.md) | | planned |
+| [test021 K230 boot time](test021-boot-time/README.md) | | 1.00 s to app init; mounts 0.70 s |
 | [test022 battery ADC](test022-battery-adc/README.md) | | planned |
 | [test023 K230 heartbeat (K230_ALIVE)](test023-heartbeat/README.md) | | planned |
 | [test024 DDR stress](test024-ddr-stress/README.md) | | planned |

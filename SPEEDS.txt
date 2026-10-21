@@ -14,14 +14,15 @@ or a measurement yet. Keep this file current when a test or a setting changes it
   SDIO K230 MMC0 <-> BL616    50 MHz, 4-bit, high speed    bus writes 21.4 MB/s, reads 21.5 MB/s 50 MHz (BL616 SDIO 2.0)  yes       test014
                                                            end to end 9.4 MB/s (echo device)
                                                            soak 109 MB, 0 CRC errors
-  SPI NAND (W25N02KV)         quad SPI, 50 MHz             file system: read 9.4 MB/s (shell),   100 MHz: K230 QSPI SDR  no        test010,
-                              (SPI_NAND_SPI_FREQ)          12.7 MB/s (program), write 1.8 MB/s   100 (design guide 3-4);           test016
-                                                                                                 chip 104 MHz
-  DDR (K230D SiP)             2667 MT/s (U-Boot            -                                     3200 MT/s: Canaan's     no        test015,
-                              K230D_SIP_LPDDR4_2667)                                             K230D SiP settings                test024
+  SPI NAND (W25N02KV)         quad SPI, 50 MHz             raw: read 15.6 MB/s, program 4.6,     80 MHz stable (raw      no        test010,
+                              (SPI_NAND_SPI_FREQ)          erase 2.46 ms/block; 80 MHz: read     20.6 MB/s); 100 MHz               test016
+                                                           20.6, program 5.0; 100 MHz: zeros     fails (zeros, no error)
+                                                           file system: read 9.4-12.7, write 1.8
+  DDR (K230D SiP)             2667 MT/s (U-Boot            write 4.05, read 4.08, copy 1.86      3200 MT/s: Canaan's     no        test015,
+                              K230D_SIP_LPDDR4_2667)       GB/s (76 % of 5.33 GB/s)              K230D SiP settings                test024
                                                                                                  (3200_HWODT / _ALLODT)
-  CPU (C908)                  1.6 GHz (power manager       - (test015 measures it: rdcycle)      1.6 GHz (top profile,   yes, to   test015
-                              profile 0, manual)                                                 0.8 V)                  confirm
+  CPU (C908)                  1.6 GHz (power manager       1599-1600 MHz (rdcycle / rdtime)      1.6 GHz (top profile,   yes       test015
+                              profile 0, manual)                                                 0.8 V)
   KPU                         800 MHz (PLL3 / 2)           change net int8: 0.5 ms per           800 MHz (top profile,   yes       test012
                                                            inference, 4.4 ms per check           pm_domain_kpu.c)
   Video encoder (VPU)         800 MHz                      -                                     800 MHz (only profile)  yes       test026
@@ -65,6 +66,9 @@ or a measurement yet. Keep this file current when a test or a setting changes it
                                                   starts (each retrains); test025 temperature; test015 bandwidth
   SPI NAND       50 -> 66 -> 80 -> 100 MHz        test016: whole image area read-verified 10x, free-area write +
                  (RT-Smart and U-Boot/SPL each)   verify; 10 cold boots (SPL and U-Boot read the image too)
+                                                  2026-10-21, RT-Smart at run time: 66, 80 pass (80: /bin 10x equal,
+                                                  writes verified); 100 fails (reads zeros, driver silent). Next: SPL +
+                                                  U-Boot + Kconfig at 80, 10 cold boots, then adopt 80.
   UART link      115200 -> 230400 ... 2 Mbaud      test017: 10 MB both ways, 0 errors; both firmwares changed together
   AHT20 I2C      100 -> 400 kHz                   1000 reads, 0 CRC errors (cheap, so taken although it gains little)
   CPU, KPU, VPU  already at the top profile        CPU clock confirmed by test015's cycle count
