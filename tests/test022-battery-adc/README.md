@@ -86,7 +86,7 @@ n/a for the reading itself (Q1 switches the divider only while the K230 runs: ~1
   the K230 at ~200 mA, no cutoff: bug-004); the cell read 3.69 V at its wires, so it was the open JB1 joint, not a
   drain or a tripped PCM -> cell wired to C11, charged on the board (test001); then the battery case of this test.
 - **Battery case: VBAT 4.11 V for a moment, then BAT and VBAT both ~1.5 V, board reset** (2026-10-21 ~19:35; K230
-  running at msh, cell 4.18 V just before, cell's + wired to C11, VBUS opened at the USB-C 2 meter) -> the cell
+  running at msh, cell 4.18 V just before, cell's + wired to C11, USB-C 1 unplugged, the CH340 on USB-C 2 left in) -> the cell
   stopped feeding BAT under the ~200 mA load; the BL616 came back with defaults (K230 off) once USB was back. Cause
   open: the cell's - joint on JB1 pin 2 (same kind of joint as the failed +), the new C11 wire, or the pack's PCM
   latching -> measure the cell at its own wires, and its - wire to board GND (C11 pad 2). Not reproduced: at 19:31
@@ -95,7 +95,7 @@ n/a for the reading itself (Q1 switches the divider only while the K230 runs: ~1
   moved; the pack's PCM cut on the short and the board reset with no cell behind it. The PCM stayed latched (BAT
   ~1.5 V) with the board still on it as a load, and released only when USB was plugged back: after a short the
   pack needs the charger to recover (usual for DW01-type PCMs). Product: a short leaves the unit dead until USB.
-- **CH340 re-enumerated (VMware popup) when VBUS was restored at 19:41**, K230 running, BL616 not reset -> U2 runs
-  from the switched 3V3 (bug-002), so it stayed up on battery with the cable's data lines still in; restoring VBUS
-  most likely made the Mac re-attach the port (VUSB back-fed to ~2.2 V through D3 before it, or the lead touching
-  the splice) -> connect in VMware again; harmless.
+- **CH340 re-enumerated (VMware popup) when USB-C 1 was plugged back at 19:41**, its own cable (USB-C 2) in all
+  the time, K230 running, BL616 not reset -> not explained. U2 runs from the switched 3V3 (bug-002), so it stayed
+  up on battery; a candidate is a short dip on VBAT/3V3 when U1 switches OUT from the cell to the input -> connect
+  in VMware again; watch for it on the next USB plug with the K230 running.
