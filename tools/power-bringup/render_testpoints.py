@@ -639,11 +639,11 @@ def main():
                          "Leave pad 5 (VUSB) and pad 2 (GND) bare. Check: no short between the bridges, D+/D- not to VUSB/GND.",
                          "Then rails on, no USB cable: VUSB (C2 pad 1) ~0 V instead of ~2.2 V. The debug USB loses its ESD clamp."))
     render_led_wiring(pcb, comps, os.path.join(HERE, "led_wiring.png"))
-    # test021 battery ADC: the K230 reads VBAT (C15) through R59/R61; BAT (C11) is the cell
+    # test022 battery ADC: the K230 reads VBAT (C15) through R59/R61; BAT (C11) is the cell
     adc = [{"id": "VBAT", "rail": "VBAT (what the ADC reads)", "pad": "C15.1", "gnd": "C15.2", "side": "top"},
            {"id": "BAT", "rail": "BAT (the cell)", "pad": "C11.1", "gnd": "C11.2", "side": "top"}]
-    render_points_sheet(pcb, comps, adc, os.path.join(TESTS, "test021-battery-adc", "adc_points.png"), (49.0, 61.0, 28.0, 38.0), 80.0,
-                        ", test021 battery ADC", {"VBAT": "= K230 ADC_1 reading (raw x 5400 / 4095)", "BAT": "the cell (VBAT on battery)"},
+    render_points_sheet(pcb, comps, adc, os.path.join(TESTS, "test022-battery-adc", "adc_points.png"), (49.0, 61.0, 28.0, 38.0), 80.0,
+                        ", test022 battery ADC", {"VBAT": "= K230 ADC_1 reading (raw x 5400 / 4095)", "BAT": "the cell (VBAT on battery)"},
                         ("Red probe on the red ring, black on the black ring (GND, the cap's other pad).",
                          "USB in: VBAT ~0.1-0.2 V above BAT (charger output). USB out: VBAT = BAT."))
 

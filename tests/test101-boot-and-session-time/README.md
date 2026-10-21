@@ -1,9 +1,9 @@
-# test101: K230 boot time and session length
+# test101: session length (wake to power-off)
 
 Status: **planned** (2026-10-21).
 
-Every wake powers the K230: the time from rails on to READY and the whole session decide the battery cost of
-a wake (with test102).
+The whole session: wake, K230 boot (measured on its own in test021), READY, the agent's work, the heartbeat
+stopping, power-off. With test102 it decides the battery cost of a wake.
 
 ## Steps
 

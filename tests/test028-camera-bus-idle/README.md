@@ -1,4 +1,4 @@
-# test027: Camera buses and IO without cameras
+# test028: Camera buses and IO without cameras
 
 Status: **planned** (2026-10-21).
 

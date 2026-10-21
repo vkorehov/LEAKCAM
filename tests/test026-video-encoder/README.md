@@ -1,4 +1,4 @@
-# test025: H.265 encoder with synthetic frames
+# test026: H.265 encoder with synthetic frames
 
 Status: **planned** (2026-10-21).
 

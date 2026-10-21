@@ -12,7 +12,7 @@ A meter or USB power meter in the battery lead (board on battery only), or a shu
 ## Steps
 
 1. Rails off (BL616 only): sleep-level current (the BL616 test firmware does not hibernate: product firmware later).
-2. `pt_on` held in reset, booting, agent idle, KPU loop, encoder (test025), LEDs at 100 % (white, IR).
+2. `pt_on` held in reset, booting, agent idle, KPU loop, encoder (test026), LEDs at 100 % (white, IR).
 3. Integrate over a typical session (test101) for the energy per wake.
 
 ## Pass

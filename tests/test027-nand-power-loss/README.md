@@ -1,4 +1,4 @@
-# test026: NAND / UFFS power-loss robustness
+# test027: NAND / UFFS power-loss robustness
 
 Status: **planned** (2026-10-21).
 
