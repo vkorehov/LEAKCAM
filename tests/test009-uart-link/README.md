@@ -1,6 +1,22 @@
 # test009: K230 <-> BL616 UART link, 2026-10-18
 
+Status: **pass** (2026-10-18).
+
 K230 UART1 (IO40 TX, IO41 RX, `/dev/uart1`) to BL616 UART0 (IO22 RX, IO21 TX), 115200 8N1.
+
+## Setup
+
+Not written at the time; the setup is in the introduction above and in the Results.
+
+## Steps
+
+Not written at the time; the steps are the rows of the Results tables.
+
+## Pass
+
+Not written at the time; every Results row carries its pass / fail.
+
+## Results
 
 | Direction | How | Result | |
 |---|---|---|---|
@@ -9,17 +25,7 @@ K230 UART1 (IO40 TX, IO41 RX, `/dev/uart1`) to BL616 UART0 (IO22 RX, IO21 TX), 1
 
 **Pass.**
 
-
-
-## Boot time
-
-The agent's READY on the link marks the end of the boot (test021's last milestone); link init itself negligible.
-
-## Battery energy
-
-n/a: the link's own current is negligible next to the K230 running; its time cost is test017.
-
-## Temperature
+### Temperature
 
 Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
 
@@ -38,6 +44,14 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | not measured: run before the metrics rule (2026-10-21); fill on a re-run | - | scripts/energy.py |
 | Per day | not measured: run before the metrics rule (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
+
+## Boot time
+
+The agent's READY on the link marks the end of the boot (test021's last milestone); link init itself negligible.
+
+## Battery energy
+
+n/a: the link's own current is negligible next to the K230 running; its time cost is test017.
 
 ## Obstacles
 

@@ -5,6 +5,10 @@ Status: **in progress** (2026-10-21): open board, idle and memtest load measured
 `CONFIG_RT_USING_TS=y`: the K230's die temperature sensor. How hot the K230 gets in a session, and with the
 enclosure closed.
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. Read the TS device at idle right after boot, then every 10 s for 10 min.
@@ -16,8 +20,7 @@ enclosure closed.
 Readings plausible (idle a few C above room temperature, monotonic warm-up), and under worst-case load well below
 the K230's limit (datasheet); note the margin for the enclosure.
 
-
-## Result (2026-10-21, open board on the bench, test image, K230 booted at 20:23:43)
+## Results (2026-10-21, open board on the bench, test image, K230 booted at 20:23:43)
 
 Every 10 s: K230 die from msh `chip_temp`, board from the BL616's AHT20 (`pt_status`). Log:
 [temp_2026-10-21.csv](temp_2026-10-21.csv).
@@ -58,3 +61,7 @@ n/a (the TS read is in the session); boot temperature recorded at READY.
 ## Battery energy
 
 The current at each load step logged next to the temperature (self-heating follows power).
+
+## Obstacles
+
+None yet.

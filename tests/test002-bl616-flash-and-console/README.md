@@ -1,7 +1,23 @@
 # test002: BL616 flash and console (PR1), 2026-10-17
 
+Status: **pass** (2026-10-17).
+
 PR1 cable and flash mode: [tools/power-bringup](../../tools/power-bringup/README.md) sections 2-3; test
 firmware [bl616_powertest](../../tools/power-bringup/bl616_powertest).
+
+## Setup
+
+Not written at the time; the setup is in the introduction above and in the Results.
+
+## Steps
+
+Not written at the time; the steps are the rows of the Results tables.
+
+## Pass
+
+Not written at the time; every Results row carries its pass / fail.
+
+## Results
 
 | Step | Result | |
 |---|---|---|
@@ -12,7 +28,21 @@ firmware [bl616_powertest](../../tools/power-bringup/bl616_powertest).
 
 **Pass.** Wet leak test and Wi-Fi: with the product BL616 firmware (later).
 
+## Metrics (2026-10-21, ISP flash of bl616_powertest)
 
+Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - 3V3_SLEEP at PR1 pad 6, VBAT C15.1.
+
+| Metric | Value | Top / budget | Note |
+|---|---|---|---|
+| Boot, power-on -> READY | n/a | - | no K230 |
+| This part's boot share | EN tap -> console on USB ~5 s | - | includes the VMware re-attach |
+| Test run time | `make flash` 26 s (ISP 1 s, flasher 3.8 s, the rest the container + waits) | - | setup: 2 "connect to Linux" clicks + 1 EN tap |
+| Flash write | 116.6 KB in 571 ms = 204 KB/s | UART 2 Mbaud = 200 KB/s | ~100 % (the ROM link is the limit) |
+| Current idle / during (min / avg / peak) | not measured: meter not connected | - | on USB (not battery) |
+| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
+| Power, energy per operation | n/a | - | flashing only on USB power |
+| Per day | n/a | - | |
+| Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
 
 ## Boot time
 
@@ -35,19 +65,3 @@ n/a: flashing and the console run from USB power.
   mode afterwards: `BLFlashCommand --reset` logs "Reset cpu" but the chip does not restart -> one EN tap starts the
   new image (banner build time changed, `pt_status` normal); the HBN user-boot flag does not bring the ROM back.
   Flashing: no BOOT link, one EN tap (was link + two taps).
-
-## Metrics (2026-10-21, ISP flash of bl616_powertest)
-
-Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - 3V3_SLEEP at PR1 pad 6, VBAT C15.1.
-
-| Metric | Value | Top / budget | Note |
-|---|---|---|---|
-| Boot, power-on -> READY | n/a | - | no K230 |
-| This part's boot share | EN tap -> console on USB ~5 s | - | includes the VMware re-attach |
-| Test run time | `make flash` 26 s (ISP 1 s, flasher 3.8 s, the rest the container + waits) | - | setup: 2 "connect to Linux" clicks + 1 EN tap |
-| Flash write | 116.6 KB in 571 ms = 204 KB/s | UART 2 Mbaud = 200 KB/s | ~100 % (the ROM link is the limit) |
-| Current idle / during (min / avg / peak) | not measured: meter not connected | - | on USB (not battery) |
-| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | n/a | - | flashing only on USB power |
-| Per day | n/a | - | |
-| Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |

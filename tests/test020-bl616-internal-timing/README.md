@@ -4,6 +4,10 @@ Status: **planned** (2026-10-21).
 
 The always-on side's speed: how fast a wake turns into a K230 power-on, and the cost of its own jobs.
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. Wake to K230_PWR high: from an RTC wake, a leak (ACOMP) edge and a USB plug (product firmware; a GPIO toggled at
@@ -16,6 +20,9 @@ The always-on side's speed: how fast a wake turns into a K230 power-on, and the 
 
 Figures recorded; wake to K230 power-on within the design's budget (DESIGN.md).
 
+## Results
+
+Not run yet.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -40,3 +47,7 @@ The BL616 side of every wake: wake -> decision -> K230_PWR high (adds to every s
 ## Battery energy
 
 The BL616's current while awake (humidity slice, wake handling) and how long; energy per humidity slice (144 per day) and per wake decision.
+
+## Obstacles
+
+None yet.

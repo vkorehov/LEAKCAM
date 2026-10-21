@@ -6,6 +6,10 @@ Adds up the per-part figures that every low-level test records (section "Battery
 [ENERGY.txt](../../ENERGY.txt), and checks the sum against a multi-day run. It finds no bottleneck itself: those
 show in the low-level tests (user, 2026-10-21).
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. Sleep current: from test030 (low level, BL616 HBN with the test firmware); here only checked with the product
@@ -22,6 +26,9 @@ show in the low-level tests (user, 2026-10-21).
 
 ENERGY.txt filled with measured figures; the budget and the long run agree within ~20 %; battery life recorded.
 
+## Results
+
+Not run yet.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -46,3 +53,7 @@ The boot's share of the daily energy (test021 x wakes per day).
 ## Battery energy
 
 This test is the audit: ENERGY.txt filled, battery life.
+
+## Obstacles
+
+None yet.

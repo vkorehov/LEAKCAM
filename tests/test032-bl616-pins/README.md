@@ -24,6 +24,10 @@ each flash) and by line tests with both ends (test013 SDIO). This is the same fo
 | D+, D- | PR1 USB | USB console | enumerates |
 | NC pins | - | unused | defined state, no float (pull or analog) |
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. Configuration: each pin's function, pull, drive strength and IO voltage domain (3V3_SLEEP) in both firmwares
@@ -38,6 +42,10 @@ each flash) and by line tests with both ends (test013 SDIO). This is the same fo
 ## Pass
 
 Every pin as in the table in every state; no back-feed; unused pins in a defined state.
+
+## Results
+
+Not run yet.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -62,3 +70,7 @@ n/a for the pins themselves; the pin init time at boot is part of test020.
 ## Battery energy
 
 A floating or back-feeding pin shows as extra sleep current: compare test030 before and after any pin change.
+
+## Obstacles
+
+None yet.

@@ -1,6 +1,6 @@
 # test021: K230 boot time
 
-Status: **0.88 s** reset release -> app init with NAND at 80 MHz (was 1.00 s at 50 MHz, 2026-10-21); msh prompt and READY not timed yet.
+Status: **0.506 s** reset release -> app init (2026-10-21: NAND 80 MHz, /bin 8 MiB with one ISP set, /sdcard 32 MiB; 1.00 s this morning); msh prompt and READY not timed yet.
 
 Every wake powers the K230 up from cold, so its boot time is paid on every session (the whole session: test101).
 Not measured yet: the test firmware does not time it and the product BL616 firmware (which logs "READY <ms> after
@@ -33,7 +33,6 @@ timestamps (skill k230-rtsmart-hangs `console_record.py`, K230 console on the CH
 ## Pass
 
 Recorded per step; the biggest steps named as candidates to shorten.
-
 
 ## Results (2026-10-21)
 
@@ -111,4 +110,3 @@ Battery current through the boot, per step (scope over a shunt in the battery le
 - **Build failed after limiting the ISP pattern to `ov5647-1280x960`** -> the SDK rule appends `.json`/`.xml` to the
   pattern for the rsync copy (`ov5647-*` only worked through the shell glob) -> pattern `ov5647-1280x960*`; check
   images/bin holds config.txt + the 4 files before flashing.
-

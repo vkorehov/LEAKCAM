@@ -1,9 +1,23 @@
 # test012: KPU, change net (leakcam_change.kmodel), 2026-10-18/19
 
+Status: **pass: int8 net, 0.5 ms per inference, threshold 0.43** (2026-10-18/19).
+
 The change net ([firmware/k230_nn](../../firmware/k230_nn/README.md)) on the KPU against the 15 check pairs of
 `make_embed.py` (`data/embed_pairs.npy` with TensorFlow's distances). Temporary test programs, in the SDK copy only
 (not in the repo): `leakcam_kputest` (the pairs through `change_distance()`), `leakcam_kpurun` (any kmodel, fixed
 input), `leakcam_kmin` (a one-layer model with known output), Canaan's `yolov8_image.elf`.
+
+## Setup
+
+Not written at the time; the setup is in the introduction above and in the Results.
+
+## Steps
+
+Not written at the time; the steps are the rows of the Results tables.
+
+## Pass
+
+Not written at the time; every Results row carries its pass / fail.
 
 ## Results
 
@@ -47,17 +61,7 @@ the product image with it boots and the agent ends its session normally.
 
 **Pass.**
 
-
-
-## Boot time
-
-Not recorded (before the boot rule, 2026-10-21). If re-run: KPU power-up and kmodel load time (at boot or at first use in the session).
-
-## Battery energy
-
-Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: extra current during inference vs idle; energy per change check (4.4 ms per check).
-
-## Temperature
+### Temperature
 
 Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
 
@@ -76,6 +80,14 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | not measured: run before the metrics rule (2026-10-21); fill on a re-run | - | scripts/energy.py |
 | Per day | not measured: run before the metrics rule (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
+
+## Boot time
+
+Not recorded (before the boot rule, 2026-10-21). If re-run: KPU power-up and kmodel load time (at boot or at first use in the session).
+
+## Battery energy
+
+Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: extra current during inference vs idle; energy per change check (4.4 ms per check).
 
 ## Obstacles
 

@@ -6,6 +6,10 @@ The K230's PMU RTC (Y1, 32.768 kHz, AVDD1P8_RTC on the switched 1V8 rail) restar
 hands it the time in the `WAKE` reply and the K230 sets the RTC from it (DESIGN.md 5.4); NTP time goes back as
 `TIME,<unix s>`. It needs the PMU awake (bug-003: R45 bridged, INT4 1.8 V); `RT_USING_RTC_PMU`.
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. Boot: `rtc driver register OK`; the time the RTC starts with before the handover (expect the reset value), and
@@ -20,6 +24,10 @@ hands it the time in the `WAKE` reply and the K230 sets the RTC from it (DESIGN.
 ## Pass
 
 RTC within 1 s of the BL616 after every handover, Y1 within +-20 ppm, roll-overs correct, 10/10 cold starts.
+
+## Results
+
+Not run yet.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -44,3 +52,7 @@ PMU wake + RTC driver register, and the handover to the first valid read: part o
 ## Battery energy
 
 n/a on its own (inside every K230 session); a slow RTC start would show in the boot time.
+
+## Obstacles
+
+None yet.

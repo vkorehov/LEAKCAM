@@ -5,6 +5,10 @@ Status: **planned** (2026-10-21).
 The control link (K230 UART1 <-> BL616 UART0, 115200 8N1, test009) carries READY/WAKE/SLEEP/WIFI/TIME frames.
 Latency matters (a session waits on each ACK, 300 ms resend timeout); throughput only if it ever carries more.
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. BL616 test firmware: an echo mode on UART0 (`pt_uart echo`); K230 temporary command sends frames and times the
@@ -18,6 +22,9 @@ Latency matters (a session waits on each ACK, 300 ms resend timeout); throughput
 Latency and error-free limit recorded; the product keeps 115200 unless a faster rate is clean with margin and buys
 session time.
 
+## Results
+
+Not run yet.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -42,3 +49,7 @@ Time from RT-Smart up to READY acknowledged at each baud (link handshake share o
 ## Battery energy
 
 Session time saved by a faster baud x the K230's session current = energy saved per wake (the link itself draws next to nothing).
+
+## Obstacles
+
+None yet.

@@ -43,6 +43,15 @@ Then: BL616 HBN share = (HBN) - (EN low); compare each part with ENERGY.txt sect
 Each state: minimum, average and peak over >= 10 s (meter min/max hold, or a shunt and scope for the peaks); the
 range that reads it (uA / mA / A) and the meter's resolution there.
 
+## Pass
+
+Sleep current measured and split into the BL616 and the rest; every state's minimum, average and peak recorded; within the ENERGY.txt estimate, or the largest consumer
+named with a fix (firmware: HBN level, pins; rev 2: parts).
+
+## Results
+
+Not run yet.
+
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
 Probes: current - battery lead (cell + wire), uA/mA range, USB out; voltage - BAT C11.1 at rest and on wake.
@@ -69,7 +78,6 @@ and every K230 session start (with test020).
 This test is the sleep figure and every state's floor: uA -> mAh per month (uA x 0.72), power (P = I x VBAT) per
 state; the sleep goes into ENERGY.txt section 2 and the budget line "Sleep", the floors into the session lines.
 
-## Pass
+## Obstacles
 
-Sleep current measured and split into the BL616 and the rest; every state's minimum, average and peak recorded; within the ENERGY.txt estimate, or the largest consumer
-named with a fix (firmware: HBN level, pins; rev 2: parts).
+None yet.

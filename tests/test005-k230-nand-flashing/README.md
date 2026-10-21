@@ -1,7 +1,23 @@
 # test005: K230 NAND flashing, 2026-10-17/18
 
+Status: **pass** (2026-10-17).
+
 Every flash: [firmware/k230_board/flash_nand.sh](../../firmware/k230_board/flash_nand.sh) (pad check, erase
 0..248M, write the kdimg), K230 in USB boot (`pt_boot1 high`, `pt_hold`, `pt_run`).
+
+## Setup
+
+Not written at the time; the setup is in the introduction above and in the Results.
+
+## Steps
+
+Not written at the time; the steps are the rows of the Results tables.
+
+## Pass
+
+Not written at the time; every Results row carries its pass / fail.
+
+## Results
 
 | Step | Result | |
 |---|---|---|
@@ -11,17 +27,7 @@ Every flash: [firmware/k230_board/flash_nand.sh](../../firmware/k230_board/flash
 
 **Pass.**
 
-
-
-## Boot time
-
-n/a: flashing.
-
-## Battery energy
-
-n/a: flashing runs from USB power.
-
-## Temperature
+### Temperature
 
 Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
 
@@ -40,6 +46,14 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | not measured: run before the metrics rule (2026-10-21); fill on a re-run | - | scripts/energy.py |
 | Per day | not measured: run before the metrics rule (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
+
+## Boot time
+
+n/a: flashing.
+
+## Battery energy
+
+n/a: flashing runs from USB power.
 
 ## Obstacles
 

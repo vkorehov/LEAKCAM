@@ -1,9 +1,25 @@
 # test013: SDIO wiring, K230 MMC0 <-> BL616 SDIO, 2026-10-19
 
+Status: **pass: CLK, CMD, D0-D3 both directions, no shorts** (2026-10-19).
+
 The Wi-Fi link's six lines (BL616 IO13 CLK, IO12 CMD, IO14/15/10/11 D0-D3, 10 k pull-ups to the switched 3V3) without
 the BL616's SDIO device firmware. BL616: `bl616_powertest` `pt_sdio`; K230: a temporary reader of its SD host's
 present-state register (MMC0 at 0x91580000, offset 0x24: D0-D3 in bits 20-23, CMD in bit 24; via `/dev/mem`) and the
 NetHub driver's probe (`/dev/bl616` ioctl 0x4c01).
+
+## Setup
+
+Not written at the time; the setup is in the introduction above and in the Results.
+
+## Steps
+
+Not written at the time; the steps are the rows of the Results tables.
+
+## Pass
+
+Not written at the time; every Results row carries its pass / fail.
+
+## Results
 
 | Step | Result | |
 |---|---|---|
@@ -15,17 +31,7 @@ NetHub driver's probe (`/dev/bl616` ioctl 0x4c01).
 **Pass.** Next: the BL616 SDIO device firmware, enumeration, Wi-Fi, and the bus speed raised to the fastest clock
 that runs without CRC errors.
 
-
-
-## Boot time
-
-n/a: a wiring check.
-
-## Battery energy
-
-n/a: a wiring check.
-
-## Temperature
+### Temperature
 
 Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
 
@@ -44,6 +50,14 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | not measured: run before the metrics rule (2026-10-21); fill on a re-run | - | scripts/energy.py |
 | Per day | not measured: run before the metrics rule (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
+
+## Boot time
+
+n/a: a wiring check.
+
+## Battery energy
+
+n/a: a wiring check.
 
 ## Obstacles
 

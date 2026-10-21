@@ -1,6 +1,22 @@
 # test006: K230 NAND boot (SPL), 2026-10-17
 
+Status: **pass** (2026-10-17).
+
 Boot straps: [boot_straps_board.png](boot_straps_board.png) (where), [boot_straps.png](boot_straps.png) (zoom).
+
+## Setup
+
+Not written at the time; the setup is in the introduction above and in the Results.
+
+## Steps
+
+Not written at the time; the steps are the rows of the Results tables.
+
+## Pass
+
+Not written at the time; every Results row carries its pass / fail.
+
+## Results
 
 | Step | Result | |
 |---|---|---|
@@ -10,17 +26,7 @@ Boot straps: [boot_straps_board.png](boot_straps_board.png) (where), [boot_strap
 
 **Pass:** SPL boots from NAND, DDR trains at 2667. The kernel after OpenSBI: test007.
 
-
-
-## Boot time
-
-Not recorded (before the boot rule, 2026-10-21). If re-run: ROM -> SPL banner and SPL DDR training time (now part of test021).
-
-## Battery energy
-
-Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: superseded by test021 (boot energy).
-
-## Temperature
+### Temperature
 
 Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
 
@@ -39,6 +45,14 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | not measured: run before the metrics rule (2026-10-21); fill on a re-run | - | scripts/energy.py |
 | Per day | not measured: run before the metrics rule (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
+
+## Boot time
+
+Not recorded (before the boot rule, 2026-10-21). If re-run: ROM -> SPL banner and SPL DDR training time (now part of test021).
+
+## Battery energy
+
+Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: superseded by test021 (boot energy).
 
 ## Obstacles
 

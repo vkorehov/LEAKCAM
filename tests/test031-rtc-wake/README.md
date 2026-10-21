@@ -6,6 +6,10 @@ The BL616's hibernate RTC (Y3, 32.768 kHz) wakes it every 10 min for humidity an
 it also keeps the wall clock between NTP syncs (aon_state.c: ~20 ppm, 1.7 s/day expected). A wake that comes late,
 early or never is a missed report or a missed humidity alarm.
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. Test firmware `pt_sleep <s>` (test030): RTC wake after 10, 60, 600 s; the wake time against the host clock
@@ -18,6 +22,10 @@ early or never is a missed report or a missed humidity alarm.
 ## Pass
 
 Every wake within +-1 s at 600 s, none missed in 100; crystal within +-20 ppm; drift <= 2 s/day.
+
+## Results
+
+Not run yet.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -43,3 +51,7 @@ HBN wake to the first instruction and to a usable console (part of every humidit
 
 Energy per RTC wake with nothing to do (the humidity slice without the K230): current over the awake time, x 144 per
 day (ENERGY.txt section 3).
+
+## Obstacles
+
+None yet.

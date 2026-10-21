@@ -1,6 +1,22 @@
 # test003: K230 rails and USB boot, 2026-10-17
 
+Status: **pass; USB-C attach with rails on: bug-002** (2026-10-17).
+
 The cell on JB1, `bl616_powertest` on PR1. Probe points and limits: [k230_rails.png](k230_rails.png).
+
+## Setup
+
+Not written at the time; the setup is in the introduction above and in the Results.
+
+## Steps
+
+Not written at the time; the steps are the rows of the Results tables.
+
+## Pass
+
+Not written at the time; every Results row carries its pass / fail.
+
+## Results
 
 | Step | Result | |
 |---|---|---|
@@ -15,17 +31,7 @@ The cell on JB1, `bl616_powertest` on PR1. Probe points and limits: [k230_rails.
 
 **Pass** (all four K230 rails, boot ROM, debug UART); USB-C attach with the rails on: bug-002 open.
 
-
-
-## Boot time
-
-Not recorded (before the boot rule, 2026-10-21). If re-run: rails on -> reset released (BL616 pt_on/pt_run timing; RSTN 12.5 ms after the last rail by design).
-
-## Battery energy
-
-Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: current with the K230 rails on and the K230 held in reset (the cost of `pt_on` alone).
-
-## Temperature
+### Temperature
 
 Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
 
@@ -44,6 +50,14 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | not measured: run before the metrics rule (2026-10-21); fill on a re-run | - | scripts/energy.py |
 | Per day | not measured: run before the metrics rule (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
+
+## Boot time
+
+Not recorded (before the boot rule, 2026-10-21). If re-run: rails on -> reset released (BL616 pt_on/pt_run timing; RSTN 12.5 ms after the last rail by design).
+
+## Battery energy
+
+Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: current with the K230 rails on and the K230 held in reset (the cost of `pt_on` alone).
 
 ## Obstacles
 

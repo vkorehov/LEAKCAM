@@ -1,7 +1,12 @@
 # test029: cameras: detection, capture, image
 
 Status: **placeholder** (2026-10-21): the cameras are not delivered yet (two OV5647 with 222 degree M12 fisheye
+
 lenses, EXTERNAL_PARTS.md; Arducam B0370 format on J4/CSI0 and J5/CSI2).
+
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
 
 ## Steps (to detail when they arrive)
 
@@ -15,6 +20,13 @@ lenses, EXTERNAL_PARTS.md; Arducam B0370 format on J4/CSI0 and J5/CSI2).
 
 Speed (frame rate, I2C clock) is test019; the encoder with real frames test026; the whole leak path test103.
 
+## Pass
+
+To fill.
+
+## Results
+
+Not run yet.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -39,3 +51,7 @@ Sensor init to first frame, both cameras (adds to every session that captures).
 ## Battery energy
 
 Battery current per camera capturing, with white and IR LEDs on; energy per capture of both cameras.
+
+## Obstacles
+
+None yet.

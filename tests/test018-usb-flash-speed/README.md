@@ -5,6 +5,10 @@ Status: **planned** (2026-10-21).
 USB-C 1's data lines are used only for USB boot and flashing (the product needs no USB data). Record what the
 flash path achieves, and its total time, as a reference for production programming.
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. From the flash logs (flash_nand.sh): per-part write speed and the whole erase + write time.
@@ -15,6 +19,9 @@ flash path achieves, and its total time, as a reference for production programmi
 
 Figures recorded (K230 writes 3.7-5.5 MB/s seen 2026-10-21); a production flash time per board.
 
+## Results
+
+Not run yet.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -39,3 +46,7 @@ n/a: flashing.
 ## Battery energy
 
 n/a: flashing runs from USB power.
+
+## Obstacles
+
+None yet.

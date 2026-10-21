@@ -5,6 +5,10 @@ Status: **pass** (2026-10-21).
 The agent toggles K230 GPIO2 every 500 ms (net K230_ALIVE -> BL616 IO01, R32 100 k to 3V3); the BL616 ends a
 session when the edges stop for 2 s. Without it a product session never ends (or ends early).
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. BL616 test firmware: `pt_on`, `pt_run`; K230 boots the image with the agent.
@@ -16,8 +20,7 @@ session when the edges stop for 2 s. Without it a product session never ends (or
 
 Edges at 1 Hz +-10 % while the agent runs, none after it stops; low with the rails off.
 
-
-## Result (2026-10-21, BL616 test firmware with `pt_alive`, K230 NAND test image)
+## Results (2026-10-21, BL616 test firmware with `pt_alive`, K230 NAND test image)
 
 `pt_on`, `pt_run`, at once `pt_alive 30` (BL616 busy-polls IO01, timestamps every edge):
 
@@ -76,4 +79,3 @@ n/a: one GPIO toggling every 500 ms.
   reset) -> open: a running/stopped K230 loads 3V3 harder, likely harmless; repeat from reset to compare.
 - **A Docker `make -j5` container up 11 h** found during the flash (`docker ps`) -> open: left from an earlier build,
   may slow the qemu builds; asked the user before stopping it.
-

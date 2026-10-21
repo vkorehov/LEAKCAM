@@ -6,6 +6,10 @@ The BL616 must end every K230 session, even a hung one: no heartbeat edge for 2 
 boot timeout (90 s, to tighten after test021) -> rails off, retry, back off after 3 failures. Without it a hang drains
 the battery in hours.
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. Product firmware: stop the K230 agent (or a test hook that hangs): power-off after 2 s of no heartbeat, logged.
@@ -16,6 +20,10 @@ the battery in hours.
 ## Pass
 
 Every hang ends in rails off within its timeout, no session runs on; retries and back-off as designed.
+
+## Results
+
+Not run yet.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -40,3 +48,7 @@ The boot timeout should follow test021's measured boot (e.g. 3 x the median) ins
 ## Battery energy
 
 Energy of a failed session (boot timeout x the session floor): what one hang costs, x the retries.
+
+## Obstacles
+
+None yet.

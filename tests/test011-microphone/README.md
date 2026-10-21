@@ -1,8 +1,24 @@
 # test011: microphone U13 (MSM381ACB026) on the K230 inner codec, 2026-10-18
 
+Status: **pass** (2026-10-18).
+
 Board on USB-C 1 (VBAT 4.25 V), K230 from NAND. `leakcam_stream -m <s> -o /tmp/mic.raw -x` (levels per 0.5 s,
 samples as hex over the console). 16 kHz, 16-bit mono, codec left input, PGA 30 dB + ALC 24 dB.
 Probe sheet: [mic.png](mic.png).
+
+## Setup
+
+Not written at the time; the setup is in the introduction above and in the Results.
+
+## Steps
+
+Not written at the time; the steps are the rows of the Results tables.
+
+## Pass
+
+Not written at the time; every Results row carries its pass / fail.
+
+## Results
 
 | Point | Net | Measured (recording running) |
 |---|---|---|
@@ -25,17 +41,7 @@ Probe sheet: [mic.png](mic.png).
 high-pass, normalised). Gain stays 54 dB for now (PGA 20 dB would give 10 dB headroom). MIC_BIAS 1.4 V is below
 the mic's 1.8 V characterisation point; sensitivity is fine.
 
-
-
-## Boot time
-
-Codec/audio init time at boot, if any is done at boot (else at first use: then its start-up time when the hook needs it).
-
-## Battery energy
-
-Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: extra current with the codec and mic recording vs idle (mA, per second of clip).
-
-## Temperature
+### Temperature
 
 Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
 
@@ -54,6 +60,14 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | not measured: run before the metrics rule (2026-10-21); fill on a re-run | - | scripts/energy.py |
 | Per day | not measured: run before the metrics rule (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
+
+## Boot time
+
+Codec/audio init time at boot, if any is done at boot (else at first use: then its start-up time when the hook needs it).
+
+## Battery energy
+
+Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: extra current with the codec and mic recording vs idle (mA, per second of clip).
 
 ## Obstacles
 

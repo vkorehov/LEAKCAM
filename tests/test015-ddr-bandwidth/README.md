@@ -5,6 +5,10 @@ Status: **pass at 2667** (2026-10-21; 3200 not tried yet). Image: SDK copy + [le
 DDR runs at 2667 MT/s (SPL training, test006), 64 MB. Bandwidth decides how much the KPU, the encoder and the
 camera pipeline can do at once.
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. A temporary MSH command (SDK copy, as the test014 bench; waits sleep, skill k230-rtsmart-hangs): `memcpy`,
@@ -15,7 +19,6 @@ camera pipeline can do at once.
 ## Pass
 
 Recorded MB/s per case; the drop under concurrent load; no errors (compare with test024's stress).
-
 
 ## Results (2026-10-21)
 
@@ -29,12 +32,6 @@ Recorded MB/s per case; the drop under concurrent load; no errors (compare with 
 | CPU clock (rdcycle / rdtime) | 1599-1600 MHz | top profile confirmed |
 
 Not done yet: the uncached alias (step 2), 3200 MT/s (SPEEDS.txt 3, with test024).
-
-## Obstacles
-
-- **`ddr_bench 16384` crashed the kernel** (Load Page Fault, reboot) -> the 8 MB kernel heap has no 2 x 16 MB; the
-  error path called `rt_free_align(NULL)`, which faults -> NULL guards in the bench (rebuilt with the next image);
-  keep buffers <= 3 MB.
 
 ## Metrics (2026-10-21, bench image, 2667 MT/s)
 
@@ -65,3 +62,9 @@ The DDR clock's effect on boot: training time at 2667 vs 3200 MT/s (SPL), from t
 ## Battery energy
 
 Battery current during each bench (copy, read, write) vs idle; energy per GB moved. With test024 at 3200 MT/s: does the faster clock cost more per GB or save by finishing sooner?
+
+## Obstacles
+
+- **`ddr_bench 16384` crashed the kernel** (Load Page Fault, reboot) -> the 8 MB kernel heap has no 2 x 16 MB; the
+  error path called `rt_free_align(NULL)`, which faults -> NULL guards in the bench (rebuilt with the next image);
+  keep buffers <= 3 MB.

@@ -27,7 +27,6 @@ K230 running (BL616 test firmware: `pt_on`, `pt_run`), K230 console (USBC2), met
 ADC within +-30 mV of the meter's VBAT (after a one-point correction if it is a constant offset), noise <= 10 mV
 between reads.
 
-
 ## Results (2026-10-21, USB powered, K230 at msh, NAND 80 MHz image)
 
 `adc probe adc`, `adc read 1` x 20, VBAT = raw x 5400 / 4095:
@@ -116,4 +115,3 @@ n/a for the reading itself (Q1 switches the divider only while the K230 runs: ~1
   away in rev 2 (U2 on USBC2's VBUS, D3 VCC off VUSB: bugs/v2.txt 3/5). Scope 3V3 (U2 VCC) and D+ on the plug to tell.
 - **BL616 console gone after the battery reading (2026-10-21 22:16)** -> a PR1 cable pin had slipped out of
   alignment (moved while probing / unplugging USB-C 1) -> re-seated; not a firmware or power event.
-

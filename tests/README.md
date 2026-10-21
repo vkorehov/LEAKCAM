@@ -11,6 +11,14 @@ timestamped milestones; "n/a" where the part is not touched at boot. Energy and 
 the low-level tests, so a bottleneck shows where it is; the 100+ tests only add them up. **Every test records temperature** too: the K230 die (msh `chip_temp`) and the board (BL616 AHT20) at the start, peak and end of the activity. Board bugs: [bugs/](../bugs/bugs.txt). Rev 2: [bugs/v2.txt](../bugs/v2.txt).
 Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello): [tools/power-bringup](../tools/power-bringup/README.md).
 
+
+**Every test README has the same structure** (2026-10-21), in this order: title, `Status: **<result>** (<date>).`,
+a short introduction, then `## Setup` (hookup, image, probes), `## Steps`, `## Pass` (the criterion), `## Results`
+(dated runs as `###` subsections), `## Metrics` (the full block of skill leakcam-test-metrics with its `Probes:`
+line, every value at its maximum), `## Boot time`, `## Battery energy`, `## Obstacles` (problem -> cause -> fix,
+written when it happens). Nothing is left out: an empty part says so ("Not run yet.", "None yet.", "not measured:
+<reason>"). The status here and in the README's Status line say the same.
+
 | Test | Date | Result |
 |---|---|---|
 | [test001 power and charging](test001-power-and-charging/README.md) | 2026-10-17/20 | pass: battery rails; charging with the bug-001 47 k |

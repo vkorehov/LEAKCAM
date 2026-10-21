@@ -5,6 +5,10 @@ Status: **planned** (2026-10-21).
 The leak probes S1-S3 pull LEAK_SENS (1 M / 1 M divider from 3V3_SLEEP, 1.65 V dry) down when water bridges them;
 ACOMP1 wakes the BL616 from hibernate on that edge. The product's first job.
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. Probe resistance sweep across S1 (resistor decade or fixed values 10 k .. 10 M): LEAK_SENS voltage (pt_leak) and
@@ -18,6 +22,10 @@ ACOMP1 wakes the BL616 from hibernate on that edge. The product's first job.
 ## Pass
 
 Wet detected at every water type the product must see, dry never woken falsely in 24 h; wake latency recorded.
+
+## Results
+
+Not run yet.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -42,3 +50,7 @@ HBN wake on a leak to the K230's power-on (with test020): the first part of the 
 ## Battery energy
 
 The divider's current wet vs dry (1.65 uA dry; wet up to 3.3 uA): a standing leak raises the sleep current.
+
+## Obstacles
+
+None yet.

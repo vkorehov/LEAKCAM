@@ -5,6 +5,10 @@ Status: **planned** (2026-10-21).
 A USB plug wakes the hibernating BL616 through PGOOD on ACOMP0 (threshold 1.65 V today; 0.5 V with the rev 2 battery
 divider, bug-004) and switches it to USB mode (BLE pairing, awake). Unplug returns it to the battery path.
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. HBN (pt_sleep / product), plug USB-C 1: wake within ms, PGOOD low, USB mode; unplug: back to battery mode.
@@ -15,6 +19,10 @@ divider, bug-004) and switches it to USB mode (BLE pairing, awake). Unplug retur
 ## Pass
 
 Every plug wakes and every unplug returns to battery mode; latency recorded.
+
+## Results
+
+Not run yet.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -39,3 +47,7 @@ Plug to the BL616 in USB mode (console up).
 ## Battery energy
 
 n/a while on USB (the charger powers the board); the unplug path's return to sleep is checked by test030's sleep current afterwards.
+
+## Obstacles
+
+None yet.

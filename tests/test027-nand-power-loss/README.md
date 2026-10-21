@@ -5,6 +5,10 @@ Status: **short run pass** (2026-10-21): 13 random cuts, 0 lost or corrupt; the 
 The product writes clips, logs and references to /sdcard (UFFS on NAND) while the battery can run out or the BL616
 can cut the rails. UFFS is log-structured; this proves it on rev 1.
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. A test hook writes files in a loop (sizes 1 KB .. 2 MB, fsync, verify the previous file).
@@ -15,7 +19,6 @@ can cut the rails. UFFS is log-structured; this proves it on rev 1.
 ## Pass
 
 100 random power cuts: every mount succeeds, no fsynced file lost or corrupt, no space leak.
-
 
 ## Results (2026-10-21, image with /sdcard 32 MiB, NAND 80 MHz)
 
@@ -59,3 +62,7 @@ Mount time after an unclean power cut (UFFS recovery may scan more) vs a clean m
 ## Battery energy
 
 n/a: a robustness test (the energy of writes is test016).
+
+## Obstacles
+
+None yet.

@@ -5,6 +5,10 @@ Status: **pass so far** (2026-10-21): 0 errors in 61 passes (5 min run + 5 cold 
 SPL trains the DDR at 2667 MT/s on every boot (test006). A marginal setting shows only as rare random crashes.
 This test runs a pattern memory test over most of the free RAM for a long time.
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. [memtest/](memtest/memtest.c), a temporary user program (SDK copy only: `src/applications/memtest` +
@@ -22,8 +26,7 @@ This test runs a pattern memory test over most of the free RAM for a long time.
 
 0 errors over >= 1 h and >= 5 cold starts; no reset (a silent reset = watchdog: the test must sleep between passes).
 
-
-## Readings (2026-10-21)
+## Results (2026-10-21)
 
 | Time | State | Meter (USB-C 1 VBUS) | |
 |---|---|---|---|
@@ -83,4 +86,3 @@ Battery current at 2667 and 3200 MT/s under the same load: the cost of the faste
 - **The agent's hook failed to load during memtest** (`[E/LWP] ERROR: ELF loading failed`, once per cold start) ->
   memtest leaves only 4 MB of system RAM free; the agent starts its hook ~10 s after boot -> expected while
   memtest runs; these are the only ERROR lines in the logs (memtest's own mismatch lines start with "ERROR pass").
-

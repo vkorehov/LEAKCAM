@@ -43,6 +43,9 @@ sleep current needs the meter in the cell's + lead, USB unplugged (test104).
 
 Recorded figures; energy per wake and the number of wakes a 1000 mAh cell allows.
 
+## Results
+
+Not run yet.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -67,3 +70,7 @@ Boot energy per wake from test021's timing x its current.
 ## Battery energy
 
 This test is the energy measurement of a session; its figures go into ENERGY.txt.
+
+## Obstacles
+
+None yet.

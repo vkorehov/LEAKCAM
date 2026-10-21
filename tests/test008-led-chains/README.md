@@ -1,8 +1,24 @@
 # test008: LED chains (white U14/J1, IR U15/J2)
 
+Status: **pass** (2026-10-16/18).
+
 Wiring: [led_wiring.png](../../tools/power-bringup/led_wiring.png); design: [LED_STRIPS.txt](../../LED_STRIPS.txt).
 
-## Strips on a bench supply, 2026-10-16
+## Setup
+
+Not written at the time; the setup is in the introduction above and in the Results.
+
+## Steps
+
+Not written at the time; the steps are the rows of the Results tables.
+
+## Pass
+
+Not written at the time; every Results row carries its pass / fail.
+
+## Results
+
+### Strips on a bench supply, 2026-10-16
 
 Each whole chain (8 LEDs through all four strips) from a bench supply, raised until the LEDs light.
 
@@ -14,7 +30,7 @@ Each whole chain (8 LEDs through all four strips) from a bench supply, raised un
 **Pass.** All 16 LEDs light, every strip has + on pin 2. IR was first wired reversed (from an earlier version of
 the wiring page); swapped at J2. One IR pair saw up to 14 V in reverse (~7 V per LED, rated 5 V); all light now.
 
-## Driven by the K230, 2026-10-18
+### Driven by the K230, 2026-10-18
 
 RT-Smart shell: `pwm_disable pwm <other>`, `pwm_set pwm <ch> 40000 <pulse ns>`, `pwm_enable pwm <ch>` (channel 1 =
 white, channel 0 = IR; 25 kHz; I = duty x 0.2 V / R_FB: white 66.7 mA, IR 133 mA at 100 %; LEDs rated 350 mA / 1 A).
@@ -29,17 +45,7 @@ Probe sheets: [led_drivers.png](led_drivers.png), [r66_white_return.png](r66_whi
 
 **Pass.** Brightness at 2-3 m: with the cameras.
 
-
-
-## Boot time
-
-n/a for boot (the LED drivers are idle until used); PWM init time is in test021's driver init if visible.
-
-## Battery energy
-
-Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: battery current with white and IR at 25/50/100 % duty; mA per chain at full on (the clip lighting cost per second).
-
-## Temperature
+### Temperature
 
 Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
 
@@ -58,6 +64,14 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | not measured: run before the metrics rule (2026-10-21); fill on a re-run | - | scripts/energy.py |
 | Per day | not measured: run before the metrics rule (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
+
+## Boot time
+
+n/a for boot (the LED drivers are idle until used); PWM init time is in test021's driver init if visible.
+
+## Battery energy
+
+Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: battery current with white and IR at 25/50/100 % duty; mA per chain at full on (the clip lighting cost per second).
 
 ## Obstacles
 

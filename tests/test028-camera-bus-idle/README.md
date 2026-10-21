@@ -4,6 +4,10 @@ Status: **planned** (2026-10-21).
 
 Before the cameras arrive: the two camera I2C buses and the CAM_IO1 lines must be idle and not stuck.
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. K230 running: IIC0 (CAM2, J4, CSI0) and IIC4 (CAM1, J5, CSI2) SCL/SDA high (R17/R18, R14/R15 4.7 k to 3V3); an
@@ -15,6 +19,9 @@ Before the cameras arrive: the two camera I2C buses and the CAM_IO1 lines must b
 
 Buses idle high, scans end cleanly, CAM_IO1 low, connector supplies as designed.
 
+## Results
+
+Not run yet.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -39,3 +46,7 @@ I2C bus init and sensor probe time without cameras (part of today's boot).
 ## Battery energy
 
 Current with the cameras powered but idle (their standby draw while the K230 runs).
+
+## Obstacles
+
+None yet.

@@ -5,6 +5,10 @@ Status: **80 MHz adopted** (2026-10-21, kernel + U-Boot/SPL, sample delay 5); 10
 test010 measured the file system: read 9.4 MB/s (shell) / 12.7 MB/s (user program), write 1.8 MB/s. This splits
 it into the NAND itself and UFFS, and checks the SPI clock's headroom.
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. Raw MTD read and program+erase of a spare area (not /bin, /sdcard): page, 64 KB, 1 MB transfers; timed.
@@ -17,7 +21,6 @@ it into the NAND itself and UFFS, and checks the SPI clock's headroom.
 
 Raw vs file system figures recorded; the fastest clock that verifies over the whole image area 10 times is the
 setting, or the current one is shown to be the limit.
-
 
 ## Results (2026-10-21)
 
@@ -63,14 +66,6 @@ The NAND is on SPI0 (OSPI, DW SSI): ssi_clk **800 MHz**, SCLK = 800 / BAUDR (50 
   5). 18 cold boots: every boot read (11) app init 0.876-0.886 s, /bin checksum equal to the 50 MHz read; the others
   booted too (the CH340 attaches ~10 s after power-on in the VM, after the script's read).
 
-## Obstacles
-
-- **100 MHz returns zeros without an error** -> mis-sampled status reads say "ready, no error" -> every clock step
-  needs a checksum against a known read, never the driver's status; sample-delay sweep above.
-- **`install.sh` run with `sh`** stopped at `set -o pipefail`, and without its SDK argument it only printed usage: the
-  next build used the old settings -> `bash install.sh ~/k230_rtos_sdk`, then `leakcam_docker_build.sh
-  k230d_rtos_leakcam_defconfig` and `log`; check `rtconfig.h` and the dtb before flashing.
-
 ## Metrics (2026-10-21, bench image)
 
 Setup (2026-10-21): USB-C 1 the only power path (USB-C 2 VBUS cut, PR1 VBUS cut), meter (10 A range, 0.1 mA
@@ -104,3 +99,11 @@ Battery current during raw reads, programs, erases at each NAND clock; energy pe
 - **Sweep results landed on the wrong lines** -> a failing read at 100 MHz takes ~3 s, the fixed 1.2 s read window
   queued the next commands -> wait for each command's result line (a sweep script, not shell `eval` with `|` in
   arguments: the shell ran the tokens as commands and nothing reached the board).
+
+## Obstacles
+
+- **100 MHz returns zeros without an error** -> mis-sampled status reads say "ready, no error" -> every clock step
+  needs a checksum against a known read, never the driver's status; sample-delay sweep above.
+- **`install.sh` run with `sh`** stopped at `set -o pipefail`, and without its SDK argument it only printed usage: the
+  next build used the old settings -> `bash install.sh ~/k230_rtos_sdk`, then `leakcam_docker_build.sh
+  k230d_rtos_leakcam_defconfig` and `log`; check `rtconfig.h` and the dtb before flashing.

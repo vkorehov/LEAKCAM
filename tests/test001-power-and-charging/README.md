@@ -1,9 +1,25 @@
 # test001: power and charging
 
+Status: **pass: battery rails; charging with the bug-001 47 k** (2026-10-17/20).
+
 Board: MIFA rev 1 (fab 11a6a38). Rails and limits: [tools/power-bringup](../../tools/power-bringup/README.md)
 (`power_check.py`).
 
-## Battery only, 2026-10-17
+## Setup
+
+Not written at the time; the setup is in the introduction above and in the Results.
+
+## Steps
+
+Not written at the time; the steps are the rows of the Results tables.
+
+## Pass
+
+Not written at the time; every Results row carries its pass / fail.
+
+## Results
+
+### Battery only, 2026-10-17
 
 The cell on JB1 (3.9 V), USB unplugged. Wiring: [hookup_battery.png](../../tools/power-bringup/hookup_battery.png);
 probe points: [battery_only.png](battery_only.png).
@@ -17,7 +33,7 @@ probe points: [battery_only.png](battery_only.png).
 **Pass.** U5 (TPS63802) regulates from the battery; the X-ray had shown it slightly off its pads. U1 passes the
 cell to VBAT.
 
-## Charging from USB-C 1, 2026-10-17
+### Charging from USB-C 1, 2026-10-17
 
 The cell on JB1 (3.9 V), thermistor on JT, USB on USB-C 1. Probe points: [charging.png](charging.png). Charger
 set to ~0.89 A (ISET R7 1 k), 1.0 A input limit (ILIM R5 1.5 k), 6.3 h timer (TMR R21 47 k); red D1 = /CHG.
@@ -31,7 +47,7 @@ set to ~0.89 A (ISET R7 1 k), 1.0 A input limit (ILIM R5 1.5 k), 6.3 h timer (TM
 
 **Fail: no charging**, [bug-001](../../bugs/bug-001/README.md). Retest after the 47 k workaround.
 
-## Charging with the 47 k workaround, 2026-10-19
+### Charging with the 47 k workaround, 2026-10-19
 
 47 k fitted from C2 pad 1 (VUSB) to JT pin 1 (TS) ([workaround_47k.png](../../bugs/bug-001/workaround_47k.png)).
 USB on USB-C 1, K230 off.
@@ -48,7 +64,7 @@ USB on USB-C 1, K230 off.
 
 **Pass: the board charges to full** with the 47 k (D1 off, 4.15 V at rest). Current and charge time: see 2026-10-21.
 
-## Charging with the cell wired to C11, 2026-10-21
+### Charging with the cell wired to C11, 2026-10-21
 
 The cell's + wired straight to C11 pad 1 (BAT), the JB1 joint bypassed (see Obstacles). USB meter in VBUS, K230 off.
 
@@ -69,17 +85,7 @@ cell read 3.69 V at its wires. The low "~0.2-0.3 A" was never measured (a wrong 
 the "3.0 V cut-off" is only the generic cell spec's recommended end of discharge (EXTERNAL_PARTS.md), not a
 protection in the pack. U1's heat: not seen; it holds 0.89 A.
 
-
-
-## Boot time
-
-Not recorded (before the boot rule, 2026-10-21). If re-run: rails-on time (3V3 up 1.7 ms after K230_PWR, measured in test003's pt_on) and RSTN delay: the floor of every boot.
-
-## Battery energy
-
-Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: the battery-only rails' quiescent current (BL616 running the test firmware, K230 rails off and on); charging is from USB, n/a.
-
-## Temperature
+### Temperature
 
 Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
 
@@ -98,6 +104,14 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | not measured: run before the metrics rule (2026-10-21); fill on a re-run | - | scripts/energy.py |
 | Per day | not measured: run before the metrics rule (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
+
+## Boot time
+
+Not recorded (before the boot rule, 2026-10-21). If re-run: rails-on time (3V3 up 1.7 ms after K230_PWR, measured in test003's pt_on) and RSTN delay: the floor of every boot.
+
+## Battery energy
+
+Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: the battery-only rails' quiescent current (BL616 running the test firmware, K230 rails off and on); charging is from USB, n/a.
 
 ## Obstacles
 

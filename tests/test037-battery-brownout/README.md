@@ -30,6 +30,10 @@ state after recovery.
 Cut at 3.10 V +-50 mV under load, every time; lockout holds without USB; unlock only at >= 3.50 V with USB; no
 latch-up or NAND damage down to 1.6 V and back.
 
+## Results
+
+Not run yet.
+
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
 Probes: current - lab supply in place of the cell, its current; voltage - VBAT C15.1, BAT C11.1, 3V3_SLEEP (U5 output) while ramping.
@@ -54,3 +58,7 @@ After a brown-out the BL616 cold-starts (HBN RAM lost): its boot to sleep, and a
 
 Lockout current (should be the sleep floor), and the charge left at the cut: the rest voltage after the cut ->
 state of charge (ENERGY.txt section 1, usable charge).
+
+## Obstacles
+
+None yet.

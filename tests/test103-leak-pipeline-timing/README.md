@@ -5,6 +5,10 @@ Status: **later** (excluded for now, user 2026-10-21): needs the cameras, Wi-Fi 
 Every part measured on its own (KPU 0.5 ms, SDIO, NAND, encoder): the time from a wake to the server's answer,
 with everything running together.
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. Wake -> K230 READY (test101) -> capture both cameras -> change net -> history -> POST /v1/check -> answer ->
@@ -16,6 +20,9 @@ with everything running together.
 
 Recorded timeline; the longest step named; the leak-to-video time within what the user expects.
 
+## Results
+
+Not run yet.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -40,3 +47,7 @@ Boot share of the leak-to-video time (test021).
 ## Battery energy
 
 Energy per leak event, wake to clip uploaded and power-off.
+
+## Obstacles
+
+None yet.

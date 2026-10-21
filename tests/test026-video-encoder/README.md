@@ -5,6 +5,10 @@ Status: **pass** (2026-10-21): 2 x 15 fps at the product settings, encoder top ~
 The heaviest job of a leak session: two H.265 streams, 1280x960, 15 fps, ~500 kbit/s each (DESIGN.md). The
 encoder can be fed synthetic frames, so speed and memory can be measured before the cameras arrive.
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. [venctest/](venctest/venctest.c), a temporary user program (SDK copy: `src/applications/venctest` + `subdirs-y
@@ -21,8 +25,7 @@ encoder can be fed synthetic frames, so speed and memory can be measured before 
 Both channels hold 15 fps with margin, memory leaves room for the change net and the network stack, the stream
 decodes and keeps the rate and IDR interval.
 
-
-## Result (2026-10-21, test image flashed 20:42:38-20:43:11, NAND boot 20:44:36)
+## Results (2026-10-21, test image flashed 20:42:38-20:43:11, NAND boot 20:44:36)
 
 Console logs: [run1.log](run1.log), [run2.log](run2.log), [run3.log](run3.log) (the 1586 enqueue-failure lines of run 3 left out).
 
@@ -93,4 +96,3 @@ Battery current with one and two encoder channels running; energy per second of 
   was still open (unusable); a clean single-reader dump still drops ~16 lines in 23k and can garble one into a line
   that parses -> unhexdump.py checks each line's ASCII column and merges dumps; always list and kill earlier readers
   (by PID) before a capture.
-

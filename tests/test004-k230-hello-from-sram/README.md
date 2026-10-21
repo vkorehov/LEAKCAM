@@ -1,7 +1,23 @@
 # test004: K230 hello from SRAM, 2026-10-17
 
+Status: **pass** (2026-10-17).
+
 [k230_hello](../../tools/power-bringup/k230_hello): 0.8 KB bare-metal program the boot ROM loads into SRAM over
 USB-C 1 (`make run`), nothing written to the NAND.
+
+## Setup
+
+Not written at the time; the setup is in the introduction above and in the Results.
+
+## Steps
+
+Not written at the time; the steps are the rows of the Results tables.
+
+## Pass
+
+Not written at the time; every Results row carries its pass / fail.
+
+## Results
 
 | Step | Result | |
 |---|---|---|
@@ -10,17 +26,7 @@ USB-C 1 (`make run`), nothing written to the NAND.
 
 **Pass.**
 
-
-
-## Boot time
-
-n/a: a bring-up step outside the product boot.
-
-## Battery energy
-
-n/a: a one-off bring-up step, no product activity.
-
-## Temperature
+### Temperature
 
 Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
 
@@ -39,6 +45,14 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | not measured: run before the metrics rule (2026-10-21); fill on a re-run | - | scripts/energy.py |
 | Per day | not measured: run before the metrics rule (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
+
+## Boot time
+
+n/a: a bring-up step outside the product boot.
+
+## Battery energy
+
+n/a: a one-off bring-up step, no product activity.
 
 ## Obstacles
 

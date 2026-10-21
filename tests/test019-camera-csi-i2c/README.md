@@ -4,6 +4,10 @@ Status: **planned** (2026-10-21).
 
 After the cameras arrive (OV5647 on CSI0 / CSI2, I2C0 / I2C4).
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. I2C: SCL frequency (scope or the sensor's register read time), 100 vs 400 kHz, error-free register dumps.
@@ -15,6 +19,9 @@ After the cameras arrive (OV5647 on CSI0 / CSI2, I2C0 / I2C4).
 
 Both cameras at the design rate with no dropped frames for 10 min; I2C clean at the configured clock.
 
+## Results
+
+Not run yet.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -39,3 +46,7 @@ Sensor probe and init time at boot, both sensors (without cameras the probes fai
 ## Battery energy
 
 Battery current with one and two sensors streaming (vs K230 idle); energy per second of capture and per still.
+
+## Obstacles
+
+None yet.

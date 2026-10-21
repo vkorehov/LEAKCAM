@@ -1,5 +1,7 @@
 # test014: SDIO speed, K230 MMC0 <-> BL616 SDIO device, 2026-10-21
 
+Status: **pass: 50 MHz 4-bit, bus 21 MB/s, end to end 9.4 MB/s, no CRC errors; soak 56 runs / 109 MB clean** (2026-10-21).
+
 The Wi-Fi link's bus alone, without Wi-Fi or NetHub: the BL616 runs the SDK's SDIO2 echo device (`sdio2_test`) as
 `pt_sdu on` in `bl616_powertest` (4 ports x 2 KB download buffers; every block written comes back on the upload
 ports). The K230 runs its NetHub driver with a temporary bench ([k230_bench.patch](k230_bench.patch), SDK copy only):
@@ -7,6 +9,18 @@ ports). The K230 runs its NetHub driver with a temporary bench ([k230_bench.patc
 pushes messages through the driver's ring and ports and times them (rdtime, 27 MHz).
 
 Order: BL616 `pt_off`, `pt_boot1 low`, `pt_on`, `pt_sdu on`, `pt_run`; K230 `bl616_scan`, `bl616_bench 2000`.
+
+## Setup
+
+Not written at the time; the setup is in the introduction above and in the Results.
+
+## Steps
+
+Not written at the time; the steps are the rows of the Results tables.
+
+## Pass
+
+Not written at the time; every Results row carries its pass / fail.
 
 ## Results
 
@@ -35,17 +49,7 @@ Order: BL616 `pt_off`, `pt_boot1 low`, `pt_on`, `pt_sdu on`, `pt_run`; K230 `bl6
 NetHub's credit header back (the bench now drops echoes), the resets the watchdog starved by the bench's busy wait:
 both in the test code, not the bus.
 
-
-
-## Boot time
-
-Not recorded (before the boot rule, 2026-10-21). If re-run: SDIO card scan and attach time (bl616_scan: card bound) - done at WIFI time in a session, not at boot.
-
-## Battery energy
-
-Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: BL616 + K230 current while transferring vs idle; energy per MB over SDIO (part of every upload).
-
-## Temperature
+### Temperature
 
 Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
 
@@ -64,6 +68,14 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | not measured: run before the metrics rule (2026-10-21); fill on a re-run | - | scripts/energy.py |
 | Per day | not measured: run before the metrics rule (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
+
+## Boot time
+
+Not recorded (before the boot rule, 2026-10-21). If re-run: SDIO card scan and attach time (bl616_scan: card bound) - done at WIFI time in a session, not at boot.
+
+## Battery energy
+
+Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: BL616 + K230 current while transferring vs idle; energy per MB over SDIO (part of every upload).
 
 ## Obstacles
 

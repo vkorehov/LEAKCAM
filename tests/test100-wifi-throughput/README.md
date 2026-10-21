@@ -6,6 +6,10 @@ The product path for clips and checks: the K230's lwIP over the NetHub SDIO brid
 limit) to the BL616's 2.4 GHz radio. Needs the product BL616 firmware (open on rev 1) and stored credentials
 (`wifi_set` on the debug console, or BLE).
 
+## Setup
+
+To fill: hookup, firmware / image, and the probes named in Metrics.
+
 ## Steps
 
 1. Join, DHCP, DNS, NTP (time to each step from the WIFI command).
@@ -18,6 +22,9 @@ limit) to the BL616's 2.4 GHz radio. Needs the product BL616 firmware (open on r
 
 TCP up >= 2 x the two streams' rate with margin at the install distance; no RTMP drops; figures recorded.
 
+## Results
+
+Not run yet.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -42,3 +49,7 @@ Time from the WIFI request to associated, DHCP and NTP (paid in every networked 
 ## Battery energy
 
 Battery current: Wi-Fi join (energy per join, paid on every networked session), idle associated, sending; energy per MB uploaded.
+
+## Obstacles
+
+None yet.
