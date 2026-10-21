@@ -1,8 +1,10 @@
-# test030: sleep current (BL616 hibernating, K230 off)
+# test030: sleep and minimal currents (every power state's floor)
 
 Status: **planned** (2026-10-21).
 
-What the board draws between wakes, which is most of its life. ENERGY.txt estimates ~15-20 uA (BL616 HBN "a few
+The lowest current each power state can reach, measured on its own, so every other test's figure reads as a rise
+above a known floor (user, 2026-10-21: minimal currents too). First the sleep: what the board draws between wakes,
+which is most of its life. ENERGY.txt estimates ~15-20 uA (BL616 HBN "a few
 uA", U5 TPS63802 ~11 uA, probe divider 1.65 uA, AHT20, charger); this test measures it, part by part. It needs no
 product firmware: a `pt_sleep <s>` command in the test firmware enters the same hibernate the product uses (HBN level
 0, `pm_hbn_mode_enter`) with an RTC wake after <s> seconds.
@@ -27,6 +29,20 @@ product firmware: a `pt_sleep <s>` command in the test firmware enters the same 
 
 Then: BL616 HBN share = (HBN) - (EN low); compare each part with ENERGY.txt section 2.
 
+### Minimal currents with the K230 on (the session floor)
+
+| State | How | Measures |
+|---|---|---|
+| K230 rails on, held in reset | `pt_on` | the rails' own floor (regulators, leakage), no K230 activity |
+| K230 at the msh prompt, nothing running | `pt_run`, wait for msh | the idle floor of RT-Smart at boot clocks |
+| Same, CPU at its lowest profile | power manager: CPU 0.2 GHz (profiles in pm_domain_cpu.c) | what a slower CPU saves while waiting |
+| Same, KPU and VPU clock-gated or powered off | power manager domains off | the media blocks' idle share |
+| Agent waiting on the link (READY sent) | the agent running, BL616 not answering | the floor a session sits at while it waits |
+| BL616 awake, idle (test firmware prompt) | K230 rails off | the BL616's own awake floor |
+
+Each state: minimum, average and peak over >= 10 s (meter min/max hold, or a shunt and scope for the peaks); the
+range that reads it (uA / mA / A) and the meter's resolution there.
+
 ## Boot time
 
 The BL616's HBN wake to its first instruction and to the console (RTC wake after <s>): part of every humidity slice
@@ -34,10 +50,10 @@ and every K230 session start (with test020).
 
 ## Battery energy
 
-This test is the sleep figure: uA -> mAh per month (uA x 0.72), and the share of a 1000 mAh cell per month; it goes
-into ENERGY.txt section 2 and the budget line "Sleep".
+This test is the sleep figure and every state's floor: uA -> mAh per month (uA x 0.72), power (P = I x VBAT) per
+state; the sleep goes into ENERGY.txt section 2 and the budget line "Sleep", the floors into the session lines.
 
 ## Pass
 
-Sleep current measured and split into the BL616 and the rest; within the ENERGY.txt estimate, or the largest consumer
+Sleep current measured and split into the BL616 and the rest; every state's minimum, average and peak recorded; within the ENERGY.txt estimate, or the largest consumer
 named with a fix (firmware: HBN level, pins; rev 2: parts).
