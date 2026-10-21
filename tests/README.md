@@ -8,7 +8,7 @@ or, for sleep currents, in the battery lead; a shunt and scope for short events;
 with the reason where the battery is not involved. The figures feed [ENERGY.txt](../ENERGY.txt). **Every test records boot time** too (section "Boot time"): what the tested part adds to
 the K230's power-on -> READY (its driver init, mount, probe, load) or to the BL616's wake path, from test021's
 timestamped milestones; "n/a" where the part is not touched at boot. Energy and boot time are measured per part, in
-the low-level tests, so a bottleneck shows where it is; the 100+ tests only add them up. Board bugs: [bugs/](../bugs/bugs.txt). Rev 2: [bugs/v2.txt](../bugs/v2.txt).
+the low-level tests, so a bottleneck shows where it is; the 100+ tests only add them up. **Every test records temperature** too: the K230 die (msh `chip_temp`) and the board (BL616 AHT20) at the start, peak and end of the activity. Board bugs: [bugs/](../bugs/bugs.txt). Rev 2: [bugs/v2.txt](../bugs/v2.txt).
 Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello): [tools/power-bringup](../tools/power-bringup/README.md).
 
 | Test | Date | Result |
