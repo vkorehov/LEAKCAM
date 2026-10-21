@@ -11,6 +11,10 @@ workaround cuts off on this reading (3.10 V under load), so it must agree with a
 K230 running (BL616 test firmware: `pt_on`, `pt_run`), K230 console (USBC2), meter on C11 pad 1 (BAT) and C15 pad 1
 (VBAT, what the ADC sees), GND on the caps' other pads.
 
+![probe points](adc_points.png)
+
+[adc_points.png](adc_points.png): VBAT on C15 pad 1, BAT on C11 pad 1, GND on each cap's other pad (top side, U1 corner).
+
 ## Steps
 
 1. K230 shell: `adc probe adc`, then `adc read 1` five times; VBAT = raw x 5400 / 4095 mV.
