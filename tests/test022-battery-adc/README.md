@@ -111,3 +111,6 @@ n/a for the reading itself (Q1 switches the divider only while the K230 runs: ~1
   Candidates: (a) D3's VCC is VUSB, back-fed to ~2.2 V from U2's D+ while unplugged (bug-002); the step to 5 V on
   plug couples into D+/D- and the host sees a disconnect; (b) a dip on the switched 3V3 that resets U2. Both go
   away in rev 2 (U2 on USBC2's VBUS, D3 VCC off VUSB: bugs/v2.txt 3/5). Scope 3V3 (U2 VCC) and D+ on the plug to tell.
+- **BL616 console gone after the battery reading (2026-10-21 22:16)** -> a PR1 cable pin had slipped out of
+  alignment (moved while probing / unplugging USB-C 1) -> re-seated; not a firmware or power event.
+
