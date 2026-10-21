@@ -1,4 +1,4 @@
-# test031: Camera buses and IO without cameras
+# test030: Camera buses and IO without cameras
 
 Status: **planned** (2026-10-21).
 

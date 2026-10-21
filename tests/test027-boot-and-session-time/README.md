@@ -1,9 +1,9 @@
-# test028: K230 boot time and session length
+# test027: K230 boot time and session length
 
 Status: **planned** (2026-10-21).
 
 Every wake powers the K230: the time from rails on to READY and the whole session decide the battery cost of
-a wake (with test030).
+a wake (with test029).
 
 ## Steps
 

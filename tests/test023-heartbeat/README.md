@@ -1,4 +1,4 @@
-# test024: K230 heartbeat to the BL616 (K230_ALIVE)
+# test023: K230 heartbeat to the BL616 (K230_ALIVE)
 
 Status: **planned** (2026-10-21).
 

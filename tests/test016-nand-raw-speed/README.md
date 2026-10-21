@@ -11,7 +11,7 @@ it into the NAND itself and UFFS, and checks the SPI clock's headroom.
 2. UFFS on the same sizes (test010 method) for the overhead.
 3. The SPI controller clock and mode in use (quad, DTR?) from the driver; if it runs below the W25N02KV's limit, raise
    it one step at a time with a read-verify of the whole image area, as test014 did for SDIO.
-4. Boot impact: the SPL/U-Boot NAND read speed (part of test028's boot time).
+4. Boot impact: the SPL/U-Boot NAND read speed (part of test027's boot time).
 
 ## Pass
 

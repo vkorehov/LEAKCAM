@@ -1,4 +1,4 @@
-# test026: K230 die temperature (TS)
+# test025: K230 die temperature (TS)
 
 Status: **planned** (2026-10-21).
 
@@ -8,7 +8,7 @@ enclosure closed.
 ## Steps
 
 1. Read the TS device at idle right after boot, then every 10 s for 10 min.
-2. Same under load: KPU change net in a loop, then the encoder (test027), both cameras when they arrive.
+2. Same under load: KPU change net in a loop, then the encoder (test026), both cameras when they arrive.
 3. Same with the board in the closed enclosure.
 
 ## Pass

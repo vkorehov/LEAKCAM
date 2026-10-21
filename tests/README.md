@@ -27,17 +27,17 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | [test019 USB boot and flashing speed](test019-usb-flash-speed/README.md) | | planned |
 | [test020 camera CSI and I2C speed](test020-camera-csi-i2c/README.md) | | planned |
 | [test021 BL616 internal timing](test021-bl616-internal-timing/README.md) | | planned |
-| [test022 leak pipeline timing](test022-leak-pipeline-timing/README.md) | | planned |
-| [test023 battery ADC](test023-battery-adc/README.md) | | planned |
-| [test024 K230 heartbeat (K230_ALIVE)](test024-heartbeat/README.md) | | planned |
-| [test025 DDR stress](test025-ddr-stress/README.md) | | planned |
-| [test026 K230 temperature](test026-temperature/README.md) | | planned |
-| [test027 H.265 encoder, synthetic frames](test027-video-encoder/README.md) | | planned |
-| [test028 boot time and session length](test028-boot-and-session-time/README.md) | | planned |
-| [test029 NAND power loss](test029-nand-power-loss/README.md) | | planned |
-| [test030 session current](test030-session-current/README.md) | | planned |
-| [test031 camera buses idle](test031-camera-bus-idle/README.md) | | planned |
-| [test032 cameras: detection, capture, image](test032-camera-capture/README.md) | | placeholder: cameras not delivered |
+| [test022 battery ADC](test022-battery-adc/README.md) | | planned |
+| [test023 K230 heartbeat (K230_ALIVE)](test023-heartbeat/README.md) | | planned |
+| [test024 DDR stress](test024-ddr-stress/README.md) | | planned |
+| [test025 K230 temperature](test025-temperature/README.md) | | planned |
+| [test026 H.265 encoder, synthetic frames](test026-video-encoder/README.md) | | planned |
+| [test027 boot time and session length](test027-boot-and-session-time/README.md) | | planned |
+| [test028 NAND power loss](test028-nand-power-loss/README.md) | | planned |
+| [test029 session current](test029-session-current/README.md) | | planned |
+| [test030 camera buses idle](test030-camera-bus-idle/README.md) | | planned |
+| [test031 cameras: detection, capture, image](test031-camera-capture/README.md) | | placeholder: cameras not delivered |
+| [test032 leak pipeline timing](test032-leak-pipeline-timing/README.md) | | later: after the cameras, Wi-Fi and the product firmware |
 
 ## Status by subsystem (2026-10-18)
 
@@ -55,7 +55,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | NAND persistence, full disk, speed | pass: read 9.4 MB/s (shell) / 12.7 MB/s (user program), write 1.8 MB/s | test010 |
 | Microphone | pass: -7 dBFS claps over a -42 dBFS floor at 54 dB | test011 |
 | KPU (change net) | pass: int8 on the KPU, 4.4 ms per check, same decisions as TensorFlow (int16 ran 40 layers on the CPU: 6.3 s) | test012 |
-| Cameras | not tested: not delivered | test032 |
+| Cameras | not tested: not delivered | test031 |
 | SDIO wiring K230 <-> BL616 | pass | test013 |
 | SDIO speed (synthetic, SDK echo device) | pass: 50 MHz 4-bit (max), bus writes 21.4 / reads 21.5 MB/s, end to end 9.4 MB/s; soak 109 MB, 0 errors | test014 |
 | Product BL616 firmware | **open**: no USB console on rev 1 (hangs before USB starts) | test014 |
