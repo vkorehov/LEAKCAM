@@ -6,6 +6,7 @@
  *   nand_bench read [blocks]  raw page reads from nand0 (/bin, read only), checksum to compare across clocks
  *   nand_bench write [blocks] erase, program, read back and verify in the free last 8 MiB (blocks 1984..2047)
  *   nand_clk [hz]             show / set the NAND QSPI clock (Kconfig SPI_NAND_SPI_FREQ at boot)
+ *   nand_rxsd [n]             show / set SPI0 RX_SAMPLE_DLY (ssi_clk cycles; Kconfig RT_SPI0_RXSD at boot)
  *   boot_times                tests/test021: rdtime (from reset release) at the end of each init level
  *
  * Timing: rdtime, 27 MHz. Every loop sleeps 1 ms now and then (outside the timed part): the 20 s watchdog's
@@ -16,6 +17,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "drivers/mtd_nand.h"
+#include "board.h"
+#include "../drivers/interdrv/spi/drv_spi.h"
+#include "../drivers/interdrv/sysctl/sysctl_clock/sysctl_clk.h"
+#include <ioremap.h>
 
 static inline rt_uint64_t now(void)
 {
@@ -189,6 +194,14 @@ static int nand_bench(int argc, char **argv)
 }
 MSH_CMD_EXPORT(nand_bench, test016: raw NAND speed: read [blocks] | write [blocks]);
 
+static dw_spi_reg_t *spi0_regs(void)
+{
+    static dw_spi_reg_t *r;
+    if (!r)
+        r = (dw_spi_reg_t *)rt_ioremap((void *)SPI_OPI_BASE_ADDR, sizeof(dw_spi_reg_t));
+    return r;
+}
+
 static int nand_clk(int argc, char **argv)
 {
     rt_device_t dev = rt_device_find("spinand0");
@@ -214,9 +227,31 @@ static int nand_clk(int argc, char **argv)
     }
     rt_kprintf("nand_clk: %u Hz requested, %d-bit (boot default %d Hz)\n",
                (unsigned)((struct rt_spi_device *)dev)->config.max_hz, SPI_NAND_SPI_BUS_WIDTH, SPI_NAND_SPI_FREQ);
+    {   /* what the controller really runs: ssi_clk / BAUDR (DW SSI uses even dividers) */
+        dw_spi_reg_t *r = spi0_regs();
+        rt_uint32_t src = sysctl_clk_get_leaf_freq(SYSCTL_CLK_SSI_0_CLK), dv = r->baudr;
+        rt_kprintf("nand_clk: ssi_clk %u Hz, BAUDR %u -> SCLK %u Hz, RX_SAMPLE_DLY 0x%x\n", (unsigned)src, (unsigned)dv,
+                   (unsigned)(dv ? src / dv : 0), (unsigned)r->rx_sample_delay);
+    }
     return 0;
 }
 MSH_CMD_EXPORT(nand_clk, test016: show or set the NAND QSPI clock [hz]);
+
+/* The driver writes RX_SAMPLE_DLY only in configure (from RT_SPI0_RXSD), so a value set here holds until the next
+ * nand_clk. Bit 16 (RSD edge) stays 0. */
+static int nand_rxsd(int argc, char **argv)
+{
+    dw_spi_reg_t *r = spi0_regs();
+    if (argc > 1)
+    {
+        r->ssienr = 0;
+        r->rx_sample_delay = (rt_uint32_t)atoi(argv[1]) & 0xffu;
+    }
+    rt_kprintf("nand_rxsd: RX_SAMPLE_DLY %u ssi_clk cycles (boot default %d)\n", (unsigned)(r->rx_sample_delay & 0xffu),
+               RT_SPI0_RXSD);
+    return 0;
+}
+MSH_CMD_EXPORT(nand_rxsd, test016: show or set the NAND SPI read sample delay [cycles]);
 
 /* test021 boot time: rdtime counts from the SoC reset, so these are times after reset release (ROM, SPL, DDR
  * training and OpenSBI are all before "kernel init start"). The sections sort by name: "N.9" runs last in level N. */

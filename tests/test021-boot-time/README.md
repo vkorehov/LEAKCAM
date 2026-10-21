@@ -1,6 +1,6 @@
 # test021: K230 boot time
 
-Status: **first measurement** (2026-10-21): 1.00 s reset release -> app init; msh prompt and READY not timed yet.
+Status: **0.88 s** reset release -> app init with NAND at 80 MHz (was 1.00 s at 50 MHz, 2026-10-21); msh prompt and READY not timed yet.
 
 Every wake powers the K230 up from cold, so its boot time is paid on every session (the whole session: test101).
 Not measured yet: the test firmware does not time it and the product BL616 firmware (which logs "READY <ms> after
@@ -50,6 +50,9 @@ temporary init hooks record it at the end of each RT-Thread init level (`boot_ti
 | app init done | 1.003 s | 0.997 s | 23 ms |
 | msh prompt, agent READY | not timed | | |
 
+NAND at 80 MHz (test016), 11 cold boots read: kernel init 0.207 s (-23 ms: SPL/U-Boot load faster), board..component
+0.262 s, **mounts done 0.853-0.863 s (0.59-0.60 s, -100 ms)**, **app init 0.876-0.886 s (-12 %)**.
+
 **The UFFS mounts are 70 % of the boot to app init**: first lever. Then the NAND clock (80 MHz, test016) for the
 mount reads and the kernel load. Still to time: main/msh and the agent's READY (needs the product BL616 or a K230-side
 hook), and 5 cold boots (each costs a VMware click for the CH340).
@@ -64,12 +67,12 @@ burned mA fuse: readings from before the swap are void.
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, reset release -> app init (2 boots) | 1.00 s (0.997-1.003) | target: to set | longest step: UFFS mounts 0.70 s |
+| Boot, reset release -> app init | 0.88 s at 80 MHz (11 boots, 0.876-0.886); 1.00 s at 50 MHz | target: to set | longest step: UFFS mounts 0.59 s |
 | This part's boot share | - | - | (the boot is this test) |
 | Test run time | 1 command; setup: reflash (USB boot) ~5 min with clicks | - | |
-| NAND clock in the boot | 50 MHz | 80 MHz stable (test016) | |
+| NAND clock in the boot | 80 MHz (since 2026-10-21) | 100 MHz has no window (test016) | |
 | Current: rails in reset / boot peak / msh idle | 86.3 / ~227 / 204 mA | - | USB-C 1 VBUS |
-| Power, energy per boot (to app init) | ~215 mA x 1.0 s = 0.82 J, 60 uAh | - | 3.8 V nominal |
+| Power, energy per boot (to app init) | ~215 mA x 0.88 s = 0.72 J, 53 uAh (1.0 s: 0.82 J) | - | 3.8 V nominal |
 | Per day | 4 report sessions: 0.24 mAh/day (boot to app init only) | ENERGY.txt 3 | 0.7 % of 1000 mAh / month |
 
 ## Boot time

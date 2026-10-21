@@ -1,6 +1,6 @@
 # test016: SPI NAND raw speed and SPI clock
 
-Status: **pass at 50 and 80 MHz, 100 MHz fails** (2026-10-21). Bench: [leakcam_bench.c](leakcam_bench.c) (SDK copy, `bsp/maix3/board/`).
+Status: **80 MHz adopted** (2026-10-21, kernel + U-Boot/SPL, sample delay 5); 100 MHz has no sample-delay window. Bench: [leakcam_bench.c](leakcam_bench.c) (SDK copy, `bsp/maix3/board/`).
 
 test010 measured the file system: read 9.4 MB/s (shell) / 12.7 MB/s (user program), write 1.8 MB/s. This splits
 it into the NAND itself and UFFS, and checks the SPI clock's headroom.
@@ -33,13 +33,38 @@ Raw MTD, 2 KiB pages, quad SPI; read on nand0 (/bin, blocks 384..), program/eras
 After the 100 MHz run, back at 50 MHz: checksums unchanged, 0 false bad blocks in the spare area, /bin and /sdcard
 list normally: no damage. Program and erase are chip-limited (W25N02KV); reads scale with the clock.
 
-Not done yet for adopting 80 MHz (SPEEDS.txt 3): SPL and U-Boot at 80 too, 10 cold boots, the /sdcard area; 100 MHz
-might need the controller's RX sample delay (to look at, not a board fault: 80 is clean).
+### Why 100 MHz fails: the read sample delay (2026-10-21)
+
+The NAND is on SPI0 (OSPI, DW SSI): ssi_clk **800 MHz**, SCLK = 800 / BAUDR (50 = /16, 66.7 = /12, 80 = /10,
+100 = /8). RX_SAMPLE_DLY delays sampling by n x 1.25 ns (boot default `RT_SPI0_RXSD` 6). Read-only sweep
+(`nand_clk`, `nand_rxsd n`, `nand_bench read 64`, reference checksum from 50 MHz):
+
+| Delay | 50 MHz | 80 MHz | 100 MHz |
+|---|---|---|---|
+| 0 | 1 bit flipped, 0 errors | zeros | ECC errors |
+| 1-2 | clean | zeros | ECC errors |
+| 3 | clean | clean | ECC errors |
+| 4-8 | clean | clean | zeros, "0 errors" |
+| 9, 11, 14, 16 | 1 bit flipped | zeros (9-10) | ECC errors (9-10) |
+
+- At 100 MHz no delay works: 0-3 the 1-line status reads are right (the driver waits, reports ECC errors) but the
+  4-line data is wrong; 4-8 the status reads 0 ("ready, no error") and the data zeros. The 1-line and 4-line
+  phases want different sampling points and their windows no longer overlap. Still to try: the other sampling edge
+  (RX_SAMPLE_DLY bit 16, half steps) and stronger pad drive on the OSPI pins.
+- **Bus errors are silent**: the NAND's ECC works inside the chip, so a bit mis-sampled on the bus arrives with no
+  error. Hence the delay in the middle of the window, and checksums (never the driver status) for every clock change.
+- Chosen: **80 MHz, delay 5** (window 3-8 at both 50 and 80 MHz): kernel `CONFIG_SPI_NAND_SPI_FREQ=80000000`,
+  `CONFIG_RT_SPI0_RXSD=5`; U-Boot/SPL dts `spi-max-frequency = <80000000>`, `rx-sample-delay-ns = <6>` (6 ns / 1.25 =
+  5). 18 cold boots: every boot read (11) app init 0.876-0.886 s, /bin checksum equal to the 50 MHz read; the others
+  booted too (the CH340 attaches ~10 s after power-on in the VM, after the script's read).
 
 ## Obstacles
 
-- **100 MHz returns zeros without an error** -> the driver has no read check -> every clock step needs a checksum
-  against a known read, never the driver's status.
+- **100 MHz returns zeros without an error** -> mis-sampled status reads say "ready, no error" -> every clock step
+  needs a checksum against a known read, never the driver's status; sample-delay sweep above.
+- **`install.sh` run with `sh`** stopped at `set -o pipefail`, and without its SDK argument it only printed usage: the
+  next build used the old settings -> `bash install.sh ~/k230_rtos_sdk`, then `leakcam_docker_build.sh
+  k230d_rtos_leakcam_defconfig` and `log`; check `rtconfig.h` and the dtb before flashing.
 
 ## Metrics (2026-10-21, bench image)
 

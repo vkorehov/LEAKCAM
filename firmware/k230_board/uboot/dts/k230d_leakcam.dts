@@ -45,16 +45,17 @@
 	status = "okay";
 };
 
-/* U16 W25N02KV on OSPI CS0, quad I/O at 50 MHz (as the burn tool and the EVB U-Boot) */
+/* U16 W25N02KV on OSPI CS0, quad I/O at 80 MHz; rx-sample-delay 6 ns = 5 x 1.25 ns, the middle of the clean
+ * window 3-8 (tests/test016; the kernel uses RT_SPI0_RXSD=5) */
 &spi0 {
 	status = "okay";
-	rx-sample-delay-ns = <5>;
+	rx-sample-delay-ns = <6>;
 	u-boot,dm-pre-reloc;
 
 	spi-flash@0 {
 		compatible = "spi-nand";
 		reg = <0>;
-		spi-max-frequency = <50000000>;
+		spi-max-frequency = <80000000>;
 		spi-tx-bus-width = <4>;
 		spi-rx-bus-width = <4>;
 		status = "okay";
