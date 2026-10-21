@@ -54,4 +54,4 @@ day (ENERGY.txt section 3).
 
 ## Obstacles
 
-None yet.
+- **First HBN sleep with the RTC on Y3 never woke** (test030, 2026-10-21) -> open; see test030 Obstacles.

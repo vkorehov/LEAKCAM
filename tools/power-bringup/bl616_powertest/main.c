@@ -51,6 +51,10 @@
 #if PT_TEST_LEAK
 #include "bflb_adc.h"
 #endif
+#if PT_TEST_SLEEP
+#include "bl616_hbn.h"
+#include "bl616_pm.h"
+#endif
 #if PT_TEST_SDU
 #include "bflb_sdio2.h"
 #include "bflb_l1c.h"
@@ -738,6 +742,9 @@ static void background_task(void *arg)
 #if PT_TEST_I2C
                    " pt_i2c"
 #endif
+#if PT_TEST_SLEEP
+                   " pt_sleep"
+#endif
 #if PT_TEST_USB
                    " pt_usb"
 #endif
@@ -819,6 +826,35 @@ static int cmd_boot1(int argc, char **argv)
     return 0;
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_boot1, pt_boot1, K230 BOOT1 strap: low | high | park);
+
+#if PT_TEST_SLEEP
+/* test030: the board's sleep current. The K230 rails go off first (HBN releases every non-AON pad: R19 then holds
+ * K230_PWR low, R76 the reset); the RTC moves to the Y3 crystal (as the product's rtc_use_crystal()), then HBN
+ * level 0 until the RTC wakes the BL616 after <s>; the wake is a reset, the test firmware starts again. */
+static int cmd_sleep(int argc, char **argv)
+{
+    uint32_t s = argc > 1 ? (uint32_t)atoi(argv[1]) : 60, t;
+    if (s < 2 || s > 86400) {
+        printf("usage: pt_sleep <2..86400 s>\r\n");
+        return -1;
+    }
+#if PT_TEST_SDU
+    sdu_stop();
+#endif
+    LOCKED(t = rails_off_timed());
+    (void)t;
+    HBN_Power_On_Xtal_32K();
+    HBN_32K_Sel(HBN_32K_XTAL);
+    printf("pt_sleep: K230 off, HBN level 0 for %lu s (RTC on Y3); unplug PR1 now for the sleep current\r\n",
+           (unsigned long)s);
+    bflb_mtimer_delay_ms(50);           /* let the USB console send the line */
+    pm_hbn_mode_enter(PM_HBN_LEVEL_0, (uint64_t)s * 32768u);
+    while (1) {
+    }
+    return 0;
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_sleep, pt_sleep, K230 off and HBN level 0 for <s> seconds (RTC wake));
+#endif
 
 static void pins_init(void)
 {
