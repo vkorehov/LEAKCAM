@@ -12,6 +12,17 @@ To fill: hookup, firmware / image, and the probes named in Metrics.
 
 ## Steps
 
+0. **Hardware configuration** (before any timing):
+   - image: `CONFIG_RT_USING_RTC=y`, `CONFIG_RT_USING_RTC_PMU=y` in the built rtconfig.h; the PMU pads in the pin
+     table (72-pad table, bug-003) as in the defconfig comments;
+   - board: Y1 32.768 kHz with its load capacitors as in the schematic (values vs the crystal's CL), INT4 at 1.8 V
+     (R45 bridged, bug-003), AVDD1P8_RTC on the 1V8 rail at 1.8 V with the rails on;
+   - driver: the `rtc` device registered (`list_device`), its clock source the external crystal, not an internal RC
+     (driver / PMU register, read back and printed);
+   - oscillation: the RTC seconds advance between two reads 10 s apart (and, if a scope is at hand, Y1 at 32.768 kHz
+     on the crystal pin, a 10x probe only).
+   **Raw read:** `date` in msh, and the PMU RTC registers read directly (a temporary MSH command in the SDK copy):
+   seconds, date fields, the valid / running flags, before and after a set.
 1. Boot: `rtc driver register OK`; the time the RTC starts with before the handover (expect the reset value), and
    the time to the first valid read.
 2. Handover: the `WAKE` time against the host's UTC; the RTC (`date` in msh) right after: offset <= 1 s; with
