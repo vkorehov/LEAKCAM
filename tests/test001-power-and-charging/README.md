@@ -39,17 +39,33 @@ USB on USB-C 1, K230 off.
 | Step | Result | |
 |---|---|---|
 | TS (JT 1 to JT 2) | 0.88 V: inside the 0.65-1.3 V charge window (~26 C) | pass |
-| First try, cell at 2.9 V | D1 flashes and goes off, BAT jumps: the charger's battery detection, no cell seen on BAT (deep-discharged cell) | |
+| First try, cell at 2.9 V | D1 flashes and goes off, BAT jumps: the charger's battery detection, no cell seen on BAT. Then read as a deep-discharged cell; from 2026-10-21 more likely the JB1 joint already failing (2.9 V is not deep: the cell's PCM had not cut it) | |
 | Cell lifted on a bench supply, then board charger | bench run: 2.2 A falling to 1.6 A at 4.3 V (too much: use 4.20 V, <= 0.5 A); rest voltage after it 3.54-3.56 V | |
 | Board charger, cell at ~3.56 V rest | BAT 3.64 V, then 3.71 V: charging | **pass** |
-| Charge current | ~0.2-0.3 A estimated (BAT - rest = 0.08 V over ~0.3-0.45 ohm), below the 0.89 A set point: likely U1's thermal regulation, ~1.4 W at (5.2 - 3.6) V x 0.89 A | note |
-| End of charge (2026-10-20) | D1 off; cell 4.15 V at rest; about 6 h from ~3.56 V (not watched in between) | **pass** |
+| Charge current | ~0.2-0.3 A estimated from BAT minus the rest voltage (0.08 V over an assumed ~0.3-0.45 ohm) and put down to U1's thermal regulation. Both wrong (2026-10-21): there is no such drop between the cell and BAT while charging, and with the cell wired well U1 gives the full 0.89 A | not measured |
+| End of charge (2026-10-20) | D1 off next morning; cell 4.15 V at rest (overnight, not watched: no charge time) | **pass** |
 | USB replugged at 4.15 V | D1 flashes once, then off: the cell is above the ~4.10 V recharge threshold, so the charger reports done at once. The overnight charge therefore ended by termination, not on the 6.3 h timer | pass |
 
-**Pass: the board charges to full** with the 47 k (D1 off, 4.15 V at rest). Note: ~6 h is close to the 6.3 h
-safety timer (TMR R21 47 k), which also turns D1 off when it expires; 4.15 V at rest says the cell was full, but a cell
-starting near empty may hit the timer at this low current. Not measured yet: the real current, V(R7) to GND / 2.5 =
-charge current in A (ISET monitor, V_ISET = I_charge / 400 x R_ISET, datasheet SLUS810 eq. 3), no wire cut needed.
+**Pass: the board charges to full** with the 47 k (D1 off, 4.15 V at rest). Current and charge time: see 2026-10-21.
+
+## Charging with the cell wired to C11, 2026-10-21
+
+The cell's + wired straight to C11 pad 1 (BAT), the JB1 joint bypassed (see Obstacles). USB meter in VBUS, K230 off.
+
+| Step | Result | |
+|---|---|---|
+| Start, cell ~3.6 V | 0.94 A on the USB meter = 0.89 A into the cell + 51 mA BL616/board | **pass**: full set current, U1 not throttling |
+| After ~1 h | 350 mA for a while; a replug started at 0.45 A and ramped down quickly to 350 mA | not explained |
+| Later, same charge | 0.94 A again (0.89 A + 51 mA) | so the 350 mA was not the CV taper; U1 not throttling |
+| End of charge | expected D1 off at ~0.09 A charge (C/10), ~0.14 A on the meter; ~1-1.5 h of charging from ~3.6 V, well inside the 6.3 h timer | open |
+
+**What the earlier charger problems were.** Every one from 2026-10-19 to 10-21 fits the JB1 cell joint, not U1 or
+the cell: D1 flashing / "no cell" and BAT jumping
+(joint open), the board resetting on every VBUS interruption (no cell behind VUSB), and C11 at 3.30 V while the
+cell read 3.69 V at its wires. The low "~0.2-0.3 A" was never measured (a wrong voltage-drop estimate) and the
+"~6 h" was an unwatched overnight charge. There is no evidence that the cell was ever deep-discharged or that its PCM tripped;
+the "3.0 V cut-off" is only the generic cell spec's recommended end of discharge (EXTERNAL_PARTS.md), not a
+protection in the pack. U1's heat: not seen; it holds 0.89 A.
 
 
 
@@ -66,19 +82,20 @@ Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: the b
 - **No charging** -> U1 is BQ24072**T** (no internal TS bias), circuit drawn for the plain BQ24072 -> rev 1: 47 k
   VUSB-TS; rev 2: BQ24072RGTR.
 - **Wrong NTC window** -> assumed B3950, part is B3435 -> take constants from EXTERNAL_PARTS.md.
-- **Cell drained to 2.9 V after a day of bring-up** -> no charging and hours without USB power (bug-002 before it
-  was understood) -> K230 rails off; charge the cell off the board (4.2 V, 100 mA below 3.0 V) or fit the 47 k.
-- **D1 flashes and goes off, BAT jumps (with the 47 k)** -> the charger sees no cell (battery detection cycling) after
-  the deep discharge -> lift the cell on a bench supply first (4.20 V, <= 0.5 A; 4.3 V / 2.2 A was too much), then
-  the board charger takes over.
-- **Charge current looks low** -> a linear charger at a low cell voltage throttles for heat -> read V(R7) / 2.5 instead
-  of guessing from voltages.
-  No K230 flashing at 2.9 V (brown-out during a NAND write). D1 went off: charger timer / pre-charge state.
+- **Cell at 2.9 V after a day of bring-up** -> no charging (bug-001) and hours without USB power (bug-002 before it
+  was understood) -> K230 rails off; fit the 47 k. Not deep: the cell's PCM did not cut it at 2.9 V.
+- **D1 flashes and goes off, BAT jumps (with the 47 k)** -> the charger sees no cell (battery detection cycling);
+  then blamed on a deep discharge, most likely the JB1 joint already failing -> lifted the cell on a bench supply
+  (4.20 V, <= 0.5 A; 4.3 V / 2.2 A was too much), then the board charger took over.
+- **Charge current "looked low" (~0.2-0.3 A, 2026-10-19)** -> estimated from a cell-BAT drop that does not exist
+  and blamed on U1's heat; measured on 2026-10-21 it is the full 0.89 A -> measure, don't guess: the USB meter, or
+  V(R7) / 2.5 (ISET monitor, SLUS810 eq. 3).
+  No K230 flashing at 2.9 V (brown-out during a NAND write).
 - **No charging, D1 flashing 2 Hz, then one blink and off (2026-10-21)** -> the cell's + wire joint on JB1 pin 1 was
   cracked: the cell read 3.69 V at its wires, C11 (BAT) millivolts; first the pre-charge timer latched a fault (2 Hz,
   cleared only by removing the input), then the charger found no battery -> reflowed the joint; charges from a wall
   adapter. Probe sheets: charger_pins_top/bottom.png. The same open joint is why every VBUS interruption that day
-  reset the board (no cell behind VUSB), and the cell had been drained before it opened.
+  reset the board (no cell behind VUSB). The cell itself was fine (3.69 V).
 - **D1 blinking, no charge, only with the ammeter in VBUS** (2026-10-21) -> the meter path (10 A shunt, leads, splice:
   a few tenths of an ohm) drops VUSB at the ~1 A charge start, and in ILIM mode (EN2 high) the charger has no
   VIN-DPM to back off, so it drops out and restarts -> charge with the meter bypassed (Mac port direct or a wall
@@ -89,8 +106,3 @@ Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: the b
 - **Rework (2026-10-21):** the cell's + now goes by copper wire straight to C11 pad 1 (BAT), bypassing the JB1 joint.
   The BAT copper itself is fine (0.51 mm tracks + pour on top, good for ~1.5-2 A; the board charges at <= 1 A);
   the JB1 failures were mechanical. Fix the wire down near C11 so it does not load the small pad.
-- **Full charge current once the cell is wired well** (2026-10-21): 0.94 A on the USB meter (10 A range) = 0.89 A
-  ISET + ~50 mA board, U1 not throttling at first. The 0.2-0.3 A of 2026-10-19/20 ("thermal regulation") was more
-  likely the JB1 joint's resistance. Still to watch: U1 dissipates ~1.2 W at (4.95 - 3.6 V) x 0.89 A - note the
-  current after 10-20 min; a drop to a few hundred mA would be the thermal loop after all.
-

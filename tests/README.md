@@ -62,7 +62,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | Subsystem | State | Test |
 |---|---|---|
 | Battery rails, 3V3_SLEEP | pass | test001 |
-| Charging | pass with the bug-001 47 k: full in ~6 h (4.15 V, D1 off); ~0.2-0.3 A (thermal), close to the 6.3 h timer | test001 |
+| Charging | pass with the bug-001 47 k and the cell wired to C11: full 0.89 A measured (end of charge to time); the earlier ~0.2-0.3 A / ~6 h were a wrong estimate and an unwatched night | test001 |
 | USB-C power with K230 on | **open**: bug-002, plug USB before `pt_on` | test003 |
 | BL616 flash, USB console, AHT20, leak ADC (dry) | pass | test002 |
 | K230 rails, boot ROM, debug UART, code from SRAM | pass | test003, test004 |

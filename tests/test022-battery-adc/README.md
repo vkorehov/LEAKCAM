@@ -35,14 +35,14 @@ between reads.
 | Point | Meter (second meter) | ADC |
 |---|---|---|
 | C15 pad 1, "VBAT" net = ADC input | 4.37 V | mean 4.430 V (+60 mV, +1.4 %), sd 52 mV, 4.340-4.507 |
-| C11 pad 1, BAT (cell) | 3.298 V | - |
+| C11 pad 1, BAT | 3.298 V (board side of the open JB1 joint; the cell read 3.69 V at its wires) | - |
 
 - **On USB, C15 is the BQ24072 output rail (~4.4 V), not the cell.** On battery the BAT-FET joins OUT to the cell, so
   the ADC reads the cell then: the only case the bug-004 cutoff needs. The firmware must not report the USB reading
   as battery level.
 - **Noise sd 52 mV** (target 10): single reads are not enough for a 3.10 V cutoff -> average (64 reads: ~7 mV).
 - Offset +60 mV: one-point correction once the battery case is measured.
-- **Cell at 3.30 V with D1 off** (should charge, D1 on): the charger does not see / charge the cell - see Obstacles.
+- **C11 at 3.30 V with D1 off** (should charge, D1 on): the JB1 cell joint was open - see Obstacles.
 
 ## Metrics (2026-10-21)
 
@@ -72,8 +72,7 @@ n/a for the reading itself (Q1 switches the divider only while the K230 runs: ~1
 - **Cell at 3.30 V, D1 off, board resets when the ammeter leads are re-seated** (16:06, 16:07; and 14:42, 15:20) ->
   the charger does not see the cell (test001: D1 flashing then off = battery detection, no cell), so nothing backs
   up VBUS -> found: the cell's + wire joint on JB1 pin 1 was cracked (test001), reflowed.
-- **Likely cause of the empty cell** -> while the first ammeter's mA fuse was burned (2026-10-21 ~14:42-15:00) its
-  path was open and the board ran from the cell with the K230 at ~200 mA; rev 1 has no discharge cutoff (bug-004)
-  and the test firmware no workaround, so the cell was drained until its protection opened -> bench charge (50 mA
-  pre-charge below 3.0 V, then CC/CV 4.20 V, 0.2-0.3 A, stop at ~20 mA), then the battery case of this test.
+- **"Empty cell" was not empty** -> first blamed on the burned ammeter fuse (~14:42-15:00, board on the cell with
+  the K230 at ~200 mA, no cutoff: bug-004); the cell read 3.69 V at its wires, so it was the open JB1 joint, not a
+  drain or a tripped PCM -> cell wired to C11, charged on the board (test001); then the battery case of this test.
 

@@ -73,12 +73,10 @@ Record the readings in tests/test001-power-and-charging/README.md.
 
 **Result of workaround A (2026-10-19): it charges.** TS 0.88 V with the 47 k fitted; with the cell above the
 pre-charge range BAT rose 3.64 -> 3.71 V on the board charger (test001). The cell first had to be lifted on a bench
-supply: after the drain to 2.9 V the charger's battery detection did not see it (D1 flash, BAT jumping). The current
-was estimated at only ~0.2-0.3 A, likely U1's thermal regulation (~1.4 W in the QFN-16 at a low cell voltage); measure
-it as V(R7) / 2.5. End of charge confirmed 2026-10-20: D1 off, cell 4.15 V at rest after ~6 h from ~3.56 V. ~6 h is close to the
-6.3 h safety timer (TMR R21 47 k); a replug at 4.15 V only flashed D1 (above the ~4.10 V recharge threshold), so this
-charge ended by termination. From a near-empty cell the low current could still end on the timer instead. Rev 2: a
-switching charger, or less heat in U1 (lower ISET, or a longer timer), so a full charge finishes well inside the timer.
+supply: the charger's battery detection did not see it (D1 flash, BAT jumping). End of charge confirmed 2026-10-20:
+D1 off, cell 4.15 V at rest after an unwatched night. The "no cell" was the cell's solder joint on JB1; the low
+~0.2-0.3 A then reported was a wrong estimate, not a measurement: on 2026-10-21 U1 charges at the full 0.89 A
+(test001). The 47 k workaround works as designed.
 
 ## Lesson
 

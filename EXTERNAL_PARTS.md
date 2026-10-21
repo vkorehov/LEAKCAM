@@ -30,6 +30,9 @@ part can be re-sourced from any vendor.
   (1000 mA), max continuous discharge 1 C, charge temperature 0 to 45 C, about
   5.0 x 34 x 50 mm, about 22 g (generic 503450 specification; "523450" in the title is
   the 5.2 mm thick sibling). Built-in PCM for over-charge / over-discharge / short.
+- The 3.0 V cut-off is the recommended end of discharge, not the PCM's trip point: the cell
+  sat at 2.9 V on 2026-10-19 without a cut (generic PCMs trip ~2.4-2.5 V, not measured).
+  The board itself must stop at 3.0 V (bugs/bug-004).
 - The board charges at about 0.89 A, which is 0.9 C for one cell (0.45 C with two cells in
   parallel on JB1 + JB2); within the cell's 1 C rating.
 - Connection: the board has no battery connector. Cut the JST PH plug off and solder the

@@ -40,7 +40,9 @@ Open on rev 1: firmware workaround to write. Rev 2: divider in the schematic.
 
 ## Seen in bring-up (2026-10-21)
 
-A bench session drained the cell: with the ammeter path open (burned mA fuse) the board ran from the cell with the
-K230 on (~200 mA) and nothing stopped it; the charger then flashed D1 (no cell seen, protection open) and the cell
-needed a bench charge (tests/test022). The test firmware has no cutoff: on battery, keep sessions short or watch VBAT.
+First thought to be a drained cell (burned ammeter fuse, board on the cell with the K230 at ~200 mA): it was the
+cell's open solder joint on JB1, the cell read 3.69 V (tests/test001, test022). No drain or PCM trip has been seen
+yet. The bug stands: nothing on the board stops a drain, and the pack's PCM is no 3.0 V guard (the cell sat at 2.9 V
+on 2026-10-19 without a cut; generic PCMs trip ~2.4-2.5 V, deeper than the cell should go). The test firmware has no
+cutoff: on battery, keep sessions short or watch VBAT.
 
