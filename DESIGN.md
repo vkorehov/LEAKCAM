@@ -447,6 +447,12 @@ back to U13's GND pad beside MICPL; 1 µF 0402 fits better than the 0805 (footpr
 
 ## 7. Open firmware work
 
+- **BL616 RTC clock (found 2026-10-21, tests/test030).** rtc_use_crystal() selects the Y3 crystal at once on a
+  cold boot and assumes the RTC runs on RC32K until it starts: measured wrong, the HBN RTC counter stops for ~1 s,
+  and an HBN sleep entered then never wakes. Fix before the product sleeps: select Y3 only once the counter moves
+  (as bl616_powertest's xtal32k_select), else stay on RC32K; the Y3 wake itself is not proven yet. Fallback:
+  RC32K for the wake (+0.44 %) with the clock corrected against the 40 MHz crystal while awake. Y3 also measured
+  -110 ppm (load caps to check).
 - **Full sensor resolution (decided 2026-10-21, refactor later).** The cameras are to run at the OV5647's native
   2592x1944 instead of the 1280x960 binned mode the code uses now (WIDTH/HEIGHT in leakcam_wake.c and
   leakcam_stream.c; the trimmed /bin keeps the 1280x960 ISP set until then). What it touches:

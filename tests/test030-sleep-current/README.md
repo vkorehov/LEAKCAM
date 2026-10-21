@@ -1,6 +1,6 @@
 # test030: sleep and minimal currents (every power state's floor)
 
-Status: **open: no RTC wake** (2026-10-21): HBN works (USB 60 -> 1.24 mA) but the BL616 did not wake after 120 s.
+Status: **HBN + RTC wake work on RC32K** (2026-10-21): sleep 1.23 mA through USB (mostly the charger), wake at 60 s; the Y3 crystal path still fails; battery-lead figure open.
 
 The lowest current each power state can reach, measured on its own, so every other test's figure reads as a rise
 above a known floor (user, 2026-10-21: minimal currents too). First the sleep: what the board draws between wakes,
@@ -57,12 +57,36 @@ Meter in USB-C 1 VBUS (10 A range awake, mA range asleep), cell full (D1 off), K
 
 | State | Current | Note |
 |---|---|---|
-| BL616 awake, K230 off | ~60 mA (earlier today: 60.5 mA) | USB PHY and console on |
+| BL616 awake, K230 off | ~60 mA (earlier today: 60.5 mA; 61 mA after the RC32K wake) | USB PHY and console on |
 | BL616 in HBN level 0 (`pt_sleep 120`, 23:29:23) | **1.24 mA** | mostly the charger's own input current (ICC <= 1.5 mA with input present); the board's sleep share is not visible through USB |
 | PR1 / USB-C 2 unplugged while asleep | no change: 1.24 mA (the USB data lines add nothing) | |
 | RTC wake after 120 s | **did not happen**: still 1.24 mA at 23:32+ (awake would be ~60 mA), console not back | see Obstacles; EN tap to recover |
 
 The battery figure (charger <= 6.5 uA IBAT(PDWN) + board) needs the meter in the cell lead: still to do.
+
+### 2026-10-21 evening: the RTC wake traced (test firmware with `pt_rtc`, `pt_sleep <s> [rc]`)
+
+HBN RTC counter rate while awake (`pt_rtc`, 1 s against the BL616 mtimer):
+
+| 32 kHz source | Ticks per s | Note |
+|---|---|---|
+| RC32K (the default after reset) | 32882-32911 (normalised ~32913) | runs, **+0.44 %** |
+| Y3 right after HBN_Power_On_Xtal_32K + HBN_32K_Sel(XTAL) | **0 for the first second**, then 31893 | **the counter stops** until the crystal oscillates |
+| Y3 settled | 32754-32758 (normalised ~32764) | runs, **-110 ppm** (~9.5 s/day slow: load caps? test031) |
+
+Sleep runs (meter in USB-C 1 VBUS, K230 off):
+
+| Run | RTC clock | Sleep current | At the wake time | Result |
+|---|---|---|---|---|
+| 23:29 `pt_sleep 120` | Y3 selected 0 ms after power-on | 1.24 mA | no change | **no wake** (counter frozen: crystal not running, never starts in HBN) |
+| 23:44 `pt_sleep 30` | Y3 selected only once the counter moved | 3.95-4.11 mA, falling slowly | no change, no console, no USB popup | **no wake / stuck** (not explained; a top-up charge with D1 off cannot be ruled out) |
+| 23:48 `pt_sleep 60 rc` | RC32K | **1.23 mA** | **jumped to 61 mA, console back 23:50:00** | **woke normally** |
+| 23:50 `pt_sleep 60` | Y3 ("running after 1000 ms") | not read | not observed: device disconnected | open |
+
+So hibernation and the RTC wake work; the crystal path does not yet. The product's rtc_use_crystal()
+(leak_wake.c) selects Y3 at once on a cold boot and assumes the RTC keeps running on RC32K until the crystal
+starts: measured wrong, the counter stops. Until the Y3 path is proven, the safe product choice is RC32K for the
+HBN wake (+0.44 % = 2.6 s per 10-min wake) with the wall clock corrected against the 40 MHz crystal while awake.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -92,10 +116,11 @@ state; the sleep goes into ENERGY.txt section 2 and the budget line "Sleep", the
 
 ## Obstacles
 
-- **No RTC wake from HBN level 0** (2026-10-21 23:29, `pt_sleep 120`): still asleep after > 3 min, EN needed (EN tap
-  23:3x: BL616 back, test firmware normal, board 28 C) ->
-  open. Suspects: (1) `HBN_32K_Sel(HBN_32K_XTAL)` right after `HBN_Power_On_Xtal_32K()`: if the 32 kHz crystal (Y3)
-  is not running yet (or at all), the RTC may stop instead of running on RC32K as the product code assumes
-  (leak_wake.c rtc_use_crystal); (2) the RTC wake not armed in this path. Next: `pt_sleep` without the crystal
-  switch (RC32K), and the HBN RTC counter read twice while awake on XTAL. **Matters for the product**: its wakes
-  are RTC wakes (test031).
+- **No RTC wake from HBN level 0 with the RTC on Y3** (2026-10-21) -> selecting the 32 kHz crystal before it
+  oscillates stops the HBN RTC counter (measured: 0 ticks for ~1 s), and the BL616 never reaches the wake
+  compare -> `pt_sleep` now selects Y3 only once the counter moves (Y3 needs ~1 s); on RC32K the wake works
+  (60 s, 1.23 mA asleep). With Y3 selected that way the 23:44 run still did not wake (4 mA): open.
+- **`pt_rtc` printed empty numbers** -> the SDK's printf has no `%llu` -> 32-bit `%lu` (the deltas are small).
+- **ISP flash failed once** ("Could not configure port: Input/output error", LOAD HELP BIN FAIL, 20:39) -> the
+  helper load runs before any write, the flash was untouched -> retried, passed.
+- **No RTC wake on the first try was recovered with EN** (twice); EN resets the HBN domain too.

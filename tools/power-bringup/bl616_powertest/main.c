@@ -743,7 +743,7 @@ static void background_task(void *arg)
                    " pt_i2c"
 #endif
 #if PT_TEST_SLEEP
-                   " pt_sleep"
+                   " pt_sleep pt_rtc"
 #endif
 #if PT_TEST_USB
                    " pt_usb"
@@ -828,14 +828,43 @@ static int cmd_boot1(int argc, char **argv)
 SHELL_CMD_EXPORT_ALIAS(cmd_boot1, pt_boot1, K230 BOOT1 strap: low | high | park);
 
 #if PT_TEST_SLEEP
+/* The HBN RTC counts the selected 32 kHz clock. Selecting the Y3 crystal before it oscillates STOPS the counter
+ * (measured 2026-10-21: 0 ticks for ~1 s after HBN_Power_On_Xtal_32K + HBN_32K_Sel(XTAL)), and an HBN sleep entered
+ * then never reaches its wake compare. So: power the crystal, select it, and keep it only once the counter moves;
+ * otherwise back to RC32K and retry, up to 3 s. */
+static bool rtc_counter_moves(void)
+{
+    uint32_t l0, h0, l1, h1;
+    HBN_Get_RTC_Timer_Val(&l0, &h0);
+    bflb_mtimer_delay_ms(5);                 /* ~164 ticks at 32768 Hz */
+    HBN_Get_RTC_Timer_Val(&l1, &h1);
+    return l1 - l0 > 100;
+}
+static bool xtal32k_select(void)
+{
+    HBN_Power_On_Xtal_32K();
+    for (int i = 0; i < 30; i++) {
+        HBN_32K_Sel(HBN_32K_XTAL);
+        if (rtc_counter_moves()) {
+            printf("pt_sleep: Y3 running after %d00 ms\r\n", i);
+            return true;
+        }
+        HBN_32K_Sel(HBN_32K_RC);
+        bflb_mtimer_delay_ms(100);
+    }
+    printf("pt_sleep: Y3 not running after 3 s, RTC stays on RC32K\r\n");
+    return false;
+}
+
 /* test030: the board's sleep current. The K230 rails go off first (HBN releases every non-AON pad: R19 then holds
  * K230_PWR low, R76 the reset); the RTC moves to the Y3 crystal (as the product's rtc_use_crystal()), then HBN
  * level 0 until the RTC wakes the BL616 after <s>; the wake is a reset, the test firmware starts again. */
 static int cmd_sleep(int argc, char **argv)
 {
     uint32_t s = argc > 1 ? (uint32_t)atoi(argv[1]) : 60, t;
+    bool rc = argc > 2 && !strcmp(argv[2], "rc");   /* stay on RC32K: the wake test without the crystal */
     if (s < 2 || s > 86400) {
-        printf("usage: pt_sleep <2..86400 s>\r\n");
+        printf("usage: pt_sleep <2..86400 s> [rc]\r\n");
         return -1;
     }
 #if PT_TEST_SDU
@@ -843,17 +872,44 @@ static int cmd_sleep(int argc, char **argv)
 #endif
     LOCKED(t = rails_off_timed());
     (void)t;
-    HBN_Power_On_Xtal_32K();
-    HBN_32K_Sel(HBN_32K_XTAL);
-    printf("pt_sleep: K230 off, HBN level 0 for %lu s (RTC on Y3); unplug PR1 now for the sleep current\r\n",
-           (unsigned long)s);
+    if (!rc && !xtal32k_select())
+        rc = true;                      /* Y3 did not start: stay on RC32K rather than never wake */
+    printf("pt_sleep: K230 off, HBN level 0 for %lu s (RTC on %s); unplug PR1 now for the sleep current\r\n",
+           (unsigned long)s, rc ? "RC32K" : "Y3");
     bflb_mtimer_delay_ms(50);           /* let the USB console send the line */
     pm_hbn_mode_enter(PM_HBN_LEVEL_0, (uint64_t)s * 32768u);
     while (1) {
     }
     return 0;
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_sleep, pt_sleep, K230 off and HBN level 0 for <s> seconds (RTC wake));
+SHELL_CMD_EXPORT_ALIAS(cmd_sleep, pt_sleep, K230 off and HBN level 0 for <s> seconds (RTC wake) [rc]);
+
+/* test030/031: does the HBN RTC counter run? It counts the selected 32 kHz clock (Y3 crystal or RC32K): 32768
+ * ticks per second expected. A counter that stands still never reaches the HBN wake compare value. */
+static int cmd_rtc(int argc, char **argv)
+{
+    if (argc > 1 && !strcmp(argv[1], "xtal")) {
+        HBN_Power_On_Xtal_32K();
+        HBN_32K_Sel(HBN_32K_XTAL);
+        printf("pt_rtc: 32K = Y3 crystal\r\n");
+    } else if (argc > 1 && !strcmp(argv[1], "rc")) {
+        HBN_32K_Sel(HBN_32K_RC);
+        printf("pt_rtc: 32K = RC32K\r\n");
+    }
+    for (int i = 0; i < 3; i++) {
+        uint32_t l0, h0, l1, h1;
+        HBN_Get_RTC_Timer_Val(&l0, &h0);
+        uint64_t t0 = bflb_mtimer_get_time_us();
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        HBN_Get_RTC_Timer_Val(&l1, &h1);
+        uint64_t t1 = bflb_mtimer_get_time_us();
+        uint64_t c0 = ((uint64_t)(h0 & 0xff) << 32) | l0, c1 = ((uint64_t)(h1 & 0xff) << 32) | l1;
+        printf("pt_rtc: counter %lu -> %lu: %lu ticks in %lu us (32768 expected)\r\n",   /* no %llu here */
+               (unsigned long)c0, (unsigned long)c1, (unsigned long)(c1 - c0), (unsigned long)(t1 - t0));
+    }
+    return 0;
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_rtc, pt_rtc, HBN RTC counter rate [xtal | rc]);
 #endif
 
 static void pins_init(void)
