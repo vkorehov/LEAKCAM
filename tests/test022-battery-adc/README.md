@@ -1,6 +1,6 @@
 # test022: Battery ADC (K230 ADC_1, VBAT/3)
 
-Status: **in progress** (2026-10-21): USB case measured; battery case open.
+Status: **in progress** (2026-10-21): USB and full-cell battery case measured; a low-cell point and a loaded case open.
 
 K230 ADC_1 (ball A6) reads VBAT through R59 200 k / R61 100 k, switched by Q1 from the K230's 3V3 (readable only
 while the K230 runs). The agent converts raw x 1800 mV x 3 / 4095 (12-bit, 1.8 V reference). The bug-004 rev 1
@@ -38,12 +38,15 @@ between reads.
 | C11 pad 1, BAT | 3.298 V (board side of the open JB1 joint; the cell read 3.69 V at its wires) | - |
 | Repeat 19:30, cell wired to C11, charging (CV): C15 | 4.37 V | 64 reads: mean 4.428 V (+58 mV), sd 49 mV, 4.345-4.509 |
 | Repeat 19:30: C11, BAT | 4.18 V | - |
+| **Battery** 19:32 (USB out, K230 at msh): C15 | 4.12 V | 62 reads: mean 4.185 V (+65 mV, +1.6 %), sd 42 mV, 4.105-4.254 |
 
 - **On USB, C15 is the BQ24072 output rail (~4.4 V), not the cell.** On battery the BAT-FET joins OUT to the cell, so
   the ADC reads the cell then: the only case the bug-004 cutoff needs. The firmware must not report the USB reading
   as battery level.
 - **Noise sd 52 mV** (target 10): single reads are not enough for a 3.10 V cutoff -> average (64 reads: ~7 mV).
-- Offset +60 mV: one-point correction once the battery case is measured.
+- Offset +58..+65 mV on USB and on battery: constant within the meter's reading, so one correction, -61 mV (or x 0.986;
+  the two points are too close in voltage to tell offset from gain; the low-cell point decides). Corrected and
+  averaged over 64 reads: within +-5 mV of the meter: **pass** at a full cell.
 - **C11 at 3.30 V with D1 off** (should charge, D1 on): the JB1 cell joint was open - see Obstacles.
 
 ## Metrics (2026-10-21)
@@ -81,4 +84,5 @@ n/a for the reading itself (Q1 switches the divider only while the K230 runs: ~1
   running at msh, cell 4.18 V just before, cell's + wired to C11, VBUS opened at the USB-C 2 meter) -> the cell
   stopped feeding BAT under the ~200 mA load; the BL616 came back with defaults (K230 off) once USB was back. Cause
   open: the cell's - joint on JB1 pin 2 (same kind of joint as the failed +), the new C11 wire, or the pack's PCM
-  latching -> measure the cell at its own wires, and its - wire to board GND (C11 pad 2).
+  latching -> measure the cell at its own wires, and its - wire to board GND (C11 pad 2). Not reproduced: at 19:31
+  the same switch-over (K230 started on battery) held, VBAT 4.15 V -> 4.12 V under load, no reset.
