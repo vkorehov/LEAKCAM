@@ -29,6 +29,14 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | [test021 NAND power loss](test021-nand-power-loss/README.md) | | planned |
 | [test022 session current](test022-session-current/README.md) | | planned |
 | [test023 camera buses idle](test023-camera-bus-idle/README.md) | | planned |
+| [test024 DDR bandwidth](test024-ddr-bandwidth/README.md) | | planned |
+| [test025 NAND raw speed and SPI clock](test025-nand-raw-speed/README.md) | | planned |
+| [test026 UART link speed and latency](test026-uart-link-speed/README.md) | | planned |
+| [test027 Wi-Fi throughput end to end](test027-wifi-throughput/README.md) | | planned |
+| [test028 USB boot and flashing speed](test028-usb-flash-speed/README.md) | | planned |
+| [test029 camera CSI and I2C speed](test029-camera-csi-i2c/README.md) | | planned |
+| [test030 BL616 internal timing](test030-bl616-internal-timing/README.md) | | planned |
+| [test031 leak pipeline timing](test031-leak-pipeline-timing/README.md) | | planned |
 
 ## Status by subsystem (2026-10-18)
 
