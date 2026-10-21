@@ -60,6 +60,8 @@ between reads.
 
 ## Metrics (2026-10-21)
 
+Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1 (ADC input), BAT C11.1 (adc_points.png).
+
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
 | Boot, power-on -> app init | 0.88 s | test021 | |
@@ -67,6 +69,7 @@ between reads.
 | Test run time | 20 reads ~45 s; 64 reads ~16 s (script, 0.25 s each); battery case 19:31-19:41 | - | |
 | ADC accuracy / noise | +60 mV / sd 52 mV single; calibrated 64-read mean within +-10 mV, sd ~6 mV | +-30 mV / 10 mV | pass averaged |
 | Current on battery, K230 at msh | not measured (meter in USB-C 1 path, unplugged); 202-203 mA on USB (above) | - | VBAT 4.07-4.12 V |
+| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Current during reads | 202-203 mA (= msh idle) | floor 202 | reads cost nothing measurable |
 | Power, energy per reading | below the meter's resolution | - | |
 | Per day | n/a | - | |

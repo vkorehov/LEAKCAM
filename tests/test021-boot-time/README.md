@@ -65,6 +65,8 @@ Board floor: rails off, BL616 awake on USB 60.5 mA; rails on, K230 in reset 86.3
 READY not answered by the test firmware) 204 mA. A mA-range meter (2-5 ohm) reset the board; an earlier meter had a
 burned mA fuse: readings from before the swap are void.
 
+Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
+
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
 | Boot, reset release -> app init | 0.88 s at 80 MHz (11 boots, 0.876-0.886); 1.00 s at 50 MHz | target: to set | longest step: UFFS mounts 0.59 s |
@@ -72,6 +74,7 @@ burned mA fuse: readings from before the swap are void.
 | Test run time | 1 command; setup: reflash (USB boot) ~5 min with clicks | - | |
 | NAND clock in the boot | 80 MHz (since 2026-10-21) | 100 MHz has no window (test016) | |
 | Current: rails in reset / boot peak / msh idle | 86.3 / ~227 / 204 mA | - | USB-C 1 VBUS |
+| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per boot (to app init) | ~215 mA x 0.88 s = 0.72 J, 53 uAh (1.0 s: 0.82 J) | - | 3.8 V nominal |
 | Per day | 4 report sessions: 0.24 mAh/day (boot to app init only) | ENERGY.txt 3 | 0.7 % of 1000 mAh / month |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |

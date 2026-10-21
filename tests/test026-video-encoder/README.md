@@ -54,6 +54,8 @@ pattern 6, x 240 y 150). **Pass.**
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
+Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
+
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
 | Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
@@ -61,6 +63,7 @@ pattern 6, x 240 y 150). **Pass.**
 | Test run time | runs 20:44:53-20:46:30 | - | setup 20:33-20:44: write, 2 builds (one failed), flash 33 s, boot |
 | encoder fps, bitrate | 2 x 15 fps at 510 kbit/s each; top 84 fps (1 ch) / 82 fps (2 ch) | VPU 800 MHz | product load = 36 % of the top |
 | Current idle / during | 205 / 207 (1 ch) / 220 mA, peaks 245 (2 ch) / 270 mA at max rate | floor (test030) | USB-C 1 VBUS meter, D1 off; VBAT ~4.15 V |
+| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | 2 channels: +62 mW over idle; a 5 s two-camera clip +0.31 J (21 uAh) for the encoder alone | - | by hand |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | 47.9 / 48.5 / 47.9 C (board not read) | K230 limit (datasheet) | encoder adds no measurable heat in 20 s |

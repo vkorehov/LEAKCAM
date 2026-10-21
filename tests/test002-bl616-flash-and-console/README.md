@@ -38,6 +38,8 @@ n/a: flashing and the console run from USB power.
 
 ## Metrics (2026-10-21, ISP flash of bl616_powertest)
 
+Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - 3V3_SLEEP at PR1 pad 6, VBAT C15.1.
+
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
 | Boot, power-on -> READY | n/a | - | no K230 |
@@ -45,6 +47,7 @@ n/a: flashing and the console run from USB power.
 | Test run time | `make flash` 26 s (ISP 1 s, flasher 3.8 s, the rest the container + waits) | - | setup: 2 "connect to Linux" clicks + 1 EN tap |
 | Flash write | 116.6 KB in 571 ms = 204 KB/s | UART 2 Mbaud = 200 KB/s | ~100 % (the ROM link is the limit) |
 | Current idle / during (min / avg / peak) | not measured: meter not connected | - | on USB (not battery) |
+| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | n/a | - | flashing only on USB power |
 | Per day | n/a | - | |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |

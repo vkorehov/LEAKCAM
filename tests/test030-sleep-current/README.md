@@ -45,6 +45,8 @@ range that reads it (uA / mA / A) and the meter's resolution there.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
+Probes: current - battery lead (cell + wire), uA/mA range, USB out; voltage - BAT C11.1 at rest and on wake.
+
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
 | Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
@@ -52,6 +54,7 @@ range that reads it (uA / mA / A) and the meter's resolution there.
 | Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
 | Speed / rate (none for this test) | not measured yet | - | % of the top |
 | Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |

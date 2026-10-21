@@ -32,6 +32,8 @@ latch-up or NAND damage down to 1.6 V and back.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
+Probes: current - lab supply in place of the cell, its current; voltage - VBAT C15.1, BAT C11.1, 3V3_SLEEP (U5 output) while ramping.
+
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
 | Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
@@ -39,6 +41,7 @@ latch-up or NAND damage down to 1.6 V and back.
 | Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
 | cut-off voltage vs set 3.10 V, time to rails off | not measured yet | +-50 mV | % of the top |
 | Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |

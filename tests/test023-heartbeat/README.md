@@ -38,6 +38,8 @@ the power 2 s later. As designed.
 
 ## Metrics (2026-10-21, BL616 test firmware 16:56:59 build, K230 NAND test image)
 
+Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
+
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
 | Boot, power-on -> READY (median of 5) | not measured: one boot; first heartbeat edge 0.98 s after reset release | test021: 0.88 s to app init | the agent starts ~0.1 s after app init |
@@ -46,6 +48,7 @@ the power 2 s later. As designed.
 | Setup time | 19:52-20:04, 12 min: pt_alive written + built (13 s build) 19:52-19:57; flash 1 failed 19:57:14-19:58:14 (permissions, above); ROM re-attached 20:00:20; flash 2 (4 s) 20:02:22-20:02:26, waited for EN + console to 20:04:09 | - | the flash itself is 4 s; the rest is waiting for hands and the script bug |
 | heartbeat period and jitter | half-period 490 ms avg, 502 max | 500 ms, timeout 2 s | 98 % of the set period, 4x margin to the timeout |
 | Current idle / during | not measured: no meter reading asked (my omission); msh idle 202 mA (test022) | floor (test030) | |
+| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | n/a: one GPIO write per 500 ms, below the meter's resolution | - | |
 | Per day | n/a | - | |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |

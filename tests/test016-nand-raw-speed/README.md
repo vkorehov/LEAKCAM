@@ -79,6 +79,8 @@ Board floor: rails off, BL616 awake on USB 60.5 mA; rails on, K230 in reset 86.3
 READY not answered by the test firmware) 204 mA. A mA-range meter (2-5 ohm) reset the board; an earlier meter had a
 burned mA fuse: readings from before the swap are void.
 
+Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
+
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
 | Boot, power-on -> app init | 1.00 s | test021 | UFFS mounts 0.70 s: NAND reads, the clock matters |
@@ -87,6 +89,7 @@ burned mA fuse: readings from before the swap are void.
 | Raw read 50 / 80 MHz | 15.6 / 20.6 MB/s | 25 / 40 MB/s bus | 62 % / 52 % |
 | Program | 4.6-5.0 MB/s | chip limit | |
 | Current idle / read 50 / read 80 / program | 204 / 225 / 232 / 235-236 mA | floor 204 | USB-C 1 VBUS |
+| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Energy per MiB read, whole board | 57 mJ at 50 MHz, 45 mJ at 80 MHz | - | 21 % less: shorter time at the 204 mA floor |
 | Per day | inside the boot (mounts) and sessions | ENERGY.txt 3 | |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |

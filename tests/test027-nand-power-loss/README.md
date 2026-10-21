@@ -38,6 +38,8 @@ fix before the long run; a clean boot of this image: mounts 0.374 s, app init 0.
 
 ## Metrics (2026-10-21, short run)
 
+Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
+
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
 | Boot, reset release -> app init | 0.660 s (clean boot, this image) | test021 | mounts 0.374 s (/sdcard 32 MiB) |
@@ -45,6 +47,7 @@ fix before the long run; a clean boot of this image: mounts 0.374 s, app init 0.
 | Test run time | 5 min, 13 cuts (~25 s per cycle) | - | setup: build + flash ~6 min |
 | Recovery after a cut | every mount clean, no fsck-like delay seen | - | |
 | Current | msh idle with charging 540 mA (USB VBUS, D1 on); during writes not read | floor 202 mA w/o charging | |
+| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | n/a | - | |
 | Per day | n/a | - | |
 | Temperature die / board | not measured: missed in the short run (taken in the long run) | - | |

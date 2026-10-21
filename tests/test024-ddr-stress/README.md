@@ -47,6 +47,8 @@ kernel init 0.207 s, mounts done 0.870 s, app init 0.893-0.894 s. The CH340 came
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
+Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
+
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
 | Boot, reset release -> app init (median of 5) | 0.893 s (min 0.893, max 0.894) | test021: 0.88 s | longest step: mounts /bin + /sdcard, 0.262 -> 0.870 s (+0.61 s) |
@@ -54,6 +56,7 @@ kernel init 0.207 s, mounts done 0.870 s, app init 0.893-0.894 s. The CH340 came
 | Test run time | run 1: 5 min 05 s (46 passes) | - | setup: memtest written + image built 20:05-20:11, flash 20:12:41-20:13:14, boot 20:14:24-31 |
 | memtest MB/s, errors | 167 MB/s write+verify (5 patterns, MMZ uncached), 0 errors so far | DDR top 5.33 GB/s (test015) | 3 %: a checker, not a bandwidth test |
 | Current idle / during | 196 mA (rails on after flash) / 202 mA msh (test022) / 240 mA memtest, peaks 260 mA | floor (test030) | USB-C 1 VBUS meter, D1 off; VBAT ~4.15 V (full cell) |
+| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | 1.0 W during memtest (240 mA x 4.15 V), +158 mW over msh idle; per pass (6.5 s) 6.5 J / 433 uAh, +1.0 J / 69 uAh over idle | - | by hand: scripts/energy.py does not exist |
 | Per day | n/a: a bench test, not in the product | - | |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |

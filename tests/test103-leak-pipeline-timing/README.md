@@ -19,6 +19,8 @@ Recorded timeline; the longest step named; the leak-to-video time within what th
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
+Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
+
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
 | Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
@@ -26,6 +28,7 @@ Recorded timeline; the longest step named; the leak-to-video time within what th
 | Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
 | leak -> video steps | not measured yet | - | % of the top |
 | Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
