@@ -71,7 +71,8 @@ or a measurement yet. Keep this file current when a test or a setting changes it
                                                   U-Boot + Kconfig at 80, 10 cold boots, then adopt 80.
                                                   Adopted 2026-10-21: 80 MHz, RX sample delay 5 (window 3-8), 18 cold
                                                   boots clean, boot to app init 1.00 -> 0.88 s. 100 MHz: no window
-                                                  (1-line and 4-line phases want different delays); edge/drive untried.
+                                                  (1-line and 4-line phases want different delays); pad drive 7/10/15 no
+                                                  difference. Kept at 80 (user, 2026-10-21).
   UART link      115200 -> 230400 ... 2 Mbaud      test017: 10 MB both ways, 0 errors; both firmwares changed together
   AHT20 I2C      100 -> 400 kHz                   1000 reads, 0 CRC errors (cheap, so taken although it gains little)
   CPU, KPU, VPU  already at the top profile        CPU clock confirmed by test015's cycle count
