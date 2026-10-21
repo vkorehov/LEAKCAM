@@ -19,6 +19,7 @@ This file records what was decided and why. Details live in the documents it lin
 | PCB stack and gerbers | [LAYERS.txt](LAYERS.txt), [FAB_NOTES.txt](FAB_NOTES.txt) |
 | Off-board parts (battery, NTC, cameras, cables) | [EXTERNAL_PARTS.md](EXTERNAL_PARTS.md) |
 | Clocks and speeds of every interface (configured, measured, top) | [SPEEDS.txt](SPEEDS.txt) |
+| Battery energy budget (sleep, wakes, sessions, battery life) | [ENERGY.txt](ENERGY.txt) |
 
 Status (2026-09-24): first hardware revision, still in design. No board has been made; nothing
 below has run on hardware. Firmware claims marked "built" were checked by building and linking.

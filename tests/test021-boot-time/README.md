@@ -6,6 +6,12 @@ Every wake powers the K230 up from cold, so its boot time is paid on every sessi
 Not measured yet: the test firmware does not time it and the product BL616 firmware (which logs "READY <ms> after
 power-on") does not run on rev 1 yet.
 
+## Target
+
+The design wants the fastest boot: it is paid on every wake (ENERGY.txt, the biggest lever). Estimate before the
+first measurement (2026-10-21): 1-3.5 s power-on to READY. Target to set from the first measurement; first
+candidates: sensor probes without cameras, the /sdcard UFFS mount, DDR training, the kernel load (NAND clock).
+
 ## Setup
 
 BL616 test firmware; K230 NAND image (current test image or the product image); both consoles recorded with

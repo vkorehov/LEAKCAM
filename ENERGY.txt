@@ -1,0 +1,66 @@
+LEAKCAM rev 1: battery energy budget
+====================================
+
+Where the battery's energy goes, so battery life can be audited and improved. Every figure is marked:
+  [m] measured (test named), [d] datasheet / design value, [e] estimate to replace with a measurement.
+Keep this file current when a test or a change moves a figure. The audit that closes it: tests/test104.
+
+
+1. The battery
+--------------
+
+  Cells          503450 LiPo, 3.7 V nominal, 1000 mAh each [d]; JB1, JB2 for a second in parallel (2000 mAh)
+  Usable         ~95 % of the charge down to the rev 1 cutoff (bug-004: 3.10 V under load) [e]
+  Energy         1 cell: ~3.5 Wh usable; 2 cells: ~7.0 Wh [e]
+  Self-discharge LiPo ~2-3 %/month [d]: about 25 mAh/month per cell, a floor under any budget
+  Charging       ~6 h from empty at ~0.2-0.3 A [m test001]; BQ24072 6.3 h safety timer [d]
+
+
+2. Always on (BL616 hibernating, K230 off)
+------------------------------------------
+
+  Consumer                                  Current        Source
+  ----------------------------------------  -------------  ----------------------------------------------
+  BL616 in HBN level 0                       "a few uA"     [d] (DESIGN.md); to measure: test102
+  U5 TPS63802 (3V3_SLEEP), quiescent          ~11 uA        [d] TPS63802 datasheet
+  Leak probe divider R71/R72 1 M + 1 M        1.65 uA       [d] 3.3 V / 2 M
+  AHT20 asleep                                ~0.25 uA      [d]
+  BQ24072 battery drain, no input             < 1 uA        [d]
+  PGOOD pull-up R23 (no USB: open drain off)  0             [d]
+  Total sleep                                 ~15-20 uA     [e] -> about 11-15 mAh/month
+
+
+3. Wakes
+--------
+
+  Wake                       How often                    Awake                       Energy per wake
+  -------------------------  ---------------------------  --------------------------  ------------------------
+  Humidity slice (BL616)     every 10 min (144/day)        ~85 ms, K230 off [d]        to measure (BL616 only)
+  K230 report session        every 6 h (4/day), or the     boot (test021) + agent +    to measure: test102,
+                             interval the K230 asks for    check + power-off           test101 (length)
+  K230 leak session          on a leak (rare)              + clip upload (Wi-Fi)       to measure: test104
+  BL616 USB / BLE            only on USB power             -                           from USB, not the battery
+
+  The K230 session is the big item: its boot (power-on to READY, estimated 1-3.5 s on 2026-10-21, not measured)
+  is paid on every wake, so boot time is battery life (test021: measure, then shorten).
+
+
+4. Budget (to fill)
+-------------------
+
+  Item                       Per day                      Per month        Source
+  -------------------------  ---------------------------  ---------------  ---------------------------------
+  Sleep                      ~0.4 mAh                     ~12 mAh          [e]
+  Humidity slices            144 x ?                      ?                test020 / test102
+  Report sessions            4 x ? (boot + work)          ?                test021, test101, test102
+  Self-discharge             -                            ~25 mAh / cell   [d]
+  Total, battery life        ?                            ?                test104
+
+
+5. Levers (in rough order of size)
+----------------------------------
+
+  1. K230 boot time: every second of boot at a few hundred mA, 4+ times a day (test021 target).
+  2. Report interval and what a report session does (agent, Wi-Fi join, upload).
+  3. The K230's session current: clocks only as high as the session needs at its busiest step; rails off fast.
+  4. Sleep current: the BL616's HBN level, U5's quiescent current, the divider values (bug-004 rev 2: +3.5 uA).

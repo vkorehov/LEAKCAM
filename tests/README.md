@@ -40,6 +40,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | [test101 session length](test101-boot-and-session-time/README.md) | | planned |
 | [test102 session current](test102-session-current/README.md) | | planned |
 | [test103 leak pipeline timing](test103-leak-pipeline-timing/README.md) | | later: after the cameras, Wi-Fi and the product firmware |
+| [test104 battery energy audit](test104-battery-energy-audit/README.md) | | planned |
 
 ## Status by subsystem (2026-10-18)
 
