@@ -1,6 +1,6 @@
 # test027: NAND / UFFS power-loss robustness
 
-Status: **planned** (2026-10-21).
+Status: **short run pass** (2026-10-21): 13 random cuts, 0 lost or corrupt; the 100-cut run still to do.
 
 The product writes clips, logs and references to /sdcard (UFFS on NAND) while the battery can run out or the BL616
 can cut the rails. UFFS is log-structured; this proves it on rev 1.
@@ -17,18 +17,37 @@ can cut the rails. UFFS is log-structured; this proves it on rev 1.
 100 random power cuts: every mount succeeds, no fsynced file lost or corrupt, no space leak.
 
 
-## Metrics (to fill on every run: skill leakcam-test-metrics)
+## Results (2026-10-21, image with /sdcard 32 MiB, NAND 80 MHz)
+
+Writer and checker: `plt_write` / `plt_check` in [leakcam_bench.c](../test016-nand-raw-speed/leakcam_bench.c) (SDK
+copy): files of 1 KB..2 MB in /sdcard/plt (16 slots), each fsynced, then a commit record (two slots, fsynced).
+`plt_check` verifies the 15 newest committed files (the 16th slot may be the one cut mid-write). Host loop:
+[plt_loop.py](plt_loop.py) (BL616 `pt_off` / `pt_on` / `pt_run`, CH340 console), log
+[run1_2026-10-21.csv](run1_2026-10-21.csv).
+
+| | Result |
+|---|---|
+| Power cuts | 13 (2 trial + 11; stopped after 5 min, user: longer run later) at 2.9-18.8 s into the writer |
+| Mount after each cut | 13 / 13, every `plt_check` ran |
+| Committed files verified | 15 per cycle, **0 bad**; every "committed" line printed before a cut was found afterwards (last = previous last + commits) |
+| Free space | 16.5-18.3 MB of 32 MB, no downward trend (varies with which slots hold the 1-2 MB files) |
+| Writer speed | 2 MB file 1.47 s with fsync (~1.4 MB/s through UFFS) |
+
+Not yet: the 100-cut run; the mount time after an unclean cut (the loop's `boot_times` parse came back empty: to
+fix before the long run; a clean boot of this image: mounts 0.374 s, app init 0.660 s, test021).
+
+## Metrics (2026-10-21, short run)
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
-| This part's boot share | not measured yet | - | |
-| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
-| recovery time after power loss | not measured yet | - | % of the top |
-| Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
-| Power, energy per operation | not measured yet | - | scripts/energy.py |
-| Per day | not measured yet | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
+| Boot, reset release -> app init | 0.660 s (clean boot, this image) | test021 | mounts 0.374 s (/sdcard 32 MiB) |
+| This part's boot share | after an unclean cut: not parsed yet | - | |
+| Test run time | 5 min, 13 cuts (~25 s per cycle) | - | setup: build + flash ~6 min |
+| Recovery after a cut | every mount clean, no fsck-like delay seen | - | |
+| Current | msh idle with charging 540 mA (USB VBUS, D1 on); during writes not read | floor 202 mA w/o charging | |
+| Power, energy per operation | n/a | - | |
+| Per day | n/a | - | |
+| Temperature die / board | not measured | - | |
 
 ## Boot time
 

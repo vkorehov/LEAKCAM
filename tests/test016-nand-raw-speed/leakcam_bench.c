@@ -8,6 +8,8 @@
  *   nand_clk [hz]             show / set the NAND QSPI clock (Kconfig SPI_NAND_SPI_FREQ at boot)
  *   nand_rxsd [n]             show / set SPI0 RX_SAMPLE_DLY (ssi_clk cycles; Kconfig RT_SPI0_RXSD at boot)
  *   pad_ds [ds [first last]]  show / set the pad drive strength (0..15) of IO14-19 (OSPI CS, CLK, D0-D3) only
+ *   plt_write [files]         test027: write files 1 KB..2 MB in /sdcard/plt with fsync + commit record, forever
+ *   plt_check                 test027: after a power cut, verify every committed file, free space
  *   boot_times                tests/test021: rdtime (from reset release) at the end of each init level
  *
  * Timing: rdtime, 27 MHz. Every loop sleeps 1 ms now and then (outside the timed part): the 20 s watchdog's
@@ -18,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "drivers/mtd_nand.h"
+#include <dfs_posix.h>
 #include "board.h"
 #include "../drivers/interdrv/spi/drv_spi.h"
 #include "../drivers/interdrv/sysctl/sysctl_clock/sysctl_clk.h"
@@ -321,3 +324,158 @@ static int pad_ds(int argc, char **argv)
     return 0;
 }
 MSH_CMD_EXPORT(pad_ds, test016: show or set the OSPI pad drive [ds [first last]]);
+
+/* test027: UFFS power-loss robustness. Files f<seq % 16>.bin, each a header (magic, seq, size, crc) and a payload
+ * from a seq-seeded generator; after the file's fsync, a commit record (seq) goes to s<seq % 2> with fsync. A cut
+ * may break only the file being written (slot last+1, which held seq last-15): plt_check verifies seq last-14..last. */
+#define PLT_DIR   "/sdcard/plt"
+#define PLT_MAGIC 0x31544c50u                  /* "PLT1" */
+static const rt_uint32_t plt_size[8] = {1024, 4096, 16384, 65536, 262144, 1048576, 2097152, 8192};
+
+static rt_uint32_t plt_crc(rt_uint32_t c, const rt_uint8_t *p, rt_size_t n)
+{
+    c = ~c;
+    while (n--)
+    {
+        c ^= *p++;
+        for (int k = 0; k < 8; k++)
+            c = (c >> 1) ^ (0xedb88320u & (0u - (c & 1u)));
+    }
+    return ~c;
+}
+static void plt_fill(rt_uint8_t *b, rt_size_t n, rt_uint32_t *x)
+{
+    for (rt_size_t i = 0; i < n; i++)
+    {
+        *x ^= *x << 13; *x ^= *x >> 17; *x ^= *x << 5;
+        b[i] = (rt_uint8_t)*x;
+    }
+}
+static int plt_last(void)                      /* the newest valid commit record, -1 if none */
+{
+    int best = -1;
+    for (int k = 0; k < 2; k++)
+    {
+        char path[32];
+        rt_uint32_t r[3];
+        rt_snprintf(path, sizeof(path), PLT_DIR "/s%d", k);
+        int fd = open(path, O_RDONLY);
+        if (fd < 0)
+            continue;
+        if (read(fd, r, sizeof(r)) == sizeof(r) && r[0] == PLT_MAGIC && r[2] == (r[1] ^ 0xa5a5a5a5u) && (int)r[1] > best)
+            best = (int)r[1];
+        close(fd);
+    }
+    return best;
+}
+#define PLT_CHUNK 65536u
+static int plt_file_ok(rt_uint32_t seq, rt_uint8_t *buf)
+{
+    char path[32];
+    rt_uint32_t h[4], crc = 0, left;
+    rt_snprintf(path, sizeof(path), PLT_DIR "/f%02u.bin", (unsigned)(seq % 16));
+    int fd = open(path, O_RDONLY);
+    if (fd < 0)
+        return -1;
+    int ok = read(fd, h, sizeof(h)) == sizeof(h) && h[0] == PLT_MAGIC && h[1] == seq;
+    for (left = ok ? h[2] : 0; ok && left; )
+    {
+        rt_uint32_t n = left > PLT_CHUNK ? PLT_CHUNK : left;
+        ok = read(fd, buf, n) == (int)n;
+        crc = plt_crc(crc, buf, n);
+        left -= n;
+    }
+    close(fd);
+    return ok && crc == h[3] ? 0 : -2;
+}
+static int plt_write(int argc, char **argv)
+{
+    int files = argc > 1 ? atoi(argv[1]) : 0x7fffffff, last;
+    rt_uint8_t *buf = rt_malloc(PLT_CHUNK);
+    if (!buf)
+        return -1;
+    mkdir(PLT_DIR, 0);
+    last = plt_last();
+    for (int i = 0; i < files; i++)
+    {
+        rt_uint32_t seq = (rt_uint32_t)(last + 1), size = plt_size[seq % 8], x = seq * 2654435761u | 1u, crc = 0, h[4];
+        char path[32];
+        rt_uint64_t t0 = now();
+        rt_snprintf(path, sizeof(path), PLT_DIR "/f%02u.bin", (unsigned)(seq % 16));
+        int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC);
+        if (fd < 0)
+        {
+            rt_kprintf("plt: open %s failed\n", path);
+            break;
+        }
+        for (rt_uint32_t left = size, y = x; left; )   /* crc first: the header goes in front */
+        {
+            rt_uint32_t n = left > PLT_CHUNK ? PLT_CHUNK : left;
+            plt_fill(buf, n, &y);
+            crc = plt_crc(crc, buf, n);
+            left -= n;
+        }
+        h[0] = PLT_MAGIC; h[1] = seq; h[2] = size; h[3] = crc;
+        int ok = write(fd, h, sizeof(h)) == sizeof(h);
+        for (rt_uint32_t left = size; ok && left; )
+        {
+            rt_uint32_t n = left > PLT_CHUNK ? PLT_CHUNK : left;
+            plt_fill(buf, n, &x);
+            ok = write(fd, buf, n) == (int)n;
+            left -= n;
+        }
+        ok = ok && fsync(fd) == 0;
+        close(fd);
+        if (!ok)
+        {
+            rt_kprintf("plt: write seq %u failed\n", (unsigned)seq);
+            break;
+        }
+        rt_uint32_t r[3] = {PLT_MAGIC, seq, seq ^ 0xa5a5a5a5u};
+        rt_snprintf(path, sizeof(path), PLT_DIR "/s%d", (int)(seq % 2));
+        fd = open(path, O_WRONLY | O_CREAT | O_TRUNC);
+        ok = fd >= 0 && write(fd, r, sizeof(r)) == sizeof(r) && fsync(fd) == 0;
+        if (fd >= 0)
+            close(fd);
+        if (!ok)
+        {
+            rt_kprintf("plt: commit seq %u failed\n", (unsigned)seq);
+            break;
+        }
+        last = (int)seq;
+        rt_kprintf("plt: committed %u (%u B, %u ms)\n", (unsigned)seq, (unsigned)size, (unsigned)((now() - t0) / 27000));
+        rt_thread_mdelay(1);
+    }
+    rt_free(buf);
+    return 0;
+}
+MSH_CMD_EXPORT(plt_write, test027: write files with fsync and commit records [files]);
+
+static int plt_check(int argc, char **argv)
+{
+    struct statfs sf;
+    int last = plt_last(), bad = 0, n = 0;
+    rt_uint8_t *buf = rt_malloc(PLT_CHUNK);
+    if (!buf)
+        return -1;
+    for (int seq = last - 14; last >= 0 && seq <= last; seq++)
+    {
+        if (seq < 0)
+            continue;
+        int r = plt_file_ok((rt_uint32_t)seq, buf);
+        n++;
+        if (r)
+        {
+            bad++;
+            rt_kprintf("plt_check: seq %d BAD (%d)\n", seq, r);
+        }
+    }
+    rt_free(buf);
+    if (statfs("/sdcard", &sf) == 0)
+        rt_kprintf("plt_check: last %d, %d checked, %d bad, free %u KB of %u KB\n", last, n, bad,
+                   (unsigned)((rt_uint64_t)sf.f_bfree * sf.f_bsize / 1024), (unsigned)((rt_uint64_t)sf.f_blocks * sf.f_bsize / 1024));
+    else
+        rt_kprintf("plt_check: last %d, %d checked, %d bad, statfs failed\n", last, n, bad);
+    return 0;
+}
+MSH_CMD_EXPORT(plt_check, test027: verify the committed files after a power cut);

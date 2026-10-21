@@ -39,7 +39,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | [test024 DDR stress](test024-ddr-stress/README.md) | 2026-10-21 | 0 errors: 109 of 128 MB, 61 passes (5 min + 5 cold starts); 1 h and loaded runs open |
 | [test025 K230 temperature](test025-temperature/README.md) | 2026-10-21 | open board: die 48.5 C idle (board 39 C), 53.3 C after 2 min memtest; KPU/encoder/enclosure open |
 | [test026 H.265 encoder, synthetic frames](test026-video-encoder/README.md) | 2026-10-21 | pass: 2 x 15 fps at 510 kbit/s, +15 mA; top 83 fps at 1280x960; decode on PC open |
-| [test027 NAND power loss](test027-nand-power-loss/README.md) | | planned |
+| [test027 NAND power loss](test027-nand-power-loss/README.md) | 2026-10-21 | short run pass: 13 random cuts, 0 lost/corrupt files; 100-cut run open |
 | [test028 camera buses idle](test028-camera-bus-idle/README.md) | | planned |
 | [test029 cameras: detection, capture, image](test029-camera-capture/README.md) | | placeholder: cameras not delivered |
 | [test030 sleep and minimal currents](test030-sleep-current/README.md) | | planned |

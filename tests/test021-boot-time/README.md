@@ -94,3 +94,7 @@ Battery current through the boot, per step (scope over a shunt in the battery le
   all booted.
 - **The kernel crashed in `ddr_bench 16384`** (test015) and rebooted: that warm reboot restarts `rdtime` too, so it
   gave a second sample.
+- **/sdcard 176 -> 32 MiB (2026-10-21, image with test027's writer):** mounts 0.374 s (was 0.59), app init **0.660 s**
+  (was 0.88). Less than the ~0.4 s estimated from block counts: used blocks cost more than empty ones; /bin
+  (20 MiB, ~3.6 MB used) is now the larger share.
+
