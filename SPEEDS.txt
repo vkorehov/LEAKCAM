@@ -1,0 +1,56 @@
+LEAKCAM rev 1: clocks and speeds of every interface
+=================================================
+
+What each interface runs at now, what it measured, and what it could run at. "Measured" values come from the
+tests (tests/testNNN); "configured" values from the firmware; "unverified" means not checked against a datasheet
+or a measurement yet. Keep this file current when a test or a setting changes it.
+
+
+1. Overview
+-----------
+
+  Interface                  Runs at (configured)         Measured                              Top possible            At top?   Test
+  -------------------------  ---------------------------  ------------------------------------  ----------------------  --------  -------
+  SDIO K230 MMC0 <-> BL616    50 MHz, 4-bit, high speed    bus writes 21.4 MB/s, reads 21.5 MB/s 50 MHz (BL616 SDIO 2.0)  yes       test014
+                                                           end to end 9.4 MB/s (echo device)
+                                                           soak 109 MB, 0 CRC errors
+  SPI NAND (W25N02KV)         quad SPI, 50 MHz             file system: read 9.4 MB/s (shell),   104 MHz (chip); K230    no        test010,
+                              (SPI_NAND_SPI_FREQ)          12.7 MB/s (program), write 1.8 MB/s   controller: unverified            test025
+  DDR (K230D SiP)             2667 MT/s (SDK training)     -                                     unverified              unknown   test024,
+                                                                                                                                  test017
+  KPU                         800 MHz (PLL3 / 2)           change net int8: 0.5 ms per           unverified              unknown   test012
+                                                           inference, 4.4 ms per check
+  UART link K230 <-> BL616    115200 8N1                   works (test009); latency not measured  several Mbit/s (both)   no        test026
+  K230 console (CH340, USBC2) 115200 8N1                   -                                     -                       n/a       -
+  BL616 console (PR1)         USB CDC (full speed)         -                                     -                       n/a       -
+  BL616 I2C -> AHT20          100 kHz                      -                                     400 kHz (AHT20)         no        test030
+  BL616 flash (XIP)           80 MHz (SDK default)         -                                     module limit            probably  -
+  Camera I2C (IIC0, IIC4)     not set up yet               -                                     400 kHz (OV5647)        -         test029
+  Camera CSI0 / CSI2          not set up yet               -                                     OV5647 2-lane, 1280x960 -         test029
+                                                                                                 binned at 45 fps
+  Wi-Fi (BL616 radio)         not running yet              -                                     2.4 GHz 802.11ax 20 MHz -         test027
+  Microphone (codec ADC)      16 kHz, 16-bit mono          -42 dBFS floor at 54 dB gain          -                       n/a       test011
+  LED PWM (TPS61161 CTRL)     25 kHz (40000 ns period)     white 66.7 mA, IR 133 mA at 100 %     -                       n/a       test008
+  USB-C 1 (K230 USB 2.0)      USB boot / flashing only     NAND writes 3.7-5.5 MB/s while        -                       n/a       test028
+                                                           flashing
+  BL616 programming (PR1)     UART boot, 2 Mbaud           test firmware 4 s, product 13 s       -                       n/a       test028
+
+
+2. Fixed clocks and timers
+--------------------------
+
+  K230 CPU timer (rdtime)       27 MHz (bsp/maix3/c908/tick.h, TIMER_CLK_FREQ)
+  K230 watchdog                 20 s timeout, fed every 10 s by wdt_feed1 (priority 25), started at boot
+  K230 PMU RTC                  32.768 kHz crystal Y1, restarts with the 1V8 rail (bug-003: R45 bridged)
+  BL616 RTC (HBN)               32.768 kHz crystal Y3, runs through hibernate
+  K230 heartbeat (K230_ALIVE)   toggles every 500 ms; the BL616 ends a session after 2 s without an edge
+  BL616 link resend             300 ms without an ACK, 5 tries
+
+
+3. What to raise, in order
+--------------------------
+
+  1. SPI NAND clock: 50 MHz of the chip's 104 MHz. Faster boot (image read), clip writes and reads. test025.
+  2. UART link: only if test026 shows faster frames shorten a session.
+  3. DDR, KPU: first check the K230D datasheet's maximum; measure (test024) before changing anything.
+  Not worth it: AHT20 I2C (one read per 10 min, the 80 ms conversion dominates), consoles, USB-C 1.
