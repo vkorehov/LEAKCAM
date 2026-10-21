@@ -1,6 +1,6 @@
 # test026: H.265 encoder with synthetic frames
 
-Status: **pass** (2026-10-21): 2 x 15 fps at the product settings, encoder top ~83 fps at 1280x960 (2.8x margin). Open: decode check on the PC (needs a way off the board).
+Status: **pass** (2026-10-21): 2 x 15 fps at the product settings, encoder top ~83 fps at 1280x960 (2.8x margin), the stream decodes on the PC.
 
 The heaviest job of a leak session: two H.265 streams, 1280x960, 15 fps, ~500 kbit/s each (DESIGN.md). The
 encoder can be fed synthetic frames, so speed and memory can be measured before the cameras arrive.
@@ -44,6 +44,14 @@ Console logs: [run1.log](run1.log), [run2.log](run2.log), [run3.log](run3.log) (
   frame rate there because CBR is set for 15 fps.
 - The bit rate starts high (363 KB in the first second: the first IDR and CBR settling), then 22-90 KB/s.
 
+**Decode check (20:51-21:12):** `venctest 1 1 15` -> /sdcard/venc0.h265, 367,574 B (1 s: 1 IDR + 14 P), taken off the
+board with msh `hexdump` over the console (~11 KB/s, 2.5 min per dump) and rebuilt with
+[tools/k230-console/unhexdump.py](../../tools/k230-console/unhexdump.py) from two dumps (22,825 and 22,956 of 22,974
+lines good, 0 disagreeing, 0 missing in both): [venc0_1s.h265](venc0_1s.h265). ffprobe: hevc Main, 1280x960, yuv420p,
+16 frames; `ffmpeg -f null` decodes with no error. Frames 0 and 14 ([decoded_frames_0_14.jpg](decoded_frames_0_14.jpg)):
+the generated gradient, chroma columns, noise band, and the square at the input pattern's position (frame 14 =
+pattern 6, x 240 y 150). **Pass.**
+
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
 | Metric | Value | Top / budget | Note |
@@ -77,4 +85,9 @@ Battery current with one and two encoder channels running; energy per second of 
   tried to capture while venctest held the VB pools; not from venctest, expected while it runs.
 - **Run 2's latency (110 ms avg) is not a real figure** -> latency pairs frames by count; one dropped frame shifts all
   later ones by 67 ms -> use per-frame pts in the redo.
+- **Console dumps lose lines** (msh `hexdump`, 2026-10-21) -> the first dump had a stale reader for its first
+  seconds (my mistake again: the `ls` step's `cat` still open), the second ran while the first dump's 330 s reader
+  was still open (unusable); a clean single-reader dump still drops ~16 lines in 23k and can garble one into a line
+  that parses -> unhexdump.py checks each line's ASCII column and merges dumps; always list and kill earlier readers
+  (by PID) before a capture.
 
