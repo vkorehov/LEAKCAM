@@ -19,7 +19,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | [test011 microphone](test011-microphone/README.md) | 2026-10-18 | pass |
 | [test012 KPU change net](test012-kpu-change-net/README.md) | 2026-10-18/19 | pass: int8 net, 0.5 ms per inference, threshold 0.43 |
 | [test013 SDIO wiring](test013-sdio-wiring/README.md) | 2026-10-19 | pass: CLK, CMD, D0-D3 both directions, no shorts |
-| [test014 SDIO speed](test014-sdio-speed/README.md) | 2026-10-21 | pass: 50 MHz 4-bit, bus 21 MB/s, end to end 9.4 MB/s, no CRC errors; occasional stalls (open; the K230 resets were the watchdog, starved by the bench) |
+| [test014 SDIO speed](test014-sdio-speed/README.md) | 2026-10-21 | pass: 50 MHz 4-bit, bus 21 MB/s, end to end 9.4 MB/s, no CRC errors; soak 56 runs / 109 MB clean |
 | [test015 battery ADC](test015-battery-adc/README.md) | | planned |
 | [test016 K230 heartbeat (K230_ALIVE)](test016-heartbeat/README.md) | | planned |
 | [test017 DDR stress](test017-ddr-stress/README.md) | | planned |
@@ -48,7 +48,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | KPU (change net) | pass: int8 on the KPU, 4.4 ms per check, same decisions as TensorFlow (int16 ran 40 layers on the CPU: 6.3 s) | test012 |
 | Cameras | not tested: not delivered | |
 | SDIO wiring K230 <-> BL616 | pass | test013 |
-| SDIO speed (synthetic, SDK echo device) | pass: 50 MHz 4-bit (max), bus writes 21.4 / reads 21.5 MB/s, end to end 9.4 MB/s; **open**: occasional transfer stalls (resets = watchdog) | test014 |
+| SDIO speed (synthetic, SDK echo device) | pass: 50 MHz 4-bit (max), bus writes 21.4 / reads 21.5 MB/s, end to end 9.4 MB/s; soak 109 MB, 0 errors | test014 |
 | Product BL616 firmware | **open**: no USB console on rev 1 (hangs before USB starts) | test014 |
 | Leak probes wet, Wi-Fi through the BL616 | not tested: needs the product BL616 firmware | |
 

@@ -20,6 +20,7 @@ Order: BL616 `pt_off`, `pt_boot1 low`, `pt_on`, `pt_sdu on`, `pt_run`; K230 `bl6
 | 50 x 512 B (byte mode, 1 block) | bus 20.5 MB/s, end to end 4.0 MB/s (per-message overhead) | pass |
 | 2000 x 512 B | run 1 the K230 lost the card, run 2 and a soak run it reset; a later run clean: the resets are the watchdog (Obstacles), the stall behind them is being traced | open |
 | Errors, BL616 side | CRC 0, aborts 0 over 2500 blocks (3.4 MB) | pass |
+| Soak, ~10 min, 2000 x 1514 / 2000 x 512 B alternating (bench with the watchdog-safe waits, echoes dropped) | 56 runs, 0 stalls, 0 resets; BL616 112344 blocks in, 112343 out, 109 MB, CRC 0, aborts 0 | pass |
 
 - **End to end vs bus:** the echo device re-arms a download buffer only after its echo went up, so the K230 waits for a
   free port (BL616 busy 499 times in 2000 messages). NetHub re-arms at once; the product will sit between 9.4 and
@@ -30,8 +31,9 @@ Order: BL616 `pt_off`, `pt_boot1 low`, `pt_on`, `pt_sdu on`, `pt_run`; K230 `bl6
   (realistically 20-30 Mbit/s TCP). The SDIO link is not the bottleneck; the clock is already at its maximum, no
   tuning needed.
 
-**Pass** for the bus (50 MHz, 4-bit, 21 MB/s, no CRC errors). **Open:** transfers sometimes stall; the K230 resets
-seen were its watchdog starved by the bench's busy wait, not the bus.
+**Pass** for the bus (50 MHz, 4-bit, 21 MB/s, no CRC errors). The stalls were the echo device mirroring
+NetHub's credit header back (the bench now drops echoes), the resets the watchdog starved by the bench's busy wait:
+both in the test code, not the bus.
 
 ## Obstacles
 
