@@ -59,6 +59,7 @@ Meter in USB-C 1 VBUS (10 A range awake, mA range asleep), cell full (D1 off), K
 |---|---|---|
 | BL616 awake, K230 off | ~60 mA (earlier today: 60.5 mA) | USB PHY and console on |
 | BL616 in HBN level 0 (`pt_sleep 120`, 23:29:23) | **1.24 mA** | mostly the charger's own input current (ICC <= 1.5 mA with input present); the board's sleep share is not visible through USB |
+| PR1 / USB-C 2 unplugged while asleep | no change: 1.24 mA (the USB data lines add nothing) | |
 | RTC wake after 120 s | **did not happen**: still 1.24 mA at 23:32+ (awake would be ~60 mA), console not back | see Obstacles; EN tap to recover |
 
 The battery figure (charger <= 6.5 uA IBAT(PDWN) + board) needs the meter in the cell lead: still to do.
@@ -91,7 +92,8 @@ state; the sleep goes into ENERGY.txt section 2 and the budget line "Sleep", the
 
 ## Obstacles
 
-- **No RTC wake from HBN level 0** (2026-10-21 23:29, `pt_sleep 120`): still asleep after > 3 min, EN needed ->
+- **No RTC wake from HBN level 0** (2026-10-21 23:29, `pt_sleep 120`): still asleep after > 3 min, EN needed (EN tap
+  23:3x: BL616 back, test firmware normal, board 28 C) ->
   open. Suspects: (1) `HBN_32K_Sel(HBN_32K_XTAL)` right after `HBN_Power_On_Xtal_32K()`: if the 32 kHz crystal (Y3)
   is not running yet (or at all), the RTC may stop instead of running on RC32K as the product code assumes
   (leak_wake.c rtc_use_crystal); (2) the RTC wake not armed in this path. Next: `pt_sleep` without the crystal
