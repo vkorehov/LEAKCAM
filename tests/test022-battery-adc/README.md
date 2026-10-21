@@ -95,3 +95,7 @@ n/a for the reading itself (Q1 switches the divider only while the K230 runs: ~1
   moved; the pack's PCM cut on the short and the board reset with no cell behind it. The PCM stayed latched (BAT
   ~1.5 V) with the board still on it as a load, and released only when USB was plugged back: after a short the
   pack needs the charger to recover (usual for DW01-type PCMs). Product: a short leaves the unit dead until USB.
+- **CH340 re-enumerated (VMware popup) when VBUS was restored at 19:41**, K230 running, BL616 not reset -> U2 runs
+  from the switched 3V3 (bug-002), so it stayed up on battery with the cable's data lines still in; restoring VBUS
+  most likely made the Mac re-attach the port (VUSB back-fed to ~2.2 V through D3 before it, or the lead touching
+  the splice) -> connect in VMware again; harmless.
