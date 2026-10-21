@@ -28,3 +28,7 @@ n/a: flashing and the console run from USB power.
 - **Flash mode ignored** -> BOOT sampled only at reset -> link 4-6 first, then tap EN. Later: `reboot uart`.
 - **New firmware not running after flash** -> the ROM stays in flash mode -> one EN tap.
 - **`BLFlashCommand-arm` won't start** -> 32-bit armhf binary on arm64 -> `make flash` runs the x86 tool in the container.
+- **Flashing needed BOOT link + EN touch every time** -> the ROM also starts download mode after `reboot uart`
+  (SDK bl616dk shell: HBN user-boot 1 + power-on reset) -> `make flash` does it over the running console
+  ([bl616_isp.py](../../tools/power-bringup/bl616_isp.py), 2026-10-21). **To verify on the board:** the ROM comes up
+  on USB in this mode, and the new firmware starts after flashing without an EN tap.

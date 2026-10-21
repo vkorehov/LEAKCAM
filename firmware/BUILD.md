@@ -257,13 +257,13 @@ PR1 is on the bottom side: pad 1 D+, pad 2 D-, pad 3 GND, pad 4 AI_BOOT, pad 5 A
 
 1. Power the board from the battery or USB-C 1; PR1's 3V3_SLEEP is an output, not a supply input.
 2. Wire a USB cable's D+/D-/GND to pads 1-3.
-3. Hold **AI_BOOT high** (pad 4 to pad 6). Pulse **AI_EN low** (pad 5 to pad 3), then release it.
-4. The BL616 ROM enumerates as `Bouffalo CDC` (349b:6160), `/dev/ttyACM0`. Run:
-   ```
-   make flash COMX=/dev/ttyACM0        # BLFlashCommand --interface=uart --baudrate=2000000 --chipname=bl616
-   ```
-   The SDK picks `BLFlashCommand-arm` on aarch64 and `BLFlashCommand-ubuntu` on x86-64.
-5. Release BOOT and pulse EN.
+3. `make flash` (arm64 host: in the build container, [bl616/host.mk](bl616/host.mk)). While a firmware's USB console
+   (ffff:ffff) runs, [bl616_isp.py](../tools/power-bringup/bl616_isp.py) sends it `reboot uart` (HBN user-boot 1 +
+   power-on reset): the ROM enumerates as `Bouffalo CDC` (349b:6160) with no BOOT link or EN touch. The flasher
+   (`BLFlashCommand --interface=uart --baudrate=2000000 --chipname=bl616`) runs on that port, then the script waits
+   for the new firmware's console.
+4. Only without a running console (blank chip, a firmware that hangs before USB): hold **AI_BOOT high** (pad 4 to
+   pad 6), pulse **AI_EN low** (pad 5 to pad 3), `make flash`, then release BOOT and pulse EN.
 
 ### 4.4 Debugging
 
@@ -300,7 +300,7 @@ is deterministic. All pass as of 2026-09-27. Run them before every firmware comm
 | pin table (`k230_board/pins.py`) | the same; check `check_pad_voltage.py` again |
 | kernel config (`k230_board/rtsmart/configs/`) | `install.sh`, `./leakcam_docker_build.sh k230d_rtos_leakcam_defconfig`, `log` |
 | NAND layout | edit `genimage-spinand.cfg`, `spinand_parts.h` and the U-Boot dts partitions together: they must agree |
-| BL616 | `make && make flash COMX=/dev/ttyACM0` |
+| BL616 | `make && make flash` |
 | K230 Wi-Fi driver (`k230_board/rtsmart/drivers/bl616_nethub/`), `bl616/wifi_ctrl_proto.h` or `bl616/k230_link.h` | `install.sh`, `./leakcam_docker_build.sh log`, and rebuild the BL616 for a protocol change |
 
 ## 7. Known build problems and their fixes

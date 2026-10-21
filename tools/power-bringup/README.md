@@ -95,7 +95,10 @@ sees 5.1 k from CC to GND, so fit **5.1 k (4.7 .. 5.6 k) between the yellow and 
 red VBUS still cut and taped (the port turns on 5 V once CC is terminated). Without it the Mac shows nothing. A
 USB-C to USB-A adapter or a hub on the computer side does this itself. On macOS the port is `/dev/cu.usbmodem*`.
 
-- **Boot into flash mode**: link pad 4 (BOOT) to pad 6 (3V3_SLEEP), then touch pad 5 (EN) to GND
+- **Flash mode without wires** (normal case): while a firmware's USB console runs, `make flash` sends it
+  `reboot uart` ([bl616_isp.py](bl616_isp.py)): the ROM starts as with BOOT high. Only a firmware that never
+  reaches its console needs the pads below.
+- **Boot into flash mode by hand**: link pad 4 (BOOT) to pad 6 (3V3_SLEEP), then touch pad 5 (EN) to GND
   (pad 3) for a moment and let go. The ROM enumerates as `Bouffalo CDC` (349b:6160), `/dev/ttyACM0`.
 - **Run**: remove the 4-6 link and touch pad 5 to GND again. The firmware's console appears on the
   same cable as `/dev/ttyACM0` (any baud rate): `picocom /dev/ttyACM0`.
@@ -108,7 +111,7 @@ from the PR1 console. Not the product firmware; flash that afterwards.
 ```
 cd bl616_powertest
 make                              # arm64 host: builds in the K230 build container by itself
-make flash COMX=/dev/ttyACM0      # BL616 in flash mode (above); then remove the link and reset
+make flash                        # switches the running firmware to the ROM, flashes, waits for the new console
 ```
 
 On an arm64 host the RISC-V toolchain (x86-64 only) runs in the `k230-rtos-sdk-build:arm64-x86tc`
