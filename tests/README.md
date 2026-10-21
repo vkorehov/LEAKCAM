@@ -37,7 +37,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | [test022 battery ADC](test022-battery-adc/README.md) | 2026-10-21 | pass 4.07-4.37 V: reads 1.3 % high, calibrated (full scale 5329 mV, 64-read mean); low cell and load open |
 | [test023 K230 heartbeat (K230_ALIVE)](test023-heartbeat/README.md) | 2026-10-21 | pass: 490 ms half-period (1.02 Hz), first edge 0.98 s after reset release, stops with the agent, low with rails off |
 | [test024 DDR stress](test024-ddr-stress/README.md) | 2026-10-21 | 0 errors: 109 of 128 MB, 61 passes (5 min + 5 cold starts); 1 h and loaded runs open |
-| [test025 K230 temperature](test025-temperature/README.md) | | planned |
+| [test025 K230 temperature](test025-temperature/README.md) | 2026-10-21 | open board: die 48.5 C idle (board 39 C), 53.3 C after 2 min memtest; KPU/encoder/enclosure open |
 | [test026 H.265 encoder, synthetic frames](test026-video-encoder/README.md) | | planned |
 | [test027 NAND power loss](test027-nand-power-loss/README.md) | | planned |
 | [test028 camera buses idle](test028-camera-bus-idle/README.md) | | planned |
