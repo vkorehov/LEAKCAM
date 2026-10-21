@@ -18,7 +18,7 @@ Order: BL616 `pt_off`, `pt_boot1 low`, `pt_on`, `pt_sdu on`, `pt_run`; K230 `bl6
 | Same run, uploads (echoes) | **bus reads 21.5 MB/s**; 3000 KB back of 3000 KB | pass |
 | 200 x 1514 B | bus 21.4 MB/s, end to end 9.3 MB/s | pass |
 | 50 x 512 B (byte mode, 1 block) | bus 20.5 MB/s, end to end 4.0 MB/s (per-message overhead) | pass |
-| 2000 x 512 B | after ~13 (run 1) and ~360 (run 2) messages the K230 lost the card, then rebooted; BL616 no errors | **fail** |
+| 2000 x 512 B | run 1 the K230 lost the card, run 2 and a soak run it reset; a later run clean: the resets are the watchdog (Obstacles), the stall behind them is being traced | open |
 | Errors, BL616 side | CRC 0, aborts 0 over 2500 blocks (3.4 MB) | pass |
 
 - **End to end vs bus:** the echo device re-arms a download buffer only after its echo went up, so the K230 waits for a
@@ -30,7 +30,8 @@ Order: BL616 `pt_off`, `pt_boot1 low`, `pt_on`, `pt_sdu on`, `pt_run`; K230 `bl6
   (realistically 20-30 Mbit/s TCP). The SDIO link is not the bottleneck; the clock is already at its maximum, no
   tuning needed.
 
-**Pass** for the bus (50 MHz, 4-bit, 21 MB/s, no CRC errors). **Open:** exactly-512-byte messages crash the K230 side.
+**Pass** for the bus (50 MHz, 4-bit, 21 MB/s, no CRC errors). **Open:** transfers sometimes stall; the K230 resets
+seen were its watchdog starved by the bench's busy wait, not the bus.
 
 ## Obstacles
 
@@ -38,8 +39,13 @@ Order: BL616 `pt_off`, `pt_boot1 low`, `pt_on`, `pt_sdu on`, `pt_run`; K230 `bl6
   boot probe build): the product configuration hangs before USB starts -> NetHub not usable yet; synthetic test with
   the SDK's `sdio2_test` added to the working test firmware (`pt_sdu`). Open: add the product's parts to the test
   image step by step.
-- **512-byte messages** -> one block written in byte mode (count field 0 = 512) right at the byte/block boundary
-  (`xfer_len`) -> open: reproduce with the clock lowered, try writing 512 as one block in block mode.
+- **K230 resets silently during a bench** (no trap dump: U-Boot SPL is the next line; 3 times, with 512 and 1514 B
+  frames, once on the first run) -> the 20 s hardware watchdog: `drv_wdt.c` starts it at boot, its feeder thread
+  (priority 25) feeds every 10 s; the bench waited for a stalled transfer with `rt_thread_yield()`, which only lets
+  equal-priority threads run, so the shell starved the feeder and the reset came ~20 s after the stall. Not the
+  message size. -> bench waits with `rt_thread_mdelay(1)` and gives up after 3 s with a dump of the port state
+  (`bl616_dump`); the soak then shows what stalls (see Results when it ran). Rule for the product driver too: no
+  wait may spin without sleeping (skill k230-rtsmart-hangs).
 - **Port count:** `bflb_sdio2` defaults to 16 ports, the K230 driver and NetHub use 4 -> `-D SDIO2_MAX_PORT_NUM=4`
   in the test firmware, as `sdio2_test` and NetHub do.
 - **Nothing scans MMC0 at boot** (only the agent, after `WIFI` on the link) -> temporary `bl616_scan`.
