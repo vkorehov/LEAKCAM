@@ -31,7 +31,8 @@ This test runs a pattern memory test over most of the free RAM for a long time.
 | 20:13 | K230 rails on after the flash (USB loader idle), charge finished (D1 off) | 196 mA | |
 | 20:14:24 | NAND boot (`pt_boot1 low`, `pt_on`, `pt_run`), console 20:14:31 | - | |
 | 20:14:39 | `memtest 1`: 40 MB system RAM (4 MB left free) + 69 MB MMZ = 109 of 128 MB | - | 1 pass 6.5 s, 167 MB/s write+verify, 0 errors |
-| 20:14:56 | `memtest 560` started (~1 h) | ask | |
+| 20:14:56 | `memtest 560` started (~1 h) | - | |
+| 20:17 | memtest running (pass ~20, 0 errors) | 240 mA | msh idle 202 mA (test022): memtest +38 mA |
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -40,10 +41,10 @@ This test runs a pattern memory test over most of the free RAM for a long time.
 | Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
 | This part's boot share | not measured yet | - | |
 | Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
-| memtest MB/s under load, errors | not measured yet | DDR top (test015) | % of the top |
-| Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
-| Power, energy per operation | not measured yet | - | scripts/energy.py |
-| Per day | not measured yet | ENERGY.txt line | n per day |
+| memtest MB/s, errors | 167 MB/s write+verify (5 patterns, MMZ uncached), 0 errors so far | DDR top 5.33 GB/s (test015) | 3 %: a checker, not a bandwidth test |
+| Current idle / during | 196 mA (rails on after flash) / 202 mA msh (test022) / 240 mA memtest | floor (test030) | USB-C 1 VBUS meter, D1 off; VBAT ~4.15 V (full cell) |
+| Power, energy per operation | 1.0 W during memtest (240 mA x 4.15 V), +158 mW over msh idle; per pass (6.5 s) 6.5 J / 433 uAh, +1.0 J / 69 uAh over idle | - | by hand: scripts/energy.py does not exist |
+| Per day | n/a: a bench test, not in the product | - | |
 
 ## Boot time
 
@@ -62,4 +63,6 @@ Battery current at 2667 and 3200 MT/s under the same load: the cost of the faste
   logger with `stdbuf -oL` (scratchpad mtlog.sh); passes 1-4 are missing from the log, the run itself is unaffected.
 - **Garbage + "U-Boot: command not found" at every boot** -> the SPL banner arrives while the agent prints, and the
   shell takes the banner's text as a command; harmless (every boot on 2026-10-21).
+- **`scripts/energy.py` (skill leakcam-test-metrics) does not exist** -> computed by hand (P = I x VBAT, E = P x t,
+  Q = I x t) -> skill note corrected.
 
