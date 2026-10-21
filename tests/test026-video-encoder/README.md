@@ -1,14 +1,18 @@
 # test026: H.265 encoder with synthetic frames
 
-Status: **planned** (2026-10-21).
+Status: **in progress** (2026-10-21): venctest written, test image building.
 
 The heaviest job of a leak session: two H.265 streams, 1280x960, 15 fps, ~500 kbit/s each (DESIGN.md). The
 encoder can be fed synthetic frames, so speed and memory can be measured before the cameras arrive.
 
 ## Steps
 
-1. A test program (SDK copy) feeding the MPP VENC from a VB pool with generated frames (moving pattern), one channel,
-   then two, at the product's settings; write the stream to /sdcard.
+1. [venctest/](venctest/venctest.c), a temporary user program (SDK copy: `src/applications/venctest` + `subdirs-y
+   += venctest` in apps.mk), built from the SDK examples (sample_venc, smart_ipc's `kd_mpi_venc_send_frame`), no
+   product code: 8 generated NV12 frames per channel (scrolling gradient, moving square, noise band) cycled into
+   VENC, H.265 Main CBR 500 kbit/s, GOP 150 at 15 fps (the product's settings); `/sdcard/app/venctest [1|2]
+   [seconds] [fps, 0 = max]`; stream to /sdcard/venc<N>.h265 (30 MB max); per second frames in/out, bytes, I
+   frames; at the end fps, kbit/s, IDR spacing, send-to-stream latency.
 2. Measure encode time per frame, CPU load, memory (VB pools, heap), the stream's bit rate and its IDR spacing.
 3. Play the stream back on the PC (ffprobe/ffplay) to check it decodes.
 
