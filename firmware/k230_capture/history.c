@@ -34,7 +34,7 @@ _Static_assert(sizeof(struct hist_header) == 48, "header layout is part of the f
 void hist_default_cfg(struct hist_cfg *cfg, const char *dir)
 {
     cfg->dir = dir;
-    cfg->quota_bytes = 32u << 20;   /* x 2 cameras: a quarter of the 256 MB W25N02KV */
+    cfg->quota_bytes = 4u << 20;    /* x 2 cameras: one keyframe group each, /sdcard is 32 MB */
     cfg->max_deltas = 96;           /* 16 h of changes at one wake per 10 min */
     cfg->key_frac = 0.5f;
 }
@@ -286,10 +286,12 @@ int hist_store(const struct hist_cfg *cfg, int cam, time_t taken, const uint8_t 
     if (scan(cdir, &r, &n) < 0)
         return -1;
 
-    /* the current group: its keyframe and how many deltas follow it */
+    /* the current group: its keyframe, how many deltas follow it and its size */
     uint32_t next_seq = n ? r[n - 1].seq + 1 : 1, key_seq = 0;
     unsigned deltas = 0;
+    size_t group_bytes = 0;
     for (size_t i = n; i-- > 0;) {
+        group_bytes += r[i].bytes;
         if (r[i].kind == 'K') {
             key_seq = r[i].seq;
             break;
@@ -311,7 +313,9 @@ int hist_store(const struct hist_cfg *cfg, int cam, time_t taken, const uint8_t 
             if (changed && changed[by][bx])
                 idx[nchg++] = (uint16_t)(by * IMGDIFF_BLOCKS_X + bx);
 
+    /* a group over half the quota starts a new one: prune never deletes the current group */
     int key = force_key || !key_seq || !changed || deltas >= cfg->max_deltas ||
+              group_bytes > cfg->quota_bytes / 2 ||
               (usable_blocks > 0 && nchg > cfg->key_frac * (float)usable_blocks);
     if (!key && nchg == 0) {
         free(r);

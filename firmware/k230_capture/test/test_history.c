@@ -169,6 +169,15 @@ int main(void)
     free(got);
     free(e);
 
+    /* 10. a group over half the quota ends: the next change is a keyframe, so prune can drop the old group */
+    cfg.quota_bytes = 1u << 20;
+    CHECK(hist_store(&cfg, 0, 6000, f0, W, H, chg, 150, 1, &hi) == 0 && hi.kind == HIST_KEY, "fresh keyframe");
+    size_t key_bytes = hi.bytes;
+    cfg.quota_bytes = key_bytes * 2 - 1;                  /* the keyframe alone is over half the quota */
+    CHECK(hist_store(&cfg, 0, 6100, f1, W, H, chg, 150, 0, &hi) == 0 && hi.kind == HIST_KEY,
+          "a group over half the quota did not start a new keyframe");
+    printf("group over quota/2:  next record a keyframe (%zu B keyframe)\n", key_bytes);
+
     rm_tree(dir);
     free(f0);
     free(f1);

@@ -138,8 +138,8 @@ SPI-NAND SPL fails it on 50 of 64 pads, which is why the port builds SPL and U-B
 | 5M | 20M | rtt_a | OpenSBI + RT-Smart, slot A |
 | 25M | 20M | rtt_b | the same, slot B |
 | 48M | 20M | bin | UFFS `/bin`: ISP tuning files, SDK tools |
-| 72M | 176M | sdcard | UFFS `/sdcard`: `/sdcard/app/leakcam_*`, image history (`/sdcard/leakcam`) |
-| 248M | 8M | (free) | bad-block reserve |
+| 72M | 32M | sdcard | UFFS `/sdcard`: `/sdcard/app/leakcam_*`, image history (`/sdcard/leakcam`) |
+| 104M | 152M | (free) | bad-block reserve |
 
 **Boot:**
 1. **Boot ROM.** Straps BOOT0 = 1, BOOT1 = 0 select SPI NAND. The ROM loads the SPL into SRAM.

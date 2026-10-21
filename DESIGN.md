@@ -141,8 +141,8 @@ U-Boot: only when the TOC is missing or neither slot loads
 | 5M | 20M | rtt_a |
 | 25M | 20M | rtt_b |
 | 48M | 20M | UFFS `/bin` (ISP tuning files) |
-| 72M | 176M | UFFS `/sdcard` (programs, image history) |
-| 248M | 8M | bad-block reserve |
+| 72M | 32M | UFFS `/sdcard` (programs, image history); small because UFFS scans every block at mount |
+| 104M | 152M | unused, bad-block reserve |
 
 **UFFS spare area.** UFFS uses the chip's 64 user OOB bytes. The W25N02KV has 128 spare bytes,
 but 64-127 hold its on-die ECC. `mkuffs` and UFFS both cap the spare at 64 for 2 KiB pages, so
@@ -375,7 +375,8 @@ capture (LEDs at 100 %, AE settled)
   - Per camera: a keyframe (full luma, compressed) plus deltas holding only the changed 80x80
     blocks.
   - A new keyframe after 96 deltas, or when more than half the image changed.
-  - A 32 MB quota per camera; the oldest group is deleted first.
+  - A 4 MB quota per camera (one keyframe group: the history needs only one large image per camera);
+    the oldest group is deleted first.
   - Every file is written as tmp + fsync + rename, with a CRC.
   - Reference files use two slots, because UFFS cannot rename onto an existing file.
 - **LED control.** Start at maximum current, because 2 m must be lit. Back off only when
