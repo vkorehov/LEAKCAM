@@ -25,7 +25,8 @@ Recharging from there is slow or fails: below VBAT(SC) 1.6-2.0 V the charger sou
   ADC samples from it, not through the divider's 290 k.
 - **Rev 1: no hardware rework** (user, 2026-10-21: too dense to bodge by hand). Firmware workaround, BL616
   product firmware, not yet written:
-  - the K230's own reading (ADC_1, answered in WAKE's ACK every session) is the battery value;
+  - the K230 reports its own reading (ADC_1) back to the BL616 in WAKE's ACK every session; the BL616 keeps it
+    and the lockout flag in HBN RAM (aon_state.c: survives every hibernate, lost only with the battery);
   - below 3.10 V under load the BL616 cuts the K230 at once and hibernates with only the USB wake (no RTC, no
     leak wake); the lockout ends with USB plugged and the next reading >= 3.50 V;
   - 3.10 V under load is ~3.2 V at rest: ~2-3 % of the charge left, above VLOWV, so a recharge starts at full
