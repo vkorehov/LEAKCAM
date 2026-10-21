@@ -30,7 +30,7 @@ Every 10 s: K230 die from msh `chip_temp`, board from the BL616's AHT20 (`pt_sta
 
 - Die ~9.5 C above the board at idle; memtest adds ~+4.5 C in 2 min, not settled yet (still rising at the end);
   back to idle within ~20 s after the load: a small die, the heat goes into the board.
-- The board itself sits at 39 C: the K230 has been on since 19:31 except short gaps; room temperature not measured.
+- The board itself sits at 39 C: the K230 has been on most of the time since 19:31 (off 19:57-20:04, short power cycles); room temperature not measured.
 - `chip_temp` steps are 0.3-0.9 C (12-bit TS); single readings scatter +-0.6 C at idle.
 - Plausible readings, monotonic warm-up: **pass** for idle and CPU/DDR load. The K230's die limit is not in the repo
   yet (datasheet to check); the margin for the enclosure follows from it.
