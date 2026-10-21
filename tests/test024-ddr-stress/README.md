@@ -29,6 +29,9 @@ This test runs a pattern memory test over most of the free RAM for a long time.
 |---|---|---|---|
 | 20:12:41-20:13:14 | test image flashed (`flash_nand.sh`: erase 8 s, write, 33 s in all) | - | |
 | 20:13 | K230 rails on after the flash (USB loader idle), charge finished (D1 off) | 196 mA | |
+| 20:14:24 | NAND boot (`pt_boot1 low`, `pt_on`, `pt_run`), console 20:14:31 | - | |
+| 20:14:39 | `memtest 1`: 40 MB system RAM (4 MB left free) + 69 MB MMZ = 109 of 128 MB | - | 1 pass 6.5 s, 167 MB/s write+verify, 0 errors |
+| 20:14:56 | `memtest 560` started (~1 h) | ask | |
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -49,3 +52,14 @@ Each DDR setting's training time (with test015), cold starts recorded.
 ## Battery energy
 
 Battery current at 2667 and 3200 MT/s under the same load: the cost of the faster DDR per second, against the time it saves (test015, test021).
+
+## Obstacles
+
+- **"Memory exhaustion!" and `hil_mmb_alloc ... failed!` on the console at memtest start** -> memtest allocates
+  until both allocators refuse; expected, not an error.
+- **The long-run log stayed empty for 30 s** (my mistake) -> the one-pass run's `timeout 150 cat` was still reading
+  the console (two readers split the data), and `tr` block-buffers into a pipe -> killed both by PID, restarted the
+  logger with `stdbuf -oL` (scratchpad mtlog.sh); passes 1-4 are missing from the log, the run itself is unaffected.
+- **Garbage + "U-Boot: command not found" at every boot** -> the SPL banner arrives while the agent prints, and the
+  shell takes the banner's text as a command; harmless (seen since test021).
+
