@@ -1,6 +1,6 @@
 # test022: Battery ADC (K230 ADC_1, VBAT/3)
 
-Status: **in progress** (2026-10-21): USB and battery case 4.07-4.12 V measured (pass, -55 mV); back on USB at 19:41. Open: a low-cell point (~3.4 V) and a loaded case.
+Status: **pass** at 4.07-4.37 V (2026-10-21), calibration in the agent. Open: a low-cell point (~3.4 V) and a loaded case.
 
 K230 ADC_1 (ball A6) reads VBAT through R59 200 k / R61 100 k, switched by Q1 from the K230's 3V3 (readable only
 while the K230 runs). The agent converts raw x 1800 mV x 3 / 4095 (12-bit, 1.8 V reference). The bug-004 rev 1
@@ -52,6 +52,10 @@ between reads.
   meter and ADC, so one correction, -55 mV (or x 0.986;
   the two points are too close in voltage to tell offset from gain; the low-cell point decides). Corrected and
   averaged over 64 reads: within +-10 mV of the meter: **pass** at a full cell.
+- **Calibration (2026-10-21), 7 pairs 4.07-4.37 V:** gain fits as well as offset (residuals within +-10 mV both
+  ways); gain chosen (a divider/reference error scales): meter = ADC x 0.9868, i.e. full scale 5329 mV instead of
+  5400. In firmware/k230_agent/leakcam_agent.c (BAT_FULL_SCALE_MV), with the mean of 64 conversions (sd 45 -> ~6
+  mV). The low-cell point will tell gain from offset; re-fit then.
 - **C11 at 3.30 V with D1 off** (should charge, D1 on): the JB1 cell joint was open - see Obstacles.
 
 ## Metrics (2026-10-21)

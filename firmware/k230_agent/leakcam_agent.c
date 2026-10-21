@@ -249,30 +249,36 @@ static void fmt_x10(char *out, size_t n, long v)
 
 /* ---------------- battery: ADC_1 (ball A6) = VBAT / 3 ---------------- */
 
-/* R59 200 k over R61 100 k, switched on with our 3V3 (Q2 -> Q1), so only readable while we run;
- * C92 100 nF holds the node, one conversion is enough. The RT-Smart ADC device: ioctl 0 enables
- * a channel, then a 4-byte read at file offset <channel> is one 12-bit conversion against the
- * 1.8 V ADC reference (kernel ABI of bsp/maix3 drv_adc and the RT-Thread ADC framework) */
-#define BAT_ADC_CHANNEL  1
-#define BAT_DIVIDER      3
-#define ADC_IOCTL_ENABLE 0
+/* R59 200 k over R61 100 k, switched on with our 3V3 (Q2 -> Q1), so only readable while we run.
+ * The RT-Smart ADC device: ioctl 0 enables a channel, then a 4-byte read at file offset <channel>
+ * is one 12-bit conversion against the 1.8 V ADC reference (kernel ABI of bsp/maix3 drv_adc and
+ * the RT-Thread ADC framework). Single conversions scatter by sd ~45 mV of VBAT, so we average
+ * 64 (~6 mV). Full scale is 1.8 V x 3 = 5400 mV nominal; measured against a meter on C15 it reads
+ * 1.3 % high (4.07-4.37 V, tests/test022), so the calibrated full scale is 5329 mV */
+#define BAT_ADC_CHANNEL   1
+#define BAT_FULL_SCALE_MV 5329u
+#define BAT_SAMPLES       64u
+#define ADC_IOCTL_ENABLE  0
 
 static int bat_mv = -1;                 /* our reading this session, -1 = none */
 
 static int battery_read_mv(void)
 {
-    uint32_t raw;
+    uint32_t raw, sum = 0;
     int fd = open("/dev/adc", O_RDWR);
-    bool ok = fd >= 0 && ioctl(fd, ADC_IOCTL_ENABLE, BAT_ADC_CHANNEL) == 0 &&
-              lseek(fd, BAT_ADC_CHANNEL, SEEK_SET) == BAT_ADC_CHANNEL &&
-              read(fd, &raw, sizeof(raw)) == (ssize_t)sizeof(raw) && raw <= 4095;
+    bool ok = fd >= 0 && ioctl(fd, ADC_IOCTL_ENABLE, BAT_ADC_CHANNEL) == 0;
+    for (unsigned i = 0; ok && i < BAT_SAMPLES; i++) {
+        ok = lseek(fd, BAT_ADC_CHANNEL, SEEK_SET) == BAT_ADC_CHANNEL &&
+             read(fd, &raw, sizeof(raw)) == (ssize_t)sizeof(raw) && raw <= 4095;
+        sum += raw;
+    }
     if (fd >= 0)
         close(fd);
     if (!ok) {
         logmsg("battery: ADC channel %d: %s", BAT_ADC_CHANNEL, strerror(errno));
         return -1;
     }
-    return (int)((raw * 1800u * BAT_DIVIDER + 4095u / 2) / 4095u);
+    return (int)(((uint64_t)sum * BAT_FULL_SCALE_MV + 4095u * BAT_SAMPLES / 2) / (4095u * BAT_SAMPLES));
 }
 
 /* the sensor part of WAKE, <rh_x10>,<t_x10>,<probe_mv>,<bat_mv>, for the hook as LEAKCAM_RH and

@@ -34,7 +34,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | [test019 camera CSI and I2C speed](test019-camera-csi-i2c/README.md) | | planned |
 | [test020 BL616 internal timing](test020-bl616-internal-timing/README.md) | | planned |
 | [test021 K230 boot time](test021-boot-time/README.md) | | 0.88 s to app init at NAND 80 MHz; mounts 0.59 s |
-| [test022 battery ADC](test022-battery-adc/README.md) | | planned |
+| [test022 battery ADC](test022-battery-adc/README.md) | 2026-10-21 | pass 4.07-4.37 V: reads 1.3 % high, calibrated (full scale 5329 mV, 64-read mean); low cell and load open |
 | [test023 K230 heartbeat (K230_ALIVE)](test023-heartbeat/README.md) | | planned |
 | [test024 DDR stress](test024-ddr-stress/README.md) | | planned |
 | [test025 K230 temperature](test025-temperature/README.md) | | planned |
