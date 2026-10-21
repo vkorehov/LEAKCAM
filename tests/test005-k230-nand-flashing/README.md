@@ -21,6 +21,10 @@ n/a: flashing.
 
 n/a: flashing runs from USB power.
 
+## Temperature
+
+Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
+
 ## Obstacles
 
 - **x86-only `k230_flash_cli`** -> run in the container with `--privileged -v /dev/bus/usb`.

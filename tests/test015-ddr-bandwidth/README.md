@@ -53,6 +53,7 @@ burned mA fuse: readings from before the swap are void.
 | Current idle / during (min / avg / peak) | 204 / - / 270 mA | floor 204 (msh idle) | USB-C 1 VBUS |
 | Power, energy per operation | +66 mA = +251 mW over idle; 18 mJ per 64 MB pass set | - | 3.8 V nominal |
 | Per day | n/a (no DDR-only work in a session) | - | |
+| Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
 
 ## Boot time
 

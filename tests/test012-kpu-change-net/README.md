@@ -57,6 +57,10 @@ Not recorded (before the boot rule, 2026-10-21). If re-run: KPU power-up and kmo
 
 Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: extra current during inference vs idle; energy per change check (4.4 ms per check).
 
+## Temperature
+
+Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
+
 ## Obstacles
 
 - **First inference hangs** -> KPU never powered: `pm_core_init()` fails without `CONFIG_RT_USING_REGULATOR` ->

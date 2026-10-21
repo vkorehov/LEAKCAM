@@ -70,6 +70,7 @@ between reads.
 | Current during reads | 202-203 mA (= msh idle) | floor 202 | reads cost nothing measurable |
 | Power, energy per reading | below the meter's resolution | - | |
 | Per day | n/a | - | |
+| Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
 
 ## Boot time
 

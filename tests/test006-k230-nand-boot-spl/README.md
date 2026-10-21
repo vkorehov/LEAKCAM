@@ -20,6 +20,10 @@ Not recorded (before the boot rule, 2026-10-21). If re-run: ROM -> SPL banner an
 
 Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: superseded by test021 (boot energy).
 
+## Temperature
+
+Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
+
 ## Obstacles
 
 - **"boot failed with exit code 13"** = file error in the boot medium (19 = no medium) -> the ROM reads the NAND.

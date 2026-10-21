@@ -45,6 +45,10 @@ Not recorded (before the boot rule, 2026-10-21). If re-run: SDIO card scan and a
 
 Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: BL616 + K230 current while transferring vs idle; energy per MB over SDIO (part of every upload).
 
+## Temperature
+
+Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
+
 ## Obstacles
 
 - **Product BL616 firmware does not reach its USB console on rev 1**, even reduced to `board_init()` + scheduler (a

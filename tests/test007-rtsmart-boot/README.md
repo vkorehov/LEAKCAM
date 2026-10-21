@@ -22,6 +22,10 @@ Not recorded (before the boot rule, 2026-10-21). If re-run: OpenSBI -> RT-Smart 
 
 Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: superseded by test021 (boot energy) and test101 (session).
 
+## Temperature
+
+Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
+
 ## Obstacles
 
 - **Silent after "OpenSBI v0.9"** -> OpenSBI is quiet; the kernel hung -> found with temporary markers

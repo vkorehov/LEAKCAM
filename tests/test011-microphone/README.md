@@ -35,6 +35,10 @@ Codec/audio init time at boot, if any is done at boot (else at first use: then i
 
 Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: extra current with the codec and mic recording vs idle (mA, per second of clip).
 
+## Temperature
+
+Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
+
 ## Obstacles
 
 - **Mic check hung after the codec power-up** -> the AI takes its frames from a VB pool and none existed ->

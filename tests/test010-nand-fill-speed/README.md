@@ -24,6 +24,10 @@ Not recorded (before the boot rule, 2026-10-21). If re-run: the UFFS mount time 
 
 Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: extra current while reading and writing /sdcard vs idle; energy per MB written (clips) and read.
 
+## Temperature
+
+Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
+
 ## Obstacles
 
 - **`echo` cannot create files** -> msh `echo` opens without O_CREAT -> create with `cp` first.

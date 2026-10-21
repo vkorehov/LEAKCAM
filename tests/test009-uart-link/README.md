@@ -19,6 +19,10 @@ The agent's READY on the link marks the end of the boot (test021's last mileston
 
 n/a: the link's own current is negligible next to the K230 running; its time cost is test017.
 
+## Temperature
+
+Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
+
 ## Obstacles
 
 - **Each READY 5 times** -> by design: the agent resends while no ACK comes (the test firmware sends none).

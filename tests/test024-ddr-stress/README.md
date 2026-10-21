@@ -56,6 +56,7 @@ kernel init 0.207 s, mounts done 0.870 s, app init 0.893-0.894 s. The CH340 came
 | Current idle / during | 196 mA (rails on after flash) / 202 mA msh (test022) / 240 mA memtest, peaks 260 mA | floor (test030) | USB-C 1 VBUS meter, D1 off; VBAT ~4.15 V (full cell) |
 | Power, energy per operation | 1.0 W during memtest (240 mA x 4.15 V), +158 mW over msh idle; per pass (6.5 s) 6.5 J / 433 uAh, +1.0 J / 69 uAh over idle | - | by hand: scripts/energy.py does not exist |
 | Per day | n/a: a bench test, not in the product | - | |
+| Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
 
 ## Boot time
 

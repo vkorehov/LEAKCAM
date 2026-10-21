@@ -20,6 +20,10 @@ n/a: a bring-up step outside the product boot.
 
 n/a: a one-off bring-up step, no product activity.
 
+## Temperature
+
+Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
+
 ## Obstacles
 
 - **Loader format** -> `--custom-loader` takes a raw binary at 0x80360000, no header.

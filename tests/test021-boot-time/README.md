@@ -74,6 +74,7 @@ burned mA fuse: readings from before the swap are void.
 | Current: rails in reset / boot peak / msh idle | 86.3 / ~227 / 204 mA | - | USB-C 1 VBUS |
 | Power, energy per boot (to app init) | ~215 mA x 0.88 s = 0.72 J, 53 uAh (1.0 s: 0.82 J) | - | 3.8 V nominal |
 | Per day | 4 report sessions: 0.24 mAh/day (boot to app init only) | ENERGY.txt 3 | 0.7 % of 1000 mAh / month |
+| Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
 
 ## Boot time
 

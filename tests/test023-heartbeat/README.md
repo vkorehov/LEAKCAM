@@ -48,6 +48,7 @@ the power 2 s later. As designed.
 | Current idle / during | not measured: no meter reading asked (my omission); msh idle 202 mA (test022) | floor (test030) | |
 | Power, energy per operation | n/a: one GPIO write per 500 ms, below the meter's resolution | - | |
 | Per day | n/a | - | |
+| Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
 
 ## Boot time
 

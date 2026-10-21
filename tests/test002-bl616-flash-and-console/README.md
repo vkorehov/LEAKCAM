@@ -47,3 +47,4 @@ n/a: flashing and the console run from USB power.
 | Current idle / during (min / avg / peak) | not measured: meter not connected | - | on USB (not battery) |
 | Power, energy per operation | n/a | - | flashing only on USB power |
 | Per day | n/a | - | |
+| Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
