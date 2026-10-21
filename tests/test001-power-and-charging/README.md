@@ -83,4 +83,7 @@ Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: the b
   a few tenths of an ohm) drops VUSB at the ~1 A charge start, and in ILIM mode (EN2 high) the charger has no
   VIN-DPM to back off, so it drops out and restarts -> charge with the meter bypassed (Mac port direct or a wall
   adapter); measure the board's current with a full cell (D1 off). bugs/v2.txt 9.
+- **The reflowed JB1 joint opened again within the hour** (2026-10-21; D1 went off, 71 mA, cell disconnected) ->
+  the cell wire loads the joint mechanically -> wire through the plated hole, solder wetting both sides with flux
+  and a hot tip, strain relief (glue or tape 5-10 mm from the pad); pull test, then C11 = the cell with USB out.
 
