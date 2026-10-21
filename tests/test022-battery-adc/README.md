@@ -1,6 +1,6 @@
 # test022: Battery ADC (K230 ADC_1, VBAT/3)
 
-Status: **planned** (2026-10-21).
+Status: **in progress** (2026-10-21): USB case measured; battery case open.
 
 K230 ADC_1 (ball A6) reads VBAT through R59 200 k / R61 100 k, switched by Q1 from the K230's 3V3 (readable only
 while the K230 runs). The agent converts raw x 1800 mV x 3 / 4095 (12-bit, 1.8 V reference). The bug-004 rev 1
@@ -28,17 +28,33 @@ ADC within +-30 mV of the meter's VBAT (after a one-point correction if it is a 
 between reads.
 
 
-## Metrics (to fill on every run: skill leakcam-test-metrics)
+## Results (2026-10-21, USB powered, K230 at msh, NAND 80 MHz image)
+
+`adc probe adc`, `adc read 1` x 20, VBAT = raw x 5400 / 4095:
+
+| Point | Meter (second meter) | ADC |
+|---|---|---|
+| C15 pad 1, "VBAT" net = ADC input | 4.37 V | mean 4.430 V (+60 mV, +1.4 %), sd 52 mV, 4.340-4.507 |
+| C11 pad 1, BAT (cell) | 3.298 V | - |
+
+- **On USB, C15 is the BQ24072 output rail (~4.4 V), not the cell.** On battery the BAT-FET joins OUT to the cell, so
+  the ADC reads the cell then: the only case the bug-004 cutoff needs. The firmware must not report the USB reading
+  as battery level.
+- **Noise sd 52 mV** (target 10): single reads are not enough for a 3.10 V cutoff -> average (64 reads: ~7 mV).
+- Offset +60 mV: one-point correction once the battery case is measured.
+- **Cell at 3.30 V with D1 off** (should charge, D1 on): the charger does not see / charge the cell - see Obstacles.
+
+## Metrics (2026-10-21)
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
-| This part's boot share | not measured yet | - | |
-| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
-| ADC reading vs meter (error mV) | not measured yet | - | % of the top |
-| Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
-| Power, energy per operation | not measured yet | - | scripts/energy.py |
-| Per day | not measured yet | ENERGY.txt line | n per day |
+| Boot, power-on -> app init | 0.88 s | test021 | |
+| This part's boot share | none (ADC probed on demand) | - | |
+| Test run time | 20 reads ~45 s | - | |
+| ADC accuracy / noise | +60 mV / sd 52 mV | +-30 mV / 10 mV | noise fails single-read |
+| Current during reads | 202-203 mA (= msh idle) | floor 202 | reads cost nothing measurable |
+| Power, energy per reading | below the meter's resolution | - | |
+| Per day | n/a | - | |
 
 ## Boot time
 
@@ -53,3 +69,7 @@ n/a for the reading itself (Q1 switches the divider only while the K230 runs: ~1
 - **Unexplained board reset at 15:20:09 (2026-10-21)** while VBAT was probed at C15 with a second meter: BL616 and
   CH340 dropped together, the BL616 came back with its defaults. Not explained (probe slip or cable move); repeat
   the VBAT reading with the probe held firm, rails off first.
+- **Cell at 3.30 V, D1 off, board resets when the ammeter leads are re-seated** (16:06, 16:07; and 14:42, 15:20) ->
+  the charger does not see the cell (test001: D1 flashing then off = battery detection, no cell), so nothing backs
+  up VBUS -> open: check JB1 / the cell's own voltage and protection; until then every VBUS interruption resets the
+  board.
