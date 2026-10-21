@@ -30,6 +30,6 @@ From the rev 1 bugs
    C33/C34.
 7. K230 BOOT1: read 0.5 V with the BL616's IO27 floating (at the 1.8 V bank's VIL). Stronger pull-down
    (R31 lower than 10 k) or IO27 driven low by the BL616 from reset (the test firmware does now).
-8. bug-004: battery sense on the BL616, as the rev 1 rework: PGOOD (IO3) pull-up to VBAT through
+8. bug-004: battery sense on the BL616 (no rev 1 rework: too dense): PGOOD (IO3) pull-up to VBAT through
    680 k with 510 k to GND (reads VBAT x 0.429 while USB is out, ~0 V with USB), 100 nF at IO3. The BL616 then
    stops the K230 and hibernates below the cutoff; the charger has no discharge cutoff of its own.

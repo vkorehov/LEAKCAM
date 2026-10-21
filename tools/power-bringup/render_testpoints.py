@@ -396,67 +396,6 @@ def render_ts_fix(pcb, comps, out):
     new.save(out)
 
 
-def render_bat_sense(pcb, comps, out):
-    """the rev 1 battery sense rework (bugs/bug-004): R23 (PGOOD pull-up to 3V3_SLEEP) out, a 680 k / 510 k divider
-    from VBAT across C50 with 100 nF on its middle, wired to R23 pad 2, so the BL616 reads the battery on IO3 while
-    USB is out"""
-    region = (40.6, 49.2, 39.4, 47.6)
-    x0, x1, y0, y1 = region
-    px = 110.0
-    render(pcb, comps, [], out, region=region, px=px, label=", battery sense: R23 out, divider at C50")
-    im = Image.open(out)
-    W, H = im.size
-    notes = ("1. Remove R23 (100 k, 0402). Pad 1 (3V3_SLEEP) stays bare; pad 2 is PGOOD = BL616 IO3.",
-             "2. 680 k and 510 k (1 %) in series from C50 pad 1 (VBAT) to C50 pad 2 (GND): 680 k on the VBAT side.",
-             "3. 100 nF from the junction to C50 pad 2 (GND): required (the ADC samples from it, not through the 290 k).",
-             "4. Thin insulated wire from the junction to R23 pad 2.",
-             "Check, USB out: R23 pad 2 = VBAT x 0.429 (cell 3.8 V -> 1.63 V). USB in: ~0 V (PGOOD low).",
-             "Firmware reads the battery there whenever USB is out; USB detect threshold 0.5 V (bugs/bug-004).")
-    new = Image.new("RGB", (W, H + 60 + 45 * len(notes)), "white")
-    new.paste(im, (0, 0))
-    d = ImageDraw.Draw(new)
-    d.rectangle((420, 54, W - 420, 74), fill=(232, 240, 228))  # no probe rings here: drop render()'s legend
-    try:
-        fb = ImageFont.truetype("DejaVuSans-Bold.ttf", 26)
-        f = ImageFont.truetype("DejaVuSans.ttf", 26)
-    except OSError:
-        fb = f = ImageFont.load_default()
-    P = lambda x, y: (MARGIN + (x - x0) * px, 110 + (y1 - y) * px)
-    pin = lambda ref, n: P(*comps[ref]["pins"][n][:2])
-    vbat, gnd, pg, r23a = pin("C50", "1"), pin("C50", "2"), pin("R23", "2"), pin("R23", "1")
-    # R23 crossed out
-    cx, cy = (pg[0] + r23a[0]) / 2, (pg[1] + r23a[1]) / 2
-    for s_ in (1, -1):
-        d.line((cx - 55, cy - 75 * s_, cx + 55, cy + 75 * s_), fill=(210, 30, 30), width=8)
-    # the divider drawn above C50: leads up from the pads, the two bodies, the junction
-    lift = 230
-    a, b = (vbat[0], vbat[1] - lift), (gnd[0], gnd[1] - lift)
-    j = ((a[0] + b[0]) / 2, a[1] - 60)
-    d.line((vbat, a, j), fill=(0, 0, 0), width=5, joint="curve")
-    d.line((gnd, b, j), fill=(0, 0, 0), width=5, joint="curve")
-    c = (b[0] - 190, b[1])                                  # the 100 nF: its own leads, left of the 510 k
-    d.line((j, c, (c[0], gnd[1] - 45), (gnd[0] - 12, gnd[1] - 45), gnd), fill=(0, 0, 0), width=5, joint="curve")
-    mx, my = c[0], (c[1] + gnd[1] - 45) / 2
-    d.rounded_rectangle((mx - 75, my - 24, mx + 75, my + 24), radius=12, fill=(255, 245, 210), outline=(0, 0, 0), width=4)
-    d.text((mx, my), "100 nF", fill=(0, 0, 0), font=fb, anchor="mm")
-    for (u, v), lab in (((vbat, a), "680 k"), ((gnd, b), "510 k")):
-        mx, my = (u[0] + v[0]) / 2, (u[1] + v[1]) / 2
-        d.rounded_rectangle((mx - 70, my - 24, mx + 70, my + 24), radius=12, fill=(255, 255, 255), outline=(0, 0, 0), width=4)
-        d.text((mx, my), lab, fill=(0, 0, 0), font=fb, anchor="mm")
-    d.ellipse((j[0] - 12, j[1] - 12, j[0] + 12, j[1] + 12), fill=(0, 0, 0))
-    # the wire from the junction to R23 pad 2, bent over the top of the area
-    top_y = min(j[1], pg[1]) - 90
-    d.line((j, (j[0], top_y), (pg[0], top_y), pg), fill=(30, 90, 200), width=6, joint="curve")
-    d.text(((j[0] + pg[0]) / 2, top_y - 22), "insulated wire", fill=(30, 90, 200), font=fb, anchor="mm", stroke_width=5, stroke_fill="white")
-    for q, lab, anchor, dx in ((vbat, "C50 pad 1 = VBAT", "lm", 30), (gnd, "C50 pad 2 = GND", "rm", -30),
-                               (pg, "R23 pad 2 = PGOOD (IO3)", "rm", -40), (r23a, "R23 pad 1: bare", "rm", -40)):
-        d.ellipse((q[0] - 11, q[1] - 11, q[0] + 11, q[1] + 11), outline=(0, 0, 0), width=4)
-        d.text((q[0] + dx, q[1] + 40), lab, fill=(0, 0, 0), font=fb, anchor=anchor, stroke_width=5, stroke_fill="white")
-    for i, line in enumerate(notes):
-        d.text((20, H + 30 + i * 45), line, fill=(0, 0, 0), font=f)
-    new.save(out)
-
-
 def render_led_wiring(pcb, comps, out):
     """the LED strip wires on the top side, for printing in black and white: white chain solid, IR dashed,
     each wire in its own lane (white above the pad rows, IR below, the long ones further out) and every
@@ -700,14 +639,6 @@ def main():
                          "Leave pad 5 (VUSB) and pad 2 (GND) bare. Check: no short between the bridges, D+/D- not to VUSB/GND.",
                          "Then rails on, no USB cable: VUSB (C2 pad 1) ~0 V instead of ~2.2 V. The debug USB loses its ESD clamp."))
     render_led_wiring(pcb, comps, os.path.join(HERE, "led_wiring.png"))
-    # bug-004 battery sense: the BL616 reads VBAT on IO3 (PGOOD) while USB is out
-    render_bat_sense(pcb, comps, os.path.join(REPO, "bugs", "bug-004", "bat_sense_rework.png"))
-    bat = [{"id": "C50", "rail": "divider at C50", "pad": "C50.1", "gnd": "C50.2", "side": "top"},
-           {"id": "R23", "rail": "remove", "pad": "R23.2", "gnd": "R23.1", "side": "top"}]
-    render_points_sheet(pcb, comps, bat, os.path.join(REPO, "bugs", "bug-004", "bat_sense_board.png"), None, 22.0,
-                        ", battery sense rework (where)", {"C50": "VBAT / GND pads", "R23": "pad 2 = PGOOD: wire"},
-                        ("Top side. R23 is right of the BL616 module (U11), just below C109 / R72 (leak divider);",
-                         "C50 (U8's input cap) is down and to the right of it, left of C105."))
 
 
 if __name__ == "__main__":
