@@ -20,6 +20,15 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | [test012 KPU change net](test012-kpu-change-net/README.md) | 2026-10-18/19 | pass: int8 net, 0.5 ms per inference, threshold 0.43 |
 | [test013 SDIO wiring](test013-sdio-wiring/README.md) | 2026-10-19 | pass: CLK, CMD, D0-D3 both directions, no shorts |
 | [test014 SDIO speed](test014-sdio-speed/README.md) | 2026-10-21 | pass: 50 MHz 4-bit, bus 21 MB/s, end to end 9.4 MB/s, no CRC errors; occasional stalls (open; the K230 resets were the watchdog, starved by the bench) |
+| [test015 battery ADC](test015-battery-adc/README.md) | | planned |
+| [test016 K230 heartbeat (K230_ALIVE)](test016-heartbeat/README.md) | | planned |
+| [test017 DDR stress](test017-ddr-stress/README.md) | | planned |
+| [test018 K230 temperature](test018-temperature/README.md) | | planned |
+| [test019 H.265 encoder, synthetic frames](test019-video-encoder/README.md) | | planned |
+| [test020 boot time and session length](test020-boot-and-session-time/README.md) | | planned |
+| [test021 NAND power loss](test021-nand-power-loss/README.md) | | planned |
+| [test022 session current](test022-session-current/README.md) | | planned |
+| [test023 camera buses idle](test023-camera-bus-idle/README.md) | | planned |
 
 ## Status by subsystem (2026-10-18)
 
