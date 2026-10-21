@@ -7,7 +7,8 @@
  * Feeds VENC channel(s) with generated NV12 frames (1280x960: a gradient that scrolls, a moving square and a
  * noise band, FRAMES distinct frames cycled), H.265 Main, CBR 500 kbit/s, GOP 10 s at 15 fps: the product's
  * settings. Per channel the stream goes to /sdcard/venc<N>.h265 (the first 30 s at most); per second a line:
- * frames in / out, bytes, I frames; at the end fps, kbit/s, IDR spacing, send-to-stream latency.
+ * frames in / out, bytes, I frames; at the end fps, kbit/s, IDR spacing, send-to-stream latency (by pts).
+ * Max rate (fps 0) keeps 3 frames in flight per channel.
  * Built from the SDK examples (sample_venc: channel and stream; smart_ipc media.cpp: kd_mpi_venc_send_frame
  * with a VB block), no product code.
  */
@@ -143,6 +144,11 @@ static void *feed(void *arg)
             unsigned long long due = t0 + n * period, t = now_us();
             if (due > t)
                 usleep((useconds_t)(due - t));
+        } else {
+            /* max rate: send_frame does not block on a full input queue, it fails at once (2026-10-21: a
+             * feed spinning on it flooded the console and hung the run); keep 3 frames in flight */
+            while (running && st[c].in - st[c].out >= 3)
+                usleep(500);
         }
         k_video_frame_info vf;
         memset(&vf, 0, sizeof(vf));
@@ -160,6 +166,8 @@ static void *feed(void *arg)
         st[c].sent_us[n & 255] = now_us();
         if (kd_mpi_venc_send_frame(c, &vf, -1) == 0)
             st[c].in++;
+        else
+            usleep(2000);
     }
     return NULL;
 }
@@ -195,7 +203,8 @@ static void *drain(void *arg)
             }
         }
         unsigned n = st[c].out;
-        unsigned long long lat = t - st[c].sent_us[n & 255];
+        /* by pts (= frame number at send), not by count: a dropped frame would shift every later one */
+        unsigned long long lat = t - st[c].sent_us[out.pack[out.pack_cnt - 1].pts & 255];
         st[c].lat_us_sum += lat;
         if (lat > st[c].lat_us_max)
             st[c].lat_us_max = lat;

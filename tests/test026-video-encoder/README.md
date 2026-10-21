@@ -1,6 +1,6 @@
 # test026: H.265 encoder with synthetic frames
 
-Status: **pass at 15 fps, 1 and 2 channels** (2026-10-21); the max-rate run hung (venctest bug), to redo; the decode check on the PC is open.
+Status: **pass** (2026-10-21): 2 x 15 fps at the product settings, encoder top ~83 fps at 1280x960 (2.8x margin). Open: decode check on the PC (needs a way off the board).
 
 The heaviest job of a leak session: two H.265 streams, 1280x960, 15 fps, ~500 kbit/s each (DESIGN.md). The
 encoder can be fed synthetic frames, so speed and memory can be measured before the cameras arrive.
@@ -34,11 +34,14 @@ Console logs: [run1.log](run1.log), [run2.log](run2.log), [run3.log](run3.log) (
 | idle | after run 2 | - | 205 mA | |
 | 3: 2 channels, as fast as possible, 15 s | 20:46:00-20:46:30 | **hung**: send_frame queue full ("venc_input_enqueue>failed" x 1586), channel 1 no output, program never ended; K230 power-cycled 20:47 | 220 mA, no peak | - |
 | after the power cycle | 20:47 | - | 217 mA (booting) | |
+| 4: 1 channel, max rate (3 in flight), 15 s | 20:50:15-20:50:30 | **84.2 fps**, 0 send failures, IDR every 149-150, latency 20 ms avg / 82 max | 270 mA (during 4-5, not split) | |
+| 5: 2 channels, max rate, 15 s | 20:50:30-20:50:46 | **41.3 + 40.7 = 82.0 fps**, latency 17-18 ms avg / 175-205 max | | |
 
 - **15 fps holds on both channels with the product settings** and the CBR keeps 500 kbit/s within 2 %; the encoder is
   cheap: +2 mA for one channel, +15 mA for two (x 4.15 V: +8 / +62 mW).
-- Run 1's latency (10 ms per frame at 1280x960) says one channel is far from the encoder's limit; the real top waits
-  for run 3 redone.
+- **Encoder top: ~83 fps at 1280x960 H.265**, shared by the channels (84 for one, 82 for two): the product's 2 x 15 =
+  30 fps is 36 % of it (2.8x margin). Runs 4-5 with the fixed venctest (logs run4/run5); bit rate scales with the
+  frame rate there because CBR is set for 15 fps.
 - The bit rate starts high (363 KB in the first second: the first IDR and CBR settling), then 22-90 KB/s.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
@@ -48,8 +51,8 @@ Console logs: [run1.log](run1.log), [run2.log](run2.log), [run3.log](run3.log) (
 | Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
 | This part's boot share | not measured yet | - | |
 | Test run time | runs 20:44:53-20:46:30 | - | setup 20:33-20:44: write, 2 builds (one failed), flash 33 s, boot |
-| encoder fps, bitrate | 2 x 15 fps at 510 kbit/s; top not measured (run 3 hung) | VPU 800 MHz | 10 ms per frame (1 channel) |
-| Current idle / during | 205 / 207 (1 ch) / 220 mA, peaks 245 (2 ch) | floor (test030) | USB-C 1 VBUS meter, D1 off; VBAT ~4.15 V |
+| encoder fps, bitrate | 2 x 15 fps at 510 kbit/s each; top 84 fps (1 ch) / 82 fps (2 ch) | VPU 800 MHz | product load = 36 % of the top |
+| Current idle / during | 205 / 207 (1 ch) / 220 mA, peaks 245 (2 ch) / 270 mA at max rate | floor (test030) | USB-C 1 VBUS meter, D1 off; VBAT ~4.15 V |
 | Power, energy per operation | 2 channels: +62 mW over idle; a 5 s two-camera clip +0.31 J (21 uAh) for the encoder alone | - | by hand |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | 47.9 / 48.5 / 47.9 C (board not read) | K230 limit (datasheet) | encoder adds no measurable heat in 20 s |
@@ -69,7 +72,7 @@ Battery current with one and two encoder channels running; energy per second of 
 - **Run 3 (max rate) hung the K230 shell** (my bug) -> `kd_mpi_venc_send_frame(..., -1)` does not block when the
   encoder's input queue is full, it fails at once ("venc_input_enqueue>failed"); the feed loop spun on it, flooded the
   console and channel 1 never produced a frame -> fix: in max mode keep at most 3 frames in flight (feed waits for the
-  drain), back off 2 ms after a failed send; redo run 3.
+  drain), back off 2 ms after a failed send; latency by pts. Redone as runs 4-5: 0 failures.
 - **"vicap: video buffer pools failed (MMZ too small?) / capture failed" during run 1** -> the agent's test hook
   tried to capture while venctest held the VB pools; not from venctest, expected while it runs.
 - **Run 2's latency (110 ms avg) is not a real figure** -> latency pairs frames by count; one dropped frame shifts all
