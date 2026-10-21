@@ -1,0 +1,40 @@
+# test037: battery brown-out below 3.10 V (cutoff, lockout, recovery)
+
+Status: **planned** (2026-10-21).
+
+Rev 1 has no hardware discharge cutoff (bug-004): the BQ24072 keeps its BAT-FET on, so the firmware is the only
+guard. The K230 reads VBAT (test022) and reports it in the WAKE ACK; the BL616 keeps it in HBN RAM; below 3.10 V
+under load it cuts the K230 at once and hibernates with only the USB wake (no RTC, no leak wake); the lockout ends
+with USB plugged and the next reading >= 3.50 V. Below that the cell, U5 (3V3_SLEEP) and the BL616 brown out.
+
+## Setup
+
+Lab supply in place of the cell (JB1, current limit 1 A, 4.2 V start), USB out; meter on VBAT (C15) and on the
+supply current. The BL616's USB console needs USB, so log through the K230 console and read the BL616's HBN RAM
+state after recovery.
+
+## Steps
+
+1. Sweep down in 50 mV steps from 3.6 V with sessions running: the reported VBAT against the meter (error, test022);
+   the cut at 3.10 V under load (the step where it fires, time to rails off).
+2. Lockout: after the cut, no RTC or leak wake for 1 h (current = sleep floor, test030); a leak on S1 stays ignored.
+3. Recovery: USB plugged at 3.3 V -> stays locked; supply raised to 3.50 V with USB -> unlocks, normal wakes resume.
+4. Below the cutoff, firmware no longer in control (supply down to 2.5, 2.0, 1.6 V): U5's output, the BL616's reset
+   (restarts cleanly or latches up), the K230 rails stay off, no NAND write in flight (test027).
+5. Slow ramp back up from 1.6 V to 3.7 V without USB: the BL616 boots once, HBN RAM lost -> cold start with no
+   lockout: does it start a session on a nearly empty cell? (expect: the first reading decides).
+6. Load dip: a session start (Wi-Fi + LEDs) at 3.15 V rest: the sag under load that trips the cut.
+
+## Pass
+
+Cut at 3.10 V +-50 mV under load, every time; lockout holds without USB; unlock only at >= 3.50 V with USB; no
+latch-up or NAND damage down to 1.6 V and back.
+
+## Boot time
+
+After a brown-out the BL616 cold-starts (HBN RAM lost): its boot to sleep, and any K230 boot it triggers.
+
+## Battery energy
+
+Lockout current (should be the sleep floor), and the charge left at the cut: the rest voltage after the cut ->
+state of charge (ENERGY.txt section 1, usable charge).

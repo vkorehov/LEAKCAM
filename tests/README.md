@@ -43,6 +43,13 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | [test028 camera buses idle](test028-camera-bus-idle/README.md) | | planned |
 | [test029 cameras: detection, capture, image](test029-camera-capture/README.md) | | placeholder: cameras not delivered |
 | [test030 sleep and minimal currents](test030-sleep-current/README.md) | | planned |
+| [test031 RTC wake](test031-rtc-wake/README.md) | | planned |
+| [test032 every BL616 pin: function, levels, back-feed](test032-bl616-pins/README.md) | | planned |
+| [test033 leak probe wake](test033-leak-probe-wake/README.md) | | planned |
+| [test034 USB plug wake](test034-usb-plug-wake/README.md) | | planned |
+| [test035 K230 hang recovery](test035-k230-hang-recovery/README.md) | | planned |
+| [test036 K230 PMU RTC](test036-k230-rtc/README.md) | | planned |
+| [test037 battery brown-out below 3.10 V](test037-battery-brownout/README.md) | | planned |
 | **High level (100+): the product's whole flow** | | |
 | [test100 Wi-Fi throughput end to end](test100-wifi-throughput/README.md) | | planned |
 | [test101 session length](test101-boot-and-session-time/README.md) | | planned |
