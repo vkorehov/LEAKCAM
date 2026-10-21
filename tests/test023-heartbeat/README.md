@@ -42,7 +42,8 @@ the power 2 s later. As designed.
 |---|---|---|---|
 | Boot, power-on -> READY (median of 5) | not measured: one boot; first heartbeat edge 0.98 s after reset release | test021: 0.88 s to app init | the agent starts ~0.1 s after app init |
 | This part's boot share | ~0 (GPIO open + one write) | - | |
-| Test run time | 35 s (setup ~15 min: firmware with pt_alive, two flash attempts) | - | |
+| Test run time | 35 s (20:04:18-20:04:53) + checks to 20:05:32 | - | |
+| Setup time | 19:52-20:04, 12 min: pt_alive written + built (13 s build) 19:52-19:57; flash 1 failed 19:57:14-19:58:14 (permissions, above); ROM re-attached 20:00:20; flash 2 (4 s) 20:02:22-20:02:26, waited for EN + console to 20:04:09 | - | the flash itself is 4 s; the rest is waiting for hands and the script bug |
 | heartbeat period and jitter | half-period 490 ms avg, 502 max | 500 ms, timeout 2 s | 98 % of the set period, 4x margin to the timeout |
 | Current idle / during | not measured: no meter reading asked (my omission); msh idle 202 mA (test022) | floor (test030) | |
 | Power, energy per operation | n/a: one GPIO write per 500 ms, below the meter's resolution | - | |
@@ -58,9 +59,10 @@ n/a: one GPIO toggling every 500 ms.
 
 ## Obstacles
 
-- **First `make flash` flashed nothing** -> `bl616_isp.py` waits only 60 s for the ROM (349b:6160) after `reboot
-  uart`; the VMware "connect" came later -> re-run with the ROM attached (the script then flashes at once).
-  Open: raise its default `--timeout`.
+- **First `make flash` flashed nothing** (19:57:14-19:58:14) -> the ROM was attached at 19:57:21 (dmesg), but
+  /dev/ttyACM0 was root:dialout and not writable; `bl616_isp.py` had spent its one-shot hint on the "waiting" line
+  and timed out silently after 60 s -> fixed: the script grants itself access (`sudo -n setfacl`) on every
+  re-enumeration, separate hints (tested with `--wait-app`).
 - **That failure looked like success** (my mistake) -> the background command was piped through `tail`, exit 0 ->
   never pipe flash/build commands; read the log.
 - **The flash looked "so long"** (my mistake) -> after the 4 s flash, `make flash` waits for the EN tap and the

@@ -13,6 +13,7 @@ A firmware that never reaches its console cannot be switched this way: BOOT + EN
 import argparse
 import glob
 import os
+import subprocess
 import sys
 import termios
 import time
@@ -35,17 +36,23 @@ def ports():
 
 
 def wait_for(ids, what, timeout):
-    t0, told = time.time(), False
+    """A new ttyACM is root:dialout 0660: grant ourselves access (sudo -n), as every re-enumeration needs.
+    2026-10-21: the ROM came up 7 s in but unwritable, and the one-shot hint had already been spent on the
+    "waiting" line, so the script timed out silently with the ROM attached."""
+    t0, told_wait, told_perm = time.time(), False, False
     while time.time() - t0 < timeout:
         p = ports().get(ids)
+        if p and not os.access(p, os.R_OK | os.W_OK):
+            subprocess.run(["sudo", "-n", "setfacl", "-m", f"u:{os.environ['USER']}:rw", p],
+                           stderr=subprocess.DEVNULL)
         if p and os.access(p, os.R_OK | os.W_OK):
             return p
-        if p and not told:
+        if p and not told_perm:
             print(f"{p} not writable: sudo setfacl -m u:$USER:rw {p}", file=sys.stderr)
-            told = True
-        if not p and not told and time.time() - t0 > 3:
+            told_perm = True
+        if not p and not told_wait and time.time() - t0 > 3:
             print(f"waiting for {what}: press 'connect to Linux' in VMware", file=sys.stderr)
-            told = True
+            told_wait = True
         time.sleep(0.2)
     sys.exit(f"bl616_isp: no {what} after {timeout} s")
 
@@ -65,7 +72,7 @@ def send(port, line):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--wait-app", action="store_true", help="wait for the firmware console instead")
-    ap.add_argument("--timeout", type=float, default=60)
+    ap.add_argument("--timeout", type=float, default=300)  # VMware "connect" clicks often take over a minute
     a = ap.parse_args()
 
     if a.wait_app:
