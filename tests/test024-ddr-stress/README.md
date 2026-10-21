@@ -1,6 +1,6 @@
 # test024: DDR stress (128 MB at 2667 MT/s)
 
-Status: **in progress** (2026-10-21): memtest built into a test image.
+Status: **in progress** (2026-10-21): first run clean, cut short at 5 min (user: longer runs later); cold starts next.
 
 SPL trains the DDR at 2667 MT/s on every boot (test006). A marginal setting shows only as rare random crashes.
 This test runs a pattern memory test over most of the free RAM for a long time.
@@ -35,13 +35,16 @@ This test runs a pattern memory test over most of the free RAM for a long time.
 | 20:17 | memtest running (pass ~20, 0 errors) | 240 mA, short peaks to 260 mA | msh idle 202 mA (test022): memtest +38 mA; the peaks are too short for the meter (pass phases, likely the uncached MMZ writes) |
 | 20:18 | memtest running | 260 mA | up from 240 mA: warming up (AHT20 37 C at 19:51) or a heavier phase; watch the trend |
 
+**Run 1 (20:14:56-20:20:01), cut short by the user after 46 passes (5 min; planned 560, ~1 h):** 46 x 109 MB x 5
+patterns, **0 errors**, no reset, 6.5 s per pass throughout. A >= 1 h run stays open for a later session.
+
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
 | Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
 | This part's boot share | not measured yet | - | |
-| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
+| Test run time | run 1: 5 min 05 s (46 passes) | - | setup: memtest written + image built 20:05-20:11, flash 20:12:41-20:13:14, boot 20:14:24-31 |
 | memtest MB/s, errors | 167 MB/s write+verify (5 patterns, MMZ uncached), 0 errors so far | DDR top 5.33 GB/s (test015) | 3 %: a checker, not a bandwidth test |
 | Current idle / during | 196 mA (rails on after flash) / 202 mA msh (test022) / 240 mA memtest, peaks 260 mA | floor (test030) | USB-C 1 VBUS meter, D1 off; VBAT ~4.15 V (full cell) |
 | Power, energy per operation | 1.0 W during memtest (240 mA x 4.15 V), +158 mW over msh idle; per pass (6.5 s) 6.5 J / 433 uAh, +1.0 J / 69 uAh over idle | - | by hand: scripts/energy.py does not exist |
