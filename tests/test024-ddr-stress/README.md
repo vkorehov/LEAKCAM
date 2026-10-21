@@ -1,6 +1,6 @@
 # test024: DDR stress (128 MB at 2667 MT/s)
 
-Status: **in progress** (2026-10-21): first run clean, cut short at 5 min (user: longer runs later); cold starts next.
+Status: **pass so far** (2026-10-21): 0 errors in 61 passes (5 min run + 5 cold starts). Open: the >= 1 h run and the run with KPU + encoder busy.
 
 SPL trains the DDR at 2667 MT/s on every boot (test006). A marginal setting shows only as rare random crashes.
 This test runs a pattern memory test over most of the free RAM for a long time.
@@ -38,12 +38,19 @@ This test runs a pattern memory test over most of the free RAM for a long time.
 **Run 1 (20:14:56-20:20:01), cut short by the user after 46 passes (5 min; planned 560, ~1 h):** 46 x 109 MB x 5
 patterns, **0 errors**, no reset, 6.5 s per pass throughout. A >= 1 h run stays open for a later session.
 
+**Cold starts (20:21-20:24):** 5 x (`pt_off`, 3 s, `pt_on`, `pt_run`: DDR retrained each time), then `boot_times` and
+`memtest 3`. Every start: 3 passes, **0 errors**, 6.5-6.6 s per pass. Boot identical every time (from reset release):
+kernel init 0.207 s, mounts done 0.870 s, app init 0.893-0.894 s. The CH340 came back by itself 5-7 s after each
+`pt_run` (no VMware click needed). Meter over the loop (boot + memtest): 205 mA average, 250 mA peak.
+
+**Pass** for the cold starts; with run 1, 61 passes x 109 MB x 5 patterns, 0 errors, no reset.
+
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
-| This part's boot share | not measured yet | - | |
+| Boot, reset release -> app init (median of 5) | 0.893 s (min 0.893, max 0.894) | test021: 0.88 s | longest step: mounts /bin + /sdcard, 0.262 -> 0.870 s (+0.61 s) |
+| This part's boot share | 0.207 s before kernel init includes SPL's DDR training (not split out) | - | |
 | Test run time | run 1: 5 min 05 s (46 passes) | - | setup: memtest written + image built 20:05-20:11, flash 20:12:41-20:13:14, boot 20:14:24-31 |
 | memtest MB/s, errors | 167 MB/s write+verify (5 patterns, MMZ uncached), 0 errors so far | DDR top 5.33 GB/s (test015) | 3 %: a checker, not a bandwidth test |
 | Current idle / during | 196 mA (rails on after flash) / 202 mA msh (test022) / 240 mA memtest, peaks 260 mA | floor (test030) | USB-C 1 VBUS meter, D1 off; VBAT ~4.15 V (full cell) |
@@ -69,4 +76,7 @@ Battery current at 2667 and 3200 MT/s under the same load: the cost of the faste
   shell takes the banner's text as a command; harmless (every boot on 2026-10-21).
 - **`scripts/energy.py` (skill leakcam-test-metrics) does not exist** -> computed by hand (P = I x VBAT, E = P x t,
   Q = I x t) -> skill note corrected.
+- **The agent's hook failed to load during memtest** (`[E/LWP] ERROR: ELF loading failed`, once per cold start) ->
+  memtest leaves only 4 MB of system RAM free; the agent starts its hook ~10 s after boot -> expected while
+  memtest runs; these are the only ERROR lines in the logs (memtest's own mismatch lines start with "ERROR pass").
 

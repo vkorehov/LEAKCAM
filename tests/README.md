@@ -36,7 +36,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | [test021 K230 boot time](test021-boot-time/README.md) | | 0.88 s to app init at NAND 80 MHz; mounts 0.59 s |
 | [test022 battery ADC](test022-battery-adc/README.md) | 2026-10-21 | pass 4.07-4.37 V: reads 1.3 % high, calibrated (full scale 5329 mV, 64-read mean); low cell and load open |
 | [test023 K230 heartbeat (K230_ALIVE)](test023-heartbeat/README.md) | 2026-10-21 | pass: 490 ms half-period (1.02 Hz), first edge 0.98 s after reset release, stops with the agent, low with rails off |
-| [test024 DDR stress](test024-ddr-stress/README.md) | | planned |
+| [test024 DDR stress](test024-ddr-stress/README.md) | 2026-10-21 | 0 errors: 109 of 128 MB, 61 passes (5 min + 5 cold starts); 1 h and loaded runs open |
 | [test025 K230 temperature](test025-temperature/README.md) | | planned |
 | [test026 H.265 encoder, synthetic frames](test026-video-encoder/README.md) | | planned |
 | [test027 NAND power loss](test027-nand-power-loss/README.md) | | planned |
@@ -78,6 +78,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | SDIO speed (synthetic, SDK echo device) | pass: 50 MHz 4-bit (max), bus writes 21.4 / reads 21.5 MB/s, end to end 9.4 MB/s; soak 109 MB, 0 errors | test014 |
 | Battery ADC (K230 ADC_1) | pass 4.07-4.37 V: +1.3 %, calibrated in the agent (full scale 5329 mV, 64-read mean); low cell open | test022 |
 | K230 heartbeat (K230_ALIVE) | pass: 490 ms half-period, stops with the agent, low with rails off | test023 |
+| DDR 2667 MT/s stability | 0 errors over 61 passes and 5 retrainings; 1 h run open | test024 |
 | Product BL616 firmware | **open**: no USB console on rev 1 (hangs before USB starts) | test014 |
 | Leak probes wet, Wi-Fi through the BL616 | not tested: needs the product BL616 firmware | |
 
