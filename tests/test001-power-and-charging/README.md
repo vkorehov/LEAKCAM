@@ -58,6 +58,7 @@ The cell's + wired straight to C11 pad 1 (BAT), the JB1 joint bypassed (see Obst
 | After ~1 h | 350 mA for a while; a replug started at 0.45 A and ramped down quickly to 350 mA | not explained |
 | Later, same charge | 0.94 A again (0.89 A + 51 mA) | so the 350 mA was not the CV taper; U1 not throttling |
 | Then | 290 mA, then 250 mA, falling (~0.20 A into the cell) | CV taper at 4.20 V |
+| BAT (C11 pad 1) at ~250 mA, 19:30 | 4.18 V (VBAT 4.37 V) | CV phase confirmed: the taper is the cell, not U1's heat |
 | End of charge | expected D1 off at ~0.09 A charge (C/10), ~0.14 A on the meter; ~1-1.5 h of charging from ~3.6 V, well inside the 6.3 h timer | open |
 
 **What the earlier charger problems were.** Every one from 2026-10-19 to 10-21 fits the JB1 cell joint, not U1 or

@@ -36,6 +36,8 @@ between reads.
 |---|---|---|
 | C15 pad 1, "VBAT" net = ADC input | 4.37 V | mean 4.430 V (+60 mV, +1.4 %), sd 52 mV, 4.340-4.507 |
 | C11 pad 1, BAT | 3.298 V (board side of the open JB1 joint; the cell read 3.69 V at its wires) | - |
+| Repeat 19:30, cell wired to C11, charging (CV): C15 | 4.37 V | 64 reads: mean 4.428 V (+58 mV), sd 49 mV, 4.345-4.509 |
+| Repeat 19:30: C11, BAT | 4.18 V | - |
 
 - **On USB, C15 is the BQ24072 output rail (~4.4 V), not the cell.** On battery the BAT-FET joins OUT to the cell, so
   the ADC reads the cell then: the only case the bug-004 cutoff needs. The firmware must not report the USB reading
