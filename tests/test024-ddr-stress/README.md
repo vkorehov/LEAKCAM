@@ -32,7 +32,7 @@ This test runs a pattern memory test over most of the free RAM for a long time.
 | 20:14:24 | NAND boot (`pt_boot1 low`, `pt_on`, `pt_run`), console 20:14:31 | - | |
 | 20:14:39 | `memtest 1`: 40 MB system RAM (4 MB left free) + 69 MB MMZ = 109 of 128 MB | - | 1 pass 6.5 s, 167 MB/s write+verify, 0 errors |
 | 20:14:56 | `memtest 560` started (~1 h) | - | |
-| 20:17 | memtest running (pass ~20, 0 errors) | 240 mA | msh idle 202 mA (test022): memtest +38 mA |
+| 20:17 | memtest running (pass ~20, 0 errors) | 240 mA, short peaks to 260 mA | msh idle 202 mA (test022): memtest +38 mA; the peaks are too short for the meter (pass phases, likely the uncached MMZ writes) |
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -42,7 +42,7 @@ This test runs a pattern memory test over most of the free RAM for a long time.
 | This part's boot share | not measured yet | - | |
 | Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
 | memtest MB/s, errors | 167 MB/s write+verify (5 patterns, MMZ uncached), 0 errors so far | DDR top 5.33 GB/s (test015) | 3 %: a checker, not a bandwidth test |
-| Current idle / during | 196 mA (rails on after flash) / 202 mA msh (test022) / 240 mA memtest | floor (test030) | USB-C 1 VBUS meter, D1 off; VBAT ~4.15 V (full cell) |
+| Current idle / during | 196 mA (rails on after flash) / 202 mA msh (test022) / 240 mA memtest, peaks 260 mA | floor (test030) | USB-C 1 VBUS meter, D1 off; VBAT ~4.15 V (full cell) |
 | Power, energy per operation | 1.0 W during memtest (240 mA x 4.15 V), +158 mW over msh idle; per pass (6.5 s) 6.5 J / 433 uAh, +1.0 J / 69 uAh over idle | - | by hand: scripts/energy.py does not exist |
 | Per day | n/a: a bench test, not in the product | - | |
 
