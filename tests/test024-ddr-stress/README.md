@@ -61,5 +61,5 @@ Battery current at 2667 and 3200 MT/s under the same load: the cost of the faste
   the console (two readers split the data), and `tr` block-buffers into a pipe -> killed both by PID, restarted the
   logger with `stdbuf -oL` (scratchpad mtlog.sh); passes 1-4 are missing from the log, the run itself is unaffected.
 - **Garbage + "U-Boot: command not found" at every boot** -> the SPL banner arrives while the agent prints, and the
-  shell takes the banner's text as a command; harmless (seen since test021).
+  shell takes the banner's text as a command; harmless (every boot on 2026-10-21).
 
