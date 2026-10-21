@@ -646,6 +646,25 @@ def main():
                         ", test022 battery ADC", {"VBAT": "= K230 ADC_1 reading (raw x 5400 / 4095)", "BAT": "the cell (VBAT on battery)"},
                         ("Red probe on the red ring, black on the black ring (GND, the cap's other pad).",
                          "USB in: VBAT ~0.1-0.2 V above BAT (charger output). USB out: VBAT = BAT."))
+    # test028 camera buses idle: per connector its 3V3, pin 17 pull-up, SCL/SDA pull-ups (on the resistors, the FPC
+    # pins are 0.5 mm pitch) and pin 18 (CAM_GPIO, no part on it: the connector pad)
+    for j, cam, (c3, r17, rscl, rsda) in (("J4", "CAM2 (J4, CSI0, IIC0)", ("C7", "R13", "R14", "R15")),
+                                          ("J5", "CAM1 (J5, CSI2, IIC4)", ("C8", "R16", "R17", "R18"))):
+        pts = [{"id": "3V3", "rail": f"{j} 3V3 (pin 22)", "pad": f"{c3}.1", "gnd": f"{c3}.2"},
+               {"id": "P17", "rail": f"{j} pin 17 pull-up", "pad": f"{r17}.1", "gnd": f"{c3}.2"},
+               {"id": "SCL", "rail": f"{j} SCL (pin 20)", "pad": f"{rscl}.1", "gnd": f"{c3}.2"},
+               {"id": "SDA", "rail": f"{j} SDA (pin 21)", "pad": f"{rsda}.1", "gnd": f"{c3}.2"},
+               {"id": "GPIO", "rail": f"{j} pin 18 CAM_GPIO", "pad": f"{j}.18", "gnd": f"{j}.19"}]
+        for side in sorted({comps[p["pad"].split(".")[0]]["side"] for p in pts}):
+            sp = [dict(p, side=side) for p in pts if comps[p["pad"].split(".")[0]]["side"] == side]
+            xs = [comps[q.split(".")[0]]["pins"][q.split(".")[1]][0] for p in sp for q in (p["pad"], p["gnd"]) if comps[q.split(".")[0]]["side"] == side]
+            ys = [comps[q.split(".")[0]]["pins"][q.split(".")[1]][1] for p in sp for q in (p["pad"], p["gnd"]) if comps[q.split(".")[0]]["side"] == side]
+            render_points_sheet(pcb, comps, sp, os.path.join(TESTS, "test028-camera-bus-idle", f"{j.lower()}_{side}.png"),
+                                (min(xs) - 4, max(xs) + 4, max(0.0, min(ys) - 4), max(ys) + 4), 55.0, f", test028 {cam}, nothing plugged in",
+                                {"3V3": "3.3 V (rails on)", "P17": "3.3 V", "SCL": "3.3 V", "SDA": "3.3 V", "GPIO": "~0 V (driven low)"},
+                                ("K230 running, no camera on the connector. GND: the black ring (capacitor or connector GND pin).",
+                                 "SCL/SDA below 3 V: a pull-up or the K230 pad holds the bus; GPIO high: the pin init did not run."),
+                                side=side)
     # charger not charging (2026-10-21): U1's input, output, cell, charge-current monitor and TS, with USB-C 1 in
     chg = [{"id": "VUSB", "rail": "VUSB (charger input)", "pad": "C2.1", "gnd": "C2.2", "side": comps["C2"]["side"]},
            {"id": "VBAT", "rail": "VBAT (charger output)", "pad": "C15.1", "gnd": "C15.2", "side": comps["C15"]["side"]},
