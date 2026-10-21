@@ -10,6 +10,9 @@
  *   pad_ds [ds [first last]]  show / set the pad drive strength (0..15) of IO14-19 (OSPI CS, CLK, D0-D3) only
  *   plt_write [files]         test027: write files 1 KB..2 MB in /sdcard/plt with fsync + commit record, forever
  *   plt_check                 test027: after a power cut, verify every committed file, free space
+ *   rtc_raw                   test036: the PMU RTC registers, raw and decoded
+ *   rtc_ppm [s]               test036: RTC ticks (32768/s) against rdtime (27 MHz) over s seconds: crystal ppm
+ *   pad_read <pin>...         test028: pad input level (IOMUX di bit) of the given pads
  *   boot_times                tests/test021: rdtime (from reset release) at the end of each init level
  *
  * Timing: rdtime, 27 MHz. Every loop sleeps 1 ms now and then (outside the timed part): the 20 s watchdog's
@@ -479,3 +482,80 @@ static int plt_check(int argc, char **argv)
     return 0;
 }
 MSH_CMD_EXPORT(plt_check, test027: verify the committed files after a power cut);
+
+/* test036: PMU RTC at 0x91000C00 (board.h RTC_BASE_ADDR): date, time, alarm date, alarm time, count, int_ctrl.
+ * count: curr_count bits 0-14 (sub-second, 32768 per second from the 32.768 kHz crystal), sum_count 16-30. */
+static volatile rt_uint32_t *rtc_regs(void)
+{
+    static volatile rt_uint32_t *r;
+    if (!r)
+        r = (volatile rt_uint32_t *)rt_ioremap((void *)RTC_BASE_ADDR, 0x20);
+    return r;
+}
+static int rtc_raw(int argc, char **argv)
+{
+    volatile rt_uint32_t *r = rtc_regs();
+    rt_uint32_t d = r[0], t = r[1], c = r[4], ic = r[5];
+    rt_kprintf("rtc_raw: date %08x time %08x alarm_date %08x alarm_time %08x count %08x int_ctrl %08x\n",
+               (unsigned)d, (unsigned)t, (unsigned)r[2], (unsigned)r[3], (unsigned)c, (unsigned)ic);
+    rt_kprintf("rtc_raw: %u%02u-%02u-%02u %02u:%02u:%02u week %u leap %u, curr_count %u sum_count %u\n",
+               (unsigned)((d >> 24) & 0x7f), (unsigned)((d >> 16) & 0x7f), (unsigned)((d >> 8) & 0xf), (unsigned)(d & 0x1f),
+               (unsigned)((t >> 16) & 0x1f), (unsigned)((t >> 8) & 0x3f), (unsigned)(t & 0x3f), (unsigned)((t >> 24) & 7),
+               (unsigned)((d >> 23) & 1), (unsigned)(c & 0x7fff), (unsigned)((c >> 16) & 0x7fff));
+    return 0;
+}
+MSH_CMD_EXPORT(rtc_raw, test036: PMU RTC registers raw and decoded);
+
+static rt_int64_t rtc_ticks(rt_uint64_t *at)     /* seconds-of-day x 32768 + curr_count, with the rdtime of the read */
+{
+    volatile rt_uint32_t *r = rtc_regs();
+    rt_uint32_t t0, c, t1;
+    do
+    {
+        t0 = r[1]; c = r[4]; *at = now(); t1 = r[1];
+    } while (t0 != t1);
+    rt_int64_t sod = ((t0 >> 16) & 0x1f) * 3600 + ((t0 >> 8) & 0x3f) * 60 + (t0 & 0x3f);
+    return sod * 32768 + (c & 0x7fff);
+}
+static int rtc_ppm(int argc, char **argv)
+{
+    int secs = argc > 1 ? atoi(argv[1]) : 10;
+    rt_uint64_t a0, a1;
+    rt_int64_t k0 = rtc_ticks(&a0), q0, q1;
+    rt_uint64_t b0;
+    q0 = rtc_ticks(&b0);                         /* direction of curr_count: two reads a few us apart */
+    for (int i = 0; i < secs * 10; i++)
+        rt_thread_mdelay(100);
+    rt_int64_t k1 = rtc_ticks(&a1);
+    q1 = k1;
+    double dt = (double)(a1 - a0) / 27000000.0, ticks = (double)(k1 - k0);
+    if (ticks < 0)
+        ticks += 86400.0 * 32768;
+    double ppm = (ticks / (dt * 32768.0) - 1.0) * 1e6;
+    rt_kprintf("rtc_ppm: %d.%03d s by rdtime, %d RTC ticks: %d ppm (32768 ticks per s = 0 ppm)%s\n",
+               (int)dt, (int)(dt * 1000) % 1000, (int)ticks, (int)(ppm + (ppm < 0 ? -0.5 : 0.5)),
+               (q0 < k0) ? " [curr_count counts down: result invalid]" : "");
+    (void)q1;
+    return 0;
+}
+MSH_CMD_EXPORT(rtc_ppm, test036: RTC crystal against rdtime [seconds]);
+
+/* test028: the pad's input level is bit 31 (di) of its IOMUX word, whatever its function */
+static int pad_read(int argc, char **argv)
+{
+    for (int i = 1; i < argc; i++)
+    {
+        int pin = atoi(argv[i]);
+        rt_uint32_t v = 0;
+        if (pin < 0 || pin > 63 || drv_fpioa_get_pin_cfg(pin, &v) != 0)
+        {
+            rt_kprintf("pad_read: IO%d ?\n", pin);
+            continue;
+        }
+        rt_kprintf("pad_read: IO%d level %u (sel %u, ie %u, oe %u, pu %u, pd %u)\n", pin, (unsigned)(v >> 31),
+                   (unsigned)((v >> 11) & 7), (unsigned)((v >> 8) & 1), (unsigned)((v >> 7) & 1), (unsigned)((v >> 6) & 1),
+                   (unsigned)((v >> 5) & 1));
+    }
+    return 0;
+}
+MSH_CMD_EXPORT(pad_read, test028: pad input levels [pins]);

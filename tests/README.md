@@ -48,7 +48,7 @@ written when it happens). Nothing is left out: an empty part says so ("Not run y
 | [test025 K230 temperature](test025-temperature/README.md) | 2026-10-21 | open board: die 48.5 C idle (board 39 C), 53.3 C after 2 min memtest; KPU/encoder/enclosure open |
 | [test026 H.265 encoder, synthetic frames](test026-video-encoder/README.md) | 2026-10-21 | pass: 2 x 15 fps at 510 kbit/s, +15 mA; top 83 fps at 1280x960; decode on PC open |
 | [test027 NAND power loss](test027-nand-power-loss/README.md) | 2026-10-21 | short run pass: 13 random cuts, 0 lost/corrupt files; 100-cut run open |
-| [test028 camera buses idle](test028-camera-bus-idle/README.md) | 2026-10-21 | partial pass: both I2C buses scan clean, no hang; pin levels by pad_read open |
+| [test028 camera buses idle](test028-camera-bus-idle/README.md) | 2026-10-21 | pass: I2C buses scan clean and idle high, CAM GPIOs low |
 | [test029 cameras: detection, capture, image](test029-camera-capture/README.md) | | placeholder: cameras not delivered |
 | [test030 sleep and minimal currents](test030-sleep-current/README.md) | | planned |
 | [test031 RTC wake](test031-rtc-wake/README.md) | | planned |
@@ -56,7 +56,7 @@ written when it happens). Nothing is left out: an empty part says so ("Not run y
 | [test033 leak probe wake](test033-leak-probe-wake/README.md) | | planned |
 | [test034 USB plug wake](test034-usb-plug-wake/README.md) | | planned |
 | [test035 K230 hang recovery](test035-k230-hang-recovery/README.md) | | planned |
-| [test036 K230 PMU RTC](test036-k230-rtc/README.md) | | planned |
+| [test036 K230 PMU RTC](test036-k230-rtc/README.md) | 2026-10-21 | step 0 pass: runs from Y1 (+25 ppm vs 27 MHz), UTC fixed; handover open |
 | [test037 battery brown-out below 3.10 V](test037-battery-brownout/README.md) | | planned |
 | **High level (100+): the product's whole flow** | | |
 | [test100 Wi-Fi throughput end to end](test100-wifi-throughput/README.md) | | planned |

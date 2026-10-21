@@ -249,6 +249,19 @@ grep -q 'k230d_leakcam.dtb' "$UB/arch/riscv/dts/Makefile" ||
         "$UB/arch/riscv/dts/Makefile"
 grep -q 'k230d_leakcam.dtb' "$UB/arch/riscv/dts/Makefile" || { echo "could not register the dtb"; exit 1; }
 
+# Time zone: RT-Thread's musl sys/time.h turns its lightweight time zone on unconditionally with a +8 h default
+# (China), so localtime()/ctime() and msh `date` read 8 h ahead of the UTC RTC. LEAKCAM runs on UTC only.
+TZC=$RTT/../../rt-thread/components/libc/compilers/musl/time.c
+grep -q 'LEAKCAM: UTC' "$TZC" || python3 - "$TZC" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = '#define RT_LIBC_TZ_DEFAULT_HOUR   (8U)\n'
+b = '#define RT_LIBC_TZ_DEFAULT_HOUR   (0U)   /* LEAKCAM: UTC */\n'
+assert s.count(a) == 1, 'musl time.c changed, cannot apply the UTC patch'
+open(p, 'w').write(s.replace(a, b))
+PY
+grep -q 'LEAKCAM: UTC' "$TZC" || { echo "UTC patch not applied"; exit 1; }
+
 # ISP tuning files: the SDK copies every ov5647-* resolution (3.3 MB) into /bin; the product runs 1280x960 only.
 # UFFS mount time follows the used pages, so the other four sets cost ~85 ms per boot (tests/test021, 2026-10-21).
 ISPMK=$SDK/src/rtsmart/mpp/userapps/src/sensor/Makefile

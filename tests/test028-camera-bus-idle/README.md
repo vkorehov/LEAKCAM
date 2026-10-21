@@ -1,6 +1,6 @@
 # test028: Camera buses and IO without cameras
 
-Status: **partial pass** (2026-10-21): both buses scan clean, no hang; pin levels by `pad_read` (next bench image).
+Status: **pass** (2026-10-21): both camera I2C buses scan clean and idle high, CAM GPIOs low; re-check with cameras (test019).
 
 Before the cameras arrive: the two camera I2C buses and the CAM_IO1 lines must be idle and not stuck.
 
@@ -30,7 +30,10 @@ Buses idle high, scans end cleanly, CAM_IO1 low, connector supplies as designed.
 |---|---|
 | `i2cdetect i2c0` (J4, CAM2) | no device, returns (no hang) |
 | `i2cdetect i2c4` (J5, CAM1) | no device, returns (no hang) |
-| SCL/SDA high, GPIO62/63 low | not measured yet: `pad_read` comes with the next bench image |
+| `pad_read 7 8` (IIC4 SCL/SDA, J5) | 1, 1 (pull-ups and 3V3 present) |
+| `pad_read 48 49` (IIC0 SCL/SDA, J4) | 1, 1 |
+| `pad_read 62 63` (CAM GPIO, pin 18) | 0, 0 with input enabled |
+| GPIO62/63 configuration at run time | ie 1, pu 1, **pd 1** (both pulls) vs the pin table's ie 0, pu 0, pd 1: something re-configures them after the pin init - to find (both pulls waste a little current) |
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -60,3 +63,5 @@ Current with the cameras powered but idle (their standby draw while the K230 run
 
 - **Meter probing at J4/J5 too hard** (0.5 mm FPC pins, J4 and J5 on opposite sides) -> pin levels read in software
   (`pad_read`, pad input bits) instead.
+- **Pin table comments had R14/R15 and R17/R18 swapped** (IIC4 = J5 = R17/R18, IIC0 = J4 = R14/R15 in the schematic)
+  -> pins.py comments corrected; function unaffected.

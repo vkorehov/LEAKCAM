@@ -26,7 +26,7 @@ PINS = {
     1:  (0, 1, 0, 0, 0, 2, 0, "BOOT1 strap (R31 10k to GND; BL616 IO27 via RBT1 forces 1 for USB boot)"),
     2:  (0, 1, 1, 0, 0, 4, 0, "GPIO2 K230_ALIVE heartbeat to BL616 IO01 (reset function is JTAG_TCK)"),
     3:  NC_IN + ("NC",), 4: NC_IN + ("NC",), 5: NC_IN + ("NC",), 6: NC_IN + ("NC",),
-    7:  (2, 1, 1, 1, 0, 7, 1, "IIC4_SCL, CAM1 (J5, CSI2), R14/R15 4.7k to 3V3"),
+    7:  (2, 1, 1, 1, 0, 7, 1, "IIC4_SCL, CAM1 (J5, CSI2), R17/R18 4.7k to 3V3"),
     8:  (2, 1, 1, 1, 0, 7, 1, "IIC4_SDA, CAM1 (J5, CSI2)"),
     10: NC_IN + ("NC",), 11: NC_IN + ("NC",), 12: NC_IN + ("NC",), 13: NC_IN + ("NC",),
     # OSPI drive 7 of 15, not Canaan's 15: the NAND traces are 12-20 mm (under 130 ps one way) with no
@@ -49,7 +49,7 @@ PINS.update({
     40: (1, 0, 1, 0, 0, 7, 1, "UART1_TXD -> BL616 GPIO22/RXD (AI_RXD, R36 pull-up)"),
     41: (1, 1, 0, 0, 0, 7, 1, "UART1_RXD <- BL616 GPIO21/TXD (AI_TXD, R34 pull-up)"),
     44: NC_IN + ("NC",), 45: NC_IN + ("NC",),
-    48: (3, 1, 1, 1, 0, 7, 1, "IIC0_SCL, CAM2 (J4, CSI0), R17/R18 4.7k to 3V3"),
+    48: (3, 1, 1, 1, 0, 7, 1, "IIC0_SCL, CAM2 (J4, CSI0), R14/R15 4.7k to 3V3"),
     49: (3, 1, 1, 1, 0, 7, 1, "IIC0_SDA, CAM2 (J4, CSI0)"),
     59: NC_IN + ("NC",),
     60: (1, 1, 1, 0, 0, 7, 1, "PWM0 -> LED_CTL1 -> U15 TPS61161 CTRL, IR chain (J2)"),

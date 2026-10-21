@@ -1,6 +1,6 @@
 # test036: K230 PMU RTC: start, set from the BL616, timekeeping
 
-Status: **planned** (2026-10-21).
+Status: **step 0 pass** (2026-10-21): RTC runs from Y1 (+25 ppm vs the 27 MHz timer), UTC fixed; handover, roll-overs, absolute ppm open.
 
 The K230's PMU RTC (Y1, 32.768 kHz, AVDD1P8_RTC on the switched 1V8 rail) restarts at every power-up; the BL616
 hands it the time in the `WAKE` reply and the K230 sets the RTC from it (DESIGN.md 5.4); NTP time goes back as
@@ -38,7 +38,19 @@ RTC within 1 s of the BL616 after every handover, Y1 within +-20 ppm, roll-overs
 
 ## Results
 
-Not run yet.
+### 2026-10-21, bench image (rtc_raw, rtc_ppm), NAND 80 MHz
+
+| Check | Result |
+|---|---|
+| Config: RT_USING_RTC / RT_USING_RTC_PMU | in the image (defconfig, rtconfig.h); `rtc driver register OK` at boot |
+| Start value | 2025-01-01 00:00:00 at power-up (reset value), counts from there: 00:00:23 at ~23 s |
+| Raw registers (`rtc_raw`) | date 14190101, time 03000017, count curr 5614 / sum 32767, int_ctrl 2 |
+| Oscillator | sub-second counter 32768 per s: **+25 ppm against the K230's 27 MHz timer** (30 s, twice, equal) -> Y1 crystal, not an RC (that would be % off) |
+| Absolute ppm | not yet: against host NTP the console latency (40 ms) gives +-330 ppm over 120 s; needs >= 20 min |
+| `date` | was 8 h ahead (RT-Thread musl light time zone, default +8 h); **install.sh patch: UTC** -> `date` = RTC |
+
+Steps 1-6 (handover from the BL616, roll-overs, 10 cold starts) still to do: the handover needs the product BL616
+firmware.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -66,4 +78,7 @@ n/a on its own (inside every K230 session); a slow RTC start would show in the b
 
 ## Obstacles
 
-None yet.
+- **msh `date` 8 h ahead of the RTC** -> RT-Thread's musl `sys/time.h` defines RT_LIBC_USING_LIGHT_TZ_DST with a +8 h
+  default (time.c) -> install.sh sets it to 0 (UTC, user rule); the RTC driver itself was UTC (timegm/gmtime).
+- **Flash chain stopped silently** -> the USB boot device came after my 4 s check (VMware click) -> wait up to 60 s
+  for 29f1:0230 before flashing.
