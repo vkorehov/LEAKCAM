@@ -52,13 +52,14 @@ named with a fix (firmware: HBN level, pins; rev 2: parts).
 
 ### 2026-10-21, through USB (user: no battery-lead cut today), test firmware with `pt_sleep`
 
-Meter in USB-C 1 VBUS (10 A range awake, mA range asleep), cell full (D1 off), K230 rails off, PR1 unplugged.
+Meter in USB-C 1 VBUS (10 A range awake, mA range asleep), cell full (D1 off), K230 rails off, **PR1 still plugged**
+(its D+/D- to the host stay connected during the sleep).
 
 | State | Current | Note |
 |---|---|---|
 | BL616 awake, K230 off | ~60 mA (earlier today: 60.5 mA) | USB PHY and console on |
 | BL616 in HBN level 0 (`pt_sleep 120`, 23:29:23) | **1.24 mA** | mostly the charger's own input current (ICC <= 1.5 mA with input present); the board's sleep share is not visible through USB |
-| RTC wake after 120 s | **did not happen**: still 1.24 mA at 23:32+, console not back | see Obstacles; EN tap to recover |
+| RTC wake after 120 s | **did not happen**: still 1.24 mA at 23:32+ (awake would be ~60 mA), console not back | see Obstacles; EN tap to recover |
 
 The battery figure (charger <= 6.5 uA IBAT(PDWN) + board) needs the meter in the cell lead: still to do.
 
