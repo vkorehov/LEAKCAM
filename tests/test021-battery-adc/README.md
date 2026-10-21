@@ -1,4 +1,4 @@
-# test022: Battery ADC (K230 ADC_1, VBAT/3)
+# test021: Battery ADC (K230 ADC_1, VBAT/3)
 
 Status: **planned** (2026-10-21).
 

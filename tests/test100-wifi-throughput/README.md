@@ -1,4 +1,4 @@
-# test018: Wi-Fi throughput, K230 -> SDIO -> BL616 -> AP
+# test100: Wi-Fi throughput, K230 -> SDIO -> BL616 -> AP
 
 Status: **planned** (2026-10-21).
 

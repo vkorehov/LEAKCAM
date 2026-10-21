@@ -1,4 +1,4 @@
-# test019: K230 USB-C 1: USB boot and flashing speed
+# test018: K230 USB-C 1: USB boot and flashing speed
 
 Status: **planned** (2026-10-21).
 

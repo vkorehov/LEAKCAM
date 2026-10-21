@@ -1,4 +1,4 @@
-# test031: cameras: detection, capture, image
+# test028: cameras: detection, capture, image
 
 Status: **placeholder** (2026-10-21): the cameras are not delivered yet (two OV5647 with 222 degree M12 fisheye
 lenses, EXTERNAL_PARTS.md; Arducam B0370 format on J4/CSI0 and J5/CSI2).
@@ -9,8 +9,8 @@ lenses, EXTERNAL_PARTS.md; Arducam B0370 format on J4/CSI0 and J5/CSI2).
 2. Capture: both at 1280x960 binned (DESIGN.md), single frames and continuous, VICAP offline mode; frames saved to
    /sdcard and checked on the PC.
 3. Image: focus of the fisheye lens in the holder (lens raise per the enclosure), exposure in daylight and dark,
-   white LEDs and IR LEDs on (test008 drivers), IR-cut behaviour, CAM_IO1 LED off (test030).
+   white LEDs and IR LEDs on (test008 drivers), IR-cut behaviour, CAM_IO1 LED off (test027).
 4. The full field of view: both cameras together cover the sphere (memory: 360 view is a hard requirement).
 5. In the enclosure: lens openings clear, LED light not leaking into the lenses.
 
-Speed (frame rate, I2C clock) is test020; the encoder with real frames test026; the whole leak path test032.
+Speed (frame rate, I2C clock) is test019; the encoder with real frames test025; the whole leak path test103.

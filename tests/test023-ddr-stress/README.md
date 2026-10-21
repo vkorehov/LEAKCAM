@@ -1,4 +1,4 @@
-# test024: DDR stress (64 MB at 2667 MT/s)
+# test023: DDR stress (64 MB at 2667 MT/s)
 
 Status: **planned** (2026-10-21).
 

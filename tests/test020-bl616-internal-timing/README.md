@@ -1,4 +1,4 @@
-# test021: BL616: wake latency, flash storage, sensor reads
+# test020: BL616: wake latency, flash storage, sensor reads
 
 Status: **planned** (2026-10-21).
 
