@@ -429,6 +429,25 @@ static int cmd_session(int argc, char **argv)
     return 0;
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_session, session, start a K230 session on USB power (debug builds));
+
+/* bench (debug builds): store Wi-Fi credentials without the phone (no check, as BLE's "save without
+ * checking"); release builds take them only over BLE */
+static int cmd_wifi_set(int argc, char **argv)
+{
+    if (argc < 2 || argc > 3) {
+        printf("usage: wifi_set <ssid> [password]\r\n");
+        return 0;
+    }
+    storage_init();
+    const char *k = argc > 2 ? argv[2] : "";
+    if (ef_set_env_blob("wifi_ssid", argv[1], strlen(argv[1])) != EF_NO_ERR ||
+        ef_set_env_blob("wifi_psk", k, strlen(k)) != EF_NO_ERR)
+        printf("wifi_set: storing failed\r\n");
+    else
+        printf("wifi_set: stored \"%s\" (%u character password)\r\n", argv[1], (unsigned)strlen(k));
+    return 0;
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_wifi_set, wifi_set, store Wi-Fi credentials (debug builds): ssid [password]);
 #endif
 
 static void usb_mode(uint32_t pf, bool first_boot)

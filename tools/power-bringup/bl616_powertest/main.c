@@ -49,6 +49,12 @@
 #if PT_TEST_LEAK
 #include "bflb_adc.h"
 #endif
+#if PT_TEST_SDU
+#include "bflb_sdio2.h"
+#include "bflb_l1c.h"
+#include "bl616_glb.h"
+static void sdu_stop(void);
+#endif
 
 #define PIN_BOOT1_FORCE   GPIO_PIN_27              /* IO27 -> RBT1 10k -> K230 BOOT1: driven low (NAND boot) */
 
@@ -344,6 +350,9 @@ static int cmd_on(int argc, char **argv)
 static int cmd_off(int argc, char **argv)
 {
     uint32_t t;
+#if PT_TEST_SDU
+    sdu_stop();                     /* the SDIO pads first: nothing may drive into the dropping 3V3 */
+#endif
     LOCKED(t = rails_off_timed());
     if (t == 0)
         printf("FAIL: 3V3 still up 1 s after K230_PWR went low: something else feeds it.\r\n");
@@ -558,6 +567,110 @@ static int cmd_sdio(int argc, char **argv)
     return 0;
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_sdio, pt_sdio, SDIO wiring: watch [s] | drive <hex> | park);
+#endif
+
+#if PT_TEST_SDU
+/* ---------------------------------------------------------- SDIO device echo ---- */
+/* The SDK's sdio2_test as a command, for the K230 bus speed test (tests/test014): four 2 KB download
+ * buffers; every block the K230 writes comes back on the upload ports (length from its first 4 bytes,
+ * tag + length as in the message router header). bflb_sdio2_init() sets what the K230 driver checks at
+ * attach (application running, packed read lengths, buffer size, port pointers). */
+#define SDU_BUF 2048
+static struct bflb_device_s *sdu;
+static bool sdu_on;
+static volatile uint32_t sdu_dnld, sdu_upld, sdu_crc, sdu_abort, sdu_other, sdu_resets;
+static volatile uint64_t sdu_bytes;
+static uint8_t sdu_buf[SDIO2_MAX_PORT_NUM][SDU_BUF] __attribute__((aligned(64)));
+
+static void sdu_arm(void)
+{
+    bflb_sdio2_init(sdu, SDU_BUF);
+    for (unsigned i = 0; i < SDIO2_MAX_PORT_NUM; i++) {
+        bflb_sdio2_trans_desc_t d = { .buff = sdu_buf[i], .buff_len = SDU_BUF, .user_arg = NULL };
+        bflb_l1c_dcache_invalidate_range(sdu_buf[i], SDU_BUF);
+        bflb_sdio2_dnld_port_push(sdu, &d);
+    }
+}
+
+static void sdu_irq(void *arg, uint32_t ev, bflb_sdio2_trans_desc_t *d)
+{
+    (void)arg;
+    switch (ev) {
+    case SDIO2_IRQ_EVENT_DNLD_CPL: {
+        sdu_dnld++;
+        bflb_l1c_dcache_invalidate_range(d->buff, d->data_len);
+        const uint16_t *h = (const uint16_t *)d->buff;         /* tag, length (bytes after the 4) */
+        uint32_t n = (uint32_t)h[1] + 4u;
+        d->data_len = n > SDU_BUF ? SDU_BUF : n;
+        sdu_bytes += d->data_len;
+        bflb_sdio2_upld_port_push(sdu, d);
+        break;
+    }
+    case SDIO2_IRQ_EVENT_UPLD_CPL:
+        sdu_upld++;
+        d->buff_len = SDU_BUF;
+        bflb_sdio2_dnld_port_push(sdu, d);
+        break;
+    case SDIO2_IRQ_EVENT_SOFT_RESET:                          /* the K230's card detection resets the SDU */
+        sdu_resets++;
+        bflb_sdio2_deinit(sdu);
+        sdu_arm();
+        break;
+    case SDIO2_IRQ_EVENT_ERR_CRC:
+        sdu_crc++;
+        break;
+    case SDIO2_IRQ_EVENT_ERR_ABORT:
+        sdu_abort++;
+        break;
+    default:
+        sdu_other++;
+        break;
+    }
+}
+
+static void sdu_stop(void)
+{
+    if (!sdu_on)
+        return;
+    bflb_sdio2_deinit(sdu);
+    sdio_park();
+    sdu_on = false;
+}
+
+static int cmd_sdu(int argc, char **argv)
+{
+    if (argc >= 2 && strcmp(argv[1], "on") == 0) {
+        if (!rails_on) {
+            printf("K230 rails off: pt_on first (the SDIO pads are pulled up to its 3V3)\r\n");
+            return 0;
+        }
+        if (!sdu_on) {
+            GLB_PER_Clock_UnGate(GLB_AHB_CLOCK_USB20_SDU);
+            sdu = bflb_device_get_by_name("sdio2");
+            static const uint8_t pins[] = { PIN_SD_D2, PIN_SD_D3, PIN_SD_CMD, PIN_SD_CLK, PIN_SD_D0, PIN_SD_D1 };
+            for (unsigned i = 0; i < sizeof(pins); i++)       /* as the product: SDU function, pull-up, drive 0 */
+                bflb_gpio_init(gpio, pins[i], GPIO_FUNC_SDU | GPIO_ALTERNATE | GPIO_PULLUP | GPIO_SMT_EN | GPIO_DRV_0);
+            sdu_dnld = sdu_upld = sdu_crc = sdu_abort = sdu_other = sdu_resets = 0;
+            sdu_bytes = 0;
+            sdu_arm();
+            bflb_sdio2_irq_attach(sdu, sdu_irq, NULL);
+            sdu_on = true;
+        }
+        printf("SDIO device on: echo, %u ports x %u B (now pt_run; the K230 attaches it as the BL616)\r\n",
+               (unsigned)SDIO2_MAX_PORT_NUM, (unsigned)SDU_BUF);
+        return 0;
+    }
+    if (argc >= 2 && strcmp(argv[1], "off") == 0) {
+        sdu_stop();
+        printf("SDIO device off, pads parked\r\n");
+        return 0;
+    }
+    printf("SDIO device %s: %lu blocks in, %lu out, %lu KB echoed; CRC errors %lu, aborts %lu, other %lu, resets %lu\r\n",
+           sdu_on ? "on" : "off", (unsigned long)sdu_dnld, (unsigned long)sdu_upld, (unsigned long)(sdu_bytes / 1024),
+           (unsigned long)sdu_crc, (unsigned long)sdu_abort, (unsigned long)sdu_other, (unsigned long)sdu_resets);
+    return 0;
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_sdu, pt_sdu, SDIO device echo for the bus speed test: on | off | (stat));
 #endif
 
 /* ---------------------------------------------------------------- tasks ---- */
