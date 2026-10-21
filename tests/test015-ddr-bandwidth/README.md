@@ -17,6 +17,18 @@ camera pipeline can do at once.
 Recorded MB/s per case; the drop under concurrent load; no errors (compare with test024's stress).
 
 
+## Metrics (to fill on every run: skill leakcam-test-metrics)
+
+| Metric | Value | Top / budget | Note |
+|---|---|---|---|
+| Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
+| This part's boot share | not measured yet | - | |
+| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
+| DDR write / read / copy; CPU clock | not measured yet | LPDDR4 2667 MT/s x 16 bit = 5.3 GB/s peak; CPU 1.6 GHz | % of the top |
+| Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Power, energy per operation | not measured yet | - | scripts/energy.py |
+| Per day | not measured yet | ENERGY.txt line | n per day |
+
 ## Boot time
 
 The DDR clock's effect on boot: training time at 2667 vs 3200 MT/s (SPL), from test021's timestamps.

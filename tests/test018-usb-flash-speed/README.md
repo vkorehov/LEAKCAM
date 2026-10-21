@@ -16,6 +16,18 @@ flash path achieves, and its total time, as a reference for production programmi
 Figures recorded (K230 writes 3.7-5.5 MB/s seen 2026-10-21); a production flash time per board.
 
 
+## Metrics (to fill on every run: skill leakcam-test-metrics)
+
+| Metric | Value | Top / budget | Note |
+|---|---|---|---|
+| Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
+| This part's boot share | not measured yet | - | |
+| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
+| USB NAND flashing write speed | not measured yet | NAND program limit (test016) | % of the top |
+| Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Power, energy per operation | not measured yet | - | scripts/energy.py |
+| Per day | not measured yet | ENERGY.txt line | n per day |
+
 ## Boot time
 
 n/a: flashing.

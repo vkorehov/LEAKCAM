@@ -21,6 +21,18 @@ hands it the time in the `WAKE` reply and the K230 sets the RTC from it (DESIGN.
 
 RTC within 1 s of the BL616 after every handover, Y1 within +-20 ppm, roll-overs correct, 10/10 cold starts.
 
+## Metrics (to fill on every run: skill leakcam-test-metrics)
+
+| Metric | Value | Top / budget | Note |
+|---|---|---|---|
+| Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
+| This part's boot share | not measured yet | - | |
+| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
+| RTC offset after handover, Y1 ppm | not measured yet | <= 1 s, +-20 ppm | % of the top |
+| Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Power, energy per operation | not measured yet | - | scripts/energy.py |
+| Per day | not measured yet | ENERGY.txt line | n per day |
+
 ## Boot time
 
 PMU wake + RTC driver register, and the handover to the first valid read: part of test021's breakdown.

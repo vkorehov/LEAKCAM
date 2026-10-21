@@ -16,6 +16,18 @@ lenses, EXTERNAL_PARTS.md; Arducam B0370 format on J4/CSI0 and J5/CSI2).
 Speed (frame rate, I2C clock) is test019; the encoder with real frames test026; the whole leak path test103.
 
 
+## Metrics (to fill on every run: skill leakcam-test-metrics)
+
+| Metric | Value | Top / budget | Note |
+|---|---|---|---|
+| Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
+| This part's boot share | not measured yet | - | |
+| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
+| capture fps, resolution | not measured yet | 1280x960 binned, 45 fps | % of the top |
+| Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Power, energy per operation | not measured yet | - | scripts/energy.py |
+| Per day | not measured yet | ENERGY.txt line | n per day |
+
 ## Boot time
 
 Sensor init to first frame, both cameras (adds to every session that captures).

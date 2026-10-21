@@ -16,6 +16,18 @@ After the cameras arrive (OV5647 on CSI0 / CSI2, I2C0 / I2C4).
 Both cameras at the design rate with no dropped frames for 10 min; I2C clean at the configured clock.
 
 
+## Metrics (to fill on every run: skill leakcam-test-metrics)
+
+| Metric | Value | Top / budget | Note |
+|---|---|---|---|
+| Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
+| This part's boot share | not measured yet | - | |
+| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
+| CSI lane rate, I2C clock | not measured yet | OV5647 2-lane, I2C 400 kHz | % of the top |
+| Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Power, energy per operation | not measured yet | - | scripts/energy.py |
+| Per day | not measured yet | ENERGY.txt line | n per day |
+
 ## Boot time
 
 Sensor probe and init time at boot, both sensors (without cameras the probes fail: their timeout is in today's boot).

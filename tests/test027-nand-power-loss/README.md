@@ -17,6 +17,18 @@ can cut the rails. UFFS is log-structured; this proves it on rev 1.
 100 random power cuts: every mount succeeds, no fsynced file lost or corrupt, no space leak.
 
 
+## Metrics (to fill on every run: skill leakcam-test-metrics)
+
+| Metric | Value | Top / budget | Note |
+|---|---|---|---|
+| Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
+| This part's boot share | not measured yet | - | |
+| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
+| recovery time after power loss | not measured yet | - | % of the top |
+| Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Power, energy per operation | not measured yet | - | scripts/energy.py |
+| Per day | not measured yet | ENERGY.txt line | n per day |
+
 ## Boot time
 
 Mount time after an unclean power cut (UFFS recovery may scan more) vs a clean mount.

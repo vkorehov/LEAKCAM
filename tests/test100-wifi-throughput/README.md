@@ -19,6 +19,18 @@ limit) to the BL616's 2.4 GHz radio. Needs the product BL616 firmware (open on r
 TCP up >= 2 x the two streams' rate with margin at the install distance; no RTMP drops; figures recorded.
 
 
+## Metrics (to fill on every run: skill leakcam-test-metrics)
+
+| Metric | Value | Top / budget | Note |
+|---|---|---|---|
+| Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
+| This part's boot share | not measured yet | - | |
+| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
+| Wi-Fi TCP up / down | not measured yet | 802.11ax 20 MHz; SDIO 9.4 MB/s end to end | % of the top |
+| Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Power, energy per operation | not measured yet | - | scripts/energy.py |
+| Per day | not measured yet | ENERGY.txt line | n per day |
+
 ## Boot time
 
 Time from the WIFI request to associated, DHCP and NTP (paid in every networked session after the boot).

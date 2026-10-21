@@ -19,6 +19,18 @@ ACOMP1 wakes the BL616 from hibernate on that edge. The product's first job.
 
 Wet detected at every water type the product must see, dry never woken falsely in 24 h; wake latency recorded.
 
+## Metrics (to fill on every run: skill leakcam-test-metrics)
+
+| Metric | Value | Top / budget | Note |
+|---|---|---|---|
+| Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
+| This part's boot share | not measured yet | - | |
+| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
+| wake latency on wet | not measured yet | - | % of the top |
+| Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Power, energy per operation | not measured yet | - | scripts/energy.py |
+| Per day | not measured yet | ENERGY.txt line | n per day |
+
 ## Boot time
 
 HBN wake on a leak to the K230's power-on (with test020): the first part of the leak-to-video time.

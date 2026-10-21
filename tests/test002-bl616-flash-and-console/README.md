@@ -35,3 +35,15 @@ n/a: flashing and the console run from USB power.
   mode afterwards: `BLFlashCommand --reset` logs "Reset cpu" but the chip does not restart -> one EN tap starts the
   new image (banner build time changed, `pt_status` normal); the HBN user-boot flag does not bring the ROM back.
   Flashing: no BOOT link, one EN tap (was link + two taps).
+
+## Metrics (2026-10-21, ISP flash of bl616_powertest)
+
+| Metric | Value | Top / budget | Note |
+|---|---|---|---|
+| Boot, power-on -> READY | n/a | - | no K230 |
+| This part's boot share | EN tap -> console on USB ~5 s | - | includes the VMware re-attach |
+| Test run time | `make flash` 26 s (ISP 1 s, flasher 3.8 s, the rest the container + waits) | - | setup: 2 "connect to Linux" clicks + 1 EN tap |
+| Flash write | 116.6 KB in 571 ms = 204 KB/s | UART 2 Mbaud = 200 KB/s | ~100 % (the ROM link is the limit) |
+| Current idle / during (min / avg / peak) | not measured: meter not connected | - | on USB (not battery) |
+| Power, energy per operation | n/a | - | flashing only on USB power |
+| Per day | n/a | - | |

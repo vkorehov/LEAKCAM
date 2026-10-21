@@ -30,6 +30,18 @@ state after recovery.
 Cut at 3.10 V +-50 mV under load, every time; lockout holds without USB; unlock only at >= 3.50 V with USB; no
 latch-up or NAND damage down to 1.6 V and back.
 
+## Metrics (to fill on every run: skill leakcam-test-metrics)
+
+| Metric | Value | Top / budget | Note |
+|---|---|---|---|
+| Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
+| This part's boot share | not measured yet | - | |
+| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
+| cut-off voltage vs set 3.10 V, time to rails off | not measured yet | +-50 mV | % of the top |
+| Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Power, energy per operation | not measured yet | - | scripts/energy.py |
+| Per day | not measured yet | ENERGY.txt line | n per day |
+
 ## Boot time
 
 After a brown-out the BL616 cold-starts (HBN RAM lost): its boot to sleep, and any K230 boot it triggers.

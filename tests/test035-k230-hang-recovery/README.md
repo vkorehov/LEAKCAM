@@ -17,6 +17,18 @@ the battery in hours.
 
 Every hang ends in rails off within its timeout, no session runs on; retries and back-off as designed.
 
+## Metrics (to fill on every run: skill leakcam-test-metrics)
+
+| Metric | Value | Top / budget | Note |
+|---|---|---|---|
+| Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
+| This part's boot share | not measured yet | - | |
+| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
+| time to rails off after a hang | not measured yet | 2 s heartbeat, boot timeout | % of the top |
+| Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Power, energy per operation | not measured yet | - | scripts/energy.py |
+| Per day | not measured yet | ENERGY.txt line | n per day |
+
 ## Boot time
 
 The boot timeout should follow test021's measured boot (e.g. 3 x the median) instead of 90 s.

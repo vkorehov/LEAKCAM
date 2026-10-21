@@ -17,6 +17,18 @@ session when the edges stop for 2 s. Without it a product session never ends (or
 Edges at 1 Hz +-10 % while the agent runs, none after it stops; low with the rails off.
 
 
+## Metrics (to fill on every run: skill leakcam-test-metrics)
+
+| Metric | Value | Top / budget | Note |
+|---|---|---|---|
+| Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
+| This part's boot share | not measured yet | - | |
+| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
+| heartbeat period and jitter | not measured yet | 500 ms, timeout 2 s | % of the top |
+| Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Power, energy per operation | not measured yet | - | scripts/energy.py |
+| Per day | not measured yet | ENERGY.txt line | n per day |
+
 ## Boot time
 
 Time from RT-Smart to the first heartbeat edge (the agent's start).
