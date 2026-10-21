@@ -1,6 +1,6 @@
 # test022: Battery ADC (K230 ADC_1, VBAT/3)
 
-Status: **in progress** (2026-10-21): USB and full-cell battery case measured; a low-cell point and a loaded case open.
+Status: **in progress** (2026-10-21): USB and battery case 4.07-4.12 V measured (pass, -55 mV); back on USB at 19:41. Open: a low-cell point (~3.4 V) and a loaded case.
 
 K230 ADC_1 (ball A6) reads VBAT through R59 200 k / R61 100 k, switched by Q1 from the K230's 3V3 (readable only
 while the K230 runs). The agent converts raw x 1800 mV x 3 / 4095 (12-bit, 1.8 V reference). The bug-004 rev 1
