@@ -8,8 +8,8 @@ show in the low-level tests (user, 2026-10-21).
 
 ## Steps
 
-1. Sleep current: board on battery only, BL616 hibernating (product firmware), meter in the battery lead on a
-   uA range (with a burden-free meter or a shunt and averaging: the humidity slices are short peaks).
+1. Sleep current: from test030 (low level, BL616 HBN with the test firmware); here only checked with the product
+   firmware's real sleep.
 2. Energy per humidity slice: the current over the ~85 ms wake, integrated (scope over a shunt).
 3. Energy per K230 report session: current over the whole session (test101 timing, test102 current), boot part
    separate (test021).

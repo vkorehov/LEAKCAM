@@ -42,6 +42,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | [test027 NAND power loss](test027-nand-power-loss/README.md) | | planned |
 | [test028 camera buses idle](test028-camera-bus-idle/README.md) | | planned |
 | [test029 cameras: detection, capture, image](test029-camera-capture/README.md) | | placeholder: cameras not delivered |
+| [test030 sleep current](test030-sleep-current/README.md) | | planned |
 | **High level (100+): the product's whole flow** | | |
 | [test100 Wi-Fi throughput end to end](test100-wifi-throughput/README.md) | | planned |
 | [test101 session length](test101-boot-and-session-time/README.md) | | planned |

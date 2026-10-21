@@ -21,13 +21,13 @@ Keep this file current when a test or a change moves a figure. The audit that cl
 
   Consumer                                  Current        Source
   ----------------------------------------  -------------  ----------------------------------------------
-  BL616 in HBN level 0                       "a few uA"     [d] (DESIGN.md); to measure: test102
+  BL616 in HBN level 0                       "a few uA"     [d] (DESIGN.md); to measure: test030
   U5 TPS63802 (3V3_SLEEP), quiescent          ~11 uA        [d] TPS63802 datasheet
   Leak probe divider R71/R72 1 M + 1 M        1.65 uA       [d] 3.3 V / 2 M
   AHT20 asleep                                ~0.25 uA      [d]
   BQ24072 battery drain, no input             < 1 uA        [d]
   PGOOD pull-up R23 (no USB: open drain off)  0             [d]
-  Total sleep                                 ~15-20 uA     [e] -> about 11-15 mAh/month
+  Total sleep                                 ~15-20 uA     [e] -> about 11-15 mAh/month; measured by test030
 
 
 3. Wakes
@@ -50,7 +50,7 @@ Keep this file current when a test or a change moves a figure. The audit that cl
 
   Item                       Per day                      Per month        Source
   -------------------------  ---------------------------  ---------------  ---------------------------------
-  Sleep                      ~0.4 mAh                     ~12 mAh          [e]
+  Sleep                      ~0.4 mAh                     ~12 mAh          [e] test030
   Humidity slices            144 x ?                      ?                test020 / test102
   Report sessions            4 x ? (boot + work)          ?                test021, test101, test102
   Self-discharge             -                            ~25 mAh / cell   [d]
