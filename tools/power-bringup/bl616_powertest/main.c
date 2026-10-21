@@ -9,6 +9,8 @@
  *                          discharge timed; pt_run releases the reset (a blank NAND then makes the
  *                          K230 ROM enumerate on USB-C 1 as 29f1:0230), pt_hold holds it again,
  *                          pt_cycle [n] power-cycles n times.
+ *        pt_alive [s]      K230_ALIVE heartbeat (IO01) for s seconds (default 10): edges, half-period
+ *                          min/avg/max, and the first edge's time after pt_run.
  *        What the BL616 sees of the rails: the switched 3V3 through the 10 k pull-ups on the SDIO
  *        lines, read as inputs only. 0V8 is implied (U8 is enabled by U6's power-good); 1V8 and
  *        1V1 are not visible: measure them (power_check.py) or use pt_run.
@@ -77,6 +79,8 @@ static const char *const boot1_name[] = { "low (NAND boot)", "HIGH (ROM tries SD
 static const uint8_t sense_pins[] = { PIN_SD_D0, PIN_SD_D1, PIN_SD_D2, PIN_SD_D3, PIN_SD_CMD };
 #define SENSE_ALL ((unsigned)sizeof(sense_pins))
 #define SENSE_UP  (SENSE_ALL - 1)                  /* one line may be held by the K230 pad itself */
+
+static uint64_t run_us;                            /* when pt_run released the reset */
 
 static void reset_hold(bool held)
 {
@@ -369,6 +373,7 @@ static int cmd_run(int argc, char **argv)
         return 0;
     }
     reset_hold(false);
+    run_us = bflb_mtimer_get_time_us();
     printf("K230 reset released. With a blank NAND its ROM enumerates on USB-C 1 within ~2 s:\r\n"
            "  lsusb | grep 29f1:0230      (Windows: Device Manager, 'K230 USB Boot Device')\r\n"
            "That proves 0V8, 1V1, 1V8 and 3V3 together. pt_hold puts it back in reset.\r\n");
@@ -407,11 +412,42 @@ static int cmd_cycle(int argc, char **argv)
            (unsigned long)(dn_max / 1000));
     return 0;
 }
+/* K230_ALIVE: the agent toggles it every 500 ms; the product BL616 ends a session 2 s after the
+ * last edge. Busy-polled like pt_sdio watch: the shell is blocked for the watch */
+static int cmd_alive(int argc, char **argv)
+{
+    uint32_t secs = argc > 1 ? (uint32_t)atoi(argv[1]) : 10, edges = 0;
+    uint64_t t0 = bflb_mtimer_get_time_us(), last_edge = 0, first_edge = 0;
+    uint32_t h_min = UINT32_MAX, h_max = 0;
+    bool v = bflb_gpio_read(gpio, PIN_K230_ALIVE);
+    printf("watching K230_ALIVE for %lu s, now %s\r\n", (unsigned long)secs, v ? "high" : "low");
+    while (bflb_mtimer_get_time_us() - t0 < (uint64_t)secs * 1000000u) {
+        bool n = bflb_gpio_read(gpio, PIN_K230_ALIVE);
+        if (n == v)
+            continue;
+        uint64_t now = bflb_mtimer_get_time_us();
+        if (edges++ == 0)
+            first_edge = now;
+        else {
+            uint32_t h = (uint32_t)(now - last_edge);
+            h_min = h < h_min ? h : h_min, h_max = h > h_max ? h : h_max;
+        }
+        last_edge = now, v = n;
+    }
+    printf("  edges %lu, now %s\r\n", (unsigned long)edges, v ? "high" : "low");
+    if (edges >= 2)
+        printf("  half-period min %lu / avg %lu / max %lu ms (agent: 500)\r\n", (unsigned long)(h_min / 1000),
+               (unsigned long)((last_edge - first_edge) / (edges - 1) / 1000), (unsigned long)(h_max / 1000));
+    if (edges && run_us && first_edge > run_us)
+        printf("  first edge %lu ms after pt_run\r\n", (unsigned long)((first_edge - run_us) / 1000));
+    return 0;
+}
 SHELL_CMD_EXPORT_ALIAS(cmd_on, pt_on, K230 rails on (reset held) and time the 3V3 ramp);
 SHELL_CMD_EXPORT_ALIAS(cmd_off, pt_off, K230 rails off and time the discharge);
 SHELL_CMD_EXPORT_ALIAS(cmd_run, pt_run, release K230 reset: blank NAND enumerates as 29f1:0230);
 SHELL_CMD_EXPORT_ALIAS(cmd_hold, pt_hold, hold the K230 in reset);
 SHELL_CMD_EXPORT_ALIAS(cmd_cycle, pt_cycle, n power cycles with timing (default 10));
+SHELL_CMD_EXPORT_ALIAS(cmd_alive, pt_alive, K230_ALIVE heartbeat for s seconds (default 10));
 #endif
 
 #if PT_TEST_UART
