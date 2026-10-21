@@ -22,6 +22,9 @@ learned that day:
 - **Check the mA fuse** of a borrowed meter: one with a burned fuse read nothing useful; shorting its leads "fixed"
   the board. Readings from before the swap are void.
 - **Only one cable may carry power**: both USB-C ports feed VUSB, so with two plugged in the meter reads a share.
+- **Meter in after the port is up**: plug USB-C 1 with the meter leads shorted, wait until the board runs (D1 solid
+  if charging), then open the short. With the meter in line at plug-in, the voltage sags at the port's switch-on
+  and the charger's ~1 A start, and the charger only blinks D1 (no VIN-DPM in ILIM mode, bugs/v2.txt 9).
 - "LEAd" on the GD118B = the red lead's jack does not match the function; it has auto power-off (APO) - disable it
   (key at switch-on, see the manual) for long runs.
 
