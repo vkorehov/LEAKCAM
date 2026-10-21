@@ -47,8 +47,8 @@ Keep this file current when a test or a change moves a figure. The audit that cl
   Measured board currents (2026-10-21, USB-C 1 VBUS only, cell full; tests 015/016/021):
     rails off, BL616 awake on USB 60.5 mA | rails on, K230 in reset 86.3 | ROM in USB boot 182 | boot peak ~227
     msh idle 204-206 | DDR bench peak 270 | NAND read 225 (50 MHz), 232 (80 MHz) | NAND program/erase 235
-  K230 boot, reset release -> app init: 0.88 s at NAND 80 MHz (1.00 s at 50; UFFS mounts 0.59 s): ~0.72 J, 53 uAh
-  per wake [m test021]
+  K230 boot, reset release -> app init: 0.66 s with /sdcard 32 MiB and NAND 80 MHz (0.88 s with 176 MiB, 1.00 s at
+  50 MHz; UFFS mounts 0.37 s): ~0.54 J, 40 uAh per wake [m test021]
 
   The K230 session is the big item: its boot (power-on to READY, estimated 1-3.5 s on 2026-10-21, not measured)
   is paid on every wake, so boot time is battery life (test021: measure, then shorten).
@@ -61,7 +61,7 @@ Keep this file current when a test or a change moves a figure. The audit that cl
   -------------------------  ---------------------------  ---------------  ---------------------------------
   Sleep                      ~0.4 mAh                     ~12 mAh          [e] test030
   Humidity slices            144 x ?                      ?                test020 / test102
-  Report sessions            4 x (53 uAh boot to app      ?                test021, test101, test102
+  Report sessions            4 x (40 uAh boot to app      ?                test021, test101, test102
                              init + work ?)
   Self-discharge             -                            ~25 mAh / cell   [d]
   Total, battery life        ?                            ?                test104
