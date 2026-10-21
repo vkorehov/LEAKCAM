@@ -73,3 +73,8 @@ n/a for the reading itself (Q1 switches the divider only while the K230 runs: ~1
   the charger does not see the cell (test001: D1 flashing then off = battery detection, no cell), so nothing backs
   up VBUS -> open: check JB1 / the cell's own voltage and protection; until then every VBUS interruption resets the
   board.
+- **Likely cause of the empty cell** -> while the first ammeter's mA fuse was burned (2026-10-21 ~14:42-15:00) its
+  path was open and the board ran from the cell with the K230 at ~200 mA; rev 1 has no discharge cutoff (bug-004)
+  and the test firmware no workaround, so the cell was drained until its protection opened -> bench charge (50 mA
+  pre-charge below 3.0 V, then CC/CV 4.20 V, 0.2-0.3 A, stop at ~20 mA), then the battery case of this test.
+

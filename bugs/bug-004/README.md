@@ -37,3 +37,10 @@ Recharging from there is slow or fails: below VBAT(SC) 1.6-2.0 V the charger sou
 ## Status
 
 Open on rev 1: firmware workaround to write. Rev 2: divider in the schematic.
+
+## Seen in bring-up (2026-10-21)
+
+A bench session drained the cell: with the ammeter path open (burned mA fuse) the board ran from the cell with the
+K230 on (~200 mA) and nothing stopped it; the charger then flashed D1 (no cell seen, protection open) and the cell
+needed a bench charge (tests/test022). The test firmware has no cutoff: on battery, keep sessions short or watch VBAT.
+
