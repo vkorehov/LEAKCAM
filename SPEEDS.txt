@@ -14,26 +14,31 @@ or a measurement yet. Keep this file current when a test or a setting changes it
   SDIO K230 MMC0 <-> BL616    50 MHz, 4-bit, high speed    bus writes 21.4 MB/s, reads 21.5 MB/s 50 MHz (BL616 SDIO 2.0)  yes       test014
                                                            end to end 9.4 MB/s (echo device)
                                                            soak 109 MB, 0 CRC errors
-  SPI NAND (W25N02KV)         quad SPI, 50 MHz             file system: read 9.4 MB/s (shell),   104 MHz (chip); K230    no        test010,
-                              (SPI_NAND_SPI_FREQ)          12.7 MB/s (program), write 1.8 MB/s   controller: unverified            test025
-  DDR (K230D SiP)             2667 MT/s (SDK training)     -                                     unverified              unknown   test024,
-                                                                                                                                  test017
-  KPU                         800 MHz (PLL3 / 2)           change net int8: 0.5 ms per           unverified              unknown   test012
-                                                           inference, 4.4 ms per check
-  UART link K230 <-> BL616    115200 8N1                   works (test009); latency not measured  several Mbit/s (both)   no        test026
+  SPI NAND (W25N02KV)         quad SPI, 50 MHz             file system: read 9.4 MB/s (shell),   100 MHz: K230 QSPI SDR  no        test010,
+                              (SPI_NAND_SPI_FREQ)          12.7 MB/s (program), write 1.8 MB/s   100 (design guide 3-4);           test016
+                                                                                                 chip 104 MHz
+  DDR (K230D SiP)             2667 MT/s (U-Boot            -                                     3200 MT/s: Canaan's     no        test015,
+                              K230D_SIP_LPDDR4_2667)                                             K230D SiP settings                test025
+                                                                                                 (3200_HWODT / _ALLODT)
+  CPU (C908)                  1.6 GHz (power manager       - (test015 measures it: rdcycle)      1.6 GHz (top profile,   yes, to   test015
+                              profile 0, manual)                                                 0.8 V)                  confirm
+  KPU                         800 MHz (PLL3 / 2)           change net int8: 0.5 ms per           800 MHz (top profile,   yes       test012
+                                                           inference, 4.4 ms per check           pm_domain_kpu.c)
+  Video encoder (VPU)         800 MHz                      -                                     800 MHz (only profile)  yes       test027
+  UART link K230 <-> BL616    115200 8N1                   works (test009); latency not measured  several Mbit/s (both)   no        test017
   K230 console (CH340, USBC2) 115200 8N1                   -                                     -                       n/a       -
   BL616 console (PR1)         USB CDC (full speed)         -                                     -                       n/a       -
-  BL616 I2C -> AHT20          100 kHz                      -                                     400 kHz (AHT20)         no        test030
+  BL616 I2C -> AHT20          100 kHz                      -                                     400 kHz (AHT20)         no        test021
   BL616 flash (XIP)           80 MHz (SDK default)         -                                     module limit            probably  -
-  Camera I2C (IIC0, IIC4)     not set up yet               -                                     400 kHz (OV5647)        -         test029
-  Camera CSI0 / CSI2          not set up yet               -                                     OV5647 2-lane, 1280x960 -         test029
+  Camera I2C (IIC0, IIC4)     not set up yet               -                                     400 kHz (OV5647)        -         test020
+  Camera CSI0 / CSI2          not set up yet               -                                     OV5647 2-lane, 1280x960 -         test020
                                                                                                  binned at 45 fps
-  Wi-Fi (BL616 radio)         not running yet              -                                     2.4 GHz 802.11ax 20 MHz -         test027
+  Wi-Fi (BL616 radio)         not running yet              -                                     2.4 GHz 802.11ax 20 MHz -         test018
   Microphone (codec ADC)      16 kHz, 16-bit mono          -42 dBFS floor at 54 dB gain          -                       n/a       test011
   LED PWM (TPS61161 CTRL)     25 kHz (40000 ns period)     white 66.7 mA, IR 133 mA at 100 %     -                       n/a       test008
-  USB-C 1 (K230 USB 2.0)      USB boot / flashing only     NAND writes 3.7-5.5 MB/s while        -                       n/a       test028
+  USB-C 1 (K230 USB 2.0)      USB boot / flashing only     NAND writes 3.7-5.5 MB/s while        -                       n/a       test019
                                                            flashing
-  BL616 programming (PR1)     UART boot, 2 Mbaud           test firmware 4 s, product 13 s       -                       n/a       test028
+  BL616 programming (PR1)     UART boot, 2 Mbaud           test firmware 4 s, product 13 s       -                       n/a       test019
 
 
 2. Fixed clocks and timers
@@ -47,10 +52,24 @@ or a measurement yet. Keep this file current when a test or a setting changes it
   BL616 link resend             300 ms without an ACK, 5 tries
 
 
-3. What to raise, in order
---------------------------
+3. Top speed if stable: what to raise and how it is accepted
+------------------------------------------------------------
 
-  1. SPI NAND clock: 50 MHz of the chip's 104 MHz. Faster boot (image read), clip writes and reads. test025.
-  2. UART link: only if test026 shows faster frames shorten a session.
-  3. DDR, KPU: first check the K230D datasheet's maximum; measure (test024) before changing anything.
-  Not worth it: AHT20 I2C (one read per 10 min, the 80 ms conversion dominates), consoles, USB-C 1.
+  Rule (user, 2026-10-21): every interface runs at its top supported setting if that is stable. A setting is
+  adopted (Kconfig / defconfig / U-Boot, then this table) only after its stability test passes; otherwise the next
+  step down is tried, and the reason is written here.
+
+  Interface      Steps to try                     Stability test before adopting
+  -------------  -------------------------------  ------------------------------------------------------------------
+  DDR            2667 -> 3200 (HWODT, ALLODT)     test025 memtest >= 1 h at each, under KPU + encoder load; 10 cold
+                                                  starts (each retrains); test026 temperature; test015 bandwidth
+  SPI NAND       50 -> 66 -> 80 -> 100 MHz        test016: whole image area read-verified 10x, free-area write +
+                 (RT-Smart and U-Boot/SPL each)   verify; 10 cold boots (SPL and U-Boot read the image too)
+  UART link      115200 -> 230400 ... 2 Mbaud      test017: 10 MB both ways, 0 errors; both firmwares changed together
+  AHT20 I2C      100 -> 400 kHz                   1000 reads, 0 CRC errors (cheap, so taken although it gains little)
+  CPU, KPU, VPU  already at the top profile        CPU clock confirmed by test015's cycle count
+  SDIO           at the top (50 MHz)              test014 (soak 109 MB, 0 errors)
+  Cameras        when they arrive                 test020
+
+  Notes: the DDR is inside the K230D package, so its signals never touch the PCB; the board's part is the rails and
+  their decoupling under load (PDN), which the DDR soak exercises. Consoles and USB-C 1 stay as they are.

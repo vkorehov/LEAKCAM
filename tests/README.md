@@ -20,23 +20,24 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | [test012 KPU change net](test012-kpu-change-net/README.md) | 2026-10-18/19 | pass: int8 net, 0.5 ms per inference, threshold 0.43 |
 | [test013 SDIO wiring](test013-sdio-wiring/README.md) | 2026-10-19 | pass: CLK, CMD, D0-D3 both directions, no shorts |
 | [test014 SDIO speed](test014-sdio-speed/README.md) | 2026-10-21 | pass: 50 MHz 4-bit, bus 21 MB/s, end to end 9.4 MB/s, no CRC errors; soak 56 runs / 109 MB clean |
-| [test015 battery ADC](test015-battery-adc/README.md) | | planned |
-| [test016 K230 heartbeat (K230_ALIVE)](test016-heartbeat/README.md) | | planned |
-| [test017 DDR stress](test017-ddr-stress/README.md) | | planned |
-| [test018 K230 temperature](test018-temperature/README.md) | | planned |
-| [test019 H.265 encoder, synthetic frames](test019-video-encoder/README.md) | | planned |
-| [test020 boot time and session length](test020-boot-and-session-time/README.md) | | planned |
-| [test021 NAND power loss](test021-nand-power-loss/README.md) | | planned |
-| [test022 session current](test022-session-current/README.md) | | planned |
-| [test023 camera buses idle](test023-camera-bus-idle/README.md) | | planned |
-| [test024 DDR bandwidth](test024-ddr-bandwidth/README.md) | | planned |
-| [test025 NAND raw speed and SPI clock](test025-nand-raw-speed/README.md) | | planned |
-| [test026 UART link speed and latency](test026-uart-link-speed/README.md) | | planned |
-| [test027 Wi-Fi throughput end to end](test027-wifi-throughput/README.md) | | planned |
-| [test028 USB boot and flashing speed](test028-usb-flash-speed/README.md) | | planned |
-| [test029 camera CSI and I2C speed](test029-camera-csi-i2c/README.md) | | planned |
-| [test030 BL616 internal timing](test030-bl616-internal-timing/README.md) | | planned |
-| [test031 leak pipeline timing](test031-leak-pipeline-timing/README.md) | | planned |
+| [test015 DDR bandwidth](test015-ddr-bandwidth/README.md) | | planned |
+| [test016 NAND raw speed and SPI clock](test016-nand-raw-speed/README.md) | | planned |
+| [test017 UART link speed and latency](test017-uart-link-speed/README.md) | | planned |
+| [test018 Wi-Fi throughput end to end](test018-wifi-throughput/README.md) | | planned |
+| [test019 USB boot and flashing speed](test019-usb-flash-speed/README.md) | | planned |
+| [test020 camera CSI and I2C speed](test020-camera-csi-i2c/README.md) | | planned |
+| [test021 BL616 internal timing](test021-bl616-internal-timing/README.md) | | planned |
+| [test022 leak pipeline timing](test022-leak-pipeline-timing/README.md) | | planned |
+| [test023 battery ADC](test023-battery-adc/README.md) | | planned |
+| [test024 K230 heartbeat (K230_ALIVE)](test024-heartbeat/README.md) | | planned |
+| [test025 DDR stress](test025-ddr-stress/README.md) | | planned |
+| [test026 K230 temperature](test026-temperature/README.md) | | planned |
+| [test027 H.265 encoder, synthetic frames](test027-video-encoder/README.md) | | planned |
+| [test028 boot time and session length](test028-boot-and-session-time/README.md) | | planned |
+| [test029 NAND power loss](test029-nand-power-loss/README.md) | | planned |
+| [test030 session current](test030-session-current/README.md) | | planned |
+| [test031 camera buses idle](test031-camera-bus-idle/README.md) | | planned |
+| [test032 cameras: detection, capture, image](test032-camera-capture/README.md) | | placeholder: cameras not delivered |
 
 ## Status by subsystem (2026-10-18)
 
@@ -54,7 +55,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | NAND persistence, full disk, speed | pass: read 9.4 MB/s (shell) / 12.7 MB/s (user program), write 1.8 MB/s | test010 |
 | Microphone | pass: -7 dBFS claps over a -42 dBFS floor at 54 dB | test011 |
 | KPU (change net) | pass: int8 on the KPU, 4.4 ms per check, same decisions as TensorFlow (int16 ran 40 layers on the CPU: 6.3 s) | test012 |
-| Cameras | not tested: not delivered | |
+| Cameras | not tested: not delivered | test032 |
 | SDIO wiring K230 <-> BL616 | pass | test013 |
 | SDIO speed (synthetic, SDK echo device) | pass: 50 MHz 4-bit (max), bus writes 21.4 / reads 21.5 MB/s, end to end 9.4 MB/s; soak 109 MB, 0 errors | test014 |
 | Product BL616 firmware | **open**: no USB console on rev 1 (hangs before USB starts) | test014 |
