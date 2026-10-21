@@ -646,6 +646,20 @@ def main():
                         ", test022 battery ADC", {"VBAT": "= K230 ADC_1 reading (raw x 5400 / 4095)", "BAT": "the cell (VBAT on battery)"},
                         ("Red probe on the red ring, black on the black ring (GND, the cap's other pad).",
                          "USB in: VBAT ~0.1-0.2 V above BAT (charger output). USB out: VBAT = BAT."))
+    # charger not charging (2026-10-21): U1's input, output, cell, charge-current monitor and TS, with USB-C 1 in
+    chg = [{"id": "VUSB", "rail": "VUSB (charger input)", "pad": "C2.1", "gnd": "C2.2", "side": comps["C2"]["side"]},
+           {"id": "VBAT", "rail": "VBAT (charger output)", "pad": "C15.1", "gnd": "C15.2", "side": comps["C15"]["side"]},
+           {"id": "BAT", "rail": "BAT (the cell)", "pad": "C11.1", "gnd": "C11.2", "side": comps["C11"]["side"]},
+           {"id": "ISET", "rail": "ISET (R7): charge current x 2.5", "pad": "R7.2", "gnd": "R7.1", "side": comps["R7"]["side"]},
+           {"id": "TS", "rail": "TS (JT pin 1)", "pad": "JT.1", "gnd": "JT.2", "side": comps["JT"]["side"]}]
+    for side in sorted({p["side"] for p in chg}):
+        pts = [p for p in chg if p["side"] == side]
+        render_points_sheet(pcb, comps, pts, os.path.join(TESTS, "test001-power-and-charging", f"charger_pins_{side}.png"),
+                            (46.0, 61.0, 22.0, 42.0), 60.0, ", charger U1 pins (USB-C 1 in, cell in JB1)",
+                            {"VUSB": "4.75 - 5.25 V", "VBAT": "3.7 - 4.4 V", "BAT": "the cell, rising when charging",
+                             "ISET": "> 0.1 V when charging (0 = no current)", "TS": "0.65 - 1.3 V"},
+                            ("D1 off and ~50 mA on the meter = not charging. ISET ~0 V confirms it; TS outside 0.65-1.3 V",
+                             "= temperature fault (47 k VUSB-TS loose?); VUSB < BAT + 0.1 V = input not valid."), side=side)
 
 
 if __name__ == "__main__":
