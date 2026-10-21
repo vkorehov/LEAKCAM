@@ -28,7 +28,7 @@ This test runs a pattern memory test over most of the free RAM for a long time.
 | Time | State | Meter (USB-C 1 VBUS) | |
 |---|---|---|---|
 | 20:12:41-20:13:14 | test image flashed (`flash_nand.sh`: erase 8 s, write, 33 s in all) | - | |
-| 20:15 | K230 rails on after the flash (USB loader idle), charge finished (D1 off) | 196 mA | |
+| 20:13 | K230 rails on after the flash (USB loader idle), charge finished (D1 off) | 196 mA | |
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
