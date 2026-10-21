@@ -86,4 +86,7 @@ Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: the b
 - **The reflowed JB1 joint opened again within the hour** (2026-10-21; D1 went off, 71 mA, cell disconnected) ->
   the cell wire loads the joint mechanically -> wire through the plated hole, solder wetting both sides with flux
   and a hot tip, strain relief (glue or tape 5-10 mm from the pad); pull test, then C11 = the cell with USB out.
+- **Rework (2026-10-21):** the cell's + now goes by copper wire straight to C11 pad 1 (BAT), bypassing the JB1 joint.
+  The BAT copper itself is fine (0.51 mm tracks + pour on top, good for ~1.5-2 A; the board charges at <= 1 A);
+  the JB1 failures were mechanical. Fix the wire down near C11 so it does not load the small pad.
 
