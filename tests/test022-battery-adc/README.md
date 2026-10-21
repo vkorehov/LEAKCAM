@@ -77,4 +77,8 @@ n/a for the reading itself (Q1 switches the divider only while the K230 runs: ~1
 - **"Empty cell" was not empty** -> first blamed on the burned ammeter fuse (~14:42-15:00, board on the cell with
   the K230 at ~200 mA, no cutoff: bug-004); the cell read 3.69 V at its wires, so it was the open JB1 joint, not a
   drain or a tripped PCM -> cell wired to C11, charged on the board (test001); then the battery case of this test.
-
+- **Battery case: VBAT 4.11 V for a moment, then BAT and VBAT both ~1.5 V, board reset** (2026-10-21 ~19:35; K230
+  running at msh, cell 4.18 V just before, cell's + wired to C11, VBUS opened at the USB-C 2 meter) -> the cell
+  stopped feeding BAT under the ~200 mA load; the BL616 came back with defaults (K230 off) once USB was back. Cause
+  open: the cell's - joint on JB1 pin 2 (same kind of joint as the failed +), the new C11 wire, or the pack's PCM
+  latching -> measure the cell at its own wires, and its - wire to board GND (C11 pad 2).
