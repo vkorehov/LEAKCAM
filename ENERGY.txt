@@ -13,7 +13,10 @@ Keep this file current when a test or a change moves a figure. The audit that cl
   Usable         ~95 % of the charge down to the rev 1 cutoff (bug-004: 3.10 V under load) [e]
   Energy         1 cell: ~3.5 Wh usable; 2 cells: ~7.0 Wh [e]
   Self-discharge LiPo ~2-3 %/month [d]: about 25 mAh/month per cell, a floor under any budget
-  Charging       ~6 h from empty at ~0.2-0.3 A [m test001]; BQ24072 6.3 h safety timer [d]
+  Charging       0.89 A into the cell (0.94 A on USB with the BL616's 51 mA) [m test001]; CV taper from ~1 h
+                 (BAT 4.18 V); full charge ~1-1.5 h from ~3.6 V [e]; BQ24072 6.3 h safety timer [d]
+  Protection     pack PCM trips on a short and stays off until USB is plugged [m test022]; no 3.0 V
+                 over-discharge cut (cell sat at 2.9 V) [m test001]: the board's own cutoff is the only one
 
 
 2. Always on (BL616 hibernating, K230 off)

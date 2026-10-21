@@ -57,7 +57,7 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | [test103 leak pipeline timing](test103-leak-pipeline-timing/README.md) | | later: after the cameras, Wi-Fi and the product firmware |
 | [test104 battery energy audit](test104-battery-energy-audit/README.md) | | planned |
 
-## Status by subsystem (2026-10-18)
+## Status by subsystem (2026-10-21)
 
 | Subsystem | State | Test |
 |---|---|---|
@@ -76,6 +76,8 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 | Cameras | not tested: not delivered | test029 |
 | SDIO wiring K230 <-> BL616 | pass | test013 |
 | SDIO speed (synthetic, SDK echo device) | pass: 50 MHz 4-bit (max), bus writes 21.4 / reads 21.5 MB/s, end to end 9.4 MB/s; soak 109 MB, 0 errors | test014 |
+| Battery ADC (K230 ADC_1) | pass 4.07-4.37 V: +1.3 %, calibrated in the agent (full scale 5329 mV, 64-read mean); low cell open | test022 |
+| K230 heartbeat (K230_ALIVE) | pass: 490 ms half-period, stops with the agent, low with rails off | test023 |
 | Product BL616 firmware | **open**: no USB console on rev 1 (hangs before USB starts) | test014 |
 | Leak probes wet, Wi-Fi through the BL616 | not tested: needs the product BL616 firmware | |
 

@@ -1,6 +1,6 @@
 # test022: Battery ADC (K230 ADC_1, VBAT/3)
 
-Status: **pass** at 4.07-4.37 V (2026-10-21), calibration in the agent. Open: a low-cell point (~3.4 V) and a loaded case.
+Status: **pass** at 4.07-4.37 V (2026-10-21), calibration in the agent (committed 94d6b9e, not yet on the board's image). Open: a low-cell point (~3.4 V) and a loaded case.
 
 K230 ADC_1 (ball A6) reads VBAT through R59 200 k / R61 100 k, switched by Q1 from the K230's 3V3 (readable only
 while the K230 runs). The agent converts raw x 1800 mV x 3 / 4095 (12-bit, 1.8 V reference). The bug-004 rev 1
@@ -64,8 +64,9 @@ between reads.
 |---|---|---|---|
 | Boot, power-on -> app init | 0.88 s | test021 | |
 | This part's boot share | none (ADC probed on demand) | - | |
-| Test run time | 20 reads ~45 s | - | |
-| ADC accuracy / noise | +60 mV / sd 52 mV | +-30 mV / 10 mV | noise fails single-read |
+| Test run time | 20 reads ~45 s; 64 reads ~16 s (script, 0.25 s each); battery case 19:31-19:41 | - | |
+| ADC accuracy / noise | +60 mV / sd 52 mV single; calibrated 64-read mean within +-10 mV, sd ~6 mV | +-30 mV / 10 mV | pass averaged |
+| Current on battery, K230 at msh | not measured (meter in USB-C 1 path, unplugged); 202-203 mA on USB (above) | - | VBAT 4.07-4.12 V |
 | Current during reads | 202-203 mA (= msh idle) | floor 202 | reads cost nothing measurable |
 | Power, energy per reading | below the meter's resolution | - | |
 | Per day | n/a | - | |

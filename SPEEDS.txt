@@ -49,7 +49,11 @@ or a measurement yet. Keep this file current when a test or a setting changes it
   K230 watchdog                 20 s timeout, fed every 10 s by wdt_feed1 (priority 25), started at boot
   K230 PMU RTC                  32.768 kHz crystal Y1, restarts with the 1V8 rail (bug-003: R45 bridged)
   BL616 RTC (HBN)               32.768 kHz crystal Y3, runs through hibernate
-  K230 heartbeat (K230_ALIVE)   toggles every 500 ms; the BL616 ends a session after 2 s without an edge
+  K230 heartbeat (K230_ALIVE)   toggles every 500 ms; measured half-period 490 avg / 502 max ms, first edge 0.98 s
+                                after reset release (test023); the BL616 ends a session after 2 s without an edge
+  K230 battery ADC (ADC_1)      12-bit, 1.8 V ref, VBAT/3; single read sd ~45 mV, 64-read mean ~6 mV; reads 1.3 %
+                                high, calibrated full scale 5329 mV (test022); 64 reads ~16 s from msh (console
+                                round trips), in the agent one loop
   BL616 link resend             300 ms without an ACK, 5 tries
 
 
