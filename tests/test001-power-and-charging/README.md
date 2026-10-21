@@ -79,4 +79,8 @@ Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: the b
   cleared only by removing the input), then the charger found no battery -> reflowed the joint; charges from a wall
   adapter. Probe sheets: charger_pins_top/bottom.png. The same open joint is why every VBUS interruption that day
   reset the board (no cell behind VUSB), and the cell had been drained before it opened.
+- **D1 blinking, no charge, only with the ammeter in VBUS** (2026-10-21) -> the meter path (10 A shunt, leads, splice:
+  a few tenths of an ohm) drops VUSB at the ~1 A charge start, and in ILIM mode (EN2 high) the charger has no
+  VIN-DPM to back off, so it drops out and restarts -> charge with the meter bypassed (Mac port direct or a wall
+  adapter); measure the board's current with a full cell (D1 off). bugs/v2.txt 9.
 

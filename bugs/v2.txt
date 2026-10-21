@@ -35,6 +35,6 @@ From the rev 1 bugs
    stops the K230 and hibernates below the cutoff; the charger has no discharge cutoff of its own.
 9. Charger input limit from a USB host (2026-10-21, tests/test001): EN2 high / EN1 low (R8, ILIM mode) sets
    1.07 A (R5 1.5 k, KILIM 1610) and turns VIN-DPM off - the BQ24072 only backs off on a sagging input with
-   EN2 low. Through a host port and a meter the input collapsed when charging started and D1 blinked, no
-   charge; a wall adapter charges. Rev 2: EN2/EN1 from the BL616 (USB500 by default, ILIM only when the
+   EN2 low. Through an ammeter (10 A range, leads, spliced cable) the input collapsed when charging started
+   and D1 blinked, no charge; the same Mac port without the meter, or a wall adapter, charges. Rev 2: EN2/EN1 from the BL616 (USB500 by default, ILIM only when the
    USB-C CC level says 1.5 A or 3 A), or USB500 (EN1 high, EN2 low) fixed.
