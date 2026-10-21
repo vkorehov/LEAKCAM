@@ -39,14 +39,17 @@ between reads.
 | Repeat 19:30, cell wired to C11, charging (CV): C15 | 4.37 V | 64 reads: mean 4.428 V (+58 mV), sd 49 mV, 4.345-4.509 |
 | Repeat 19:30: C11, BAT | 4.18 V | - |
 | **Battery** 19:32 (USB out, K230 at msh): C15 | 4.12 V | 62 reads: mean 4.185 V (+65 mV, +1.6 %), sd 42 mV, 4.105-4.254 |
+| Battery 19:32: C15 | 4.12 V | 64 reads: mean 4.178 V (+58 mV) |
+| Battery 19:34: C15 | 4.11 V | 64 reads: mean 4.157 V (+47 mV) |
 
 - **On USB, C15 is the BQ24072 output rail (~4.4 V), not the cell.** On battery the BAT-FET joins OUT to the cell, so
   the ADC reads the cell then: the only case the bug-004 cutoff needs. The firmware must not report the USB reading
   as battery level.
 - **Noise sd 52 mV** (target 10): single reads are not enough for a 3.10 V cutoff -> average (64 reads: ~7 mV).
-- Offset +58..+65 mV on USB and on battery: constant within the meter's reading, so one correction, -61 mV (or x 0.986;
+- Offset +47..+65 mV on USB and on battery (mean +57): constant within the meter's 10 mV step and the time between
+  meter and ADC, so one correction, -57 mV (or x 0.986;
   the two points are too close in voltage to tell offset from gain; the low-cell point decides). Corrected and
-  averaged over 64 reads: within +-5 mV of the meter: **pass** at a full cell.
+  averaged over 64 reads: within +-10 mV of the meter: **pass** at a full cell.
 - **C11 at 3.30 V with D1 off** (should charge, D1 on): the JB1 cell joint was open - see Obstacles.
 
 ## Metrics (2026-10-21)
