@@ -49,8 +49,13 @@ The NAND is on SPI0 (OSPI, DW SSI): ssi_clk **800 MHz**, SCLK = 800 / BAUDR (50 
 
 - At 100 MHz no delay works: 0-3 the 1-line status reads are right (the driver waits, reports ECC errors) but the
   4-line data is wrong; 4-8 the status reads 0 ("ready, no error") and the data zeros. The 1-line and 4-line
-  phases want different sampling points and their windows no longer overlap. Still to try: the other sampling edge
-  (RX_SAMPLE_DLY bit 16, half steps) and stronger pad drive on the OSPI pins.
+  phases want different sampling points and their windows no longer overlap.
+- **Pad drive makes no difference** (2026-10-21, `pad_ds` on IO14-19, msc checked unchanged): at 100 MHz, ds 7 (the
+  board's setting), 10 and 15 all give delays 0-3 and 9-10 ~1100 ECC errors per 64 blocks, 4-8 wrong data with 0
+  errors; no correct read at any drive. So edges/ringing are not the limit; the round trip is (W25N02KV ~6-7 ns clock
+  to data, plus pads and traces, against a 10 ns bit). Left to try: the other sampling edge (RX_SAMPLE_DLY bit 16,
+  half steps) and separate delays for 1-line status and 4-line data reads (driver change). Gain at stake: raw read
+  20.6 -> ~25 MB/s, part of the 0.59 s of mounts. Drive stays 7.
 - **Bus errors are silent**: the NAND's ECC works inside the chip, so a bit mis-sampled on the bus arrives with no
   error. Hence the delay in the middle of the window, and checksums (never the driver status) for every clock change.
 - Chosen: **80 MHz, delay 5** (window 3-8 at both 50 and 80 MHz): kernel `CONFIG_SPI_NAND_SPI_FREQ=80000000`,
@@ -92,3 +97,6 @@ The NAND clock's effect on boot: SPL kernel load and UFFS mount time at each clo
 ## Battery energy
 
 Battery current during raw reads, programs, erases at each NAND clock; energy per MB read and per MB written, and how it changes with the clock (faster clock, shorter on-time).
+- **Sweep results landed on the wrong lines** -> a failing read at 100 MHz takes ~3 s, the fixed 1.2 s read window
+  queued the next commands -> wait for each command's result line (a sweep script, not shell `eval` with `|` in
+  arguments: the shell ran the tokens as commands and nothing reached the board).

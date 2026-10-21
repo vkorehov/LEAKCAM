@@ -7,6 +7,7 @@
  *   nand_bench write [blocks] erase, program, read back and verify in the free last 8 MiB (blocks 1984..2047)
  *   nand_clk [hz]             show / set the NAND QSPI clock (Kconfig SPI_NAND_SPI_FREQ at boot)
  *   nand_rxsd [n]             show / set SPI0 RX_SAMPLE_DLY (ssi_clk cycles; Kconfig RT_SPI0_RXSD at boot)
+ *   pad_ds [ds [first last]]  show / set the pad drive strength (0..15) of IO14-19 (OSPI CS, CLK, D0-D3) only
  *   boot_times                tests/test021: rdtime (from reset release) at the end of each init level
  *
  * Timing: rdtime, 27 MHz. Every loop sleeps 1 ms now and then (outside the timed part): the 20 s watchdog's
@@ -21,6 +22,7 @@
 #include "../drivers/interdrv/spi/drv_spi.h"
 #include "../drivers/interdrv/sysctl/sysctl_clock/sysctl_clk.h"
 #include <ioremap.h>
+#include "../drivers/interdrv/fpioa/drv_fpioa.h"
 
 static inline rt_uint64_t now(void)
 {
@@ -288,3 +290,34 @@ static int boot_times(int argc, char **argv)
     return 0;
 }
 MSH_CMD_EXPORT(boot_times, test021: init level times after reset release);
+
+/* test016: OSPI pad drive. Only the ds field changes; msc (bank voltage) is checked unchanged after the write. */
+static int pad_ds(int argc, char **argv)
+{
+    int first = argc > 3 ? atoi(argv[2]) : 14, last = argc > 3 ? atoi(argv[3]) : 19, pin;
+
+    if (first < 14 || last > 19 || first > last)
+    {
+        rt_kprintf("pad_ds: OSPI pins only (14..19)\n");
+        return -1;
+    }
+    for (pin = first; pin <= last; pin++)
+    {
+        fpioa_iomux_cfg_t c, n;
+        drv_fpioa_get_pin_cfg(pin, &c.u.value);
+        if (argc > 1)
+        {
+            n = c;
+            n.u.bit.ds = (uint32_t)atoi(argv[1]) & 0xfu;
+            drv_fpioa_set_pin_cfg(pin, n.u.value & 0x7fffffffu);
+            drv_fpioa_get_pin_cfg(pin, &n.u.value);
+            if (n.u.bit.msc != c.u.bit.msc)
+                rt_kprintf("pad_ds: IO%d msc CHANGED %u -> %u\n", pin, (unsigned)c.u.bit.msc, (unsigned)n.u.bit.msc);
+            c = n;
+        }
+        rt_kprintf("pad_ds: IO%d ds %u msc %u sel %u (0x%08x)\n", pin, (unsigned)c.u.bit.ds, (unsigned)c.u.bit.msc,
+                   (unsigned)c.u.bit.io_sel, (unsigned)(c.u.value & 0x7fffffffu));
+    }
+    return 0;
+}
+MSH_CMD_EXPORT(pad_ds, test016: show or set the OSPI pad drive [ds [first last]]);
