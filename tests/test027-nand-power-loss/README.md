@@ -47,7 +47,7 @@ fix before the long run; a clean boot of this image: mounts 0.374 s, app init 0.
 | Current | msh idle with charging 540 mA (USB VBUS, D1 on); during writes not read | floor 202 mA w/o charging | |
 | Power, energy per operation | n/a | - | |
 | Per day | n/a | - | |
-| Temperature die / board | not measured | - | |
+| Temperature die / board | not measured: missed in the short run (taken in the long run) | - | |
 
 ## Boot time
 

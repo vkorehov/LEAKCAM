@@ -101,4 +101,11 @@ Battery current through the boot, per step (scope over a shunt in the battery le
   UFFS mount time goes with the **used pages**, not the partition size: it reads the tags of every page holding
   data. /bin 3.3 MB + /sdcard ~7 MB = ~10.5 MB = ~5300 pages x ~65 us = ~0.35 s, as measured. Levers now: less data
   (ISP tuning files for one resolution only, stripped programs) or /sdcard mounted only when a session needs it.
+- **/bin trimmed to the 1280x960 ISP set (3.3 -> 0.68 MB, install.sh, 2026-10-21):** 3 cold boots read, all equal:
+  component init 0.262 s, mounts done 0.483 s (0.22 s), **app init 0.506 s** (was 0.641; 1.00 s this morning).
+  Temperature at msh idle after: die 45.8-46.7 C (chip_temp), board 37.4 C (AHT20); peak during the boot not
+  measured (the boot is < 1 s, chip_temp needs the shell).
+- **Build failed after limiting the ISP pattern to `ov5647-1280x960`** -> the SDK rule appends `.json`/`.xml` to the
+  pattern for the rsync copy (`ov5647-*` only worked through the shell glob) -> pattern `ov5647-1280x960*`; check
+  images/bin holds config.txt + the 4 files before flashing.
 
