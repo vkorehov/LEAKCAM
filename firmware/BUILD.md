@@ -260,8 +260,9 @@ PR1 is on the bottom side: pad 1 D+, pad 2 D-, pad 3 GND, pad 4 AI_BOOT, pad 5 A
 3. `make flash` (arm64 host: in the build container, [bl616/host.mk](bl616/host.mk)). While a firmware's USB console
    (ffff:ffff) runs, [bl616_isp.py](../tools/power-bringup/bl616_isp.py) sends it `reboot uart` (HBN user-boot 1 +
    power-on reset): the ROM enumerates as `Bouffalo CDC` (349b:6160) with no BOOT link or EN touch. The flasher
-   (`BLFlashCommand --interface=uart --baudrate=2000000 --chipname=bl616`) runs on that port, then the script waits
-   for the new firmware's console.
+   (`BLFlashCommand --interface=uart --baudrate=2000000 --chipname=bl616`) runs on that port. The ROM then stays in
+   download mode (`--reset` does not restart it): tap **AI_EN** (pad 5 to pad 3) once; the script waits for the new
+   firmware's console.
 4. Only without a running console (blank chip, a firmware that hangs before USB): hold **AI_BOOT high** (pad 4 to
    pad 6), pulse **AI_EN low** (pad 5 to pad 3), `make flash`, then release BOOT and pulse EN.
 

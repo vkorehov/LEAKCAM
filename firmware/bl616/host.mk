@@ -5,8 +5,9 @@
 # Flashing runs there too, with the x86-64 BLFlashCommand-ubuntu: the SDK's BLFlashCommand-arm is a 32-bit
 # armhf binary and does not start on an arm64-only host.
 #
-# make flash needs no BOOT link or EN touch while the firmware's USB console runs: bl616_isp.py sends
-# `reboot uart` and the ROM comes up on USB; afterwards it waits for the new firmware's console.
+# make flash needs no BOOT link while the firmware's USB console runs: bl616_isp.py sends `reboot uart` and
+# the ROM comes up on USB. The ROM does not leave download mode by itself (BLFlashCommand --reset logs "Reset
+# cpu" but the chip stays in the ROM): one EN tap afterwards, then it waits for the new firmware's console.
 TOOLCHAIN ?= $(HW_ROOT)/toolchain_gcc_t-head_linux
 IMAGE ?= k230-rtos-sdk-build:arm64-x86tc
 ISP := $(HW_ROOT)/LEAKCAM/tools/power-bringup/bl616_isp.py
@@ -22,7 +23,7 @@ flash:
 	docker run --rm --user $$(id -u):$$(id -g) --group-add $$(stat -c %g $$port) --device $$port -e HOME=/tmp \
 	    -e LEAKCAM_IN_CONTAINER=1 -v $(HW_ROOT):$(HW_ROOT) -w $(CURDIR) $(IMAGE) \
 	    make flash COMX=$$port BL_FLASH_PROGRAM=$(BL_SDK_BASE)/tools/bflb_tools/bouffalo_flash_cube/BLFlashCommand-ubuntu
-	@$(ISP) --wait-app --timeout 20 || { echo "flashed, but the firmware console did not come back:" \
-	    "pulse EN (PR1 pad 5 to GND), and record it in tests/test002"; exit 1; }
+	@echo "flashed; the ROM stays in download mode: tap EN (PR1 pad 5 to GND) once"
+	@$(ISP) --wait-app --timeout 120
 clean:
 	rm -rf build

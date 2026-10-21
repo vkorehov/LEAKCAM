@@ -30,5 +30,8 @@ n/a: flashing and the console run from USB power.
 - **`BLFlashCommand-arm` won't start** -> 32-bit armhf binary on arm64 -> `make flash` runs the x86 tool in the container.
 - **Flashing needed BOOT link + EN touch every time** -> the ROM also starts download mode after `reboot uart`
   (SDK bl616dk shell: HBN user-boot 1 + power-on reset) -> `make flash` does it over the running console
-  ([bl616_isp.py](../../tools/power-bringup/bl616_isp.py), 2026-10-21). **To verify on the board:** the ROM comes up
-  on USB in this mode, and the new firmware starts after flashing without an EN tap.
+  ([bl616_isp.py](../../tools/power-bringup/bl616_isp.py)). **Verified 2026-10-21:** `reboot uart` -> ROM `Bouffalo
+  CDC` (349b:6160) on USB (after "connect to Linux"), flash 3.8 s at 2 Mbaud, SHA verified. The ROM stays in download
+  mode afterwards: `BLFlashCommand --reset` logs "Reset cpu" but the chip does not restart -> one EN tap starts the
+  new image (banner build time changed, `pt_status` normal); the HBN user-boot flag does not bring the ROM back.
+  Flashing: no BOOT link, one EN tap (was link + two taps).
