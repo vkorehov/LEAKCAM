@@ -119,8 +119,6 @@ static int setup(void)
         a.venc_attr.type = K_PT_H265;
         a.venc_attr.pic_width = W;
         a.venc_attr.pic_height = H;
-        a.venc_attr.stream_buf_size = STREAM_BLK_SIZE;
-        a.venc_attr.stream_buf_cnt = 4;
         a.venc_attr.profile = VENC_PROFILE_H265_MAIN;
         a.rc_attr.rc_mode = K_VENC_RC_MODE_CBR;
         a.rc_attr.cbr.gop = GOP_S * GOP_FPS;

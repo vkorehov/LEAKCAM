@@ -42,3 +42,8 @@ Encoder / media stack init time (VB pools, VENC) at boot or at first use.
 ## Battery energy
 
 Battery current with one and two encoder channels running; energy per second of clip (two cameras, 15 fps).
+
+## Obstacles
+
+- **First build failed: `k_venc_attr` has no `stream_buf_size` / `stream_buf_cnt`** (my mistake: fields assumed, not
+  read from this SDK's k_venc_comm.h) -> removed; the stream buffers come from the attached VB pool.
