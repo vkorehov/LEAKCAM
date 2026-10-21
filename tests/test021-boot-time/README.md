@@ -82,3 +82,14 @@ This test is the boot time measurement.
 ## Battery energy
 
 Battery current through the boot, per step (scope over a shunt in the battery lead): energy per boot = the fixed cost of every wake. Also after each speed change (NAND clock, DDR 3200).
+
+## Obstacles
+
+- **Host-side boot timing misses the start** -> the CH340 (U2) is powered from the switched 3V3 (bug-002), so it
+  re-enumerates on every cold boot and appears in the VM ~10 s after power-on -> the kernel times itself (`rdtime`
+  from reset release, `boot_times`); the skill's `boot_time.py` is only for a console that stays up.
+- **Console reader stopped early** -> the agent prints `READY not answered` again and again (the test BL616 firmware
+  does not answer) -> read for a fixed time, not up to the first prompt; 7 of 18 boots were not read for that reason,
+  all booted.
+- **The kernel crashed in `ddr_bench 16384`** (test015) and rebooted: that warm reboot restarts `rdtime` too, so it
+  gave a second sample.

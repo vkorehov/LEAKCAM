@@ -12,6 +12,19 @@ power ([usb_meter.png](usb_meter.png)): USB-C 1 unplugged (it feeds VUSB directl
 data only. The cell must be charged (D1 off): then the USB current is the board's own draw. Board power = that
 current x VBAT (C15 pad 1), not x 5 V (the linear charger's drop is not paid on battery). A / 10 A input, 0.001 A.
 
+**Used 2026-10-21 (tests 015/016/021):** VBUS of the USB-C 2 cable cut instead, the meter in USB-C 1's VBUS: one
+cable then powers the board and flashes the K230, and the CH340 still works (U2 runs from the switched 3V3). Rules
+learned that day:
+- **10 A jack and range, locked** (no autorange). The mA range's shunt + fuse (2-5 ohm) dropped VBUS 0.4-1 V at
+  200 mA and reset the board on current steps; autorange switching opens the path briefly.
+- **Meter in the red VBUS wire**, GND joined straight through: a meter in GND offsets the board's ground against the
+  host and every USB device on the board (PR1, CH340, K230) fails.
+- **Check the mA fuse** of a borrowed meter: one with a burned fuse read nothing useful; shorting its leads "fixed"
+  the board. Readings from before the swap are void.
+- **Only one cable may carry power**: both USB-C ports feed VUSB, so with two plugged in the meter reads a share.
+- "LEAd" on the GD118B = the red lead's jack does not match the function; it has auto power-off (APO) - disable it
+  (key at switch-on, see the manual) for long runs.
+
 **On battery (sleep current only):** with USB present the product BL616 firmware stays awake (USB mode, BLE), so the
 sleep current needs the meter in the cell's + lead, USB unplugged (test104).
 

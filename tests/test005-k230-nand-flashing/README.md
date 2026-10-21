@@ -29,3 +29,6 @@ n/a: flashing runs from USB power.
 - **Read-back fails** -> the loader can't read SPI NAND -> verify by booting.
 - **Re-flash needs B1 short** -> `pt_boot1 high` + `pt_hold` + `pt_run`; flash without `--auto-reboot`.
 - **Re-flash leaves stale blocks** -> the loader does not erase beyond each image -> erase first.
+- **`flash_nand.sh` said "flashed" after a failed write** (2026-10-21: the board lost power during the /sdcard write) ->
+  `k230_flash_cli` exits 0 when a write fails -> the script now stops on `^(Write|Erase) .* failed`. The line `usb bulk
+  read data failed ... LIBUSB_ERROR_TIMEOUT` during the long erase is normal (the erase still ends "done").

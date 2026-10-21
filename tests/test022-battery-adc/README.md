@@ -47,3 +47,9 @@ n/a: one conversion during the session (not at boot).
 ## Battery energy
 
 n/a for the reading itself (Q1 switches the divider only while the K230 runs: ~14 uA then, nothing while off); the test gives the voltage the energy audit (test104) logs.
+
+## Obstacles
+
+- **Unexplained board reset at 15:20:09 (2026-10-21)** while VBAT was probed at C15 with a second meter: BL616 and
+  CH340 dropped together, the BL616 came back with its defaults. Not explained (probe slip or cable move); repeat
+  the VBAT reading with the probe held firm, rails off first.
