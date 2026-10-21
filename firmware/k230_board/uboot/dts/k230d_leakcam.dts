@@ -99,7 +99,7 @@
 			};
 			bin@3000000 {
 				label = "bin";
-				reg = <0x3000000 0x1400000>;
+				reg = <0x3000000 0x800000>;
 			};
 			sdcard@4800000 {
 				label = "sdcard";

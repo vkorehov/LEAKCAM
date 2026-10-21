@@ -97,4 +97,8 @@ Battery current through the boot, per step (scope over a shunt in the battery le
 - **/sdcard 176 -> 32 MiB (2026-10-21, image with test027's writer):** mounts 0.374 s (was 0.59), app init **0.660 s**
   (was 0.88). Less than the ~0.4 s estimated from block counts: used blocks cost more than empty ones; /bin
   (20 MiB, ~3.6 MB used) is now the larger share.
+- **/bin 20 -> 8 MiB (2026-10-21):** mounts 0.355 s (0.374), app init **0.641 s**: only 19 ms for 96 fewer blocks.
+  UFFS mount time goes with the **used pages**, not the partition size: it reads the tags of every page holding
+  data. /bin 3.3 MB + /sdcard ~7 MB = ~10.5 MB = ~5300 pages x ~65 us = ~0.35 s, as measured. Levers now: less data
+  (ISP tuning files for one resolution only, stripped programs) or /sdcard mounted only when a session needs it.
 

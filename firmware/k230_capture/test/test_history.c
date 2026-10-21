@@ -59,6 +59,8 @@ int main(void)
     CHECK(mkdtemp(dir) != NULL, "mkdtemp");
     struct hist_cfg cfg;
     hist_default_cfg(&cfg, dir);
+    cfg.quota_bytes = 32u << 20;      /* the policy checks need room for deltas, whatever the product's quota
+                                         (test 10 sets its own) */
     struct hist_info hi;
     uint8_t chg[IMGDIFF_BLOCKS_Y][IMGDIFF_BLOCKS_X];
     uint8_t *f0 = malloc(W * H), *f1 = malloc(W * H), *f2 = malloc(W * H), *view = malloc(W * H);

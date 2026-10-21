@@ -140,7 +140,8 @@ U-Boot: only when the TOC is missing or neither slot loads
 | 4M | 512K | U-Boot environment |
 | 5M | 20M | rtt_a |
 | 25M | 20M | rtt_b |
-| 48M | 20M | UFFS `/bin` (ISP tuning files) |
+| 48M | 8M | UFFS `/bin` (ISP tuning files, 3.3 MB); small because UFFS scans every block at mount |
+| 56M | 16M | unused |
 | 72M | 32M | UFFS `/sdcard` (programs, image history); small because UFFS scans every block at mount |
 | 104M | 152M | unused, bad-block reserve |
 
@@ -376,6 +377,8 @@ capture (LEDs at 100 %, AE settled)
     blocks.
   - A new keyframe after 96 deltas, or when more than half the image changed.
   - A 4 MB quota per camera (one keyframe group: the history needs only one large image per camera);
+    a group over half the quota (2 MB) starts a new keyframe, so the oldest group can go (the prune never
+    deletes the current group);
     the oldest group is deleted first.
   - Every file is written as tmp + fsync + rename, with a CRC.
   - Reference files use two slots, because UFFS cannot rename onto an existing file.

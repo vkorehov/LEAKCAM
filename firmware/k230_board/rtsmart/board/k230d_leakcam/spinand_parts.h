@@ -4,5 +4,5 @@
  * 5M RT-Smart slot A, 25M slot B, then the two UFFS filesystems. 104M .. 256M stays unused: room for
  * bad-block replacement, never part of a filesystem. UFFS scans every block at mount (~0.38 ms per block),
  * so /sdcard is only as big as programs + two history images need (tests/test021, 2026-10-21). */
-{ "nand0", 48 * 1024 * 1024,  20 * 1024 * 1024 }, // bin,    48M ~ 68M
+{ "nand0", 48 * 1024 * 1024,   8 * 1024 * 1024 }, // bin,    48M ~ 56M (3.3 MB of ISP files; 56M ~ 72M unused)
 { "nand1", 72 * 1024 * 1024,  32 * 1024 * 1024 }, // sdcard, 72M ~ 104M (programs, image history)
