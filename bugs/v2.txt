@@ -20,9 +20,10 @@ Debug console
 From the rev 1 bugs
 -------------------
 4. bug-001: U1 BQ24072RGTR (C140288), not the T variant: the NTC on TS works as drawn.
-   Charge time: on rev 1 a full charge took ~6 h at ~0.2-0.3 A (U1, a linear charger, throttles for heat:
-   ~1.4 W at a low cell voltage), close to the 6.3 h safety timer. Choose a switching charger, or less heat
-   (lower ISET) with a longer timer (TMR), so a charge from empty ends well inside the timer.
+   Charge time: on rev 1 a full charge took ~6 h at ~0.2-0.3 A, close to the 6.3 h safety timer. First put
+   down to U1's heat (~1.4 W); on 2026-10-21, with the cell wired well, U1 charged at the full 0.89 A, so the
+   low current was more likely the cell joint's resistance (tests/test001). Keep checking U1's heat over a
+   whole charge before choosing a switching charger; a longer timer (TMR) is cheap insurance either way.
 5. bug-002: no data line may lift VUSB: ESD arrays' VCC from their own connector's VBUS (or ESD parts
    without a VCC pin); check R63 / K230 B7. With item 3 the CH340X path is gone; D5 on USBC1 stays.
 6. bug-003: INT4 (ball F14) tied directly to the PMU's 1.8 V, or a pull-up of 4.7 k or less (not 100 k: the

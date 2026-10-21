@@ -89,4 +89,8 @@ Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: the b
 - **Rework (2026-10-21):** the cell's + now goes by copper wire straight to C11 pad 1 (BAT), bypassing the JB1 joint.
   The BAT copper itself is fine (0.51 mm tracks + pour on top, good for ~1.5-2 A; the board charges at <= 1 A);
   the JB1 failures were mechanical. Fix the wire down near C11 so it does not load the small pad.
+- **Full charge current once the cell is wired well** (2026-10-21): 0.94 A on the USB meter (10 A range) = 0.89 A
+  ISET + ~50 mA board, U1 not throttling at first. The 0.2-0.3 A of 2026-10-19/20 ("thermal regulation") was more
+  likely the JB1 joint's resistance. Still to watch: U1 dissipates ~1.2 W at (4.95 - 3.6 V) x 0.89 A - note the
+  current after 10-20 min; a drop to a few hundred mA would be the thermal loop after all.
 
