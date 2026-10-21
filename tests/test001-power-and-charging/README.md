@@ -74,3 +74,9 @@ Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: the b
 - **Charge current looks low** -> a linear charger at a low cell voltage throttles for heat -> read V(R7) / 2.5 instead
   of guessing from voltages.
   No K230 flashing at 2.9 V (brown-out during a NAND write). D1 went off: charger timer / pre-charge state.
+- **No charging, D1 flashing 2 Hz, then one blink and off (2026-10-21)** -> the cell's + wire joint on JB1 pin 1 was
+  cracked: the cell read 3.69 V at its wires, C11 (BAT) millivolts; first the pre-charge timer latched a fault (2 Hz,
+  cleared only by removing the input), then the charger found no battery -> reflowed the joint; charges from a wall
+  adapter. Probe sheets: charger_pins_top/bottom.png. The same open joint is why every VBUS interruption that day
+  reset the board (no cell behind VUSB), and the cell had been drained before it opened.
+
