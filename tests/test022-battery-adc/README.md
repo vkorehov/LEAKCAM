@@ -87,4 +87,6 @@ n/a for the reading itself (Q1 switches the divider only while the K230 runs: ~1
   latching -> measure the cell at its own wires, and its - wire to board GND (C11 pad 2). Not reproduced: at 19:31
   the same switch-over (K230 started on battery) held, VBAT 4.15 V -> 4.12 V under load, no reset; a repeat at
   19:32 read 4.178 V (+58 mV). Most likely cause (user): the battery shorted by accident while the probes were
-  moved; the pack's PCM cut on the short and released afterwards, the board reset with no cell behind it.
+  moved; the pack's PCM cut on the short and the board reset with no cell behind it. The PCM stayed latched (BAT
+  ~1.5 V) with the board still on it as a load, and released only when USB was plugged back: after a short the
+  pack needs the charger to recover (usual for DW01-type PCMs). Product: a short leaves the unit dead until USB.
