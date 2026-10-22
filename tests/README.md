@@ -47,8 +47,8 @@ written when it happens). Nothing is left out: an empty part says so ("Not run y
 | [test017 NAND raw speed and SPI clock](test017-nand-raw-speed/README.md) | | 80 MHz adopted (20.6 MB/s), 100 MHz: no sample window |
 | [test018 UART link speed and latency](test018-uart-link-speed/README.md) | 2026-10-22 | pass: 4 Mbaud adopted, one rate from boot (10 MB, 0 errors, 353 KB/s); 6 Mbaud fails; round trip 1.48 ms -> 54 us |
 | [test019 USB boot and flashing speed](test019-usb-flash-speed/README.md) | 2026-10-22 | pass: K230 image 26 s (erase 8 s, 5.6 MB/s, USB HS), BL616 4 s flash, no EN tap; ~45 s per board |
-| [test020 camera CSI and I2C speed](test020-camera-csi-i2c/README.md) | | planned |
-| [test021 BL616 internal timing](test021-bl616-internal-timing/README.md) | | planned |
+| [test020 camera CSI and I2C speed](test020-camera-csi-i2c/README.md) | | skipped: cameras not delivered (user, 2026-10-22: skip camera tests) |
+| [test021 BL616 internal timing](test021-bl616-internal-timing/README.md) | 2026-10-22 | pass: wake -> main 12-16 ms (one 245 ms outlier open), 3V3 1.7 ms, AHT20 50 ms, easyflash 1 ms; ADC 3-32 ms spread open |
 | [test022 K230 boot time](test022-boot-time/README.md) | | 0.506 s to app init (NAND 80 MHz, small /bin + /sdcard, one ISP set); mounts 0.22 s |
 | [test023 battery ADC](test023-battery-adc/README.md) | 2026-10-21 | pass 4.07-4.37 V: reads 1.3 % high, calibrated (full scale 5329 mV, 64-read mean); low cell and load open |
 | [test024 K230 heartbeat (K230_ALIVE)](test024-heartbeat/README.md) | 2026-10-21 | pass: 490 ms half-period (1.02 Hz), first edge 0.98 s after reset release, stops with the agent, low with rails off |
@@ -57,7 +57,7 @@ written when it happens). Nothing is left out: an empty part says so ("Not run y
 | [test027 H.265 encoder, synthetic frames](test027-video-encoder/README.md) | 2026-10-21 | pass: 2 x 15 fps at 510 kbit/s, +15 mA; top 83 fps at 1280x960; decode on PC open |
 | [test028 NAND power loss](test028-nand-power-loss/README.md) | 2026-10-21 | short run pass: 13 random cuts, 0 lost/corrupt files; 100-cut run open |
 | [test029 camera buses idle](test029-camera-bus-idle/README.md) | 2026-10-21 | pass: I2C buses scan clean and idle high, CAM GPIOs low |
-| [test030 cameras: detection, capture, image](test030-camera-capture/README.md) | | placeholder: cameras not delivered |
+| [test030 cameras: detection, capture, image](test030-camera-capture/README.md) | | skipped: cameras not delivered (user, 2026-10-22: skip camera tests) |
 | [test031 sleep and minimal currents](test031-sleep-current/README.md) | 2026-10-22 | RTC wake fixed (HBN pin pulls off + wait for Y3), 5/5 wakes; 1.23 mA asleep through USB; battery figure open |
 | [test032 RTC wake](test032-rtc-wake/README.md) | 2026-10-22 | wake works on Y3 (5/5); Y3 -110 ppm open |
 | [test033 every BL616 pin: function, levels, back-feed](test033-bl616-pins/README.md) | | planned |

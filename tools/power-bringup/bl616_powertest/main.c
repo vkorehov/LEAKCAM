@@ -778,6 +778,9 @@ static void background_task(void *arg)
 #if PT_TEST_SLEEP
                    " pt_sleep pt_rtc"
 #endif
+#if PT_TEST_TIMING
+                   " pt_time"
+#endif
 #if PT_TEST_USB
                    " pt_usb"
 #endif
@@ -861,6 +864,30 @@ static int cmd_boot1(int argc, char **argv)
 SHELL_CMD_EXPORT_ALIAS(cmd_boot1, pt_boot1, K230 BOOT1 strap: low | high | park);
 
 #if PT_TEST_SLEEP
+/* test021: the RTC tick the wake is due at (low 32 bits, 36 h wrap), kept across the sleep in HBN_RSV3, an AON
+ * register the BL616 SDK does not use (HBN RAM did not keep it, 2026-10-22: the startup copies its hbn_ram
+ * section there); main() reads the RTC first thing, so the difference is ROM + boot2 + init. 0 = no mark. */
+#define WAKE_MARK (*(volatile uint32_t *)(HBN_BASE + HBN_RSV3_OFFSET))
+static uint32_t wake_due, wake_main;               /* RTC ticks; wake_due 0 = not woken by pt_sleep */
+static uint64_t main_mtimer;                       /* core timer at main(): time since the core left reset? */
+
+static uint64_t rtc_now(void)
+{
+    uint32_t lo, hi;
+    HBN_Get_RTC_Timer_Val(&lo, &hi);
+    return ((uint64_t)(hi & 0xff) << 32) | lo;
+}
+
+static void wake_mark_take(void)
+{
+    main_mtimer = bflb_mtimer_get_time_us();
+    wake_main = (uint32_t)rtc_now();
+    wake_due = WAKE_MARK;
+    WAKE_MARK = 0;
+    if (wake_main - wake_due > 2u * 32768u)        /* reset keeps RSV3: a stray value (132 after a flash) is no mark */
+        wake_due = 0;
+}
+
 /* Y3 must run before the sleep: selected while still starting (~1 s after power-on) it stops the HBN RTC counter,
  * and it does not start in HBN, so the chip never wakes (2026-10-22, cold start). Wait until the counter moves on
  * Y3; if it never does, RC32K, so the chip still wakes. */
@@ -905,6 +932,7 @@ static int cmd_sleep(int argc, char **argv)
     printf("pt_sleep: K230 off, HBN level 0 for %lu s (RTC on %s); unplug PR1 now for the sleep current\r\n",
            (unsigned long)s, y3 ? "Y3" : "RC32K");
     bflb_mtimer_delay_ms(50);           /* let the USB console send the line */
+    WAKE_MARK = (uint32_t)(rtc_now() + (uint64_t)s * 32768u) | 1u;  /* pm_hbn_mode_enter() reads it <= 1 tick later */
     pm_hbn_mode_enter(PM_HBN_LEVEL_0, (uint64_t)s * 32768u);
     while (1) {
     }
@@ -940,6 +968,93 @@ static int cmd_rtc(int argc, char **argv)
 SHELL_CMD_EXPORT_ALIAS(cmd_rtc, pt_rtc, HBN RTC counter rate [xtal | rc]);
 #endif
 
+#if PT_TEST_TIMING
+#include "bflb_mtd.h"
+#include "easyflash.h"
+
+static void min_max(uint32_t v, uint32_t *lo, uint32_t *hi)
+{
+    if (v < *lo)
+        *lo = v;
+    if (v > *hi)
+        *hi = v;
+}
+
+/* test021: the always-on side's own timings, min / max over 5 runs (us, the mtimer) */
+static int cmd_time(int argc, char **argv)
+{
+    static bool ef_up;
+    uint32_t lo, hi, t;
+    if (wake_due)
+        printf("wake -> main: %lu us (RTC wake due at tick %lu, main at %lu, 30.5 us per tick)\r\n",
+               (unsigned long)((uint64_t)(wake_main - wake_due) * 1000000u / 32768u), (unsigned long)wake_due,
+               (unsigned long)wake_main);
+    else
+        printf("wake -> main: no pt_sleep wake since this boot started (pt_sleep 5, then pt_time)\r\n");
+    printf("core timer at main(): %lu us\r\n", (unsigned long)main_mtimer);
+
+    if (rails_on) {
+        printf("K230_PWR -> 3V3 up: rails on, pt_off first\r\n");
+    } else {
+        LOCKED(t = rails_on_timed());
+        printf("K230_PWR -> 3V3 up: %lu us (rails left on, K230 in reset)\r\n", (unsigned long)t);
+    }
+
+    lo = UINT32_MAX, hi = 0;
+    for (int i = 0; i < 5; i++) {
+        int rh, tc;
+        uint64_t t0 = bflb_mtimer_get_time_us();
+        enum aht20_result r;
+        LOCKED(r = aht20_read(&rh, &tc));
+        if (r != AHT20_OK) {
+            printf("AHT20: %s\r\n", aht20_err(r));
+            break;
+        }
+        min_max((uint32_t)(bflb_mtimer_get_time_us() - t0), &lo, &hi);
+    }
+    printf("AHT20 trigger -> data: %lu .. %lu us\r\n", (unsigned long)lo, (unsigned long)hi);
+
+    lo = UINT32_MAX, hi = 0;
+    for (int i = 0; i < 5; i++) {
+        uint64_t t0 = bflb_mtimer_get_time_us();
+        LOCKED((void)leak_mv());
+        min_max((uint32_t)(bflb_mtimer_get_time_us() - t0), &lo, &hi);
+    }
+    printf("leak probe ADC (init, 6 conversions, the first 5 dropped): %lu .. %lu us\r\n", (unsigned long)lo,
+           (unsigned long)hi);
+
+    if (!ef_up) {
+        uint64_t t0 = bflb_mtimer_get_time_us();
+        bflb_mtd_init();
+        easyflash_init();
+        ef_up = true;
+        printf("easyflash on littlefs (PSM) init: %lu us\r\n", (unsigned long)(bflb_mtimer_get_time_us() - t0));
+    }
+    uint8_t w[64], r[64];
+    for (unsigned i = 0; i < sizeof(w); i++)
+        w[i] = (uint8_t)(i * 13 + 7);
+    uint32_t slo = UINT32_MAX, shi = 0, glo = UINT32_MAX, ghi = 0, bad = 0;
+    for (int i = 0; i < 5; i++) {
+        w[0] = (uint8_t)i;                          /* a changed value each time: a real write */
+        uint64_t t0 = bflb_mtimer_get_time_us();
+        ef_set_env_blob("pt_t021", w, sizeof(w));
+        uint64_t t1 = bflb_mtimer_get_time_us();
+        size_t n = ef_get_env_blob("pt_t021", r, sizeof(r), NULL);
+        uint64_t t2 = bflb_mtimer_get_time_us();
+        min_max((uint32_t)(t1 - t0), &slo, &shi);
+        min_max((uint32_t)(t2 - t1), &glo, &ghi);
+        bad += n != sizeof(w) || memcmp(w, r, sizeof(w));
+    }
+    uint64_t t0 = bflb_mtimer_get_time_us();
+    ef_del_env("pt_t021");
+    printf("easyflash 64 B key: set %lu .. %lu us, get %lu .. %lu us, delete %lu us, %lu of 5 read back wrong\r\n",
+           (unsigned long)slo, (unsigned long)shi, (unsigned long)glo, (unsigned long)ghi,
+           (unsigned long)(bflb_mtimer_get_time_us() - t0), (unsigned long)bad);
+    return 0;
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_time, pt_time, test021 timings: wake to main + 3V3 ramp + AHT20 + probe ADC + easyflash key);
+#endif
+
 static void pins_init(void)
 {
     gpio = bflb_device_get_by_name("gpio");
@@ -967,6 +1082,9 @@ static void pins_init(void)
 
 int main(void)
 {
+#if PT_TEST_SLEEP
+    wake_mark_take();      /* before board_init: the wake latency ends here */
+#endif
     board_init();          /* also starts the USB CDC console and its shell (defconfig) */
     pins_init();
     hw = xSemaphoreCreateMutex();

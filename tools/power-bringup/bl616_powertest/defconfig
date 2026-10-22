@@ -10,3 +10,9 @@ CONFIG_CHERRYUSB_DEVICE         =y
 CONFIG_CHERRYUSB_DEVICE_CDC     =y
 CONFIG_CHERRYUSB_DEVICE_CDC_ACM =y
 CONFIG_BSP_CONSOLE_USB_CDC      =y
+
+# pt_time (test021): easyflash on littlefs in the PSM partition, as the product keeps its Wi-Fi credentials
+CONFIG_LITTLEFS                 =y
+CONFIG_LITTLEFS_KV_EASYFLASH    =y
+CONFIG_BFLB_MTD                 =y
+CONFIG_PARTITION                =y

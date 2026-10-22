@@ -13,6 +13,7 @@
 #define PT_TEST_SDIO   1   /* pt_sdio: SDIO lines to K230 MMC0: edges while it probes, driven patterns  */
 #define PT_TEST_SDU    1   /* pt_sdu: SDIO device echo (the SDK's sdio2_test) for the K230 bus speed test */
 #define PT_TEST_SLEEP  1   /* pt_sleep: K230 off, HBN level 0, RTC wake after <s> (test031 sleep current) */
+#define PT_TEST_TIMING 1   /* pt_time: test021 timings (wake -> main, rails, AHT20, ADC, easyflash key)   */
 
 #if PT_TEST_UART && !PT_TEST_POWER
 #error "PT_TEST_UART needs PT_TEST_POWER: the link pins may only be driven while the K230 3V3 is up"
@@ -22,6 +23,9 @@
 #endif
 #if PT_TEST_SLEEP && !PT_TEST_POWER
 #error "PT_TEST_SLEEP needs PT_TEST_POWER: the K230 rails go off before the BL616 hibernates"
+#endif
+#if PT_TEST_TIMING && !(PT_TEST_SLEEP && PT_TEST_I2C && PT_TEST_LEAK)
+#error "PT_TEST_TIMING times the RTC wake (PT_TEST_SLEEP), the AHT20 (PT_TEST_I2C) and the probe ADC (PT_TEST_LEAK)"
 #endif
 
 #endif

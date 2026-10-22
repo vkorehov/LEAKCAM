@@ -1,12 +1,15 @@
 # test021: BL616: wake latency, flash storage, sensor reads
 
-Status: **planned** (2026-10-21).
+Status: **pass** (2026-10-22): RTC wake -> main() 12-16 ms (one 245 ms outlier, open), 3V3 ramp 1.7 ms, AHT20 50 ms, easyflash key set 1 ms / get 0.6 ms; probe ADC 3-32 ms spread open.
 
 The always-on side's speed: how fast a wake turns into a K230 power-on, and the cost of its own jobs.
 
 ## Setup
 
-To fill: hookup, firmware / image, and the probes named in Metrics.
+BL616 test firmware (tools/power-bringup/bl616_powertest) with `pt_time` (PT_TEST_TIMING): min / max of 5 runs on the
+core timer (us). Wake latency: `pt_sleep 5` writes the RTC tick the wake is due at into HBN_RSV3 (an AON register
+the SDK leaves alone; HBN RAM did not keep it), `main()` reads the RTC (30.5 us ticks) and the core timer before
+`board_init()`. K230 off except for the 3V3 ramp. USB-C 1 powers the board.
 
 ## Needs (build features and dependencies)
 
@@ -28,7 +31,22 @@ Figures recorded; wake to K230 power-on within the design's budget (DESIGN.md).
 
 ## Results
 
-Not run yet.
+### 2026-10-22
+
+| Timing | Value | Note |
+|---|---|---|
+| RTC wake -> `main()` | **12.3, 13.8, 15.2, 15.5 ms**; once 245.6 ms | outlier: the first sleep after a cold Y3 start (Y3 running 1020 ms before), open |
+| of which core reset -> `main()` (ROM + boot2 + C start-up) | 5.28 ms (cold reset and wake alike) | the core timer counts from the core's reset |
+| so wake -> core reset (power-up, clocks) | ~7-10 ms | |
+| `main()` -> K230_PWR | not timed: the product decides here (leak_wake.c) | |
+| K230_PWR -> 3V3 up | 1.68-1.70 ms | 4 runs |
+| AHT20 trigger -> data | 50.2-51.2 ms | the driver's first read at 50 ms (datasheet 80 ms max); worth a status poll from ~40 ms |
+| Leak probe ADC (init + 6 conversions, the first 5 dropped) | **3.1 .. 31.8 ms** | one of 5 runs ~10x slower every time: open (in the leak wake path) |
+| easyflash on littlefs: mount | 4.3-4.8 ms; 63 ms the first time (empty PSM, reformatted) | |
+| easyflash 64 B key: set / get / delete | 0.9-1.6 ms (once 20-24 ms: littlefs compaction) / 0.6-1.3 ms / 1.0-1.4 ms | 25 of 25 read back right |
+
+Wake to K230 power-on on the BL616 side: ~15 ms + the product's decision + 1.7 ms ramp; the K230 boot (0.48 s, test022)
+dominates.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -45,8 +63,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
-| Image (sizes) | to fill | minimal image (rule) | the image this run used |
-| Compile flags | to fill | smallest code (rule) | |
+| Image (sizes) | BL616 test firmware 149 984 B (+29 KB storage stack) | minimal image (rule) | the image this run used |
+| Compile flags | BL616 SDK -Os -g, sections, --gc-sections, -flto | smallest code (rule) | |
 | Features over the minimal image | to fill: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
 | Optimised build (-O3, LTO, -march) | to fill: speed / size / boot / current vs the current flags | the faster one stays | |
 
@@ -60,4 +78,10 @@ The BL616's current while awake (humidity slice, wake handling) and how long; en
 
 ## Obstacles
 
-None yet.
+- **Wake marker in HBN RAM lost** -> the SDK startup copies its hbn_ram section into HBN RAM (or boot2/ROM use it) ->
+  HBN_RSV3 (AON register, kept across resets as RSV2 is).
+- **HBN_RSV3 held 132 after the flash's reset** -> a reset keeps it, so a stale value read as a 1 h "wake" -> accept a
+  mark only if < 2 s old.
+- **`SHELL_CMD_EXPORT_ALIAS` failed on commas in the help text** (the macro splits on them) -> no commas.
+- **Test firmware +29 KB** (120 784 -> 149 984 B): littlefs + easyflash + MTD (the product's storage stack), this test's Needs.
+
