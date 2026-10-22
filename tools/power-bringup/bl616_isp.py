@@ -10,7 +10,8 @@ it sets the HBN user-boot field to 1 and does a power-on reset, and the ROM then
 high. Their console is the SDK's USB CDC (ffff:ffff); the ROM enumerates as Bouffalo CDC (349b:6160).
 The field lives in HBN_RSV2 (0x2000F108), which a reset keeps: BLFlashCommand's reset alone lands in the ROM
 again, only EN cleared it. --boot does what the vendor's bflb_eflash_loader.clear_boot_status() does (ISP
-memory write 0x50, HBN_RSV2 = 0), then the ISP reset 0x21, in the ROM session the flasher left open.
+memory write 0x50, HBN_RSV2 = 0), then the ISP reset 0x21, in the ROM session the flasher left open (or a new one:
+the ROM closes a session after ~2 s idle; then 0x55 bytes until it answers OK).
 A firmware that never reaches its console cannot be switched this way: BOOT + EN by hand
 (README.md section 2). Under VMware every re-enumeration needs "connect to Linux" on the Mac.
 """
@@ -92,9 +93,20 @@ def boot(port):
         attr[6][termios.VMIN], attr[6][termios.VTIME] = 0, 0
         termios.tcsetattr(fd, termios.TCSANOW, attr)
         os.set_blocking(fd, True)
-        ok, ack = isp_cmd(fd, 0x50, (0x2000F108).to_bytes(4, "little") + bytes(4))
+        clear = (0x2000F108).to_bytes(4, "little") + bytes(4)
+        ok, ack = isp_cmd(fd, 0x50, clear)
         if not ok:
-            sys.exit(f"bl616_isp: HBN_RSV2 write refused ({ack!r}); tap EN")
+            # the ROM ends an ISP session after ~2 s without a command (the vendor tool sets that timeout): if the
+            # flasher's container took longer to exit, hand-shake again - 0x55 bytes until it answers OK (2026-10-22)
+            for _ in range(3):
+                termios.tcflush(fd, termios.TCIFLUSH)
+                os.write(fd, b"\x55" * 600)
+                time.sleep(0.2)
+                if b"OK" in os.read(fd, 64):
+                    break
+            ok, ack = isp_cmd(fd, 0x50, clear)
+        if not ok:
+            sys.exit(f"bl616_isp: HBN_RSV2 write refused ({ack!r}), also after a new handshake; tap EN")
         isp_cmd(fd, 0x21)  # the chip resets at once; the OK may not get out
     finally:
         os.close(fd)

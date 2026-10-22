@@ -81,3 +81,6 @@ n/a: flashing and the console run from USB power.
   write 0x50 HBN_RSV2 = 0 (as the vendor's `clear_boot_status()` in bflb-mcu-tool) and ISP reset 0x21; `make flash`
   runs it. Verified 2026-10-22 09:38: `reboot uart` -> new firmware console in 18 s, no hand action but the 2 VMware
   clicks.
+- **`--boot` refused once ("b''", 2026-10-22 22:29)** -> the ROM had closed the ISP session: it ends one after ~2 s
+  without a command, and the flasher's container took longer than that to exit -> `--boot` hand-shakes again
+  (0x55 bytes until "OK") and retries; done by hand once, then built into bl616_isp.py.
