@@ -58,7 +58,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | This part's boot share | not measured yet | - | |
 | Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
 | BL616 step times (wake -> K230 power-on, I2C read) | not measured yet | I2C 400 kHz (now 100) | % of the top |
-| Current idle / during (min / avg / peak) | not measured yet | floor (test031) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Current idle / during (min / avg / peak) | 88 mA at 10:19 (BL616 awake idle, K230 rails on and held in reset after pt_time; 87 mA on 2026-10-21 in the same state); the timed jobs last < 0.1 s, too short for the meter | floor (test031) | USB-C 1 VBUS |
 | Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
