@@ -1,6 +1,6 @@
 # test019: K230 USB-C 1: USB boot and flashing speed
 
-Status: **in progress** (2026-10-22): K230 whole image 25.7 s (erase 8 s, write 3.5-5.6 MB/s, USB 2.0 high speed); BL616 ISP 18 s to the new console.
+Status: **pass** (2026-10-22, 2 runs): K230 whole image 25.7 / 26.9 s (erase 8 s, write 3.1-5.6 MB/s, USB 2.0 high speed); BL616 ISP flasher 4 s at 2 Mbaud, no hand action; current during the 15 s write not read.
 
 USB-C 1's data lines are used only for USB boot and flashing (the product needs no USB data). Record what the
 flash path achieves, and its total time, as a reference for production programming.

@@ -45,8 +45,8 @@ written when it happens). Nothing is left out: an empty part says so ("Not run y
 | [test015 SDIO speed](test015-sdio-speed/README.md) | 2026-10-21 | pass: 50 MHz 4-bit, bus 21 MB/s, end to end 9.4 MB/s, no CRC errors; soak 56 runs / 109 MB clean |
 | [test016 DDR bandwidth](test016-ddr-bandwidth/README.md) | | pass at 2667: 4.05/4.08 GB/s, CPU 1600 MHz |
 | [test017 NAND raw speed and SPI clock](test017-nand-raw-speed/README.md) | | 80 MHz adopted (20.6 MB/s), 100 MHz: no sample window |
-| [test018 UART link speed and latency](test018-uart-link-speed/README.md) | 2026-10-22 | pass: clean up to 4 Mbaud (10 MB), 6 Mbaud fails; 16 B round trip 1.48 ms -> 55 us |
-| [test019 USB boot and flashing speed](test019-usb-flash-speed/README.md) | | planned |
+| [test018 UART link speed and latency](test018-uart-link-speed/README.md) | 2026-10-22 | pass: 4 Mbaud adopted, one rate from boot (10 MB, 0 errors, 353 KB/s); 6 Mbaud fails; round trip 1.48 ms -> 54 us |
+| [test019 USB boot and flashing speed](test019-usb-flash-speed/README.md) | 2026-10-22 | pass: K230 image 26 s (erase 8 s, 5.6 MB/s, USB HS), BL616 4 s flash, no EN tap; ~45 s per board |
 | [test020 camera CSI and I2C speed](test020-camera-csi-i2c/README.md) | | planned |
 | [test021 BL616 internal timing](test021-bl616-internal-timing/README.md) | | planned |
 | [test022 K230 boot time](test022-boot-time/README.md) | | 0.506 s to app init (NAND 80 MHz, small /bin + /sdcard, one ISP set); mounts 0.22 s |
