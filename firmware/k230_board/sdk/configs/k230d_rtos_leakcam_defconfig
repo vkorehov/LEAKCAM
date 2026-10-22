@@ -30,3 +30,7 @@ CONFIG_MPP_ENABLE_SENSOR_OV5647=y
 CONFIG_APP_ENABLE_LEAKCAM=y
 # networking comes from the BL616 over SDIO, not USB LAN
 # CONFIG_ENABLE_NETWORK_RT_LAN_OVER_USB is not set
+
+# --- LEAKCAM minimal image (tests/test008, 2026-10-22): inherited from the CanMV board, unused here
+# CONFIG_MPP_ENABLE_MIDDLEWARE_LIB_FFMPEG is not set
+# CONFIG_MPP_DSI_ENABLE_VIRT is not set

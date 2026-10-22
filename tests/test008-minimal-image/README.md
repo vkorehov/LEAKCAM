@@ -67,6 +67,17 @@ RT_USING_USAGE (sys_cpu_usage).
 | options =y | 145 | 127 | -18 |
 | boot to app init | 0.506 s | to measure on the board | |
 
+### Build 2, 2026-10-22: inherited from the CanMV board, unused here
+
+Off: `MPP_ENABLE_MIDDLEWARE_LIB_FFMPEG` (nothing of ours links libav*: streaming is rtmp.c + Opus) and
+`MPP_DSI_ENABLE_VIRT` (virtual display; no display on LEAKCAM). rtthread.bin 3 711 904 B (-248 B), programs and
+kdimg unchanged: both were only built, never in the image - the gain is build time (FFmpeg). Reviewed, kept:
+the MPP threads (auto_load, mcm_task, thermal_detect) and the boot messages "Can't find sensor on csi0/2", "vo delay
+timer" come from the prebuilt MPP libraries (needed for cameras/encoder); etx/erx (lwIP netif of the Wi-Fi bridge),
+mmcsd_detect (SDIO to the BL616), the GPIO threads. To check: MPP_ISP_CONFIG_INSTALL_BIN and _JSON_XML both on (the
+ISP set twice in /bin; with the cameras, test020/030); FAST_BOOT_CONFIGURATION packs one program into the image
+(rtapp.elf.gz, CanMV's MicroPython) - a speed candidate for leakcam_agent/wake, to measure later.
+
 The kernel's bulk is in what the product needs (MPP, GNNE/KPU, lwIP, the WLAN framework): the larger levers are
 the flags (kernel -O1 -g; programs without sections/LTO) and leakcam_wake (5.18 MB).
 
