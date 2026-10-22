@@ -1,6 +1,6 @@
 # test033: every BL616 pin: function, levels, back-feed
 
-Status: **pass** (2026-10-22): every pin as in the table in 5 states (pt_pins + pin_check.py, 0 off); product fixed: BOOT1 (IO27) was never driven; back-feed: rails off, no K230-side pin driven or pulled, 3V3 sense 0 of 5, meter: see Results.
+Status: **pass** (2026-10-22): every pin as in the table in 5 states (pt_pins + pin_check.py, 0 off); product fixed: BOOT1 (IO27) was never driven; no back-feed (rails off: no K230-side pin driven or pulled, 3V3 rail 0 V at C87).
 
 The K230's pads were checked by configuration (check_pad_voltage.py: every bank's voltage against the board, before
 each flash) and by line tests with both ends (test014 SDIO). This is the same for every BL616 (Ai-M62-CBS, U11) pin.
@@ -77,7 +77,7 @@ Every pin as in the table in every state; no back-feed; unused pins in a defined
 | IO4-9, 18, 19, 23-26, 31-34 | not connected | GPIO, ie 0 oe 0, no pull | same | same | reset default: input buffer off, high-Z: defined |
 
 **Back-feed, rails off:** no K230-side pin (IO10-15, IO21, IO22) driven or pulled, IO01 an input; 3V3 sense 0 of
-5 (below VIL); VBUS 63 mA (BL616 awake, K230 off). K230 3V3 rail with the meter: see below.
+5 (below VIL); VBUS 63 mA (BL616 awake, K230 off); **K230 3V3 rail at C87.1 (test003 point 7): 0 V** (meter, 11:24): no back-feed.
 
 **Found:**
 - **The product firmware never drove IO27 (BOOT1).** Floating, BOOT1 read 0.5 V, at the 1.8 V bank's VIL
@@ -100,7 +100,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Test run time | ~4 min of dumps (5 states); setup: 4 builds + flashes (~2 clicks each) | - | setup (flashing, plugging, waiting) separately |
 | Speed / rate (none for this test) | not measured yet | - | % of the top |
 | Current idle / during (min / avg / peak) | 63 mA rails off (BL616 awake, USB VBUS); the dumps are instant | floor (test031) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
-| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
+| Voltage under load (min) | K230 3V3 rail 0 V with the rails off (C87.1, back-feed check) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
