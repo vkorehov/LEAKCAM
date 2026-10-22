@@ -1,6 +1,6 @@
 # test008: minimal image - the fewest bits that still boot and pass
 
-Status: **planned** (2026-10-22). **Runs first after board bring-up** (after test007, the first RT-Smart boot): the
+Status: **in progress** (2026-10-22): build 1 (unused defaults off) -1 % kernel, -147 KB programs; flags next. **Runs first after board bring-up** (after test007, the first RT-Smart boot): the
 floor every later test builds its `## Needs` on.
 
 The standing practice (tests/README) keeps every build minimal; this test pushes it to the floor on purpose: remove
@@ -51,7 +51,24 @@ and the product image set to the smallest one that passes every test's `## Needs
 
 ## Results
 
-Not run yet.
+### Build 1, 2026-10-22: defaults no test needs, off (speed first: none of them speeds anything up)
+
+Off: VG_LITE, UART2/3/4, I2C_BITOPS, SAL AF_UNIX, LWIP IGMP / RAW / NETIF_LOOPBACK / USING_PING, NETDEV
+ifconfig/ping/netstat, WLAN MSH_CMD / AUTO_CONNECT / CFG / SCAN_SORT, OVERFLOW_CHECK; the temporary test programs
+memtest and venctest out of the image (SDK copy: moved to src/applications_off). Kept because the SDK itself
+references them: RT_DEBUG (44 RT_ASSERT users), RT_USING_PROC + DFS_PROCFS (17 drivers register /proc entries),
+RT_USING_USAGE (sys_cpu_usage).
+
+| | Baseline | Build 1 | Difference |
+|---|---|---|---|
+| rtthread.bin | 3 749 752 B | 3 712 152 B | -37.6 KB (-1.0 %) |
+| /sdcard programs | 6 763 034 B | 6 616 314 B | -147 KB (memtest, venctest) |
+| kdimg | 45.41 MB | 45.38 MB | |
+| options =y | 145 | 127 | -18 |
+| boot to app init | 0.506 s | to measure on the board | |
+
+The kernel's bulk is in what the product needs (MPP, GNNE/KPU, lwIP, the WLAN framework): the larger levers are
+the flags (kernel -O1 -g; programs without sections/LTO) and leakcam_wake (5.18 MB).
 
 ### Baseline 2026-10-22
 
@@ -95,4 +112,8 @@ Energy per wake per build (ENERGY.txt section 3): the gain in uAh per wake and p
 
 ## Obstacles
 
-None yet.
+- **Link failed after switching defaults off** (rt_assert_handler, rt_proc_entry_*, sys_cpu_usage undefined) -> SDK
+  code needs RT_DEBUG, RT_USING_PROC + DFS_PROCFS and RT_USING_USAGE -> kept on.
+- **Defconfig step failed** (Kconfig.app: can't open venctest/Kconfig) -> the app list is generated from the folders
+  in src/applications; the other session's temporary venctest had no Kconfig -> memtest and venctest moved to
+  src/applications_off (SDK copy).
