@@ -13,7 +13,7 @@ To fill: hookup, firmware / image, and the probes named in Metrics.
 
 MPP VENC (H.265), venctest (temporary), VPU clock.
 
-(What this test uses; the union over all tests is the feature set test200/201 must keep.)
+(What this test uses; the union over all tests is the feature set the minimal image keeps.)
 
 ## Steps
 
@@ -76,8 +76,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | 2 channels: +62 mW over idle; a 5 s two-camera clip +0.31 J (21 uAh) for the encoder alone | - | by hand |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | 47.9 / 48.5 / 47.9 C (board not read) | K230 limit (datasheet) | encoder adds no measurable heat in 20 s |
-| Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB | test200 / test201 | the image this run used |
-| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, --gc-sections (no -ffunction-sections, no LTO) | test200 / test201 | |
+| Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB | minimal image (rule) | the image this run used |
+| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, --gc-sections (no -ffunction-sections, no LTO) | smallest code (rule) | |
 
 ## Boot time
 

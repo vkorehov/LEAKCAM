@@ -13,7 +13,7 @@ To fill: hookup, firmware / image, and the probes named in Metrics.
 
 UFFS on nand1, dfs_posix (open/write/fsync/statfs), plt_write/plt_check (leakcam_bench.c).
 
-(What this test uses; the union over all tests is the feature set test200/201 must keep.)
+(What this test uses; the union over all tests is the feature set the minimal image keeps.)
 
 ## Steps
 
@@ -60,8 +60,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | n/a | - | |
 | Per day | n/a | - | |
 | Temperature die / board | not measured: missed in the short run (taken in the long run) | - | |
-| Image (sizes) | kdimg 58.4 MB (/sdcard 32 MiB, /bin 20 MiB), kernel 3.75 MB | test200 / test201 | the image this run used |
-| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, --gc-sections (no -ffunction-sections, no LTO) | test200 / test201 | |
+| Image (sizes) | kdimg 58.4 MB (/sdcard 32 MiB, /bin 20 MiB), kernel 3.75 MB | minimal image (rule) | the image this run used |
+| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, --gc-sections (no -ffunction-sections, no LTO) | smallest code (rule) | |
 
 ## Boot time
 

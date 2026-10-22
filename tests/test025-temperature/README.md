@@ -13,7 +13,7 @@ To fill: hookup, firmware / image, and the probes named in Metrics.
 
 K230 temperature sensor (TS driver, chip_temp).
 
-(What this test uses; the union over all tests is the feature set test200/201 must keep.)
+(What this test uses; the union over all tests is the feature set the minimal image keeps.)
 
 ## Steps
 
@@ -59,8 +59,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | idle 0.85 W, memtest 1.01 W (+0.16 W) | - | x 4.15 V, by hand |
 | Per day | n/a: bench measurement | - | |
 | Temperature die / board (start / peak / end) | 49.1 / 53.3 / 49.1 C, board 39.3 / 39.9 / 39.4 C | K230 limit (datasheet) | this test |
-| Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB | test200 / test201 | the image this run used |
-| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, --gc-sections (no -ffunction-sections, no LTO) | test200 / test201 | |
+| Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB | minimal image (rule) | the image this run used |
+| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, --gc-sections (no -ffunction-sections, no LTO) | smallest code (rule) | |
 
 ## Boot time
 

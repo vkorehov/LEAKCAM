@@ -21,7 +21,7 @@ timestamps (skill k230-rtsmart-hangs `console_record.py`, K230 console on the CH
 
 Kernel init levels, UFFS mounts (dominant), boot_times (leakcam_bench.c); SPL/U-Boot NAND clock.
 
-(What this test uses; the union over all tests is the feature set test200/201 must keep.)
+(What this test uses; the union over all tests is the feature set the minimal image keeps.)
 
 ## Steps
 
@@ -83,8 +83,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per boot (to app init) | ~215 mA x 0.88 s = 0.72 J, 53 uAh (1.0 s: 0.82 J) | - | 3.8 V nominal |
 | Per day | 4 report sessions: 0.24 mAh/day (boot to app init only) | ENERGY.txt 3 | 0.7 % of 1000 mAh / month |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
-| Image (sizes) | kdimg 45.4 MB (/sdcard 32 MiB, /bin 8 MiB one ISP set), kernel 3.75 MB, /bin 0.68 MB, /sdcard programs 6.76 MB (latest run) | test200 / test201 | the image this run used |
-| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, --gc-sections (no -ffunction-sections, no LTO) | test200 / test201 | |
+| Image (sizes) | kdimg 45.4 MB (/sdcard 32 MiB, /bin 8 MiB one ISP set), kernel 3.75 MB, /bin 0.68 MB, /sdcard programs 6.76 MB (latest run) | minimal image (rule) | the image this run used |
+| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, --gc-sections (no -ffunction-sections, no LTO) | smallest code (rule) | |
 
 ## Boot time
 

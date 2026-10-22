@@ -13,7 +13,7 @@ To fill: hookup, firmware / image, and the probes named in Metrics.
 
 Kernel only: rdtime/rdcycle, rt_malloc (bench in leakcam_bench.c); no drivers.
 
-(What this test uses; the union over all tests is the feature set test200/201 must keep.)
+(What this test uses; the union over all tests is the feature set the minimal image keeps.)
 
 ## Steps
 
@@ -60,8 +60,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | +66 mA = +251 mW over idle; 18 mJ per 64 MB pass set | - | 3.8 V nominal |
 | Per day | n/a (no DDR-only work in a session) | - | |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
-| Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB | test200 / test201 | the image this run used |
-| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, --gc-sections (no -ffunction-sections, no LTO) | test200 / test201 | |
+| Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB | minimal image (rule) | the image this run used |
+| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, --gc-sections (no -ffunction-sections, no LTO) | smallest code (rule) | |
 
 ## Boot time
 
