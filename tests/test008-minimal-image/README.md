@@ -65,7 +65,7 @@ RT_USING_USAGE (sys_cpu_usage).
 | /sdcard programs | 6 763 034 B | 6 616 314 B | -147 KB (memtest, venctest) |
 | kdimg | 45.41 MB | 45.38 MB | |
 | options =y | 145 | 127 | -18 |
-| boot to app init | 0.506 s | to measure on the board | |
+| boot to app init | 0.506 s | 0.484-0.494 s (builds 1+2) | -12..-22 ms |
 
 ### Build 2, 2026-10-22: inherited from the CanMV board, unused here
 
@@ -77,6 +77,10 @@ timer" come from the prebuilt MPP libraries (needed for cameras/encoder); etx/er
 mmcsd_detect (SDIO to the BL616), the GPIO threads. To check: MPP_ISP_CONFIG_INSTALL_BIN and _JSON_XML both on (the
 ISP set twice in /bin; with the cameras, test020/030); FAST_BOOT_CONFIGURATION packs one program into the image
 (rtapp.elf.gz, CanMV's MicroPython) - a speed candidate for leakcam_agent/wake, to measure later.
+
+**Build 1 + 2 on the board (2026-10-22, flashed 05:2x):** boots; 3 cold boots app init **0.484 / 0.494 / 0.493 s**
+(was 0.506; mounts 0.20-0.21 s instead of 0.22: 147 KB less on /sdcard); ADC, I2C (both buses clean), RTC, NAND
+80 MHz (20.6 MB/s, 0 errors), pads all as before; die 42.5 C; flash write 205 mA.
 
 The kernel's bulk is in what the product needs (MPP, GNNE/KPU, lwIP, the WLAN framework): the larger levers are
 the flags (kernel -O1 -g; programs without sections/LTO) and leakcam_wake (5.18 MB).
