@@ -221,7 +221,7 @@ compare each camera with what its history shows (cam<N>.hist; none yet = new):
 imgdiff, then the change net where imgdiff saw a change (below the camera's threshold = light)
   |-- same or light on every camera, and no sensor alarm ----> sleep 6 h
   |   (once a day a light pair near its threshold is reported as a sample)
-  | new, or a sensor alarm (probe wake, humidity alarm, probe node < 825 mV)
+  | new, or a sensor alarm (probe wake, humidity alarm, probe node < 850 mV)
 no server configured (/sdcard/leakcam/server) --------------> sleep 1 h
   |
 "wifi" to the agent -> WIFI to the BL616 -> MMC0 probe
@@ -254,7 +254,7 @@ POST /v1/check?reason=&probe_mv=&bat_mv=&rh=&t=&nn=&thr=&cam<i>=, both reduced f
 
 **Server protocol (HTTP/1.1, one request per connection).** The mock is
 `firmware/k230_capture/mock_server.py`; it answers "leak" when the probes say wet (the reason
-is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
+is `leak`, or the probe node is below 850 mV), or always / never with `--leak`.
 
 | Request | Body | Reply |
 |---|---|---|
@@ -278,7 +278,7 @@ is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
   wake is a reset; the cold boot's result is stored in aon_state and handed back through bflb_adc.c's
   globals: the first probe reading after a wake 31.2 -> 2.6 ms (tests/test021).
 - **Wake sources:**
-  - leak line on ACOMP1, trip at 0.825 V;
+  - leak line on ACOMP1, trip at 0.85 V (vio_sel 17; the scaling factor has no effect, tests/test034);
   - USB plug-in via PGOOD on ACOMP0;
   - the RTC.
 - **The BL616 does not judge.** It keeps no memory of what was reported: a probe reading wet or

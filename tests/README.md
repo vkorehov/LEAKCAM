@@ -61,7 +61,7 @@ written when it happens). Nothing is left out: an empty part says so ("Not run y
 | [test031 sleep and minimal currents](test031-sleep-current/README.md) | 2026-10-22 | RTC wake fixed (HBN pin pulls off + wait for Y3), 5/5 wakes; 1.23 mA asleep through USB; battery figure open |
 | [test032 RTC wake](test032-rtc-wake/README.md) | 2026-10-22 | wake works on Y3 (5/5); Y3 -110 ppm open |
 | [test033 every BL616 pin: function, levels, back-feed](test033-bl616-pins/README.md) | 2026-10-22 | pass: all pins as the table in 5 states (pt_pins + pin_check.py); product BOOT1 (IO27) fix; back-feed none |
-| [test034 leak probe wake](test034-leak-probe-wake/README.md) | | planned |
+| [test034 leak probe wake](test034-leak-probe-wake/README.md) | 2026-10-22 | pass with opens: product threshold fixed (was 1.65 V = dry, now 0.85 V); S1-S3 detected; HBN wake wet and dry works; water types, sweep, 24 h open |
 | [test035 USB plug wake](test035-usb-plug-wake/README.md) | | planned |
 | [test036 K230 hang recovery](test036-k230-hang-recovery/README.md) | | planned |
 | [test037 K230 PMU RTC](test037-k230-rtc/README.md) | 2026-10-21 | step 0 pass: runs from Y1 (+25 ppm vs 27 MHz), UTC fixed; handover open |

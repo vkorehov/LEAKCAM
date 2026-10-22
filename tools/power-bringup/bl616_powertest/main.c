@@ -51,6 +51,7 @@
 #endif
 #if PT_TEST_LEAK
 #include "bflb_adc.h"
+#include "bflb_acomp.h"
 #endif
 #if PT_TEST_SLEEP
 #include "bl616_hbn.h"
@@ -631,19 +632,99 @@ SHELL_CMD_EXPORT_ALIAS(cmd_usb, pt_usb, USB cable detection (PGOOD));
 #endif
 
 #if PT_TEST_LEAK
+/* test034: the leak comparator exactly as the product's leak_init() (leak_wake.c): ACOMP1 on ADC0 = IO20 against
+ * vio_sel 17 x 50 mV = 0.85 V (the scaling factor has no effect: `pt_leak sweep`), 30 mV hysteresis each way, slowest
+ * bias. Wet = node below the reference = below ~430 kohm across a probe. */
+static void leak_acomp_init(void)
+{
+    struct bflb_acomp_config_s cfg = {
+        .mux_en = ENABLE,
+        .pos_chan_sel = AON_ACOMP_CHAN_ADC0,
+        .neg_chan_sel = AON_ACOMP_CHAN_VIO_X_SCALING_FACTOR_1,
+        .vio_sel = 17,                                          /* 0.85 V: vio_sel x 50 mV */
+        .scaling_factor = AON_ACOMP_SCALING_FACTOR_1,           /* no effect on this input */
+        .bias_prog = AON_ACOMP_BIAS_POWER_MODE1,
+        .hysteresis_pos_volt = AON_ACOMP_HYSTERESIS_VOLT_30MV,
+        .hysteresis_neg_volt = AON_ACOMP_HYSTERESIS_VOLT_30MV,
+    };
+    bflb_acomp_init(AON_ACOMP1_ID, &cfg);
+    bflb_acomp_enable(AON_ACOMP1_ID);
+    bflb_mtimer_delay_ms(1);
+}
+
+static bool leak_acomp_wet(void)
+{
+    return bflb_acomp_get_result(AON_ACOMP1_ID) == 0;
+}
+
+static const char *wake_names(unsigned w);
+static unsigned last_wake;                         /* main(): HBN wake sources of this boot (WAKE_* bits) */
+
 static int cmd_leak(int argc, char **argv)
 {
+    if (argc > 1 && !strcmp(argv[1], "sweep")) {   /* where does the comparator flip against the probe node? */
+        static const struct { uint8_t sf; const char *name; } sfs[] = {
+            { AON_ACOMP_SCALING_FACTOR_0P25, "0.25" }, { AON_ACOMP_SCALING_FACTOR_0P5, "0.5" },
+            { AON_ACOMP_SCALING_FACTOR_0P75, "0.75" }, { AON_ACOMP_SCALING_FACTOR_1, "1" } };
+        int mv;
+        LOCKED(mv = leak_mv());
+        printf("pt_leak sweep: node %d mV; output per vio_sel 0..63 (1 = node above the reference)\r\n", mv);
+        for (unsigned k = 0; k < sizeof(sfs) / sizeof(sfs[0]); k++) {
+            char line[80];
+            for (unsigned v = 0; v < 64; v++) {
+                struct bflb_acomp_config_s cfg = {
+                    .mux_en = ENABLE, .pos_chan_sel = AON_ACOMP_CHAN_ADC0,
+                    .neg_chan_sel = AON_ACOMP_CHAN_VIO_X_SCALING_FACTOR_1, .vio_sel = (uint8_t)v,
+                    .scaling_factor = sfs[k].sf, .bias_prog = AON_ACOMP_BIAS_POWER_MODE1,
+                    .hysteresis_pos_volt = AON_ACOMP_HYSTERESIS_VOLT_30MV,
+                    .hysteresis_neg_volt = AON_ACOMP_HYSTERESIS_VOLT_30MV,
+                };
+                bflb_acomp_init(AON_ACOMP1_ID, &cfg);
+                bflb_acomp_enable(AON_ACOMP1_ID);
+                bflb_mtimer_delay_ms(2);
+                line[v] = bflb_acomp_get_result(AON_ACOMP1_ID) ? '1' : '0';
+            }
+            line[64] = 0;
+            printf("  scaling %-4s: %s\r\n", sfs[k].name, line);
+        }
+        leak_acomp_init();                         /* back to the product setting */
+        return 0;
+    }
+    if (argc > 1 && !strcmp(argv[1], "watch")) {   /* one line per comparator change: wet / dry tests by hand */
+        uint32_t s = argc > 2 ? (uint32_t)atoi(argv[2]) : 30;
+        bool wet = leak_acomp_wet();
+        uint64_t t0 = bflb_mtimer_get_time_ms();
+        printf("pt_leak watch %lu s: comparator %s now\r\n", (unsigned long)s, wet ? "WET" : "dry");
+        while (bflb_mtimer_get_time_ms() - t0 < s * 1000u) {
+            bool w = leak_acomp_wet();
+            if (w != wet) {
+                int mv;
+                /* the comparator flips while C109 is still moving: tau = (1 M || 94 k) x 100 nF = 8.6 ms on wetting,
+                 * 500 k x 100 nF = 50 ms on drying; read the settled node (a first try read 692 mV for a hard short
+                 * that settles at ~260 mV) */
+                vTaskDelay(pdMS_TO_TICKS(w ? 50 : 250));
+                LOCKED(mv = leak_mv());
+                printf("%7lu ms: %s (node %d mV, %ld kohm)\r\n", (unsigned long)(bflb_mtimer_get_time_ms() - t0),
+                       w ? "WET" : "dry", mv, leak_kohm(mv));
+                wet = w;
+            }
+            vTaskDelay(pdMS_TO_TICKS(2));
+        }
+        printf("pt_leak watch: end, %s\r\n", wet ? "WET" : "dry");
+        return 0;
+    }
     int mv;
     LOCKED(mv = leak_mv());
     long k = leak_kohm(mv);
-    printf("leak node %d mV (dry ~1650, product calls < 825 mV wet = < ~400 kohm water)\r\n", mv);
+    printf("leak node %d mV (dry ~1650, wet below 850 mV = below ~430 kohm across a probe); comparator %s; "
+           "this boot woke by %s\r\n", mv, leak_acomp_wet() ? "WET" : "dry", wake_names(last_wake));
     if (k < 0)
         printf("  dry: nothing across S1..S3\r\n");
     else
         printf("  %ld kohm across a probe (put a known resistor across S1 to check: 100k reads ~100)\r\n", k);
     return 0;
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_leak, pt_leak, leak probe node and resistance);
+SHELL_CMD_EXPORT_ALIAS(cmd_leak, pt_leak, leak probe node + comparator; pt_leak watch [s]);
 #endif
 
 #if PT_TEST_SDIO
@@ -947,6 +1028,32 @@ SHELL_CMD_EXPORT_ALIAS(cmd_boot1, pt_boot1, K230 BOOT1 strap: low | high | park)
 static uint32_t wake_due, wake_main;               /* RTC ticks; wake_due 0 = not woken by pt_sleep */
 static uint64_t main_mtimer;                       /* core timer at main(): counts from the core's reset */
 
+#define WAKE_LEAK 1u
+#define WAKE_RTC  2u
+#define WAKE_USB  4u
+/* as the product's wake_reason_get(): the HBN interrupt states survive the wake reset until cleared */
+static unsigned wake_reason_take(void)
+{
+    unsigned r = 0;
+    if (HBN_Get_INT_State(HBN_INT_ACOMP1) == SET)
+        r |= WAKE_LEAK;
+    if (HBN_Get_INT_State(HBN_INT_ACOMP0) == SET)
+        r |= WAKE_USB;
+    if (HBN_Get_INT_State(HBN_INT_RTC) == SET)
+        r |= WAKE_RTC;
+    HBN_Clear_IRQ(HBN_INT_ACOMP1);
+    HBN_Clear_IRQ(HBN_INT_ACOMP0);
+    HBN_Clear_IRQ(HBN_INT_RTC);
+    return r;
+}
+
+static const char *wake_names(unsigned w)
+{
+    static const char *const n[8] = { "cold start / reset", "leak", "rtc", "leak+rtc", "usb", "leak+usb", "rtc+usb",
+                                      "leak+rtc+usb" };
+    return n[w & 7];
+}
+
 static uint64_t rtc_now(void)
 {
     uint32_t lo, hi;
@@ -1002,11 +1109,16 @@ static int cmd_sleep(int argc, char **argv)
     LOCKED(t = rails_off_timed());
     (void)t;
     bool y3 = rtc_on_xtal();
+    /* test034: the leak comparator wakes HBN on its next edge, as the product's hbn_sleep(): wet (falling) while dry,
+     * dry again (rising) while wet */
+    bool wet = leak_acomp_wet();
+    HBN_Clear_IRQ(HBN_INT_ACOMP1);
+    HBN_Enable_AComp_IRQ(AON_ACOMP1_ID, wet ? HBN_ACOMP_INT_EDGE_POSEDGE : HBN_ACOMP_INT_EDGE_NEGEDGE);
     /* HBN gives GPIO16-19 hardware pulls unless disabled; on IO16/17 (Y3) they stop the oscillator and the RTC
      * never wakes the chip (2026-10-22). pm_hbn_mode_enter() does not disable them, HBN_Mode_Enter() does. */
     HBN_Hw_Pu_Pd_Cfg(DISABLE);
-    printf("pt_sleep: K230 off, HBN level 0 for %lu s (RTC on %s); unplug PR1 now for the sleep current\r\n",
-           (unsigned long)s, y3 ? "Y3" : "RC32K");
+    printf("pt_sleep: K230 off, HBN level 0 for %lu s (RTC on %s), leak wakes it on going %s; unplug PR1 now for the "
+           "sleep current\r\n", (unsigned long)s, y3 ? "Y3" : "RC32K", wet ? "dry" : "wet");
     bflb_mtimer_delay_ms(50);           /* let the USB console send the line */
     WAKE_MARK = (uint32_t)(rtc_now() + (uint64_t)s * 32768u) | 1u;  /* pm_hbn_mode_enter() reads it <= 1 tick later */
     /* the last write to HBN RAM is done: retention on now and no HBN RAM access after it (HBN RAM rule at main()) */
@@ -1276,6 +1388,9 @@ static void pins_init(void)
 #if PT_TEST_I2C
     aht20_init();
 #endif
+#if PT_TEST_LEAK
+    leak_acomp_init();
+#endif
 }
 
 int main(void)
@@ -1291,6 +1406,7 @@ int main(void)
      */
     BL_WR_REG(HBN_BASE, HBN_SRAM, BL_RD_REG(HBN_BASE, HBN_SRAM) & ~(HBN_RETRAM_RET_MSK | HBN_RETRAM_SLP_MSK));
     wake_mark_take();      /* before board_init: the wake latency ends here */
+    last_wake = wake_reason_take();
 #endif
     board_init();          /* also starts the USB CDC console and its shell (defconfig) */
     pins_init();

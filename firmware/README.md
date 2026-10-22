@@ -59,8 +59,9 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
 3. **SDK console is on the K230 link pins.** The BL616 dev-board console defaults to UART0 on
    GPIO21/22, which on LEAKCAM are AI_TXD/AI_RXD. `defconfig` moves the console to USB CDC (PR1).
 4. **LEAK_SENS dry level is not a logic level.** 1.65 V sits between VIL (0.99 V) and VIH (2.31 V).
-   The pin stays analog and is read by ACOMP1 at 0.825 V (trips below ~500 k between probes,
-   ~406 k with 2 x 47 k series resistors).
+   The pin stays analog and is read by ACOMP1 at 0.85 V (trips below ~528 k between probes,
+   ~434 k with 2 x 47 k series resistors). The reference is vio_sel x 50 mV; the scaling factor has no effect on
+   it (tests/test034: the first setting, vio_sel 33 x 0.5 meant as 0.825 V, was 1.65 V = the dry level).
 5. **HBN wakes only on GPIO16-19, RTC and ACOMP**, and releases every non-AON pad, so K230_PWR falls to
    R19's pull-down. The K230 can only run while the BL616 is awake; the firmware turns it off first.
 6. **K230 GPIO2 is JTAG_TCK at reset**, so the heartbeat is edges, not a level, and the device tree

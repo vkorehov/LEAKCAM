@@ -7,8 +7,8 @@
  * current. So the pad is kept in analog mode and watched by the always-on comparator ACOMP1,
  * whose positive input is ADC channel 0 = GPIO20 (same setup as the SDK's bl616dk board).
  *
- * Threshold 0.825 V = VIO 1.65 V x 0.5. Water resistance at the trip point:
- *   3.3 * (1M || Rw) / (1M + 1M || Rw) = 0.825  ->  Rw = 500 k  (406 k with 2 x 47 k in series)
+ * Threshold 0.85 V = vio_sel 17 x 50 mV (ACOMP_VIO_LEAK below). Water resistance at the trip point:
+ *   3.31 * (1M || Rw) / (1M + 1M || Rw) = 0.85  ->  Rw = 528 k  (434 k with 2 x 47 k in series)
  */
 #include "leak_wake.h"
 
@@ -30,7 +30,11 @@
 #include "log.h"
 
 #define LEAK_ACOMP          AON_ACOMP1_ID
-#define ACOMP_VIO_1V65      33          /* vio_sel is in 50 mV steps; SDK: DEFAULT_ACOMP_VREF_1V65 */
+/* The reference is vio_sel x 50 mV; the scaling factor does nothing on this input (measured, tests/test034: every
+ * scaling flipped between vio_sel 32 and 33 against the 1.648 V dry node). The first code had vio_sel 33 x 0.5
+ * meant as 0.825 V: really 1.65 V, the dry level itself, so a dry probe read wet. 17 = 0.85 V: wet below ~430 kohm
+ * across a probe (1 M / 1 M divider from 3V3_SLEEP, 94 k series), 0.8 V clear of dry. */
+#define ACOMP_VIO_LEAK      17
 
 void leak_init(void)
 {
@@ -41,8 +45,8 @@ void leak_init(void)
         .mux_en = ENABLE,
         .pos_chan_sel = AON_ACOMP_CHAN_ADC0,                    /* GPIO20 */
         .neg_chan_sel = AON_ACOMP_CHAN_VIO_X_SCALING_FACTOR_1,
-        .vio_sel = ACOMP_VIO_1V65,
-        .scaling_factor = AON_ACOMP_SCALING_FACTOR_0P5,         /* -> 0.825 V */
+        .vio_sel = ACOMP_VIO_LEAK,                              /* 0.85 V */
+        .scaling_factor = AON_ACOMP_SCALING_FACTOR_1,           /* no effect here (see ACOMP_VIO_LEAK) */
         .bias_prog = AON_ACOMP_BIAS_POWER_MODE1,                /* slowest, lowest current */
         .hysteresis_pos_volt = AON_ACOMP_HYSTERESIS_VOLT_30MV,  /* probes in a film of water chatter */
         .hysteresis_neg_volt = AON_ACOMP_HYSTERESIS_VOLT_30MV,
