@@ -1,5 +1,5 @@
 /*
- * BL616 <-> K230 line protocol on UART0 (BL616) / UART1 (K230), 115200 8N1.
+ * BL616 <-> K230 line protocol on UART0 (BL616) / UART1 (K230), LINK_BAUD 8N1.
  *
  *   $<seq>,<CMD>[,<arg>...]*<XX>\n     seq = 0..255, counted by each sender on its own
  *                                      XX  = CRC-8 of the bytes between '$' and '*' (link_crc8),
@@ -64,8 +64,9 @@ static inline uint8_t link_crc8(const char *p, const char *end)
     return c;
 }
 
+#define LINK_BAUD           4000000 /* top stable rate, tests/test018; K230 side: k230_board/install.sh */
 #define LINK_MAX_LINE       64
-#define LINK_ACK_TIMEOUT_MS 300     /* a 64-byte frame takes 6 ms; the rest is the peer's loop */
+#define LINK_ACK_TIMEOUT_MS 300     /* a 64-byte frame takes 0.16 ms; the rest is the peer's loop */
 #define LINK_TRIES          5
 /* NAK codes; 0 is ACK */
 #define LINK_ERR_REFUSED        1   /* invalid argument (TIME before 2026) */

@@ -127,7 +127,7 @@ static void *heartbeat_thread(void *arg)
 
 /* ---------------- UART link ---------------- */
 
-/* /dev/uart<id> comes up at the kernel's default 115200 8N1 (RT_SERIAL_CONFIG_DEFAULT) */
+/* /dev/uart1 comes up at LINK_BAUD 8N1 (k230_board/install.sh sets it in the UART driver) */
 static int uart_open(void)
 {
     char dev[16];

@@ -297,7 +297,7 @@ is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
 
 ### 5.4 K230-BL616 link and time
 
-- **The UART carries session control.** UART1 at 115200 8N1, frames `$<seq>,<CMD>[,args]*XX`
+- **The UART carries session control.** UART1 at 4 Mbaud 8N1 (top stable rate, tests/test018), frames `$<seq>,<CMD>[,args]*XX`
   with a CRC-8 (polynomial 0x07, `link_crc8()` in `k230_link.h`, shared by both ends); invalid
   lines are dropped. It is available as soon as RT-Smart runs, without Wi-Fi.
 - **Every command is answered.** `ACK,<seq>` means accepted; `NAK,<seq>,<code>` means received but

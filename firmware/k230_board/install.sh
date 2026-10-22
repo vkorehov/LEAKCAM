@@ -289,6 +289,21 @@ open(p, 'w').write(s.replace(a, b))
 PY
 grep -q 'LEAKCAM: UTC' "$TZC" || { echo "UTC patch not applied"; exit 1; }
 
+# BL616 link: UART1 registers at the top stable rate (tests/test018: 4 Mbaud clean over 10 MB, 6 Mbaud fails), the
+# same as LINK_BAUD in bl616/k230_link.h. The serial layer has no termios, so the agent cannot set it itself.
+UARTC=$RTT/drivers/interdrv/uart/drv_uart.c
+grep -q 'LEAKCAM: link baud' "$UARTC" || python3 - "$UARTC" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = '        rt_snprintf(dev_name, sizeof(dev_name), "uart%d", inst->uart.index);\n        rt_hw_interrupt_install('
+b = ('        if (inst->uart.index == 1)\n'
+     '            inst->device.config.baud_rate = 4000000;   /* LEAKCAM: link baud (bl616/k230_link.h LINK_BAUD) */\n'
+     + a)
+assert s.count(a) == 1, 'drv_uart.c changed, cannot set the link baud'
+open(p, 'w').write(s.replace(a, b))
+PY
+grep -q 'LEAKCAM: link baud' "$UARTC" || { echo "link baud patch not applied"; exit 1; }
+
 # ISP tuning files: the SDK copies every ov5647-* resolution (3.3 MB) into /bin; the product runs 1280x960 only.
 # UFFS mount time follows the used pages, so the other four sets cost ~85 ms per boot (tests/test022, 2026-10-21).
 ISPMK=$SDK/src/rtsmart/mpp/userapps/src/sensor/Makefile

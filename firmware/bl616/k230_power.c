@@ -11,6 +11,7 @@
  *   - reset is held by the BL616 (Q4) across the whole ramp, independent of the RC.
  */
 #include "k230_power.h"
+#include "k230_link.h"
 #include "board_pins.h"
 
 #include "bflb_gpio.h"
@@ -18,7 +19,6 @@
 #include "bflb_mtimer.h"
 #include "log.h"
 
-#define LINK_BAUD             115200
 /* 1V8/3V3 below 10 % after 56-82 ms through RD1/RD2 whatever else loads them (firmware/sim);
  * 300 ms is 3.6 x that, for capacitor tolerance */
 #define OFF_DISCHARGE_MS      300

@@ -49,7 +49,9 @@ session time.
 
 Above 460800 the ~10 % gap is the bench's window protocol, not the line. **Highest clean rate 4 Mbaud** (1.5x below
 the failure at 6 Mbaud); the link runs 115200 today: adopting 3-4 Mbaud cuts every K230 <-> BL616 message 20-27x
-(WAKE, READY, Wi-Fi control). Both firmwares change together (product BL616 k230_link, the agent); not done yet.
+(WAKE, READY, Wi-Fi control). **Adopted 2026-10-22 (user: "move to top stable speeds")**: LINK_BAUD 4000000 in
+bl616/k230_link.h, UART1 set in the K230 UART driver by k230_board/install.sh (RT-Smart serial has no termios, the
+agent cannot set it). Code only; the product images are rebuilt with the firmware rewrite, then this test reruns on them.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 

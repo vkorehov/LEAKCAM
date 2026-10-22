@@ -27,7 +27,7 @@ or a measurement yet. Keep this file current when a test or a setting changes it
                                                            inference, 4.4 ms per check           pm_domain_kpu.c)
   Video encoder (VPU)         800 MHz                      H.265 1280x960: 84 fps (1 ch), 82 (2 ch); 800 MHz (only profile)  yes       test026
                                                            product 2 x 15 fps = 36 % of the top
-  UART link K230 <-> BL616    115200 8N1                   clean up to 4 Mbaud (10 MB, 0 err),   4 Mbaud (6 fails)       no        test018
+  UART link K230 <-> BL616    4 Mbaud 8N1 (was 115200)     clean up to 4 Mbaud (10 MB, 0 err),   4 Mbaud (6 fails)       yes       test018
                                                            16 B round trip 1.48 ms -> 55 us
   K230 console (CH340, USBC2) 115200 8N1                   -                                     -                       n/a       -
   BL616 console (PR1)         USB CDC (full speed)         -                                     -                       n/a       -
@@ -79,7 +79,9 @@ or a measurement yet. Keep this file current when a test or a setting changes it
                                                   boots clean, boot to app init 1.00 -> 0.88 s. 100 MHz: no window
                                                   (1-line and 4-line phases want different delays); pad drive 7/10/15 no
                                                   difference. Kept at 80 (user, 2026-10-21).
-  UART link      115200 -> 230400 ... 2 Mbaud      test017: 10 MB both ways, 0 errors; both firmwares changed together
+  UART link      115200 -> ... 4 -> 6 Mbaud       test018: 10 MB both ways, 0 errors; both firmwares changed together
+                                                  Adopted 2026-10-22: 4 Mbaud (6 Mbaud corrupts bulk data); code only,
+                                                  product images not rebuilt yet (rewrite after the tests)
   AHT20 I2C      100 -> 400 kHz                   1000 reads, 0 CRC errors (cheap, so taken although it gains little)
   CPU, KPU, VPU  already at the top profile        CPU clock confirmed by test015's cycle count
   SDIO           at the top (50 MHz)              test014 (soak 109 MB, 0 errors)
