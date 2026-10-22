@@ -64,6 +64,9 @@ written when it happens). Nothing is left out: an empty part says so ("Not run y
 | [test102 session current](test102-session-current/README.md) | | planned |
 | [test103 leak pipeline timing](test103-leak-pipeline-timing/README.md) | | later: after the cameras, Wi-Fi and the product firmware |
 | [test104 battery energy audit](test104-battery-energy-audit/README.md) | | planned |
+| **Build and image (200+): optimisation, only the needed features** | | |
+| [test200 K230 image minimal and optimised](test200-k230-build-minimal/README.md) | | planned |
+| [test201 BL616 firmware minimal and optimised](test201-bl616-build-minimal/README.md) | | planned |
 
 ## Status by subsystem (2026-10-21)
 
