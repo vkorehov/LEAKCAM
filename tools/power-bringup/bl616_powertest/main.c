@@ -828,31 +828,25 @@ static int cmd_boot1(int argc, char **argv)
 SHELL_CMD_EXPORT_ALIAS(cmd_boot1, pt_boot1, K230 BOOT1 strap: low | high | park);
 
 #if PT_TEST_SLEEP
-/* The HBN RTC counts the selected 32 kHz clock. Selecting the Y3 crystal before it oscillates STOPS the counter
- * (measured 2026-10-21: 0 ticks for ~1 s after HBN_Power_On_Xtal_32K + HBN_32K_Sel(XTAL)), and an HBN sleep entered
- * then never reaches its wake compare. So: power the crystal, select it, and keep it only once the counter moves;
- * otherwise back to RC32K and retry, up to 3 s. */
-static bool rtc_counter_moves(void)
+/* Y3 must run before the sleep: selected while still starting (~1 s after power-on) it stops the HBN RTC counter,
+ * and it does not start in HBN, so the chip never wakes (2026-10-22, cold start). Wait until the counter moves on
+ * Y3; if it never does, RC32K, so the chip still wakes. */
+static bool rtc_on_xtal(void)
 {
     uint32_t l0, h0, l1, h1;
-    HBN_Get_RTC_Timer_Val(&l0, &h0);
-    bflb_mtimer_delay_ms(5);                 /* ~164 ticks at 32768 Hz */
-    HBN_Get_RTC_Timer_Val(&l1, &h1);
-    return l1 - l0 > 100;
-}
-static bool xtal32k_select(void)
-{
     HBN_Power_On_Xtal_32K();
-    for (int i = 0; i < 30; i++) {
-        HBN_32K_Sel(HBN_32K_XTAL);
-        if (rtc_counter_moves()) {
-            printf("pt_sleep: Y3 running after %d00 ms\r\n", i);
+    HBN_32K_Sel(HBN_32K_XTAL);
+    HBN_Get_RTC_Timer_Val(&l0, &h0);
+    for (int ms = 0; ms < 3000; ms += 10) {
+        bflb_mtimer_delay_ms(10);
+        HBN_Get_RTC_Timer_Val(&l1, &h1);
+        if (l1 - l0 > 100) {                     /* ~328 ticks per 10 ms once running */
+            printf("pt_sleep: Y3 running after %d ms\r\n", ms);
             return true;
         }
-        HBN_32K_Sel(HBN_32K_RC);
-        bflb_mtimer_delay_ms(100);
     }
-    printf("pt_sleep: Y3 not running after 3 s, RTC stays on RC32K\r\n");
+    HBN_32K_Sel(HBN_32K_RC);
+    printf("pt_sleep: Y3 not running after 3 s, RTC on RC32K\r\n");
     return false;
 }
 
@@ -862,9 +856,8 @@ static bool xtal32k_select(void)
 static int cmd_sleep(int argc, char **argv)
 {
     uint32_t s = argc > 1 ? (uint32_t)atoi(argv[1]) : 60, t;
-    bool rc = argc > 2 && !strcmp(argv[2], "rc");   /* stay on RC32K: the wake test without the crystal */
     if (s < 2 || s > 86400) {
-        printf("usage: pt_sleep <2..86400 s> [rc]\r\n");
+        printf("usage: pt_sleep <2..86400 s>\r\n");
         return -1;
     }
 #if PT_TEST_SDU
@@ -872,17 +865,19 @@ static int cmd_sleep(int argc, char **argv)
 #endif
     LOCKED(t = rails_off_timed());
     (void)t;
-    if (!rc && !xtal32k_select())
-        rc = true;                      /* Y3 did not start: stay on RC32K rather than never wake */
+    bool y3 = rtc_on_xtal();
+    /* HBN gives GPIO16-19 hardware pulls unless disabled; on IO16/17 (Y3) they stop the oscillator and the RTC
+     * never wakes the chip (2026-10-22). pm_hbn_mode_enter() does not disable them, HBN_Mode_Enter() does. */
+    HBN_Hw_Pu_Pd_Cfg(DISABLE);
     printf("pt_sleep: K230 off, HBN level 0 for %lu s (RTC on %s); unplug PR1 now for the sleep current\r\n",
-           (unsigned long)s, rc ? "RC32K" : "Y3");
+           (unsigned long)s, y3 ? "Y3" : "RC32K");
     bflb_mtimer_delay_ms(50);           /* let the USB console send the line */
     pm_hbn_mode_enter(PM_HBN_LEVEL_0, (uint64_t)s * 32768u);
     while (1) {
     }
     return 0;
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_sleep, pt_sleep, K230 off and HBN level 0 for <s> seconds (RTC wake) [rc]);
+SHELL_CMD_EXPORT_ALIAS(cmd_sleep, pt_sleep, K230 off and HBN level 0 for <s> seconds (RTC wake));
 
 /* test030/031: does the HBN RTC counter run? It counts the selected 32 kHz clock (Y3 crystal or RC32K): 32768
  * ticks per second expected. A counter that stands still never reaches the HBN wake compare value. */

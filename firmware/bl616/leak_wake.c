@@ -13,6 +13,7 @@
 #include "leak_wake.h"
 
 #include <stdio.h>
+#include <stdbool.h>
 #include "aon_state.h"
 #include "board_pins.h"
 #include "evlog.h"
@@ -131,13 +132,25 @@ const char *wake_reason_text(unsigned reasons, char *buf, unsigned len)
     return buf;
 }
 
+/* Y3 must run before the sleep: selected while still starting (~1 s after a cold power-on) it stops the HBN RTC
+ * counter, and it does not start in HBN, so the chip never wakes (rev 1, 2026-10-22; the SDK's
+ * HBN_Power_On_Xtal_32K waits 1.1 ms, not the ">1s" its comment says). Wait until the counter moves on Y3; if it
+ * never does, RC32K (+0.44 %), so the chip still wakes. After an HBN wake Y3 is running: returns at once.
+ * tests/test030. */
 void rtc_use_crystal(void)
 {
-    /* Idempotent: after an HBN wake the crystal is still running. On a cold boot it needs up to
-     * ~1 s to start; until then the RTC runs from RC32K (a few % off), fine for minute-scale wakes.
-     * To verify on hardware: frequency on IO17 and RTC drift over a day. */
+    uint32_t l0, h0, l1, h1;
     HBN_Power_On_Xtal_32K();
     HBN_32K_Sel(HBN_32K_XTAL);
+    HBN_Get_RTC_Timer_Val(&l0, &h0);
+    for (int ms = 0; ms < 3000; ms += 10) {
+        bflb_mtimer_delay_ms(10);
+        HBN_Get_RTC_Timer_Val(&l1, &h1);
+        if (l1 - l0 > 100)                         /* ~328 ticks per 10 ms once running */
+            return;
+    }
+    HBN_32K_Sel(HBN_32K_RC);
+    LOG_W("rtc: Y3 not running after 3 s, RTC on RC32K\r\n");
 }
 
 void hbn_sleep(uint32_t seconds)
@@ -156,6 +169,10 @@ void hbn_sleep(uint32_t seconds)
     /* the USB console only runs with the scheduler: a bare-metal wake has nothing to drain */
     if (xTaskGetSchedulerState() == taskSCHEDULER_RUNNING)
         bflb_mtimer_delay_ms(5);
+    /* The HBN pins GPIO16-19 get hardware pulls in HBN unless disabled: on IO16/IO17 (Y3) they stop the
+     * oscillator and the RTC never wakes us (rev 1, 2026-10-22). pm_hbn_mode_enter() does not do this;
+     * HBN_Mode_Enter() does. Pin wakes on GPIO16-19 are not used (USB and leak wake through the comparators). */
+    HBN_Hw_Pu_Pd_Cfg(DISABLE);
     /* RTC ticks at 32768 Hz (Y3 crystal on IO16/IO17 via rtc_use_crystal(), else RC32K) */
     pm_hbn_mode_enter(PM_HBN_LEVEL_0, (uint64_t)seconds * 32768u);
     while (1) {
