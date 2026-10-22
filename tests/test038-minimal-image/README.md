@@ -1,6 +1,7 @@
 # test038: minimal image - the fewest bits that still boot and pass
 
-Status: **planned** (2026-10-22).
+Status: **planned** (2026-10-22). **Runs first after board bring-up** (after test007, the first RT-Smart boot): the
+floor every later test builds its `## Needs` on.
 
 The standing practice (tests/README) keeps every build minimal; this test pushes it to the floor on purpose: remove
 everything no test's `## Needs` names, then keep removing until something breaks, and record where the floor is

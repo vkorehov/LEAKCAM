@@ -35,6 +35,7 @@ written when it happens). Nothing is left out: an empty part says so ("Not run y
 | [test005 K230 NAND flashing](test005-k230-nand-flashing/README.md) | 2026-10-17 | pass |
 | [test006 K230 NAND boot (SPL)](test006-k230-nand-boot-spl/README.md) | 2026-10-17 | pass |
 | [test007 RT-Smart boot](test007-rtsmart-boot/README.md) | 2026-10-18/20 | pass; PMU RTC with R45 bridged (bug-003) |
+| [test038 minimal image: the fewest bits that boot and pass](test038-minimal-image/README.md) | | planned: run first after board bring-up (after test007): the floor the feature tests build on |
 | [test008 LED chains](test008-led-chains/README.md) | 2026-10-16/18 | pass |
 | [test009 K230 <-> BL616 UART link](test009-uart-link/README.md) | 2026-10-18 | pass |
 | [test010 NAND persistence, full disk, speed](test010-nand-fill-speed/README.md) | 2026-10-18 | pass |
@@ -65,7 +66,6 @@ written when it happens). Nothing is left out: an empty part says so ("Not run y
 | [test035 K230 hang recovery](test035-k230-hang-recovery/README.md) | | planned |
 | [test036 K230 PMU RTC](test036-k230-rtc/README.md) | 2026-10-21 | step 0 pass: runs from Y1 (+25 ppm vs 27 MHz), UTC fixed; handover open |
 | [test037 battery brown-out below 3.10 V](test037-battery-brownout/README.md) | | planned |
-| [test038 minimal image: the fewest bits that boot and pass](test038-minimal-image/README.md) | | planned |
 | **High level (100+): the product's whole flow** | | |
 | [test100 Wi-Fi throughput end to end](test100-wifi-throughput/README.md) | | planned |
 | [test101 session length](test101-boot-and-session-time/README.md) | | planned |
