@@ -57,7 +57,12 @@ static void print_detail(const struct evlog_entry *e)
         case EV_NAK:         printf(" %c... code=%d", (char)e->val, e->arg); break;
         case EV_WIFI:        printf(" %s", e->arg ? "start failed" : "started"); break;
         case EV_LINK_LOST:   printf(" after %u sends", e->val); break;
-        case EV_SESSION_END: printf(" after %u s", e->val); break;
+        case EV_SESSION_END:
+            if (e->arg == -2)
+                printf(" cut: the agent restarted %u times", e->val);
+            else
+                printf(" after %u s%s", e->val, e->arg == -1 ? ", cut: too long" : "");
+            break;
         case EV_RETRY:       printf(" attempt %d end=%u", e->arg, e->val); break;
         case EV_SLEEP:
             if ((uint8_t)e->arg == 255)

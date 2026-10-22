@@ -45,11 +45,21 @@
 #endif
 #include "wifi_link.h"
 
-#define BOOT_TIMEOUT_MS      90000   /* SPI NAND boot + RT-Smart + agent start; measure and tighten */
+/* SPI NAND boot + RT-Smart + agent start: the agent's heartbeat (READY with it) starts 0.9-1.4 s after power-on
+ * (tests/test036, 2026-10-22); 10 s is 7x that. Was 90 s: a K230 that never boots cost 90 s per attempt. */
+#define BOOT_TIMEOUT_MS      10000
 /* The K230 keeps itself on for as long as its agent toggles GPIO2 (every 500 ms): once the edges
  * stop for this long the session is over and the power is cut. The agent stops them only when
  * it is done and its files are written. */
 #define HEARTBEAT_STOP_MS    2000
+/* What the heartbeat cannot see (tests/test036): a K230 that crashes and restarts (its watchdog) has the heartbeat
+ * back within ~1 s, under HEARTBEAT_STOP_MS, and a hung agent whose heartbeat thread still runs never stops it.
+ * Either would keep the K230 on until the battery is flat. So a session also ends - as a failure, with the retry
+ * and back-off - after SESSION_MAX_MS or when the agent comes up for the SESSION_MAX_RESTARTS + 1-th time (a READY
+ * inside a session = it restarted). SESSION_MAX_MS is a backstop above the agent's own limit (it kills a hook still
+ * running after 10 min, DESIGN.md): it only fires when the agent itself is stuck. */
+#define SESSION_MAX_MS       (15u * 60u * 1000u)
+#define SESSION_MAX_RESTARTS 2
 #define BOOT_RETRIES         3
 /* Left out of LEAKCAM_RELEASE builds; the default build has it (CMakeLists.txt, DEBUG.txt).
  * First boot (power-on or EN reset, so every reflash): the K230's rails come up but it is held in
@@ -97,6 +107,8 @@ static void env_take(enum aht20_result hr, int rh, int t)
 enum session_end {
     END_DONE,            /* READY came, then the heartbeat stopped */
     END_NO_BOOT,         /* READY never arrived */
+    END_TOO_LONG,        /* SESSION_MAX_MS reached with the heartbeat still running */
+    END_RESTARTS,        /* the agent restarted more than SESSION_MAX_RESTARTS times (crash loop) */
 };
 
 /* easyflash (BLE bonds, Wi-Fi credentials) and RF calibration: each once, shared by BLE and
@@ -295,6 +307,7 @@ static enum session_end run_session(unsigned reason, uint32_t *sleep_s, bool fir
      * when to wake it next; without one the default period applies */
     uint64_t last_edge = bflb_mtimer_get_time_ms();
     bool level = k230_alive_level();
+    unsigned restarts = 0;
     *sleep_s = REPORT_PERIOD_S;
     while (1) {
         uint64_t now = bflb_mtimer_get_time_ms();
@@ -311,13 +324,26 @@ static enum session_end run_session(unsigned reason, uint32_t *sleep_s, bool fir
             k230_off();
             return END_DONE;
         }
+        if (!debug_session && now - t_on > SESSION_MAX_MS) {
+            LOG_E("session: still running after %u s, cut\r\n", (unsigned)(SESSION_MAX_MS / 1000));
+            evlog_add(EV_SESSION_END, -1, (unsigned)((now - t_on) / 1000));
+            k230_off();
+            return END_TOO_LONG;
+        }
 
         link_tick();
         if (link_poll(&m)) {                    /* already answered by the link layer */
             if (strcmp(m.cmd, "SLEEP") == 0)
                 *sleep_s = m.has_arg ? m.arg : REPORT_PERIOD_S;
-            if (strcmp(m.cmd, "READY") == 0)    /* agent restarted inside the session */
+            if (strcmp(m.cmd, "READY") == 0) {  /* agent restarted inside the session */
+                if (++restarts > SESSION_MAX_RESTARTS && !debug_session) {
+                    LOG_E("session: agent restarted %u times, cut\r\n", restarts);
+                    evlog_add(EV_SESSION_END, -2, restarts);
+                    k230_off();
+                    return END_RESTARTS;
+                }
                 send_wake(reason);
+            }
             if (strcmp(m.cmd, "WIFI") == 0 && !wifi_on) {   /* accepted by reply() */
                 if (wifi_link_start() == 0) {
                     wifi_on = true;

@@ -207,10 +207,14 @@ the kernel NAND glue is patched to report 64.
    if it ran, cuts the K230's power and hibernates.
 
 **The K230 decides how long a session lasts.** The BL616 wakes it and keeps it powered for as long
-as the heartbeat on GPIO2 runs; there is no session limit and no shutdown command. The agent
-stops the heartbeat when its work is done and written; it kills a hook still running after
-10 min, since nothing else would end a hung session. A K230 that never sends `READY` (90 s) is
-retried and backed off as a failed boot.
+as the heartbeat on GPIO2 runs; there is no shutdown command. The agent stops the heartbeat when
+its work is done and written; it kills a hook still running after 10 min. The BL616 adds a
+backstop for what the heartbeat cannot see (tests/test036, 2026-10-22): a K230 that restarts has
+its heartbeat back within ~1 s, and a hung agent whose heartbeat thread still runs never stops it.
+So a session that is still running after 15 min (`SESSION_MAX_MS`), or whose agent came up a third
+time (`SESSION_MAX_RESTARTS`), is cut and retried / backed off as a failure. A K230 that never sends
+`READY` within 10 s (`BOOT_TIMEOUT_MS`; the agent is up 0.9-1.4 s after power-on) is retried and
+backed off as a failed boot.
 
 **`leakcam_wake` (`firmware/k230_capture/leakcam_wake.c`):**
 

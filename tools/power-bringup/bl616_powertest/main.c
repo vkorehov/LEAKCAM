@@ -554,6 +554,91 @@ SHELL_CMD_EXPORT_ALIAS(cmd_on, pt_on, K230 rails on (reset held) and time the 3V
 SHELL_CMD_EXPORT_ALIAS(cmd_off, pt_off, K230 rails off and time the discharge);
 SHELL_CMD_EXPORT_ALIAS(cmd_run, pt_run, release K230 reset: blank NAND enumerates as 29f1:0230);
 SHELL_CMD_EXPORT_ALIAS(cmd_hold, pt_hold, hold the K230 in reset);
+
+/* test036: a K230 session supervised as the product's run_session() (main.c): rails on, reset released (NAND boot),
+ * then K230_ALIVE (the agent's heartbeat, an edge every 500 ms) decides. The first edge stands in for READY (the test
+ * firmware has no link protocol): none within <boot_ms> (product BOOT_TIMEOUT_MS 90 s) = END_NO_BOOT; afterwards no
+ * edge for HEARTBEAT_STOP_MS (2 s) = session over. Either way the rails go off. Prints every step's time. */
+#define SESSION_HEARTBEAT_STOP_MS 2000u
+
+static void boot1_set(enum boot1_mode m);
+
+static int cmd_session(int argc, char **argv)
+{
+    uint32_t boot_ms = argc > 1 ? (uint32_t)atoi(argv[1]) : 90000u;
+    /* failure cases made by the BL616 itself (the K230 console needs a VMware click per session):
+     *   noboot       BOOT1 high: the K230 waits in its USB ROM, no agent, no heartbeat
+     *   hang <ms>    K230 held in reset from <ms>: CPU stopped, heartbeat frozen, as a hang looks from outside
+     *   reboot <ms>  a 50 ms reset pulse at <ms>: the K230 restarts mid-session, as its watchdog would */
+    const char *mode = argc > 2 ? argv[2] : "";
+    uint32_t at_ms = argc > 3 ? (uint32_t)atoi(argv[3]) : 8000u;
+    bool noboot = !strcmp(mode, "noboot"), hang = !strcmp(mode, "hang"), reboot = !strcmp(mode, "reboot"), done = false;
+    uint32_t t;
+    if (rails_on) {
+        printf("pt_session: rails are on, pt_off first\r\n");
+        return -1;
+    }
+    boot1_set(noboot ? BOOT1_HIGH : BOOT1_LOW);
+    LOCKED(t = rails_on_timed());
+    if (!t) {
+        printf("pt_session: 3V3 did not come up\r\n");
+        return -1;
+    }
+    LOCKED(reset_hold(false));
+    uint64_t t_on = bflb_mtimer_get_time_ms();
+    printf("pt_session: rails on (3V3 in %lu us), reset released; waiting %lu ms for the first heartbeat edge\r\n",
+           (unsigned long)t, (unsigned long)boot_ms);
+    bool level = bflb_gpio_read(gpio, PIN_K230_ALIVE);
+    uint64_t first = 0, last = 0, now;
+    unsigned edges = 0;
+    while (1) {
+        now = bflb_mtimer_get_time_ms();
+        if ((hang || reboot) && !done && now - t_on >= at_ms) {
+            LOCKED(reset_hold(true));
+            if (reboot) {
+                vTaskDelay(pdMS_TO_TICKS(50));
+                LOCKED(reset_hold(false));
+            }
+            printf("pt_session: %s at %lu ms\r\n", hang ? "K230 held in reset (hang)" : "K230 reset pulse (reboot)",
+                   (unsigned long)(now - t_on));
+            done = true;
+        }
+        bool l = bflb_gpio_read(gpio, PIN_K230_ALIVE);
+        if (l != level && now - t_on < 400) {
+            level = l;                             /* boot toggle on JTAG_TCK, before any agent: not a heartbeat */
+        } else if (l != level) {
+            level = l;
+            if (edges && now - last > 1000)
+                printf("pt_session: heartbeat gap %lu ms (resumed %lu ms after power-on)\r\n",
+                       (unsigned long)(now - last), (unsigned long)(now - t_on));
+            last = now;
+            if (!edges++) {
+                first = now;
+                printf("pt_session: first heartbeat edge %lu ms after power-on (READY stand-in)\r\n",
+                       (unsigned long)(now - t_on));
+            }
+        }
+        if (!edges && now - t_on > boot_ms) {
+            printf("pt_session: END_NO_BOOT: no heartbeat within %lu ms\r\n", (unsigned long)boot_ms);
+            break;
+        }
+        if (edges && now - last > SESSION_HEARTBEAT_STOP_MS) {
+            printf("pt_session: heartbeat stopped: %u edges, the last %lu ms after power-on; no edge for %lu ms\r\n",
+                   edges, (unsigned long)(last - t_on), (unsigned long)(now - last));
+            break;
+        }
+        vTaskDelay(pdMS_TO_TICKS(5));
+    }
+    LOCKED(t = rails_off_timed());
+    if (noboot)
+        boot1_set(BOOT1_LOW);
+    uint64_t off = bflb_mtimer_get_time_ms();
+    printf("pt_session: rails off %lu ms after power-on (session %lu ms after the first edge); ALIVE now %d\r\n",
+           (unsigned long)(off - t_on), (unsigned long)(edges ? off - first : 0),
+           (int)bflb_gpio_read(gpio, PIN_K230_ALIVE));
+    return 0;
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_session, pt_session, test036: supervised K230 session [boot_ms] [noboot | hang ms | reboot ms]);
 SHELL_CMD_EXPORT_ALIAS(cmd_cycle, pt_cycle, n power cycles with timing (default 10));
 SHELL_CMD_EXPORT_ALIAS(cmd_alive, pt_alive, K230_ALIVE heartbeat for s seconds (default 10));
 #endif

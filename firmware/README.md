@@ -230,7 +230,7 @@ mode stays off: between sessions the BL616 hibernates, which ends the associatio
 5. Measure HBN current with ACOMP1 enabled against the datasheet's 2.1 uA (and with HBN RAM
    retention on). Check the aon block survives an HBN wake and a software reset, and the RTC
    drift over a day against NTP.
-6. Measure K230 boot time from SPI NAND to agent `READY`; tighten `BOOT_TIMEOUT_MS` (90 s now).
+6. Measure K230 boot time from SPI NAND to agent `READY`; tighten `BOOT_TIMEOUT_MS`: done 2026-10-22 (tests/test036: heartbeat 0.9-1.4 s after power-on, timeout 90 -> 10 s).
 7. Plug USB during HBN: the BL616 must boot into BLE mode within about a second. Measure HBN current
    with both comparators enabled.
 8. Pair from a phone (nRF Connect is enough), write SSID, passphrase and 0x01, reboot, confirm the
