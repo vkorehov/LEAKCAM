@@ -631,6 +631,20 @@ SHELL_CMD_EXPORT_ALIAS(cmd_i2c, pt_i2c, AHT20 reading or pt_i2c scan);
 #if PT_TEST_USB
 static int cmd_usb(int argc, char **argv)
 {
+    if (argc > 1 && !strcmp(argv[1], "offwait")) {
+        /* test035: a cable plugged in while the K230 rails are up gets no power (bug-002 back-feed holds VBUS above
+         * vSafe0V); rails off, then how long until the USB-C source turns VBUS on and PGOOD goes low. The product's
+         * sleep_for() checks usb_present() OFF_DISCHARGE_MS (300 ms) after the rails go off. */
+        uint32_t t;
+        LOCKED(t = rails_off_timed());
+        uint64_t t0 = bflb_mtimer_get_time_us();
+        while (usb_pgood_high() && bflb_mtimer_get_time_us() - t0 < 5000000u)
+            bflb_mtimer_delay_us(100);
+        uint32_t us = (uint32_t)(bflb_mtimer_get_time_us() - t0);
+        printf("pt_usb offwait: rails off (3V3 gone after %lu us); PGOOD %s %lu ms after that\r\n", (unsigned long)t,
+               usb_pgood_high() ? "still high" : "low", (unsigned long)(us / 1000));
+        return 0;
+    }
     bool pg = usb_pgood_high();
     printf("USB cable on USB-C 1: %s (PGOOD %s, ACOMP0; plugging and unplugging is reported as it happens); this boot "
            "woke by %s\r\n", pg ? "not detected" : "detected", pg ? "high" : "low", wake_names(last_wake));

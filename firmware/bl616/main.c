@@ -133,6 +133,13 @@ static void k230_off(void)
         wifi_on = false;
     }
     k230_power_off();
+    /* A cable plugged in during the session got no power: the K230 rails back-feed VUSB (bug-002), so a USB-C source
+     * never turns VBUS on. It does once the rails are off: PGOOD fell 113 ms after the 3V3 rail on a Mac (tests/
+     * test035); USB-C allows up to ~275 ms, plus VUSB falling below 0.8 V. k230_power_off() already waited 300 ms;
+     * give the source up to 300 ms more, so sleep_for() sees the USB and enters USB mode instead of sleeping on the
+     * battery while plugged. Costs <= 0.3 s awake per battery session without USB (~2 uAh). */
+    for (int ms = 0; ms < 300 && !usb_present(); ms += 10)
+        bflb_mtimer_delay_ms(10);
 }
 
 /* the K230's answer to WAKE carries its battery reading (K230 ADC_1, VBAT/3) */
@@ -327,6 +334,8 @@ static enum session_end run_session(unsigned reason, uint32_t *sleep_s, bool fir
 
 /* ---------------- battery: schedule the next hibernate ---------------- */
 
+static void usb_mode(uint32_t pf, bool first_boot);
+
 static void sleep_for(uint32_t pf, uint32_t seconds)
 {
     if (seconds == 0)
@@ -335,6 +344,12 @@ static void sleep_for(uint32_t pf, uint32_t seconds)
      * that samples humidity; the count left is carried across the reboots */
     uint32_t slices = (seconds + HUM_PERIOD_S - 1) / HUM_PERIOD_S;
     uint32_t first = seconds < HUM_PERIOD_S ? seconds : HUM_PERIOD_S;
+    /* USB already present: no plug edge will come to wake us. It happens after every session that saw a plug-in:
+     * while the K230 rails are up they back-feed VUSB (bug-002), a USB-C host does not turn VBUS on, and the power
+     * (PGOOD low) arrives only when the rails go off (tests/test035, 2026-10-22). Without this the board slept on
+     * battery while plugged until the next humidity slice (up to HUM_PERIOD_S). */
+    if (usb_present())
+        usb_mode(pf, false);                    /* does not return */
     aht20_deinit();
     usb_arm_hbn_wake();                         /* a USB plug wakes us through ACOMP0 */
     persist_set(pf, slices - 1);

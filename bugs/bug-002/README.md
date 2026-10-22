@@ -30,6 +30,15 @@ device. R63 (30 k, VUSB to K230 B7) is a third, weaker path.
 
 **To confirm:** rails on, no USB cable: VUSB ~2.2 V, and D3 pin 6 (DBGP_D_P) ~3.3 V.
 
+## Seen again with the K230 running (2026-10-22, tests/test035)
+
+K230 booted from NAND and running on the cell, USB-C 1 (Mac) unplugged and plugged back: 0.03 mA in VBUS, PGOOD high,
+the charger off - with the meter leads shorted too. `pt_off` with the cable in: charging at once; `pt_usb offwait`:
+PGOOD low **113 ms** after the 3V3 rail was gone. So in the product a cable plugged in during a session is invisible
+until the session ends. Firmware handling (rev 1): `k230_off()` waits up to 300 ms more for PGOOD after the power-off
+(the source's VBUS turn-on), and `sleep_for()` enters USB mode when USB is present instead of arming a plug edge
+that has already passed (main.c). The hardware fix stays the rev 2 solution above.
+
 ## Solution (rev 2)
 
 - Power U2 (CH340X) from **USBC2's own VBUS** (after D2), not from 3V3: the debug chip then only lives while a debug

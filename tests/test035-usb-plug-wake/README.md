@@ -1,6 +1,6 @@
 # test035: USB plug wake (PGOOD on ACOMP0)
 
-Status: **pass with opens** (2026-10-22): PGOOD on ACOMP0 follows plug / unplug of USB-C 1; HBN wake on plug-in and on unplug works (woke by usb, both edges). Open: USB-C 2 path, plug during a K230 session, 100-cycle run.
+Status: **pass** (2026-10-22): plug / unplug seen awake, HBN wake on both edges, 19 charger plug transitions all reported; a plug-in during a K230 session gets no power from a USB-C host until the rails go off (bug-002, PGOOD 113 ms later) - product handles it now. Open: the Mac refusing power with the K230 off once.
 
 A USB plug wakes the hibernating BL616 through PGOOD on ACOMP0 (threshold 1.65 V today; 0.5 V with the rev 2 battery
 divider, bug-004) and switches it to USB mode (BLE pairing, awake). Unplug returns it to the battery path.
@@ -45,8 +45,23 @@ Every plug wakes and every unplug returns to battery mode; latency recorded.
 Wake latency: not measured directly; the HBN wake path is ~15 ms (test021) plus PGOOD's fall (BQ24072 open drain
 against R23 100 k: fast) - well inside "within ms" of the USB power being good.
 
-Open: step 2 (USB-C 2 only: its VBUS was cut by hand on 2026-10-21, so it powers nothing on this board); step 3 (plug
-during a K230 session, bug-002 back-feed); step 4 (100 plug cycles by hand); the product firmware build (rewrite).
+**Step 3, plug-in during a K230 session (K230 running from NAND on the cell, USB-C 1 from a Mac):** 0.03 mA in VBUS,
+PGOOD high, no charging - also with the meter leads shorted. `pt_off` with the cable in: charging at once.
+`pt_usb offwait` (rails off, then time PGOOD): **PGOOD low 113 ms after the 3V3 rail was gone**. This is bug-002 (the
+CH340's D+ pull-up back-feeds VUSB through D3; a USB-C source waits for VBUS below 0.8 V before turning it on).
+Product consequence, fixed in main.c: after a session the USB power arrives only when the rails are off, so the plug
+edge has already passed when `sleep_for()` arms it - the board slept on battery while plugged until the next
+humidity slice (up to 10 min). Now `k230_off()` waits up to 300 ms more for PGOOD after the power-off, and
+`sleep_for()` enters USB mode when USB is present. A plain 5 V charger powers the board even during a session.
+
+**Step 4, plug cycles (plain USB charger, BL616 awake):** 120 s window, 10 unplugs and 9 plug-ins reported, ending
+unplugged: every transition seen, none stuck (19 by hand, not the planned 100).
+
+**Step 2 (USB-C 2 only):** not applicable on this board: USB-C 2's VBUS was cut by hand on 2026-10-21.
+
+Open: the Mac once gave no power with the K230 **off** (0.02 mA after a few plugs at 17:39-17:41; most likely its
+port protection after repeated plug-ins with the charger's inrush), the plain charger worked at once; the product
+firmware build (rewrite).
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -81,6 +96,8 @@ n/a while on USB (the charger powers the board); the unplug path's return to sle
 - **First plug-wake try armed the wrong edge**: the user plugged back within the 2-3 s between my unplug check and
   the sleep command, so the firmware saw USB present and armed the unplug edge -> the script waits for 5 s of
   "unplugged" first and the user counts to 15 before plugging. (It proved the unplug wake instead.)
+- **The Mac stopped powering the port after several plug-ins** (K230 off): switched to a plain USB charger (user).
+- **The user's first "20 cycles" window passed before the cycling started** -> the count ran again and caught it.
 - **"woke by leak" after a flash**: the HBN interrupt state survives the flasher's reset, an ACOMP1 event latched while
   awake showed as a wake reason. The product clears all three at boot and before each sleep; harmless.
 
