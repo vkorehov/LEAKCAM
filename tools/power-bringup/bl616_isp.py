@@ -2,11 +2,15 @@
 """Put the BL616 into its ROM download mode over the USB console, no BOOT link or EN touch.
 
     bl616_isp.py              -> prints the ROM's port (/dev/ttyACMn) once it is there
+    bl616_isp.py --boot PORT  -> after flashing: ROM boots the new firmware (clears the user-boot field, resets)
     bl616_isp.py --wait-app   -> after flashing: waits for the firmware's console, prints its port
 
 Both firmwares (test and product) are built for the SDK board bl616dk, whose shell has `reboot uart`:
 it sets the HBN user-boot field to 1 and does a power-on reset, and the ROM then starts as if BOOT were
 high. Their console is the SDK's USB CDC (ffff:ffff); the ROM enumerates as Bouffalo CDC (349b:6160).
+The field lives in HBN_RSV2 (0x2000F108), which a reset keeps: BLFlashCommand's reset alone lands in the ROM
+again, only EN cleared it. --boot does what the vendor's bflb_eflash_loader.clear_boot_status() does (ISP
+memory write 0x50, HBN_RSV2 = 0), then the ISP reset 0x21, in the ROM session the flasher left open.
 A firmware that never reaches its console cannot be switched this way: BOOT + EN by hand
 (README.md section 2). Under VMware every re-enumeration needs "connect to Linux" on the Mac.
 """
@@ -69,12 +73,43 @@ def send(port, line):
         os.close(fd)
 
 
+def isp_cmd(fd, cmd, data=b""):
+    """One ROM ISP command: id, checksum, length (LE), data; the answer is OK or FL + error code."""
+    n = len(data).to_bytes(2, "little")
+    termios.tcflush(fd, termios.TCIFLUSH)
+    os.write(fd, bytes([cmd, (sum(n) + sum(data)) & 0xFF]) + n + data)
+    ack, t0 = b"", time.time()
+    while len(ack) < 2 and time.time() - t0 < 1:
+        ack += os.read(fd, 4)
+    return ack[:2] == b"OK", ack
+
+
+def boot(port):
+    fd = os.open(port, os.O_RDWR | os.O_NOCTTY | os.O_NONBLOCK)
+    try:
+        attr = termios.tcgetattr(fd)
+        attr[3] &= ~(termios.ICANON | termios.ECHO)
+        attr[6][termios.VMIN], attr[6][termios.VTIME] = 0, 0
+        termios.tcsetattr(fd, termios.TCSANOW, attr)
+        os.set_blocking(fd, True)
+        ok, ack = isp_cmd(fd, 0x50, (0x2000F108).to_bytes(4, "little") + bytes(4))
+        if not ok:
+            sys.exit(f"bl616_isp: HBN_RSV2 write refused ({ack!r}); tap EN")
+        isp_cmd(fd, 0x21)  # the chip resets at once; the OK may not get out
+    finally:
+        os.close(fd)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--boot", metavar="PORT", help="ROM port: boot the flashed firmware")
     ap.add_argument("--wait-app", action="store_true", help="wait for the firmware console instead")
     ap.add_argument("--timeout", type=float, default=300)  # VMware "connect" clicks often take over a minute
     a = ap.parse_args()
 
+    if a.boot:
+        boot(a.boot)
+        return
     if a.wait_app:
         print(wait_for(APP, "firmware console (ffff:ffff)", a.timeout))
         return

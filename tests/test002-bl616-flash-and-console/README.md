@@ -42,7 +42,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 |---|---|---|---|
 | Boot, power-on -> READY | n/a | - | no K230 |
 | This part's boot share | EN tap -> console on USB ~5 s | - | includes the VMware re-attach |
-| Test run time | `make flash` 26 s (ISP 1 s, flasher 3.8 s, the rest the container + waits) | - | setup: 2 "connect to Linux" clicks + 1 EN tap |
+| Test run time | `make flash` 26 s (ISP 1 s, flasher 3.8 s, the rest the container + waits) | - | setup: 2 "connect to Linux" clicks + 1 EN tap (none since 2026-10-22: `--boot`) |
 | Flash write | 116.6 KB in 571 ms = 204 KB/s | UART 2 Mbaud = 200 KB/s | ~100 % (the ROM link is the limit) |
 | Current idle / during (min / avg / peak) | not measured: meter not connected | - | on USB (not battery) |
 | Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
@@ -75,3 +75,9 @@ n/a: flashing and the console run from USB power.
   mode afterwards: `BLFlashCommand --reset` logs "Reset cpu" but the chip does not restart -> one EN tap starts the
   new image (banner build time changed, `pt_status` normal); the HBN user-boot flag does not bring the ROM back.
   Flashing: no BOOT link, one EN tap (was link + two taps).
+- **The EN tap after every flash** (2026-10-22) -> `reboot uart` sets the user-boot field in HBN_RSV2
+  (0x2000F108), which survives a reset, so every reset lands in the ROM again; only EN clears the HBN domain (the
+  2026-10-21 note above was wrong) -> `bl616_isp.py --boot`: in the ROM session the flasher leaves open, ISP memory
+  write 0x50 HBN_RSV2 = 0 (as the vendor's `clear_boot_status()` in bflb-mcu-tool) and ISP reset 0x21; `make flash`
+  runs it. Verified 2026-10-22 09:38: `reboot uart` -> new firmware console in 18 s, no hand action but the 2 VMware
+  clicks.

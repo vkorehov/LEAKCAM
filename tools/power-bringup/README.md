@@ -96,8 +96,8 @@ red VBUS still cut and taped (the port turns on 5 V once CC is terminated). With
 USB-C to USB-A adapter or a hub on the computer side does this itself. On macOS the port is `/dev/cu.usbmodem*`.
 
 - **Flash mode without wires** (normal case): while a firmware's USB console runs, `make flash` sends it
-  `reboot uart` ([bl616_isp.py](bl616_isp.py)): the ROM starts as with BOOT high; after flashing, one EN tap (pad 5
-  to GND) starts the new firmware. Only a firmware that never reaches its console needs the BOOT link below.
+  `reboot uart` ([bl616_isp.py](bl616_isp.py)): the ROM starts as with BOOT high; after flashing, `bl616_isp.py --boot`
+  clears the ROM's user-boot field (HBN_RSV2) and resets: the new firmware starts, no EN tap. Only a firmware that never reaches its console needs the BOOT link below.
 - **Boot into flash mode by hand**: link pad 4 (BOOT) to pad 6 (3V3_SLEEP), then touch pad 5 (EN) to GND
   (pad 3) for a moment and let go. The ROM enumerates as `Bouffalo CDC` (349b:6160), `/dev/ttyACM0`.
 - **Run**: remove the 4-6 link and touch pad 5 to GND again. The firmware's console appears on the
@@ -111,7 +111,7 @@ from the PR1 console. Not the product firmware; flash that afterwards.
 ```
 cd bl616_powertest
 make                              # arm64 host: builds in the K230 build container by itself
-make flash                        # running firmware -> ROM, flashes; then tap EN once, it waits for the console
+make flash                        # running firmware -> ROM, flashes, boots it, waits for the console
 ```
 
 On an arm64 host the RISC-V toolchain (x86-64 only) runs in the `k230-rtos-sdk-build:arm64-x86tc`
