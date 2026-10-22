@@ -65,7 +65,7 @@ written when it happens). Nothing is left out: an empty part says so ("Not run y
 | [test035 USB plug wake](test035-usb-plug-wake/README.md) | 2026-10-22 | pass: plug/unplug seen, HBN wake both edges, 19 cycles; in-session plug gets no power from a USB-C host (bug-002), product now waits for it and enters USB mode |
 | [test036 K230 hang recovery](test036-k230-hang-recovery/README.md) | 2026-10-22 | pass: hang ends in 2.3 s, no-boot at the timeout; a restart is invisible to the heartbeat -> product session backstop 15 min + restart limit, boot timeout 90 -> 10 s |
 | [test037 K230 PMU RTC](test037-k230-rtc/README.md) | 2026-10-21 | step 0 pass: runs from Y1 (+25 ppm vs 27 MHz), UTC fixed; handover open |
-| [test038 battery brown-out below 3.10 V](test038-battery-brownout/README.md) | | planned |
+| [test038 battery brown-out below 3.10 V](test038-battery-brownout/README.md) | 2026-10-22 | lockout pass (only USB wakes it: no RTC, leak ignored); the K230 VBAT cut not run (no K230 console); below 3 V needs a lab supply |
 | **High level (100+): the product's whole flow** | | |
 | [test100 Wi-Fi throughput end to end](test100-wifi-throughput/README.md) | | planned |
 | [test101 session length](test101-boot-and-session-time/README.md) | | planned |

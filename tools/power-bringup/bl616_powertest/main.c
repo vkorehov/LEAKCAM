@@ -569,10 +569,14 @@ static int cmd_session(int argc, char **argv)
     /* failure cases made by the BL616 itself (the K230 console needs a VMware click per session):
      *   noboot       BOOT1 high: the K230 waits in its USB ROM, no agent, no heartbeat
      *   hang <ms>    K230 held in reset from <ms>: CPU stopped, heartbeat frozen, as a hang looks from outside
-     *   reboot <ms>  a 50 ms reset pulse at <ms>: the K230 restarts mid-session, as its watchdog would */
+     *   reboot <ms>  a 50 ms reset pulse at <ms>: the K230 restarts mid-session, as its watchdog would
+     *   lockout <ms> test038: heartbeat stop limit <ms> (time to start bat_watch on the K230 console after the agent's
+     *                own heartbeat ends); after the cut, HBN with only the USB plug wake (bug-004 lockout) */
     const char *mode = argc > 2 ? argv[2] : "";
     uint32_t at_ms = argc > 3 ? (uint32_t)atoi(argv[3]) : 8000u;
     bool noboot = !strcmp(mode, "noboot"), hang = !strcmp(mode, "hang"), reboot = !strcmp(mode, "reboot"), done = false;
+    bool lockout = !strcmp(mode, "lockout");
+    uint32_t stop_ms = lockout ? (argc > 3 ? at_ms : 60000u) : SESSION_HEARTBEAT_STOP_MS;
     uint32_t t;
     if (rails_on) {
         printf("pt_session: rails are on, pt_off first\r\n");
@@ -622,7 +626,7 @@ static int cmd_session(int argc, char **argv)
             printf("pt_session: END_NO_BOOT: no heartbeat within %lu ms\r\n", (unsigned long)boot_ms);
             break;
         }
-        if (edges && now - last > SESSION_HEARTBEAT_STOP_MS) {
+        if (edges && now - last > stop_ms) {
             printf("pt_session: heartbeat stopped: %u edges, the last %lu ms after power-on; no edge for %lu ms\r\n",
                    edges, (unsigned long)(last - t_on), (unsigned long)(now - last));
             break;
@@ -636,9 +640,24 @@ static int cmd_session(int argc, char **argv)
     printf("pt_session: rails off %lu ms after power-on (session %lu ms after the first edge); ALIVE now %d\r\n",
            (unsigned long)(off - t_on), (unsigned long)(edges ? off - first : 0),
            (int)bflb_gpio_read(gpio, PIN_K230_ALIVE));
+    if (lockout) {
+        /* bug-004 lockout: the battery is too low for another session; only USB may wake the board (no RTC: sleep
+         * time 0, as the SDK's hbn_acomp example; no leak wake) */
+        printf("pt_session: LOCKOUT: HBN with only the USB plug wake, %lu s after power-on\r\n",
+               (unsigned long)((off - t_on) / 1000));
+        bflb_mtimer_delay_ms(50);
+        HBN_Disable_AComp_IRQ(AON_ACOMP1_ID, HBN_ACOMP_INT_EDGE_POSEDGE);
+        HBN_Disable_AComp_IRQ(AON_ACOMP1_ID, HBN_ACOMP_INT_EDGE_NEGEDGE);
+        HBN_Clear_IRQ(HBN_INT_ACOMP1);
+        HBN_Clear_IRQ(HBN_INT_ACOMP0);
+        HBN_Enable_AComp_IRQ(AON_ACOMP0_ID, HBN_ACOMP_INT_EDGE_NEGEDGE);
+        HBN_Hw_Pu_Pd_Cfg(DISABLE);
+        HBN_Set_HRAM_Ret();                        /* last: no HBN RAM access after it */
+        pm_hbn_mode_enter(PM_HBN_LEVEL_0, 0);
+    }
     return 0;
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_session, pt_session, test036: supervised K230 session [boot_ms] [noboot | hang ms | reboot ms]);
+SHELL_CMD_EXPORT_ALIAS(cmd_session, pt_session, supervised K230 session [boot_ms] [noboot | hang ms | reboot ms | lockout stop_ms]);
 SHELL_CMD_EXPORT_ALIAS(cmd_cycle, pt_cycle, n power cycles with timing (default 10));
 SHELL_CMD_EXPORT_ALIAS(cmd_alive, pt_alive, K230_ALIVE heartbeat for s seconds (default 10));
 #endif

@@ -1,6 +1,6 @@
 # test038: battery brown-out below 3.10 V (cutoff, lockout, recovery)
 
-Status: **planned** (2026-10-21).
+Status: **lockout pass, cut decision open** (2026-10-22): after a cut the BL616 hibernates with only the USB wake - no RTC wake in 3+ min, a leak short ignored, USB plug wakes it; the K230-side VBAT cut (bat_watch) not run: the K230 console (CH340) did not reach Linux. Below-3 V steps need a lab supply (none).
 
 Rev 1 has no hardware discharge cutoff (bug-004): the BQ24072 keeps its BAT-FET on, so the firmware is the only
 guard. The K230 reads VBAT (test023) and reports it in the WAKE ACK; the BL616 keeps it in HBN RAM; below 3.10 V
@@ -9,7 +9,14 @@ with USB plugged and the next reading >= 3.50 V. Below that the cell, U5 (3V3_SL
 
 ## Setup
 
-Lab supply in place of the cell (JB1, current limit 1 A, 4.2 V start), USB out; meter on VBAT (C15) and on the
+**2026-10-22, quick test without a lab supply (user: no supply; the pack's own protection trips only at ~2.4-2.5 V,
+bug-004, so the firmware cutoff stays the working guard):** the mechanism with a raised threshold instead of an
+overnight drain. K230 bench `bat_watch [cut_mv] [log_s]` (VBAT from ADC_1 averaged over 64, logged; the GPIO2
+heartbeat while VBAT >= cut, "CUT" and the heartbeat stopped after 3 readings below it); BL616 `pt_session <boot_ms>
+lockout <stop_ms>`: supervised session, after the cut HBN with only the USB plug wake (no RTC: sleep time 0; leak
+comparator wake disabled), as the product's bug-004 lockout. Board on the cell (USB-C 1 out).
+
+Planned with a lab supply (not available): lab supply in place of the cell (JB1, current limit 1 A, 4.2 V start), USB out; meter on VBAT (C15) and on the
 supply current. The BL616's USB console needs USB, so log through the K230 console and read the BL616's HBN RAM
 state after recovery.
 
@@ -38,7 +45,20 @@ latch-up or NAND damage down to 1.6 V and back.
 
 ## Results
 
-Not run yet.
+### 2026-10-22, lockout (quick test)
+
+| Step | Result |
+|---|---|
+| session on the cell, heartbeat stops (the agent's own end; bat_watch could not be started) | rails off 2 s / 60 s after the last edge, then **LOCKOUT** (22:33:52 and 22:36:21) |
+| lockout, 3+ min with nothing | **no wake** (console stayed away: no RTC wake armed) |
+| lockout, S1 shorted 3 s | **no wake** (the leak is ignored) |
+| lockout, USB-C 1 plugged | **woke by usb** (twice: 22:34 and 22:40) |
+
+Not run: the K230-side cut decision (`bat_watch 4050 5`: VBAT read under load, CUT after 3 readings, heartbeat
+stopped) - the K230 console (CH340, USB-C 2) did not reach Linux on this run (no VMware offer, user: the known
+CH340/USB-C 2 problem). bat_watch is built into the bench image and flashed; next time with the console: `pt_session
+10000 lockout 60000` on the cell, then `bat_watch 4050 5` on the K230 within 60 s of the agent's end. Steps 1-6 of the
+plan (sweep, real cutoff, deep discharge, ramp) need a lab supply.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -71,4 +91,8 @@ state of charge (ENERGY.txt section 1, usable charge).
 
 ## Obstacles
 
-None yet.
+- **No lab supply** -> the mechanism tested with a raised threshold on the real cell instead of the sweep.
+- **The K230 console (CH340) did not reach Linux** while the K230 ran on the cell -> the lockout was tested on the
+  agent's own heartbeat stop; the VBAT cut decision stays open.
+- **bl616_isp.py --boot refused once** (the ROM's ISP session had timed out) -> new handshake built in (test002).
+

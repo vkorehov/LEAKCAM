@@ -31,6 +31,7 @@
 #include "../drivers/interdrv/sysctl/sysctl_clock/sysctl_clk.h"
 #include <ioremap.h>
 #include "../drivers/interdrv/fpioa/drv_fpioa.h"
+#include "../drivers/interdrv/gpio/drv_gpio.h"
 
 static inline rt_uint64_t now(void)
 {
@@ -642,3 +643,50 @@ static int uart_bench(int argc, char **argv)
     return 0;
 }
 MSH_CMD_EXPORT(uart_bench, test018: UART1 echo latency and throughput at the link rate [kb]);
+
+/*
+ * test038: overnight battery discharge with the firmware cutoff (bug-004: only the K230 can read VBAT on rev 1).
+ * bat_watch [cut_mv] [log_s]: VBAT from ADC_1 (R59/R61 = VBAT / 3, 64 conversions averaged, full scale 5329 mV as
+ * the agent, tests/test023) every log_s seconds, logged; the K230_ALIVE heartbeat on GPIO2 (an edge every 500 ms)
+ * while VBAT stays at or above cut_mv; three readings in a row below it: "CUT", the heartbeat stops (GPIO2 low) and
+ * the BL616 (pt_session ... lockout) cuts the rails and hibernates with only the USB wake.
+ */
+static int bat_watch(int argc, char **argv)
+{
+    rt_uint32_t cut = argc > 1 ? (rt_uint32_t)atoi(argv[1]) : 3100, log_s = argc > 2 ? (rt_uint32_t)atoi(argv[2]) : 10;
+    rt_adc_device_t adc = (rt_adc_device_t)rt_device_find("adc");
+    if (!adc || rt_adc_enable(adc, 1) != RT_EOK)
+    {
+        rt_kprintf("bat_watch: ADC channel 1 not available\n");
+        return -1;
+    }
+    kd_pin_mode(2, GPIO_DM_OUTPUT);
+    rt_uint64_t t0 = now();
+    rt_uint32_t min = 9999, below = 0, level = 0;
+    rt_kprintf("bat_watch: cut below %u mV (3 readings), log every %u s, heartbeat on GPIO2\n", cut, log_s);
+    while (1)
+    {
+        rt_uint32_t sum = 0;
+        for (int i = 0; i < 64; i++)
+            sum += rt_adc_read(adc, 1);
+        rt_uint32_t mv = (rt_uint32_t)(((rt_uint64_t)sum * 5329u + 4095u * 32u) / (4095u * 64u));
+        if (mv < min)
+            min = mv;
+        below = mv < cut ? below + 1 : 0;
+        rt_kprintf("bat_watch %6u s: VBAT %4u mV (min %4u)%s\n", (unsigned)((now() - t0) / 27000000u), mv, min,
+                   below ? " below the cut" : "");
+        if (below >= 3)
+        {
+            kd_pin_write(2, 0);
+            rt_kprintf("bat_watch: CUT at %u s, VBAT %u mV: heartbeat stopped\n", (unsigned)((now() - t0) / 27000000u), mv);
+            return 0;
+        }
+        for (rt_uint32_t i = 0; i < log_s * 2; i++)
+        {
+            level ^= 1;
+            kd_pin_write(2, level);
+            rt_thread_mdelay(500);
+        }
+    }
+}
+MSH_CMD_EXPORT(bat_watch, test038: VBAT log + heartbeat until VBAT < cut [cut_mv] [log_s]);
