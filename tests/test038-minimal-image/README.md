@@ -34,6 +34,11 @@ The union of every test's `## Needs`: this test's own list is the result.
    the product, BLE provisioning only, lwIP minimal: the K230 owns IP), flags (`-Os`, sections, LTO already on).
 7. Wake path in TCM, the rest XIP; image size and the humidity slice's awake time.
 
+**Then per test, from the floor:** the floor image + that test's `## Needs` only, built, flashed, the test run: the
+difference to the floor is the cost of that test's features (bytes, boot ms, free RAM, current at idle), recorded
+in the test's Metrics ("Features over the minimal image") and summed here per feature. The product image is the
+floor + the union of the product tests' needs; a feature whose cost is high gets questioned first.
+
 **Every build:** sizes (kdimg, rtthread.bin, each program, /bin and /sdcard used; BL616 .bin), boot to app init (3
 cold boots), free RAM at msh, the speeds the change touches (test012/015/016/026), current at msh idle; the
 tests whose part changed re-run.
@@ -76,6 +81,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Temperature die / board (start / peak / end) | to fill | K230 limit (datasheet) | chip_temp, AHT20 |
 | Image (sizes) | baseline above | minimal image (rule) | per build |
 | Compile flags | baseline above | smallest code (rule) | per build |
+| Features over the minimal image | to fill: per test, its Needs on top of the floor | - | bytes, boot ms, RAM, current |
 
 ## Boot time
 

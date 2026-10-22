@@ -57,6 +57,7 @@ Probes: current - lab supply in place of the cell, its current; voltage - VBAT C
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
 | Image (sizes) | to fill | minimal image (rule) | the image this run used |
 | Compile flags | to fill | smallest code (rule) | |
+| Features over the minimal image | to fill: this test's Needs built on test038's floor | test038 floor | bytes, boot ms, RAM, current |
 
 ## Boot time
 

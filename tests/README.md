@@ -15,7 +15,8 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 **Every build is the minimal image with the smallest machine code, in every test** (2026-10-22, a standing
 practice, not a test of its own): only the features some test's `## Needs` names, sections + `--gc-sections`,
 `-Os` unless a measured speed need, LTO, stripped; each test records its image sizes and compile flags. After an
-optimisation step the tests whose part changed run again.
+optimisation step the tests whose part changed run again. test038 finds the floor (the fewest bits that boot);
+each test then builds its `## Needs` on that floor, so its Metrics show what its features cost.
 
 **Every test README has the same structure** (2026-10-21), in this order: title, `Status: **<result>** (<date>).`,
 a short introduction, then `## Setup` (hookup, image, probes), `## Needs` (the build features and dependencies the
