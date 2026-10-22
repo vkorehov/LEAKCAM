@@ -63,7 +63,7 @@ handler; a full linux/amd64 container fails under qemu-user (bison/m4 crash).
 - `app_canmv/mnt.c`: UFFS mounts, nand0 on /bin and nand1 on /sdcard (the SDK mounts no NAND).
 - `components/dfs/src/poll.c` (RT-Thread): `poll()` clears its wake flag before each check and sleeps
   for the rest of its timeout. The original busy-looped after any wake-up that left the fd not ready;
-  the agent spun at priority 25 once its hook exited and starved every user program (tests/test011).
+  the agent spun at priority 25 once its hook exited and starved every user program (tests/test012).
 - `components/drivers/src/pipe.c` (RT-Thread): a pipe's `poll()` reports POLLHUP once no writer is left.
 - `src/rtsmart/gen_config`: `config.txt` gets `board=leakcam` instead of the SD-card `auto_resize=y`.
 - Deletes `output/k230d_rtos_leakcam_defconfig/rtsmart/kernel/board/pinmux.o`: `pinmux.c`

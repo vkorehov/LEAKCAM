@@ -136,7 +136,7 @@ const char *wake_reason_text(unsigned reasons, char *buf, unsigned len)
  * counter, and it does not start in HBN, so the chip never wakes (rev 1, 2026-10-22; the SDK's
  * HBN_Power_On_Xtal_32K waits 1.1 ms, not the ">1s" its comment says). Wait until the counter moves on Y3; if it
  * never does, RC32K (+0.44 %), so the chip still wakes. After an HBN wake Y3 is running: returns at once.
- * tests/test030. */
+ * tests/test031. */
 void rtc_use_crystal(void)
 {
     uint32_t l0, h0, l1, h1;

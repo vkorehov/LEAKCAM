@@ -47,7 +47,7 @@ Quantisation
   int8 PTQ, activations and weights, KLD calibration on 20 frames: 211 KB, 0.5 ms per
   inference on the KPU; against TensorFlow mean 0.031, max 0.15 per pair, same decisions.
   int16 (within 0.0014 of TensorFlow) runs part of the net on the CPU: 6.3 s per inference on
-  the chip (tests/test012).
+  the chip (tests/test013).
 
 Cost
   The net runs only on wakes where imgdiff saw a change: 0.5 ms per inference on the KPU,
@@ -124,7 +124,7 @@ lighting false alarms, measured on LEAKCAM frames.
 
   Try uint8 first with the 64-d projection (smaller, faster). Keep it only if simulator
   distances stay within 0.01 of TensorFlow on the check pairs; otherwise int8, as now (int16 runs
-  part of the net on the CPU: 6.3 s per inference, tests/test012).
+  part of the net on the CPU: 6.3 s per inference, tests/test013).
 
 2.6 Deployment
 

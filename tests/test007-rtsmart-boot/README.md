@@ -44,26 +44,26 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 
 | Metric | Value (typical / max) | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> app init (median / max of runs) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | test021 | longest step: |
+| Boot, power-on -> app init (median / max of runs) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | test022 | longest step: |
 | This part's boot share | not measured: run before the metrics rule (2026-10-21); fill on a re-run | - | |
 | Test run time | not measured: run before the metrics rule (2026-10-21); fill on a re-run | - | setup (flashing, plugging, waiting) separately |
 | Speed / rate against the top | not measured: run before the metrics rule (2026-10-21); fill on a re-run | SPEEDS.txt | % of the top |
-| Current floor / typical / peak | not measured: run before the metrics rule (2026-10-21); fill on a re-run | floor (test030) | at the probe above |
+| Current floor / typical / peak | not measured: run before the metrics rule (2026-10-21); fill on a re-run | floor (test031) | at the probe above |
 | Voltage under load (min) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | not measured: run before the metrics rule (2026-10-21); fill on a re-run | - | scripts/energy.py |
 | Per day | not measured: run before the metrics rule (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
 | Image (sizes) | not recorded at the time (before the metrics rule) | minimal image (rule) | the image this run used |
 | Compile flags | not recorded at the time (before the metrics rule) | smallest code (rule) | |
-| Features over the minimal image | to fill: this test's Needs built on test038's floor | test038 floor | bytes, boot ms, RAM, current |
+| Features over the minimal image | to fill: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
 
 ## Boot time
 
-Not recorded (before the boot rule, 2026-10-21). If re-run: OpenSBI -> RT-Smart banner -> msh (now part of test021).
+Not recorded (before the boot rule, 2026-10-21). If re-run: OpenSBI -> RT-Smart banner -> msh (now part of test022).
 
 ## Battery energy
 
-Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: superseded by test021 (boot energy) and test101 (session).
+Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: superseded by test022 (boot energy) and test101 (session).
 
 ## Obstacles
 

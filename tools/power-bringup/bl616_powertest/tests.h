@@ -12,7 +12,7 @@
 #define PT_TEST_LEAK   1   /* pt_leak: leak probe node voltage and probe resistance (S1..S3)            */
 #define PT_TEST_SDIO   1   /* pt_sdio: SDIO lines to K230 MMC0: edges while it probes, driven patterns  */
 #define PT_TEST_SDU    1   /* pt_sdu: SDIO device echo (the SDK's sdio2_test) for the K230 bus speed test */
-#define PT_TEST_SLEEP  1   /* pt_sleep: K230 off, HBN level 0, RTC wake after <s> (test030 sleep current) */
+#define PT_TEST_SLEEP  1   /* pt_sleep: K230 off, HBN level 0, RTC wake after <s> (test031 sleep current) */
 
 #if PT_TEST_UART && !PT_TEST_POWER
 #error "PT_TEST_UART needs PT_TEST_POWER: the link pins may only be driven while the K230 3V3 is up"

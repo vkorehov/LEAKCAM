@@ -46,7 +46,7 @@
 };
 
 /* U16 W25N02KV on OSPI CS0, quad I/O at 80 MHz; rx-sample-delay 6 ns = 5 x 1.25 ns, the middle of the clean
- * window 3-8 (tests/test016; the kernel uses RT_SPI0_RXSD=5) */
+ * window 3-8 (tests/test017; the kernel uses RT_SPI0_RXSD=5) */
 &spi0 {
 	status = "okay";
 	rx-sample-delay-ns = <6>;

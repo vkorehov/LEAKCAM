@@ -603,7 +603,7 @@ def main():
     leddrv = [{"id": "W", "rail": "J1.1 white out", "pad": "J1.1", "gnd": "R3.2", "side": "top"},
               {"id": "C", "rail": "LED_CTL2 (U14 CTRL)", "pad": "R3.1", "gnd": "R3.2", "side": "top"},
               {"id": "I", "rail": "J2.1 IR out", "pad": "J2.1", "gnd": "R3.2", "side": "top"}]
-    render_points_sheet(pcb, comps, leddrv, os.path.join(TESTS, "test008-led-chains", "led_drivers.png"), (40.5, 51.5, 25.0, 36.0), 70.0,
+    render_points_sheet(pcb, comps, leddrv, os.path.join(TESTS, "test009-led-chains", "led_drivers.png"), (40.5, 51.5, 25.0, 36.0), 70.0,
                         ", LED drivers", {"W": "~22 V lit / 35-38 V open / ~VBAT idle", "C": "~1.6 V at 50 % duty",
                                           "I": "~VBAT (IR off)"},
                         ("White on: pwm_set pwm 1 40000 20000 + pwm_enable pwm 1 (50 %, ~33 mA max).",
@@ -611,7 +611,7 @@ def main():
     # white chain return: J1 pin 2 -> R66 (3R current sense, bottom) -> GND
     r66 = [{"id": "S", "rail": "R66 J1 side", "pad": "R66.2", "gnd": "R66.1", "side": "bottom"},
            {"id": "J", "rail": "J1.2 white -", "pad": "J1.2", "gnd": "R66.1", "side": "bottom"}]
-    render_points_sheet(pcb, comps, r66, os.path.join(TESTS, "test008-led-chains", "r66_white_return.png"), (40.5, 51.0, 26.0, 34.0), 80.0,
+    render_points_sheet(pcb, comps, r66, os.path.join(TESTS, "test009-led-chains", "r66_white_return.png"), (40.5, 51.0, 26.0, 34.0), 80.0,
                         ", white chain return (R66)", {"S": "S-GND ~3 ohm (power off)", "J": "J-S ~0 ohm"},
                         ("Power off. Ohmmeter: S to GND pad ~3 ohm (R66), J1 pin 2 (J) to S ~0 ohm.",
                          "Open at S-GND: reflow or replace R66 (3R 0603, LCSC C23157). Open J-S: J1 pin 2 joint or trace."),
@@ -620,7 +620,7 @@ def main():
     mic = [{"id": "V", "rail": "mic VDD (C96)", "pad": "C96.1", "gnd": "C96.2", "side": "top"},
            {"id": "B", "rail": "MIC_BIAS (FB4)", "pad": "FB4.2", "gnd": "C96.2", "side": "top"},
            {"id": "O", "rail": "mic out (C97)", "pad": "C97.1", "gnd": "C96.2", "side": "top"}]
-    render_points_sheet(pcb, comps, mic, os.path.join(TESTS, "test011-microphone", "mic.png"), (49.5, 60.5, 0.5, 9.5), 70.0,
+    render_points_sheet(pcb, comps, mic, os.path.join(TESTS, "test012-microphone", "mic.png"), (49.5, 60.5, 0.5, 9.5), 70.0,
                         ", microphone U13", {"V": "~1.4 V (measured)", "B": "~1.4 V (measured)",
                                              "O": "~0.8 V (measured)"},
                         ("Measure while a recording runs (leakcam_stream -m 30 -o /tmp/mic.raw).",
@@ -639,14 +639,14 @@ def main():
                          "Leave pad 5 (VUSB) and pad 2 (GND) bare. Check: no short between the bridges, D+/D- not to VUSB/GND.",
                          "Then rails on, no USB cable: VUSB (C2 pad 1) ~0 V instead of ~2.2 V. The debug USB loses its ESD clamp."))
     render_led_wiring(pcb, comps, os.path.join(HERE, "led_wiring.png"))
-    # test022 battery ADC: the K230 reads VBAT (C15) through R59/R61; BAT (C11) is the cell
+    # test023 battery ADC: the K230 reads VBAT (C15) through R59/R61; BAT (C11) is the cell
     adc = [{"id": "VBAT", "rail": "VBAT (what the ADC reads)", "pad": "C15.1", "gnd": "C15.2", "side": "top"},
            {"id": "BAT", "rail": "BAT (the cell)", "pad": "C11.1", "gnd": "C11.2", "side": "top"}]
-    render_points_sheet(pcb, comps, adc, os.path.join(TESTS, "test022-battery-adc", "adc_points.png"), (49.0, 61.0, 28.0, 38.0), 80.0,
-                        ", test022 battery ADC", {"VBAT": "= K230 ADC_1 reading (raw x 5400 / 4095)", "BAT": "the cell (VBAT on battery)"},
+    render_points_sheet(pcb, comps, adc, os.path.join(TESTS, "test023-battery-adc", "adc_points.png"), (49.0, 61.0, 28.0, 38.0), 80.0,
+                        ", test023 battery ADC", {"VBAT": "= K230 ADC_1 reading (raw x 5400 / 4095)", "BAT": "the cell (VBAT on battery)"},
                         ("Red probe on the red ring, black on the black ring (GND, the cap's other pad).",
                          "USB in: VBAT ~0.1-0.2 V above BAT (charger output). USB out: VBAT = BAT."))
-    # test028 camera buses idle: per connector its 3V3, pin 17 pull-up, SCL/SDA pull-ups (on the resistors, the FPC
+    # test029 camera buses idle: per connector its 3V3, pin 17 pull-up, SCL/SDA pull-ups (on the resistors, the FPC
     # pins are 0.5 mm pitch) and pin 18 (CAM_GPIO, no part on it: the connector pad)
     for j, cam, (c3, r17, rscl, rsda) in (("J4", "CAM2 (J4, CSI0, IIC0)", ("C7", "R13", "R14", "R15")),
                                           ("J5", "CAM1 (J5, CSI2, IIC4)", ("C8", "R16", "R17", "R18"))):
@@ -659,8 +659,8 @@ def main():
             sp = [dict(p, side=side) for p in pts if comps[p["pad"].split(".")[0]]["side"] == side]
             xs = [comps[q.split(".")[0]]["pins"][q.split(".")[1]][0] for p in sp for q in (p["pad"], p["gnd"]) if comps[q.split(".")[0]]["side"] == side]
             ys = [comps[q.split(".")[0]]["pins"][q.split(".")[1]][1] for p in sp for q in (p["pad"], p["gnd"]) if comps[q.split(".")[0]]["side"] == side]
-            render_points_sheet(pcb, comps, sp, os.path.join(TESTS, "test028-camera-bus-idle", f"{j.lower()}_{side}.png"),
-                                (min(xs) - 4, max(xs) + 4, max(0.0, min(ys) - 4), max(ys) + 4), 55.0, f", test028 {cam}, nothing plugged in",
+            render_points_sheet(pcb, comps, sp, os.path.join(TESTS, "test029-camera-bus-idle", f"{j.lower()}_{side}.png"),
+                                (min(xs) - 4, max(xs) + 4, max(0.0, min(ys) - 4), max(ys) + 4), 55.0, f", test029 {cam}, nothing plugged in",
                                 {"3V3": "3.3 V (rails on)", "P17": "3.3 V", "SCL": "3.3 V", "SDA": "3.3 V", "GPIO": "~0 V (driven low)"},
                                 ("K230 running, no camera on the connector. GND: the black ring (capacitor or connector GND pin).",
                                  "SCL/SDA below 3 V: a pull-up or the K230 pad holds the bus; GPIO high: the pin init did not run."),

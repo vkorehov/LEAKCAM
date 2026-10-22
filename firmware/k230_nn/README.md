@@ -21,7 +21,7 @@ Design rationale and the retraining plan: [../NN.txt](../NN.txt).
   `leakcam_change.kmodel` is 211 KB, 0.5 ms per inference on the KPU (4.4 ms per check with the 300
   cosines). Against TensorFlow: mean 0.031, max 0.15 per pair, the same decisions (table below).
   int16 stays within 0.002 of TensorFlow but runs part of the net on the CPU: 6.3 s per inference
-  (tests/test012), unusable on a wake.
+  (tests/test013), unusable on a wake.
 
 ## On the device
 
@@ -48,7 +48,7 @@ capture -> imgdiff vs the history view
   OpenCV. It adds about 5 MB to the static `leakcam_wake`.
 - The host test (`make test`) replaces the net with `test/change_stub.c`.
 - Load kmodels through a stream (`interpreter::load_model(std::istream&)`): from a memory span the runtime runs
-  the caller's heap pages in place and the KPU reads garbage (tests/test012).
+  the caller's heap pages in place and the KPU reads garbage (tests/test013).
 
 ## Threshold and measured recall
 

@@ -254,7 +254,7 @@ static void fmt_x10(char *out, size_t n, long v)
  * is one 12-bit conversion against the 1.8 V ADC reference (kernel ABI of bsp/maix3 drv_adc and
  * the RT-Thread ADC framework). Single conversions scatter by sd ~45 mV of VBAT, so we average
  * 64 (~6 mV). Full scale is 1.8 V x 3 = 5400 mV nominal; measured against a meter on C15 it reads
- * 1.3 % high (4.07-4.37 V, tests/test022), so the calibrated full scale is 5329 mV */
+ * 1.3 % high (4.07-4.37 V, tests/test023), so the calibrated full scale is 5329 mV */
 #define BAT_ADC_CHANNEL   1
 #define BAT_FULL_SCALE_MV 5329u
 #define BAT_SAMPLES       64u

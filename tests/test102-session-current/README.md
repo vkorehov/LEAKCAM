@@ -12,7 +12,7 @@ power ([usb_meter.png](usb_meter.png)): USB-C 1 unplugged (it feeds VUSB directl
 data only. The cell must be charged (D1 off): then the USB current is the board's own draw. Board power = that
 current x VBAT (C15 pad 1), not x 5 V (the linear charger's drop is not paid on battery). A / 10 A input, 0.001 A.
 
-**Used 2026-10-21 (tests 015/016/021):** VBUS of the USB-C 2 cable cut instead, the meter in USB-C 1's VBUS: one
+**Used 2026-10-21 (tests 016/017/022):** VBUS of the USB-C 2 cable cut instead, the meter in USB-C 1's VBUS: one
 cable then powers the board and flashes the K230, and the CH340 still works (U2 runs from the switched 3V3). Rules
 learned that day:
 - **10 A jack and range, locked** (no autorange). The mA range's shunt + fuse (2-5 ohm) dropped VBUS 0.4-1 V at
@@ -41,7 +41,7 @@ tests is what the minimal image keeps).
 ## Steps
 
 1. Rails off (BL616 only): sleep-level current (the BL616 test firmware does not hibernate: product firmware later).
-2. `pt_on` held in reset, booting, agent idle, KPU loop, encoder (test026), LEDs at 100 % (white, IR).
+2. `pt_on` held in reset, booting, agent idle, KPU loop, encoder (test027), LEDs at 100 % (white, IR).
 3. Integrate over a typical session (test101) for the energy per wake.
 
 ## Pass
@@ -58,22 +58,22 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
+| Boot, power-on -> READY (median of 5) | not measured yet | target (test022) | longest step: |
 | This part's boot share | not measured yet | - | |
 | Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
 | Speed / rate (none for this test) | not measured yet | - | % of the top |
-| Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Current idle / during (min / avg / peak) | not measured yet | floor (test031) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
 | Image (sizes) | to fill | minimal image (rule) | the image this run used |
 | Compile flags | to fill | smallest code (rule) | |
-| Features over the minimal image | to fill: this test's Needs built on test038's floor | test038 floor | bytes, boot ms, RAM, current |
+| Features over the minimal image | to fill: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
 
 ## Boot time
 
-Boot energy per wake from test021's timing x its current.
+Boot energy per wake from test022's timing x its current.
 
 ## Battery energy
 

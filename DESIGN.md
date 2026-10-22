@@ -447,7 +447,7 @@ back to U13's GND pad beside MICPL; 1 µF 0402 fits better than the 0805 (footpr
 
 ## 7. Open firmware work
 
-- **BL616 RTC clock (fixed 2026-10-22, tests/test030).** Two causes stopped the Y3 RTC in HBN: the HBN pin pulls
+- **BL616 RTC clock (fixed 2026-10-22, tests/test031).** Two causes stopped the Y3 RTC in HBN: the HBN pin pulls
   on GPIO16-19 (IO16/17 = Y3), which pm_hbn_mode_enter() leaves on, and Y3 selected before it runs. Fixed in
   leak_wake.c (HBN_Hw_Pu_Pd_Cfg(DISABLE) in hbn_sleep(); rtc_use_crystal() waits for Y3, else RC32K); verified in
   the test firmware, 5 of 5 wakes. Open: Y3 -110 ppm (load caps).
@@ -457,7 +457,7 @@ back to U13's GND pad beside MICPL; 1 µF 0402 fits better than the 0805 (footpr
   - ISP set 2592x1944 in /bin (install.sh pattern); sensor mode ~15 fps max at full resolution (2-lane MIPI).
   - DDR: NV12 frame 7.6 MB; 2 cameras x 3 VICAP buffers + encoder references ~60-75 MB of 128 MB: size the pools.
   - History keyframe ~3-5 MB per camera (quota 4 MB too small, >= 6 MB); references 2 x 2 x ~5 MB.
-  - /sdcard ~40 MB of data -> 64 MiB; UFFS mount time follows used pages: ~+0.8 s per wake (tests/test021).
+  - /sdcard ~40 MB of data -> 64 MiB; UFFS mount time follows used pages: ~+0.8 s per wake (tests/test022).
   - imgdiff grid and mask constants (80x80 blocks, 16x12), change-net input scaling, encoder bitrate.
   - Option noted: capture and clips at full resolution, history/references stored at 1280x960 (boot stays ~0.64 s).
 - **The real server.** Replace the mock; same two requests. Add authentication and TLS.

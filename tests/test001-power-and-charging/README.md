@@ -81,7 +81,7 @@ The cell's + wired straight to C11 pad 1 (BAT), the JB1 joint bypassed (see Obst
 | Later, same charge | 0.94 A again (0.89 A + 51 mA) | so the 350 mA was not the CV taper; U1 not throttling |
 | Then | 290 mA, then 250 mA, falling (~0.20 A into the cell) | CV taper at 4.20 V |
 | BAT (C11 pad 1) at ~250 mA, 19:30 | 4.18 V (VBAT 4.37 V) | CV phase confirmed: the taper is the cell, not U1's heat |
-| End of charge | D1 off, reported 20:13 (exact time not watched; the cell ran the K230 on battery 19:31-19:41 in between, test022) | **pass**: terminates |
+| End of charge | D1 off, reported 20:13 (exact time not watched; the cell ran the K230 on battery 19:31-19:41 in between, test023) | **pass**: terminates |
 
 **What the earlier charger problems were.** Every one from 2026-10-19 to 10-21 fits the JB1 cell joint, not U1 or
 the cell: D1 flashing / "no cell" and BAT jumping
@@ -101,18 +101,18 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 
 | Metric | Value (typical / max) | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> app init (median / max of runs) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | test021 | longest step: |
+| Boot, power-on -> app init (median / max of runs) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | test022 | longest step: |
 | This part's boot share | not measured: run before the metrics rule (2026-10-21); fill on a re-run | - | |
 | Test run time | not measured: run before the metrics rule (2026-10-21); fill on a re-run | - | setup (flashing, plugging, waiting) separately |
 | Speed / rate against the top | not measured: run before the metrics rule (2026-10-21); fill on a re-run | SPEEDS.txt | % of the top |
-| Current floor / typical / peak | not measured: run before the metrics rule (2026-10-21); fill on a re-run | floor (test030) | at the probe above |
+| Current floor / typical / peak | not measured: run before the metrics rule (2026-10-21); fill on a re-run | floor (test031) | at the probe above |
 | Voltage under load (min) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | not measured: run before the metrics rule (2026-10-21); fill on a re-run | - | scripts/energy.py |
 | Per day | not measured: run before the metrics rule (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
 | Image (sizes) | not recorded at the time (before the metrics rule) | minimal image (rule) | the image this run used |
 | Compile flags | not recorded at the time (before the metrics rule) | smallest code (rule) | |
-| Features over the minimal image | to fill: this test's Needs built on test038's floor | test038 floor | bytes, boot ms, RAM, current |
+| Features over the minimal image | to fill: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
 
 ## Boot time
 

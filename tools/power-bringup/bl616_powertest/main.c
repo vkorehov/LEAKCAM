@@ -611,7 +611,7 @@ SHELL_CMD_EXPORT_ALIAS(cmd_sdio, pt_sdio, SDIO wiring: watch [s] | drive <hex> |
 
 #if PT_TEST_SDU
 /* ---------------------------------------------------------- SDIO device echo ---- */
-/* The SDK's sdio2_test as a command, for the K230 bus speed test (tests/test014): four 2 KB download
+/* The SDK's sdio2_test as a command, for the K230 bus speed test (tests/test015): four 2 KB download
  * buffers; every block the K230 writes comes back on the upload ports (length from its first 4 bytes,
  * tag + length as in the message router header). bflb_sdio2_init() sets what the K230 driver checks at
  * attach (application running, packed read lengths, buffer size, port pointers). */
@@ -850,7 +850,7 @@ static bool rtc_on_xtal(void)
     return false;
 }
 
-/* test030: the board's sleep current. The K230 rails go off first (HBN releases every non-AON pad: R19 then holds
+/* test031: the board's sleep current. The K230 rails go off first (HBN releases every non-AON pad: R19 then holds
  * K230_PWR low, R76 the reset); the RTC moves to the Y3 crystal (as the product's rtc_use_crystal()), then HBN
  * level 0 until the RTC wakes the BL616 after <s>; the wake is a reset, the test firmware starts again. */
 static int cmd_sleep(int argc, char **argv)
@@ -879,7 +879,7 @@ static int cmd_sleep(int argc, char **argv)
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_sleep, pt_sleep, K230 off and HBN level 0 for <s> seconds (RTC wake));
 
-/* test030/031: does the HBN RTC counter run? It counts the selected 32 kHz clock (Y3 crystal or RC32K): 32768
+/* test031/032: does the HBN RTC counter run? It counts the selected 32 kHz clock (Y3 crystal or RC32K): 32768
  * ticks per second expected. A counter that stands still never reaches the HBN wake compare value. */
 static int cmd_rtc(int argc, char **argv)
 {

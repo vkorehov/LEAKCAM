@@ -7,7 +7,7 @@ Input is the reduced luma frame leakcam_wake already holds (uint8 NHWC 1x240x320
 own Rescaling layer maps it to [-1, 1], so nncase preprocess only casts uint8 -> float. Output is
 the float 1x15x20x192 feature map. int8 PTQ (activations and weights): on the KPU 0.5 ms per inference.
 int16 is closer to TensorFlow (0.001) but the K230 runs part of it on the CPU: 6.3 s per inference on the
-chip (tests/test012). The threshold comes from int8 distances measured on the KPU, not from TensorFlow.
+chip (tests/test013). The threshold comes from int8 distances measured on the KPU, not from TensorFlow.
 Usage: ./run_x86.sh compile_embed.py      (compile about 1 min under qemu, simulation a few more)
 """
 import os

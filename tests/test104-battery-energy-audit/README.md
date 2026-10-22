@@ -17,14 +17,14 @@ tests is what the minimal image keeps).
 
 ## Steps
 
-1. Sleep current: from test030 (low level, BL616 HBN with the test firmware); here only checked with the product
+1. Sleep current: from test031 (low level, BL616 HBN with the test firmware); here only checked with the product
    firmware's real sleep.
 2. Energy per humidity slice: the current over the ~85 ms wake, integrated (scope over a shunt).
 3. Energy per K230 report session: current over the whole session (test101 timing, test102 current), boot part
-   separate (test021).
+   separate (test022).
 4. Energy per leak session with a clip upload (Wi-Fi).
 5. Budget: sleep + 144 slices + 4 reports per day (+ leaks), self-discharge; battery life for 1 and 2 cells.
-6. Long run: a charged cell, the real schedule, BAT logged every report session (the K230's ADC, test022) for days;
+6. Long run: a charged cell, the real schedule, BAT logged every report session (the K230's ADC, test023) for days;
    compare the slope with the budget.
 
 ## Pass
@@ -41,22 +41,22 @@ Probes: current - battery lead over whole sessions; voltage - VBAT C15.1: minimu
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | not measured yet | target (test021) | longest step: |
+| Boot, power-on -> READY (median of 5) | not measured yet | target (test022) | longest step: |
 | This part's boot share | not measured yet | - | |
 | Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
 | Speed / rate (none for this test) | not measured yet | - | % of the top |
-| Current idle / during (min / avg / peak) | not measured yet | floor (test030) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Current idle / during (min / avg / peak) | not measured yet | floor (test031) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
 | Image (sizes) | to fill | minimal image (rule) | the image this run used |
 | Compile flags | to fill | smallest code (rule) | |
-| Features over the minimal image | to fill: this test's Needs built on test038's floor | test038 floor | bytes, boot ms, RAM, current |
+| Features over the minimal image | to fill: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
 
 ## Boot time
 
-The boot's share of the daily energy (test021 x wakes per day).
+The boot's share of the daily energy (test022 x wakes per day).
 
 ## Battery energy
 

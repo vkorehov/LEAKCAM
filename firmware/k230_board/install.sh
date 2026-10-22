@@ -263,7 +263,7 @@ PY
 grep -q 'LEAKCAM: UTC' "$TZC" || { echo "UTC patch not applied"; exit 1; }
 
 # ISP tuning files: the SDK copies every ov5647-* resolution (3.3 MB) into /bin; the product runs 1280x960 only.
-# UFFS mount time follows the used pages, so the other four sets cost ~85 ms per boot (tests/test021, 2026-10-21).
+# UFFS mount time follows the used pages, so the other four sets cost ~85 ms per boot (tests/test022, 2026-10-21).
 ISPMK=$SDK/src/rtsmart/mpp/userapps/src/sensor/Makefile
 grep -q 'LEAKCAM: ov5647 1280x960 only' "$ISPMK" || python3 - "$ISPMK" <<'PY'
 import sys
