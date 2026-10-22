@@ -118,7 +118,7 @@ On an arm64 host the RISC-V toolchain (x86-64 only) runs in the `k230-rtos-sdk-b
 container from [firmware/BUILD.md](../../firmware/BUILD.md) section 2.2, which `make` starts; the
 SDK sits next to LEAKCAM (`~/k230d-hw/bouffalo_sdk`). `make flash` runs in the same container with the
 x86-64 `BLFlashCommand-ubuntu` (the SDK's `BLFlashCommand-arm` is 32-bit armhf and does not start on an arm64-only
-host). Without the `dialout` group: `sudo setfacl -m u:$USER:rw /dev/ttyACM0` (again after each re-plug).
+host). Port permissions: install [99-leakcam.rules](99-leakcam.rules) in /etc/udev/rules.d (all four board USB devices, every re-plug).
 
 Rails start **off**; nothing switches until you type. Commands:
 

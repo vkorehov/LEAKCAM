@@ -13,7 +13,8 @@
  *   rtc_raw                   test037: the PMU RTC registers, raw and decoded
  *   rtc_ppm [s]               test037: RTC ticks (32768/s) against rdtime (27 MHz) over s seconds: crystal ppm
  *   pad_read <pin>...         test029: pad input level (IOMUX di bit) of the given pads
- *   uart_bench <baud> [kb]    test018: UART1 <-> BL616 echo (pt_uart echo): latency and checked throughput
+ *   uart_bench [kb]           test018: UART1 <-> BL616 echo (pt_uart echo): latency and checked throughput at the
+ *                             link's one rate, set by the UART driver at boot (LINK_BAUD); never changes it
  *   boot_times                tests/test022: rdtime (from reset release) at the end of each init level
  *
  * Timing: rdtime, 27 MHz. Every loop sleeps 1 ms now and then (outside the timed part): the 20 s watchdog's
@@ -567,7 +568,7 @@ MSH_CMD_EXPORT(pad_read, test029: pad input levels [pins]);
 #include <drivers/serial.h>
 static int uart_bench(int argc, char **argv)
 {
-    rt_uint32_t baud = argc > 1 ? (rt_uint32_t)atoi(argv[1]) : 115200, kb = argc > 2 ? (rt_uint32_t)atoi(argv[2]) : 64;
+    rt_uint32_t baud, kb = argc > 1 ? (rt_uint32_t)atoi(argv[1]) : 64;
     rt_device_t d = rt_device_find("uart1");
     struct serial_configure cfg = RT_SERIAL_CONFIG_DEFAULT;
     rt_uint8_t tx[64], rx[64];
@@ -577,16 +578,9 @@ static int uart_bench(int argc, char **argv)
         rt_kprintf("uart_bench: uart1 not available (leakcam_agent running?)\n");
         return -1;
     }
-    cfg = ((struct rt_serial_device *)d)->config;     /* the open device's buffer size, or the change is refused */
-    cfg.baud_rate = baud;
-    rt_err_t ce = rt_device_control(d, RT_DEVICE_CTRL_CONFIG, &cfg);
-    rt_kprintf("uart_bench: uart1 set to %u baud: %s (bufsz %u)\n", (unsigned)((struct rt_serial_device *)d)->config.baud_rate,
-               ce == RT_EOK ? "ok" : "REFUSED", (unsigned)cfg.bufsz);
-    if (ce != RT_EOK)
-    {
-        rt_device_close(d);
-        return -1;
-    }
+    cfg = ((struct rt_serial_device *)d)->config;
+    baud = cfg.baud_rate;
+    rt_kprintf("uart_bench: uart1 at %u baud (bufsz %u)\n", (unsigned)baud, (unsigned)cfg.bufsz);
     rt_thread_mdelay(20);
     while (rt_device_read(d, 0, rx, sizeof(rx)) > 0)       /* drain */
         ;
@@ -644,9 +638,7 @@ static int uart_bench(int argc, char **argv)
     rt_kprintf("uart_bench %u: %u of %u bytes back in %u us = %u B/s (line max %u B/s), %u bad bytes%s\n",
                (unsigned)baud, (unsigned)recv, (unsigned)total, (unsigned)us, (unsigned)(us ? (rt_uint64_t)recv * 1000000 / us : 0),
                (unsigned)(baud / 10), (unsigned)bad, recv < total ? " (TIMEOUT)" : "");
-    cfg.baud_rate = 115200;                          /* back to the link's rate for the agent */
-    rt_device_control(d, RT_DEVICE_CTRL_CONFIG, &cfg);
     rt_device_close(d);
     return 0;
 }
-MSH_CMD_EXPORT(uart_bench, test018: UART1 echo latency and throughput <baud> [kb]);
+MSH_CMD_EXPORT(uart_bench, test018: UART1 echo latency and throughput at the link rate [kb]);

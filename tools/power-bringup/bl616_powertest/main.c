@@ -14,7 +14,7 @@
  *        What the BL616 sees of the rails: the switched 3V3 through the 10 k pull-ups on the SDIO
  *        lines, read as inputs only. 0V8 is implied (U8 is enabled by U6's power-good); 1V8 and
  *        1V1 are not visible: measure them (power_check.py) or use pt_run.
- * UART   pt_uart on|off|send <text>   UART0 = the K230 link (IO21 TX, IO22 RX, 115200 8N1): one
+ * UART   pt_uart on|off|send <text>   UART0 = the K230 link (IO21 TX, IO22 RX, LINK_BAUD 8N1): one
  *                          message per second, anything received is echoed here. Only while 3V3 is
  *                          up (the link pins are pulled up to it); pt_off stops it first.
  * I2C    pt_i2c [scan]     AHT20 reading (0x38), or a scan of the whole bus (IO28/IO29, 3V3_SLEEP)
@@ -24,6 +24,7 @@
  *                          0.5 V on rev 1 (2026-10-17), at the 1.8 V bank's VIL, and the ROM did not boot the
  *                          NAND. High = the ROM's SD-card path, which fails into USB boot (re-flashing).
  */
+#include "../../../firmware/bl616/k230_link.h"   /* LINK_BAUD: the link's one rate */
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -122,12 +123,12 @@ static void uart_stop(void)
     uart_on = false;
 }
 
-static bool uart_start(uint32_t baud)
+static bool uart_start(void)
 {
     if (!rails_on || sense_high() < SENSE_UP)
         return false;
     struct bflb_uart_config_s cfg = {
-        .baudrate = baud, .direction = UART_DIRECTION_TXRX, .data_bits = UART_DATA_BITS_8,
+        .baudrate = LINK_BAUD, .direction = UART_DIRECTION_TXRX, .data_bits = UART_DATA_BITS_8,
         .stop_bits = UART_STOP_BITS_1, .parity = UART_PARITY_NONE, .bit_order = UART_LSB_FIRST,
         .flow_ctrl = UART_FLOWCTRL_NONE, .tx_fifo_threshold = 7, .rx_fifo_threshold = 7,
     };
@@ -490,9 +491,8 @@ static int cmd_uart(int argc, char **argv)
         printf("sent\r\n");
     } else if (!strcmp(a, "echo")) {
         static bool task;
-        uint32_t baud = argc > 2 ? (uint32_t)atoi(argv[2]) : 115200;
         bool ok;
-        LOCKED(uart_stop(); ok = uart_start(baud));
+        LOCKED(uart_stop(); ok = uart_start());
         if (!ok) {
             printf("3V3 is off: pt_on first\r\n");
             return 0;
@@ -500,16 +500,16 @@ static int cmd_uart(int argc, char **argv)
         if (!task)
             task = xTaskCreate(uart_echo_task, "uecho", 512, NULL, tskIDLE_PRIORITY + 1, NULL) == pdPASS;
         uart_echo = true;
-        printf("UART0 echo at %lu baud (pt_uart off to stop)\r\n", (unsigned long)baud);
+        printf("UART0 echo at %lu baud (pt_uart off to stop)\r\n", (unsigned long)LINK_BAUD);
     } else {
         bool ok;
-        LOCKED(ok = uart_on || uart_start(115200));
-        printf(ok ? "UART0 on: IO21 TX -> K230 UART1 RX, IO22 RX <- K230 UART1 TX, 115200 8N1, 1 message/s\r\n"
+        LOCKED(ok = uart_on || uart_start());
+        printf(ok ? "UART0 on: IO21 TX -> K230 UART1 RX, IO22 RX <- K230 UART1 TX, LINK_BAUD 8N1, 1 message/s\r\n"
                   : "3V3 is off: pt_on first (the link pins are pulled up to the K230's 3V3)\r\n");
     }
     return 0;
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_uart, pt_uart, UART0 link test: on | off | send <text> | echo [baud]);
+SHELL_CMD_EXPORT_ALIAS(cmd_uart, pt_uart, UART0 link test: on | off | send <text> | echo);
 #endif
 
 #if PT_TEST_I2C

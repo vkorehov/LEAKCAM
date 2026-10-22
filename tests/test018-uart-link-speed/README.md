@@ -53,6 +53,13 @@ the failure at 6 Mbaud); the link runs 115200 today: adopting 3-4 Mbaud cuts eve
 bl616/k230_link.h, UART1 set in the K230 UART driver by k230_board/install.sh (RT-Smart serial has no termios, the
 agent cannot set it). Code only; the product images are rebuilt with the firmware rewrite, then this test reruns on them.
 
+### 2026-10-22, on the single-rate images (4 Mbaud from boot, nothing switches it)
+
+K230 image with the UART driver patch, BL616 test firmware 06:59:02 (`pt_uart echo` = LINK_BAUD): `uart_bench 1024`
+reports "uart1 at 4000000 baud" without setting it. **10 x 1 MB: 0 bad bytes, 353.0-353.3 KB/s** (88 % of the
+line); 16 B round trip median 53-56 us, max 66 us, 2000 of 2000 ok. Die 48.2 C before and after. Boot to app init
+0.483 s (unchanged). Current during the soak not measured (asked, no reading).
+
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
@@ -88,4 +95,14 @@ Session time saved by a faster baud x the K230's session current = energy saved 
   (RT_SERIAL_CONFIG_DEFAULT 64 vs UART1's 16384), and the return value was not checked -> copy the device's
   config, change only the baud, check and print the result.
 - **The serial RX ring is 64 B** (RT_SERIAL_RB_BUFSZ) -> the bulk window was cut to 48 B.
-
+- **The rate fell back to 115200 after the first run on the 4 Mbaud image** (2026-10-22 09:51, my own bench bug):
+  uart_bench restored 115200 on exit ("back to the link's rate for the agent", from before the change); 9 queued runs
+  then timed out at 15 + 20 s each (~6 min) -> **one rate only** (user: "keep single speed", "don't like switching
+  speeds"): uart_bench takes no rate and never sets one, it reports what the UART driver set at boot; BL616 `pt_uart`
+  always runs LINK_BAUD (firmware/bl616/k230_link.h, included by the test firmware too). The sweep above stays as
+  the record of how 4 Mbaud was chosen.
+- **Soak read nothing for 2 min** (10:01-10:04, my mistake): the CH340 re-enumerated after the NAND boot as
+  root:dialout and my script skipped setfacl -> permanent fix: udev rule tools/power-bringup/99-leakcam.rules (all four
+  board USB devices 0666 on every plug; user: "remember already permissions").
+- **Queued msh commands** (my mistake): commands sent every 3.6 s while each run took 35 s queued up in msh ->
+  send the next only after the previous result line.
