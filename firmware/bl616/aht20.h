@@ -22,7 +22,7 @@ void aht20_init(void);
 /* trigger a measurement and return at once: the sensor converts (datasheet: up to 80 ms) while
  * the boot goes on */
 enum aht20_result aht20_start(void);
-/* the triggered measurement: read 50 ms after aht20_start(), again every 5 ms while the sensor
+/* the triggered measurement: read 35 ms after aht20_start(), again every 1 ms while the sensor
  * is still busy, up to 100 ms; tenths of %RH and degC */
 enum aht20_result aht20_finish(int *rh_x10, int *t_x10);
 /* release the pins before hibernate: the pull-ups keep the bus idle-high, no current flows */

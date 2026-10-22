@@ -84,9 +84,10 @@ int leak_probe_mv(void)
     bflb_adc_init(adc, &cfg);
     bflb_adc_channel_config(adc, &chan, 1);
     bflb_adc_start_conversion(adc);
-    for (int i = 0, waited = 0; !got && waited < 50; ) {
+    /* polled every 10 us: 1 ms sleeps made one reading 3.1 ms (tests/test021) */
+    for (int i = 0, waited = 0; !got && waited < 5000; ) {
         if (bflb_adc_get_count(adc) == 0) {
-            bflb_mtimer_delay_ms(1);
+            bflb_mtimer_delay_us(10);
             waited++;
             continue;
         }

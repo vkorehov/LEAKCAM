@@ -11,8 +11,8 @@
 #define AHT20_I2C_HZ    100000    /* datasheet: 10-400 kHz */
 /* datasheet 5.2 says wait 80 ms; its note says a read before the end shows status bit 7 (busy)
  * set, so polling from earlier is safe and takes the sample as soon as it is there */
-#define AHT20_FIRST_READ_MS 50
-#define AHT20_POLL_MS   5
+#define AHT20_FIRST_READ_MS 35        /* measured 36.7 ms trigger -> busy bit clear, every time (tests/test021) */
+#define AHT20_POLL_MS   1
 #define AHT20_GIVE_UP_MS 100
 
 static struct bflb_device_s *i2c0;
@@ -52,8 +52,8 @@ enum aht20_result aht20_start(void)
     return xfer(I2C_M_WRITE, trig, sizeof(trig)) < 0 ? AHT20_ERR_I2C : AHT20_OK;
 }
 
-/* the frame of the measurement aht20_start() triggered: first read 50 ms after it, then every
- * 5 ms while the sensor is busy */
+/* the frame of the measurement aht20_start() triggered: first read 35 ms after it, then every
+ * 1 ms while the sensor is busy */
 static enum aht20_result wait_frame(uint8_t f[7])
 {
     uint64_t done = started_ms + AHT20_FIRST_READ_MS, now = bflb_mtimer_get_time_ms();

@@ -231,9 +231,18 @@ static const char *aht20_err(enum aht20_result r)
 #define R_DIV      1000000.0                       /* R71 (to 3V3_SLEEP) = R72 (to GND) = 1 M */
 #define R_SERIES   94000.0                         /* RB1 + RB2 (47 k each) per probe connector */
 
+#if PT_TEST_TIMING
+static uint32_t adc_t_init, adc_t_conv[6], adc_waits;   /* pt_time: the last leak_mv()'s steps, us */
+static uint32_t adc_first[8];                           /* the first call since boot: init, 6 conversions, total */
+#endif
+
 /* probe node in mV (ADC channel 0 = IO20, 3.2 V reference), -1 if no conversion; as leak_wake.c */
 static int leak_mv(void)
 {
+#if PT_TEST_TIMING
+    uint64_t ta = bflb_mtimer_get_time_us();
+    adc_waits = 0;
+#endif
     struct bflb_device_s *adc = bflb_device_get_by_name("adc");
     struct bflb_adc_config_s cfg = {
         .clk_div = ADC_CLK_DIV_32, .scan_conv_mode = false, .continuous_conv_mode = true,
@@ -244,16 +253,34 @@ static int leak_mv(void)
     bool got = false;
     bflb_adc_init(adc, &cfg);
     bflb_adc_channel_config(adc, &chan, 1);
+#if PT_TEST_TIMING
+    uint64_t ts = bflb_mtimer_get_time_us();
+    adc_t_init = (uint32_t)(ts - ta);
+#endif
     bflb_adc_start_conversion(adc);
-    for (int i = 0, waited = 0; !got && waited < 50;) {
+    for (int i = 0, waited = 0; !got && waited < 5000;) {     /* 10 us polls, as leak_wake.c (test021) */
         if (bflb_adc_get_count(adc) == 0) {
-            bflb_mtimer_delay_ms(1);
+            bflb_mtimer_delay_us(10);
             waited++;
+#if PT_TEST_TIMING
+            adc_waits++;
+#endif
             continue;
         }
         raw = bflb_adc_read_raw(adc);
+#if PT_TEST_TIMING
+        adc_t_conv[i] = (uint32_t)(bflb_mtimer_get_time_us() - ts);
+#endif
         got = i++ == 5;                            /* the SDK's first results after a start are stale */
     }
+#if PT_TEST_TIMING
+    if (!adc_first[7]) {
+        adc_first[0] = adc_t_init;
+        for (int k = 0; k < 6; k++)
+            adc_first[k + 1] = adc_t_conv[k];
+        adc_first[7] = (uint32_t)(bflb_mtimer_get_time_us() - ta);
+    }
+#endif
     bflb_adc_stop_conversion(adc);
     int mv = -1;
     if (got) {
@@ -869,6 +896,13 @@ SHELL_CMD_EXPORT_ALIAS(cmd_boot1, pt_boot1, K230 BOOT1 strap: low | high | park)
  * section there); main() reads the RTC first thing, so the difference is ROM + boot2 + init. 0 = no mark. */
 #define WAKE_MARK (*(volatile uint32_t *)(HBN_BASE + HBN_RSV3_OFFSET))
 static uint32_t wake_due, wake_main;               /* RTC ticks; wake_due 0 = not woken by pt_sleep */
+/* test021: does HBN RAM keep data across HBN level 0? (the product's aon_state lives in its last 64 bytes)
+ * pt_sleep writes a pattern into 8 words spread over the 4 KB, main() copies them before anything else runs */
+#define HRAM_WORDS 8
+static const uint32_t hram_off[HRAM_WORDS] = { 0x000, 0x100, 0x400, 0x800, 0xC00, 0xF00, 0xF80, 0xFC0 };
+static uint32_t hram_seen[HRAM_WORDS];
+#define HRAM_WORD(i) (*(volatile uint32_t *)(HBN_RAM_BASE + hram_off[i]))
+#define HRAM_PATTERN(i) (0xA5000000u | ((uint32_t)(i) << 16) | 0x5A5Au)
 static uint64_t main_mtimer;                       /* core timer at main(): time since the core left reset? */
 
 static uint64_t rtc_now(void)
@@ -882,6 +916,8 @@ static void wake_mark_take(void)
 {
     main_mtimer = bflb_mtimer_get_time_us();
     wake_main = (uint32_t)rtc_now();
+    for (int i = 0; i < HRAM_WORDS; i++)
+        hram_seen[i] = HRAM_WORD(i);
     wake_due = WAKE_MARK;
     WAKE_MARK = 0;
     if (wake_main - wake_due > 2u * 32768u)        /* reset keeps RSV3: a stray value (132 after a flash) is no mark */
@@ -932,6 +968,9 @@ static int cmd_sleep(int argc, char **argv)
     printf("pt_sleep: K230 off, HBN level 0 for %lu s (RTC on %s); unplug PR1 now for the sleep current\r\n",
            (unsigned long)s, y3 ? "Y3" : "RC32K");
     bflb_mtimer_delay_ms(50);           /* let the USB console send the line */
+    HBN_Set_HRAM_Ret();
+    for (int i = 0; i < HRAM_WORDS; i++)
+        HRAM_WORD(i) = HRAM_PATTERN(i);
     WAKE_MARK = (uint32_t)(rtc_now() + (uint64_t)s * 32768u) | 1u;  /* pm_hbn_mode_enter() reads it <= 1 tick later */
     pm_hbn_mode_enter(PM_HBN_LEVEL_0, (uint64_t)s * 32768u);
     while (1) {
@@ -992,6 +1031,10 @@ static int cmd_time(int argc, char **argv)
     else
         printf("wake -> main: no pt_sleep wake since this boot started (pt_sleep 5, then pt_time)\r\n");
     printf("core timer at main(): %lu us\r\n", (unsigned long)main_mtimer);
+    printf("HBN RAM at main() (pattern A5ii5A5A written before the sleep):");
+    for (int i = 0; i < HRAM_WORDS; i++)
+        printf(" +%03lx %s", (unsigned long)hram_off[i], hram_seen[i] == HRAM_PATTERN(i) ? "kept" : "LOST");
+    printf("\r\n");
 
     if (rails_on) {
         printf("K230_PWR -> 3V3 up: rails on, pt_off first\r\n");
@@ -1014,14 +1057,42 @@ static int cmd_time(int argc, char **argv)
     }
     printf("AHT20 trigger -> data: %lu .. %lu us\r\n", (unsigned long)lo, (unsigned long)hi);
 
+    /* when the sample is really there: status bit 7 (busy) polled every 1 ms after the trigger (datasheet: 80 ms) */
+    struct bflb_device_s *i2c = bflb_device_get_by_name("i2c0");
     lo = UINT32_MAX, hi = 0;
+    for (int i = 0; i < 5; i++) {
+        uint8_t trig[3] = { 0xAC, 0x33, 0x00 }, st = 0x80;
+        struct bflb_i2c_msg_s w = { .addr = 0x38, .flags = I2C_M_WRITE, .buffer = trig, .length = 3 };
+        struct bflb_i2c_msg_s r1 = { .addr = 0x38, .flags = I2C_M_READ, .buffer = &st, .length = 1 };
+        uint64_t t0 = bflb_mtimer_get_time_us();
+        bool ok;
+        LOCKED(ok = bflb_i2c_transfer(i2c, &w, 1) >= 0;
+               while (ok && (st & 0x80) && bflb_mtimer_get_time_us() - t0 < 150000) {
+                   bflb_mtimer_delay_ms(1);
+                   ok = bflb_i2c_transfer(i2c, &r1, 1) >= 0;
+               });
+        if (!ok || (st & 0x80)) {
+            printf("AHT20 busy poll: %s\r\n", ok ? "still busy after 150 ms" : "no ACK");
+            break;
+        }
+        min_max((uint32_t)(bflb_mtimer_get_time_us() - t0), &lo, &hi);
+    }
+    printf("AHT20 trigger -> busy bit clear (1 ms polls): %lu .. %lu us\r\n", (unsigned long)lo, (unsigned long)hi);
+
+    printf("leak probe ADC (init, 6 conversions, the first 5 dropped), each run:");
     for (int i = 0; i < 5; i++) {
         uint64_t t0 = bflb_mtimer_get_time_us();
         LOCKED((void)leak_mv());
-        min_max((uint32_t)(bflb_mtimer_get_time_us() - t0), &lo, &hi);
+        printf(" %lu", (unsigned long)(bflb_mtimer_get_time_us() - t0));
     }
-    printf("leak probe ADC (init, 6 conversions, the first 5 dropped): %lu .. %lu us\r\n", (unsigned long)lo,
-           (unsigned long)hi);
+    printf(" us\r\n  last run: init %lu us, conversions at", (unsigned long)adc_t_init);
+    for (int i = 0; i < 6; i++)
+        printf(" %lu", (unsigned long)adc_t_conv[i]);
+    printf(" us after the start, %lu 10 us waits\r\n", (unsigned long)adc_waits);
+    printf("  first call since boot: init %lu us, conversions at %lu %lu %lu %lu %lu %lu us, %lu us to the stop\r\n",
+           (unsigned long)adc_first[0], (unsigned long)adc_first[1], (unsigned long)adc_first[2],
+           (unsigned long)adc_first[3], (unsigned long)adc_first[4], (unsigned long)adc_first[5],
+           (unsigned long)adc_first[6], (unsigned long)adc_first[7]);
 
     if (!ef_up) {
         uint64_t t0 = bflb_mtimer_get_time_us();
