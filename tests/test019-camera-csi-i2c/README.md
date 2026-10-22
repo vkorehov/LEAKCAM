@@ -8,6 +8,12 @@ After the cameras arrive (OV5647 on CSI0 / CSI2, I2C0 / I2C4).
 
 To fill: hookup, firmware / image, and the probes named in Metrics.
 
+## Needs (build features and dependencies)
+
+I2C0/I2C4, CSI0/CSI2, VICAP, OV5647 sensor driver (CONFIG_MPP_ENABLE_SENSOR_OV5647), ISP files in /bin.
+
+(What this test uses; the union over all tests is the feature set test200/201 must keep.)
+
 ## Steps
 
 1. I2C: SCL frequency (scope or the sensor's register read time), 100 vs 400 kHz, error-free register dumps.
@@ -38,6 +44,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
+| Image (sizes) | to fill | test200 / test201 | the image this run used |
+| Compile flags | to fill | test200 / test201 | |
 
 ## Boot time
 

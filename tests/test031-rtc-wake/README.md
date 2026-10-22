@@ -10,6 +10,12 @@ early or never is a missed report or a missed humidity alarm.
 
 To fill: hookup, firmware / image, and the probes named in Metrics.
 
+## Needs (build features and dependencies)
+
+BL616 HBN RTC, XTAL32K (Y3), HBN pin config (HBN_Hw_Pu_Pd_Cfg).
+
+(What this test uses; the union over all tests is the feature set test200/201 must keep.)
+
 ## Steps
 
 1. Test firmware `pt_sleep <s>` (test030): RTC wake after 10, 60, 600 s; the wake time against the host clock
@@ -42,6 +48,8 @@ Probes: current - battery lead, USB out (sleep/wake); voltage - 3V3_SLEEP, VBAT 
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
+| Image (sizes) | BL616 test firmware 121 KB (+ boot2 53 KB) | test200 / test201 | the image this run used |
+| Compile flags | BL616 -Os -g, -ffunction/-fdata-sections, --gc-sections, -flto (SDK) | test200 / test201 | |
 
 ## Boot time
 

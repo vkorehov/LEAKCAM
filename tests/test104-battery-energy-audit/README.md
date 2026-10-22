@@ -10,6 +10,11 @@ show in the low-level tests (user, 2026-10-21).
 
 To fill: hookup, firmware / image, and the probes named in Metrics.
 
+## Needs (build features and dependencies)
+
+To fill: the kernel options / drivers, SDK components, libraries and programs this test uses (the union over all
+tests is what test200/201 must keep).
+
 ## Steps
 
 1. Sleep current: from test030 (low level, BL616 HBN with the test firmware); here only checked with the product
@@ -45,6 +50,8 @@ Probes: current - battery lead over whole sessions; voltage - VBAT C15.1: minimu
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
+| Image (sizes) | to fill | test200 / test201 | the image this run used |
+| Compile flags | to fill | test200 / test201 | |
 
 ## Boot time
 

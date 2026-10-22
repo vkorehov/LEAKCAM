@@ -17,6 +17,12 @@ product firmware: a `pt_sleep <s>` command in the test firmware enters the same 
   the awake states; mind the burden: switch to the mA/A input before the BL616 wakes (or give pt_sleep long enough).
 - BL616 test firmware with `pt_sleep` (to add: HBN level 0, RTC wake, the K230 side pins parked, AHT20 idle).
 
+## Needs (build features and dependencies)
+
+BL616: HBN/PM (bl616_pm.c, pm_hbn_mode_enter), RTC (HBN counter, Y3), PT_TEST_SLEEP; USB CDC console only for setup.
+
+(What this test uses; the union over all tests is the feature set test200/201 must keep.)
+
 ## Steps
 
 | State | How | Expected |
@@ -127,6 +133,8 @@ Probes: current - battery lead (cell + wire), uA/mA range, USB out; voltage - BA
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
+| Image (sizes) | BL616 test firmware 121 KB (+ boot2 53 KB) | test200 / test201 | the image this run used |
+| Compile flags | BL616 -Os -g, -ffunction/-fdata-sections, --gc-sections, -flto (SDK) | test200 / test201 | |
 
 ## Boot time
 

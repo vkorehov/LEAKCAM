@@ -8,6 +8,12 @@ Before the cameras arrive: the two camera I2C buses and the CAM_IO1 lines must b
 
 To fill: hookup, firmware / image, and the probes named in Metrics.
 
+## Needs (build features and dependencies)
+
+I2C0/I2C4 drivers, i2cdetect (msh), fpioa (pad_read in leakcam_bench.c).
+
+(What this test uses; the union over all tests is the feature set test200/201 must keep.)
+
 ## Steps
 
 1. K230 running: IIC0 (CAM2, J4, CSI0) and IIC4 (CAM1, J5, CSI2) SCL/SDA high (R17/R18, R14/R15 4.7 k to 3V3); an
@@ -50,6 +56,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
+| Image (sizes) | kdimg 45.4 MB (/sdcard 32 MiB, /bin 8 MiB one ISP set), kernel 3.75 MB, /bin 0.68 MB, /sdcard programs 6.76 MB | test200 / test201 | the image this run used |
+| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, --gc-sections (no -ffunction-sections, no LTO) | test200 / test201 | |
 
 ## Boot time
 

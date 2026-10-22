@@ -8,6 +8,12 @@ From NAND: SPL -> OpenSBI -> RT-Smart, UFFS on /bin and /sdcard, the agent start
 
 Not written at the time; the setup is in the introduction above and in the Results.
 
+## Needs (build features and dependencies)
+
+RT-Smart kernel: PMU (RT_USING_RTC_PMU, 72-pad table), UFFS mounts (/bin, /sdcard), msh, the agent.
+
+(What this test uses; the union over all tests is the feature set test200/201 must keep.)
+
 ## Steps
 
 Not written at the time; the steps are the rows of the Results tables.
@@ -47,6 +53,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | not measured: run before the metrics rule (2026-10-21); fill on a re-run | - | scripts/energy.py |
 | Per day | not measured: run before the metrics rule (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured: run before the metrics rule (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
+| Image (sizes) | not recorded at the time (before the metrics rule) | test200 / test201 | the image this run used |
+| Compile flags | not recorded at the time (before the metrics rule) | test200 / test201 | |
 
 ## Boot time
 

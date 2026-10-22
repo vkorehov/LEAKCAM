@@ -13,7 +13,8 @@ Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello):
 
 
 **Every test README has the same structure** (2026-10-21), in this order: title, `Status: **<result>** (<date>).`,
-a short introduction, then `## Setup` (hookup, image, probes), `## Steps`, `## Pass` (the criterion), `## Results`
+a short introduction, then `## Setup` (hookup, image, probes), `## Needs` (the build features and dependencies the
+test uses: kernel options, drivers, SDK components, libraries; their union is what test200/201 keep), `## Steps`, `## Pass` (the criterion), `## Results`
 (dated runs as `###` subsections), `## Metrics` (the full block of skill leakcam-test-metrics with its `Probes:`
 line, every value at its maximum), `## Boot time`, `## Battery energy`, `## Obstacles` (problem -> cause -> fix,
 written when it happens). Nothing is left out: an empty part says so ("Not run yet.", "None yet.", "not measured:
@@ -64,7 +65,7 @@ written when it happens). Nothing is left out: an empty part says so ("Not run y
 | [test102 session current](test102-session-current/README.md) | | planned |
 | [test103 leak pipeline timing](test103-leak-pipeline-timing/README.md) | | later: after the cameras, Wi-Fi and the product firmware |
 | [test104 battery energy audit](test104-battery-energy-audit/README.md) | | planned |
-| **Build and image (200+): optimisation, only the needed features** | | |
+| **Build and image (200+): optimisation, only the needed features; the affected tests re-run afterwards** | | |
 | [test200 K230 image minimal and optimised](test200-k230-build-minimal/README.md) | | planned |
 | [test201 BL616 firmware minimal and optimised](test201-bl616-build-minimal/README.md) | | planned |
 

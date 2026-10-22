@@ -9,6 +9,12 @@ divider, bug-004) and switches it to USB mode (BLE pairing, awake). Unplug retur
 
 To fill: hookup, firmware / image, and the probes named in Metrics.
 
+## Needs (build features and dependencies)
+
+BL616 ACOMP0 (PGOOD), HBN wake on ACOMP, USB mode switch.
+
+(What this test uses; the union over all tests is the feature set test200/201 must keep.)
+
 ## Steps
 
 1. HBN (pt_sleep / product), plug USB-C 1: wake within ms, PGOOD low, USB mode; unplug: back to battery mode.
@@ -39,6 +45,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
+| Image (sizes) | to fill | test200 / test201 | the image this run used |
+| Compile flags | to fill | test200 / test201 | |
 
 ## Boot time
 

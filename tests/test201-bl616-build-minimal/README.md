@@ -12,6 +12,11 @@ Product firmware `firmware/bl616` (FreeRTOS, Wi-Fi, BLE, lwIP; 1.27 MB on 2026-1
 `bl616_powertest` (121 KB); built with `make` (container, host.mk), flashed with `make flash` (ISP). Meter in
 USB-C 1 VBUS; for the awake time the BL616's own timestamps (`awake <ms>` in the hbn log line).
 
+## Needs (build features and dependencies)
+
+To fill: the kernel options / drivers, SDK components, libraries and programs this test uses (the union over all
+tests is what test200/201 must keep).
+
 ## Steps
 
 1. **Inventory.** Every `CONFIG_` in the product defconfig and every SDK component linked (map file), each with
@@ -28,6 +33,9 @@ USB-C 1 VBUS; for the awake time the BL616's own timestamps (`awake <ms>` in the
 
 Every enabled SDK feature has a named user; the awake time of a humidity slice and the image size are reduced or
 justified; no wake source, link or Wi-Fi function regresses.
+
+After the optimisation: the tests whose part changed run again (user, 2026-10-22), each with its full metrics, so
+the gain and any regression show per part.
 
 ## Results
 
@@ -56,6 +64,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | to fill | - | |
 | Per day | to fill | ENERGY.txt line | |
 | Temperature die / board (start / peak / end) | to fill | K230 limit (datasheet) | chip_temp, AHT20 |
+| Image (sizes) | product 1.27 MB, BL616 test firmware 121 KB (+ boot2 53 KB) | test200 / test201 | the image this run used |
+| Compile flags | BL616 -Os -g, -ffunction/-fdata-sections, --gc-sections, -flto (SDK) | test200 / test201 | |
 
 ## Boot time
 

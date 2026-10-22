@@ -13,6 +13,11 @@ Bench and product image built from `firmware/k230_board/install.sh` + `leakcam_d
 image of 2026-10-22 (NAND 80 MHz, /bin 8 MiB one ISP set, /sdcard 32 MiB). Board on USB-C 1 with the meter,
 the CH340 console, `boot_times`.
 
+## Needs (build features and dependencies)
+
+To fill: the kernel options / drivers, SDK components, libraries and programs this test uses (the union over all
+tests is what test200/201 must keep).
+
 ## Steps
 
 1. **Inventory.** Every enabled kernel option (`rtconfig.h` / `.config`: 145 `=y` on 2026-10-22, 47 set in
@@ -33,6 +38,9 @@ the CH340 console, `boot_times`.
 
 Every enabled feature has a named user; no unused test program in the product image; each change kept only if
 size or boot time improves and no speed or function regresses (the tests it touches re-run).
+
+After the optimisation: the tests whose part changed run again (user, 2026-10-22), each with its full metrics, so
+the gain and any regression show per part.
 
 ## Results
 
@@ -63,6 +71,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | to fill | - | |
 | Per day | to fill | ENERGY.txt line | |
 | Temperature die / board (start / peak / end) | to fill | K230 limit (datasheet) | chip_temp, AHT20 |
+| Image (sizes) | kdimg 45.4 MB (/sdcard 32 MiB, /bin 8 MiB one ISP set), kernel 3.75 MB, /bin 0.68 MB, /sdcard programs 6.76 MB | test200 / test201 | the image this run used |
+| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, --gc-sections (no -ffunction-sections, no LTO) | test200 / test201 | |
 
 ## Boot time
 

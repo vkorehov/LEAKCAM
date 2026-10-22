@@ -15,6 +15,12 @@ K230 running (BL616 test firmware: `pt_on`, `pt_run`), K230 console (USBC2), met
 
 [adc_points.png](adc_points.png): VBAT on C15 pad 1, BAT on C11 pad 1, GND on each cap's other pad (top side, U1 corner).
 
+## Needs (build features and dependencies)
+
+K230 ADC driver (adc probe/read), msh adc command.
+
+(What this test uses; the union over all tests is the feature set test200/201 must keep.)
+
 ## Steps
 
 1. K230 shell: `adc probe adc`, then `adc read 1` five times; VBAT = raw x 5400 / 4095 mV.
@@ -73,6 +79,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per reading | below the meter's resolution | - | |
 | Per day | n/a | - | |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
+| Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB | test200 / test201 | the image this run used |
+| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, --gc-sections (no -ffunction-sections, no LTO) | test200 / test201 | |
 
 ## Boot time
 

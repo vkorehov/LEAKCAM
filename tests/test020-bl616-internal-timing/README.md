@@ -8,6 +8,12 @@ The always-on side's speed: how fast a wake turns into a K230 power-on, and the 
 
 To fill: hookup, firmware / image, and the probes named in Metrics.
 
+## Needs (build features and dependencies)
+
+BL616 product parts: HBN, RTC, ACOMP, I2C (AHT20), K230 power path.
+
+(What this test uses; the union over all tests is the feature set test200/201 must keep.)
+
 ## Steps
 
 1. Wake to K230_PWR high: from an RTC wake, a leak (ACOMP) edge and a USB plug (product firmware; a GPIO toggled at
@@ -39,6 +45,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
+| Image (sizes) | to fill | test200 / test201 | the image this run used |
+| Compile flags | to fill | test200 / test201 | |
 
 ## Boot time
 

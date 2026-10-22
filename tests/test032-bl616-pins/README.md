@@ -28,6 +28,12 @@ each flash) and by line tests with both ends (test013 SDIO). This is the same fo
 
 To fill: hookup, firmware / image, and the probes named in Metrics.
 
+## Needs (build features and dependencies)
+
+BL616 GPIO (all pins), board_pins.h; product init code.
+
+(What this test uses; the union over all tests is the feature set test200/201 must keep.)
+
 ## Steps
 
 1. Configuration: each pin's function, pull, drive strength and IO voltage domain (3V3_SLEEP) in both firmwares
@@ -62,6 +68,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
+| Image (sizes) | to fill | test200 / test201 | the image this run used |
+| Compile flags | to fill | test200 / test201 | |
 
 ## Boot time
 

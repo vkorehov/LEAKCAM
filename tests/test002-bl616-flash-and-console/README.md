@@ -9,6 +9,12 @@ firmware [bl616_powertest](../../tools/power-bringup/bl616_powertest).
 
 Not written at the time; the setup is in the introduction above and in the Results.
 
+## Needs (build features and dependencies)
+
+BL616: SDK board init, USB CDC console (CherryUSB CDC-ACM, CONFIG_BSP_CONSOLE_USB_CDC), shell, FreeRTOS; boot2; flash tool (ISP).
+
+(What this test uses; the union over all tests is the feature set test200/201 must keep.)
+
 ## Steps
 
 Not written at the time; the steps are the rows of the Results tables.
@@ -43,6 +49,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | n/a | - | flashing only on USB power |
 | Per day | n/a | - | |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
+| Image (sizes) | BL616 test firmware 121 KB (+ boot2 53 KB) (bl616_powertest) | test200 / test201 | the image this run used |
+| Compile flags | BL616 -Os -g, -ffunction/-fdata-sections, --gc-sections, -flto (SDK) | test200 / test201 | |
 
 ## Boot time
 

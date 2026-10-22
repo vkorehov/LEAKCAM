@@ -9,6 +9,12 @@ session when the edges stop for 2 s. Without it a product session never ends (or
 
 To fill: hookup, firmware / image, and the probes named in Metrics.
 
+## Needs (build features and dependencies)
+
+K230 GPIO (heartbeat on GPIO2), the agent; BL616 PT_TEST_POWER + pt_alive.
+
+(What this test uses; the union over all tests is the feature set test200/201 must keep.)
+
 ## Steps
 
 1. BL616 test firmware: `pt_on`, `pt_run`; K230 boots the image with the agent.
@@ -55,6 +61,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | n/a: one GPIO write per 500 ms, below the meter's resolution | - | |
 | Per day | n/a | - | |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
+| Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB; BL616 test firmware 121 KB (+ boot2 53 KB) | test200 / test201 | the image this run used |
+| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, --gc-sections (no -ffunction-sections, no LTO); BL616 -Os -g, -ffunction/-fdata-sections, --gc-sections, -flto (SDK) | test200 / test201 | |
 
 ## Boot time
 
