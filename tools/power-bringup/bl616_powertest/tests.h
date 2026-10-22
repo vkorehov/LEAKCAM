@@ -13,6 +13,7 @@
 #define PT_TEST_SDIO   1   /* pt_sdio: SDIO lines to K230 MMC0: edges while it probes, driven patterns  */
 #define PT_TEST_SDU    1   /* pt_sdu: SDIO device echo (the SDK's sdio2_test) for the K230 bus speed test */
 #define PT_TEST_SLEEP  1   /* pt_sleep: K230 off, HBN level 0, RTC wake after <s> (test031 sleep current) */
+#define PT_TEST_PINS   1   /* pt_pins: every GPIO's live configuration from the GLB registers (test033)      */
 #define PT_TEST_TIMING 1   /* pt_time: test021 timings (wake -> main, rails, AHT20, ADC, easyflash key)   */
 
 #if PT_TEST_UART && !PT_TEST_POWER

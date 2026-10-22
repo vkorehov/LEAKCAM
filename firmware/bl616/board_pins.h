@@ -26,6 +26,10 @@
 #define PIN_K230_RSTN   GPIO_PIN_0   /* IO00 -> Q4 gate, R76 100k pull-up: HIGH = K230 HELD IN RESET */
 #define PIN_K230_ALIVE  GPIO_PIN_1   /* IO01 <- K230 GPIO2 (JTAG_TCK at reset), R32 100k pull-up to 3V3 */
 #define PIN_K230_PWR    GPIO_PIN_30  /* IO30 -> U6 EN via R51, R19 100k pull-down: HIGH = K230 rails on */
+/* IO27 -> RBT1 10k -> K230 BOOT1 (1.8 V bank). Driven LOW from start-up = NAND boot: left floating it read 0.5 V,
+ * at the bank's VIL (bugs/v2.txt item 7), so the K230 could take it as high and try SD/USB boot (tests/test033).
+ * Low is 0 V into the unpowered K230 too: no back-feed. HIGH only to force USB boot (test firmware pt_boot1). */
+#define PIN_K230_BOOT1  GPIO_PIN_27
 
 /* USB input power: BQ24072 PGOOD (U1.7, open drain, R23 100k to 3V3_SLEEP), LOW = USB power good */
 #define PIN_USB_PGOOD   GPIO_PIN_3   /* IO03 = ADC_CH3 -> ACOMP0 */

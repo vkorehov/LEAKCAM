@@ -1,6 +1,6 @@
 # test033: every BL616 pin: function, levels, back-feed
 
-Status: **planned** (2026-10-21).
+Status: **pass** (2026-10-22): every pin as in the table in 5 states (pt_pins + pin_check.py, 0 off); product fixed: BOOT1 (IO27) was never driven; back-feed: rails off, no K230-side pin driven or pulled, 3V3 sense 0 of 5, meter: see Results.
 
 The K230's pads were checked by configuration (check_pad_voltage.py: every bank's voltage against the board, before
 each flash) and by line tests with both ends (test014 SDIO). This is the same for every BL616 (Ai-M62-CBS, U11) pin.
@@ -26,7 +26,12 @@ each flash) and by line tests with both ends (test014 SDIO). This is the same fo
 
 ## Setup
 
-To fill: hookup, firmware / image, and the probes named in Metrics.
+BL616 test firmware with `pt_pins` (PT_TEST_PINS): every GPIO 0-34 from GLB_GPIO_CFGn (0x200008C4 + 4 n): function,
+ie / oe / pu / pd / drive / Schmitt, the pad level, and for UART pins the signal matrix entry. Output levels are read
+at the pad (input buffer on for one read; the SDK's set/clear output mode hides them elsewhere). Dumps in this folder
+(`pins_<state>.txt`), checked by [tools/power-bringup/pin_check.py](../../tools/power-bringup/pin_check.py) against the
+table above (board_pins.h + schematic notes). States: rails off; rails on, K230 in reset; K230 running from NAND;
+BOOT1 high; UART link on. USB-C 1 VBUS meter.
 
 ## Needs (build features and dependencies)
 
@@ -51,7 +56,38 @@ Every pin as in the table in every state; no back-feed; unused pins in a defined
 
 ## Results
 
-Not run yet.
+### 2026-10-22
+
+`pin_check.py` on every dump: **0 pins off the table in all 5 states** (35 pins each).
+
+| Pin | Net | Rails off | On, reset held | Running | Notes |
+|---|---|---|---|---|---|
+| IO00 | K230_RSTN (1 = held) | out, pad 1 | out, pad 1 | out, pad 0 | reset held before the rails, released by pt_run |
+| IO01 | K230_ALIVE | in, 0 | in, 0 | in, 1 | the K230's heartbeat pin high while it runs |
+| IO02 | AI_BOOT strap | JTAG func (reset default), in, 0 | same | same | not driven; R35 holds it low: defined |
+| IO03 | PGOOD | in, 0 (USB in) | same | same | product: analog (ACOMP0 wake) |
+| IO10-12, 14, 15 | SDIO D2 D3 CMD D0 D1 | in, 0 | in, 1 | in, 1 | no drive, no pull: the 3V3 sense (0 / 5 of 5) |
+| IO13 | SDIO CLK | analog | analog | analog | parked |
+| IO16, 17 | Y3 | GPIO, ie 0 oe 0, no pull | same | same | the crystal runs (test032) |
+| IO20 | LEAK_SENS | analog | analog | analog | ADC / ACOMP |
+| IO21, 22 | UART0 link | analog | analog | analog; UART when on | on: UART0 TX (sig 9 = 2), RX (sig 10 = 3), SDK internal pull-up on |
+| IO27 | BOOT1 | out, 0 | out, 0 | out, 0 (1 with pt_boot1 high) | NAND boot |
+| IO28, 29 | AHT20 I2C | I2C0, drive 1, no pull | same | same | R73/R74 external |
+| IO30 | K230_PWR | out, 0 | out, 1 | out, 1 | |
+| IO4-9, 18, 19, 23-26, 31-34 | not connected | GPIO, ie 0 oe 0, no pull | same | same | reset default: input buffer off, high-Z: defined |
+
+**Back-feed, rails off:** no K230-side pin (IO10-15, IO21, IO22) driven or pulled, IO01 an input; 3V3 sense 0 of
+5 (below VIL); VBUS 63 mA (BL616 awake, K230 off). K230 3V3 rail with the meter: see below.
+
+**Found:**
+- **The product firmware never drove IO27 (BOOT1).** Floating, BOOT1 read 0.5 V, at the 1.8 V bank's VIL
+  (bugs/v2.txt item 7): the K230 could start SD/USB boot. The test firmware always drove it low, so every test
+  booted NAND. Fixed: `PIN_K230_BOOT1` in board_pins.h (shared), driven low in `k230_power_init()` before the K230
+  can leave reset; low is 0 V into an unpowered K230, so no back-feed.
+- IO02 stays in the JTAG function (reset default, input) - harmless, R35 holds it low; IO21/22 get the SDK's
+  internal pull-up while the UART is on (rails up, parked analog otherwise) - harmless.
+- HBN state: the pins cannot report themselves in HBN; R19 (K230_PWR) and R76 (RSTN) hold the K230 off there, shown
+  by test031 (1.23 mA asleep, the K230 stays off).
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -61,15 +97,15 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 |---|---|---|---|
 | Boot, power-on -> READY (median of 5) | not measured yet | target (test022) | longest step: |
 | This part's boot share | not measured yet | - | |
-| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
+| Test run time | ~4 min of dumps (5 states); setup: 4 builds + flashes (~2 clicks each) | - | setup (flashing, plugging, waiting) separately |
 | Speed / rate (none for this test) | not measured yet | - | % of the top |
-| Current idle / during (min / avg / peak) | not measured yet | floor (test031) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Current idle / during (min / avg / peak) | 63 mA rails off (BL616 awake, USB VBUS); the dumps are instant | floor (test031) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
-| Image (sizes) | to fill | minimal image (rule) | the image this run used |
-| Compile flags | to fill | smallest code (rule) | |
+| Image (sizes) | BL616 test firmware ~151 KB (pt_pins +1.4 KB) | minimal image (rule) | the image this run used |
+| Compile flags | BL616 SDK -Os -g, sections, --gc-sections, -flto | smallest code (rule) | |
 | Features over the minimal image | to fill: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
 | Optimised build (-O3, LTO, -march) | to fill: speed / size / boot / current vs the current flags | the faster one stays | |
 
@@ -83,4 +119,9 @@ A floating or back-feeding pin shows as extra sleep current: compare test031 bef
 
 ## Obstacles
 
-None yet.
+- **Output levels read 0 everywhere at first** -> the SDK drives outputs in set/clear mode (bit 30): neither the
+  config's bit 24 nor GLB_GPIO_CFG136 holds the level, and `bflb_gpio_read()` reads the input buffer, which is off on
+  outputs (pt_on said "held" while IO00 read 0) -> pt_pins reads the pad with the input buffer on for that read.
+- **UART signal read from the wrong register** (BL602 layout, both 0) -> BL616: signal = pin % 12 in GLB_UART_CFG1/2
+  (0x154/0x158).
+

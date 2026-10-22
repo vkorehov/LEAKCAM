@@ -63,7 +63,6 @@
 static void sdu_stop(void);
 #endif
 
-#define PIN_BOOT1_FORCE   GPIO_PIN_27              /* IO27 -> RBT1 10k -> K230 BOOT1: driven low (NAND boot) */
 
 static struct bflb_device_s *gpio;
 static SemaphoreHandle_t hw;                       /* commands and the monitor share the peripherals */
@@ -856,6 +855,9 @@ static void background_task(void *arg)
 #if PT_TEST_TIMING
                    " pt_time"
 #endif
+#if PT_TEST_PINS
+                   " pt_pins"
+#endif
 #if PT_TEST_USB
                    " pt_usb"
 #endif
@@ -908,13 +910,13 @@ static void background_task(void *arg)
 static void boot1_set(enum boot1_mode m)
 {
     if (m == BOOT1_PARK) {
-        park(PIN_BOOT1_FORCE);
+        park(PIN_K230_BOOT1);
     } else {
-        bflb_gpio_init(gpio, PIN_BOOT1_FORCE, GPIO_OUTPUT | GPIO_FLOAT | GPIO_DRV_0);
+        bflb_gpio_init(gpio, PIN_K230_BOOT1, GPIO_OUTPUT | GPIO_FLOAT | GPIO_DRV_0);
         if (m == BOOT1_HIGH)
-            bflb_gpio_set(gpio, PIN_BOOT1_FORCE);
+            bflb_gpio_set(gpio, PIN_K230_BOOT1);
         else
-            bflb_gpio_reset(gpio, PIN_BOOT1_FORCE);
+            bflb_gpio_reset(gpio, PIN_K230_BOOT1);
     }
     boot1 = m;
 }
@@ -1194,6 +1196,61 @@ static int cmd_time(int argc, char **argv)
     return 0;
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_time, pt_time, test021 timings: wake to main + 3V3 ramp + AHT20 + probe ADC + easyflash key);
+#endif
+
+#if PT_TEST_PINS
+/* test033: every GPIO's live configuration straight from GLB_GPIO_CFGn (0x200008C4 + 4 n): what the firmware really
+ * set, not what the code meant to set. One parseable line per pin for tools/power-bringup/pin_check.py. */
+static const char *pin_func_name(unsigned f)
+{
+    switch (f) {
+    case 0: return "SDH";
+    case 5: return "I2C0";
+    case 7: return "UART";
+    case 10: return "ANALOG";
+    case 11: return "GPIO";
+    case 12: return "SDU";
+    case 26: return "JTAG";
+    default: return "other";
+    }
+}
+
+static int cmd_pins(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    /* BL616 UART signal matrix: signal = pin % 12, its 4-bit function in GLB_UART_CFG1 (0x154, signals 0-7) or
+     * GLB_UART_CFG2 (0x158, 8-11), as bflb_gpio_uart_init() writes it */
+    uint64_t uart_sig = getreg32(GLB_BASE + 0x154) | ((uint64_t)getreg32(GLB_BASE + 0x158) << 32);
+    /* levels: the SDK drives outputs in set/clear mode (bit 30), where neither bit 24 nor GLB_GPIO_CFG136 shows the
+     * output; so the pad itself is read: GLB_GPIO_CFG128/129 (input values), for an output pin with its input buffer
+     * switched on for the read (ie, bit 0) - the pad level, i.e. what the pin really drives */
+    uint64_t in = getreg32(GLB_BASE + 0xAC4) | ((uint64_t)getreg32(GLB_BASE + 0xAC8) << 32);
+    for (unsigned pin = 0; pin <= 34; pin++) {
+        uint32_t c = getreg32(GLB_BASE + 0x8C4 + pin * 4);
+        unsigned f = (c >> 8) & 0x1f;
+        unsigned pad = (unsigned)((in >> pin) & 1);
+        if ((c >> 6) & 1 && !(c & 1)) {              /* output without input buffer: switch it on for one read */
+            uintptr_t flag = bflb_irq_save();
+            putreg32(c | 1, GLB_BASE + 0x8C4 + pin * 4);
+            bflb_mtimer_delay_us(2);
+            pad = (getreg32(GLB_BASE + (pin < 32 ? 0xAC4 : 0xAC8)) >> (pin & 31)) & 1;
+            putreg32(c, GLB_BASE + 0x8C4 + pin * 4);
+            bflb_irq_restore(flag);
+        }
+        printf("pin %02u raw %08lx func %-6s ie %lu oe %lu pu %lu pd %lu drv %lu smt %lu pad %u",
+               pin, (unsigned long)c, pin_func_name(f), (unsigned long)(c & 1), (unsigned long)((c >> 6) & 1),
+               (unsigned long)((c >> 4) & 1), (unsigned long)((c >> 5) & 1), (unsigned long)((c >> 2) & 3),
+               (unsigned long)((c >> 1) & 1), pad);
+        if (f == 7)
+            printf(" uart_sig %u = func %lu", pin % 12, (unsigned long)((uart_sig >> ((pin % 12) * 4)) & 0xf));
+        printf("\r\n");
+    }
+    printf("pins: K230_PWR %s (firmware), reset %s (firmware), 3V3 sense %u of %u\r\n", rails_on ? "on" : "off",
+           reset_held ? "held" : "released", sense_high(), (unsigned)SENSE_ALL);
+    return 0;
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_pins, pt_pins, test033: every GPIO configuration and level);
 #endif
 
 static void pins_init(void)

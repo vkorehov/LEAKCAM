@@ -60,7 +60,7 @@ written when it happens). Nothing is left out: an empty part says so ("Not run y
 | [test030 cameras: detection, capture, image](test030-camera-capture/README.md) | | skipped: cameras not delivered (user, 2026-10-22: skip camera tests) |
 | [test031 sleep and minimal currents](test031-sleep-current/README.md) | 2026-10-22 | RTC wake fixed (HBN pin pulls off + wait for Y3), 5/5 wakes; 1.23 mA asleep through USB; battery figure open |
 | [test032 RTC wake](test032-rtc-wake/README.md) | 2026-10-22 | wake works on Y3 (5/5); Y3 -110 ppm open |
-| [test033 every BL616 pin: function, levels, back-feed](test033-bl616-pins/README.md) | | planned |
+| [test033 every BL616 pin: function, levels, back-feed](test033-bl616-pins/README.md) | 2026-10-22 | pass: all pins as the table in 5 states (pt_pins + pin_check.py); product BOOT1 (IO27) fix; back-feed none |
 | [test034 leak probe wake](test034-leak-probe-wake/README.md) | | planned |
 | [test035 USB plug wake](test035-usb-plug-wake/README.md) | | planned |
 | [test036 K230 hang recovery](test036-k230-hang-recovery/README.md) | | planned |

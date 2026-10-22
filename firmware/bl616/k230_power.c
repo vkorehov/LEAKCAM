@@ -84,6 +84,9 @@ void k230_power_init(void)
     reset_assert(true);
     bflb_gpio_init(gpio, PIN_K230_PWR, GPIO_OUTPUT | GPIO_FLOAT | GPIO_SMT_EN | GPIO_DRV_0);
     bflb_gpio_reset(gpio, PIN_K230_PWR);
+    /* BOOT1 low = NAND boot, before the K230 can ever come out of reset (board_pins.h) */
+    bflb_gpio_init(gpio, PIN_K230_BOOT1, GPIO_OUTPUT | GPIO_FLOAT | GPIO_DRV_0);
+    bflb_gpio_reset(gpio, PIN_K230_BOOT1);
     /* IO01: no internal pull; R32 pulls it to the switched 3V3 rail */
     bflb_gpio_init(gpio, PIN_K230_ALIVE, GPIO_INPUT | GPIO_FLOAT | GPIO_SMT_EN);
     k230_pins_park();
