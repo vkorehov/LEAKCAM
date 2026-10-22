@@ -354,13 +354,21 @@ static long leak_kohm(int mv)
 #endif
 
 /* ---------------------------------------------------------------- status ---- */
+static const char *wake_names(unsigned w);
+static unsigned last_wake;                         /* main(): HBN wake sources of this boot (WAKE_* bits) */
+
+static bool usb_pgood_high(void)
+{
+    return bflb_acomp_get_result(AON_ACOMP0_ID) != 0;
+}
+
 static void print_status(bool line)
 {
     unsigned n = sense_high();
     if (line) {                                    /* pt_mon: one compact line */
         printf("[%lu s]", (unsigned long)(bflb_mtimer_get_time_ms() / 1000));
 #if PT_TEST_USB
-        printf(" usb=%s", bflb_gpio_read(gpio, PIN_USB_PGOOD) ? "no" : "yes");
+        printf(" usb=%s", usb_pgood_high() ? "no" : "yes");
 #endif
         printf(" pwr=%s 3v3=%u/%u rst=%s", rails_on ? "on" : "off", n, SENSE_ALL, reset_held ? "held" : "run");
 #if PT_TEST_LEAK
@@ -385,8 +393,8 @@ static void print_status(bool line)
         return;
     }
 #if PT_TEST_USB
-    printf("USB cable   : %s (PGOOD %s)\r\n", bflb_gpio_read(gpio, PIN_USB_PGOOD) ? "not detected" : "detected",
-           bflb_gpio_read(gpio, PIN_USB_PGOOD) ? "high" : "low");
+    printf("USB cable   : %s (PGOOD %s)\r\n", usb_pgood_high() ? "not detected" : "detected",
+           usb_pgood_high() ? "high" : "low");
 #endif
     printf("K230_PWR    : %s\r\n", rails_on ? "HIGH (rails commanded on)" : "low (rails off)");
     printf("K230 reset  : %s\r\n", reset_held ? "held (Q4 on)" : "released");
@@ -623,9 +631,9 @@ SHELL_CMD_EXPORT_ALIAS(cmd_i2c, pt_i2c, AHT20 reading or pt_i2c scan);
 #if PT_TEST_USB
 static int cmd_usb(int argc, char **argv)
 {
-    bool pg = bflb_gpio_read(gpio, PIN_USB_PGOOD);
-    printf("USB cable on USB-C 1: %s (PGOOD %s; plugging and unplugging is reported as it happens)\r\n",
-           pg ? "not detected" : "detected", pg ? "high" : "low");
+    bool pg = usb_pgood_high();
+    printf("USB cable on USB-C 1: %s (PGOOD %s, ACOMP0; plugging and unplugging is reported as it happens); this boot "
+           "woke by %s\r\n", pg ? "not detected" : "detected", pg ? "high" : "low", wake_names(last_wake));
     return 0;
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_usb, pt_usb, USB cable detection (PGOOD));
@@ -657,8 +665,6 @@ static bool leak_acomp_wet(void)
     return bflb_acomp_get_result(AON_ACOMP1_ID) == 0;
 }
 
-static const char *wake_names(unsigned w);
-static unsigned last_wake;                         /* main(): HBN wake sources of this boot (WAKE_* bits) */
 
 static int cmd_leak(int argc, char **argv)
 {
@@ -913,7 +919,7 @@ static void background_task(void *arg)
 {
     bool shown = false;
 #if PT_TEST_USB
-    bool pg_last = bflb_gpio_read(gpio, PIN_USB_PGOOD);
+    bool pg_last = usb_pgood_high();
 #endif
     uint64_t next_s = bflb_mtimer_get_time_ms() + 1000;
     for (;;) {
@@ -952,7 +958,7 @@ static void background_task(void *arg)
             shown = false;
         }
 #if PT_TEST_USB
-        bool pg = bflb_gpio_read(gpio, PIN_USB_PGOOD);
+        bool pg = usb_pgood_high();
         if (pg != pg_last) {
             printf("USB cable %s\r\n", pg ? "unplugged (PGOOD high)" : "plugged in (PGOOD low)");
             pg_last = pg;
@@ -1114,11 +1120,16 @@ static int cmd_sleep(int argc, char **argv)
     bool wet = leak_acomp_wet();
     HBN_Clear_IRQ(HBN_INT_ACOMP1);
     HBN_Enable_AComp_IRQ(AON_ACOMP1_ID, wet ? HBN_ACOMP_INT_EDGE_POSEDGE : HBN_ACOMP_INT_EDGE_NEGEDGE);
+    /* test035: USB wakes it on the next PGOOD edge, as the product's usb_arm_hbn_wake() (plug = falling) */
+    bool usb = !usb_pgood_high();
+    HBN_Clear_IRQ(HBN_INT_ACOMP0);
+    HBN_Enable_AComp_IRQ(AON_ACOMP0_ID, usb ? HBN_ACOMP_INT_EDGE_POSEDGE : HBN_ACOMP_INT_EDGE_NEGEDGE);
     /* HBN gives GPIO16-19 hardware pulls unless disabled; on IO16/17 (Y3) they stop the oscillator and the RTC
      * never wakes the chip (2026-10-22). pm_hbn_mode_enter() does not disable them, HBN_Mode_Enter() does. */
     HBN_Hw_Pu_Pd_Cfg(DISABLE);
-    printf("pt_sleep: K230 off, HBN level 0 for %lu s (RTC on %s), leak wakes it on going %s; unplug PR1 now for the "
-           "sleep current\r\n", (unsigned long)s, y3 ? "Y3" : "RC32K", wet ? "dry" : "wet");
+    printf("pt_sleep: K230 off, HBN level 0 for %lu s (RTC on %s), leak wakes it on going %s, USB on %s; unplug PR1 "
+           "now for the sleep current\r\n", (unsigned long)s, y3 ? "Y3" : "RC32K", wet ? "dry" : "wet",
+           usb ? "unplug" : "plug-in");
     bflb_mtimer_delay_ms(50);           /* let the USB console send the line */
     WAKE_MARK = (uint32_t)(rtc_now() + (uint64_t)s * 32768u) | 1u;  /* pm_hbn_mode_enter() reads it <= 1 tick later */
     /* the last write to HBN RAM is done: retention on now and no HBN RAM access after it (HBN RAM rule at main()) */
@@ -1365,6 +1376,27 @@ static int cmd_pins(int argc, char **argv)
 SHELL_CMD_EXPORT_ALIAS(cmd_pins, pt_pins, test033: every GPIO configuration and level);
 #endif
 
+/* test035: PGOOD (BQ24072, open drain, R23 100 k to 3V3_SLEEP; low = USB power good) as the product reads it:
+ * IO03 analog, ACOMP0 on ADC3 against vio_sel 33 x 50 mV = 1.65 V (mid-swing; the scaling factor has no effect,
+ * tests/test034), 50 mV hysteresis. Output 1 = PGOOD above 1.65 V = no USB power. */
+static void usb_acomp_init(void)
+{
+    bflb_gpio_init(gpio, PIN_USB_PGOOD, GPIO_ANALOG | GPIO_FLOAT | GPIO_DRV_0);
+    struct bflb_acomp_config_s cfg = {
+        .mux_en = ENABLE,
+        .pos_chan_sel = AON_ACOMP_CHAN_ADC3,                    /* GPIO3 */
+        .neg_chan_sel = AON_ACOMP_CHAN_VIO_X_SCALING_FACTOR_1,
+        .vio_sel = 33,
+        .scaling_factor = AON_ACOMP_SCALING_FACTOR_1,
+        .bias_prog = AON_ACOMP_BIAS_POWER_MODE1,
+        .hysteresis_pos_volt = AON_ACOMP_HYSTERESIS_VOLT_50MV,
+        .hysteresis_neg_volt = AON_ACOMP_HYSTERESIS_VOLT_50MV,
+    };
+    bflb_acomp_init(AON_ACOMP0_ID, &cfg);
+    bflb_acomp_enable(AON_ACOMP0_ID);
+    bflb_mtimer_delay_ms(1);
+}
+
 static void pins_init(void)
 {
     gpio = bflb_device_get_by_name("gpio");
@@ -1374,7 +1406,7 @@ static void pins_init(void)
     bflb_gpio_init(gpio, PIN_K230_PWR, GPIO_OUTPUT | GPIO_FLOAT | GPIO_SMT_EN | GPIO_DRV_0);
     bflb_gpio_reset(gpio, PIN_K230_PWR);
     bflb_gpio_init(gpio, PIN_K230_ALIVE, GPIO_INPUT | GPIO_FLOAT | GPIO_SMT_EN);
-    bflb_gpio_init(gpio, PIN_USB_PGOOD, GPIO_INPUT | GPIO_FLOAT | GPIO_SMT_EN);
+    usb_acomp_init();                /* IO03 analog, PGOOD watched by ACOMP0 as the product's usb_sense_init() */
     park(PIN_LINK_TX);
     park(PIN_LINK_RX);
     park(PIN_SD_CLK);
