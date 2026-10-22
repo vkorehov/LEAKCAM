@@ -108,7 +108,7 @@ the flags (kernel -O1 -g; programs without sections/LTO) and leakcam_wake (5.18 
 | rtthread.bin (kernel) | 3.75 MB | `-O1 -g`, 145 options =y |
 | /bin | 0.68 MB | one ISP set (1280x960) |
 | /sdcard programs | 6.76 MB | leakcam_wake 5.18 MB, stream 1.03, kmodel 0.21, hist 0.10, agent 0.09, venctest 0.08 (test) |
-| programs' flags | `-Os`, `--gc-sections` | no `-ffunction-sections`, no LTO |
+| programs' flags | `-Os`, `-ffunction-sections -fdata-sections`, `--gc-sections`, strip | no LTO, `-Os` not `-O2`/`-O3` |
 | boot to app init | 0.506 s | test022 |
 | BL616 product / test firmware | 1.27 MB (2026-10-21) / 121 KB | `-Os -g`, sections, `--gc-sections`, `-flto` |
 

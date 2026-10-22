@@ -77,7 +77,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Per day | not measured yet | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | 47.9 / 48.5 / 47.9 C (board not read) | K230 limit (datasheet) | encoder adds no measurable heat in 20 s |
 | Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB | minimal image (rule) | the image this run used |
-| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, --gc-sections (no -ffunction-sections, no LTO) | smallest code (rule) | |
+| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, -ffunction/-fdata-sections, --gc-sections, strip (no LTO) | smallest code (rule) | |
 | Features over the minimal image | to fill: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
 | Optimised build (-O3, LTO, -march) | to fill: speed / size / boot / current vs the current flags | the faster one stays | |
 
