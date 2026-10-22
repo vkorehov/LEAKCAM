@@ -27,7 +27,8 @@ or a measurement yet. Keep this file current when a test or a setting changes it
                                                            inference, 4.4 ms per check           pm_domain_kpu.c)
   Video encoder (VPU)         800 MHz                      H.265 1280x960: 84 fps (1 ch), 82 (2 ch); 800 MHz (only profile)  yes       test026
                                                            product 2 x 15 fps = 36 % of the top
-  UART link K230 <-> BL616    115200 8N1                   works (test009); latency not measured  several Mbit/s (both)   no        test017
+  UART link K230 <-> BL616    115200 8N1                   clean up to 4 Mbaud (10 MB, 0 err),   4 Mbaud (6 fails)       no        test018
+                                                           16 B round trip 1.48 ms -> 55 us
   K230 console (CH340, USBC2) 115200 8N1                   -                                     -                       n/a       -
   BL616 console (PR1)         USB CDC (full speed)         -                                     -                       n/a       -
   BL616 I2C -> AHT20          100 kHz                      -                                     400 kHz (AHT20)         no        test020

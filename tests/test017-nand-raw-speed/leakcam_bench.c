@@ -13,6 +13,7 @@
  *   rtc_raw                   test037: the PMU RTC registers, raw and decoded
  *   rtc_ppm [s]               test037: RTC ticks (32768/s) against rdtime (27 MHz) over s seconds: crystal ppm
  *   pad_read <pin>...         test029: pad input level (IOMUX di bit) of the given pads
+ *   uart_bench <baud> [kb]    test018: UART1 <-> BL616 echo (pt_uart echo): latency and checked throughput
  *   boot_times                tests/test022: rdtime (from reset release) at the end of each init level
  *
  * Timing: rdtime, 27 MHz. Every loop sleeps 1 ms now and then (outside the timed part): the 20 s watchdog's
@@ -559,3 +560,93 @@ static int pad_read(int argc, char **argv)
     return 0;
 }
 MSH_CMD_EXPORT(pad_read, test029: pad input levels [pins]);
+
+/* test018: UART1 to the BL616, which echoes (bl616_powertest `pt_uart echo <baud>`). Stop leakcam_agent first: it
+ * owns UART1. Latency: 200 frames of 16 bytes, each timed to its full echo. Throughput: at most 48 bytes in flight
+ * (the serial RX ring is 64, RT_SERIAL_RB_BUFSZ), every byte compared. Waits are deadline-bound; the watchdog is fed by the sleeps. */
+#include <drivers/serial.h>
+static int uart_bench(int argc, char **argv)
+{
+    rt_uint32_t baud = argc > 1 ? (rt_uint32_t)atoi(argv[1]) : 115200, kb = argc > 2 ? (rt_uint32_t)atoi(argv[2]) : 64;
+    rt_device_t d = rt_device_find("uart1");
+    struct serial_configure cfg = RT_SERIAL_CONFIG_DEFAULT;
+    rt_uint8_t tx[64], rx[64];
+    rt_uint32_t lat[200], n = 0, errs = 0, i;
+    if (!d || rt_device_open(d, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_INT_RX) != RT_EOK)
+    {
+        rt_kprintf("uart_bench: uart1 not available (leakcam_agent running?)\n");
+        return -1;
+    }
+    cfg = ((struct rt_serial_device *)d)->config;     /* the open device's buffer size, or the change is refused */
+    cfg.baud_rate = baud;
+    rt_err_t ce = rt_device_control(d, RT_DEVICE_CTRL_CONFIG, &cfg);
+    rt_kprintf("uart_bench: uart1 set to %u baud: %s (bufsz %u)\n", (unsigned)((struct rt_serial_device *)d)->config.baud_rate,
+               ce == RT_EOK ? "ok" : "REFUSED", (unsigned)cfg.bufsz);
+    if (ce != RT_EOK)
+    {
+        rt_device_close(d);
+        return -1;
+    }
+    rt_thread_mdelay(20);
+    while (rt_device_read(d, 0, rx, sizeof(rx)) > 0)       /* drain */
+        ;
+    for (i = 0; i < 200; i++)
+    {
+        for (int k = 0; k < 16; k++)
+            tx[k] = (rt_uint8_t)(i * 7 + k);
+        rt_uint64_t t0 = now(), dl = t0 + 27000000u / 10;      /* 100 ms */
+        rt_device_write(d, 0, tx, 16);
+        rt_uint32_t got = 0;
+        while (got < 16 && now() < dl)
+        {
+            rt_size_t r = rt_device_read(d, 0, rx + got, 16 - got);
+            got += r;
+        }
+        if (got < 16 || memcmp(tx, rx, 16))
+            errs++;
+        else
+            lat[n++] = (rt_uint32_t)((now() - t0) / 27);
+        if ((i & 15) == 15)
+            rt_thread_mdelay(1);
+    }
+    for (i = 1; i < n; i++)                                    /* insertion sort for the median */
+        for (rt_uint32_t j = i; j > 0 && lat[j - 1] > lat[j]; j--)
+        {
+            rt_uint32_t t = lat[j]; lat[j] = lat[j - 1]; lat[j - 1] = t;
+        }
+    rt_kprintf("uart_bench %u: latency 16 B round trip: median %u us, max %u us, %u of 200 ok, %u bad\n",
+               (unsigned)baud, (unsigned)(n ? lat[n / 2] : 0), (unsigned)(n ? lat[n - 1] : 0), (unsigned)n, (unsigned)errs);
+    /* throughput: window of 64 bytes */
+    rt_uint32_t total = kb * 1024, sent = 0, recv = 0, bad = 0, seed = 1;
+    rt_uint8_t ring[256];
+    rt_uint64_t t0 = now(), dl = t0 + (rt_uint64_t)27000000u * 15, nap = t0;
+    while (recv < total && now() < dl)
+    {
+        if (now() - nap > 27000000u)                      /* the 20 s watchdog's feeder runs at priority 25 */
+        {
+            rt_thread_mdelay(1);
+            nap = now();
+        }
+        while (sent < total && sent - recv < 48)
+        {
+            seed = seed * 1103515245u + 12345u;
+            rt_uint8_t b = (rt_uint8_t)(seed >> 16);
+            ring[sent & 255] = b;
+            rt_device_write(d, 0, &b, 1);
+            sent++;
+        }
+        rt_size_t r = rt_device_read(d, 0, rx, sizeof(rx));
+        for (rt_size_t k = 0; k < r; k++, recv++)
+            if (rx[k] != ring[recv & 255])
+                bad++;
+    }
+    rt_uint64_t us = (now() - t0) / 27;
+    rt_kprintf("uart_bench %u: %u of %u bytes back in %u us = %u B/s (line max %u B/s), %u bad bytes%s\n",
+               (unsigned)baud, (unsigned)recv, (unsigned)total, (unsigned)us, (unsigned)(us ? (rt_uint64_t)recv * 1000000 / us : 0),
+               (unsigned)(baud / 10), (unsigned)bad, recv < total ? " (TIMEOUT)" : "");
+    cfg.baud_rate = 115200;                          /* back to the link's rate for the agent */
+    rt_device_control(d, RT_DEVICE_CTRL_CONFIG, &cfg);
+    rt_device_close(d);
+    return 0;
+}
+MSH_CMD_EXPORT(uart_bench, test018: UART1 echo latency and throughput <baud> [kb]);

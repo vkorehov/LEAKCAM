@@ -108,10 +108,12 @@ static unsigned sense_high(void)
 #if PT_TEST_UART
 static struct bflb_device_s *uart0;
 static bool uart_on;
+static volatile bool uart_echo;      /* test018: every received byte sent straight back */
 static unsigned uart_count;
 
 static void uart_stop(void)
 {
+    uart_echo = false;
     if (!uart_on)
         return;
     bflb_uart_deinit(uart0);               /* first, so TX no longer drives the pad high */
@@ -120,12 +122,12 @@ static void uart_stop(void)
     uart_on = false;
 }
 
-static bool uart_start(void)
+static bool uart_start(uint32_t baud)
 {
     if (!rails_on || sense_high() < SENSE_UP)
         return false;
     struct bflb_uart_config_s cfg = {
-        .baudrate = 115200, .direction = UART_DIRECTION_TXRX, .data_bits = UART_DATA_BITS_8,
+        .baudrate = baud, .direction = UART_DIRECTION_TXRX, .data_bits = UART_DATA_BITS_8,
         .stop_bits = UART_STOP_BITS_1, .parity = UART_PARITY_NONE, .bit_order = UART_LSB_FIRST,
         .flow_ctrl = UART_FLOWCTRL_NONE, .tx_fifo_threshold = 7, .rx_fifo_threshold = 7,
     };
@@ -134,6 +136,24 @@ static bool uart_start(void)
     bflb_uart_init(uart0, &cfg);
     uart_on = true;
     return true;
+}
+
+/* test018: the echo runs in its own task and polls: at 2 Mbaud a byte arrives every 5 us and the RX FIFO holds 32,
+ * so it may not sleep while echoing (it only yields when the line is idle). */
+static void uart_echo_task(void *arg)
+{
+    (void)arg;
+    for (;;) {
+        if (!uart_echo) {
+            vTaskDelay(pdMS_TO_TICKS(20));
+            continue;
+        }
+        int c = bflb_uart_getchar(uart0);
+        if (c >= 0)
+            bflb_uart_putchar(uart0, (uint8_t)c);
+        else
+            taskYIELD();
+    }
 }
 
 static void uart_send(const char *s)
@@ -468,15 +488,28 @@ static int cmd_uart(int argc, char **argv)
         }
         LOCKED(for (int i = 2; i < argc; i++) { uart_send(argv[i]); uart_send(i + 1 < argc ? " " : "\r\n"); });
         printf("sent\r\n");
+    } else if (!strcmp(a, "echo")) {
+        static bool task;
+        uint32_t baud = argc > 2 ? (uint32_t)atoi(argv[2]) : 115200;
+        bool ok;
+        LOCKED(uart_stop(); ok = uart_start(baud));
+        if (!ok) {
+            printf("3V3 is off: pt_on first\r\n");
+            return 0;
+        }
+        if (!task)
+            task = xTaskCreate(uart_echo_task, "uecho", 512, NULL, tskIDLE_PRIORITY + 1, NULL) == pdPASS;
+        uart_echo = true;
+        printf("UART0 echo at %lu baud (pt_uart off to stop)\r\n", (unsigned long)baud);
     } else {
         bool ok;
-        LOCKED(ok = uart_on || uart_start());
+        LOCKED(ok = uart_on || uart_start(115200));
         printf(ok ? "UART0 on: IO21 TX -> K230 UART1 RX, IO22 RX <- K230 UART1 TX, 115200 8N1, 1 message/s\r\n"
                   : "3V3 is off: pt_on first (the link pins are pulled up to the K230's 3V3)\r\n");
     }
     return 0;
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_uart, pt_uart, UART0 link test: on | off | send <text>);
+SHELL_CMD_EXPORT_ALIAS(cmd_uart, pt_uart, UART0 link test: on | off | send <text> | echo [baud]);
 #endif
 
 #if PT_TEST_I2C
@@ -765,7 +798,7 @@ static void background_task(void *arg)
         }
 #endif
 #if PT_TEST_UART
-        if (uart_on) {
+        if (uart_on && !uart_echo) {
             int c;
             char buf[64];
             unsigned n = 0;
@@ -780,7 +813,7 @@ static void background_task(void *arg)
         if (bflb_mtimer_get_time_ms() >= next_s) {
             next_s += 1000;
 #if PT_TEST_UART
-            if (uart_on) {
+            if (uart_on && !uart_echo) {
                 char msg[64];
                 snprintf(msg, sizeof(msg), "LEAKCAM BL616 uart test %u, %lu ms\r\n", ++uart_count,
                          (unsigned long)bflb_mtimer_get_time_ms());
