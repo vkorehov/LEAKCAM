@@ -234,7 +234,33 @@ static const char *aht20_err(enum aht20_result r)
 #if PT_TEST_TIMING
 static uint32_t adc_t_init, adc_t_conv[6], adc_waits;   /* pt_time: the last leak_mv()'s steps, us */
 static uint32_t adc_first[8];                           /* the first call since boot: init, 6 conversions, total */
+static bool adc_first_restored;                         /* ... and whether it restored the stored calibration */
 #endif
+
+/*
+ * test021: kept across HBN and resets in HBN RAM, placed by the linker in .hbn_noinit (firmware/bl616/
+ * bl616_leakcam.ld.in; never loaded, never zeroed). HBN RAM is only reliable with its retention mode off while the
+ * firmware runs: main() turns it off before the first access, pt_sleep turns it on as the very last step (see the
+ * HBN RAM rule at main()).
+ */
+static volatile struct {
+    uint32_t wake_due;                             /* RTC tick the pt_sleep wake is due at, 0 = none */
+    uint32_t cal_valid;                            /* T021_CAL: the ADC calibration below is valid */
+    float coe;                                     /* bflb_adc.c's calibration result after a cold boot */
+    uint32_t os1;
+    int32_t os2;
+    uint32_t tsen;
+} t021 __attribute__((section(".hbn_noinit")));
+#define T021_CAL 0x43414cu                         /* "CAL" */
+
+/* bflb_adc.c (SDK 2.3.35) keeps its calibration in these globals, and bflb_adc_init() runs the calibration (28.6 ms:
+ * ~20 conversions + a 10 ms delay) only while adc_cali_complete is 0, i.e. once per reset - and every HBN wake is a
+ * reset. Handing the stored result back and setting the flag skips it (as the product's leak_wake.c does). */
+extern volatile float coe;
+extern volatile uint32_t os1;
+extern volatile int os2;
+extern volatile uint32_t tsen_offset;
+extern volatile int adc_cali_complete;
 
 /* probe node in mV (ADC channel 0 = IO20, 3.2 V reference), -1 if no conversion; as leak_wake.c */
 static int leak_mv(void)
@@ -251,7 +277,28 @@ static int leak_mv(void)
     struct bflb_adc_channel_s chan = { .pos_chan = ADC_CHANNEL_0, .neg_chan = ADC_CHANNEL_GND };
     uint32_t raw = 0;
     bool got = false;
+    bool restored = false;
+#if PT_TEST_SLEEP
+    if (!adc_cali_complete && t021.cal_valid == T021_CAL) {   /* first ADC use since the reset: restore */
+        coe = t021.coe;
+        os1 = t021.os1;
+        os2 = t021.os2;
+        tsen_offset = t021.tsen;
+        adc_cali_complete = 1;
+        restored = true;
+    }
+#endif
+    bool calibrated_before = adc_cali_complete;
     bflb_adc_init(adc, &cfg);
+#if PT_TEST_SLEEP
+    if (!calibrated_before) {                      /* it calibrated just now (cold boot): keep the result */
+        t021.coe = coe;
+        t021.os1 = os1;
+        t021.os2 = os2;
+        t021.tsen = tsen_offset;
+        t021.cal_valid = T021_CAL;
+    }
+#endif
     bflb_adc_channel_config(adc, &chan, 1);
 #if PT_TEST_TIMING
     uint64_t ts = bflb_mtimer_get_time_us();
@@ -275,6 +322,7 @@ static int leak_mv(void)
     }
 #if PT_TEST_TIMING
     if (!adc_first[7]) {
+        adc_first_restored = restored;
         adc_first[0] = adc_t_init;
         for (int k = 0; k < 6; k++)
             adc_first[k + 1] = adc_t_conv[k];
@@ -891,19 +939,11 @@ static int cmd_boot1(int argc, char **argv)
 SHELL_CMD_EXPORT_ALIAS(cmd_boot1, pt_boot1, K230 BOOT1 strap: low | high | park);
 
 #if PT_TEST_SLEEP
-/* test021: the RTC tick the wake is due at (low 32 bits, 36 h wrap), kept across the sleep in HBN_RSV3, an AON
- * register the BL616 SDK does not use (HBN RAM did not keep it, 2026-10-22: the startup copies its hbn_ram
- * section there); main() reads the RTC first thing, so the difference is ROM + boot2 + init. 0 = no mark. */
-#define WAKE_MARK (*(volatile uint32_t *)(HBN_BASE + HBN_RSV3_OFFSET))
+/* test021: the RTC tick the wake is due at (low 32 bits, 36 h wrap) in t021; main() reads the RTC first thing, so
+ * the difference is ROM + boot2 + C start-up */
+#define WAKE_MARK (t021.wake_due)
 static uint32_t wake_due, wake_main;               /* RTC ticks; wake_due 0 = not woken by pt_sleep */
-/* test021: does HBN RAM keep data across HBN level 0? (the product's aon_state lives in its last 64 bytes)
- * pt_sleep writes a pattern into 8 words spread over the 4 KB, main() copies them before anything else runs */
-#define HRAM_WORDS 8
-static const uint32_t hram_off[HRAM_WORDS] = { 0x000, 0x100, 0x400, 0x800, 0xC00, 0xF00, 0xF80, 0xFC0 };
-static uint32_t hram_seen[HRAM_WORDS];
-#define HRAM_WORD(i) (*(volatile uint32_t *)(HBN_RAM_BASE + hram_off[i]))
-#define HRAM_PATTERN(i) (0xA5000000u | ((uint32_t)(i) << 16) | 0x5A5Au)
-static uint64_t main_mtimer;                       /* core timer at main(): time since the core left reset? */
+static uint64_t main_mtimer;                       /* core timer at main(): counts from the core's reset */
 
 static uint64_t rtc_now(void)
 {
@@ -916,11 +956,9 @@ static void wake_mark_take(void)
 {
     main_mtimer = bflb_mtimer_get_time_us();
     wake_main = (uint32_t)rtc_now();
-    for (int i = 0; i < HRAM_WORDS; i++)
-        hram_seen[i] = HRAM_WORD(i);
     wake_due = WAKE_MARK;
     WAKE_MARK = 0;
-    if (wake_main - wake_due > 2u * 32768u)        /* reset keeps RSV3: a stray value (132 after a flash) is no mark */
+    if (wake_main - wake_due > 2u * 32768u)        /* any reset keeps HBN RAM: a mark from an older sleep is none */
         wake_due = 0;
 }
 
@@ -968,10 +1006,9 @@ static int cmd_sleep(int argc, char **argv)
     printf("pt_sleep: K230 off, HBN level 0 for %lu s (RTC on %s); unplug PR1 now for the sleep current\r\n",
            (unsigned long)s, y3 ? "Y3" : "RC32K");
     bflb_mtimer_delay_ms(50);           /* let the USB console send the line */
-    HBN_Set_HRAM_Ret();
-    for (int i = 0; i < HRAM_WORDS; i++)
-        HRAM_WORD(i) = HRAM_PATTERN(i);
     WAKE_MARK = (uint32_t)(rtc_now() + (uint64_t)s * 32768u) | 1u;  /* pm_hbn_mode_enter() reads it <= 1 tick later */
+    /* the last write to HBN RAM is done: retention on now and no HBN RAM access after it (HBN RAM rule at main()) */
+    HBN_Set_HRAM_Ret();
     pm_hbn_mode_enter(PM_HBN_LEVEL_0, (uint64_t)s * 32768u);
     while (1) {
     }
@@ -1024,17 +1061,48 @@ static int cmd_time(int argc, char **argv)
 {
     static bool ef_up;
     uint32_t lo, hi, t;
+    if (argc > 1 && !strcmp(argv[1], "hstress")) {
+        /* The evidence for the HBN RAM rule at main() (2026-10-22, rev 1): for each HBN_SRAM mode, 10 000 x {write a
+         * word, read it back; write an AON register (HBN_SRAM, its own value), read the word}, and 200 x {write,
+         * idle 1 ms, read}. Measured: mode none 0 / 0 / 0 wrong; RET 1 / 449-747 / 0; SLP 1 / 801-1212 / 0. */
+        static const char *const mname[3] = { "none", "RET", "SLP" };
+        static const uint32_t mbits[3] = { 0, HBN_RETRAM_RET_MSK, HBN_RETRAM_SLP_MSK };
+        volatile uint32_t *w = (volatile uint32_t *)(HBN_RAM_BASE + 0xE40);   /* free: below .hbn_noinit */
+        uint32_t base = BL_RD_REG(HBN_BASE, HBN_SRAM) & ~(HBN_RETRAM_RET_MSK | HBN_RETRAM_SLP_MSK);
+        for (int m = 0; m < 3; m++) {
+            uint32_t e1 = 0, e2 = 0, e3 = 0, n3 = 200;
+            BL_WR_REG(HBN_BASE, HBN_SRAM, base | mbits[m]);
+            for (uint32_t i = 0; i < 10000; i++) {
+                uint32_t v = 0x9E3779B9u * (i + 1 + (uint32_t)m * 10000u);
+                *w = v;
+                e1 += *w != v;
+                BL_WR_REG(HBN_BASE, HBN_SRAM, base | mbits[m]);
+                e2 += *w != v;
+            }
+            for (uint32_t i = 0; i < n3; i++) {
+                uint32_t v = 0x5A5A0000u | i;
+                *w = v;
+                bflb_mtimer_delay_us(1000);
+                e3 += *w != v;
+            }
+            printf("hstress %s: write+read %lu of 10000 wrong, AON reg write+read %lu of 10000, 1 ms idle+read %lu of %lu\r\n",
+                   mname[m], (unsigned long)e1, (unsigned long)e2, (unsigned long)e3, (unsigned long)n3);
+        }
+        BL_WR_REG(HBN_BASE, HBN_SRAM, base);        /* back to the run mode: retention off */
+        return 0;
+    }
+    if (argc > 1 && !strcmp(argv[1], "recal")) {     /* forget the stored ADC calibration: the next reset measures it */
+        t021.cal_valid = 0;
+        printf("pt_time: stored ADC calibration cleared, the next reset calibrates and stores it again\r\n");
+        return 0;
+    }
     if (wake_due)
         printf("wake -> main: %lu us (RTC wake due at tick %lu, main at %lu, 30.5 us per tick)\r\n",
                (unsigned long)((uint64_t)(wake_main - wake_due) * 1000000u / 32768u), (unsigned long)wake_due,
                (unsigned long)wake_main);
     else
         printf("wake -> main: no pt_sleep wake since this boot started (pt_sleep 5, then pt_time)\r\n");
-    printf("core timer at main(): %lu us\r\n", (unsigned long)main_mtimer);
-    printf("HBN RAM at main() (pattern A5ii5A5A written before the sleep):");
-    for (int i = 0; i < HRAM_WORDS; i++)
-        printf(" +%03lx %s", (unsigned long)hram_off[i], hram_seen[i] == HRAM_PATTERN(i) ? "kept" : "LOST");
-    printf("\r\n");
+    printf("core timer at main(): %lu us (ROM + boot2 + C start-up)\r\n", (unsigned long)main_mtimer);
 
     if (rails_on) {
         printf("K230_PWR -> 3V3 up: rails on, pt_off first\r\n");
@@ -1093,6 +1161,8 @@ static int cmd_time(int argc, char **argv)
            (unsigned long)adc_first[0], (unsigned long)adc_first[1], (unsigned long)adc_first[2],
            (unsigned long)adc_first[3], (unsigned long)adc_first[4], (unsigned long)adc_first[5],
            (unsigned long)adc_first[6], (unsigned long)adc_first[7]);
+    printf("  first call: stored calibration %s\r\n", adc_first_restored ? "restored (no 28.6 ms calibration)"
+                                                                      : "not restored: calibrated and stored");
 
     if (!ef_up) {
         uint64_t t0 = bflb_mtimer_get_time_us();
@@ -1154,6 +1224,15 @@ static void pins_init(void)
 int main(void)
 {
 #if PT_TEST_SLEEP
+    /*
+     * HBN RAM rule (tests/test021, 2026-10-22, rev 1): while HBN_SRAM has its retention (RET, bit 6) or sleep (SLP,
+     * bit 7) mode set, an HBN RAM access right after any AON (HBN) register write returns or stores corrupted data
+     * (4-12 % of them, `pt_time hstress`); with both bits clear, none of 30 000. The mode is an AON register: it
+     * survives the HBN wake and every reset, and the ROM, boot2 and board_init() write AON registers. So: both bits
+     * off here, before the first HBN RAM access, and RET on again only as the very last step before HBN (pt_sleep).
+     * The product does the same in aon_init() / aon_prepare_sleep().
+     */
+    BL_WR_REG(HBN_BASE, HBN_SRAM, BL_RD_REG(HBN_BASE, HBN_SRAM) & ~(HBN_RETRAM_RET_MSK | HBN_RETRAM_SLP_MSK));
     wake_mark_take();      /* before board_init: the wake latency ends here */
 #endif
     board_init();          /* also starts the USB CDC console and its shell (defconfig) */

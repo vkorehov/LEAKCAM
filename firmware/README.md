@@ -123,8 +123,8 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
 
 ### Retained event log (`evlog.c`)
 - The last 32 events (wake reason and probe mV, AHT20 reading, READY latency, NAKs, Wi-Fi start,
-  session length, sleep length, USB, clock) in 512 bytes of HBN RAM below the always-on block,
-  CRC-guarded, surviving hibernate and software resets. The bare-metal battery wakes never reach
+  session length, sleep length, USB, clock) in 512 bytes of HBN RAM next to the always-on block
+  (linker section `.hbn_noinit`, HBN RAM rule below), CRC-guarded, surviving hibernate and software resets. The bare-metal battery wakes never reach
   the USB console, so this is their only record. `evlog` on the BL616 console prints it
   (DEBUG.txt).
 
@@ -142,8 +142,31 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
 - **Found and fixed:** the session flags used `HBN_Set_Status_Flag()` = HBN_RSV0, which
   `pm_hbn_mode_enter()` overwrites with its own HBN_STATUS_ENTER_FLAG on the way into hibernate:
   the humidity wake count, leak-reported and USB-mode flags were lost at every sleep. Flags and
-  clock now live in the last 64 bytes of HBN RAM (retention enabled before every sleep, magic +
-  CRC-32); HBN_RSV1 (SDK wake callback) and RSV3 (ROM patch code) are not free either.
+  clock now live in HBN RAM (magic + CRC-32); HBN_RSV1 (SDK wake callback) and RSV3 (ROM patch code)
+  are not free either.
+
+### HBN RAM: where and how (tests/test021, 2026-10-22)
+- **Placed by the linker, not by hand.** aon_state and evlog are ordinary variables in the section
+  `.hbn_noinit` of the LEAKCAM linker script `bl616/bl616_leakcam.ld.in` (SDK 2.3.35's
+  `bl616_common.ld.in` + this section): NOLOAD (never copied or zeroed at start-up), the top 1 KB of
+  HBN RAM (+C00..+FFF), with ASSERTs. The SDK's own users of HBN RAM stay below it: its `hbn_ram`
+  section at +000 (reloaded at every boot) and fixed blocks by address in `drivers/sys/bl616/bl616_lp.h`
+  (low-power pre-jump stub +000, boot2 parameters +300, low-power parameters +400).
+- **Retention mode only for the sleep.** HBN_SRAM (an AON register) has retention (RET, bit 6) and
+  sleep (SLP, bit 7) modes for HBN. While either is set, an HBN RAM access that follows an AON register
+  write is corrupted: measured 449-1212 of 10 000 reads after a write to HBN_SRAM itself, 0 of 30 000
+  with both bits off (test firmware `pt_time hstress`). The mode survives the HBN wake and every reset,
+  and the ROM, boot2, board_init() and our pin set-up all write AON registers, so with RET left on, the
+  first reads after a wake (the magic, the CRC) and any write near an HBN register write (the event log
+  after `HBN_Hw_Pu_Pd_Cfg()`) went wrong at random. The rule in the code:
+  - `aon_init()`, the first HBN RAM user at boot: both bits off before the first access;
+  - `aon_prepare_sleep()` = `HBN_Set_HRAM_Ret()`, called in `hbn_sleep()` as the very last step before
+    `pm_hbn_mode_enter()`, after the last HBN RAM write (EV_SLEEP); nothing may touch HBN RAM after it.
+  Retention itself works: data written in normal mode survives HBN level 0 and software resets.
+- **The ADC calibration rides along.** `bflb_adc_init()` calibrates once per reset (28.6 ms) and every
+  wake is a reset; `leak_probe_mv()` stores the cold boot's result in aon_state and hands it back through
+  bflb_adc.c's globals (`coe`, `os1`, `os2`, `tsen_offset`, `adc_cali_complete`): first probe reading
+  after a wake 31.2 -> 2.6 ms.
 
 ### Architecture consequence
 The BL616 is also the K230's Wi-Fi: Bouffalo's NetHub bridge over SDIO (`bl616/wifi_link.c`) with

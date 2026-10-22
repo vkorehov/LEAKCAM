@@ -10,6 +10,9 @@ target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/a
 # pt_sdu: four SDIO ports, as the K230 driver and the SDK's sdio2_test use
 sdk_add_compile_definitions(-D SDIO2_MAX_PORT_NUM=4)
 
+# HBN-retained variables (.hbn_noinit): the product's linker script
+sdk_set_linker_script_macro(${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/bl616_leakcam.ld.in)
+
 sdk_set_main_file(main.c)
 
 project(bl616_powertest)

@@ -66,6 +66,13 @@ bool leak_is_wet(void)
  * value is data. */
 #define ADC_SETTLE_RESULTS 5
 
+/* bflb_adc.c (SDK 2.3.35) keeps its calibration in these globals; adc_cali_complete = 1 makes bflb_adc_init() skip it */
+extern volatile float coe;
+extern volatile uint32_t os1;
+extern volatile int os2;
+extern volatile uint32_t tsen_offset;
+extern volatile int adc_cali_complete;
+
 int leak_probe_mv(void)
 {
     struct bflb_device_s *adc = bflb_device_get_by_name("adc");
@@ -81,7 +88,22 @@ int leak_probe_mv(void)
     uint32_t raw = 0;
     bool got = false;
 
+    /* bflb_adc_init() calibrates once per reset (28.6 ms), and every HBN wake is a reset: the cold boot's result
+     * is kept in aon_state and handed back through bflb_adc.c's own globals, which skip the calibration */
+    struct adc_cal cal;
+    if (!adc_cali_complete && adc_cal_get(&cal)) {
+        coe = cal.coe;
+        os1 = cal.os1;
+        os2 = cal.os2;
+        tsen_offset = cal.tsen;
+        adc_cali_complete = 1;
+    }
+    bool calibrated_before = adc_cali_complete;
     bflb_adc_init(adc, &cfg);
+    if (!calibrated_before) {           /* it calibrated just now: keep the result for the next wakes */
+        cal = (struct adc_cal){ .coe = coe, .os1 = os1, .os2 = os2, .tsen = tsen_offset };
+        adc_cal_set(&cal);
+    }
     bflb_adc_channel_config(adc, &chan, 1);
     bflb_adc_start_conversion(adc);
     /* polled every 10 us: 1 ms sleeps made one reading 3.1 ms (tests/test021) */
@@ -161,7 +183,6 @@ void hbn_sleep(uint32_t seconds)
     HBN_Clear_IRQ(HBN_INT_ACOMP1);
     HBN_Enable_AComp_IRQ(LEAK_ACOMP, leak_is_wet() ? HBN_ACOMP_INT_EDGE_POSEDGE : HBN_ACOMP_INT_EDGE_NEGEDGE);
 
-    aon_prepare_sleep();                                   /* persisted state + clock in HBN RAM */
     /* the time since reset: the number to shorten, measured on every wake */
     unsigned awake_ms = (unsigned)bflb_mtimer_get_time_ms();
     LOG_I("hbn: sleeping %u s, probes %s, awake %u ms\r\n", (unsigned)seconds,
@@ -174,6 +195,7 @@ void hbn_sleep(uint32_t seconds)
      * oscillator and the RTC never wakes us (rev 1, 2026-10-22). pm_hbn_mode_enter() does not do this;
      * HBN_Mode_Enter() does. Pin wakes on GPIO16-19 are not used (USB and leak wake through the comparators). */
     HBN_Hw_Pu_Pd_Cfg(DISABLE);
+    aon_prepare_sleep();                /* last before HBN: retention on, no HBN RAM access after it */
     /* RTC ticks at 32768 Hz (Y3 crystal on IO16/IO17 via rtc_use_crystal(), else RC32K) */
     pm_hbn_mode_enter(PM_HBN_LEVEL_0, (uint64_t)seconds * 32768u);
     while (1) {

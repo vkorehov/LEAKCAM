@@ -15,7 +15,7 @@
 #define AON_RTC_HZ    32768u
 #define AON_RTC_MASK  ((1ull << 40) - 1)
 #define AON_MAGIC     0x4C43414Du          /* "LCAM" */
-#define AON_VERSION   1u
+#define AON_VERSION   2u                    /* 2: adc_cal added */
 /* earliest plausible time: 2026-01-01T00:00:00Z. A clock from before that is a bug or a
  * default value, never real, and is refused. */
 #define AON_EPOCH_MIN 1767225600u
@@ -28,6 +28,11 @@ struct aon_block {
     uint32_t epoch_ref;         /* Unix seconds at rtc_ref */
     uint64_t rtc_ref;           /* 40-bit RTC count, 32768 Hz */
     uint32_t bat_mv;            /* battery at the last K230 session (its ADC); 0 = none yet */
+    uint32_t adc_cal_valid;     /* 1 = the four below hold the ADC calibration of the last cold boot */
+    float adc_coe;              /* bflb_adc.c's coe, os1, os2, tsen_offset after its calibration */
+    uint32_t adc_os1;
+    int32_t adc_os2;
+    uint32_t adc_tsen;
     uint32_t crc;               /* CRC-32 over everything above */
 };
 

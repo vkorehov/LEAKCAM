@@ -9,11 +9,9 @@
 
 #include "evlog.h"
 
-/* the last 64 bytes of HBN RAM, away from anything the SDK might place at its start */
-#define AON_ADDR (HBN_RAM_BASE + HBN_RAM_SIZE - 64u)
-_Static_assert(sizeof(struct aon_block) <= 64, "aon block must fit the reserved 64 bytes");
-
-static volatile struct aon_block *const aon = (volatile struct aon_block *)AON_ADDR;
+/* in HBN RAM, placed by the linker in .hbn_noinit (bl616_leakcam.ld.in): never loaded or zeroed at start-up */
+static struct aon_block aon_store __attribute__((section(".hbn_noinit")));
+static volatile struct aon_block *const aon = &aon_store;
 
 static uint64_t rtc_now(void)
 {
@@ -33,7 +31,11 @@ static void store(struct aon_block *a)
 
 void aon_init(void)
 {
-    HBN_Set_HRAM_Ret();
+    /* HBN RAM in RET (or SLP) mode corrupts an access right after any AON register write, 4-12 % of them
+     * (tests/test021, 2026-10-22); the last sleep left RET set and the ROM, boot2 and board_init() wrote AON
+     * registers since: RET off before the first access, on again only in aon_prepare_sleep() */
+    uint32_t sram = BL_RD_REG(HBN_BASE, HBN_SRAM);
+    BL_WR_REG(HBN_BASE, HBN_SRAM, sram & ~(HBN_RETRAM_RET_MSK | HBN_RETRAM_SLP_MSK));
     HBN_Enable_RTC_Counter();          /* sets bit 0 only: a running counter keeps its count */
     struct aon_block a;
     load(&a);
@@ -110,6 +112,33 @@ void battery_set(unsigned mv)
     if (!aon_intact(&a))
         memset(&a, 0, sizeof(a));
     a.bat_mv = mv;
+    store(&a);
+}
+
+bool adc_cal_get(struct adc_cal *c)
+{
+    struct aon_block a;
+    load(&a);
+    if (!aon_intact(&a) || !a.adc_cal_valid)
+        return false;
+    c->coe = a.adc_coe;
+    c->os1 = a.adc_os1;
+    c->os2 = a.adc_os2;
+    c->tsen = a.adc_tsen;
+    return true;
+}
+
+void adc_cal_set(const struct adc_cal *c)
+{
+    struct aon_block a;
+    load(&a);
+    if (!aon_intact(&a))
+        memset(&a, 0, sizeof(a));
+    a.adc_cal_valid = 1;
+    a.adc_coe = c->coe;
+    a.adc_os1 = c->os1;
+    a.adc_os2 = c->os2;
+    a.adc_tsen = c->tsen;
     store(&a);
 }
 

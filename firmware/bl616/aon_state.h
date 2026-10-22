@@ -1,7 +1,8 @@
 /*
  * State that must survive hibernate and software resets: the persisted session flags, the
- * wall clock and the last battery reading. Kept in the last 64 bytes of HBN RAM (4 KB always-on SRAM at HBN_RAM_BASE, held in
- * retention through HBN level 0) with a magic and a CRC.
+ * wall clock, the last battery reading and the ADC calibration. Kept in HBN RAM (4 KB always-on SRAM, held in
+ * retention through HBN level 0; checked on rev 1 in tests/test021) in the linker section .hbn_noinit
+ * (bl616_leakcam.ld.in), with a magic and a CRC.
  *
  * Why not HBN_Set_Status_Flag(): it is HBN_RSV0, and pm_hbn_mode_enter() overwrites HBN_RSV0 with
  * its own HBN_STATUS_ENTER_FLAG on the way into hibernate, so anything stored there is lost at
@@ -19,8 +20,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-/* call first at boot: validates the block (fresh after a power loss), enables HBN RAM
- * retention and rebases the clock onto the current RTC count */
+/* call first at boot, before any HBN RAM access: takes HBN RAM out of retention mode, validates the block (fresh
+ * after a power loss) and rebases the clock onto the current RTC count */
 void aon_init(void);
 
 void persist_get(uint32_t *flags, uint32_t *hum_wakes_left);
@@ -35,7 +36,19 @@ bool wallclock_set(uint32_t epoch);
 int battery_get(void);
 void battery_set(unsigned mv);
 
-/* before every hibernate: keep HBN RAM in retention */
+/* the GPADC calibration bflb_adc_init() runs once per reset (28.6 ms, tests/test021), kept across HBN:
+ * coe, os1, os2, tsen_offset of bflb_adc.c; false = none since the power loss */
+struct adc_cal {
+    float coe;
+    uint32_t os1;
+    int32_t os2;
+    uint32_t tsen;
+};
+bool adc_cal_get(struct adc_cal *c);
+void adc_cal_set(const struct adc_cal *c);
+
+/* the last call before pm_hbn_mode_enter(): HBN RAM into retention; no HBN RAM access after it (in RET an access
+ * after an AON register write is corrupted, tests/test021) */
 void aon_prepare_sleep(void);
 
 #endif

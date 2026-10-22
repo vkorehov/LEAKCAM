@@ -264,9 +264,19 @@ is `leak`, or the probe node is below 825 mV), or always / never with `--leak`.
 
 ### 5.2 BL616 power manager ([firmware/README.md](firmware/README.md))
 
-- **Hibernate (HBN) between wakes.** Session flags and the wall clock live in the last 64 bytes
-  of HBN RAM, with a magic word and a CRC. `HBN_RSV0` is not usable because
+- **Hibernate (HBN) between wakes.** Session flags, the wall clock, the last battery reading and the
+  ADC calibration (aon_state), and the event log (evlog) live in HBN RAM, with a magic word and a CRC.
+  The linker places them in `.hbn_noinit` (firmware/bl616/bl616_leakcam.ld.in: NOLOAD, the top 1 KB,
+  clear of the SDK's fixed HBN RAM blocks at +000/+300/+400). `HBN_RSV0` is not usable because
   `pm_hbn_mode_enter()` overwrites it.
+- **HBN RAM rule (tests/test021, 2026-10-22).** While HBN_SRAM has retention (RET) or sleep (SLP) mode
+  set, an HBN RAM access right after any AON register write is corrupted (4-12 % of them, both reads
+  and writes; none with the mode off). The mode survives every wake and reset. So `aon_init()` turns
+  both bits off before the first access, and `aon_prepare_sleep()` sets RET as the very last step in
+  `hbn_sleep()`, after every HBN RAM write (nothing may touch HBN RAM after it).
+- **ADC calibration kept across HBN.** `bflb_adc_init()` calibrates once per reset (28.6 ms) and every
+  wake is a reset; the cold boot's result is stored in aon_state and handed back through bflb_adc.c's
+  globals: the first probe reading after a wake 31.2 -> 2.6 ms (tests/test021).
 - **Wake sources:**
   - leak line on ACOMP1, trip at 0.825 V;
   - USB plug-in via PGOOD on ACOMP0;
@@ -447,6 +457,10 @@ back to U13's GND pad beside MICPL; 1 µF 0402 fits better than the 0805 (footpr
 
 ## 7. Open firmware work
 
+- **BL616 HBN RAM (fixed 2026-10-22, tests/test021).** HBN RAM in retention mode corrupted accesses after AON
+  register writes: the product would have lost its flags, clock and event log on wakes (aon_init() set RET and then
+  read; hbn_sleep() set RET and then wrote the event log). Fixed in aon_state.c / leak_wake.c, state moved into the
+  linker section .hbn_noinit; verified in the test firmware, product build pending (rewrite).
 - **BL616 RTC clock (fixed 2026-10-22, tests/test031).** Two causes stopped the Y3 RTC in HBN: the HBN pin pulls
   on GPIO16-19 (IO16/17 = Y3), which pm_hbn_mode_enter() leaves on, and Y3 selected before it runs. Fixed in
   leak_wake.c (HBN_Hw_Pu_Pd_Cfg(DISABLE) in hbn_sleep(); rtc_use_crystal() waits for Y3, else RC32K); verified in

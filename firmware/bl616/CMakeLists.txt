@@ -33,6 +33,9 @@ target_sources(app PRIVATE
                    wifi_check.c
                    )
 
+# HBN-retained variables (.hbn_noinit) need the LEAKCAM linker script
+sdk_set_linker_script_macro(${CMAKE_CURRENT_SOURCE_DIR}/bl616_leakcam.ld.in)
+
 sdk_set_main_file(main.c)
 
 project(leakcam)

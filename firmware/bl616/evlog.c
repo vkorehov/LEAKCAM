@@ -12,14 +12,9 @@
 #include "aon_state.h"
 #include "leak_wake.h"
 
-/* just below the 64-byte aon block at the end of HBN RAM (aon_state.c). The SDK's own hbn_ram
- * section is at the start and is reloaded at every boot; the check below keeps them apart. */
-#define EVLOG_ADDR (HBN_RAM_BASE + HBN_RAM_SIZE - 64u - 512u)
-_Static_assert(sizeof(struct evlog) <= 512, "event log must fit its 512 bytes");
-
-extern uint8_t __hbn_ram_end__[];
-
-static struct evlog *const log_ram = (struct evlog *)EVLOG_ADDR;
+/* in HBN RAM, placed by the linker in .hbn_noinit (bl616_leakcam.ld.in) next to the aon block */
+static struct evlog log_store __attribute__((section(".hbn_noinit")));
+static struct evlog *const log_ram = &log_store;
 
 static uint32_t rtc_s(void)
 {
@@ -28,8 +23,6 @@ static uint32_t rtc_s(void)
 
 void evlog_add(enum ev ev, int arg, unsigned val)
 {
-    if ((uintptr_t)__hbn_ram_end__ > EVLOG_ADDR)
-        return;                         /* the SDK's HBN code grew into the log: never overwrite it */
     evlog_push(log_ram, rtc_s(), (uint8_t)ev, (int8_t)arg, (uint16_t)(val > 0xFFFFu ? 0xFFFFu : val));
 }
 
