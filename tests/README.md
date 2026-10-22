@@ -12,9 +12,9 @@ the low-level tests, so a bottleneck shows where it is; the 100+ tests only add 
 Test tools (rail checks, probe-sheet renderer, BL616 test firmware, k230_hello): [tools/power-bringup](../tools/power-bringup/README.md).
 
 
-**Every build is the minimal image with the smallest machine code, in every test** (2026-10-22, a standing
-practice, not a test of its own): only the features some test's `## Needs` names, sections + `--gc-sections`,
-`-Os` unless a measured speed need, LTO, stripped; each test records its image sizes and compile flags. After an
+**Every build is the minimal image, speed first, in every test** (2026-10-22, a standing practice, not a test of
+its own): only the features some test's `## Needs` names, but none removed that makes anything slower, and the
+fastest flags; every test also runs a heavily optimised build (`-O3`, LTO, `-march`/`-mtune`) side by side; each test records its image sizes and compile flags. After an
 optimisation step the tests whose part changed run again. test008 finds the floor (the fewest bits that boot);
 each test then builds its `## Needs` on that floor, so its Metrics show what its features cost.
 

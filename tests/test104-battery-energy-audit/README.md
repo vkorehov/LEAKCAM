@@ -53,6 +53,7 @@ Probes: current - battery lead over whole sessions; voltage - VBAT C15.1: minimu
 | Image (sizes) | to fill | minimal image (rule) | the image this run used |
 | Compile flags | to fill | smallest code (rule) | |
 | Features over the minimal image | to fill: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | to fill: speed / size / boot / current vs the current flags | the faster one stays | |
 
 ## Boot time
 

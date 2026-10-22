@@ -83,6 +83,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Image (sizes) | baseline above | minimal image (rule) | per build |
 | Compile flags | baseline above | smallest code (rule) | per build |
 | Features over the minimal image | to fill: per test, its Needs on top of the floor | - | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | to fill: speed / size / boot / current vs the current flags | the faster one stays | |
 
 ## Boot time
 
