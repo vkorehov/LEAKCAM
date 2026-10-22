@@ -1,6 +1,6 @@
 # test031: RTC wake (BL616 HBN timer, 32.768 kHz crystal)
 
-Status: **open** (2026-10-21): RTC wake works on RC32K (+0.44 %); on Y3 not yet; Y3 -110 ppm.
+Status: **wake works** (2026-10-22, test030 fix): HBN RTC wake on Y3 5 of 5; Y3 -110 ppm (target +-20) open.
 
 The BL616's hibernate RTC (Y3, 32.768 kHz) wakes it every 10 min for humidity and at the K230's requested interval;
 it also keeps the wall clock between NTP syncs (aon_state.c: ~20 ppm, 1.7 s/day expected). A wake that comes late,
@@ -54,7 +54,5 @@ day (ENERGY.txt section 3).
 
 ## Obstacles
 
-- **The HBN RTC on Y3** (test030, 2026-10-21): the counter stops for ~1 s when Y3 is selected right after power-on;
-  **no wake from HBN on Y3, even with the crystal running first** (asleep overnight 2026-10-21/22); RC32K wakes
-  fine (+0.44 %). Y3 measured **-110 ppm** while awake (target
-  +-20 ppm): check its load capacitors against the crystal's CL.
+- **No HBN RTC wake on Y3** -> fixed (test030): HBN pin pulls off + wait for Y3 before the sleep. Still open: Y3
+  measured **-110 ppm** while awake (target +-20 ppm): check its load capacitors against the crystal's CL.

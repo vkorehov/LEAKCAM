@@ -50,8 +50,8 @@ written when it happens). Nothing is left out: an empty part says so ("Not run y
 | [test027 NAND power loss](test027-nand-power-loss/README.md) | 2026-10-21 | short run pass: 13 random cuts, 0 lost/corrupt files; 100-cut run open |
 | [test028 camera buses idle](test028-camera-bus-idle/README.md) | 2026-10-21 | pass: I2C buses scan clean and idle high, CAM GPIOs low |
 | [test029 cameras: detection, capture, image](test029-camera-capture/README.md) | | placeholder: cameras not delivered |
-| [test030 sleep and minimal currents](test030-sleep-current/README.md) | 2026-10-21 | HBN + RTC wake work on RC32K, 1.23 mA through USB; Y3 path fails; battery figure open |
-| [test031 RTC wake](test031-rtc-wake/README.md) | 2026-10-21 | open: Y3 stops the counter when selected early; wake on Y3 not seen; Y3 -110 ppm |
+| [test030 sleep and minimal currents](test030-sleep-current/README.md) | 2026-10-22 | RTC wake fixed (HBN pin pulls off + wait for Y3), 5/5 wakes; 1.23 mA asleep through USB; battery figure open |
+| [test031 RTC wake](test031-rtc-wake/README.md) | 2026-10-22 | wake works on Y3 (5/5); Y3 -110 ppm open |
 | [test032 every BL616 pin: function, levels, back-feed](test032-bl616-pins/README.md) | | planned |
 | [test033 leak probe wake](test033-leak-probe-wake/README.md) | | planned |
 | [test034 USB plug wake](test034-usb-plug-wake/README.md) | | planned |

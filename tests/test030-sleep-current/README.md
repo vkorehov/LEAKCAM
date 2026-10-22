@@ -1,6 +1,6 @@
 # test030: sleep and minimal currents (every power state's floor)
 
-Status: **HBN + RTC wake work on RC32K** (2026-10-21): sleep 1.23 mA through USB (mostly the charger), wake at 60 s; the Y3 crystal path still fails; battery-lead figure open.
+Status: **RTC wake fixed** (2026-10-22): HBN on Y3 wakes (5 of 5, cold start included); sleep 1.23 mA through USB (mostly the charger); battery-lead figure open.
 
 The lowest current each power state can reach, measured on its own, so every other test's figure reads as a rise
 above a known floor (user, 2026-10-21: minimal currents too). First the sleep: what the board draws between wakes,
@@ -81,7 +81,30 @@ Sleep runs (meter in USB-C 1 VBUS, K230 off):
 | 23:29 `pt_sleep 120` | Y3 selected 0 ms after power-on | 1.24 mA | no change | **no wake** (counter frozen: crystal not running, never starts in HBN) |
 | 23:44 `pt_sleep 30` | Y3 selected only once the counter moved | 3.95-4.11 mA, falling slowly | no change, no console, no USB popup | **no wake / stuck** (not explained; a top-up charge with D1 off cannot be ruled out) |
 | 23:48 `pt_sleep 60 rc` | RC32K | **1.23 mA** | **jumped to 61 mA, console back 23:50:00** | **woke normally** |
-| 23:50 `pt_sleep 60` | Y3 ("running after 1000 ms") | ~305 mA next morning = charging (D1 on) + sleep | **never woke: still asleep the next morning**, EN tap 2026-10-22 brought the console back | **no wake on Y3, crystal running** |
+| 23:50 `pt_sleep 60` | Y3 ("running after 1000 ms") | not read | **no valid result**: the board was disconnected overnight | - |
+
+### 2026-10-22: the cause and the fix
+
+Two things stop the Y3 RTC in HBN; both are needed:
+1. **HBN pin pulls on GPIO16-19.** In HBN the chip puts hardware pulls on its HBN pins unless disabled; IO16/IO17
+   are the Y3 crystal, the pulls stop the oscillator, the counter freezes, no wake. `pm_hbn_mode_enter()` does not
+   disable them (the SDK's `HBN_Mode_Enter()` does: `HBN_Hw_Pu_Pd_Cfg(DISABLE)`, "0x4000F014[16]=0"). Fix: call it
+   before the sleep.
+2. **Y3 must already run.** Selected while starting (~1 s after a cold power-on; the SDK's HBN_Power_On_Xtal_32K
+   waits 1.1 ms despite its ">1s" comment) the counter stops, and the crystal does not start in HBN. Fix: select
+   Y3, wait until the counter moves (<= 3 s), else RC32K so the chip still wakes.
+
+| Run (test firmware) | Y3 ready | Wake |
+|---|---|---|
+| 07:42 `pt_sleep 60`, pulls off, wait | after 1000 ms | console back after 68 s |
+| 07:43 `pt_sleep 30` x 2 | after 0 ms (still running from the last wake) | 37 s, 36 s |
+| 07:51 `pt_sleep 60` (charge done) | 0 ms | 66 s; **1.23 mA asleep, 61 mA awake after** |
+| 07:53 cold start, pulls off, **no wait** | - | **no wake** (the wait is needed) |
+| 07:57 cold start, pulls off, wait (final code) | after 1030 ms | **36 s** |
+
+The polling-and-switching workaround and `pt_sleep ... rc` of 2026-10-21 are removed again; the final code is
+`rtc_on_xtal()` (wait) + `HBN_Hw_Pu_Pd_Cfg(DISABLE)` in bl616_powertest, the same in the product (leak_wake.c
+rtc_use_crystal(), hbn_sleep(); not run yet: the product image is rebuilt at the end).
 
 So hibernation and the RTC wake work on RC32K; **on Y3 the wake never comes, even with the crystal running before the
 sleep** (the counter runs on Y3 while awake: the oscillator or its clock path apparently stops in HBN). The product's rtc_use_crystal()
@@ -117,11 +140,15 @@ state; the sleep goes into ENERGY.txt section 2 and the budget line "Sleep", the
 
 ## Obstacles
 
-- **No RTC wake from HBN level 0 with the RTC on Y3** (2026-10-21) -> selecting the 32 kHz crystal before it
-  oscillates stops the HBN RTC counter (measured: 0 ticks for ~1 s), and the BL616 never reaches the wake
-  compare -> `pt_sleep` now selects Y3 only once the counter moves (Y3 needs ~1 s); on RC32K the wake works
-  (60 s, 1.23 mA asleep). With Y3 selected that way the 23:44 run still did not wake (4 mA): open.
-- **`pt_rtc` printed empty numbers** -> the SDK's printf has no `%llu` -> 32-bit `%lu` (the deltas are small).
-- **ISP flash failed once** ("Could not configure port: Input/output error", LOAD HELP BIN FAIL, 20:39) -> the
-  helper load runs before any write, the flash was untouched -> retried, passed.
-- **No RTC wake on the first try was recovered with EN** (twice); EN resets the HBN domain too.
+- **No RTC wake from HBN on Y3** (2026-10-21/22) -> the HBN pin pulls on GPIO16-19 stop the Y3 oscillator in HBN
+  (pm_hbn_mode_enter does not disable them), and Y3 selected before it runs stops the counter and does not start in
+  HBN -> `HBN_Hw_Pu_Pd_Cfg(DISABLE)` before the sleep + wait until Y3 runs (<= 3 s, else RC32K). 5 of 5 wakes incl.
+  a cold start; the product has the same fix.
+- **"Asleep overnight" was not a valid result** -> the board had been disconnected overnight (user) -> the Y3
+  result taken again the next morning.
+- **`pt_rtc` printed empty numbers** -> the SDK's printf has no `%llu` -> 32-bit `%lu`.
+- **ISP flash failed once** ("Could not configure port: Input/output error", LOAD HELP BIN FAIL) -> nothing written
+  (fails while loading the helper) -> retried, passed.
+- **Builds took very long** -> three stale `make -j5` containers (one 20 h old: the abandoned bisect build in
+  tmp_bisect) -> stopped by container ID; tmp_bisect and the product build dir deleted (product image rebuilt at
+  the end, user).
