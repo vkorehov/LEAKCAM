@@ -55,5 +55,6 @@ day (ENERGY.txt section 3).
 ## Obstacles
 
 - **The HBN RTC on Y3** (test030, 2026-10-21): the counter stops for ~1 s when Y3 is selected right after power-on;
-  a wake from HBN on Y3 not yet seen (RC32K wakes fine, +0.44 %). Y3 measured **-110 ppm** while awake (target
+  **no wake from HBN on Y3, even with the crystal running first** (asleep overnight 2026-10-21/22); RC32K wakes
+  fine (+0.44 %). Y3 measured **-110 ppm** while awake (target
   +-20 ppm): check its load capacitors against the crystal's CL.

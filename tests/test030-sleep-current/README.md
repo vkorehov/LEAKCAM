@@ -81,9 +81,10 @@ Sleep runs (meter in USB-C 1 VBUS, K230 off):
 | 23:29 `pt_sleep 120` | Y3 selected 0 ms after power-on | 1.24 mA | no change | **no wake** (counter frozen: crystal not running, never starts in HBN) |
 | 23:44 `pt_sleep 30` | Y3 selected only once the counter moved | 3.95-4.11 mA, falling slowly | no change, no console, no USB popup | **no wake / stuck** (not explained; a top-up charge with D1 off cannot be ruled out) |
 | 23:48 `pt_sleep 60 rc` | RC32K | **1.23 mA** | **jumped to 61 mA, console back 23:50:00** | **woke normally** |
-| 23:50 `pt_sleep 60` | Y3 ("running after 1000 ms") | not read | not observed: device disconnected | open |
+| 23:50 `pt_sleep 60` | Y3 ("running after 1000 ms") | ~305 mA next morning = charging (D1 on) + sleep | **never woke: still asleep the next morning**, EN tap 2026-10-22 brought the console back | **no wake on Y3, crystal running** |
 
-So hibernation and the RTC wake work; the crystal path does not yet. The product's rtc_use_crystal()
+So hibernation and the RTC wake work on RC32K; **on Y3 the wake never comes, even with the crystal running before the
+sleep** (the counter runs on Y3 while awake: the oscillator or its clock path apparently stops in HBN). The product's rtc_use_crystal()
 (leak_wake.c) selects Y3 at once on a cold boot and assumes the RTC keeps running on RC32K until the crystal
 starts: measured wrong, the counter stops. Until the Y3 path is proven, the safe product choice is RC32K for the
 HBN wake (+0.44 % = 2.6 s per 10-min wake) with the wall clock corrected against the 40 MHz crystal while awake.
