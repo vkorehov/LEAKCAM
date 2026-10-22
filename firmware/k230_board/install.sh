@@ -249,6 +249,33 @@ grep -q 'k230d_leakcam.dtb' "$UB/arch/riscv/dts/Makefile" ||
         "$UB/arch/riscv/dts/Makefile"
 grep -q 'k230d_leakcam.dtb' "$UB/arch/riscv/dts/Makefile" || { echo "could not register the dtb"; exit 1; }
 
+# KPU driver: gnne_setup_kpu_bandwidth() writes its two registers at their physical address (0x91301d8c) with the
+# rt_ioremap version disabled by "#if 0". At -O1 it happened to work; at -O2 the kernel faults there at every boot
+# (Store/AMO page fault, tests/test008, 2026-10-22). Use the mapped version.
+GNNE=$RTT/drivers/interdrv/gnne/gnne_dev.c
+grep -q 'LEAKCAM: KPU bandwidth mapped' "$GNNE" || python3 - "$GNNE" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = 'static int gnne_setup_kpu_bandwidth(void)\n{\n#if 0\n'
+b = 'static int gnne_setup_kpu_bandwidth(void)\n{\n#if 1   /* LEAKCAM: KPU bandwidth mapped (the physical write faults at -O2) */\n'
+assert s.count(a) == 1, 'gnne_dev.c changed, cannot apply the KPU bandwidth patch'
+open(p, 'w').write(s.replace(a, b))
+PY
+grep -q 'LEAKCAM: KPU bandwidth mapped' "$GNNE" || { echo "KPU bandwidth patch not applied"; exit 1; }
+
+# Kernel optimisation: the SDK's release build is -O1 (rtconfig.py). Speed first (tests/test008): the level that
+# measures fastest; -g stays (debug info only in the ELF, not in rtthread.bin).
+KOPT=-O1        # -O2 crashes in the LWP signal return (tests/test008); back to the SDK level until fixed
+RTCPY=$RTT/rtconfig.py
+python3 - "$RTCPY" "$KOPT" <<'PY'
+import re, sys
+p, opt = sys.argv[1], sys.argv[2]; s = open(p).read()
+s2, n = re.subn(r"CFLAGS \+= ' -O[0-3s] -g -gdwarf-2'(  # LEAKCAM: kernel opt)?", f"CFLAGS += ' {opt} -g -gdwarf-2'  # LEAKCAM: kernel opt", s)
+assert n == 1, 'rtconfig.py changed, cannot set the kernel optimisation'
+open(p, 'w').write(s2)
+PY
+grep -q "LEAKCAM: kernel opt" "$RTCPY" || { echo "kernel optimisation patch not applied"; exit 1; }
+
 # Time zone: RT-Thread's musl sys/time.h turns its lightweight time zone on unconditionally with a +8 h default
 # (China), so localtime()/ctime() and msh `date` read 8 h ahead of the UTC RTC. LEAKCAM runs on UTC only.
 TZC=$RTT/../../rt-thread/components/libc/compilers/musl/time.c

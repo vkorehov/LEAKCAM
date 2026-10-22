@@ -1,6 +1,6 @@
 # test008: minimal image - the fewest bits that still boot and pass
 
-Status: **in progress** (2026-10-22): build 1 (unused defaults off) -1 % kernel, -147 KB programs; flags next. **Runs first after board bring-up** (after test007, the first RT-Smart boot): the
+Status: **in progress** (2026-10-22): builds 1+2 (unused/inherited off) app init 0.506 -> 0.49 s; kernel -O2 not adopted (two latent bugs, one fixed); programs' flags next. **Runs first after board bring-up** (after test007, the first RT-Smart boot): the
 floor every later test builds its `## Needs` on.
 
 The standing practice (tests/README) keeps every build minimal; this test pushes it to the floor on purpose: remove
@@ -82,6 +82,21 @@ ISP set twice in /bin; with the cameras, test020/030); FAST_BOOT_CONFIGURATION p
 (was 0.506; mounts 0.20-0.21 s instead of 0.22: 147 KB less on /sdcard); ADC, I2C (both buses clean), RTC, NAND
 80 MHz (20.6 MB/s, 0 errors), pads all as before; die 42.5 C; flash write 205 mA.
 
+### Flags A, 2026-10-22: kernel -O2 (instead of the SDK's -O1) - not adopted, back to -O1 (user: safe side)
+
+rtthread.bin at -O2: 3 724 328 B (+12.4 KB). On the board:
+1. **Every boot faulted in gnne_device_init** (Store/AMO page fault at 0x91301d8c): Canaan's
+   gnne_setup_kpu_bandwidth() writes the KPU bandwidth registers at their physical address, with the rt_ioremap
+   version disabled by `#if 0`; at -O1 it happened to work. **Fixed** (install.sh: the mapped version) and kept at
+   -O1 too: a real bug.
+2. **Then leakcam_agent faulted** (Instruction Page Fault at 0xfffffffffffff000, ra the same): the user process
+   returns to the signal-return trampoline page, which at -O2 is not mapped/set up: a second latent bug in the
+   kernel's LWP signal path (likely an inline-asm/volatile assumption). Open.
+Kernel back at -O1 (install.sh KOPT) with the KPU fix: 3 712 016 B, boots, app init 0.484-0.493 s (3 boots), no
+fault. Whether -O2 is faster at all was not measured (it did not run); the kernel's share of the boot without the
+mounts is ~0.26 s. Next lever: the programs (leakcam_wake 5.18 MB: sections, LTO, -O2/-O3), where the compute time
+of a session goes.
+
 The kernel's bulk is in what the product needs (MPP, GNNE/KPU, lwIP, the WLAN framework): the larger levers are
 the flags (kernel -O1 -g; programs without sections/LTO) and leakcam_wake (5.18 MB).
 
@@ -132,3 +147,9 @@ Energy per wake per build (ENERGY.txt section 3): the gain in uAh per wake and p
 - **Defconfig step failed** (Kconfig.app: can't open venctest/Kconfig) -> the app list is generated from the folders
   in src/applications; the other session's temporary venctest had no Kconfig -> memtest and venctest moved to
   src/applications_off (SDK copy).
+- **Kernel -O2 faulted at every boot in gnne_device_init** -> the KPU driver writes 0x91301d8c physically (the
+  ioremap branch `#if 0`) -> install.sh patch "LEAKCAM: KPU bandwidth mapped" (kept at -O1).
+- **Kernel -O2: leakcam_agent faults returning to 0xfffffffffffff000** (signal-return trampoline) -> open; kernel
+  back at -O1 (user: safe side).
+- **"no K230 boot device after 90 s"** -> the VMware click came later -> wait up to 180 s before giving up.
+
