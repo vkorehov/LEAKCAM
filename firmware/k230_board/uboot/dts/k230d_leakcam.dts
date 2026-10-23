@@ -29,6 +29,21 @@
 		device_type = "memory";
 		reg = <0x0 0 0x0 0x8000000>;
 	};
+
+	/* the console is UART1, the BL616 link, at its one rate (4 Mbaud): the BL616 shows it on /dev/ttyACM1 from
+	 * the first SPL line (tests/test039); UART0 (the CH340, USB-C 2) keeps only the BootROM's own lines */
+	aliases {
+		uart1 = &serial1;
+	};
+
+	chosen {
+		stdout-path = "uart1:4000000n8";
+	};
+};
+
+/* 100 MHz (the clock divider 1/1, set by the ns16550 patch in install.sh): 4 Mbaud = 1 + 9/16 with the fraction */
+&serial1 {
+	clocks = <&def_100mhz>;
 };
 
 /* MMC0 is the BL616's SDIO device interface (Wi-Fi), MMC1 is not connected: nothing to boot or

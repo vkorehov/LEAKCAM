@@ -1,6 +1,6 @@
 # test022: K230 boot time
 
-Status: **0.506 s** reset release -> app init (2026-10-21: NAND 80 MHz, /bin 8 MiB with one ISP set, /sdcard 32 MiB; 1.00 s this morning); msh prompt and READY not timed yet.
+Status: **0.30 s** reset release -> app init (2026-10-23: the console on UART1 at 4 Mbaud from SPL, tests/test039; 0.506 s on 2026-10-21, 1.00 s before); msh prompt and READY not timed yet.
 
 Every wake powers the K230 up from cold, so its boot time is paid on every session (the whole session: test101).
 Not measured yet: the test firmware does not time it and the product BL616 firmware (which logs "READY <ms> after

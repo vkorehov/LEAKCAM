@@ -260,6 +260,52 @@ grep -q 'LEAKCAM: BL616 SDU' "$SDIOC" || { echo "SDIO FUNCE patch not applied"; 
 # 3. U-Boot/SPL: defconfig, device tree (reuses the BPI-Zero TARGET: same K230D SiP board code)
 cp "$HERE/uboot/configs/k230d_leakcam_defconfig" "$UB/configs/"
 cp "$HERE"/uboot/dts/k230d_leakcam.dts "$HERE"/uboot/dts/k230d_leakcam_pins.dtsi "$UB/arch/riscv/dts/"
+
+# SPL and OpenSBI print on UART1 at the link's rate (4 Mbaud), as RT-Smart does since the link mux (tests/test039):
+# their console reaches the BL616's /dev/ttyACM1 from the first SPL line. U-Boot's ns16550 has neither the K230's
+# UART clock divider nor the DesignWare fractional divisor that 4 Mbaud needs (100 MHz / 16 / 4 M = 1 + 9/16):
+# probe sets UART1's clock divider 1/2 -> 1/1 (sysctl uart_i2c_clkdiv_cfg 0x9110002c bits 5:3, bit 31 = write
+# enable, as RT-Smart's sysctl_clk_set_leaf_div), setbrg writes the fraction (DLF, 4 bits at 0xC0) as drv_uart.
+NS=$UB/drivers/serial/ns16550.c
+grep -q 'LEAKCAM: UART1 clock' "$NS" || python3 - "$NS" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = '\tcom_port->plat = dev_get_plat(dev);\n\tns16550_init(com_port, -1);\n'
+b = ('\tcom_port->plat = dev_get_plat(dev);\n'
+     '\tif (plat->base == 0x91401000) {\t/* LEAKCAM: UART1 clock 1/1 = 100 MHz (console + BL616 link, 4 Mbaud) */\n'
+     '\t\tu32 v = readl((void *)0x9110002c);\n'
+     '\t\twritel((v & ~0x38u) | (1u << 31), (void *)0x9110002c);\n'
+     '\t}\n'
+     '\tns16550_init(com_port, -1);\n')
+assert s.count(a) == 1, 'ns16550 probe changed, cannot set the UART1 clock'
+s = s.replace(a, b)
+a = '\tclock_divisor = ns16550_calc_divisor(com_port, plat->clock, baudrate);\n\n\tns16550_setbrg(com_port, clock_divisor);\n\n\treturn 0;\n}\n'
+b = ('\t/* LEAKCAM: DesignWare fractional divisor (DLF, 4 bits at 0xC0): divisor x 16 rounded, the integer part in\n'
+     '\t * DLL/DLH, the sixteenths in DLF (4 Mbaud from 100 MHz = 1 + 9/16), as RT-Smart\'s drv_uart */\n'
+     '\tunsigned int x16 = (plat->clock + baudrate / 2) / baudrate;\n'
+     '\tclock_divisor = x16 / 16 ? x16 / 16 : 1;\n'
+     '\tns16550_setbrg(com_port, clock_divisor);\n'
+     '\tint lcr = serial_in(&com_port->lcr);\n'
+     '\tserial_out(lcr | UART_LCR_DLAB, &com_port->lcr);\n'
+     '\twritel(x16 / 16 ? x16 % 16 : 0, (void *)(plat->base + 0xc0));\n'
+     '\tserial_out(lcr, &com_port->lcr);\n\n'
+     '\treturn 0;\n}\n')
+assert s.count(a) == 1, 'ns16550 setbrg changed, cannot add the fractional divisor'
+open(p, 'w').write(s.replace(a, b))
+PY
+grep -q 'LEAKCAM: UART1 clock' "$NS" || { echo "ns16550 patch not applied"; exit 1; }
+
+# OpenSBI: its 8250 driver already writes DLF; with the clock SPL set it is 100 MHz, not the SDK's fixed 50 MHz
+OSBI=$SDK/src/opensbi/opensbi/platform/kendryte/fpgac908/platform.c
+grep -q 'LEAKCAM: UART clock' "$OSBI" || python3 - "$OSBI" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = '#define UART_CLK                    50000000\n'
+b = '#define UART_CLK                    100000000   /* LEAKCAM: UART clock 1/1, set by SPL (ns16550 patch) */\n'
+assert s.count(a) == 1, 'OpenSBI platform.c changed, cannot set the UART clock'
+open(p, 'w').write(s.replace(a, b))
+PY
+grep -q 'LEAKCAM: UART clock' "$OSBI" || { echo "OpenSBI UART clock patch not applied"; exit 1; }
 grep -q 'k230d_leakcam.dtb' "$UB/arch/riscv/dts/Makefile" ||
     sed -i 's|^dtb-$(CONFIG_TARGET_K230D_CANMV_BPI_ZERO) += k230d_canmv_bpi_zero.dtb$|&\ndtb-$(CONFIG_TARGET_K230D_CANMV_BPI_ZERO) += k230d_leakcam.dtb|' \
         "$UB/arch/riscv/dts/Makefile"

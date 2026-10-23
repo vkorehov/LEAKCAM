@@ -66,7 +66,7 @@ written when it happens). Nothing is left out: an empty part says so ("Not run y
 | [test036 K230 hang recovery](test036-k230-hang-recovery/README.md) | 2026-10-22 | pass: hang ends in 2.3 s, no-boot at the timeout; a restart is invisible to the heartbeat -> product session backstop 15 min + restart limit, boot timeout 90 -> 10 s |
 | [test037 K230 PMU RTC](test037-k230-rtc/README.md) | 2026-10-21 | step 0 pass: runs from Y1 (+25 ppm vs 27 MHz), UTC fixed; handover open |
 | [test038 battery brown-out below 3.10 V](test038-battery-brownout/README.md) | 2026-10-22 | lockout pass (only USB wakes it: no RTC, leak ignored); the K230 VBAT cut not run (no K230 console); below 3 V needs a lab supply |
-| [test039 K230 console over the BL616 link](test039-k230-console-over-link/README.md) | 2026-10-23 | pass stage A: kernel/msh/agent on /dev/ttyACM1, typing works, frames split; boot 0.484 -> 0.385 s; SPL/OpenSBI on UART1 open |
+| [test039 K230 console over the BL616 link](test039-k230-console-over-link/README.md) | 2026-10-23 | pass: SPL, OpenSBI, kernel, msh, agent on /dev/ttyACM1 (4 Mbaud from the first line, 0 garbage), typing works, frames split; boot to app init 0.484 -> 0.30 s |
 | **High level (100+): the product's whole flow** | | |
 | [test100 Wi-Fi throughput end to end](test100-wifi-throughput/README.md) | | planned |
 | [test101 session length](test101-boot-and-session-time/README.md) | | planned |
@@ -102,6 +102,7 @@ written when it happens). Nothing is left out: an empty part says so ("Not run y
 **Always:**
 - Build host = VMware VM on a Mac: every re-enumerated USB device needs "connect to Linux" on the Mac.
 - Serial ports: /etc/udev/rules.d/99-leakcam.rules opens them on every plug. Consoles: `/dev/ttyACM0` BL616 shell,
-  `/dev/ttyACM1` K230 console (over the link UART since 2026-10-22; the CH340X `/dev/ttyUSB0` only for SPL/OpenSBI).
+  `/dev/ttyACM1` K230 console (over the link UART since 2026-10-22, from the first SPL line; the CH340X `/dev/ttyUSB0`
+  only for the BootROM).
 - Host is arm64; vendor tools are x86-64/armhf: run them in the build container.
 - Audio played inside the VM stutters: judge recordings by their data or play them on the Mac.

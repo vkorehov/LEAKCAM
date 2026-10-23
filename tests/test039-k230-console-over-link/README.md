@@ -35,16 +35,25 @@ over the BL616's UART, as early as possible, one USB device; fewest clicks.
 | boot to app init | **0.385 s** (was 0.484 s, test022): the console now runs at 4 Mbaud instead of 115200, the boot no longer waits for its own log |
 | before the kernel | ~150 bytes of garbage on `/dev/ttyACM1` (the stages before RT-Smart's UART driver: other rate or pin toggling) |
 
-Stage B (open): SPL and OpenSBI on UART1 at 4 Mbaud. SPL's UART clock is 50 MHz with an integer divider (U-Boot
-ns16550): 4 Mbaud needs the 100 MHz clock (divider 1:1) and the DesignWare fractional divider (DLF), as RT-Smart's
-drv_uart does - a U-Boot patch via install.sh. Then the K230 log is complete from the first SPL line; only the
-BootROM stays on UART0 (mask ROM, prints only on errors / USB boot).
+### 2026-10-23, stage B: SPL and OpenSBI on UART1 at 4 Mbaud
+
+SPL and OpenSBI clock the UART at 50 MHz with an integer divider: 3.125 Mbaud at most, and OpenSBI sent garbage at
+4 Mbaud (divider 0 -> 1). Patched (install.sh, ~20 lines; user: "patch"): U-Boot ns16550 probe sets UART1's clock
+divider 1/2 -> 1/1 (100 MHz, sysctl 0x9110002c bits 5:3, bit 31 write enable), setbrg writes the DesignWare
+fractional divisor (DLF at 0xC0: 4 Mbaud = 1 + 9/16, as RT-Smart's drv_uart); OpenSBI's UART_CLK 50 -> 100 MHz (its
+8250 driver already writes DLF); board dts `uart1` alias, `stdout-path = "uart1:4000000n8"`, serial1 on def_100mhz;
+U-Boot `CONFIG_BAUDRATE=4000000` (U-Boot ignores the rate in stdout-path).
+
+| Check | Result |
+|---|---|
+| `/dev/ttyACM1` from power-on | `U-Boot SPL 2022.10...`, the DDR training lines, `OpenSBI v0.9`, RT-Smart: **0 non-printable bytes** |
+| boot, 3 cold boots | kernel init start **0.100-0.104 s** (was 0.197), app init **0.296-0.301 s** (was 0.385; 0.484 before the link console) |
 
 ## Metrics
 
 | Metric | Value | Note |
 |---|---|---|
-| Boot, power-on -> app init | 0.385 s | console at 4 Mbaud; was 0.484 s |
+| Boot, power-on -> app init | 0.296-0.301 s (3 cold boots) | console at 4 Mbaud from SPL; was 0.484 s |
 | Console path | UART1 4 Mbaud -> BL616 -> USB CDC | same wire as the link |
 | Clicks per K230 power cycle | 0 (was 1 for the CH340) | the BL616 port stays |
 | Image | kdimg 45.4 MB; BL616 test firmware ~153 KB | |
