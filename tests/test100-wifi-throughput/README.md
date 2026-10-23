@@ -1,6 +1,6 @@
 # test100: Wi-Fi throughput, K230 -> SDIO -> BL616 -> AP
 
-Status: **step 1 in progress** (2026-10-23): `pt_wifi` scan passes (radio up 635 ms, 11 APs in 2.9 s, own AP -29 dBm); join + DHCP next.
+Status: **step 1 in progress** (2026-10-23): `pt_wifi` scan and join pass: (radio up 635 ms, 11 APs in 2.9 s, own AP -29 dBm); join + DHCP pass (3.82 s to an address); TCP next.
 
 The product path for clips and checks: the K230's lwIP over the NetHub SDIO bridge (test015: bus 21 MB/s, not the
 limit) to the BL616's 2.4 GHz radio. Needs the product BL616 firmware (open on rev 1) and stored credentials
@@ -52,7 +52,19 @@ TCP up >= 2 x the two streams' rate with margin at the install distance; no RTMP
 | Country code | SDK default **CN** (channels 1-13, the same set as the EU here); the product sets its own |
 | STA MAC | 7c:3e:82:62:b1:49 |
 
-Next: step 1b, join + DHCP.
+### Step 1b, join + DHCP (21:35, the user's AP "Vlad", credentials from `~/.leakcam_wifi`, never in the repo)
+
+`. ~/.leakcam_wifi; pt_wifi join "$ssid" "$psk"` (console capture filtered for the key):
+
+| What | Result |
+|---|---|
+| Association + WPA2 handshake | **3168 ms** (status ok, reason 0) |
+| DHCP | **651 ms** |
+| Join request -> address | **3.82 s** |
+| RSSI / channel | -31 dBm (status: -30), ch 6 |
+| Address | 10.63.220.152/24, gateway and DNS 10.63.220.238 |
+
+Next: step 1c, DNS + TCP to the internet (the product's credential check) and to the LAN PC.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
