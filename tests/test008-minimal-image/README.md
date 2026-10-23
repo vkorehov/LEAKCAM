@@ -103,6 +103,22 @@ build is shown to compute the same. Host (x86, -O2): reduce 2.3 ms, compare 0.38
 A test image with all six variants (`LEAKCAM_BENCH=1` per variant, `LEAKCAM_BENCH_DIR` copies them in) and test025's
 memtest is built (kdimg 17:47); not flashed yet: the K230 USB boot device needs a VMware click (see Obstacles).
 
+### Flags B on the board, 2026-10-23 21:05 (leakcam_cpubench, 20 runs, median ms; check line identical in all six)
+
+| build | reduce x2 | compare | compress key | crc32 | sum |
+|---|---|---|---|---|---|
+| -Os (current) | 21.07 | 7.57 | 279.73 | 36.17 | 344.5 |
+| -Os LTO | 19.35 | 7.47 | 281.15 | 35.41 | 343.4 |
+| -O2 | 32.74 | 4.95 | 272.37 | 35.59 | 345.7 |
+| -O2 LTO | 29.26 | 5.20 | 273.64 | 33.91 | 342.0 |
+| -O3 | 19.49 | 4.67 | 272.39 | 28.49 | 325.0 |
+| **-O3 LTO** | **6.26** | 4.79 | 275.03 | 28.49 | **314.6** |
+
+-O3 LTO is the fastest (-9 % on the sum, reduce 3.4x faster: vectorised with `-march=rv64imafdcv`), +11.7 KB on
+leakcam_wake, +127 KB on leakcam_stream. Rule (speed first): **adopt -O3 -flto** for the programs; the compress
+step (miniz level 3 on a 1.2 MB frame, 275 ms) dominates and is the next lever. Not adopted yet: the product
+programs are rebuilt with the firmware rewrite.
+
 ### Flags A, 2026-10-22: kernel -O2 (instead of the SDK's -O1) - not adopted, back to -O1 (user: safe side)
 
 rtthread.bin at -O2: 3 724 328 B (+12.4 KB). On the board:

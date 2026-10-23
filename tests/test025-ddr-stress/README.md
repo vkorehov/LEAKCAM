@@ -54,6 +54,10 @@ kernel init 0.207 s, mounts done 0.870 s, app init 0.893-0.894 s. (The CH340 con
 
 **Pass** for the cold starts; with run 1, 61 passes x 109 MB x 5 patterns, 0 errors, no reset.
 
+**Run 2 (2026-10-23 21:05:37-21:08:41, stopped by the user for the Wi-Fi work after 3 min; planned 1 h):** `memtest 0`
+in the background, 30 passes, **0 errors**; die 43.4 -> 48.2 C, board (AHT20) 31.9 -> 35.9 C in 3 min, still rising.
+The >= 1 h run stays open. Image: the test008 bench image (kdimg 17:47, memtest + six cpubench variants).
+
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).

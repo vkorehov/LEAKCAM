@@ -39,6 +39,12 @@ until the session ends. Firmware handling (rev 1): `k230_off()` waits up to 300 
 (the source's VBUS turn-on), and `sleep_for()` enters USB mode when USB is present instead of arming a plug edge
 that has already passed (main.c). The hardware fix stays the rev 2 solution above.
 
+## Seen again without the CH340 (2026-10-23, the U2 path gone)
+
+USB-C 1 plugged in while the K230 sat in its USB boot ROM (BOOT1 high, rails on): 0 mA, no VMware offer; `pt_off`:
+PGOOD low at once. With the K230 booted from NAND a mid-session plug works (16:27, its USB idle). So the D5 path
+predicted above is real: the ROM's USB device pulls D+ up, D5 lifts VUSB. Plug USB-C 1 before `pt_on` for USB boot.
+
 ## Solution (rev 2)
 
 - Power U2 (CH340X) from **USBC2's own VBUS** (after D2), not from 3V3: the debug chip then only lives while a debug
