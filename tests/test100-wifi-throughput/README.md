@@ -1,6 +1,6 @@
 # test100: Wi-Fi throughput, K230 -> SDIO -> BL616 -> AP
 
-Status: **step 1 in progress** (2026-10-23): `pt_wifi` scan and join pass: (radio up 635 ms, 11 APs in 2.9 s, own AP -29 dBm); join + DHCP pass (3.82 s to an address); TCP next.
+Status: **step 1 in progress** (2026-10-23): `pt_wifi` scan and join pass: (radio up 635 ms, 11 APs in 2.9 s, own AP -29 dBm); join + DHCP pass (3.82 s to an address), internet check 70-158 ms, joined 80 mA: **step 1 pass**; step 2 (NetHub over SDIO) next.
 
 The product path for clips and checks: the K230's lwIP over the NetHub SDIO bridge (test015: bus 21 MB/s, not the
 limit) to the BL616's 2.4 GHz radio. Needs the product BL616 firmware (open on rev 1) and stored credentials
@@ -64,7 +64,28 @@ TCP up >= 2 x the two streams' rate with margin at the install distance; no RTMP
 | RSSI / channel | -31 dBm (status: -30), ch 6 |
 | Address | 10.63.220.152/24, gateway and DNS 10.63.220.238 |
 
-Next: step 1c, DNS + TCP to the internet (the product's credential check) and to the LAN PC.
+### Step 1c, internet check (21:52, `pt_wifi net`: the product's wifi_check.c probe)
+
+10 of 10: DNS connectivitycheck.gstatic.com 47 ms (first; cached after), TCP connect **33-64 ms**, `HTTP/1.1 204 No
+Content` 34-73 ms later; DNS to answer **70-158 ms**. Pass.
+
+### Step 1 current (USB-C 1 VBUS meter, K230 rails off: the BL616 alone; board on USB, cell charged)
+
+| State | Current | Over the previous |
+|---|---|---|
+| BL616 ROM idle (after `isp`) | 52 mA | - |
+| BL616 app awake, radio off | 62 mA | - |
+| Radio up (RF, Wi-Fi task, manager), not joined | 64 mA | +2 mA |
+| Scanning continuously (6 scans, 20 s) | 85-88 mA | +24 mA (receiver on) |
+| Join (association + WPA + DHCP), peak | 88 mA | |
+| Joined, idle | **80 mA** | +18 over radio up: no Wi-Fi power save (receiver on between beacons) |
+| Internet checks in a loop | 80 mA average | TX bursts too short for the meter |
+
+The awake BL616's 62 mA is most of it (on USB the charger's own draw is in it too; the battery figures come from the
+product's sleep/wake path, test031/ENERGY.txt). For a battery session: join ~4 s at ~88 mA ~ 0.1 mAh. Power save
+(DTIM sleep) when joined is a lever for long sessions: step 4 measures it with traffic.
+
+**Step 1 pass** (scan, join + DHCP 3.8-4.0 s, internet 70-158 ms). Next: step 2, the NetHub bridge over SDIO.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 

@@ -1,6 +1,8 @@
 #include "wdg_guard.h"
 
+#include "bflb_mtimer.h"
 #include "bflb_wdg.h"
+#include <stdio.h>
 #include "bl616_glb.h"
 #include "bl616_hbn.h"
 #include "FreeRTOS.h"
@@ -37,18 +39,26 @@ bool wdg_guard_start(void)
 
 #ifdef CONFIG_SHELL
 #include "shell.h"
+#include "usbd_core.h"
 
 extern int bl_sys_reset_por(void);
 
 /* ISP entry for tools/power-bringup/bl616_isp.py: the SDK's `reboot uart` sets the ROM's user-boot field and resets
  * with bl_sys_reset_por(), which leaves this watchdog running: it reset the ROM every 8 s, before the ROM had
  * enumerated on USB, and the field (kept across resets) sent every reset back into the ROM - no USB device until a
- * 3V3 cut (2026-10-23, tests/test100 Obstacles). Stop the watchdog first, then the same as `reboot uart`. */
+ * 3V3 cut (2026-10-23, tests/test100 Obstacles). Stop the watchdog first, then the same as `reboot uart`.
+ * And detach from USB first: 2 of 7 ROM entries that day never reached the host, with the watchdog off too. The app
+ * vanished and the ROM attached a few ms later, inside the host's ~100 ms connect debounce; a clean unplug (D+ off,
+ * PHY down: usbd_deinitialize) and 500 ms before the reset make the ROM a new attach. */
 static void cmd_isp(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
     bflb_wdg_stop(wdg);
+    printf("isp: USB detach, the ROM in 0.5 s\r\n");
+    bflb_mtimer_delay_ms(20);
+    usbd_deinitialize(0);                   /* the console's bus (usb_console2.c USB_CONSOLE_BUS_ID) */
+    bflb_mtimer_delay_ms(500);
     HBN_Set_User_Boot_Config(1);
     bl_sys_reset_por();
 }

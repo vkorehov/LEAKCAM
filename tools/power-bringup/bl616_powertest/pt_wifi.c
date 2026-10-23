@@ -5,6 +5,7 @@
  *   pt_wifi join <ssid> [psk]     associate + WPA, then DHCP on the BL616's own lwIP; each step timed
  *   pt_wifi status                joined?, RSSI, channel, IP / gateway / DNS
  *   pt_wifi leave                 DHCP lease released, disconnected
+ *   pt_wifi net [host]            DNS, TCP connect, GET /generate_204 (the product's internet check), each timed
  *
  * The bring-up order is the product's (firmware/bl616/main.c radio_init(), wifi_link.c start_lwip/start_wifi): RF
  * parameters, lwIP, the Wi-Fi task + fhost; the manager answers once CODE_WIFI_ON_MGMR_DONE came. The join and the
@@ -24,6 +25,8 @@
 
 #include <lwip/tcpip.h>
 #include <lwip/ip4_addr.h>
+#include <lwip/netdb.h>
+#include <lwip/sockets.h>
 
 #include "async_event.h"
 #include "bflb_mtimer.h"
@@ -48,6 +51,8 @@
 #define JOIN_MS  25000
 #define DHCP_MS  20000
 #define LEAVE_MS 3000
+#define TCP_MS   10000
+#define NET_HOST "connectivitycheck.gstatic.com"   /* wifi_check.h WCHK_PROBE_HOST */
 
 static EventGroupHandle_t evg;
 static bool up;
@@ -229,11 +234,57 @@ static void do_leave(void)
         printf("pt_wifi leave: no disconnect event in %u ms\r\n", LEAVE_MS);
 }
 
+/* step 1c: the product's internet check (wifi_check.c internet()), each part timed */
+static void do_net(const char *host)
+{
+    struct addrinfo hints, *ai = NULL;
+    char req[160], buf[64];
+    int n = 0, k;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    uint64_t t0 = bflb_mtimer_get_time_ms();
+    if (lwip_getaddrinfo(host, "80", &hints, &ai) != 0 || ai == NULL) {
+        printf("pt_wifi net: DNS for %s failed after %lu ms\r\n", host, (unsigned long)(bflb_mtimer_get_time_ms() - t0));
+        return;
+    }
+    uint64_t t1 = bflb_mtimer_get_time_ms();
+    printf("pt_wifi net: DNS %s -> %s in %lu ms\r\n", host,
+           ip4addr_ntoa((const ip4_addr_t *)&((struct sockaddr_in *)ai->ai_addr)->sin_addr), (unsigned long)(t1 - t0));
+    int fd = lwip_socket(AF_INET, SOCK_STREAM, 0);
+    struct timeval tv = { TCP_MS / 1000, 0 };
+    lwip_setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+    lwip_setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+    int c = lwip_connect(fd, ai->ai_addr, ai->ai_addrlen);
+    lwip_freeaddrinfo(ai);
+    uint64_t t2 = bflb_mtimer_get_time_ms();
+    if (c != 0) {
+        printf("pt_wifi net: TCP connect failed after %lu ms\r\n", (unsigned long)(t2 - t1));
+        lwip_close(fd);
+        return;
+    }
+    printf("pt_wifi net: TCP connect in %lu ms\r\n", (unsigned long)(t2 - t1));
+    snprintf(req, sizeof(req), "GET /generate_204 HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", host);
+    lwip_send(fd, req, strlen(req), 0);
+    while (n < 12 && (k = lwip_recv(fd, buf + n, sizeof(buf) - 1 - (size_t)n, 0)) > 0)
+        n += k;
+    lwip_close(fd);
+    uint64_t t3 = bflb_mtimer_get_time_ms();
+    buf[n] = 0;
+    char *eol = strchr(buf, '\r');
+    if (eol)
+        *eol = 0;
+    printf("pt_wifi net: answer \"%s\" in %lu ms; DNS to answer %lu ms\r\n", n ? buf : "(none)",
+           (unsigned long)(t3 - t2), (unsigned long)(t3 - t0));
+}
+
 static int cmd_wifi(int argc, char **argv)
 {
     const char *op = argc > 1 ? argv[1] : "";
 
-    if (!strcmp(op, "scan") || !strcmp(op, "join") || !strcmp(op, "status") || !strcmp(op, "leave")) {
+    if (!strcmp(op, "scan") || !strcmp(op, "join") || !strcmp(op, "status") || !strcmp(op, "leave") ||
+        !strcmp(op, "net")) {
         if (!bring_up())
             return -1;
     }
@@ -245,9 +296,11 @@ static int cmd_wifi(int argc, char **argv)
         do_status();
     else if (!strcmp(op, "leave"))
         do_leave();
+    else if (!strcmp(op, "net"))
+        do_net(argc > 2 ? argv[2] : NET_HOST);
     else
-        printf("usage: pt_wifi scan | join <ssid> [psk] | status | leave\r\n");
+        printf("usage: pt_wifi scan | join <ssid> [psk] | status | leave | net [host]\r\n");
     return 0;
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_wifi, pt_wifi, test100 Wi-Fi on the BL616 alone: scan | join ssid psk | status | leave);
+SHELL_CMD_EXPORT_ALIAS(cmd_wifi, pt_wifi, test100 Wi-Fi on the BL616 alone: scan | join ssid psk | status | leave | net host);
 #endif
