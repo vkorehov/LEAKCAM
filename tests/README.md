@@ -55,13 +55,13 @@ written when it happens). Nothing is left out: an empty part says so ("Not run y
 | [test025 DDR stress](test025-ddr-stress/README.md) | 2026-10-21 | 0 errors: 109 of 128 MB, 61 passes (5 min + 5 cold starts); 1 h and loaded runs open |
 | [test026 K230 temperature](test026-temperature/README.md) | 2026-10-21 | open board: die 48.5 C idle (board 39 C), 53.3 C after 2 min memtest; KPU/encoder/enclosure open |
 | [test027 H.265 encoder, synthetic frames](test027-video-encoder/README.md) | 2026-10-21 | pass: 2 x 15 fps at 510 kbit/s, +15 mA; top 83 fps at 1280x960; decode on PC open |
-| [test028 NAND power loss](test028-nand-power-loss/README.md) | 2026-10-23 | **pass**: 100 random cuts, 0 lost/corrupt files, every mount clean |
+| [test028 NAND power loss](test028-nand-power-loss/README.md) | 2026-10-23 | **pass**: 500 random cuts (100 + 400), 0 lost/corrupt files; 4 check results unparsed (no loss, cause open) |
 | [test029 camera buses idle](test029-camera-bus-idle/README.md) | 2026-10-21 | pass: I2C buses scan clean and idle high, CAM GPIOs low |
 | [test030 cameras: detection, capture, image](test030-camera-capture/README.md) | | skipped: cameras not delivered (user, 2026-10-22: skip camera tests) |
 | [test031 sleep and minimal currents](test031-sleep-current/README.md) | 2026-10-22 | RTC wake fixed (HBN pin pulls off + wait for Y3), 5/5 wakes; 1.23 mA asleep through USB; battery figure open |
 | [test032 RTC wake](test032-rtc-wake/README.md) | 2026-10-22 | wake works on Y3 (5/5); Y3 -110 ppm open |
 | [test033 every BL616 pin: function, levels, back-feed](test033-bl616-pins/README.md) | 2026-10-22 | pass: all pins as the table in 5 states (pt_pins + pin_check.py); product BOOT1 (IO27) fix; back-feed none |
-| [test034 leak probe wake](test034-leak-probe-wake/README.md) | 2026-10-22 | pass with opens: product threshold fixed (was 1.65 V = dry, now 0.85 V); S1-S3 detected; HBN wake wet and dry works; water types, sweep, 12 h dry open |
+| [test034 leak probe wake](test034-leak-probe-wake/README.md) | 2026-10-22 | pass with opens: product threshold fixed (was 1.65 V = dry, now 0.85 V); S1-S3 detected; HBN wake wet and dry works; water types, sweep, 8 h dry open |
 | [test035 USB plug wake](test035-usb-plug-wake/README.md) | 2026-10-22 | pass: plug/unplug seen, HBN wake both edges, 19 cycles; in-session plug gets no power from a USB-C host (bug-002), product now waits for it and enters USB mode |
 | [test036 K230 hang recovery](test036-k230-hang-recovery/README.md) | 2026-10-22 | pass: hang ends in 2.3 s, no-boot at the timeout; a restart is invisible to the heartbeat -> product session backstop 15 min + restart limit, boot timeout 90 -> 10 s |
 | [test037 K230 PMU RTC](test037-k230-rtc/README.md) | 2026-10-21 | step 0 pass: runs from Y1 (+25 ppm vs 27 MHz), UTC fixed; handover open |

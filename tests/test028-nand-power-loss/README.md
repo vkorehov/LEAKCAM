@@ -1,6 +1,6 @@
 # test028: NAND / UFFS power-loss robustness
 
-Status: **pass** (2026-10-23): 100 random power cuts during writes, 0 lost or corrupt, every mount clean; app init after a cut 0.478 s (short run 2026-10-21: 13 cuts).
+Status: **pass** (2026-10-23): 500 random power cuts during writes (100 + 400), 0 lost or corrupt; 4 check results unparsed (cause open, no loss); app init after a cut 0.478 s (short run 2026-10-21: 13 cuts).
 
 The product writes clips, logs and references to /sdcard (UFFS on NAND) while the battery can run out or the BL616
 can cut the rails. UFFS is log-structured; this proves it on rev 1.
@@ -54,6 +54,15 @@ Board on USB-C 1 (Mac), K230 console on `/dev/ttyACM1` (no clicks), CH340 off th
 | Free space | 16.5-18.7 MB of 32 MB, no downward trend |
 | Boot after an unclean cut | env init 0.459-0.477 s (median 0.469), app init **0.468-0.486 s** (median 0.478) |
 | Cycle | ~20 s; one 9 min gap after cycle 50 = the Linux VM paused (no log 16:55-17:04, "Clock change detected"), not the board |
+
+### 400-cut run, 2026-10-23 17:50-20:15 (run3_2026-10-23.csv, unattended)
+
+400 cuts, **0 bad**, 16 040 commits before cuts, every one found (last record 19 917); free 16.5-18.6 MB, no trend;
+app init after a cut 0.468-0.487 s (median 0.477, 399 boots: DDR retrained each time, no boot failure). **4 cycles
+(66, 106, 142, 174) "mount/check failed"**: `plt_check`'s result line was not parsed in 30 s (those cycles took ~40-50 s
+against ~25 s); no data lost: the next check counts exactly the commits of both cycles (e.g. 6317 + 63 + 1 = 6381).
+Cause open (a slow check? text lost on the console?): the loop now keeps the raw text of a failed check
+(`<csv>.fail.txt`).
 
 Pass. The app init after a cut (0.478 s) is this image (it mounts the 32 MiB `/sdcard`): it was 0.660 s on a clean
 boot with the 115200 console (test022); the 0.30 s of test039 is the minimal image without that mount.

@@ -42,6 +42,9 @@ for i in range(1, N + 1):
     ck = cmd(fd, "plt_check", 30, r"plt_check: last[^\n]*\n")
     m = re.search(r"last (-?\d+), (\d+) checked, (\d+) bad, free (\d+) KB", ck)
     bads = re.findall(r"seq \d+ BAD \(-?\d+\)", ck)
+    if not m:   # 2026-10-23: 4 of 400 checks unparsed, the raw text was not kept: keep it now
+        with open(LOG + ".fail.txt", "a") as f:
+            f.write(f"--- cycle {i} {time.strftime('%H:%M:%S')}\n{bt}\n{ck}\n")
     cut = random.uniform(2, 20)
     os.write(fd, b"plt_write\r\n"); out = b""; t0 = time.time()
     while time.time() - t0 < cut:
