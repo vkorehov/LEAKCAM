@@ -21,6 +21,12 @@ target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/a
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/wdg_guard.c)
 sdk_add_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616)
 
+# pt_wifi (test100): the product's Wi-Fi library build options (firmware/bl616/CMakeLists.txt, from the SDK's NetHub example)
+target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/pt_wifi.c)
+sdk_add_compile_definitions(-DCONFIG_RWNX_LWIP)
+sdk_add_compile_definitions(-DBL_RA_EN=1)
+sdk_add_compile_definitions(-DWPA_SUPPLICANT_CLEANUP_INTERVAL=1800)
+
 # pt_sdu: four SDIO ports, as the K230 driver and the SDK's sdio2_test use
 sdk_add_compile_definitions(-D SDIO2_MAX_PORT_NUM=4)
 

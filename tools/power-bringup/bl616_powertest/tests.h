@@ -15,6 +15,7 @@
 #define PT_TEST_SLEEP  1   /* pt_sleep: K230 off, HBN level 0, RTC wake after <s> (test031 sleep current) */
 #define PT_TEST_PINS   1   /* pt_pins: every GPIO's live configuration from the GLB registers (test033)      */
 #define PT_TEST_TIMING 1   /* pt_time: test021 timings (wake -> main, rails, AHT20, ADC, easyflash key)   */
+#define PT_TEST_WIFI   1   /* pt_wifi: test100 step 1, the BL616 radio alone: scan, join + DHCP, status (pt_wifi.c) */
 
 #if PT_TEST_UART && !PT_TEST_POWER
 #error "PT_TEST_UART needs PT_TEST_POWER: the link pins may only be driven while the K230 3V3 is up"

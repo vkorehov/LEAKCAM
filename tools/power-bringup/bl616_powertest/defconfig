@@ -1,4 +1,4 @@
-# LEAKCAM BL616 power-up test: FreeRTOS + SDK shell on the USB CDC console (PR1). No Wi-Fi/BLE.
+# LEAKCAM BL616 power-up test: FreeRTOS + SDK shell on the USB CDC console (PR1). No BLE; Wi-Fi for pt_wifi (test100).
 # The USB console needs FreeRTOS, the shell and CherryUSB's CDC-ACM class; without any of them
 # Kconfig drops CONFIG_BSP_CONSOLE_USB_CDC silently and the console falls back to UART0 = the
 # K230 link pins (check build/generated/autoconfig.h).
@@ -16,3 +16,7 @@ CONFIG_LITTLEFS                 =y
 CONFIG_LITTLEFS_KV_EASYFLASH    =y
 CONFIG_BFLB_MTD                 =y
 CONFIG_PARTITION                =y
+
+# pt_wifi (test100 step 1): the SDK's Wi-Fi set (lwIP, RF, Wi-Fi 6 fhost), as the product; ping kept for the tests
+-include $(BL_SDK_BASE)/examples/wifi/defconfig
+CONFIG_IPV6 =n

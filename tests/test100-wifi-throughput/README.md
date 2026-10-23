@@ -1,6 +1,6 @@
 # test100: Wi-Fi throughput, K230 -> SDIO -> BL616 -> AP
 
-Status: **planned** (2026-10-21).
+Status: **step 1 written** (2026-10-23): `pt_wifi` in bl616_powertest (scan, join + DHCP, status, leave) builds (1.06 MB); not run yet: the PR1 USB cable broke during its flash.
 
 The product path for clips and checks: the K230's lwIP over the NetHub SDIO bridge (test015: bus 21 MB/s, not the
 limit) to the BL616's 2.4 GHz radio. Needs the product BL616 firmware (open on rev 1) and stored credentials
@@ -16,6 +16,18 @@ To fill: the kernel options / drivers, SDK components, libraries and programs th
 tests is what the minimal image keeps).
 
 ## Steps
+
+Built up one function at a time, each passed on the board before the next (user, 2026-10-23):
+
+- **Step 1, the BL616 radio alone** ([pt_wifi.c](../../tools/power-bringup/bl616_powertest/pt_wifi.c), `PT_TEST_WIFI`):
+  `pt_wifi scan` / `join <ssid> [psk]` / `status` / `leave`: the antenna and RF before SDIO; join and DHCP on the
+  BL616's own lwIP, each step timed (the product's wifi_check.c path, proven here first).
+- Step 2, the NetHub bridge over SDIO: the K230 scans through the BL616.
+- Step 3, the K230 joins and gets its address over the bridge; ping to the LAN PC.
+- Step 4, TCP throughput K230 <-> PC with RSSI, current, temperature.
+- Step 5, the real load (two RTMP streams), after the cameras.
+
+The full list:
 
 1. Join, DHCP, DNS, NTP (time to each step from the WIFI command).
 2. iperf (or a temporary TCP/UDP sender on the K230 and a receiver on the LAN PC): TCP up/down, UDP up with loss, at
@@ -61,4 +73,9 @@ Battery current: Wi-Fi join (energy per join, paid on every networked session), 
 
 ## Obstacles
 
-None yet.
+- **Test firmware too small for Wi-Fi** (2026-10-23): the link failed on `vTaskSetThreadLocalStoragePointerAndDelCallback`
+  (lwIP's FreeRTOS port) -> the product's FreeRTOS settings in the test firmware: 32 priorities, 100 KB heap, timer
+  stack 1024, thread-local storage. Image 158 KB -> 1.06 MB.
+- **The PR1 USB cable broke again during the first flash of step 1** (2026-10-23 21:2x): after `reboot uart` the ROM
+  never enumerated, no VMware offer, BOOT + EN by hand no help, board drawing 51 mA (alive). The user found the
+  cable broken. Resolder, then `make flash` (the new image is built).
