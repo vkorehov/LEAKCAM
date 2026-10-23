@@ -289,6 +289,49 @@ static void do_net(const char *host)
            (unsigned long)(t3 - t2), (unsigned long)(t3 - t0));
 }
 
+/* wifi_link.c's breadcrumbs (wl_trace) in HBN RAM: they survive the watchdog reset of a hang; pt_trace prints them.
+ * Own marks: 0x01 bridge start, 0x02 started, 0x03 bridge stopped (rails off). */
+#define TRACE_N     32
+#define TRACE_MAGIC 0x57544c31u            /* "WTL1" */
+static struct {
+    uint32_t magic, n;
+    struct {
+        uint32_t ms;
+        uint8_t code;
+    } e[TRACE_N];
+} trace __attribute__((section(".hbn_noinit")));
+
+void wl_trace(uint8_t code)
+{
+    if (trace.magic != TRACE_MAGIC) {
+        memset(&trace, 0, sizeof(trace));
+        trace.magic = TRACE_MAGIC;
+    }
+    trace.e[trace.n % TRACE_N].ms = (uint32_t)bflb_mtimer_get_time_ms();
+    trace.e[trace.n % TRACE_N].code = code;
+    trace.n++;
+}
+
+static int cmd_trace(int argc, char **argv)
+{
+    if (argc > 1 && !strcmp(argv[1], "clear")) {
+        trace.magic = 0;
+        printf("pt_trace: cleared\r\n");
+        return 0;
+    }
+    if (trace.magic != TRACE_MAGIC) {
+        printf("pt_trace: empty\r\n");
+        return 0;
+    }
+    uint32_t first = trace.n > TRACE_N ? trace.n - TRACE_N : 0;
+    printf("pt_trace: %lu marks, the last %lu (ms since that boot, code):\r\n", (unsigned long)trace.n,
+           (unsigned long)(trace.n - first));
+    for (uint32_t i = first; i < trace.n; i++)
+        printf("  %8lu ms  0x%02x\r\n", (unsigned long)trace.e[i % TRACE_N].ms, trace.e[i % TRACE_N].code);
+    return 0;
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_trace, pt_trace, wifi_link breadcrumbs kept across a reset [clear]);
+
 /* step 2: the K230 takes the radio over the NetHub SDIO bridge (wifi_link_start(); the K230's 3V3 must be up: the
  * SDIO pads' pull-ups sit on it). The K230 then binds the card when it boots (pt_run) and drives Wi-Fi itself. */
 static void do_bridge(void)
@@ -309,7 +352,10 @@ static void do_bridge(void)
         return;
     }
     uint64_t t0 = bflb_mtimer_get_time_ms();
+    trace.magic = 0;                        /* a fresh trace per bridge session */
+    wl_trace(0x01);
     int r = wifi_link_start();
+    wl_trace(0x02);
     bridged = r == 0;
     printf("pt_wifi bridge: wifi_link_start %d in %lu ms; now pt_run, then on the K230: wifi scan\r\n", r,
            (unsigned long)(bflb_mtimer_get_time_ms() - t0));
@@ -322,6 +368,7 @@ void pt_wifi_rails_off(void)
     wifi_link_stop();
     wifi_link_release(WIFI_OWNER_K230);
     bridged = false;
+    wl_trace(0x03);
 }
 
 static int cmd_wifi(int argc, char **argv)

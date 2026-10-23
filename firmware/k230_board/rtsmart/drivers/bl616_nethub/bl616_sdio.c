@@ -351,3 +351,17 @@ static int bl616_sdio_init(void)
     return err == -RT_EEMPTY ? RT_EOK : err;
 }
 INIT_COMPONENT_EXPORT(bl616_sdio_init);
+
+#ifdef RT_WLAN_MSH_CMD_ENABLE
+/* tests/test100: the agent's rescan by hand, for driving Wi-Fi from the shell (BL616 test firmware: pt_wifi bridge
+ * first); only with the test's wifi commands (k230d_leakcam_defconfig) */
+static int bl616_rescan(void)
+{
+    rt_tick_t t0 = rt_tick_get();
+    rt_err_t err = rescan_control(&rescan_dev, BL616_IOCTL_RESCAN, RT_NULL);
+    rt_kprintf("bl616_rescan: %s in %u ms\n", err == RT_EOK ? "card bound" : "no card (pt_wifi bridge on the BL616?)",
+               (unsigned)((rt_tick_get() - t0) * 1000 / RT_TICK_PER_SECOND));
+    return err == RT_EOK ? 0 : -1;
+}
+MSH_CMD_EXPORT(bl616_rescan, test100: bind the BL616 SDIO card as the agent does);
+#endif

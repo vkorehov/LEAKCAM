@@ -19,6 +19,7 @@
 #include <string.h>
 
 #include <FreeRTOS.h>
+#include <queue.h>
 #include <task.h>
 
 #include <lwip/pbuf.h>
@@ -62,6 +63,15 @@ static void (*volatile local_ev)(int code);
 static volatile bool mgmr_ready;
 static bool rejoin;                         /* a check dropped the bridge's association */
 
+/* Breadcrumbs for a hang (tests/test100 step 2, 2026-10-23: the BL616 stopped dead after the control channel opened
+ * and the watchdog reset it): empty here, the test firmware keeps the last marks in HBN RAM across the reset.
+ * Codes: 0x1n ctrl_rx of WCP type n, 0x1f its end; 0x20/0x21 send_status in/out; 0x30/0x31 scan_done in/out, 0x32
+ * per item; 0x4n Wi-Fi event n (low bits); 0x5n set_state n. */
+__attribute__((weak)) void wl_trace(uint8_t code)
+{
+    (void)code;
+}
+
 /* ------------------------------------------------------------------ K230 side */
 
 static void send_status(void)
@@ -70,6 +80,7 @@ static void send_status(void)
     wifi_mgmr_connect_ind_stat_info_t info;
     int rssi = 0;
 
+    wl_trace(0x20);
     memset(&s, 0, sizeof(s));
     s.type = WCP_STATUS;
     s.state = state;
@@ -86,12 +97,14 @@ static void send_status(void)
     }
     if (nethub_vchan_user_send(&s, sizeof(s)) != 0)
         LOG_W("status not sent\r\n");
+    wl_trace(0x21);
 }
 
 static void set_state(uint8_t s)
 {
     if (s == state)
         return;
+    wl_trace(0x50 | (s & 0x0f));
     state = s;
     /* before the K230 asks, nobody is listening: a message queued now would reach the next
      * host session as stale data, and the first WCP_GET_STATUS gets the current state anyway */
@@ -152,6 +165,7 @@ static void scan_item(void *env, void *arg, wifi_mgmr_scan_item_t *item)
     uint8_t *count = arg;
 
     (void)env;
+    wl_trace(0x32);
     memset(&m, 0, sizeof(m));
     m.type = WCP_SCAN_ITEM;
     m.channel = item->channel;
@@ -168,29 +182,61 @@ static void scan_done(void)
 {
     struct wcp_scan_done d = { WCP_SCAN_DONE, 0 };
 
+    wl_trace(0x30);
     scan_pending = false;
     wifi_mgmr_scan_ap_all(NULL, &d.count, scan_item);
     nethub_vchan_user_send(&d, sizeof(d));
+    wl_trace(0x31);
+}
+
+/*
+ * The Wi-Fi manager calls wifi_event() in a context where blocking calls never return (tests/test100 step 2,
+ * 2026-10-23: the first nethub_vchan_user_send() of a scan result hung the BL616 until the watchdog; the same send
+ * from the NetHub task works). So wifi_event() only does what cannot block (flags, the credential check's event
+ * bits, the manager start) and queues the code; the bridge's handling, which sends to the K230, runs in wl_ev_task.
+ */
+#define WL_EV_DEPTH 8
+
+static QueueHandle_t wl_ev_q;
+
+static void bridge_event(int code);
+
+static void wl_ev_task(void *arg)
+{
+    int code;
+
+    (void)arg;
+    while (1) {
+        if (xQueueReceive(wl_ev_q, &code, portMAX_DELAY) == pdTRUE)
+            bridge_event(code);
+    }
 }
 
 static void wifi_event(async_input_event_t ev, void *priv)
 {
     void (*check)(int) = local_ev;
+    int code = (int)ev->code;
 
     (void)priv;
-    if (ev->code == CODE_WIFI_ON_MGMR_DONE)
+    wl_trace(0x40 | (code & 0x0f));
+    if (code == CODE_WIFI_ON_MGMR_DONE)
         mgmr_ready = true;
-    if (check) {
-        /* the credential check owns the radio: its events, not the bridge's */
-        if (ev->code == CODE_WIFI_ON_INIT_DONE)
-            wifi_mgmr_task_start();
-        check((int)ev->code);
+    if (code == CODE_WIFI_ON_INIT_DONE) {
+        wifi_mgmr_task_start();
         return;
     }
-    switch (ev->code) {
-        case CODE_WIFI_ON_INIT_DONE:
-            wifi_mgmr_task_start();
-            break;
+    if (check) {
+        /* the credential check owns the radio: its events, not the bridge's */
+        check(code);
+        return;
+    }
+    if (xQueueSend(wl_ev_q, &code, 0) != pdTRUE)
+        wl_trace(0x3f);                     /* lost: the queue was full */
+}
+
+static void bridge_event(int code)
+{
+    switch (code) {
         case CODE_WIFI_ON_MGMR_DONE:
             join_stored();
             break;
@@ -228,6 +274,7 @@ static int ctrl_rx(void *arg, uint8_t *data, uint16_t len)
     (void)arg;
     if (len < 1)
         return 0;
+    wl_trace(0x10 | (data[0] & 0x0f));
     host_seen = true;
     switch (data[0]) {
         case WCP_GET_STATUS:
@@ -256,6 +303,7 @@ static int ctrl_rx(void *arg, uint8_t *data, uint16_t len)
         default:
             break;
     }
+    wl_trace(0x1f);
     return 0;
 }
 
@@ -320,6 +368,8 @@ void wifi_link_release(enum wifi_owner who)
  * Wi-Fi on USB power, as in examples/wifi/coex/wifi_ble */
 static void start_wifi(void)
 {
+    wl_ev_q = xQueueCreate(WL_EV_DEPTH, sizeof(int));
+    xTaskCreate(wl_ev_task, "wl_ev", 1024, NULL, 10, NULL);   /* below the Wi-Fi tasks, above the app */
     async_register_event_filter(EV_WIFI, wifi_event, NULL);
     wifi_task_create();
     vTaskDelay(pdMS_TO_TICKS(500));

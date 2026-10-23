@@ -1,6 +1,6 @@
 # test100: Wi-Fi throughput, K230 -> SDIO -> BL616 -> AP
 
-Status: **step 1 in progress** (2026-10-23): `pt_wifi` scan and join pass: (radio up 635 ms, 11 APs in 2.9 s, own AP -29 dBm); join + DHCP pass (3.82 s to an address), internet check 70-158 ms, joined 80 mA: **step 1 pass**; step 2 (NetHub over SDIO) next.
+Status: **step 1 in progress** (2026-10-23): `pt_wifi` scan and join pass: (radio up 635 ms, 11 APs in 2.9 s, own AP -29 dBm); step 1 pass (BL616 alone: join 3.8 s, internet 70-158 ms, joined 80 mA); steps 2+3 pass (K230 over the NetHub bridge: scan 4 s, join, DHCP, ping 8.8.8.8); open: the join's 10 s scan wait, step 4 throughput.
 
 The product path for clips and checks: the K230's lwIP over the NetHub SDIO bridge (test015: bus 21 MB/s, not the
 limit) to the BL616's 2.4 GHz radio. Needs the product BL616 firmware (open on rev 1) and stored credentials
@@ -99,8 +99,23 @@ peak / 80 mA joined (user): the same as on the test-only path.
   device) still links beside it, never run together.
 - K230: the kernel's bl616_nethub driver (already in the image) + the `wifi` / `ifconfig` / `ping` shell commands
   switched on for this test (k230d_leakcam_defconfig; test008 had them off).
-- Order: USB-C 1 in, `pt_off`, `pt_on`, `pt_wifi bridge`, `pt_run`; on the K230 console `wifi scan`, then
+- Order: USB-C 1 in, `pt_off`, `pt_on`, `pt_wifi bridge`, `pt_run`; on the K230 console `bl616_rescan` (the agent's
+  rescan by hand: nothing probes MMC0 at boot), wait for `wlan0`, `wifi scan`, then
   `wifi join <ssid> <psk>` (from `~/.leakcam_wifi`), `ifconfig`, `ping`.
+
+### Steps 2 + 3, bridge, scan, join, ping (2026-10-23 22:25)
+
+| What | Result |
+|---|---|
+| `bl616_rescan` | card bound in 42 ms (SDIO 424c:0606); netdev started (credit 8), `wlan0` with the BL616's MAC 7c:3e:82:62:b1:49, control channel up (credit 3) |
+| K230 `wifi scan` over the bridge | **4.0 s**; "Vlad" -33 dBm ch 6 WPA2-AES (only that one listed, though the BL616 sent 6-8 items: open) |
+| K230 `wifi join` | joined, **14.0 s**: 10 s of it RT-Thread's WLAN manager waiting for a `scan_with_info` (scan for the SSID) our driver does not answer ("scan wait timeout!"), then the join; to fix in the driver (~4 s then) |
+| Address (the K230's own DHCP over the bridge) | 10.63.220.152/24, gw + DNS 10.63.220.238 (the same lease as the BL616's: same MAC) |
+| ping gateway / 8.8.8.8 | both answer over `wlan0` |
+| Current (USB-C 1 VBUS, user) | K230 running + bridge idle 211-221 mA, peaks 223 mA |
+
+**Pass** for the bridge path (scan, join, DHCP, internet from the K230). Open: the join's 10 s, the scan list, then step 4
+(throughput, needs a server the board can reach: this Linux VM is behind the Mac's NAT).
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
@@ -131,6 +146,15 @@ Time from the WIFI request to associated, DHCP and NTP (paid in every networked 
 Battery current: Wi-Fi join (energy per join, paid on every networked session), idle associated, sending; energy per MB uploaded.
 
 ## Obstacles
+
+- **The BL616 hung on the K230's first `wifi scan` and the watchdog reset it** (2026-10-23 22:10, three runs) ->
+  breadcrumbs in HBN RAM (`wl_trace` in wifi_link.c, `pt_trace`, kept across the reset): the scan finished, then the
+  first scan item's `nethub_vchan_user_send()` never returned. The same send from the NetHub task (status answers)
+  works; from the Wi-Fi manager's event callback it blocks for ever and the watchdog feeder (top priority) starves
+  too: the manager calls its callbacks with the scheduler suspended (xEventGroupSetBits still works there, which is
+  why step 1's local path was fine). Fix: wifi_event() only does what cannot block and queues the code; a task
+  (`wl_ev`, queue of 8) does the bridge's handling and its sends. Join events went the same way (set_state ->
+  send_status), so the join would have hung too. Product code fixed with it (wifi_link.c is the product's).
 
 - **Test firmware too small for Wi-Fi** (2026-10-23): the link failed on `vTaskSetThreadLocalStoragePointerAndDelCallback`
   (lwIP's FreeRTOS port) -> the product's FreeRTOS settings in the test firmware: 32 priorities, 100 KB heap, timer
