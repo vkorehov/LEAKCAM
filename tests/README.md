@@ -100,6 +100,7 @@ written when it happens). Nothing is left out: an empty part says so ("Not run y
 
 **Always:**
 - Build host = VMware VM on a Mac: every re-enumerated USB device needs "connect to Linux" on the Mac.
-- Serial ports: `sudo setfacl -m u:$USER:rw /dev/ttyACM0 /dev/ttyUSB0` after each re-enumeration.
+- Serial ports: /etc/udev/rules.d/99-leakcam.rules opens them on every plug. Consoles: `/dev/ttyACM0` BL616 shell,
+  `/dev/ttyACM1` K230 console (over the link UART since 2026-10-22; the CH340X `/dev/ttyUSB0` only for SPL/OpenSBI).
 - Host is arm64; vendor tools are x86-64/armhf: run them in the build container.
 - Audio played inside the VM stutters: judge recordings by their data or play them on the Mac.

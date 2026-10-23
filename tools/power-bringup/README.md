@@ -144,7 +144,7 @@ or `pt_run`. Each test can be left out: set it to 0 in
 ### K230 hello (no NAND needed)
 
 [k230_hello/](k230_hello): 0.8 KB of bare-metal RISC-V that the boot ROM loads into SRAM over USB-C 1 and runs:
-a status line per second on the debug UART (USB-C 2, `/dev/ttyUSB0`, 115200) and a heartbeat on K230_ALIVE.
+a status line per second on the K230 console (the BL616's `/dev/ttyACM1`; before 2026-10-22 USB-C 2 `/dev/ttyUSB0`) and a heartbeat on K230_ALIVE.
 For checking a board's K230 before the NAND holds anything.
 
 ```

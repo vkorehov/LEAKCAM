@@ -20,16 +20,13 @@ def cmd(fd, c, secs, until=None):
     return out.decode(errors="replace")
 def bl(c): 
     fd = openp("/dev/ttyACM0", False); r = cmd(fd, c, 1.5); os.close(fd); return r
+K230_CONSOLE = "/dev/ttyACM1"   # the BL616's second USB port (link_mux, 2026-10-22); was the CH340 /dev/ttyUSB0
 def k230_port(timeout=60):
+    # the port stays while the K230 is power-cycled (it is the BL616's): no waiting for a re-enumeration
     t0 = time.time()
     while time.time() - t0 < timeout:
-        if os.path.exists("/dev/ttyUSB0"):
-            if not os.access("/dev/ttyUSB0", os.W_OK):
-                subprocess.run(["sudo", "-n", "setfacl", "-m", f"u:{os.environ['USER']}:rw", "/dev/ttyUSB0"], stderr=subprocess.DEVNULL)
-            if os.access("/dev/ttyUSB0", os.W_OK):
-                try: return openp("/dev/ttyUSB0", True)
-                except OSError: pass
-        time.sleep(0.5)
+        try: return openp(K230_CONSOLE, False)
+        except OSError: time.sleep(0.5)
     return None
 new = not os.path.exists(LOG)
 log = open(LOG, "a")

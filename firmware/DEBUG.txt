@@ -3,7 +3,7 @@ LEAKCAM firmware debugging
 
 Four tools, from the one you always have to the one that needs wires:
 
-  1. consoles         BL616 on PR1 (USB CDC), K230 on USBC2 (CH340X)
+  1. consoles         both on PR1 (one USB device): /dev/ttyACM0 BL616, /dev/ttyACM1 K230 (over the link UART)
   2. retained log     the BL616's last 32 events, read with `evlog` on the BL616 console
   3. default build    first boot waits for your terminals, 30 min timeouts (not in LEAKCAM_RELEASE)
   4. JTAG             BL616 only, debug build, four wires soldered to the SDIO pull-ups
@@ -37,10 +37,11 @@ BL616: USB CDC on PR1 (bottom side, 6 pins)
   Session lines give the timing: "READY 23400 ms after power-on", "heartbeat stopped after
   96 s, next wake in 21600 s".
 
-K230: USB-C USBC2 -> CH340X (U2) -> K230 UART0 (DBG_TXD/DBG_RXD), 115200 8N1.
-  The CH340X is on the switched 3V3, so the port appears only while the BL616 has the K230
-  powered. RT-Smart's msh prompt and the agent's own output (leakcam_agent, leakcam_wake) are
-  here.
+K230: PR1's second port, /dev/ttyACM1 (since 2026-10-22). RT-Smart's console (kprintf, msh, the agent's and
+  leakcam_wake's output) shares UART1 with the link frames (the kernel's link_mux); the BL616 splits them
+  (k230_linesplit.h: valid frames to the link code, the rest to /dev/ttyACM1) and sends what is typed there to
+  the K230's msh. The port does not re-enumerate when the K230 is power-cycled. SPL and OpenSBI still print on
+  UART0 = USB-C USBC2 -> CH340X (U2), 115200 8N1, which exists only while the K230 has power.
 
 Flashing the BL616: hold BOOT (PR1.4 to 3V3_SLEEP), pulse EN (PR1.5 to GND), release BOOT; the
 BootROM then takes the image over the same USB lines (BUILD.md, section 4).
@@ -87,15 +88,14 @@ leaves it out:
   rm -rf firmware/bl616/build
   docker run ... -e LEAKCAM_RELEASE=1 ... make -j5
 
-Needs both USB cables: PR1 (BL616) and USBC2 (K230). On the first boot (power-on or EN reset,
-so right after flashing) the BL616 brings the K230's rails up but holds it in reset: that
-powers the CH340X, whose port can now be opened. Then:
+Needs PR1 (both consoles; USBC2 only for SPL/OpenSBI lines until they move to UART1). On the first boot
+(power-on or EN reset, so right after flashing) the BL616 brings the K230's rails up but holds it in reset. Then:
 
-  1. open the K230 terminal (USBC2), 2. open the BL616 terminal (PR1).
+  1. open the K230 terminal (/dev/ttyACM1), 2. open the BL616 terminal (/dev/ttyACM0).
 
 Opening the BL616 terminal (DTR) prints the build, the event log and a 3 s countdown, then the
-K230 leaves reset and its whole boot, bootloader first, is on the K230 terminal. The CH340X
-has no DTR wired, so the BL616 cannot see the K230 terminal: open that one first. With no
+K230 leaves reset and its boot is on the K230 terminal (from the kernel on; SPL/OpenSBI on USBC2 for now). The
+BL616 only looks at the DTR of its own port (0): open the K230 terminal first. With no
 terminal within 30 s it boots as usual (normal timeouts).
 
 A terminal opened then makes it a debug session until the next reset: READY may take 30 min

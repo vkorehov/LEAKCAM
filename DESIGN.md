@@ -53,7 +53,7 @@ These apply to every part of the project.
  |  - AHT20 humidity every 10 min |  GPIO2   |  2x OV5647 222 deg fisheye (CSI0, CSI2)        |
  |  - wall clock (HBN RTC, Y3)    |<---------|  2x TPS61161 LED drivers (PWM0 IR, PWM1 white) |
  |  - Wi-Fi radio (NetHub bridge) |  hb      |  MEMS mic (codec left input)                   |
- |  - BLE: Wi-Fi credentials only |          |  USB0 on USB-C 1 (flashing), UART0 on CH340X   |
+ |  - BLE: Wi-Fi credentials only |          |  USB0 on USB-C 1 (flashing), console via BL616 |
  +--------------------------------+          +------------------------------------------------+
             ^ BQ24072 charger, 1000 mAh LiPo, USB-C power
 ```
@@ -83,7 +83,7 @@ These apply to every part of the project.
 | IO voltage | Every K230 IO bank on 3V3; only the fixed IO0/IO1 bank is 1.8 V | Matches the BL616's 3.3 V IO. Consequence: Canaan's prebuilt EVB boot loaders (1.8 V banks) must never be used. |
 | Boot straps | BOOT0 = 1 (R64 to 1V8), BOOT1 = 0 (R31 to GND): SPI NAND | NAND boot. BOOT1 = 1 selects MMC0, which is the BL616 and never boots, so the ROM falls into USB flashing mode. |
 | Forcing USB flash mode | BL616 IO27 → RBT1 10k → BOOT1; test points B1_P/B1_N as manual fallback | The BL616 can put the K230 into USB flash mode without opening the unit (BOOT1 = 1.65 V, reads high on the 1.8 V pin) |
-| USB | USB-C 1 = K230 USB0 (flashing, device mode); USB-C 2 = CH340X console on UART0 | Flashing and console independent. The CH340X runs from the switched 3V3, so it cannot back-power an off K230. |
+| USB | USB-C 1 = K230 USB0 (flashing, device mode); USB-C 2 = CH340X on UART0 (rev 1, not used for the console since 2026-10-22) | **The K230 console runs over the BL616 link** (UART1, 4 Mbaud): the kernel's link_mux sends console text and link frames on one wire, the BL616 splits them and shows the console on its second USB port (PR1, `/dev/ttyACM1`; `/dev/ttyACM0` = BL616 shell): one USB device for both consoles. The CH340X re-enumerated with every K230 power cycle (it runs from the switched 3V3, bug-002). Until SPL/OpenSBI move too, their lines are still on UART0 (CH340X). |
 | Power chain | BQ24072 charger (ISET 0.89 A, ILIM 1.0 A, TMR 6.3 h); TPS62823 0V8 → TPS63802 3V3 and 1V8 → TPS62823 1V1; U7 PG → RSTN | Meets the K230 power-up order (core first, IO after, RSTN 12.5 ms after the last rail). Soft charge chosen on purpose. |
 | Power-off | RD1/RD2 1.5 k discharge 1V8/3V3; firmware waits ≥ 300 ms before re-powering; all BL616 pins toward the K230 go analog before K230_PWR drops | The TPS63802 has no output discharge (RD1/RD2 bring the rails below 10 % in < 0.1 s); pull-ups on the switched 3V3 would back-feed the dead rail |
 | BL616 pins | PGOOD on IO03 (ACOMP0), K230_PWR on IO30, leak line on GPIO20 (ACOMP1) | Hibernate wakes only on GPIO16-19, the RTC and the two comparators; USB plug-in and leak both need a comparator |
