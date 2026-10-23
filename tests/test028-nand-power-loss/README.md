@@ -75,9 +75,9 @@ n/a: a robustness test (the energy of writes is test017).
 
 ## Obstacles
 
-- **2026-10-23 09:46, the 100-cut run started on the Mac while the cell was meant to charge** -> USB-C 1 had been
-  plugged into the Mac while the K230 rails were on: the back-feed (bug-002) kept the Mac from turning VBUS on
-  (0.03 mA), and the loop keeps the K230 on most of the time, so the board ran on the cell instead of charging.
-  Stopped after 0 cycles (csv header only). Long K230 runs need the plain charger on USB-C 1, or a full cell.
+- **2026-10-23 09:46, the 100-cut run was started while the BL616 was still in a test038 lockout session** ->
+  stopped after 0 cycles (csv header only). At 09:47:08 that session's 60 s heartbeat limit ran out: rails off, then
+  the lockout HBN, so the BL616 left USB (not a crash, not this test). Details and the fix: tests/test038, Obstacles.
+  Rerun the loop on its own, on the charger or a full cell.
 
 None yet.

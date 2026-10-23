@@ -33,8 +33,13 @@ bool usb_present(void)
     return bflb_acomp_get_result(USB_ACOMP) == 0;    /* PGOOD below 1.65 V */
 }
 
-void usb_arm_hbn_wake(void)
+/* Arm first, then look: a plug after the arming leaves the edge pending and HBN wakes at once; a plug before it
+ * has no edge left to wake us, so the caller must not sleep (2026-10-23, tests/test038: the lockout armed the plug
+ * wake ~50 ms after the rails went off, the Mac's VBUS came in that gap, and the board stayed in HBN, plugged, until
+ * EN). */
+bool usb_arm_hbn_wake(void)
 {
     HBN_Clear_IRQ(HBN_INT_ACOMP0);
     HBN_Enable_AComp_IRQ(USB_ACOMP, HBN_ACOMP_INT_EDGE_NEGEDGE);
+    return usb_present();
 }

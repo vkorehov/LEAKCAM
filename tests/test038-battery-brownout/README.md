@@ -98,6 +98,20 @@ state of charge (ENERGY.txt section 1, usable charge).
 
 ## Obstacles
 
+- **2026-10-23, the board stayed in the lockout HBN while plugged in, until EN** -> `pt_session 10000 lockout 60000`
+  on the cell, `bat_watch` cut at 09:46:09, the user plugged USB-C 1 back in during the session, and at 09:47:08 (60 s
+  heartbeat limit) the BL616 turned the rails off and entered the lockout. VBUS came right after the rails went off
+  (the user saw charging start then), before or while the plug wake (ACOMP0 falling edge on PGOOD) was armed ~50 ms
+  later: no edge was left to wake it. USB plugged, BL616 gone from USB, PR1 replug no help, only EN. Fix (arm first,
+  then look): the lockout now arms the edge and then checks PGOOD; USB already in = no HBN ("LOCKOUT skipped"), an
+  edge after the arming stays pending and wakes HBN at once. `pt_sleep` likewise. The product had the same window
+  (`sleep_for()` checked USB, then armed): `usb_arm_hbn_wake()` now arms and returns whether USB is in, and both sleep
+  paths go to USB mode instead (firmware/bl616/usb_power.c, main.c). Retest 10:13: USB-C 1 in, `pt_session 10000
+  lockout 3000` -> "LOCKOUT skipped: USB present", BL616 stayed on USB. **Open:** no charge (0.03 mA) while the K230
+  ran with USB-C 1 replugged mid-session, charging only once the rails went off: the CH340 is off the board now, so
+  not bug-002's D3 path; recheck by plugging during a session (pt_usb).
+- **`make flash` waited for ever on the ROM** (2026-10-23) -> `bl616_isp.py` took the last ttyACM of the firmware, the
+  second port (`/dev/ttyACM1`, the K230 console), and sent `reboot uart` to the K230. Fixed: it takes interface 0 only.
 (Since 2026-10-23 the K230 console is the BL616's `/dev/ttyACM1`, over the link UART from the first SPL line,
 up across cold boots (tests/test039): the CH340 problems below are history, kept as the record of these runs.)
 

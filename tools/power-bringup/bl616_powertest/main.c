@@ -695,14 +695,20 @@ static int cmd_session(int argc, char **argv)
     if (lockout) {
         /* bug-004 lockout: the battery is too low for another session; only USB may wake the board (no RTC: sleep
          * time 0, as the SDK's hbn_acomp example; no leak wake) */
-        printf("pt_session: LOCKOUT: HBN with only the USB plug wake, %lu s after power-on\r\n",
-               (unsigned long)((off - t_on) / 1000));
-        bflb_mtimer_delay_ms(50);
         HBN_Disable_AComp_IRQ(AON_ACOMP1_ID, HBN_ACOMP_INT_EDGE_POSEDGE);
         HBN_Disable_AComp_IRQ(AON_ACOMP1_ID, HBN_ACOMP_INT_EDGE_NEGEDGE);
         HBN_Clear_IRQ(HBN_INT_ACOMP1);
         HBN_Clear_IRQ(HBN_INT_ACOMP0);
         HBN_Enable_AComp_IRQ(AON_ACOMP0_ID, HBN_ACOMP_INT_EDGE_NEGEDGE);
+        /* arm first, then look, as the product's usb_arm_hbn_wake(): USB already in has no plug edge left to wake
+         * us (2026-10-23: VBUS came right after the rails went off, the board slept plugged until EN) */
+        if (!usb_pgood_high()) {
+            printf("pt_session: LOCKOUT skipped: USB present (no plug edge would wake us); staying awake\r\n");
+            return 0;
+        }
+        printf("pt_session: LOCKOUT: HBN with only the USB plug wake, %lu s after power-on\r\n",
+               (unsigned long)((off - t_on) / 1000));
+        bflb_mtimer_delay_ms(50);              /* an edge from here on stays pending: HBN wakes at once */
         HBN_Hw_Pu_Pd_Cfg(DISABLE);
         HBN_Set_HRAM_Ret();                        /* last: no HBN RAM access after it */
         pm_hbn_mode_enter(PM_HBN_LEVEL_0, 0);
@@ -1274,6 +1280,10 @@ static int cmd_sleep(int argc, char **argv)
     bool usb = !usb_pgood_high();
     HBN_Clear_IRQ(HBN_INT_ACOMP0);
     HBN_Enable_AComp_IRQ(AON_ACOMP0_ID, usb ? HBN_ACOMP_INT_EDGE_POSEDGE : HBN_ACOMP_INT_EDGE_NEGEDGE);
+    if (usb != !usb_pgood_high()) {     /* changed before the arming: that edge is gone, the armed one is wrong */
+        printf("pt_sleep: USB changed while arming, not sleeping\r\n");
+        return -1;
+    }
     /* HBN gives GPIO16-19 hardware pulls unless disabled; on IO16/17 (Y3) they stop the oscillator and the RTC
      * never wakes the chip (2026-10-22). pm_hbn_mode_enter() does not disable them, HBN_Mode_Enter() does. */
     HBN_Hw_Pu_Pd_Cfg(DISABLE);

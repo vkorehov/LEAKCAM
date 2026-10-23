@@ -11,6 +11,6 @@
 
 void usb_sense_init(void);
 bool usb_present(void);
-void usb_arm_hbn_wake(void);          /* ACOMP0 falling edge on PGOOD = plug-in */
+bool usb_arm_hbn_wake(void);          /* ACOMP0 falling edge on PGOOD = plug-in; true: USB already in, don't sleep */
 
 #endif

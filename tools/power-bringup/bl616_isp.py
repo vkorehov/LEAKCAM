@@ -28,12 +28,15 @@ APP = ("ffff", "ffff")
 
 
 def ports():
-    """{(vid, pid): /dev/ttyACMn} from sysfs."""
+    """{(vid, pid): /dev/ttyACMn} from sysfs, interface 0 only: the firmware's second port (if02, ttyACM1) is the
+    K230 console, and `reboot uart` sent there went to the K230 (2026-10-23, make flash waited for ever)."""
     found = {}
     for tty in sorted(glob.glob("/sys/class/tty/ttyACM*")):
         dev = os.path.realpath(os.path.join(tty, "device", ".."))
         try:
             ids = tuple(open(os.path.join(dev, f)).read().strip() for f in ("idVendor", "idProduct"))
+            if int(open(os.path.join(tty, "device", "bInterfaceNumber")).read(), 16) != 0:
+                continue
         except OSError:
             continue
         found[ids] = "/dev/" + os.path.basename(tty)

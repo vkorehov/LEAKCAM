@@ -374,10 +374,9 @@ static void sleep_for(uint32_t pf, uint32_t seconds)
      * while the K230 rails are up they back-feed VUSB (bug-002), a USB-C host does not turn VBUS on, and the power
      * (PGOOD low) arrives only when the rails go off (tests/test035, 2026-10-22). Without this the board slept on
      * battery while plugged until the next humidity slice (up to HUM_PERIOD_S). */
-    if (usb_present())
+    if (usb_arm_hbn_wake())                     /* a later USB plug wakes us through ACOMP0 */
         usb_mode(pf, false);                    /* does not return */
     aht20_deinit();
-    usb_arm_hbn_wake();                         /* a USB plug wakes us through ACOMP0 */
     persist_set(pf, slices - 1);
     hbn_sleep(first);
 }
@@ -599,8 +598,9 @@ int main(void)
     /* humidity slice with nothing to report (only the RTC woke us): straight back to sleep, the
      * K230 stays off */
     if (reason == WAKE_RTC && hum_left > 0) {
+        if (usb_arm_hbn_wake())                 /* plugged since the check above: no edge left to wake us */
+            usb_mode(pf, false);
         aht20_deinit();
-        usb_arm_hbn_wake();
         persist_set(pf, hum_left - 1);
         hbn_sleep(HUM_PERIOD_S);
     }
