@@ -37,6 +37,7 @@ target_sources(app PRIVATE
                    k230_link.c
                    leak_wake.c
                    usb_power.c
+                   wdg_guard.c
                    ble_pairing.c
                    aht20.c
                    wifi_link.c

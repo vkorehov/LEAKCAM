@@ -40,6 +40,7 @@
 #include "k230_link.h"
 #include "leak_wake.h"
 #include "usb_power.h"
+#include "wdg_guard.h"
 #ifndef LEAKCAM_RELEASE
 #include "shell.h"
 #endif
@@ -553,7 +554,10 @@ int main(void)
 {
     board_init();
 #ifdef LEAKCAM_JTAG
-    jtag_attach();
+    jtag_attach();                              /* no watchdog: a halted core would be reset */
+#else
+    if (wdg_guard_start())
+        LOG_E("boot: reset by the watchdog (the BL616 hung)\r\n");
 #endif
     /* first thing after clocks: rails off, reset held, K230-side pins parked. R19/R76 already
      * hold this state in hardware while the BL616 is in reset or booting. */

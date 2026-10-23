@@ -63,11 +63,13 @@
 #include "bflb_sdio2.h"
 #include "bflb_l1c.h"
 #include "bl616_glb.h"
+#include "wdg_guard.h"
 static void sdu_stop(void);
 #endif
 
 
 static struct bflb_device_s *gpio;
+static bool wdg_reset_seen;                 /* this boot came from a watchdog reset (wdg_guard.h) */
 static SemaphoreHandle_t hw;                       /* commands and the monitor share the peripherals */
 static bool rails_on, reset_held = true, monitor;
 static volatile bool console_open;
@@ -492,6 +494,21 @@ static int cmd_mon(int argc, char **argv)
     return 0;
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_status, pt_status, board test status);
+
+/* the watchdog test: hang with interrupts off, as a crash would; wdg_guard resets the chip within WDG_GUARD_MS and
+ * the USB console comes back by itself (no EN) */
+static int cmd_hang(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    printf("pt_hang: interrupts off, spinning; the watchdog resets the chip within %u ms\r\n", WDG_GUARD_MS);
+    bflb_mtimer_delay_ms(50);
+    __disable_irq();
+    while (1) {
+    }
+    return 0;
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_hang, pt_hang, watchdog test: hang with interrupts off);
 SHELL_CMD_EXPORT_ALIAS(cmd_mon, pt_mon, one status line per second (pt_mon off));
 
 /* ---------------------------------------------------------------- commands ---- */
@@ -1102,6 +1119,8 @@ static void background_task(void *arg)
     for (;;) {
         if (console_open && !shown) {
             vTaskDelay(pdMS_TO_TICKS(300));
+            if (wdg_reset_seen)
+                printf("\r\nthis boot: reset by the watchdog (the BL616 hung)");
             printf("\r\nLEAKCAM BL616 board test, " __DATE__ " " __TIME__ "\r\n"
                    "commands: pt_status pt_mon pt_boot1"
 #if PT_TEST_POWER
@@ -1601,6 +1620,7 @@ int main(void)
     last_wake = wake_reason_take();
 #endif
     board_init();          /* also starts the USB CDC console and its shell (defconfig) */
+    wdg_reset_seen = wdg_guard_start();
     pins_init();
     hw = xSemaphoreCreateMutex();
     xTaskCreate(background_task, "pt", 2048, NULL, 2, NULL);

@@ -110,6 +110,14 @@ state of charge (ENERGY.txt section 1, usable charge).
   lockout 3000` -> "LOCKOUT skipped: USB present", BL616 stayed on USB. **Open:** no charge (0.03 mA) while the K230
   ran with USB-C 1 replugged mid-session, charging only once the rails went off: the CH340 is off the board now, so
   not bug-002's D3 path; recheck by plugging during a session (pt_usb).
+- **The BL616 dropped off USB again at 10:47:55 while awake in its shell** (lockout skipped at 10:24, no command
+  sent; back only with EN at 16:25) -> cause not found: there was no watchdog, so any hang stayed for good. Fixed by
+  the BL616 watchdog (firmware/bl616/wdg_guard.c, both firmwares): 8 s reset mode, fed every 1 s by a top-priority
+  task. `pt_hang` (interrupts off, spin): off USB after 7.3 s, shell back after **12.9 s** with no hands, the boot
+  says "reset by the watchdog". `make flash` with the watchdog running: fine (18 s, verified). If the drop happens
+  again the boot line tells a hang (watchdog) from anything else.
+- 16:27 retest: USB-C 1 plugged in during a session (K230 on): PGOOD low at once (charging), lockout skipped. With the
+  CH340 off the board the mid-session plug works (the 0.03 mA case above is not reproduced).
 - **`make flash` waited for ever on the ROM** (2026-10-23) -> `bl616_isp.py` took the last ttyACM of the firmware, the
   second port (`/dev/ttyACM1`, the K230 console), and sent `reboot uart` to the K230. Fixed: it takes interface 0 only.
 (Since 2026-10-23 the K230 console is the BL616's `/dev/ttyACM1`, over the link UART from the first SPL line,
