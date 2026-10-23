@@ -34,3 +34,7 @@ CONFIG_APP_ENABLE_LEAKCAM=y
 # --- LEAKCAM minimal image (tests/test008, 2026-10-22): inherited from the CanMV board, unused here
 # CONFIG_MPP_ENABLE_MIDDLEWARE_LIB_FFMPEG is not set
 # CONFIG_MPP_DSI_ENABLE_VIRT is not set
+# console on UART1 at the link's one rate (link_mux; the BL616 shows it on /dev/ttyACM1), 2026-10-22
+CONFIG_RTT_CONSOLE_UART1=y
+CONFIG_RTT_CONSOLE_ID=1
+CONFIG_RTT_CONSOLE_BAUD=4000000

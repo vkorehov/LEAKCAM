@@ -146,6 +146,13 @@ static const struct link_result *wait_bl616_result(int idx, int ms)
     return NULL;
 }
 
+/* the BL616 side passes non-frame bytes to its K230 console USB port (usb_console2.c); none here */
+ssize_t usb_k230_write(const void *data, size_t size)
+{
+    (void)data;
+    return (ssize_t)size;
+}
+
 int main(void)
 {
     int sv[2];

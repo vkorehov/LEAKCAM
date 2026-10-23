@@ -1,0 +1,9 @@
+config RT_USING_LINK_MUX
+    bool "LEAKCAM: console and BL616 link share UART1"
+    depends on RT_USING_SERIAL && RT_USING_CONSOLE
+    default n
+    help
+        The K230 console and the BL616 link frames on one wire (UART1 <-> BL616 UART0):
+        valid link frames go to /dev/link (leakcam_agent), everything else to the console
+        device "kcon" (msh, stdin/stdout). The BL616 shows the console on its second USB
+        port. Replaces the CH340 console on UART0 (USB-C 2).

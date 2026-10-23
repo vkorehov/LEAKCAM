@@ -2,6 +2,16 @@ cmake_minimum_required(VERSION 3.15)
 
 find_package(bouffalo_sdk REQUIRED HINTS $ENV{BL_SDK_BASE})
 
+# The LEAKCAM two-port USB console (firmware/bl616/usb_console2.c: the BL616 shell + the K230 console) replaces
+# the SDK's single-port bsp/common/usb_app/usb_console.c; CONFIG_BSP_CONSOLE_USB_CDC stays on (printf and
+# board_init() use the same function names). find_package() above already added the SDK file to app.
+get_target_property(_app_sources app SOURCES)
+list(FILTER _app_sources EXCLUDE REGEX "usb_app/usb_console\\.c$")
+set_property(TARGET app PROPERTY SOURCES ${_app_sources})
+target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/./usb_console2.c)
+target_include_directories(app PRIVATE ${BL_SDK_BASE}/bsp/common/usb_app)
+
+
 # the same Wi-Fi library build options as the SDK's NetHub example
 sdk_add_compile_definitions(-DCONFIG_RWNX_LWIP)
 sdk_add_compile_definitions(-DBL_RA_EN=1)

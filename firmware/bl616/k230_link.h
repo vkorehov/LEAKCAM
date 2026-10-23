@@ -28,7 +28,7 @@
  *                                     BL616 wall clock, 0 when it is not valid (after a power
  *                                     loss, until the K230 has sent TIME once); the AHT20 sample
  *                                     (rh -1 = the read failed, t then 0); the leak probe node voltage
- *                                     (1650 dry, below 825 wet; -1 = no reading); the battery as
+ *                                     (1650 dry, below 850 wet; -1 = no reading); the battery as
  *                                     the K230 measured it at the previous session (-1 = none
  *                                     since the power loss). The BL616 has no battery ADC input:
  *                                     the VBAT/3 divider (R59/R61, switched by the K230's 3V3)
@@ -38,7 +38,9 @@
  *                                     WAKE and its event log
  * both            ACK,<seq>[,<answer>]   NAK,<seq>,<code>
  *
- * Anything that is not a valid frame (K230 boot noise, a partial line) is dropped silently.
+ * Anything that is not a valid frame is the K230's console (its kernel's link_mux shares the wire since
+ * 2026-10-22): k230_linesplit.h passes it to the BL616's second USB port (/dev/ttyACM1); the K230 splits what the
+ * BL616 sends the same way (frames -> /dev/link, the rest -> msh).
  *
  * The session length is the K230's: it stays powered while its agent toggles K230_ALIVE
  * (GPIO2 -> BL616 IO01); the BL616 cuts the power once the edges stop. There is no shutdown

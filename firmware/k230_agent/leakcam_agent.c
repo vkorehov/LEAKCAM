@@ -5,7 +5,8 @@
  *  - toggles K230 GPIO2 (net K230_ALIVE -> BL616 IO01) as a heartbeat, every 500 ms: the K230
  *    stays powered while it runs, and stopping it is how the session ends (the BL616 cuts the
  *    power 2 s after the last edge; there is no shutdown command);
- *  - talks to the BL616 over UART1 (GPIO40 TXD / GPIO41 RXD, /dev/uart1), protocol in
+ *  - talks to the BL616 over UART1 (GPIO40 TXD / GPIO41 RXD) through /dev/link (the kernel's link_mux: the console
+ *    shares the wire, the BL616 splits them), protocol in
  *    bl616/k230_link.h;
  *  - runs the capture hook for the wake reason (killed after HOOK_TIMEOUT_S: nothing else ends
  *    a session that hangs), sends SLEEP,<s> for the next wake, then stops the heartbeat; the BL616's
@@ -57,7 +58,6 @@
 #define DEFAULT_SLEEP_S          (6 * 3600)
 #define HOOK_TIMEOUT_S           600u    /* a hook still running then is killed */
 
-static int uart_id = 1;                       /* /dev/uart1 on IO40/IO41 */
 static int alive_pin = 2;                     /* K230 IO2 */
 static const char *hook = "/sdcard/app/leakcam_wake";
 
@@ -127,11 +127,11 @@ static void *heartbeat_thread(void *arg)
 
 /* ---------------- UART link ---------------- */
 
-/* /dev/uart1 comes up at LINK_BAUD 8N1 (k230_board/install.sh sets it in the UART driver) */
+/* /dev/link: the link frames from UART1 (LINK_BAUD 8N1, set in the UART driver by k230_board/install.sh); the kernel's
+ * link_mux passes only valid frames here, the console text that shares the wire goes to the console */
 static int uart_open(void)
 {
-    char dev[16];
-    snprintf(dev, sizeof(dev), "/dev/uart%d", uart_id);
+    const char *dev = "/dev/link";
     uart_fd = open(dev, O_RDWR | O_NONBLOCK);
     if (uart_fd < 0) {
         logmsg("open %s: %s", dev, strerror(errno));
@@ -529,13 +529,12 @@ static int run_hook(const char *reason, unsigned *sleep_s)
 int main(int argc, char **argv)
 {
     int opt;
-    while ((opt = getopt(argc, argv, "u:l:x:")) != -1) {
+    while ((opt = getopt(argc, argv, "l:x:")) != -1) {
         switch (opt) {
-            case 'u': uart_id = atoi(optarg); break;
             case 'l': alive_pin = atoi(optarg); break;
             case 'x': hook = optarg; break;
             default:
-                fprintf(stderr, "usage: %s [-u uart] [-l gpio] [-x hook]\n", argv[0]);
+                fprintf(stderr, "usage: %s [-l gpio] [-x hook]\n", argv[0]);
                 return 2;
         }
     }

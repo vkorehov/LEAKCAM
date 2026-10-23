@@ -567,6 +567,8 @@ MSH_CMD_EXPORT(pad_read, test029: pad input levels [pins]);
  * owns UART1. Latency: 200 frames of 16 bytes, each timed to its full echo. Throughput: at most 48 bytes in flight
  * (the serial RX ring is 64, RT_SERIAL_RB_BUFSZ), every byte compared. Waits are deadline-bound; the watchdog is fed by the sleeps. */
 #include <drivers/serial.h>
+extern void link_mux_pause(int pause);   /* the link mux owns uart1: hand it to the raw bench for its run */
+
 static int uart_bench(int argc, char **argv)
 {
     rt_uint32_t baud, kb = argc > 1 ? (rt_uint32_t)atoi(argv[1]) : 64;
@@ -579,6 +581,7 @@ static int uart_bench(int argc, char **argv)
         rt_kprintf("uart_bench: uart1 not available (leakcam_agent running?)\n");
         return -1;
     }
+    link_mux_pause(1);
     cfg = ((struct rt_serial_device *)d)->config;
     baud = cfg.baud_rate;
     rt_kprintf("uart_bench: uart1 at %u baud (bufsz %u)\n", (unsigned)baud, (unsigned)cfg.bufsz);
@@ -640,6 +643,7 @@ static int uart_bench(int argc, char **argv)
                (unsigned)baud, (unsigned)recv, (unsigned)total, (unsigned)us, (unsigned)(us ? (rt_uint64_t)recv * 1000000 / us : 0),
                (unsigned)(baud / 10), (unsigned)bad, recv < total ? " (TIMEOUT)" : "");
     rt_device_close(d);
+    link_mux_pause(0);
     return 0;
 }
 MSH_CMD_EXPORT(uart_bench, test018: UART1 echo latency and throughput at the link rate [kb]);

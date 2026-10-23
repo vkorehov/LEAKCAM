@@ -25,6 +25,8 @@
  *                          NAND. High = the ROM's SD-card path, which fails into USB boot (re-flashing).
  */
 #include "../../../firmware/bl616/k230_link.h"   /* LINK_BAUD: the link's one rate */
+#include "../../../firmware/bl616/k230_linesplit.h"   /* frames vs K230 console text on the link */
+#include "../../../firmware/bl616/usb_console2.h"     /* the second USB port: the K230 console */
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -110,7 +112,6 @@ static unsigned sense_high(void)
 static struct bflb_device_s *uart0;
 static bool uart_on;
 static volatile bool uart_echo;      /* test018: every received byte sent straight back */
-static unsigned uart_count;
 
 static void uart_stop(void)
 {
@@ -162,6 +163,52 @@ static void uart_send(const char *s)
     while (*s)
         bflb_uart_putchar(uart0, *s++);
 }
+
+/*
+ * The K230 console over the link (2026-10-22): whenever UART0 is on and not in echo mode, everything the K230 sends
+ * is split (k230_linesplit.h): its console text goes to the second USB port (/dev/ttyACM1), link frames to this
+ * shell as "link rx:"; what the host types on /dev/ttyACM1 goes to the K230. Replaces the CH340 (USB-C 2), which
+ * re-enumerates with every K230 power cycle. Polled as the test018 echo (4 Mbaud, 10 MB without a lost byte).
+ */
+static void bridge_text(void *ctx, const char *p, unsigned n)
+{
+    (void)ctx;
+    usb_k230_write(p, n);
+}
+
+static void bridge_frame(void *ctx, const char *line, unsigned n)
+{
+    (void)ctx;
+    printf("link rx: %.*s\r\n", (int)n, line);
+}
+
+static void uart_bridge_task(void *arg)
+{
+    (void)arg;
+    static struct linesplit split;
+    char buf[128];
+    linesplit_init(&split, bridge_text, bridge_frame, NULL);
+    for (;;) {
+        if (!uart_on || uart_echo) {
+            vTaskDelay(pdMS_TO_TICKS(20));
+            continue;
+        }
+        unsigned n = 0;
+        int c;
+        while (n < sizeof(buf) && (c = bflb_uart_getchar(uart0)) >= 0)
+            buf[n++] = (char)c;
+        if (n)
+            linesplit_feed(&split, buf, n);
+        else
+            taskYIELD();
+    }
+}
+
+void usb_k230_rx(const uint8_t *data, uint32_t len)
+{
+    if (uart_on && !uart_echo)
+        bflb_uart_put(uart0, (uint8_t *)data, len);
+}
 #endif
 
 #if PT_TEST_POWER
@@ -185,7 +232,12 @@ static uint32_t rails_on_timed(void)
             return 0;
         }
     }
-    return (uint32_t)(bflb_mtimer_get_time_us() - t0);
+    uint32_t t = (uint32_t)(bflb_mtimer_get_time_us() - t0);
+#if PT_TEST_UART
+    if (!uart_on)
+        uart_start();                      /* the K230 console bridge runs whenever the K230 has power */
+#endif
+    return t;
 }
 
 static uint32_t rails_off_timed(void)
@@ -421,7 +473,7 @@ static void print_status(bool line)
         printf("AHT20       : FAIL, %s\r\n", aht20_err(r));
 #endif
 #if PT_TEST_UART
-    printf("UART0 link  : %s\r\n", uart_on ? "on, 1 message/s" : "off");
+    printf("UART0 link  : %s\r\n", uart_on ? (uart_echo ? "on, echo" : "on, K230 console bridge (/dev/ttyACM1)") : "off");
 #endif
 }
 
@@ -691,12 +743,12 @@ static int cmd_uart(int argc, char **argv)
     } else {
         bool ok;
         LOCKED(ok = uart_on || uart_start());
-        printf(ok ? "UART0 on: IO21 TX -> K230 UART1 RX, IO22 RX <- K230 UART1 TX, LINK_BAUD 8N1, 1 message/s\r\n"
+        printf(ok ? "UART0 on: IO21 TX -> K230 UART1 RX, IO22 RX <- K230 UART1 TX, LINK_BAUD 8N1, K230 console on /dev/ttyACM1\r\n"
                   : "3V3 is off: pt_on first (the link pins are pulled up to the K230's 3V3)\r\n");
     }
     return 0;
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_uart, pt_uart, UART0 link test: on | off | send <text> | echo);
+SHELL_CMD_EXPORT_ALIAS(cmd_uart, pt_uart, UART0 link: on (K230 console bridge) | off | send <text> | echo);
 #endif
 
 #if PT_TEST_I2C
@@ -1029,8 +1081,9 @@ SHELL_CMD_EXPORT_ALIAS(cmd_sdu, pt_sdu, SDIO device echo for the bus speed test:
 /* CherryUSB's weak hook: a terminal opening the PR1 console raises DTR */
 void usbd_cdc_acm_set_dtr(uint8_t busid, uint8_t intf, bool dtr)
 {
-    (void)busid, (void)intf;
-    console_open = dtr;
+    (void)busid;
+    if (intf == 0)                         /* port 0 = this shell; interface 2 is the K230 console port */
+        console_open = dtr;
 }
 
 static void background_task(void *arg)
@@ -1082,29 +1135,8 @@ static void background_task(void *arg)
             pg_last = pg;
         }
 #endif
-#if PT_TEST_UART
-        if (uart_on && !uart_echo) {
-            int c;
-            char buf[64];
-            unsigned n = 0;
-            while (n < sizeof(buf) - 1 && (c = bflb_uart_getchar(uart0)) >= 0)
-                buf[n++] = (char)c;
-            if (n) {
-                buf[n] = 0;
-                printf("uart rx: %s\r\n", buf);
-            }
-        }
-#endif
         if (bflb_mtimer_get_time_ms() >= next_s) {
             next_s += 1000;
-#if PT_TEST_UART
-            if (uart_on && !uart_echo) {
-                char msg[64];
-                snprintf(msg, sizeof(msg), "LEAKCAM BL616 uart test %u, %lu ms\r\n", ++uart_count,
-                         (unsigned long)bflb_mtimer_get_time_ms());
-                LOCKED(uart_send(msg));
-            }
-#endif
             if (monitor)
                 LOCKED(print_status(true));
         }
@@ -1562,6 +1594,9 @@ int main(void)
     pins_init();
     hw = xSemaphoreCreateMutex();
     xTaskCreate(background_task, "pt", 2048, NULL, 2, NULL);
+#if PT_TEST_UART
+    xTaskCreate(uart_bridge_task, "k230con", 1024, NULL, tskIDLE_PRIORITY + 1, NULL);
+#endif
     vTaskStartScheduler();
     while (1) {
     }

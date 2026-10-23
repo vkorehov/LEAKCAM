@@ -52,6 +52,18 @@ static int count(const char *needle) { int n = 0; for (const char *p = tx; (p = 
 
 static uint8_t refuse_time(const struct link_msg *m) { return strcmp(m->cmd, "TIME") != 0 || m->arg >= 1767225600u ? 0 : LINK_ERR_REFUSED; }
 
+/* the K230 console text the splitter passes on (usb_console2.c on the board) */
+static char console[1024];
+static unsigned nconsole;
+ssize_t usb_k230_write(const void *data, size_t size)
+{
+    if (nconsole + size < sizeof(console)) {
+        memcpy(console + nconsole, data, size);
+        nconsole += (unsigned)size;
+    }
+    return (ssize_t)size;
+}
+
 int main(void)
 {
     struct link_msg m;
@@ -87,8 +99,9 @@ int main(void)
     agent_frame(want, 1, "ACK", "1"); CHECK(strstr(tx, want) != NULL, "ACK for SLEEP");
     agent_frame(want, 2, "ACK", "2"); CHECK(strstr(tx, want) != NULL, "ACK for WIFI");
     CHECK(count("ACK") == 3, "exactly 3 answers, got %d: %s", count("ACK"), tx);
-    CHECK(logged("link: dropped") == 3, "trace: 3 dropped frames (junk, bad CRC, no seq), got %d",
-          logged("link: dropped"));
+    /* since the console shares the wire, junk and a bad CRC are console text (to the console port), only a frame
+     * with a good CRC but no valid seq is a dropped frame */
+    CHECK(logged("link: dropped") == 1, "trace: 1 dropped frame (no seq), got %d", logged("link: dropped"));
     CHECK(logged("link< 1,SLEEP,600*") == 1 && logged("link> 2,ACK,2") == 1, "trace: RX and TX lines");
 
     /* 2. a repeat (our ACK was lost) is answered again but not delivered twice */
@@ -160,6 +173,16 @@ int main(void)
     CHECK(link_service(t + 7000) == NULL && count("WAKE") == 0, "WAKE dropped on READY: not resent");
     CHECK(link_send_cmd("WAKE", "rtc,1790000000,-1,0,1650,3698"), "a new WAKE can be sent after READY");
 
-    printf(fails ? "FAIL (%d)\n" : "link protocol: CRC-8, seq/ACK/NAK, duplicates, resends, give-up, stale answers, READY restart, noise, trace\n", fails);
+    /* the K230 console shares the wire (link_mux): its text goes to the console port, frames still arrive */
+    nconsole = 0;
+    feed("msh />boot_times 0.385 s app init\r\n");
+    feed_cmd(2, "SLEEP", "120");
+    feed("price $5\r\nmsh />");
+    CHECK(link_poll(&m) && strcmp(m.cmd, "SLEEP") == 0 && m.arg == 120, "frame between console lines delivered");
+    CHECK(!link_poll(&m), "no frame in console text");
+    console[nconsole] = 0;
+    CHECK(!strcmp(console, "msh />boot_times 0.385 s app init\r\nprice $5\r\nmsh />"), "console text passed on: [%s]", console);
+
+    printf(fails ? "FAIL (%d)\n" : "link protocol: CRC-8, seq/ACK/NAK, duplicates, resends, give-up, stale answers, READY restart, noise, trace, console text on the same wire\n", fails);
     return fails != 0;
 }

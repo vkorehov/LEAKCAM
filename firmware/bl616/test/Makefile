@@ -4,9 +4,13 @@
 # HTTP parsing (wifi_check_calc.h),
 # against the SDK stand-ins in stub/ plus the layout of wifi_ctrl_proto.h.
 #   make -C firmware/bl616/test
-all: test_link test_aht20 test_aon test_evlog test_wifi_link test_wifi_link_check_first test_wifi_check
+all: test_linesplit test_link test_aht20 test_aon test_evlog test_wifi_link test_wifi_link_check_first test_wifi_check
 
-test_link: test_link.c ../k230_link.c stub/bflb_uart.h stub/log.h
+test_linesplit: test_linesplit.c ../k230_linesplit.h ../k230_link.h
+	$(CC) -Wall -Wextra -Werror -I.. -o $@ test_linesplit.c
+	./$@
+
+test_link: test_link.c ../k230_link.c ../k230_linesplit.h ../usb_console2.h stub/bflb_uart.h stub/log.h
 	$(CC) -Wall -Wextra -Werror -Istub -I.. -o $@ test_link.c ../k230_link.c
 	./$@
 

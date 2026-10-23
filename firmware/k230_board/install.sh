@@ -218,6 +218,22 @@ if line not in s:
     open(p, 'w').write(s.replace(a, a + line))
 PY
 
+# Link mux (2026-10-22): the console and the BL616 link frames share UART1; the BL616 shows the console on its
+# second USB port. Sources + the splitter and link protocol headers shared with the BL616 firmware.
+MUX=$RTT/drivers/extdrv/link_mux
+rm -rf "$MUX"; mkdir -p "$MUX"
+cp "$HERE"/rtsmart/drivers/link_mux/* "$MUX/"
+cp "$HERE/../bl616/k230_linesplit.h" "$HERE/../bl616/k230_link.h" "$MUX/"
+python3 - "$RTT/drivers/extdrv/Kconfig" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+line = '    source "drivers/extdrv/link_mux/Kconfig"\n'
+if line not in s:
+    a = '    source "drivers/extdrv/bl616_nethub/Kconfig"\n'
+    assert s.count(a) == 1, 'extdrv/Kconfig changed, cannot add the link mux'
+    open(p, 'w').write(s.replace(a, a + line))
+PY
+
 # RT-Thread SDIO core: the BL616 SDU function 1 CIS has no FUNCE tuple, so the core reads a
 # max block size of 0 and refuses the function. Give it the 512-byte block of its port FIFO
 # and the 200 ms enable timeout Bouffalo's own host driver sets for the same reason.

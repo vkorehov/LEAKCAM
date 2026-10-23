@@ -1,4 +1,6 @@
 #include "k230_link.h"
+#include "k230_linesplit.h"
+#include "usb_console2.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,9 +11,9 @@
 
 static char line[LINK_MAX_LINE];
 static unsigned len;
-static bool in_frame;
 
 /* receive side: last accepted seq (-1 = none since the last READY / reset) and its answer */
+static bool split_ready, frame_ready;   /* k230_linesplit state (link_poll) */
 static int rx_last = -1;
 static uint8_t rx_last_code;       /* 0 = ACK, else the NAK code */
 static bool rx_last_ready;         /* the last accepted command was READY */
@@ -38,7 +40,8 @@ static struct bflb_device_s *uart(void)
 void link_reset(void)
 {
     len = 0;
-    in_frame = false;
+    split_ready = false;             /* the splitter starts clean on the next poll */
+    frame_ready = false;
     rx_last = -1;
     tx_pending = false;
     tx_sends = 0;
@@ -142,38 +145,47 @@ static bool accept(struct link_msg *m)
     return rx_last_code == 0;
 }
 
+/* The wire also carries the K230's console (its kernel's link_mux, 2026-10-22): k230_linesplit.h passes valid
+ * frames here and everything else to the K230 console USB port (usb_console2.c, /dev/ttyACM1) */
+static struct linesplit split;
+
+static void split_text(void *ctx, const char *p, unsigned n)
+{
+    (void)ctx;
+    usb_k230_write(p, n);
+}
+
+static void split_frame(void *ctx, const char *l, unsigned n)
+{
+    (void)ctx;
+    len = n - 1;                    /* without the '$' */
+    memcpy(line, l + 1, len);
+    line[len] = 0;
+    frame_ready = true;
+}
+
 bool link_poll(struct link_msg *out)
 {
     int c;
+    if (!split_ready) {
+        linesplit_init(&split, split_text, split_frame, NULL);
+        split_ready = true;
+    }
     while ((c = bflb_uart_getchar(uart())) >= 0) {
-        if (c == '$') {             /* a new frame always restarts, noise before it is dropped */
-            in_frame = true;
-            len = 0;
+        char ch = (char)c;
+        linesplit_feed(&split, &ch, 1);
+        if (!frame_ready)
+            continue;
+        frame_ready = false;
+        char raw[LINK_MAX_LINE];
+        memcpy(raw, line, len + 1);             /* parse() cuts the line up */
+        if (!parse(out)) {
+            LOG_W("link: dropped %s (format)\r\n", raw);
             continue;
         }
-        if (!in_frame)
-            continue;
-        if (c == '\r')
-            continue;
-        if (c == '\n') {
-            in_frame = false;
-            line[len] = 0;
-            char raw[LINK_MAX_LINE];
-            memcpy(raw, line, len + 1);             /* parse() cuts the line up */
-            if (!parse(out)) {
-                LOG_W("link: dropped %s (CRC or format)\r\n", raw);
-                continue;
-            }
-            LOG_I("link< %s\r\n", raw);
-            if (accept(out))
-                return true;
-            continue;
-        }
-        if (len >= sizeof(line) - 1) {  /* over-long garbage */
-            in_frame = false;
-            continue;
-        }
-        line[len++] = (char)c;
+        LOG_I("link< %s\r\n", raw);
+        if (accept(out))
+            return true;
     }
     return false;
 }
