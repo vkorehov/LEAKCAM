@@ -21,7 +21,7 @@ RUN dpkg --add-architecture amd64 && apt-get update && \
     make autoconf automake bison flex gcc g++ gawk libncurses5-dev pkg-config \
     libconfuse-dev libssl-dev python3 python3-pip python-is-python3 cmake \
     libyaml-dev scons mtools bzip2 curl git openssh-client rsync dosfstools \
-    ca-certificates wget xz-utils file bc cpio unzip zip patch \
+    ca-certificates wget xz-utils file bc cpio unzip zip patch xxd \
     libc6:amd64 libstdc++6:amd64 libgcc-s1:amd64 zlib1g:amd64 libssl3:amd64 libudev1:amd64 \
     && apt-get clean && update-ca-certificates && rm -rf /var/lib/apt/lists/*
 RUN pip3 install --no-cache-dir --break-system-packages pycryptodome gmssl scons==3.1.2 jsonschema jinja2

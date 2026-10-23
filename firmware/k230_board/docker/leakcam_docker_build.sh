@@ -48,8 +48,11 @@ else
     CMD=(make ${MAKE_J:+-j"$MAKE_J"} "$@")
     # The SDK's own `make log` pipes through tee and always exits 0; do the
     # same logging here but keep make's exit status.
-    if [[ "$*" == "log" ]]; then
-        CMD=(bash -o pipefail -c "make ${MAKE_J:+-j$MAKE_J} 2>&1 | tee log.txt")
+    # `log` may carry make variables after it (log LEAKCAM_BENCH_DIR=...): with them it fell through to the SDK's
+    # `make log` and a failed build exited 0 (2026-10-23, the 3200 MT/s SPL).
+    if [[ "${1:-}" == "log" ]]; then
+        shift
+        CMD=(bash -o pipefail -c "make ${MAKE_J:+-j$MAKE_J} $(printf '%q ' "$@") 2>&1 | tee log.txt")
     fi
 fi
 
