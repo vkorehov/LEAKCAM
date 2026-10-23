@@ -1,6 +1,6 @@
 # test038: battery brown-out below 3.10 V (cutoff, lockout, recovery)
 
-Status: **lockout pass, cut decision open** (2026-10-22): after a cut the BL616 hibernates with only the USB wake - no RTC wake in 3+ min, a leak short ignored, USB plug wakes it; the K230-side VBAT cut (bat_watch) not run: the K230 console (CH340) did not reach Linux. Below-3 V steps need a lab supply (none).
+Status: **cut + lockout + USB wake pass** (2026-10-23): K230 `bat_watch` cut (raised threshold), heartbeat stop, rails off, lockout HBN, USB plug wakes it with no EN; BL616 watchdog added (no hang stays). Below-3 V steps (the real 3.10 V cut, the 3.50 V unlock) need a lab supply (none).
 
 Rev 1 has no hardware discharge cutoff (bug-004): the BQ24072 keeps its BAT-FET on, so the firmware is the only
 guard. The K230 reads VBAT (test023) and reports it in the WAKE ACK; the BL616 keeps it in HBN RAM; below 3.10 V
@@ -53,6 +53,25 @@ latch-up or NAND damage down to 1.6 V and back.
 | lockout, 3+ min with nothing | **no wake** (console stayed away: no RTC wake armed) |
 | lockout, S1 shorted 3 s | **no wake** (the leak is ignored) |
 | lockout, USB-C 1 plugged | **woke by usb** (twice: 22:34 and 22:40) |
+
+### 2026-10-23 16:35, whole chain on the cell (fixed firmware: arm-then-check lockout, watchdog)
+
+USB-C 1 out, `pt_session 10000 lockout 15000`, after the agent's hook `bat_watch 4150 5` on `/dev/ttyACM1` (cut
+raised above the cell's voltage so it triggers now; the decision logic is what is tested, not the 3.10 V level).
+
+| step | time | reading |
+|---|---|---|
+| unplugged -> session start | 16:35:39 | 3V3 up in 1709 us |
+| first heartbeat (READY stand-in) | +1.5 s | |
+| agent hook done | 16:36:03 (+24 s) | camera absent (cam tests skipped) |
+| bat_watch readings | 0 / 5 / 10 s | VBAT **3947 / 4008 / 4009 mV** under load (cell not recharged) |
+| CUT, heartbeat stopped | +10 s | 3 readings below 4150 |
+| rails off | +48.9 s after power-on | 15 s heartbeat-stop limit |
+| LOCKOUT HBN, off USB | 16:36:28 | |
+| USB-C 1 plugged -> back on USB, "woke by usb" | 16:36:46 | no EN |
+
+Pass. Energy: no current reading this run (meter not in the loop); session ~49 s at the earlier ~200 mA K230 figure
+(ENERGY.txt) is ~2.7 mAh.
 
 ### 2026-10-23, bat_watch first readings
 
