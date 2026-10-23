@@ -1,6 +1,6 @@
 # test100: Wi-Fi throughput, K230 -> SDIO -> BL616 -> AP
 
-Status: **step 1 written** (2026-10-23): `pt_wifi` in bl616_powertest (scan, join + DHCP, status, leave) builds (1.06 MB); not run yet: its first flash hit the watchdog/ROM loop (Obstacles), fixed by `isp`.
+Status: **step 1 in progress** (2026-10-23): `pt_wifi` scan passes (radio up 635 ms, 11 APs in 2.9 s, own AP -29 dBm); join + DHCP next.
 
 The product path for clips and checks: the K230's lwIP over the NetHub SDIO bridge (test015: bus 21 MB/s, not the
 limit) to the BL616's 2.4 GHz radio. Needs the product BL616 firmware (open on rev 1) and stored credentials
@@ -41,7 +41,18 @@ TCP up >= 2 x the two streams' rate with margin at the install distance; no RTMP
 
 ## Results
 
-Not run yet.
+### Step 1a, scan (2026-10-23 21:31, bl616_powertest with pt_wifi, board on the bench, USB-C 1 in)
+
+| What | Result |
+|---|---|
+| Radio up (RF params, lwIP, Wi-Fi task, manager ready) | **635 ms** |
+| Scan, all channels | **2.93 s**, 11 APs |
+| The user's AP "Vlad" | ch 6, **-29 dBm**, WPA2 (close to the bench) |
+| Weakest heard | -93 dBm (several neighbours -88 .. -93 dBm): the antenna and RF receive |
+| Country code | SDK default **CN** (channels 1-13, the same set as the EU here); the product sets its own |
+| STA MAC | 7c:3e:82:62:b1:49 |
+
+Next: step 1b, join + DHCP.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
