@@ -31,7 +31,7 @@ UFFS on nand1, dfs_posix (open/write/fsync/statfs), plt_write/plt_check (leakcam
 Writer and checker: `plt_write` / `plt_check` in [leakcam_bench.c](../test017-nand-raw-speed/leakcam_bench.c) (SDK
 copy): files of 1 KB..2 MB in /sdcard/plt (16 slots), each fsynced, then a commit record (two slots, fsynced).
 `plt_check` verifies the 15 newest committed files (the 16th slot may be the one cut mid-write). Host loop:
-[plt_loop.py](plt_loop.py) (BL616 `pt_off` / `pt_on` / `pt_run`, CH340 console), log
+[plt_loop.py](plt_loop.py) (BL616 `pt_off` / `pt_on` / `pt_run`, K230 console `/dev/ttyACM1`), log
 [run1_2026-10-21.csv](run1_2026-10-21.csv).
 
 | | Result |

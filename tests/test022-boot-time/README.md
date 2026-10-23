@@ -15,7 +15,8 @@ candidates: sensor probes without cameras, the /sdcard UFFS mount, DDR training,
 ## Setup
 
 BL616 test firmware; K230 NAND image (current test image or the product image); both consoles recorded with
-timestamps (skill k230-rtsmart-hangs `console_record.py`, K230 console on the CH340; BL616 console on PR1).
+timestamps (skill k230-rtsmart-hangs `console_record.py`, K230 console `/dev/ttyACM1` and BL616 `/dev/ttyACM0`, both on PR1:
+since test039 the K230 console runs over the BL616 link from the first SPL line and stays up across cold boots).
 
 ## Needs (build features and dependencies)
 
@@ -97,6 +98,9 @@ This test is the boot time measurement.
 Battery current through the boot, per step (scope over a shunt in the battery lead): energy per boot = the fixed cost of every wake. Also after each speed change (NAND clock, DDR 3200).
 
 ## Obstacles
+
+(Since 2026-10-23 the K230 console is the BL616's `/dev/ttyACM1`, over the link UART from the first SPL line,
+up across cold boots (tests/test039): the CH340 problems below are history, kept as the record of these runs.)
 
 - **Host-side boot timing misses the start** -> the CH340 (U2) is powered from the switched 3V3 (bug-002), so it
   re-enumerates on every cold boot and appears in the VM ~10 s after power-on -> the kernel times itself (`rdtime`

@@ -94,6 +94,9 @@ n/a for the reading itself (Q1 switches the divider only while the K230 runs: ~1
 
 ## Obstacles
 
+(Since 2026-10-23 the K230 console is the BL616's `/dev/ttyACM1`, over the link UART from the first SPL line,
+up across cold boots (tests/test039): the CH340 problems below are history, kept as the record of these runs.)
+
 - **Unexplained board reset at 15:20:09 (2026-10-21)** while VBAT was probed at C15 with a second meter: BL616 and
   CH340 dropped together, the BL616 came back with its defaults. Not explained (probe slip or cable move); repeat
   the VBAT reading with the probe held firm, rails off first.

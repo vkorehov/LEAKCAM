@@ -106,6 +106,7 @@ Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: BL616
 - **The echo device does not answer NetHub's HOST_READY** (it mirrors it) -> the bench opens the netdev channel
   itself and keeps its credits topped up ("raw" mode).
 - **Echoes only on the 1 s safety poll** -> round-trip time not usable; the read rate is timed per CMD53 instead.
-- **CH340 permissions** reset on every re-enumeration -> `setfacl` again after each K230 flash.
+- **CH340 permissions** reset on every re-enumeration -> `setfacl` again after each K230 flash. (Gone: udev rule
+  99-leakcam.rules, and since test039 the K230 console is /dev/ttyACM1.)
 - **NAND now holds the test image** (bench, test hook in `/sdcard/app/leakcam_wake`) -> `install.sh` and the product
   image flash restore it.

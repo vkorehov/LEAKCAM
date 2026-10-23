@@ -43,7 +43,7 @@ Probes: current - battery lead, USB out (sleep/wake); voltage - 3V3_SLEEP, VBAT 
 | This part's boot share | not measured yet | - | |
 | Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
 | wake time error, crystal ppm | not measured yet | +-20 ppm | % of the top |
-| Current idle / during (min / avg / peak) | not measured yet | floor (test031) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Current idle / during (min / avg / peak) | not measured yet | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |

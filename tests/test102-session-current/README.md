@@ -7,18 +7,16 @@ net, the encoder and Wi-Fi.
 
 ## Setup
 
-**At USB (the usual way):** a multimeter in the VBUS wire of the USB-C 2 (CH340) cable, the only cable carrying
-power ([usb_meter.png](usb_meter.png)): USB-C 1 unplugged (it feeds VUSB directly; USB-C 2 feeds it through D2), PR1
-data only. The cell must be charged (D1 off): then the USB current is the board's own draw. Board power = that
-current x VBAT (C15 pad 1), not x 5 V (the linear charger's drop is not paid on battery). A / 10 A input, 0.001 A.
-
-**Used 2026-10-21 (tests 016/017/022):** VBUS of the USB-C 2 cable cut instead, the meter in USB-C 1's VBUS: one
-cable then powers the board and flashes the K230, and the CH340 still works (U2 runs from the switched 3V3). Rules
-learned that day:
+**At USB (the way it is done):** a multimeter in the VBUS wire of the **USB-C 1** cable, the only cable carrying power
+(USB-C 2's VBUS cut, 2026-10-21; PR1 carries data only): one cable powers the board and flashes the K230
+([usb_meter.png](usb_meter.png) shows the meter in a USB cable's VBUS). Consoles: both on PR1 (`/dev/ttyACM0` BL616,
+`/dev/ttyACM1` K230, tests/test039); USB-C 2 is not needed. The cell must be charged (D1 off): then the USB current is
+the board's own draw. Board power = that current x VBAT (C15 pad 1), not x 5 V (the linear charger's drop is not
+paid on battery). A / 10 A input, 0.001 A. Rules (2026-10-21):
 - **10 A jack and range, locked** (no autorange). The mA range's shunt + fuse (2-5 ohm) dropped VBUS 0.4-1 V at
   200 mA and reset the board on current steps; autorange switching opens the path briefly.
 - **Meter in the red VBUS wire**, GND joined straight through: a meter in GND offsets the board's ground against the
-  host and every USB device on the board (PR1, CH340, K230) fails.
+  host and every USB device on the board (PR1, K230) fails.
 - **Check the mA fuse** of a borrowed meter: one with a burned fuse read nothing useful; shorting its leads "fixed"
   the board. Readings from before the swap are void.
 - **Only one cable may carry power**: both USB-C ports feed VUSB, so with two plugged in the meter reads a share.
@@ -62,7 +60,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | This part's boot share | not measured yet | - | |
 | Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
 | Speed / rate (none for this test) | not measured yet | - | % of the top |
-| Current idle / during (min / avg / peak) | not measured yet | floor (test031) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Current idle / during (min / avg / peak) | not measured yet | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |

@@ -80,7 +80,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | This part's boot share | not measured yet | - | |
 | Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
 | time to rails off after a hang | not measured yet | 2 s heartbeat, boot timeout | % of the top |
-| Current idle / during (min / avg / peak) | not measured yet | floor (test031) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Current idle / during (min / avg / peak) | not measured yet | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
@@ -99,6 +99,9 @@ The boot timeout should follow test022's measured boot (e.g. 3 x the median) ins
 Energy of a failed session (boot timeout x the session floor): what one hang costs, x the retries.
 
 ## Obstacles
+
+(Since 2026-10-23 the K230 console is the BL616's `/dev/ttyACM1`, over the link UART from the first SPL line,
+up across cold boots (tests/test039): the CH340 problems below are history, kept as the record of these runs.)
 
 - **The K230 console is not available per session** (the CH340 lives on the switched 3V3 and needs a VMware click
   each time) -> the failure cases are made from the BL616 (reset held / pulsed, BOOT1 high).

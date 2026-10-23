@@ -73,7 +73,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | This part's boot share | not measured yet | - | |
 | Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
 | wake latency on plug | not measured yet | - | % of the top |
-k5 mA at 17:29 after the plug-in (BQ24072 charging the cell it ran on while unplugged; BL616 awake, K230 off) | floor (test031) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+k5 mA at 17:29 after the plug-in (BQ24072 charging the cell it ran on while unplugged; BL616 awake, K230 off) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |

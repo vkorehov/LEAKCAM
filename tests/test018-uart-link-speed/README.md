@@ -70,7 +70,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | This part's boot share | not measured yet | - | |
 | Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
 | UART link throughput, round trip | not measured yet | 115200 now; 2 Mbaud top (both chips) | % of the top |
-| Current idle / during (min / avg / peak) | not measured yet | floor (test031) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Current idle / during (min / avg / peak) | not measured yet | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
@@ -89,6 +89,9 @@ Time from RT-Smart up to READY acknowledged at each baud (link handshake share o
 Session time saved by a faster baud x the K230's session current = energy saved per wake (the link itself draws next to nothing).
 
 ## Obstacles
+
+(Since 2026-10-23 the K230 console is the BL616's `/dev/ttyACM1`, over the link UART from the first SPL line,
+up across cold boots (tests/test039): the CH340 problems below are history, kept as the record of these runs.)
 
 - **The K230 baud rate did not change, first run** (every rate gave exactly 11 515 B/s, the BL616 had switched) ->
   the serial layer refuses RT_DEVICE_CTRL_CONFIG with RT_EBUSY when the new bufsz differs from the open device's

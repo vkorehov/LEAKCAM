@@ -56,8 +56,8 @@ latch-up or NAND damage down to 1.6 V and back.
 
 Not run: the K230-side cut decision (`bat_watch 4050 5`: VBAT read under load, CUT after 3 readings, heartbeat
 stopped) - the K230 console (CH340, USB-C 2) did not reach Linux on this run (no VMware offer, user: the known
-CH340/USB-C 2 problem). bat_watch is built into the bench image and flashed; next time with the console: `pt_session
-10000 lockout 60000` on the cell, then `bat_watch 4050 5` on the K230 within 60 s of the agent's end. Steps 1-6 of the
+CH340/USB-C 2 problem). Now runnable without a click: the K230 console is `/dev/ttyACM1` (test039); `pt_session
+10000 lockout 60000` on the cell, then `bat_watch 4050 5` on `/dev/ttyACM1` within 60 s of the agent's end. Steps 1-6 of the
 plan (sweep, real cutoff, deep discharge, ramp) need a lab supply.
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
@@ -70,7 +70,7 @@ Probes: current - lab supply in place of the cell, its current; voltage - VBAT C
 | This part's boot share | not measured yet | - | |
 | Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
 | cut-off voltage vs set 3.10 V, time to rails off | not measured yet | +-50 mV | % of the top |
-| Current idle / during (min / avg / peak) | not measured yet | floor (test031) | USB-C 2 VBUS meter, D1 off; VBAT at C15 |
+| Current idle / during (min / avg / peak) | not measured yet | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | not measured yet | - | scripts/energy.py |
 | Per day | not measured yet | ENERGY.txt line | n per day |
@@ -90,6 +90,9 @@ Lockout current (should be the sleep floor), and the charge left at the cut: the
 state of charge (ENERGY.txt section 1, usable charge).
 
 ## Obstacles
+
+(Since 2026-10-23 the K230 console is the BL616's `/dev/ttyACM1`, over the link UART from the first SPL line,
+up across cold boots (tests/test039): the CH340 problems below are history, kept as the record of these runs.)
 
 - **No lab supply** -> the mechanism tested with a raised threshold on the real cell instead of the sweep.
 - **The K230 console (CH340) did not reach Linux** while the K230 ran on the cell -> the lockout was tested on the

@@ -122,4 +122,4 @@ Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: extra
 - **A crashed qemu compile left its container running for 20 min** -> `timeout` around `docker run` kills only the
   client -> name the container, `docker stop <name>`; run with `-w /tmp` so a qemu core dump stays out of the repo.
 - **K230 USB boot device never reached the VM** -> plug order (bug-002): the CH340 attached first -> CH340 out,
-  USB-C 1 in, then `pt_on`, `pt_run`; CH340 back after the popup.
+  USB-C 1 in, then `pt_on`, `pt_run`; CH340 back after the popup. (Since test039 the console is /dev/ttyACM1: no CH340.)

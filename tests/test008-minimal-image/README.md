@@ -11,7 +11,7 @@ test022); every kernel feature costs boot and RAM; the BL616's image is read at 
 ## Setup
 
 K230: the bench image built by `firmware/k230_board/install.sh` + `leakcam_docker_build.sh`, flashed with
-`flash_nand.sh`; CH340 console, `boot_times`. BL616: `bl616_powertest` and the product firmware, `make` /
+`flash_nand.sh`; K230 console `/dev/ttyACM1` (the BL616's port, test039), `boot_times`. BL616: `bl616_powertest` and the product firmware, `make` /
 `make flash` (ISP). Meter in USB-C 1 VBUS (10 A range, cell full).
 
 ## Needs (build features and dependencies)

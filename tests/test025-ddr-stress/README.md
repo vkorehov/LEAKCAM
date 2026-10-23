@@ -49,7 +49,7 @@ patterns, **0 errors**, no reset, 6.5 s per pass throughout. A >= 1 h run stays 
 
 **Cold starts (20:21-20:24):** 5 x (`pt_off`, 3 s, `pt_on`, `pt_run`: DDR retrained each time), then `boot_times` and
 `memtest 3`. Every start: 3 passes, **0 errors**, 6.5-6.6 s per pass. Boot identical every time (from reset release):
-kernel init 0.207 s, mounts done 0.870 s, app init 0.893-0.894 s. The CH340 came back by itself 5-7 s after each
+kernel init 0.207 s, mounts done 0.870 s, app init 0.893-0.894 s. (The CH340 console of these runs is replaced by /dev/ttyACM1 since test039.) The CH340 came back by itself 5-7 s after each
 `pt_run` (no VMware click needed). Meter over the loop (boot + memtest): 205 mA average, 250 mA peak.
 
 **Pass** for the cold starts; with run 1, 61 passes x 109 MB x 5 patterns, 0 errors, no reset.

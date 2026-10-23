@@ -3,7 +3,7 @@
 One folder per test, in bring-up order (001-099: one interface or chip; 100+: high level, the product's whole flow): setup, readings, result, and the obstacles met (problem -> cause -> fix),
 with the test's own probe sheets and recordings. **Every test records battery energy** (section "Battery energy"): the
 tested activity's average battery current and duration, and its energy per operation (uAh and mJ), measured with a
-meter in the USB-C 2 cable's VBUS (only power path, cell charged, x VBAT: [test102 usb_meter.png](test102-session-current/usb_meter.png))
+meter in the USB-C 1 cable's VBUS (only power path, cell charged, x VBAT: [test102 usb_meter.png](test102-session-current/usb_meter.png))
 or, for sleep currents, in the battery lead; a shunt and scope for short events; "n/a"
 with the reason where the battery is not involved. The figures feed [ENERGY.txt](../ENERGY.txt). **Every test records boot time** too (section "Boot time"): what the tested part adds to
 the K230's power-on -> READY (its driver init, mount, probe, load) or to the BL616's wake path, from test022's

@@ -70,7 +70,8 @@ The NAND is on SPI0 (OSPI, DW SSI): ssi_clk **800 MHz**, SCLK = 800 / BAUDR (50 
 - Chosen: **80 MHz, delay 5** (window 3-8 at both 50 and 80 MHz): kernel `CONFIG_SPI_NAND_SPI_FREQ=80000000`,
   `CONFIG_RT_SPI0_RXSD=5`; U-Boot/SPL dts `spi-max-frequency = <80000000>`, `rx-sample-delay-ns = <6>` (6 ns / 1.25 =
   5). 18 cold boots: every boot read (11) app init 0.876-0.886 s, /bin checksum equal to the 50 MHz read; the others
-  booted too (the CH340 attaches ~10 s after power-on in the VM, after the script's read).
+  booted too (the CH340 attached ~10 s after power-on in the VM, after the script's read; since test039 the console
+  is /dev/ttyACM1, up across cold boots).
 
 ## Metrics (2026-10-21, bench image)
 
