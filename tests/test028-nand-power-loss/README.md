@@ -1,6 +1,6 @@
 # test028: NAND / UFFS power-loss robustness
 
-Status: **short run pass** (2026-10-21): 13 random cuts, 0 lost or corrupt; the 100-cut run still to do.
+Status: **pass** (2026-10-23): 100 random power cuts during writes, 0 lost or corrupt, every mount clean; app init after a cut 0.478 s (short run 2026-10-21: 13 cuts).
 
 The product writes clips, logs and references to /sdcard (UFFS on NAND) while the battery can run out or the BL616
 can cut the rails. UFFS is log-structured; this proves it on rev 1.
@@ -42,8 +42,21 @@ copy): files of 1 KB..2 MB in /sdcard/plt (16 slots), each fsynced, then a commi
 | Free space | 16.5-18.3 MB of 32 MB, no downward trend (varies with which slots hold the 1-2 MB files) |
 | Writer speed | 2 MB file 1.47 s with fsync (~1.4 MB/s through UFFS) |
 
-Not yet: the 100-cut run; the mount time after an unclean cut (the loop's `boot_times` parse came back empty: to
-fix before the long run; a clean boot of this image: mounts 0.374 s, app init 0.660 s, test022).
+### 100-cut run, 2026-10-23 16:37-17:22 (run2_2026-10-23.csv)
+
+Board on USB-C 1 (Mac), K230 console on `/dev/ttyACM1` (no clicks), CH340 off the board.
+
+| What | Result |
+|---|---|
+| Cuts | **100 / 100**, each at a random point 2.1-19.6 s into `plt_write` |
+| Mount after each cut | 100 / 100, every `plt_check` ran |
+| Committed files verified | 15 per cycle, **0 bad**; 3910 commits printed before cuts, last record 3924 = all found |
+| Free space | 16.5-18.7 MB of 32 MB, no downward trend |
+| Boot after an unclean cut | env init 0.459-0.477 s (median 0.469), app init **0.468-0.486 s** (median 0.478) |
+| Cycle | ~20 s; one 9 min gap after cycle 50 = the Linux VM paused (no log 16:55-17:04, "Clock change detected"), not the board |
+
+Pass. The app init after a cut (0.478 s) is this image (it mounts the 32 MiB `/sdcard`): it was 0.660 s on a clean
+boot with the 115200 console (test022); the 0.30 s of test039 is the minimal image without that mount.
 
 ## Metrics (2026-10-21, short run)
 
@@ -56,6 +69,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Test run time | 5 min, 13 cuts (~25 s per cycle) | - | setup: build + flash ~6 min |
 | Recovery after a cut | every mount clean, no fsck-like delay seen | - | |
 | Current | msh idle with charging 540 mA (USB VBUS, D1 on); during writes not read | floor 202 mA w/o charging | |
+| Current, 100-cut run (2026-10-23) | 507-537 mA VBUS (peak 537), cell charging the whole run while the K230 cycles | - | USB-C 1 on the Mac kept VBUS on with the K230 up: no bug-002 effect without the CH340 |
 | Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | n/a | - | |
 | Per day | n/a | - | |
