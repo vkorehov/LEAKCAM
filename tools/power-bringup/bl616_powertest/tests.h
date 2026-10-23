@@ -17,6 +17,13 @@
 #define PT_TEST_TIMING 1   /* pt_time: test021 timings (wake -> main, rails, AHT20, ADC, easyflash key)   */
 #define PT_TEST_WIFI   1   /* pt_wifi: test100 step 1, the BL616 radio alone: scan, join + DHCP, status (pt_wifi.c) */
 
+#include <stdbool.h>
+bool rails_are_on(void);              /* main.c: the K230 rails are commanded on */
+void pt_wifi_rails_off(void);         /* pt_wifi.c: stop the NetHub bridge (wifi_link_stop) before the rails drop */
+
+#if PT_TEST_WIFI && !PT_TEST_POWER
+#error "PT_TEST_WIFI needs PT_TEST_POWER: the bridge's SDIO pads may only be driven while the K230 3V3 is up"
+#endif
 #if PT_TEST_UART && !PT_TEST_POWER
 #error "PT_TEST_UART needs PT_TEST_POWER: the link pins may only be driven while the K230 3V3 is up"
 #endif

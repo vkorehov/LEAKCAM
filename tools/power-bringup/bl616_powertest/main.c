@@ -242,12 +242,20 @@ static uint32_t rails_on_timed(void)
     return t;
 }
 
+bool rails_are_on(void)
+{
+    return rails_on;
+}
+
 static uint32_t rails_off_timed(void)
 {
     if (!rails_on)
         return 1;
 #if PT_TEST_UART
     uart_stop();
+#endif
+#if PT_TEST_WIFI
+    pt_wifi_rails_off();               /* the bridge's SDIO pads let go before the K230's 3V3 drops */
 #endif
     reset_hold(true);
     uint64_t t0 = bflb_mtimer_get_time_us();

@@ -23,6 +23,8 @@ sdk_add_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616)
 
 # pt_wifi (test100): the product's Wi-Fi library build options (firmware/bl616/CMakeLists.txt, from the SDK's NetHub example)
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/pt_wifi.c)
+# the product's Wi-Fi link (NetHub bridge + the BL616-only path): pt_wifi runs the code the product ships
+target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/wifi_link.c)
 sdk_add_compile_definitions(-DCONFIG_RWNX_LWIP)
 sdk_add_compile_definitions(-DBL_RA_EN=1)
 sdk_add_compile_definitions(-DWPA_SUPPLICANT_CLEANUP_INTERVAL=1800)

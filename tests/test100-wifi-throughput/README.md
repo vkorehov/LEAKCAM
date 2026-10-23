@@ -87,6 +87,21 @@ product's sleep/wake path, test031/ENERGY.txt). For a battery session: join ~4 s
 
 **Step 1 pass** (scan, join + DHCP 3.8-4.0 s, internet 70-158 ms). Next: step 2, the NetHub bridge over SDIO.
 
+Step 1 re-run on the product's code path (22:00, pt_wifi now starts the radio through firmware/bl616/wifi_link.c
+`wifi_link_local_begin()`): radio up 634 ms, scan 2.93 s, join to address 4.12 s, internet 162 ms; currents 84 / 88
+peak / 80 mA joined (user): the same as on the test-only path.
+
+### Step 2, NetHub bridge (code, 2026-10-23)
+
+- BL616: `pt_wifi bridge` (after `pt_on`): `wifi_link_start()`, the product's bridge (NetHub over SDIO, control
+  channel wifi_ctrl_proto.h); the rails going off stop it first (`pt_wifi_rails_off()` in rails_off_timed()).
+  wifi_link.c and the product's NetHub config are linked into bl616_powertest (1.11 MB); pt_sdu (test015's echo
+  device) still links beside it, never run together.
+- K230: the kernel's bl616_nethub driver (already in the image) + the `wifi` / `ifconfig` / `ping` shell commands
+  switched on for this test (k230d_leakcam_defconfig; test008 had them off).
+- Order: USB-C 1 in, `pt_off`, `pt_on`, `pt_wifi bridge`, `pt_run`; on the K230 console `wifi scan`, then
+  `wifi join <ssid> <psk>` (from `~/.leakcam_wifi`), `ifconfig`, `ping`.
+
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).

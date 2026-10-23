@@ -98,16 +98,18 @@ CONFIG_RT_USING_RTC_PMU=y
 # CONFIG_RT_USING_I2C_BITOPS is not set
 # CONFIG_SAL_USING_AF_UNIX is not set
 # CONFIG_RT_LWIP_IGMP is not set
-# CONFIG_RT_LWIP_RAW is not set
 # CONFIG_RT_LWIP_NETIF_LOOPBACK is not set
-# CONFIG_RT_LWIP_USING_PING is not set
-# CONFIG_NETDEV_USING_IFCONFIG is not set
-# CONFIG_NETDEV_USING_PING is not set
 # CONFIG_NETDEV_USING_NETSTAT is not set
-# CONFIG_RT_WLAN_MSH_CMD_ENABLE is not set
 # CONFIG_RT_WLAN_AUTO_CONNECT_ENABLE is not set
 # CONFIG_RT_WLAN_CFG_ENABLE is not set
 # CONFIG_RT_WLAN_SCAN_SORT is not set
 # CONFIG_RT_USING_OVERFLOW_CHECK is not set
+# tests/test100 Needs (2026-10-23): the wifi / ifconfig / ping shell commands to drive Wi-Fi over the NetHub bridge by
+# hand (the product's agent uses the API); ping needs lwIP raw. Off again in the product image (test008 rule)
+CONFIG_RT_LWIP_RAW=y
+CONFIG_RT_LWIP_USING_PING=y
+CONFIG_NETDEV_USING_IFCONFIG=y
+CONFIG_NETDEV_USING_PING=y
+CONFIG_RT_WLAN_MSH_CMD_ENABLE=y
 # console on UART1 with the BL616 link (link_mux, 2026-10-22): the BL616 forwards it to its USB port /dev/ttyACM1
 CONFIG_RT_USING_LINK_MUX=y

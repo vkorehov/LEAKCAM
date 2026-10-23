@@ -20,3 +20,17 @@ CONFIG_PARTITION                =y
 # pt_wifi (test100 step 1): the SDK's Wi-Fi set (lwIP, RF, Wi-Fi 6 fhost), as the product; ping kept for the tests
 -include $(BL_SDK_BASE)/examples/wifi/defconfig
 CONFIG_IPV6 =n
+
+# pt_wifi bridge (test100 step 2): the product's NetHub over SDIO (firmware/bl616/defconfig)
+CONFIG_BSP_MR              =y
+CONFIG_MR_NETDEV           =y
+CONFIG_MR_SDIO_DRIVER      =y
+CONFIG_MR_SDIO_QUEUE_DEPTH =4
+CONFIG_MR_TTY              =n
+CONFIG_MR_VIRTUALCHAN      =y
+CONFIG_NETHUB_CTRLCHANNEL_USE_ATMODULE =n
+CONFIG_NETHUB_LOWPOWER_ENABLE          =n
+CONFIG_NETHUB_PROFILE_DUAL             =n
+CONFIG_NETHUB_PROFILE_SDIO             =y
+CONFIG_NETHUB_PROFILE_USB              =n
+CONFIG_NETHUB                          =y

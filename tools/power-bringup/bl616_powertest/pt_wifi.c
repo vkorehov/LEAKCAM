@@ -6,9 +6,11 @@
  *   pt_wifi status                joined?, RSSI, channel, IP / gateway / DNS
  *   pt_wifi leave                 DHCP lease released, disconnected
  *   pt_wifi net [host]            DNS, TCP connect, GET /generate_204 (the product's internet check), each timed
+ *   pt_wifi bridge                step 2: the product's NetHub bridge over SDIO for the K230 (rails on first: pt_on)
  *
- * The bring-up order is the product's (firmware/bl616/main.c radio_init(), wifi_link.c start_lwip/start_wifi): RF
- * parameters, lwIP, the Wi-Fi task + fhost; the manager answers once CODE_WIFI_ON_MGMR_DONE came. The join and the
+ * The radio is the product's: RF parameters as main.c radio_init(), then firmware/bl616/wifi_link.c owns lwIP and the
+ * Wi-Fi task (wifi_link_local_begin(): the BL616 alone, as the product's credential check; wifi_link_start(): the
+ * bridge), so step 1 and step 2 run the code the product ships; the manager answers once CODE_WIFI_ON_MGMR_DONE came. The join and the
  * DHCP follow wifi_check.c (the product's credential check), which this step proves on hardware first. Later steps
  * (TCP, the NetHub bridge to the K230) are added here one by one, each after the previous one passed.
  */
@@ -23,21 +25,20 @@
 #include <event_groups.h>
 #include <task.h>
 
-#include <lwip/tcpip.h>
 #include <lwip/ip4_addr.h>
 #include <lwip/netdb.h>
 #include <lwip/sockets.h>
 
-#include "async_event.h"
 #include "bflb_mtimer.h"
 #include "easyflash.h"
-#include "fhost_api.h"
-#include "macsw_plat.h"
+#include "net_al.h"
 #include "net_al_ext.h"
 #include "rfparam_adapter.h"
 #include "shell.h"
 #include "wifi_mgmr.h"
 #include "wifi_mgmr_ext.h"
+
+#include "wifi_link.h"
 
 #define EV_READY        (1u << 0)
 #define EV_SCANNED      (1u << 1)
@@ -56,15 +57,15 @@
 
 static EventGroupHandle_t evg;
 static bool up;
+static bool bridged;             /* pt_wifi bridge ran: the K230 owns the radio until the rails go off */
 static uint32_t up_ms;              /* bring-up time of this boot's first use */
 
-static void wifi_event(async_input_event_t ev, void *priv)
+/* the Wi-Fi manager's events while the BL616 has the radio (wifi_link.c passes them on; it starts the manager) */
+static void wifi_event(int code)
 {
     EventBits_t b = 0;
 
-    (void)priv;
-    switch (ev->code) {
-        case CODE_WIFI_ON_INIT_DONE: wifi_mgmr_task_start(); break;
+    switch (code) {
         case CODE_WIFI_ON_MGMR_DONE: b = EV_READY; break;
         case CODE_WIFI_ON_SCAN_DONE: b = EV_SCANNED; break;
         case CODE_WIFI_ON_CONNECTED: b = EV_CONNECTED; break;
@@ -82,23 +83,32 @@ static EventBits_t wait(EventBits_t bits, uint32_t ms)
     return xEventGroupWaitBits(evg, bits, pdTRUE, pdFALSE, pdMS_TO_TICKS(ms)) & bits;
 }
 
-/* first use in this boot: RF parameters, lwIP, the Wi-Fi task; false if the manager did not come up */
+/* first use in this boot: RF parameters, then wifi_link.c brings up lwIP and the Wi-Fi task; false if the manager did
+ * not come up */
 static bool bring_up(void)
 {
     if (up)
         return true;
+    static bool rf_ready;
     uint64_t t0 = bflb_mtimer_get_time_ms();
-    evg = xEventGroupCreate();
-    easyflash_init();                       /* rfparam reads its calibration through the partition table */
-    if (rfparam_init(0, NULL, 0) != 0) {
-        printf("pt_wifi: RF init failed\r\n");
+    if (!rf_ready) {                        /* once per boot */
+        evg = xEventGroupCreate();
+        easyflash_init();                   /* rfparam reads its calibration through the partition table */
+        if (rfparam_init(0, NULL, 0) != 0) {
+            printf("pt_wifi: RF init failed\r\n");
+            return false;
+        }
+        rf_ready = true;
+    }
+    if (bridged) {
+        printf("pt_wifi: the bridge has the radio until the rails go off (pt_off)\r\n");
         return false;
     }
-    tcpip_init(NULL, NULL);
-    async_register_event_filter(EV_WIFI, wifi_event, NULL);
-    wifi_task_create();
-    vTaskDelay(pdMS_TO_TICKS(500));         /* as the SDK examples: the task runs before fhost_init() */
-    fhost_init();
+    if (!wifi_link_claim(WIFI_OWNER_CHECK)) {
+        printf("pt_wifi: radio busy\r\n");
+        return false;
+    }
+    wifi_link_local_begin(wifi_event);
     if (!wait(EV_READY, READY_MS)) {
         printf("pt_wifi: the Wi-Fi manager did not come up in %u ms\r\n", READY_MS);
         return false;
@@ -279,6 +289,41 @@ static void do_net(const char *host)
            (unsigned long)(t3 - t2), (unsigned long)(t3 - t0));
 }
 
+/* step 2: the K230 takes the radio over the NetHub SDIO bridge (wifi_link_start(); the K230's 3V3 must be up: the
+ * SDIO pads' pull-ups sit on it). The K230 then binds the card when it boots (pt_run) and drives Wi-Fi itself. */
+static void do_bridge(void)
+{
+    if (!rails_are_on()) {
+        printf("pt_wifi bridge: K230 rails off, pt_on first\r\n");
+        return;
+    }
+    if (!up && !bring_up())             /* RF parameters (once), and the manager up through the local path */
+        return;
+    if (up) {
+        wifi_link_local_end();
+        wifi_link_release(WIFI_OWNER_CHECK);
+        up = false;                     /* the next scan/join takes the radio back (after the rails went off) */
+    }
+    if (!wifi_link_claim(WIFI_OWNER_K230)) {
+        printf("pt_wifi bridge: radio busy\r\n");
+        return;
+    }
+    uint64_t t0 = bflb_mtimer_get_time_ms();
+    int r = wifi_link_start();
+    bridged = r == 0;
+    printf("pt_wifi bridge: wifi_link_start %d in %lu ms; now pt_run, then on the K230: wifi scan\r\n", r,
+           (unsigned long)(bflb_mtimer_get_time_ms() - t0));
+}
+
+void pt_wifi_rails_off(void)
+{
+    if (!bridged)
+        return;
+    wifi_link_stop();
+    wifi_link_release(WIFI_OWNER_K230);
+    bridged = false;
+}
+
 static int cmd_wifi(int argc, char **argv)
 {
     const char *op = argc > 1 ? argv[1] : "";
@@ -296,11 +341,13 @@ static int cmd_wifi(int argc, char **argv)
         do_status();
     else if (!strcmp(op, "leave"))
         do_leave();
+    else if (!strcmp(op, "bridge"))
+        do_bridge();
     else if (!strcmp(op, "net"))
         do_net(argc > 2 ? argv[2] : NET_HOST);
     else
-        printf("usage: pt_wifi scan | join <ssid> [psk] | status | leave | net [host]\r\n");
+        printf("usage: pt_wifi scan | join <ssid> [psk] | status | leave | net [host] | bridge\r\n");
     return 0;
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_wifi, pt_wifi, test100 Wi-Fi on the BL616 alone: scan | join ssid psk | status | leave | net host);
+SHELL_CMD_EXPORT_ALIAS(cmd_wifi, pt_wifi, test100 Wi-Fi on the BL616 alone: scan | join ssid psk | status | leave | net host | bridge);
 #endif
