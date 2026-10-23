@@ -147,6 +147,8 @@ Battery current: Wi-Fi join (energy per join, paid on every networked session), 
 
 ## Obstacles
 
+(The design obstacles and the rules they gave are collected in the skill `bl616-wifi-firmware`.)
+
 - **The BL616 hung on the K230's first `wifi scan` and the watchdog reset it** (2026-10-23 22:10, three runs) ->
   breadcrumbs in HBN RAM (`wl_trace` in wifi_link.c, `pt_trace`, kept across the reset): the scan finished, then the
   first scan item's `nethub_vchan_user_send()` never returned. The same send from the NetHub task (status answers)
