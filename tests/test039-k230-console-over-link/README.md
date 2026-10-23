@@ -8,6 +8,8 @@ Why: the CH340X (USB-C 2) runs from the K230's switched 3V3, re-enumerates with 
 VMware click each time, which VMware stopped offering (tests/test038). User (2026-10-22): forward the K230 output
 over the BL616's UART, as early as possible, one USB device; fewest clicks.
 
+Design, files and every SDK patch with its location: [firmware/CONSOLE.md](../../firmware/CONSOLE.md).
+
 ## Setup
 
 - **K230:** kernel driver `link_mux` (firmware/k230_board/rtsmart/drivers/link_mux): owns UART1 (4 Mbaud), splits

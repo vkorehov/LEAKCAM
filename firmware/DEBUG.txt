@@ -37,7 +37,7 @@ BL616: USB CDC on PR1 (bottom side, 6 pins)
   Session lines give the timing: "READY 23400 ms after power-on", "heartbeat stopped after
   96 s, next wake in 21600 s".
 
-K230: PR1's second port, /dev/ttyACM1 (since 2026-10-22). RT-Smart's console (kprintf, msh, the agent's and
+K230: PR1's second port, /dev/ttyACM1 (since 2026-10-22; how it works and how the SDK is patched: CONSOLE.md). RT-Smart's console (kprintf, msh, the agent's and
   leakcam_wake's output) shares UART1 with the link frames (the kernel's link_mux); the BL616 splits them
   (k230_linesplit.h: valid frames to the link code, the rest to /dev/ttyACM1) and sends what is typed there to
   the K230's msh. The port does not re-enumerate when the K230 is power-cycled. SPL and OpenSBI print there too

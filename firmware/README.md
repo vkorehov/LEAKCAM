@@ -6,6 +6,9 @@ When USB power is plugged in it wakes, stays awake and advertises over BLE so a 
 Wi-Fi credentials; unplugging returns it to the battery schedule. Every 10 minutes it wakes on its
 RTC to read the AHT20 humidity sensor and goes back to sleep without the K230 unless humidity is high.
 
+
+Consoles: both on the BL616's USB (PR1), `/dev/ttyACM0` BL616 and `/dev/ttyACM1` K230 (over the link UART, from the
+first SPL line): [CONSOLE.md](CONSOLE.md).
 ## Schematic changes for the first fab (done)
 
 Both are in the schematic (checked 2026-09-24); the firmware in this folder is written for this

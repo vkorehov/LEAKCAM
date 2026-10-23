@@ -205,7 +205,7 @@ $LEAKCAM/firmware/k230_board/flash_nand.sh ~/k230_rtos_sdk     # K230 in USB boo
 
 ### 3.4 First boot, on the console
 
-The K230 console is the BL616's second USB port: PR1 gives `/dev/ttyACM0` (BL616 shell) and `/dev/ttyACM1` (K230
+The K230 console is the BL616's second USB port ([CONSOLE.md](CONSOLE.md)): PR1 gives `/dev/ttyACM0` (BL616 shell) and `/dev/ttyACM1` (K230
 console, `/dev/serial/by-id/...-if02`), one VMware click for both; it stays while the K230 is power-cycled. The K230's
 console runs on UART1 at 4 Mbaud from the first SPL line (SPL, OpenSBI and the kernel's link_mux, shared with the
 link frames), the BL616 forwards it. Only the BootROM's own lines (errors, USB boot) stay on UART0 (USB-C 2, CH340X
