@@ -14,6 +14,11 @@ Assembly: camera into its pocket, four M2 screws from its back into the floor; f
 (the J4 flex shares that shaft); the board goes straight down, the cell cradle on it, fixed together
 by one M2x10 screw (Ø2.6 hole; S2 is 2.19 mm from its centre, so the head is at most Ø4: ISO 7380 M2,
 Ø3.5); the cover's ribs hold the board's antenna end down.
+
+Openings: only USB-C 1 (USBC1, +X side: power, charging, K230 flashing) is open to the outside. USB-C 2 (USBC2, -X,
+the CH340X debug console) is buried behind the closed skin since 2026-10-23 (user): the K230 console runs over the
+BL616 link to PR1's USB (firmware/CONSOLE.md), nothing needs that port from outside (USB_OPEN below). base.SLDPRT
+still has its mouth until this script runs again on the SolidWorks PC.
 """
 M = 0.001
 PATH = r"C:\hw\LEAKCAM\mechanical\enclosure\base.SLDPRT"
@@ -49,6 +54,10 @@ RIBS = {-1: [0.55, 58.0], 1: [0.65, 59.5]}      # board y of the 2 mm ribs, per 
 # the pocket wall (open upwards: the board goes straight down), its front
 # 0.05 from a 0.8 mm skin with a stadium like its mouth; the plug's overmold stops on the flat side
 USB = [(-1, -14.30, -18.73), (1, -12.06, 18.61)]         # USBC2 (x 23.52), USBC1 (x 60.86)
+# Only USBC1 gets a mouth and a plug way (2026-10-23, user): USBC2 (the CH340X debug console) is not used any more -
+# the K230 console runs over the BL616 link to PR1's USB (firmware/CONSOLE.md) - so it stays buried behind the closed
+# 0.8 mm skin. Its notch (the receptacle's room in the pocket wall) and its shell pad (a board support) stay.
+USB_OPEN = {1}                                           # wall sides (s) whose receptacle has an opening
 USB_Y = -1.65
 PLUG_OVERMOLD = (13.1 + 0.8, 6.7 + 0.8)                 # USB-C cable plug overmold (usb/USB_Type-C_Plug), free fit
 
@@ -162,7 +171,7 @@ feature("Board pocket", dict(rects=[(-BOARD_X, -32.8, BOARD_X, 32.8)]), lambda: 
 feature("USB-C receptacle notches", dict(rects=[(front - 0.05, zc - 4.6, -BOARD_X + 0.01, zc + 4.6) if s < 0 else
                                                  (BOARD_X - 0.01, zc - 4.6, front + 0.05, zc + 4.6) for s, zc, front in USB]),
         lambda: span(-3.4), "fronts 0.05 from the skin, open upwards for the board going in")
-for s, zc, front in USB:
+for s, zc, front in (u for u in USB if u[0] in USB_OPEN):
     face = front + 0.05 * s
     side_cut(f"USB-C mouth {'USBC2' if s < 0 else 'USBC1'}", lambda: rrect(zc, USB_Y, 9.1, 3.5, 1.75),
              *sorted((face - 0.3 * s, (OUTER_X + 0.1) * s)), f"stadium 9.1 x 3.5 at Z {zc} Y {USB_Y}, old wall {OUTER_X - abs(face):.2f}")
