@@ -54,6 +54,13 @@ latch-up or NAND damage down to 1.6 V and back.
 | lockout, S1 shorted 3 s | **no wake** (the leak is ignored) |
 | lockout, USB-C 1 plugged | **woke by usb** (twice: 22:34 and 22:40) |
 
+### 2026-10-23, bat_watch first readings
+
+On the cell (USB-C 1 out), K230 running with its console on `/dev/ttyACM1`: `bat_watch` read **VBAT 4.084-4.091 V
+under load**, falling ~1 mV per 10 s (09:43-09:45). The supervised session had not started (the rails were still on
+from the boot-time runs: `pt_session` refuses then), so no cut was taken; the user plugged USB back to let the cell
+charge. Next: `pt_off`, then the session with `bat_watch 4100 5` (cuts ~15 s in).
+
 Not run: the K230-side cut decision (`bat_watch 4050 5`: VBAT read under load, CUT after 3 readings, heartbeat
 stopped) - the K230 console (CH340, USB-C 2) did not reach Linux on this run (no VMware offer, user: the known
 CH340/USB-C 2 problem). Now runnable without a click: the K230 console is `/dev/ttyACM1` (test039); `pt_session
