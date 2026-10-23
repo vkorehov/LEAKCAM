@@ -44,7 +44,10 @@ include $(SDK_RTSMART_SRC_DIR)/libs/mk/libmpp.mk
 
 # miniz: only the one-shot compress/uncompress calls are used
 MINIZ    := -DMINIZ_NO_STDIO -DMINIZ_NO_ARCHIVE_APIS -DMINIZ_NO_TIME -I$(SRC_ROOT)/third_party/miniz
-CFLAGS   := -march=rv64imafdcv -mabi=lp64d -mcmodel=medany -Os -std=gnu11
+# optimisation, selectable for tests/test008 (LEAKCAM_OPT=-O2 / -O3, LEAKCAM_LTO=-flto; prefixed: make passes them to every SDK sub-make): the faster build stays
+LEAKCAM_OPT ?= -Os
+LEAKCAM_LTO ?=
+CFLAGS   := -march=rv64imafdcv -mabi=lp64d -mcmodel=medany $(LEAKCAM_OPT) $(LEAKCAM_LTO) -std=gnu11
 CFLAGS   += $(MINIZ) -I$(SRC_ROOT) $(LIB_CFLAGS) -I$(SDK_SRC_ROOT_DIR)/include
 CFLAGS   += -include "generated/autoconf.h" -Wall -Wextra -ffunction-sections -fdata-sections
 CXXFLAGS := $(filter-out -std=gnu11 $(MINIZ),$(CFLAGS)) -std=c++20 -Wno-multichar   # nncase model.h
@@ -58,6 +61,28 @@ $(CAPTURE): $(CAP_OBJS)
 	@echo "[LD] $@"
 	@mkdir -p $(dir $@)
 	$(Q)$(CXX) $(CFLAGS) $^ $(LDFLAGS) $(NNCASE_LDFLAGS) -o $@
+	$(Q)$(STRIP) $@
+
+# tests/test008: the wake path's CPU bench, only with LEAKCAM_BENCH=1 (its source, tests/test008-minimal-image/
+# leakcam_cpubench.c, is copied next to the others for that build); never in the product image
+BENCH      := $(SDK_APPS_IMAGE_DIR)/leakcam_cpubench
+BENCH_OBJS := $(addprefix $(BUILD)/cap/, leakcam_cpubench.o $(CORE:.c=.o))
+ifeq ($(LEAKCAM_BENCH),1)
+all: $(BENCH)
+endif
+# test008: prebuilt bench variants (one per flag set) copied in for a full image build, which cleans the image dir
+ifneq ($(LEAKCAM_BENCH_DIR),)
+all: bench-variants
+.PHONY: bench-variants
+bench-variants:
+	@mkdir -p $(SDK_APPS_IMAGE_DIR)
+	$(Q)cp $(LEAKCAM_BENCH_DIR)/leakcam_cpubench_* $(SDK_APPS_IMAGE_DIR)/
+endif
+
+$(BENCH): $(BENCH_OBJS)
+	@echo "[LD] $@"
+	@mkdir -p $(dir $@)
+	$(Q)$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
 	$(Q)$(STRIP) $@
 
 $(KMODEL): $(SRC_ROOT)/leakcam_change.kmodel
@@ -109,7 +134,7 @@ $(BUILD)/stream/%.o: $(SRC_ROOT)/%.c
 	$(Q)$(CC) $(CFLAGS) $(OPUS) -MD -MP -c $< -o $@
 
 clean:
-	@rm -f $(CAPTURE) $(KMODEL) $(HIST) $(STREAM) $(AGENT)
+	@rm -f $(CAPTURE) $(KMODEL) $(HIST) $(STREAM) $(AGENT) $(BENCH)
 
 distclean: clean
 	@rm -rf $(BUILD)

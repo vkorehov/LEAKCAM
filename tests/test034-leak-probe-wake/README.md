@@ -1,6 +1,6 @@
 # test034: leak probe wake (ACOMP1) and wet/dry thresholds
 
-Status: **pass with opens** (2026-10-22): the product's leak threshold was wrong (1.65 V = the dry level: a dry probe read WET), fixed to 0.85 V; S1/S2/S3 shorts detected, settled 250 mV; HBN wake on going wet and on going dry works. Open: real water types, resistor sweep, 24 h no-false-wake.
+Status: **pass with opens** (2026-10-22): the product's leak threshold was wrong (1.65 V = the dry level: a dry probe read WET), fixed to 0.85 V; S1/S2/S3 shorts detected, settled 250 mV; HBN wake on going wet and on going dry works. Open: real water types, resistor sweep, 12 h no-false-wake.
 
 The leak probes S1-S3 pull LEAK_SENS (1 M / 1 M divider from 3V3_SLEEP, 1.65 V dry) down when water bridges them;
 ACOMP1 wakes the BL616 from hibernate on that edge. The product's first job.
@@ -28,11 +28,11 @@ BL616 ACOMP1 (leak), ADC (pt_leak), HBN wake on ACOMP.
 3. Wake from HBN (test firmware pt_sleep, product firmware): a wet edge wakes within ms; drying (the reverse edge)
    too, as the product expects.
 4. All three sockets S1, S2, S3; a probe with a broken wire (open) stays dry.
-5. Noise: no false wake over 24 h dry (LED drivers, Wi-Fi bursts on the same rail).
+5. Noise: no false wake over 12 h dry (user 2026-10-23: 24 h overkill) (LED drivers, Wi-Fi bursts on the same rail).
 
 ## Pass
 
-Wet detected at every water type the product must see, dry never woken falsely in 24 h; wake latency recorded.
+Wet detected at every water type the product must see, dry never woken falsely in 12 h; wake latency recorded.
 
 ## Results
 
@@ -64,7 +64,7 @@ from 1.65 V to the 0.85 V trip in tau x ln(1.39 / 0.59) = 8.6 ms x 0.86 = **7.4 
 water), then the HBN wake path **~15 ms** (test021: 12-16 ms) = ~22 ms to main().
 
 Open: real water (tap, distilled, salt, wet towel) and a resistor sweep 10 k .. 10 M for the threshold in ohms;
-24 h dry without a false wake (step 5; the product's evlog will count wakes); the product firmware build (rewrite).
+12 h dry without a false wake (step 5; the product's evlog will count wakes); the product firmware build (rewrite).
 
 ## Metrics (to fill on every run: skill leakcam-test-metrics)
 

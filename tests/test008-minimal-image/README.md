@@ -82,6 +82,27 @@ ISP set twice in /bin; with the cameras, test020/030); FAST_BOOT_CONFIGURATION p
 (was 0.506; mounts 0.20-0.21 s instead of 0.22: 147 KB less on /sdcard); ADC, I2C (both buses clean), RTC, NAND
 80 MHz (20.6 MB/s, 0 errors), pads all as before; die 42.5 C; flash write 205 mA.
 
+### Flags B, 2026-10-23: the programs at -Os / -O2 / -O3, each with and without LTO (sizes; speed open)
+
+`LEAKCAM_OPT` / `LEAKCAM_LTO` in firmware/k230_capture/rtsmart/Makefile (defaults `-Os`, no LTO), six builds (56-97 s
+each), stripped sizes in bytes:
+
+| build | leakcam_wake | leakcam_stream | leakcam_hist | leakcam_agent | leakcam_cpubench |
+|---|---|---|---|---|---|
+| -Os | 5 181 000 | 1 030 880 | 100 376 | 87 552 | 75 376 |
+| -Os LTO | 5 180 488 | 1 022 592 | 96 280 | 87 536 | 75 376 |
+| -O2 | 5 185 096 | 1 067 656 | 100 376 | 91 648 | 79 472 |
+| -O2 LTO | 5 184 584 | 1 079 856 | 100 376 | 91 632 | 75 376 |
+| -O3 | 5 189 104 | 1 129 096 | 104 472 | 91 648 | 83 568 |
+| -O3 LTO | 5 192 688 | 1 157 712 | 100 376 | 91 632 | 83 568 |
+
+The flags move leakcam_wake by 0.2 % at most: nncase and MPP are most of it (the map file is the lever, step 3).
+Speed decides (rule): [leakcam_cpubench.c](leakcam_cpubench.c) times the wake path's CPU steps on a fixed synthetic
+frame pair (reduce x2, compare, keyframe compress2 level 3, CRC; not the KPU net) and prints a check line so every
+build is shown to compute the same. Host (x86, -O2): reduce 2.3 ms, compare 0.38 ms, compress 36.7 ms, CRC 13.1 ms.
+A test image with all six variants (`LEAKCAM_BENCH=1` per variant, `LEAKCAM_BENCH_DIR` copies them in) and test025's
+memtest is built (kdimg 17:47); not flashed yet: the K230 USB boot device needs a VMware click (see Obstacles).
+
 ### Flags A, 2026-10-22: kernel -O2 (instead of the SDK's -O1) - not adopted, back to -O1 (user: safe side)
 
 rtthread.bin at -O2: 3 724 328 B (+12.4 KB). On the board:
@@ -142,6 +163,12 @@ Energy per wake per build (ENERGY.txt section 3): the gain in uAh per wake and p
 
 ## Obstacles
 
+- **Unattended flash refused by VMware** (2026-10-23 17:47): `pt_boot1 high`, `pt_on`, `pt_run`, but 29f1:0230 did not
+  reach Linux in 60 s (the BL616 ports pass through by themselves, the K230 boot device asks "connect to Linux").
+  The runner stopped cleanly (rails off, BOOT1 low), the old image kept. Flash the bench image when someone is at
+  the Mac.
+- **A full SDK build wipes `images/sdcard/app`** and puts back only each app's own outputs: files copied there by hand
+  are gone from the image. -> `LEAKCAM_BENCH_DIR` makes the leakcam Makefile copy the prebuilt variants itself.
 - **Link failed after switching defaults off** (rt_assert_handler, rt_proc_entry_*, sys_cpu_usage undefined) -> SDK
   code needs RT_DEBUG, RT_USING_PROC + DFS_PROCFS and RT_USING_USAGE -> kept on.
 - **Defconfig step failed** (Kconfig.app: can't open venctest/Kconfig) -> the app list is generated from the folders
