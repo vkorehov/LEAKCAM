@@ -68,7 +68,7 @@ written when it happens). Nothing is left out: an empty part says so ("Not run y
 | [test038 battery brown-out below 3.10 V](test038-battery-brownout/README.md) | 2026-10-23 | **pass**: K230 VBAT cut -> rails off -> lockout HBN -> USB plug wakes (no EN); lockout skipped when USB is in; BL616 watchdog (12.9 s recovery); below 3 V needs a lab supply |
 | [test039 K230 console over the BL616 link](test039-k230-console-over-link/README.md) | 2026-10-23 | pass: SPL, OpenSBI, kernel, msh, agent on /dev/ttyACM1 (4 Mbaud from the first line, 0 garbage), typing works, frames split; boot to app init 0.484 -> 0.30 s |
 | **High level (100+): the product's whole flow** | | |
-| [test100 Wi-Fi throughput end to end](test100-wifi-throughput/README.md) | | planned |
+| [test100 Wi-Fi throughput end to end](test100-wifi-throughput/README.md) | 2026-10-23 | steps 1-3 pass: BL616 alone (join 3.8 s, joined 80 mA), K230 over the NetHub bridge (scan, join, DHCP, ping 8.8.8.8); BL616 hang in the event callback fixed; open: join 10 s scan wait, throughput (step 4) |
 | [test101 session length](test101-boot-and-session-time/README.md) | | planned |
 | [test102 session current](test102-session-current/README.md) | | planned |
 | [test103 leak pipeline timing](test103-leak-pipeline-timing/README.md) | | later: after the cameras, Wi-Fi and the product firmware |

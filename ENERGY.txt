@@ -33,6 +33,19 @@ Keep this file current when a test or a change moves a figure. The audit that cl
   Total sleep                                 ~15-20 uA     [e] -> about 11-15 mAh/month; measured by test030
 
 
+2b. Wi-Fi (test100, USB-C 1 VBUS meter, K230 rails off unless named; on USB the charger's own draw is in it)
+---------------------------------------------------------------------------------------------------------
+
+  BL616 app awake, radio off                  62 mA   [m test100]
+  radio up (RF, Wi-Fi task, manager)          64 mA   [m test100]  +2 mA
+  scanning continuously                       85-88 mA [m test100] +24 mA (receiver on)
+  join (association + WPA + DHCP), peak       88 mA   [m test100]
+  joined, idle (no Wi-Fi power save)          80 mA   [m test100]  +18 mA over radio up: power save is the lever
+  joined, light traffic (checks in a loop)    80 mA avg [m test100] TX bursts too short for the meter
+  K230 running + bridge up, idle              211-221 mA, peak 223 [m test100]
+  join cost on battery: ~4 s at ~88 mA        ~0.1 mAh per join [e from m]
+
+
 3. Wakes
 --------
 

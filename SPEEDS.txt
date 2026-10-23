@@ -36,7 +36,11 @@ or a measurement yet. Keep this file current when a test or a setting changes it
   Camera I2C (IIC0, IIC4)     not set up yet               -                                     400 kHz (OV5647)        -         test019
   Camera CSI0 / CSI2          not set up yet               -                                     OV5647 2-lane, 1280x960 -         test019
                                                                                                  binned at 45 fps
-  Wi-Fi (BL616 radio)         not running yet              -                                     2.4 GHz 802.11ax 20 MHz -         test100
+  Wi-Fi (BL616 radio)         2.4 GHz, ch 6, 802.11n       BL616 alone: radio up 0.63 s, scan    2.4 GHz 802.11ax 20 MHz open      test100
+                              (the AP's)                   2.93 s, join+DHCP 3.8-4.1 s, internet
+                                                           check 70-158 ms; K230 over the bridge:
+                                                           scan 4.0 s, join 14 s (10 s of it a
+                                                           scan_with_info timeout: to fix, ~4 s)
   Microphone (codec ADC)      16 kHz, 16-bit mono          -42 dBFS floor at 54 dB gain          -                       n/a       test011
   LED PWM (TPS61161 CTRL)     25 kHz (40000 ns period)     white 66.7 mA, IR 133 mA at 100 %     -                       n/a       test008
   USB-C 1 (K230 USB 2.0)      USB boot / flashing only     NAND writes 3.7-5.5 MB/s while        -                       n/a       test018
