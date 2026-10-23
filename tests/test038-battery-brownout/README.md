@@ -118,6 +118,9 @@ state of charge (ENERGY.txt section 1, usable charge).
   again the boot line tells a hang (watchdog) from anything else.
 - 16:27 retest: USB-C 1 plugged in during a session (K230 on): PGOOD low at once (charging), lockout skipped. With the
   CH340 off the board the mid-session plug works (the 0.03 mA case above is not reproduced).
+- 16:28 retest of the real lockout with the fixed firmware: USB-C 1 out, `pt_session 10000 lockout 3000` -> LOCKOUT
+  HBN 28 s after power-on (16:29:19, off USB); USB-C 1 plugged -> BL616 back on USB at 16:29:36 by itself, "woke
+  by usb", no EN. Pass.
 - **`make flash` waited for ever on the ROM** (2026-10-23) -> `bl616_isp.py` took the last ttyACM of the firmware, the
   second port (`/dev/ttyACM1`, the K230 console), and sent `reboot uart` to the K230. Fixed: it takes interface 0 only.
 (Since 2026-10-23 the K230 console is the BL616's `/dev/ttyACM1`, over the link UART from the first SPL line,
