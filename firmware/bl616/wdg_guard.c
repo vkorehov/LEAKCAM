@@ -2,6 +2,7 @@
 
 #include "bflb_wdg.h"
 #include "bl616_glb.h"
+#include "bl616_hbn.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -33,3 +34,23 @@ bool wdg_guard_start(void)
     xTaskCreate(wdg_feed_task, "wdg", 256, NULL, configMAX_PRIORITIES - 1, NULL);
     return rr.reset_recorder_wdt_rst_n;
 }
+
+#ifdef CONFIG_SHELL
+#include "shell.h"
+
+extern int bl_sys_reset_por(void);
+
+/* ISP entry for tools/power-bringup/bl616_isp.py: the SDK's `reboot uart` sets the ROM's user-boot field and resets
+ * with bl_sys_reset_por(), which leaves this watchdog running: it reset the ROM every 8 s, before the ROM had
+ * enumerated on USB, and the field (kept across resets) sent every reset back into the ROM - no USB device until a
+ * 3V3 cut (2026-10-23, tests/test100 Obstacles). Stop the watchdog first, then the same as `reboot uart`. */
+static void cmd_isp(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    bflb_wdg_stop(wdg);
+    HBN_Set_User_Boot_Config(1);
+    bl_sys_reset_por();
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_isp, isp, watchdog off then reset into the ROM for USB ISP);
+#endif

@@ -5,7 +5,8 @@
     bl616_isp.py --boot PORT  -> after flashing: ROM boots the new firmware (clears the user-boot field, resets)
     bl616_isp.py --wait-app   -> after flashing: waits for the firmware's console, prints its port
 
-Both firmwares (test and product) are built for the SDK board bl616dk, whose shell has `reboot uart`:
+Both firmwares (test and product) have `isp` (wdg_guard.c: watchdog off, then as `reboot uart`); the SDK board bl616dk's
+shell has `reboot uart`:
 it sets the HBN user-boot field to 1 and does a power-on reset, and the ROM then starts as if BOOT were
 high. Their console is the SDK's USB CDC (ffff:ffff); the ROM enumerates as Bouffalo CDC (349b:6160).
 The field lives in HBN_RSV2 (0x2000F108), which a reset keeps: BLFlashCommand's reset alone lands in the ROM
@@ -134,8 +135,14 @@ def main():
         return
     if APP not in now:
         sys.exit("bl616_isp: no BL616 on USB (PR1 cable, 'connect to Linux'?); else BOOT + EN by hand")
-    print(f"{now[APP]}: reboot uart", file=sys.stderr)
-    send(now[APP], "reboot uart")
+    # `isp` stops the watchdog first (firmware/bl616/wdg_guard.c); `reboot uart` left it running into the ROM, which it
+    # reset every 8 s before the ROM enumerated (2026-10-23). Firmware without `isp` (older builds) gets `reboot uart`.
+    print(f"{now[APP]}: isp", file=sys.stderr)
+    send(now[APP], "isp")
+    time.sleep(1.5)
+    if APP in ports():
+        print(f"{now[APP]}: reboot uart (no isp command in this firmware)", file=sys.stderr)
+        send(now[APP], "reboot uart")
     print(wait_for(ROM, "BL616 ROM (349b:6160)", a.timeout))
 
 

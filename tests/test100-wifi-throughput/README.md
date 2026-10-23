@@ -1,6 +1,6 @@
 # test100: Wi-Fi throughput, K230 -> SDIO -> BL616 -> AP
 
-Status: **step 1 written** (2026-10-23): `pt_wifi` in bl616_powertest (scan, join + DHCP, status, leave) builds (1.06 MB); not run yet: the PR1 USB cable broke during its flash.
+Status: **step 1 written** (2026-10-23): `pt_wifi` in bl616_powertest (scan, join + DHCP, status, leave) builds (1.06 MB); not run yet: its first flash hit the watchdog/ROM loop (Obstacles), fixed by `isp`.
 
 The product path for clips and checks: the K230's lwIP over the NetHub SDIO bridge (test015: bus 21 MB/s, not the
 limit) to the BL616's 2.4 GHz radio. Needs the product BL616 firmware (open on rev 1) and stored credentials
@@ -76,6 +76,10 @@ Battery current: Wi-Fi join (energy per join, paid on every networked session), 
 - **Test firmware too small for Wi-Fi** (2026-10-23): the link failed on `vTaskSetThreadLocalStoragePointerAndDelCallback`
   (lwIP's FreeRTOS port) -> the product's FreeRTOS settings in the test firmware: 32 priorities, 100 KB heap, timer
   stack 1024, thread-local storage. Image 158 KB -> 1.06 MB.
-- **The PR1 USB cable broke again during the first flash of step 1** (2026-10-23 21:2x): after `reboot uart` the ROM
-  never enumerated, no VMware offer, BOOT + EN by hand no help, board drawing 51 mA (alive). The user found the
-  cable broken. Resolder, then `make flash` (the new image is built).
+- **No BL616 on USB after `reboot uart`, for good** (2026-10-23 21:2x, the first flash of step 1): the ROM never
+  enumerated, no VMware offer, BOOT + EN no help, board alive (51 mA); after a 3V3 cut the app came back saying "reset
+  by the watchdog". Cause: the new BL616 watchdog (wdg_guard.c, added the same day) kept running through the SDK's
+  `reboot uart` (`bl_sys_reset_por()`) into the ROM and reset it every 8 s, before it enumerated; the user-boot
+  field, kept across resets, sent each reset back into the ROM. Not the cable. Fix: `isp` command in wdg_guard.c
+  (watchdog off, then the same reset), `bl616_isp.py` sends it; rule: every BL616 firmware has `isp`. The earlier
+  flash with the watchdog running (16:26) passed by luck: inside the first 8 s.
