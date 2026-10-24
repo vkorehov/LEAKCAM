@@ -52,7 +52,10 @@ else
     # `make log` and a failed build exited 0 (2026-10-23, the 3200 MT/s SPL).
     if [[ "${1:-}" == "log" ]]; then
         shift
-        CMD=(bash -o pipefail -c "make ${MAKE_J:+-j$MAKE_J} $(printf '%q ' "$@") 2>&1 | tee log.txt")
+        # printf '%q ' with no arguments prints '' and make stopped on the empty name (2026-10-24): quote only real ones
+        ARGS=""
+        [[ $# -gt 0 ]] && ARGS="$(printf '%q ' "$@")"
+        CMD=(bash -o pipefail -c "make ${MAKE_J:+-j$MAKE_J} $ARGS 2>&1 | tee log.txt")
     fi
 fi
 

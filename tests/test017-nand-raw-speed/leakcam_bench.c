@@ -205,6 +205,33 @@ static int nand_bench(int argc, char **argv)
 }
 MSH_CMD_EXPORT(nand_bench, test017: raw NAND speed: read [blocks] | write [blocks]);
 
+/* test017 (2026-10-24): the first bytes of one /bin page, to compare a fast clock against 50 MHz byte for byte: a
+ * capture one clock late shows as the same data shifted by one nibble (4-line reads), not as noise.
+ * nand_dump [block] [page] [bytes]: block counts from nand0's first block. */
+static int nand_dump(int argc, char **argv)
+{
+    struct rt_mtd_nand_device *d0 = (struct rt_mtd_nand_device *)rt_device_find("nand0");
+    rt_uint32_t blk = argc > 1 ? (rt_uint32_t)atoi(argv[1]) : 0, pg = argc > 2 ? (rt_uint32_t)atoi(argv[2]) : 0;
+    rt_uint32_t n = argc > 3 ? (rt_uint32_t)atoi(argv[3]) : 32;
+    rt_uint8_t *buf;
+
+    if (!d0)
+        return -1;
+    buf = rt_malloc_align(d0->page_size, 64);
+    if (!buf)
+        return -1;
+    if (n > d0->page_size)
+        n = d0->page_size;
+    rt_err_t e = rt_mtd_nand_read(d0, (d0->block_start + blk) * d0->pages_per_block + pg, buf, d0->page_size, RT_NULL, 0);
+    rt_kprintf("nand_dump: block %u page %u status %d:", (unsigned)blk, (unsigned)pg, (int)e);
+    for (rt_uint32_t i = 0; i < n; i++)
+        rt_kprintf(" %02x", buf[i]);
+    rt_kprintf("\n");
+    rt_free_align(buf);
+    return 0;
+}
+MSH_CMD_EXPORT(nand_dump, test017: first bytes of a nand0 page [block] [page] [bytes]);
+
 static dw_spi_reg_t *spi0_regs(void)
 {
     static dw_spi_reg_t *r;
@@ -255,7 +282,7 @@ MSH_CMD_EXPORT(nand_clk, test017: show or set the NAND QSPI clock [hz]);
 extern int dw_spi_set_rx_sample(int bus, int sd, int se, int sd_multi, int se_multi);
 static int nand_rxsd(int argc, char **argv)
 {
-    static int sd = RT_SPI0_RXSD, se, sdm = RT_SPI0_RXSD, sem;
+    static int sd = RT_SPI0_RXSD, se, sdm = 6, sem = 1;   /* boot: drv_spi.c's SPI0 defaults (install.sh) */
     if (argc > 1)
     {
         sd = atoi(argv[1]);
@@ -264,11 +291,27 @@ static int nand_rxsd(int argc, char **argv)
         sem = argc > 4 ? atoi(argv[4]) : se;
         dw_spi_set_rx_sample(0, sd, se, sdm, sem);
     }
-    rt_kprintf("nand_rxsd: 1-line delay %d edge %d, multi-line delay %d edge %d (boot default %d)\n", sd, se, sdm, sem,
+    rt_kprintf("nand_rxsd: 1-line delay %d edge %d, multi-line delay %d edge %d (boot: %d 0, 6 1)\n", sd, se, sdm, sem,
                RT_SPI0_RXSD);
     return 0;
 }
 MSH_CMD_EXPORT(nand_rxsd, test017: NAND SPI read sample delays [delay [edge [multi_delay [multi_edge]]]]);
+
+/* tests/test017 (2026-10-24): the multi-line data clock (4-line page reads) apart from the 1-line clock (commands,
+ * status polls: nand_clk); nand_clk2 <hz>, 0 = the same as nand_clk */
+extern int dw_spi_set_multi_hz(int bus, rt_uint32_t hz);
+static int nand_clk2(int argc, char **argv)
+{
+    static rt_uint32_t hz = 100000000;   /* boot: drv_spi.c's SPI0 default (install.sh) */
+    if (argc > 1)
+    {
+        hz = (rt_uint32_t)atoi(argv[1]);
+        dw_spi_set_multi_hz(0, hz);
+    }
+    rt_kprintf("nand_clk2: multi-line data clock %u Hz (0 = the 1-line clock)\n", (unsigned)hz);
+    return 0;
+}
+MSH_CMD_EXPORT(nand_clk2, test017: NAND multi-line data clock apart from the 1-line one [hz]);
 
 /* test022 boot time: rdtime counts from the SoC reset, so these are times after reset release (ROM, SPL, DDR
  * training and OpenSBI are all before "kernel init start"). The sections sort by name: "N.9" runs last in level N. */

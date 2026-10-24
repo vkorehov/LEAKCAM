@@ -1,13 +1,17 @@
 # test017: SPI NAND raw speed and SPI clock
 
-Status: **80 MHz adopted** (2026-10-21, kernel + U-Boot/SPL, sample delay 5); 100 MHz has no sample-delay window. Bench: [leakcam_bench.c](leakcam_bench.c) (SDK copy, `bsp/maix3/board/`).
+Status: **100 MHz data adopted** (2026-10-24, kernel): 1-line transfers (commands, status polls) at 80 MHz delay 5,
+4-line data at 100 MHz delay 6 + edge (per-phase SPI timing patch in install.sh); U-Boot/SPL stay at 80 MHz delay 5. Bench: [leakcam_bench.c](leakcam_bench.c) (SDK copy, `bsp/maix3/board/`).
 
 test011 measured the file system: read 9.4 MB/s (shell) / 12.7 MB/s (user program), write 1.8 MB/s. This splits
 it into the NAND itself and UFFS, and checks the SPI clock's headroom.
 
 ## Setup
 
-**MISSING**: hookup, firmware / image, and the probes named in Metrics.
+2026-10-24: USB-C 1 on the Mac (power + K230 USB boot), BL616 test firmware (bl616_powertest) on /dev/ttyACM0,
+K230 console on /dev/ttyACM1 (tools/power-bringup/board.py); RPi camera unplugged (Obstacles). Image: k230d_rtos_leakcam
+kdimg with the bench (leakcam_bench.c in the SDK's board/), flashed hands-free (BOOT1 high through the BL616).
+Probes: as in Metrics; no current meter in the 2026-10-24 runs.
 
 ## Needs (build features and dependencies)
 
@@ -86,6 +90,27 @@ Not tried yet: the W25N02KV's own output driver strength (its configuration regi
 difference, test017 2026-10-21) - the NAND drives the read data, a weak default would explain slow data edges.
 80 MHz, delay 5 stays.
 
+### 100 MHz data with the 1-line phase at 80 MHz, 2026-10-24 (split100.py, verify100.py, boots100.py)
+
+The nibble check (shift100.py) showed the 4-line data correct at 100 MHz with
+multi-line delay 4-6: the failures came from the 1-line status reads, which have no window at 100 MHz. So the driver
+patch now also keeps a clock divider per phase (`dw_spi_set_multi_hz()`, bench `nand_clk2`): 1-line at the configured
+80 MHz, 4-line data at 100 MHz. Sweep of the data delay, 3 reads of 64 /bin blocks each against the 50 MHz checksum:
+
+| Data at 100 MHz | Clean delays | Failing |
+|---|---|---|
+| Edge 0 | 5-8 | 2-4, 9 |
+| Edge 1 | 4-8 | 2-3, 9 |
+
+Edge 1 samples half a step (0.625 ns) later, so the window is 9 contiguous half steps (~5.6 ns); centre = delay 6
+edge 1, set as SPI0's boot default in the patch. At the boot defaults (verify100.py):
+all of /bin (160 blocks) read 10/10 with the reference checksum, 0 errors, 23.0 MB/s (20.6 at 80 MHz: +12 %);
+program + read-back of 32 spare blocks 10/10 without errors (quad programs run at the data clock too), program
+5.1 MB/s, read back 20.9 MB/s (2 KiB pages); K230 heap free 7.03 -> 7.31 MB (no fall), chip 42.8 -> 43.7 C.
+10 cold boots (boots100.py): all reached app init at 0.311-0.312 s with /bin
+and /sdcard mounted (mounts done 0.302-0.303 s) and read all of /bin with the reference checksum, 23.0 MB/s.
+Adopted. One of verify100's 10 reads ran at 12.3 MB/s with correct data (open; not seen in the 10 boot reads).
+
 ## Metrics (2026-10-21, bench image)
 
 Setup (2026-10-21): USB-C 1 the only power path (USB-C 2 VBUS cut, PR1 VBUS cut), meter (10 A range, 0.1 mA
@@ -102,18 +127,19 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | This part's boot share | the mounts, 0.70 s (70 %) | - | at 50 MHz |
 | Test run time | read loop 12 s, write loop 21 s, clock steps 10 s, stability 30 s | - | |
 | Raw read 50 / 80 MHz | 15.6 / 20.6 MB/s | 25 / 40 MB/s bus | 62 % / 52 % |
+| Raw read, data at 100 MHz (2026-10-24, adopted) | 23.0 MB/s | 50 MB/s bus | 46 %; 1-line phases at 80 MHz; one of 10 reads 12.3 MB/s (open) |
 | Program | 4.6-5.0 MB/s | chip limit | |
 | Current idle / read 50 / read 80 / program | 204 / 225 / 232 / 235-236 mA | floor 204 | USB-C 1 VBUS |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
+| Voltage under load (min) | **MISSING**: 2026-10-24 the cell was charging (530 mA at idle, user), which hides the board's draw; retake with the cell full (D1 off) | cutoff 3.10 V (bug-004) | at the probes above |
 | Energy per MiB read, whole board | 57 mJ at 50 MHz, 45 mJ at 80 MHz | - | 21 % less: shorter time at the 204 mA floor |
 | Per day | inside the boot (mounts) and sessions | ENERGY.txt 3 | |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Temperature die / board (start / peak / end) | die 42.8 / 43.7 / 43.1 C, board (AHT20) 33.4 / 33.9 / 33.9 C (2026-10-24, 10 /bin reads + writes) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | K230 heap free 7.03 / 7.03 / 7.31 MB of 8 MiB, max used 1.53 MB; BL616 free 230960 / min 226748 / 230960 B, 14 blocks, 0 deleted tasks, unchanged over 10 reads: no leak (2026-10-24) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB | minimal image (rule) | the image this run used |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, -ffunction/-fdata-sections, --gc-sections, strip (no LTO) | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
+| Features over the minimal image | n/a: the NAND driver is the boot device, part of test008's floor; the per-phase patch adds two fields and two setters | test008 floor | bytes, boot ms, RAM, current |
 | Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
-| Power, energy per operation | **MISSING** | - |  |
+| Power, energy per operation | **MISSING**: as voltage, cell charging on 2026-10-24; at 100 MHz the read takes 10 % less time than at 80 MHz | - |  |
 
 ## Boot time
 
@@ -138,3 +164,17 @@ Battery current during raw reads, programs, erases at each NAND clock; energy pe
 - **BL616 scanning for "Vlad" by itself after the bridge sessions** (2026-10-24, seen at the sweep's end, rails off) ->
   autoconnect left enabled by the bridge's join -> open: the bridge must disable autoconnect when the K230 goes off
   (radio current while it should be idle).
+- **The first nibble-shift check compared erased pages** (2026-10-24, shift100.py) -> pages 0/0, 0/1, 3/5 of /bin are
+  all ff: any shift matches -> the script now picks pages with varied bytes at 50 MHz first.
+- **I stopped that run by a name pattern and killed my own shell** (exit 144) -> the pattern matched the command
+  line of the shell that ran it, the memory rule says kill by recorded PID only -> runners record their PID
+  (`echo $! > file`) and are stopped by that.- **K230 3V3 stopped coming up** (2026-10-24 ~20:03, after shift100.py ran fine at ~19:55) -> two flashes failed "no
+  K230 USB boot device", and the chained split100.py then ran on the old image (every read None) -> `pt_on`: "FAIL: 3V3
+  not up 100 ms after K230_PWR (0 of 5 lines high)", also after a BL616 reboot (sense pins re-inited as inputs, so the
+  reading is real); USB-C 1 on the Mac, 540 mA charging, no 29f1 device in VMware -> the RPi camera on the
+  connector held the rail down: unplugged, 3V3 up in 1.7 ms again (cause on the camera side open: check the camera
+  and its flex before plugging it back); it was plugged in around shift100.py (user): sweep100 and the 2026-10-21 runs
+  ran without it, shift100's result was confirmed without it by split100/verify100, so no result is void; runners now chain the test only after a successful flash (`&&`).
+- **`leakcam_docker_build.sh log` stopped at once: "empty string invalid as file name"** (2026-10-24) -> my pipefail
+  fix quoted the extra make arguments with `printf '%q '`, which prints `''` when there are none -> only real
+  arguments are quoted now (comment at the fix, docker/leakcam_docker_build.sh).

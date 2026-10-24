@@ -125,14 +125,15 @@ open(p, 'w').write(s[:i] + open(f).read() + s[j + len(tail):])
 PY
 grep -q 'LEAKCAM: wait on real time' "$SPN" || { echo "busy-wait patch not applied"; exit 1; }
 
-# SPI read sample delay per phase (tests/test017, 2026-10-24): the DW SSI samples RX data RX_SAMPLE_DLY ssi_clk
-# cycles (1.25 ns, bit 16 = the other edge) after the clock. Canaan's driver writes one delay at configure time.
-# At 100 MHz (the W25N02KV's quad-read top) the 1-line status reads and the 4-line data reads want different delays
-# and no single value serves both (test017 sweep); so the standard (1-line) path and the multi-line path each write
-# their own, the multi pair (rdsd_multi / rdse_multi) defaulting to the boot value. dw_spi_set_rx_sample() lets
-# the bench (nand_rxsd) sweep them.
+# SPI timing per phase (tests/test017, 2026-10-24): the DW SSI samples RX data RX_SAMPLE_DLY ssi_clk cycles (1.25 ns,
+# bit 16 = the other edge) after the clock; Canaan's driver writes one delay and one clock at configure time. At
+# 100 MHz (the W25N02KV's top, 104 MHz) the 4-line data has a window (delay 4-6), the 1-line status reads do not, and
+# a mis-read status starts a data read before the page is ready. So the standard (1-line: commands, status polls)
+# path and the multi-line (data) path each write their own sample delay and clock divider: 1-line at the configured
+# clock, multi-line at div_multi when set. SPI0 (the NAND): 1-line 80 MHz delay 5 (Kconfig), 4-line data 100 MHz
+# delay 6 + edge (30/30 clean reads, 23.1 against 20.7 MB/s at 80 MHz). dw_spi_set_rx_sample() / dw_spi_set_multi_hz() let the bench sweep them.
 SPID=$RTT/drivers/interdrv/spi/drv_spi.c
-grep -q 'LEAKCAM: per-phase RX sample delay' "$SPID" || python3 - "$SPID" "$RTT/drivers/interdrv/spi/drv_spi.h" <<'PY'
+grep -q 'LEAKCAM: per-phase SPI timing' "$SPID" || python3 - "$SPID" "$RTT/drivers/interdrv/spi/drv_spi.h" <<'PY'
 import sys
 p, h = sys.argv[1], sys.argv[2]; s = open(p).read()
 def rep(a, b):
@@ -141,34 +142,51 @@ def rep(a, b):
     s = s.replace(a, b)
 rep('    uint8_t                 rdse;\n    uint8_t                 rdsd;\n',
     '    uint8_t                 rdse;\n    uint8_t                 rdsd;\n'
-    '    uint8_t                 rdse_multi;  /* LEAKCAM: per-phase RX sample delay, 2/4/8-line data phase */\n'
-    '    uint8_t                 rdsd_multi;\n')
+    '    uint8_t                 rdse_multi;  /* LEAKCAM: per-phase SPI timing, 2/4/8-line data phase */\n'
+    '    uint8_t                 rdsd_multi;\n'
+    '    uint32_t                div_cfg;     /* the configured divider (1-line transfers) */\n'
+    '    uint32_t                div_multi;   /* multi-line data divider, 0 = the configured one */\n')
 rep('} dw_spi_hw_info_t;\n', '} dw_spi_hw_info_t;\n\nstatic void *leakcam_spi_bus[3];   /* LEAKCAM: the registered buses, for dw_spi_set_rx_sample() */\n')
 rep('        writel(0, &spi->ssienr);\n        writel(spi_ctrlr0, &spi->spi_ctrlr0);\n',
     '        writel(0, &spi->ssienr);\n'
     '        writel(spi_bus->rdse_multi << 16 | spi_bus->rdsd_multi, &spi->rx_sample_delay);\n'
+    '        if (spi_bus->div_multi)\n            writel(spi_bus->div_multi, &spi->baudr);\n'
     '        writel(spi_ctrlr0, &spi->spi_ctrlr0);\n')
 rep('    /* Standard transfers must not inherit enhanced instruction/address state. */\n',
     '    writel(spi_bus->rdse << 16 | spi_bus->rdsd, &spi->rx_sample_delay);   /* the 1-line delay */\n'
+    '    if (spi_bus->div_multi)\n        writel(spi_bus->div_cfg, &spi->baudr);   /* and the 1-line clock */\n'
     '    /* Standard transfers must not inherit enhanced instruction/address state. */\n')
+rep('    writel(div, &spi->baudr);\n', '    writel(div, &spi->baudr);\n    spi_bus->div_cfg = div;\n')
 rep('    spi_bus->rdse = 0;\n    spi_bus->rdsd = rdsd;\n',
     '    spi_bus->rdse = 0;\n    spi_bus->rdsd = rdsd;\n    spi_bus->rdse_multi = 0;\n    spi_bus->rdsd_multi = rdsd;\n'
+    '    spi_bus->div_multi = 0;\n'
+    '    if (info->idx == 0) {   /* the NAND: 4-line data at 100 MHz, delay 6 + other edge, the centre of the clean\n'
+    '                             * window delay 4-8 (both edges) found by tests/test017 split100.py */\n'
+    '        spi_bus->rdsd_multi = 6;\n        spi_bus->rdse_multi = 1;\n'
+    '        spi_bus->div_multi = sysctl_clk_get_leaf_freq(info->clk) / 100000000;\n    }\n'
     '    if (info->idx < 3)\n        leakcam_spi_bus[info->idx] = spi_bus;\n')
 s += ('\n/* LEAKCAM: set the RX sample delays of a bus (tests/test017 sweep); applied from the next transfer */\n'
       'int dw_spi_set_rx_sample(int bus, int sd, int se, int sd_multi, int se_multi)\n{\n'
       '    dw_spi_bus_t *b = bus >= 0 && bus < 3 ? leakcam_spi_bus[bus] : RT_NULL;\n'
       '    if (!b)\n        return -1;\n'
       '    b->rdsd = (uint8_t)sd; b->rdse = (uint8_t)se; b->rdsd_multi = (uint8_t)sd_multi; b->rdse_multi = (uint8_t)se_multi;\n'
+      '    return 0;\n}\n'
+      '\n/* LEAKCAM: the multi-line data clock of a bus (0 = the configured clock), from the next transfer */\n'
+      'int dw_spi_set_multi_hz(int bus, uint32_t hz)\n{\n'
+      '    dw_spi_bus_t *b = bus >= 0 && bus < 3 ? leakcam_spi_bus[bus] : RT_NULL;\n'
+      '    if (!b)\n        return -1;\n'
+      '    b->div_multi = hz ? sysctl_clk_get_leaf_freq(b->hw->clk) / hz : 0;\n'
       '    return 0;\n}\n')
 open(p, 'w').write(s)
 t = open(h).read()
 if 'dw_spi_set_rx_sample' not in t:
     t = t.rstrip('\n')
     i = t.rfind('#endif')
-    t = t[:i] + 'int dw_spi_set_rx_sample(int bus, int sd, int se, int sd_multi, int se_multi);   /* LEAKCAM */\n\n' + t[i:] + '\n'
+    t = t[:i] + 'int dw_spi_set_rx_sample(int bus, int sd, int se, int sd_multi, int se_multi);   /* LEAKCAM */\n' \
+        'int dw_spi_set_multi_hz(int bus, uint32_t hz);   /* LEAKCAM */\n\n' + t[i:] + '\n'
     open(h, 'w').write(t)
 PY
-grep -q 'LEAKCAM: per-phase RX sample delay' "$SPID" || { echo "SPI sample delay patch not applied"; exit 1; }
+grep -q 'LEAKCAM: per-phase SPI timing' "$SPID" || { echo "SPI timing patch not applied"; exit 1; }
 
 # poll(): RT-Thread's poll_do() never clears pt->triggered, so after one wake-up whose event leaves
 # the fd not ready, poll_wait_timeout() skips the wait and poll() re-checks in a busy loop until the

@@ -78,8 +78,9 @@ CONFIG_SPI_NAND_ON_OSPI=y
 CONFIG_SPI_NAND_SPI_BUS_WIDTH_4=y
 CONFIG_SPI_NAND_SPI_FREQ=80000000
 CONFIG_SPI_NAND_WINBOND=y
-# 80 MHz (800 MHz / 10) and sample delay 5 x 1.25 ns: clean window 3-8 at 50 and 80 MHz, 100 MHz has none
-# (tests/test017; outside the window single bits flip with no error reported)
+# 80 MHz (800 MHz / 10) and sample delay 5 x 1.25 ns: clean window 3-8 at 50 and 80 MHz; this is the 1-line clock
+# (commands, status polls), the 4-line data runs at 100 MHz, delay 6 + edge (install.sh per-phase patch; tests/test017;
+# outside the window single bits flip with no error reported)
 CONFIG_RT_SPI0_RXSD=5
 CONFIG_RT_USING_DFS_UFFS=y
 CONFIG_RT_UFFS_ECC_MODE_3=y
