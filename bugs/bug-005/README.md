@@ -1,6 +1,6 @@
 # bug-005: the Pi Zero camera cable lands camera 3V3 on J4 pin 1 (GND)
 
-Found: 2026-10-24, test017 (the K230's 3V3 stopped coming up). Status: open, cause found (connector contact side), fix: rework J4/J5 or a reversed cable.
+Found: 2026-10-24, test017 (the K230's 3V3 stopped coming up). Status: open, cause found; bench: opposite-side cable, product: crossover FPC (no rework).
 
 ## What happened
 
@@ -39,11 +39,19 @@ bottom-contact" and its footprint verified; the contact side was never compared 
 
 ## Fix
 
-- Rev 1 rework: JUSHUO AFC07-S22ECA-00 (C262642) on the same pads (identical footprint), hot air; the standard
-  Pi Zero cables then fit as on the BPI board.
-- Or, without rework: a 15-to-22 cable with the contacts on opposite sides at the two ends.
-- Rev 2: C262642 in the BOM. Review rule: for every connector, trace each conductor from the far end through the
-  cable's contact sides and the connector's contact type to the pad (a mating check), not only the pin numbers.
+The geometry ties the pin order to the camera's facing: with a straight cable folded 180 degrees over the board (the
+design), the camera's pin-1 end lies over the board connector's pin-22 end. A top-contact connector or an
+opposite-side cable each fix the pin order only by flipping the camera (lens towards the board), so:
+
+- No connector rework (a top-contact part, e.g. JUSHUO AFC07-S22ECA-00 C262642 or Molex 52435-2271, flips the
+  camera in the enclosure; checked and dropped 2026-10-24).
+- Bench (test020/030): an opposite-side 22-to-15 cable (Raspberry Pi / Adafruit 5818-5820, 5-20 cm) in the existing
+  J4/J5; the camera faces the other way, irrelevant on the bench.
+- Product: custom 2-layer FPC with a conductor crossover (pin k on the board to pin k on the camera in the folded
+  position), ~45 mm top camera, ~38 mm bottom, into the existing bottom-contact J4/J5.
+- Before power after any cable change: continuity camera pin 15 (3V3) -> J4/J5 pin 22.
+- Review rule: for every connector, trace each conductor from the far end through the cable's contact sides and
+  the connector's contact type to the pad, in the mounted (folded) position, not only the pin numbers.
 
 ## Open
 

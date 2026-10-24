@@ -6,4 +6,4 @@ bug-001  2026-10-17  worked around (47 k)     U1 is BQ24072T: battery never char
 bug-002  2026-10-17  open, cause to confirm     K230 rails on: ~2.2 V back-fed into VUSB, USB-C hosts never turn on VBUS
 bug-003  2026-10-17  solved (R45 bridged)      K230 PMU block hangs on any access: INT4 only 0.3 V (100 k pull-up too weak); INT4 = 1V8 boots
 bug-004  2026-10-20  open, fix in rev 2        No battery measurement on the BL616: cannot stop before the cell drains; rev 2: VBAT divider on PGOOD (IO3), rev 1: firmware cutoff on the K230's reading
-bug-005  2026-10-24  open, fix in rev 2        J4/J5 bottom-contact (05B20L22P), BPI/Pi Zero top: cable lands camera 3V3 on GND; rework C262642
+bug-005  2026-10-24  open, fix in rev 2        J4/J5 bottom-contact (05B20L22P), BPI/Pi Zero top: cable lands camera 3V3 on GND; crossover FPC
