@@ -7,7 +7,8 @@ flash path achieves, and its total time, as a reference for production programmi
 
 ## Setup
 
-K230: `pt_off`, `pt_boot1 high`, `pt_on`, `pt_run` on the BL616 console, "connect to Linux" for 29f1:0230, then
+K230: `pt_off`, `pt_boot1 high`, `pt_on`, `pt_run` on the BL616 console (29f1:0230 attaches by itself since 2026-10-24;
+before, "connect to Linux"), then
 `firmware/k230_board/flash_nand.sh` (erase 0-248 MB, then the kdimg; k230_flash_cli in the build container), timed
 by a wrapper script; `lsusb -t` / `lsusb -v` while the boot device is up. BL616: `make flash` (bl616_isp.py:
 `reboot uart`, BLFlashCommand 2 Mbaud over USB CDC, `--boot`). Meter in USB-C 1 VBUS, 10 A range.

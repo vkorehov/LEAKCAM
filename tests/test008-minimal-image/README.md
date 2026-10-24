@@ -101,7 +101,7 @@ Speed decides (rule): [leakcam_cpubench.c](leakcam_cpubench.c) times the wake pa
 frame pair (reduce x2, compare, keyframe compress2 level 3, CRC; not the KPU net) and prints a check line so every
 build is shown to compute the same. Host (x86, -O2): reduce 2.3 ms, compare 0.38 ms, compress 36.7 ms, CRC 13.1 ms.
 A test image with all six variants (`LEAKCAM_BENCH=1` per variant, `LEAKCAM_BENCH_DIR` copies them in) and test025's
-memtest is built (kdimg 17:47); not flashed yet: the K230 USB boot device needs a VMware click (see Obstacles).
+memtest is built (kdimg 17:47); flashed 2026-10-23 21:03 and run: the board results are "Flags B on the board" below.
 
 ### Flags B on the board, 2026-10-23 21:05 (leakcam_cpubench, 20 runs, median ms; check line identical in all six)
 

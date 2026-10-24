@@ -117,6 +117,23 @@ peak / 80 mA joined (user): the same as on the test-only path.
 **Pass** for the bridge path (scan, join, DHCP, internet from the K230). Open: the join's 10 s, the scan list, then step 4
 (throughput, needs a server the board can reach: this Linux VM is behind the Mac's NAT).
 
+### Robustness + leak loop, 2026-10-24 (after the fixes; verdict from the BL616's counters, not console text)
+
+`wloop2.py`: bridge up, 20 K230 `wifi scan`, then 8 x (`wifi disc`, `wifi join`); BL616 `mem` per cycle; at the end
+`pt_trace counts` (every wl_trace code counted since boot).
+
+| What | Result |
+|---|---|
+| K230 scan requests / scans run / finished | 28 / 28 / 28 (20 by hand + 8 by RT-Thread's join), 232 items, **0 failed sends** |
+| Joins / connect called / returned / link up | 8 / 8 / 8 / 8: **no hung connect** |
+| Lost K230 messages, lost events, leaves without DISCONNECT | 0, 0, 0 |
+| BL616 memory, 20 scans | free 194748 -> 194748 B, blocks 84, deleted 0: **no leak** |
+| BL616 memory, 8 joins | 11 KB once at the first join (station buffers), then 183528 -> 183544 B, blocks 119, deleted 0: **no leak** |
+
+**Pass** for the bridge. The K230 console lost bytes during the run ("ip 10.63.22", tables cut): the console bridge
+(k230con) polls the UART at idle priority since the IDLE fix and misses the 32-byte FIFO at 4 Mbaud when the Wi-Fi
+tasks run -> UART receive by interrupt (next).
+
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).

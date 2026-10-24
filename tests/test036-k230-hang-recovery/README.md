@@ -13,7 +13,8 @@ The product firmware does not run on rev 1 yet (rewrite after the tests), so the
 released (NAND boot), K230_ALIVE (the agent's heartbeat, an edge every 500 ms) watched; the first heartbeat edge
 stands in for READY (no link protocol in the test firmware; edges in the first 400 ms are the boot toggling
 JTAG_TCK = ALIVE and are ignored); no edge for 2 s (HEARTBEAT_STOP_MS) or no first edge within boot_ms -> rails
-off. The failure cases are made by the BL616 (the K230 console needs a VMware click per session): `hang` holds the
+off. The failure cases are made by the BL616 (when this ran the K230 console needed a VMware click per session; since
+test039 it is the BL616's `/dev/ttyACM1`, no click): `hang` holds the
 K230 in reset (CPU stopped, heartbeat frozen, as a hang looks from outside), `reboot` pulses the reset 50 ms (a
 restart mid-session, as the K230 watchdog would), `noboot` sets BOOT1 high (the ROM waits on USB, no agent). K230:
 the bench image from test018/019 (agent with its 20-25 s hook). USB-C 1 on a plain charger.

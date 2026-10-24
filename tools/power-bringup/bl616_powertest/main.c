@@ -115,11 +115,55 @@ static struct bflb_device_s *uart0;
 static bool uart_on;
 static volatile bool uart_echo;      /* test018: every received byte sent straight back */
 
+/* The K230 console arrives by interrupt (2026-10-24): polled, the 32-byte RX FIFO overflows in 80 us at 4 Mbaud, so the
+ * poller had to run without blocking - at priority 1 it starved IDLE (deleted tasks never freed, a Wi-Fi connect hung),
+ * at idle priority it missed bytes while the Wi-Fi tasks ran. The ISR drains the FIFO into rx_ring and wakes the
+ * bridge task, which blocks otherwise. */
+#define RX_RING 4096u
+static uint8_t rx_ring[RX_RING];
+static volatile uint32_t rx_head, rx_tail, rx_dropped;
+static TaskHandle_t bridge_task;
+
+static void uart_rx_isr(int irq, void *arg)
+{
+    (void)irq;
+    (void)arg;
+    uint32_t st = bflb_uart_get_intstatus(uart0);
+    if (st & UART_INTSTS_RTO)
+        bflb_uart_int_clear(uart0, UART_INTCLR_RTO);
+    while (bflb_uart_rxavailable(uart0)) {
+        uint8_t c = (uint8_t)bflb_uart_getchar(uart0);
+        uint32_t next = (rx_head + 1) % RX_RING;
+        if (next == rx_tail)
+            rx_dropped++;
+        else {
+            rx_ring[rx_head] = c;
+            rx_head = next;
+        }
+    }
+    BaseType_t woken = pdFALSE;
+    if (bridge_task)
+        vTaskNotifyGiveFromISR(bridge_task, &woken);
+    portYIELD_FROM_ISR(woken);
+}
+
+static void uart_rx_irq(bool on)
+{
+    bflb_uart_rxint_mask(uart0, !on);
+    if (on) {
+        bflb_irq_attach(uart0->irq_num, uart_rx_isr, NULL);
+        bflb_irq_enable(uart0->irq_num);
+    } else {
+        bflb_irq_disable(uart0->irq_num);
+    }
+}
+
 static void uart_stop(void)
 {
     uart_echo = false;
     if (!uart_on)
         return;
+    uart_rx_irq(false);
     bflb_uart_deinit(uart0);               /* first, so TX no longer drives the pad high */
     park(PIN_LINK_TX);
     park(PIN_LINK_RX);
@@ -138,7 +182,9 @@ static bool uart_start(void)
     bflb_gpio_uart_init(gpio, PIN_LINK_TX, GPIO_UART_FUNC_UART0_TX);
     bflb_gpio_uart_init(gpio, PIN_LINK_RX, GPIO_UART_FUNC_UART0_RX);
     bflb_uart_init(uart0, &cfg);
+    rx_head = rx_tail = 0;
     uart_on = true;
+    uart_rx_irq(!uart_echo);
     return true;
 }
 
@@ -190,19 +236,20 @@ static void uart_bridge_task(void *arg)
     static struct linesplit split;
     char buf[128];
     linesplit_init(&split, bridge_text, bridge_frame, NULL);
+    bridge_task = xTaskGetCurrentTaskHandle();
     for (;;) {
         if (!uart_on || uart_echo) {
             vTaskDelay(pdMS_TO_TICKS(20));
             continue;
         }
+        ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(20));   /* the RX interrupt wakes it; 20 ms covers a missed edge */
         unsigned n = 0;
-        int c;
-        while (n < sizeof(buf) && (c = bflb_uart_getchar(uart0)) >= 0)
-            buf[n++] = (char)c;
+        while (n < sizeof(buf) && rx_tail != rx_head) {
+            buf[n++] = (char)rx_ring[rx_tail];
+            rx_tail = (rx_tail + 1) % RX_RING;
+        }
         if (n)
             linesplit_feed(&split, buf, n);
-        else
-            taskYIELD();
     }
 }
 
@@ -483,7 +530,9 @@ static void print_status(bool line)
         printf("AHT20       : FAIL, %s\r\n", aht20_err(r));
 #endif
 #if PT_TEST_UART
-    printf("UART0 link  : %s\r\n", uart_on ? (uart_echo ? "on, echo" : "on, K230 console bridge (/dev/ttyACM1)") : "off");
+    printf("UART0 link  : %s, rx dropped %lu\r\n",
+           uart_on ? (uart_echo ? "on, echo" : "on, K230 console bridge (/dev/ttyACM1)") : "off",
+           (unsigned long)rx_dropped);
 #endif
 }
 
@@ -769,6 +818,7 @@ static int cmd_uart(int argc, char **argv)
         }
         if (!task)
             task = xTaskCreate(uart_echo_task, "uecho", 512, NULL, tskIDLE_PRIORITY, NULL) == pdPASS;   /* see k230con */
+        uart_rx_irq(false);             /* the echo task polls the FIFO itself */
         uart_echo = true;
         printf("UART0 echo at %lu baud (pt_uart off to stop)\r\n", (unsigned long)LINK_BAUD);
     } else {
@@ -1633,10 +1683,8 @@ int main(void)
     hw = xSemaphoreCreateMutex();
     xTaskCreate(background_task, "pt", 2048, NULL, 2, NULL);
 #if PT_TEST_UART
-    /* at the idle priority: the loop only yields while the K230 is powered, and above IDLE it starved it, so the
-     * memory of deleted tasks was never freed: the Wi-Fi manager's per-connect tasks piled up until a connect hung
-     * (2026-10-24, tests/test100); at the same priority taskYIELD() alternates with IDLE */
-    xTaskCreate(uart_bridge_task, "k230con", 1024, NULL, tskIDLE_PRIORITY, NULL);
+    /* blocks on the RX interrupt (uart_rx_isr): no busy loop, IDLE always runs (it frees deleted tasks) */
+    xTaskCreate(uart_bridge_task, "k230con", 1024, NULL, 5, NULL);
 #endif
     vTaskStartScheduler();
     while (1) {

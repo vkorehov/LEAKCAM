@@ -39,7 +39,7 @@ cases, one per operation the product repeats:
 
 | Operation repeated | Leak test | Cycles |
 |---|---|---|
-| Wi-Fi scan / leave + join over the bridge | test100 (`wloop.py`: 20 scans, 8 joins) | >= 8 |
+| Wi-Fi scan / leave + join over the bridge | test100 (`wloop2.py`: 20 scans, 8 joins, verdict from the BL616 counters) | >= 8 |
 | K230 session (power on, agent, power off) | test036 (`pt_session` loop) | >= 8 |
 | NAND power cut + remount | test028 (`plt_loop.py`, K230 `free` per cycle) | >= 8 |
 | DDR stress pass | test025 (memtest passes, K230 `free`) | >= 8 |
@@ -88,7 +88,7 @@ cases, one per operation the product repeats:
 | [test038 battery brown-out below 3.10 V](test038-battery-brownout/README.md) | 2026-10-23 | **pass**: K230 VBAT cut -> rails off -> lockout HBN -> USB plug wakes (no EN); lockout skipped when USB is in; BL616 watchdog (12.9 s recovery); below 3 V needs a lab supply |
 | [test039 K230 console over the BL616 link](test039-k230-console-over-link/README.md) | 2026-10-23 | pass: SPL, OpenSBI, kernel, msh, agent on /dev/ttyACM1 (4 Mbaud from the first line, 0 garbage), typing works, frames split; boot to app init 0.484 -> 0.30 s |
 | **High level (100+): the product's whole flow** | | |
-| [test100 Wi-Fi throughput end to end](test100-wifi-throughput/README.md) | 2026-10-23 | steps 1-3 pass: BL616 alone (join 3.8 s, joined 80 mA), K230 over the NetHub bridge (scan, join, DHCP, ping 8.8.8.8); BL616 hang in the event callback fixed; open: join 10 s scan wait, throughput (step 4) |
+| [test100 Wi-Fi throughput end to end](test100-wifi-throughput/README.md) | 2026-10-24 | steps 1-3 pass; robustness + leak loop pass (28/28 scans, 8/8 joins, 0 dropped, no BL616 leak) after 4 bridge fixes (event callback, upload retries, control task, IDLE starvation); open: K230 console byte loss (UART interrupt fix built), throughput (step 4) |
 | [test101 session length](test101-boot-and-session-time/README.md) | | planned |
 | [test102 session current](test102-session-current/README.md) | | planned |
 | [test103 leak pipeline timing](test103-leak-pipeline-timing/README.md) | | later: after the cameras, Wi-Fi and the product firmware |
@@ -120,7 +120,11 @@ cases, one per operation the product repeats:
 | Leak probes wet, Wi-Fi through the BL616 | not tested: needs the product BL616 firmware | |
 
 **Always:**
-- Build host = VMware VM on a Mac: every re-enumerated USB device needs "connect to Linux" on the Mac.
+- Build host = VMware VM on a Mac. Since 2026-10-24 VMware's USB popups are off: every re-enumerated device (K230
+  boot ROM and loader, BL616 app and ROM) connects to Linux by itself, so flashes of both chips, K230 power cycles and
+  soak / leak loops run **unattended** (background runners that log and recover by themselves). Only physical events
+  need hands: USB-C 1 plug / unplug, probe wetting, meter readings. A device missing from `lsusb` is a board or
+  firmware fault now, not a missed click. (Before: "connect to Linux" per re-enumeration; the results below say so.)
 - Serial ports: /etc/udev/rules.d/99-leakcam.rules opens them on every plug. Consoles: `/dev/ttyACM0` BL616 shell,
   `/dev/ttyACM1` K230 console (over the link UART since 2026-10-22, from the first SPL line; the CH340X `/dev/ttyUSB0`
   only for the BootROM).

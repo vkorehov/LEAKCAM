@@ -70,7 +70,7 @@ n/a: flashing runs from USB power.
 
 - **x86-only `k230_flash_cli`** -> run in the container with `--privileged -v /dev/bus/usb`.
 - **"No devices found. Polling" after the loader** -> no USB hot-plug events in the container ->
-  `--network host -v /run/udev:/run/udev:ro` (+ "connect to Linux" on the Mac).
+  `--network host -v /run/udev:/run/udev:ro` (+ "connect to Linux" on the Mac until 2026-10-24; popups are off now).
 - **Read-back fails** -> the loader can't read SPI NAND -> verify by booting.
 - **Re-flash needs B1 short** -> `pt_boot1 high` + `pt_hold` + `pt_run`; flash without `--auto-reboot`.
 - **Re-flash leaves stale blocks** -> the loader does not erase beyond each image -> erase first.
