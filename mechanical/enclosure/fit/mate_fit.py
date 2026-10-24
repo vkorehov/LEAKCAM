@@ -65,7 +65,9 @@ def say(s):
 
 
 def comps(m):
-    return {get(c, "Name2"): c for c in m.GetComponents(True)}
+    """the components in the fit; suppressed ones (USB_Type-C_Plug-1: its port is buried since 2026-10-23) have no
+    model to mate and are left out"""
+    return {get(c, "Name2"): c for c in m.GetComponents(True) if not get(c, "IsSuppressed")}
 
 
 def xfm(c):
