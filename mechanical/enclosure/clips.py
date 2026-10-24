@@ -353,8 +353,8 @@ def solid_fills(part):
     if not tools:
         print("solid fills: none")
         return
-    f = fm.InsertCombineFeature(BODY_ADD, list(main.values())[0],
-                                win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_DISPATCH, tools))
+    f = fm.InsertCombineFeature(BODY_ADD, nothing(),      # add: no main body, every body in the list
+                                win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_DISPATCH, list(main.values()) + tools))
     if f is None:
         raise RuntimeError("solid fills: combine failed")
     f.Name = "Solid fills (form_model.py)"
