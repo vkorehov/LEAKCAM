@@ -66,26 +66,26 @@ water), then the HBN wake path **~15 ms** (test021: 12-16 ms) = ~22 ms to main()
 Open: real water (tap, distilled, salt, wet towel) and a resistor sweep 10 k .. 10 M for the threshold in ohms;
 8 h dry without a false wake (step 5; the product's evlog will count wakes); the product firmware build (rewrite).
 
-## Metrics (to fill on every run: skill leakcam-test-metrics)
+## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
 Probes: current - battery lead, USB out (wake from sleep); voltage - LEAK_SENS (R71/R72 node), 3V3_SLEEP.
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | not measured yet | target (test022) | longest step: |
-| This part's boot share | not measured yet | - | |
-| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
-| wake latency on wet | not measured yet | - | % of the top |
-| Current idle / during (min / avg / peak) | not measured yet | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
-| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | not measured yet | - | scripts/energy.py |
-| Per day | not measured yet | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | to fill | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
-| Image (sizes) | to fill | minimal image (rule) | the image this run used |
-| Compile flags | to fill | smallest code (rule) | |
-| Features over the minimal image | to fill: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | to fill: speed / size / boot / current vs the current flags | the faster one stays | |
+| Boot, power-on -> READY (median of 5) | **MISSING** | target (test022) | longest step: |
+| This part's boot share | **MISSING** | - | |
+| Test run time | **MISSING** | - | setup (flashing, plugging, waiting) separately |
+| wake latency on wet | **MISSING** | - | % of the top |
+| Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
+| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
+| Power, energy per operation | **MISSING** | - | scripts/energy.py |
+| Per day | **MISSING** | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Image (sizes) | **MISSING** | minimal image (rule) | the image this run used |
+| Compile flags | **MISSING** | smallest code (rule) | |
+| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
 
 ## Boot time
 
@@ -101,4 +101,3 @@ The divider's current wet vs dry (1.65 uA dry; wet up to 3.3 uA): a standing lea
   flipped, while C109 was still discharging (tau 8.6 ms) -> waits 50 ms (wet) / 250 ms (dry) before the reading.
   The user pointed at the series resistors in the schematic; they were already in the formula (94 k).
 - **Holding a short while clicking "connect to Linux"** broke the contact for a moment: the dry-again test woke on that.
-

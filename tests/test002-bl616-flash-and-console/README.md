@@ -7,7 +7,7 @@ firmware [bl616_powertest](../../tools/power-bringup/bl616_powertest).
 
 ## Setup
 
-Not written at the time; the setup is in the introduction above and in the Results.
+**MISSING**; the setup is in the introduction above and in the Results.
 
 ## Needs (build features and dependencies)
 
@@ -17,11 +17,11 @@ BL616: SDK board init, USB CDC console (CherryUSB CDC-ACM, CONFIG_BSP_CONSOLE_US
 
 ## Steps
 
-Not written at the time; the steps are the rows of the Results tables.
+**MISSING**; the steps are the rows of the Results tables.
 
 ## Pass
 
-Not written at the time; every Results row carries its pass / fail.
+**MISSING**; every Results row carries its pass / fail.
 
 ## Results
 
@@ -45,15 +45,15 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Test run time | `make flash` 26 s (ISP 1 s, flasher 3.8 s, the rest the container + waits) | - | setup: 2 "connect to Linux" clicks + 1 EN tap (none since 2026-10-22: `--boot`) |
 | Flash write | 116.6 KB in 571 ms = 204 KB/s | UART 2 Mbaud = 200 KB/s | ~100 % (the ROM link is the limit) |
 | Current idle / during (min / avg / peak) | not measured: meter not connected | - | on USB (not battery) |
-| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
+| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | n/a | - | flashing only on USB power |
 | Per day | n/a | - | |
-| Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | to fill | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | BL616 test firmware 121 KB (+ boot2 53 KB) (bl616_powertest) | minimal image (rule) | the image this run used |
 | Compile flags | BL616 -Os -g, -ffunction/-fdata-sections, --gc-sections, -flto (SDK) | smallest code (rule) | |
-| Features over the minimal image | to fill: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | to fill: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
 
 ## Boot time
 

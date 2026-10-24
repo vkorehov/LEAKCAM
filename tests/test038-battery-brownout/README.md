@@ -86,26 +86,26 @@ CH340/USB-C 2 problem). Now runnable without a click: the K230 console is `/dev/
 10000 lockout 60000` on the cell, then `bat_watch 4050 5` on `/dev/ttyACM1` within 60 s of the agent's end. Steps 1-6 of the
 plan (sweep, real cutoff, deep discharge, ramp) need a lab supply.
 
-## Metrics (to fill on every run: skill leakcam-test-metrics)
+## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
 Probes: current - lab supply in place of the cell, its current; voltage - VBAT C15.1, BAT C11.1, 3V3_SLEEP (U5 output) while ramping.
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | not measured yet | target (test022) | longest step: |
-| This part's boot share | not measured yet | - | |
-| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
-| cut-off voltage vs set 3.10 V, time to rails off | not measured yet | +-50 mV | % of the top |
-| Current idle / during (min / avg / peak) | not measured yet | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
-| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | not measured yet | - | scripts/energy.py |
-| Per day | not measured yet | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | to fill | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
-| Image (sizes) | to fill | minimal image (rule) | the image this run used |
-| Compile flags | to fill | smallest code (rule) | |
-| Features over the minimal image | to fill: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | to fill: speed / size / boot / current vs the current flags | the faster one stays | |
+| Boot, power-on -> READY (median of 5) | **MISSING** | target (test022) | longest step: |
+| This part's boot share | **MISSING** | - | |
+| Test run time | **MISSING** | - | setup (flashing, plugging, waiting) separately |
+| cut-off voltage vs set 3.10 V, time to rails off | **MISSING** | +-50 mV | % of the top |
+| Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
+| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
+| Power, energy per operation | **MISSING** | - | scripts/energy.py |
+| Per day | **MISSING** | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Image (sizes) | **MISSING** | minimal image (rule) | the image this run used |
+| Compile flags | **MISSING** | smallest code (rule) | |
+| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
 
 ## Boot time
 
@@ -150,4 +150,3 @@ up across cold boots (tests/test039): the CH340 problems below are history, kept
 - **The K230 console (CH340) did not reach Linux** while the K230 ran on the cell -> the lockout was tested on the
   agent's own heartbeat stop; the VBAT cut decision stays open.
 - **bl616_isp.py --boot refused once** (the ROM's ISP session had timed out) -> new handshake built in (test002).
-

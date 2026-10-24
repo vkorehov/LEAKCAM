@@ -24,6 +24,18 @@ Design, files and every SDK patch with its location: [firmware/CONSOLE.md](../..
 - **Product BL616:** k230_link.c's link_poll uses the same splitter (frames -> parse/accept, text -> port 1).
 - Host tests: test_linesplit (every chunking), test_link (console text between frames), the agent's e2e test.
 
+## Needs
+
+**MISSING**: the kernel options / drivers, SDK components, libraries and programs this test uses.
+
+## Steps
+
+**MISSING**: the steps of the test.
+
+## Pass
+
+**MISSING**: the pass criterion.
+
 ## Results
 
 ### 2026-10-23, stage A
@@ -60,7 +72,24 @@ U-Boot `CONFIG_BAUDRATE=4000000` (U-Boot ignores the rate in stdout-path).
 | Clicks per K230 power cycle | 0 (was 1 for the CH340) | the BL616 port stays |
 | Image | kdimg 45.4 MB; BL616 test firmware ~153 KB | |
 | Current | 568 mA (charging the cell, BL616 + K230 off, 08:33) | user reading |
-| Memory BL616 / K230 (start / min / end), leak | to fill | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| This part's boot share | **MISSING** | - | driver / mount / probe |
+| Test run time | **MISSING** | - | setup separately |
+| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | probe points named |
+| Power, energy per operation | **MISSING** | - |  |
+| Per day | **MISSING** | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
+| Compile flags | **MISSING** | smallest code (rule) |  |
+| Features over the minimal image | **MISSING** | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | **MISSING** | the faster one stays |  |
+
+## Boot time
+
+**MISSING**: the boot time of this test's image and its share.
+
+## Battery energy
+
+**MISSING**: current -> power -> energy per operation and per day.
 
 ## Obstacles
 

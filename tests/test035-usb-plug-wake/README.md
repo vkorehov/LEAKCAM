@@ -63,26 +63,27 @@ Open: the Mac once gave no power with the K230 **off** (0.02 mA after a few plug
 port protection after repeated plug-ins with the charger's inrush), the plain charger worked at once; the product
 firmware build (rewrite).
 
-## Metrics (to fill on every run: skill leakcam-test-metrics)
+## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VUSB C2.1, PGOOD (BL616 IO03), VBAT C15.1.
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | not measured yet | target (test022) | longest step: |
-| This part's boot share | not measured yet | - | |
-| Test run time | not measured yet | - | setup (flashing, plugging, waiting) separately |
-| wake latency on plug | not measured yet | - | % of the top |
+| Boot, power-on -> READY (median of 5) | **MISSING** | target (test022) | longest step: |
+| This part's boot share | **MISSING** | - | |
+| Test run time | **MISSING** | - | setup (flashing, plugging, waiting) separately |
+| wake latency on plug | **MISSING** | - | % of the top |
 k5 mA at 17:29 after the plug-in (BQ24072 charging the cell it ran on while unplugged; BL616 awake, K230 off) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
-| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | not measured yet | - | scripts/energy.py |
-| Per day | not measured yet | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | to fill | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
-| Image (sizes) | to fill | minimal image (rule) | the image this run used |
-| Compile flags | to fill | smallest code (rule) | |
-| Features over the minimal image | to fill: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | to fill: speed / size / boot / current vs the current flags | the faster one stays | |
+| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
+| Power, energy per operation | **MISSING** | - | scripts/energy.py |
+| Per day | **MISSING** | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Image (sizes) | **MISSING** | minimal image (rule) | the image this run used |
+| Compile flags | **MISSING** | smallest code (rule) | |
+| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 VBUS meter |
 
 ## Boot time
 
@@ -101,4 +102,3 @@ n/a while on USB (the charger powers the board); the unplug path's return to sle
 - **The user's first "20 cycles" window passed before the cycling started** -> the count ran again and caught it.
 - **"woke by leak" after a flash**: the HBN interrupt state survives the flasher's reset, an ACOMP1 event latched while
   awake showed as a wake reason. The product clears all three at boot and before each sleep; harmless.
-

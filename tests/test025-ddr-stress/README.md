@@ -7,7 +7,7 @@ This test runs a pattern memory test over most of the free RAM for a long time.
 
 ## Setup
 
-To fill: hookup, firmware / image, and the probes named in Metrics.
+**MISSING**: hookup, firmware / image, and the probes named in Metrics.
 
 ## Needs (build features and dependencies)
 
@@ -75,7 +75,7 @@ line ("5.5 s") into chip_temp: no data.
 **Pass at 3200 MT/s all-ODT** (with run 1 and the cold starts at 2667): 3200 all-ODT is the board's DDR setting from
 now on (u-boot k230d_leakcam_defconfig). Still open: the same with the KPU and the encoder busy (step 3).
 
-## Metrics (to fill on every run: skill leakcam-test-metrics)
+## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
 
@@ -86,15 +86,15 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Test run time | run 1: 5 min 05 s (46 passes) | - | setup: memtest written + image built 20:05-20:11, flash 20:12:41-20:13:14, boot 20:14:24-31 |
 | memtest MB/s, errors | 167 MB/s write+verify (5 patterns, MMZ uncached), 0 errors so far | DDR top 5.33 GB/s (test016) | 3 %: a checker, not a bandwidth test |
 | Current idle / during | 196 mA (rails on after flash) / 202 mA msh (test023) / 240 mA memtest, peaks 260 mA | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT ~4.15 V (full cell) |
-| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
+| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | 1.0 W during memtest (240 mA x 4.15 V), +158 mW over msh idle; per pass (6.5 s) 6.5 J / 433 uAh, +1.0 J / 69 uAh over idle | - | by hand: scripts/energy.py does not exist |
 | Per day | n/a: a bench test, not in the product | - | |
-| Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | to fill | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB | minimal image (rule) | the image this run used |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, -ffunction/-fdata-sections, --gc-sections, strip (no LTO) | smallest code (rule) | |
-| Features over the minimal image | to fill: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | to fill: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
 
 ## Boot time
 

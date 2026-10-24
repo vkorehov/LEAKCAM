@@ -26,6 +26,12 @@ line, every value at its maximum), `## Boot time`, `## Battery energy`, `## Obst
 written when it happens). Nothing is left out: an empty part says so ("Not run yet.", "None yet.", "not measured:
 <reason>"). The status here and in the README's Status line say the same.
 
+**One standard, no gaps after a run (user rule, 2026-10-24):** `tools/test-standard/check_tests.py` checks every
+README against the sections above and the 14 metric rows of skill leakcam-test-metrics; a value not measured is
+`**MISSING**`, one that cannot apply is `n/a: <reason>`. After a run of a test, `check_tests.py testNNN` must print
+"every metric filled" before the run is reported (2026-10-24: 476 values MISSING over 44 tests; the count falls as
+tests are re-run).
+
 **Memory (user rule, 2026-10-24):** every run records memory on both chips (BL616 `mem`, K230 `free`: the Metrics
 row "Memory BL616 / K230"), and every operation a test repeats is a leak test: a snapshot before and after each cycle,
 `tools/power-bringup/mem_leak.py report <log>`, a leak fails the test (skill leakcam-test-metrics 5b). The leak test

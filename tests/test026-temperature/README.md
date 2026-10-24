@@ -7,7 +7,7 @@ enclosure closed.
 
 ## Setup
 
-To fill: hookup, firmware / image, and the probes named in Metrics.
+**MISSING**: hookup, firmware / image, and the probes named in Metrics.
 
 ## Needs (build features and dependencies)
 
@@ -44,7 +44,7 @@ Every 10 s: K230 die from msh `chip_temp`, board from the BL616's AHT20 (`pt_sta
 - Plausible readings, monotonic warm-up: **pass** for idle and CPU/DDR load. The K230's die limit is not in the repo
   yet (datasheet to check); the margin for the enclosure follows from it.
 
-## Metrics (to fill on every run: skill leakcam-test-metrics)
+## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
 
@@ -55,15 +55,16 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Test run time | 6 min (20:27:04-20:33:06) | - | no setup: image of test025 |
 | SoC temperature vs time and load | idle 48.5 C, memtest 53.3 C peak after 2 min | die limit: datasheet, to check | +4.8 C at +39 mA |
 | Current idle / during | 205 mA / 244 mA avg, 260 peak | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT ~4.15 V |
-| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
+| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | idle 0.85 W, memtest 1.01 W (+0.16 W) | - | x 4.15 V, by hand |
 | Per day | n/a: bench measurement | - | |
 | Temperature die / board (start / peak / end) | 49.1 / 53.3 / 49.1 C, board 39.3 / 39.9 / 39.4 C | K230 limit (datasheet) | this test |
-| Memory BL616 / K230 (start / min / end), leak | to fill | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB | minimal image (rule) | the image this run used |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, -ffunction/-fdata-sections, --gc-sections, strip (no LTO) | smallest code (rule) | |
-| Features over the minimal image | to fill: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | to fill: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Speed / rate against the top | **MISSING** | SPEEDS.txt | % of the top |
 
 ## Boot time
 

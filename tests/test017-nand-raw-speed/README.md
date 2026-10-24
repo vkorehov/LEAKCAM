@@ -7,7 +7,7 @@ it into the NAND itself and UFFS, and checks the SPI clock's headroom.
 
 ## Setup
 
-To fill: hookup, firmware / image, and the probes named in Metrics.
+**MISSING**: hookup, firmware / image, and the probes named in Metrics.
 
 ## Needs (build features and dependencies)
 
@@ -91,15 +91,16 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Raw read 50 / 80 MHz | 15.6 / 20.6 MB/s | 25 / 40 MB/s bus | 62 % / 52 % |
 | Program | 4.6-5.0 MB/s | chip limit | |
 | Current idle / read 50 / read 80 / program | 204 / 225 / 232 / 235-236 mA | floor 204 | USB-C 1 VBUS |
-| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
+| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
 | Energy per MiB read, whole board | 57 mJ at 50 MHz, 45 mJ at 80 MHz | - | 21 % less: shorter time at the 204 mA floor |
 | Per day | inside the boot (mounts) and sessions | ENERGY.txt 3 | |
-| Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | to fill | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB | minimal image (rule) | the image this run used |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, -ffunction/-fdata-sections, --gc-sections, strip (no LTO) | smallest code (rule) | |
-| Features over the minimal image | to fill: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | to fill: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Power, energy per operation | **MISSING** | - |  |
 
 ## Boot time
 

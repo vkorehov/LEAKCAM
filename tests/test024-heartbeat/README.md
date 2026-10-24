@@ -7,7 +7,7 @@ session when the edges stop for 2 s. Without it a product session never ends (or
 
 ## Setup
 
-To fill: hookup, firmware / image, and the probes named in Metrics.
+**MISSING**: hookup, firmware / image, and the probes named in Metrics.
 
 ## Needs (build features and dependencies)
 
@@ -57,15 +57,15 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Setup time | 19:52-20:04, 12 min: pt_alive written + built (13 s build) 19:52-19:57; flash 1 failed 19:57:14-19:58:14 (permissions, above); ROM re-attached 20:00:20; flash 2 (4 s) 20:02:22-20:02:26, waited for EN + console to 20:04:09 | - | the flash itself is 4 s; the rest is waiting for hands and the script bug |
 | heartbeat period and jitter | half-period 490 ms avg, 502 max | 500 ms, timeout 2 s | 98 % of the set period, 4x margin to the timeout |
 | Current idle / during | not measured: no meter reading asked (my omission); msh idle 202 mA (test023) | floor (test031) | |
-| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
+| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | n/a: one GPIO write per 500 ms, below the meter's resolution | - | |
 | Per day | n/a | - | |
-| Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | to fill | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB; BL616 test firmware 121 KB (+ boot2 53 KB) | minimal image (rule) | the image this run used |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, -ffunction/-fdata-sections, --gc-sections, strip (no LTO); BL616 -Os -g, -ffunction/-fdata-sections, --gc-sections, -flto (SDK) | smallest code (rule) | |
-| Features over the minimal image | to fill: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | to fill: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
 
 ## Boot time
 

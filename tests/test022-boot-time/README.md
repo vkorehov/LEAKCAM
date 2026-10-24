@@ -3,7 +3,7 @@
 Status: **0.30 s** reset release -> app init (2026-10-23: the console on UART1 at 4 Mbaud from SPL, tests/test039; 0.506 s on 2026-10-21, 1.00 s before); msh prompt and READY not timed yet.
 
 Every wake powers the K230 up from cold, so its boot time is paid on every session (the whole session: test101).
-Not measured yet: the test firmware does not time it and the product BL616 firmware (which logs "READY <ms> after
+**MISSING**: the test firmware does not time it and the product BL616 firmware (which logs "READY <ms> after
 power-on") does not run on rev 1 yet.
 
 ## Target
@@ -80,15 +80,15 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Test run time | 1 command; setup: reflash (USB boot) ~5 min with clicks | - | |
 | NAND clock in the boot | 80 MHz (since 2026-10-21) | 100 MHz has no window (test017) | |
 | Current: rails in reset / boot peak / msh idle | 86.3 / ~227 / 204 mA | - | USB-C 1 VBUS |
-| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | at the probes above |
+| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per boot (to app init) | ~215 mA x 0.88 s = 0.72 J, 53 uAh (1.0 s: 0.82 J) | - | 3.8 V nominal |
 | Per day | 4 report sessions: 0.24 mAh/day (boot to app init only) | ENERGY.txt 3 | 0.7 % of 1000 mAh / month |
-| Temperature die / board (start / peak / end) | not measured yet | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | to fill | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | kdimg 45.4 MB (/sdcard 32 MiB, /bin 8 MiB one ISP set), kernel 3.75 MB, /bin 0.68 MB, /sdcard programs 6.76 MB (latest run) | minimal image (rule) | the image this run used |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, -ffunction/-fdata-sections, --gc-sections, strip (no LTO) | smallest code (rule) | |
-| Features over the minimal image | to fill: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | to fill: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
 
 ## Boot time
 

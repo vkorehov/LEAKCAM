@@ -76,7 +76,7 @@ the MPP threads (auto_load, mcm_task, thermal_detect) and the boot messages "Can
 timer" come from the prebuilt MPP libraries (needed for cameras/encoder); etx/erx (lwIP netif of the Wi-Fi bridge),
 mmcsd_detect (SDIO to the BL616), the GPIO threads. To check: MPP_ISP_CONFIG_INSTALL_BIN and _JSON_XML both on (the
 ISP set twice in /bin; with the cameras, test020/030); FAST_BOOT_CONFIGURATION packs one program into the image
-(rtapp.elf.gz, CanMV's MicroPython) - a speed candidate for leakcam_agent/wake, to measure later.
+(rtapp.elf.gz, CanMV's MicroPython) - a speed candidate for leakcam_agent/wake, **MISSING** later.
 
 **Build 1 + 2 on the board (2026-10-22, flashed 05:2x):** boots; 3 cold boots app init **0.484 / 0.494 / 0.493 s**
 (was 0.506; mounts 0.20-0.21 s instead of 0.22: 147 KB less on /sdcard); ADC, I2C (both buses clean), RTC, NAND
@@ -149,26 +149,26 @@ the flags (kernel -O1 -g; programs without sections/LTO) and leakcam_wake (5.18 
 | boot to app init | 0.506 s | test022 |
 | BL616 product / test firmware | 1.27 MB (2026-10-21) / 121 KB | `-Os -g`, sections, `--gc-sections`, `-flto` |
 
-## Metrics (to fill on every run: skill leakcam-test-metrics, every value at its maximum)
+## Metrics (**MISSING** on every run: skill leakcam-test-metrics, every value at its maximum)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load.
 
 | Metric | Value (typical / max) | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> app init (median / max of runs) | to fill | test022 | per build |
-| This part's boot share | to fill | - | mounts follow used pages |
-| Test run time | to fill | - | build + flash per variant |
-| Speed / rate against the top | to fill | SPEEDS.txt | no regression |
-| Current floor / typical / peak | to fill | floor (test031) | |
-| Voltage under load (min) | to fill | cutoff 3.10 V (bug-004) | |
-| Power, energy per operation | to fill | - | |
-| Per day | to fill | ENERGY.txt line | |
-| Temperature die / board (start / peak / end) | to fill | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | to fill | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Boot, power-on -> app init (median / max of runs) | **MISSING** | test022 | per build |
+| This part's boot share | **MISSING** | - | mounts follow used pages |
+| Test run time | **MISSING** | - | build + flash per variant |
+| Speed / rate against the top | **MISSING** | SPEEDS.txt | no regression |
+| Current floor / typical / peak | **MISSING** | floor (test031) | |
+| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | |
+| Power, energy per operation | **MISSING** | - | |
+| Per day | **MISSING** | ENERGY.txt line | |
+| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | baseline above | minimal image (rule) | per build |
 | Compile flags | baseline above | smallest code (rule) | per build |
-| Features over the minimal image | to fill: per test, its Needs on top of the floor | - | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | to fill: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | **MISSING**: per test, its Needs on top of the floor | - | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
 
 ## Boot time
 
@@ -196,4 +196,3 @@ Energy per wake per build (ENERGY.txt section 3): the gain in uAh per wake and p
 - **Kernel -O2: leakcam_agent faults returning to 0xfffffffffffff000** (signal-return trampoline) -> open; kernel
   back at -O1 (user: safe side).
 - **"no K230 boot device after 90 s"** -> the VMware click came later -> wait up to 180 s before giving up.
-
