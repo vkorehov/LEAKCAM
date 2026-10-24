@@ -4,7 +4,7 @@
 # The burn loader does not erase what an image does not cover, and UFFS rejects a partition with
 # leftover blocks (rev 1, 2026-10-18): always erase the whole image range (0 .. 248M) first.
 # k230_flash_cli is x86-64 only: it runs in the K230 build container. --network host and /run/udev
-# let libusb see the K230 re-enumerate as the loader; the VMware host asks "connect to Linux" for it.
+# let libusb see the K230 re-enumerate as the loader (the VMware host passes it to Linux by itself since 2026-10-24).
 set -e
 SDK=${1:-$HOME/k230_rtos_sdk}
 B=$SDK/tools/k230_flash/bin

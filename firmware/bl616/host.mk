@@ -25,6 +25,6 @@ flash:
 	    -e LEAKCAM_IN_CONTAINER=1 -v $(HW_ROOT):$(HW_ROOT) -w $(CURDIR) $(IMAGE) \
 	    make flash COMX=$$port BL_FLASH_PROGRAM=$(BL_SDK_BASE)/tools/bflb_tools/bouffalo_flash_cube/BLFlashCommand-ubuntu
 	$(ISP) --boot $$($(ISP))
-	@$(ISP) --wait-app --timeout 120
+	@$(ISP) --wait-app
 clean:
 	rm -rf build

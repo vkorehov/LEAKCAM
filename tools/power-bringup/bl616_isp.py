@@ -14,7 +14,8 @@ again, only EN cleared it. --boot does what the vendor's bflb_eflash_loader.clea
 memory write 0x50, HBN_RSV2 = 0), then the ISP reset 0x21, in the ROM session the flasher left open (or a new one:
 the ROM closes a session after ~2 s idle; then 0x55 bytes until it answers OK).
 A firmware that never reaches its console cannot be switched this way: BOOT + EN by hand
-(README.md section 2). Under VMware every re-enumeration needs "connect to Linux" on the Mac.
+(README.md section 2). The VMware host passes every re-enumerated device to Linux by itself (popups off since
+2026-10-24): the ROM and the app appear within ~2 s, so a device missing after DEVICE_WAIT_S is a board fault.
 """
 import argparse
 import glob
@@ -25,6 +26,8 @@ import termios
 import time
 
 ROM = ("349b", "6160")
+# devices attach to Linux by themselves (no VMware prompt since 2026-10-24); ~2 s seen, 20 s is a fault
+DEVICE_WAIT_S = 20
 APP = ("ffff", "ffff")
 
 
@@ -60,7 +63,7 @@ def wait_for(ids, what, timeout):
             print(f"{p} not writable: sudo setfacl -m u:$USER:rw {p}", file=sys.stderr)
             told_perm = True
         if not p and not told_wait and time.time() - t0 > 3:
-            print(f"waiting for {what}: press 'connect to Linux' in VMware", file=sys.stderr)
+            print(f"waiting for {what}", file=sys.stderr)
             told_wait = True
         time.sleep(0.2)
     sys.exit(f"bl616_isp: no {what} after {timeout} s")
@@ -120,7 +123,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--boot", metavar="PORT", help="ROM port: boot the flashed firmware")
     ap.add_argument("--wait-app", action="store_true", help="wait for the firmware console instead")
-    ap.add_argument("--timeout", type=float, default=300)  # VMware "connect" clicks often take over a minute
+    ap.add_argument("--timeout", type=float, default=DEVICE_WAIT_S)
     a = ap.parse_args()
 
     if a.boot:
@@ -134,7 +137,7 @@ def main():
         print(now[ROM])
         return
     if APP not in now:
-        sys.exit("bl616_isp: no BL616 on USB (PR1 cable, 'connect to Linux'?); else BOOT + EN by hand")
+        sys.exit("bl616_isp: no BL616 on USB (PR1 cable?); else BOOT + 3V3 cut by hand")
     # `isp` stops the watchdog first (firmware/bl616/wdg_guard.c); `reboot uart` left it running into the ROM, which it
     # reset every 8 s before the ROM enumerated (2026-10-23). Firmware without `isp` (older builds) gets `reboot uart`.
     print(f"{now[APP]}: isp", file=sys.stderr)

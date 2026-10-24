@@ -195,4 +195,5 @@ Energy per wake per build (ENERGY.txt section 3): the gain in uAh per wake and p
   ioremap branch `#if 0`) -> install.sh patch "LEAKCAM: KPU bandwidth mapped" (kept at -O1).
 - **Kernel -O2: leakcam_agent faults returning to 0xfffffffffffff000** (signal-return trampoline) -> open; kernel
   back at -O1 (user: safe side).
-- **"no K230 boot device after 90 s"** -> the VMware click came later -> wait up to 180 s before giving up.
+- **"no K230 boot device after 90 s"** -> the VMware click came later -> wait up to 180 s before giving up. (Since
+  2026-10-24 the popups are off and the device attaches in ~2 s: the runners wait 20 s, a miss is a board fault.)
