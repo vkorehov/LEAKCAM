@@ -125,6 +125,15 @@ tools/jlcpcb-cart/package-lock.json
 *.scl
 *.mdg
 *.txt
+# ... but never docs, test logs or firmware/tool text: *.txt above is the Altium template's rule, it hid test
+# results the READMEs link to (2026-10-24)
+!/*.txt
+!tests/**/*.txt
+!bugs/**/*.txt
+!firmware/**/*.txt
+!tools/**/*.txt
+!android/**/*.txt
+!mechanical/**/*.txt
 *.info
 *.gex
 *.mss

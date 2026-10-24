@@ -92,10 +92,11 @@ difference, test017 2026-10-21) - the NAND drives the read data, a weak default 
 
 ### 100 MHz data with the 1-line phase at 80 MHz, 2026-10-24 (split100.py, verify100.py, boots100.py)
 
-The nibble check (shift100.py) showed the 4-line data correct at 100 MHz with
+The nibble check (shift100.py, [shift100_out.txt](shift100_out.txt)) showed the 4-line data correct at 100 MHz with
 multi-line delay 4-6: the failures came from the 1-line status reads, which have no window at 100 MHz. So the driver
 patch now also keeps a clock divider per phase (`dw_spi_set_multi_hz()`, bench `nand_clk2`): 1-line at the configured
-80 MHz, 4-line data at 100 MHz. Sweep of the data delay, 3 reads of 64 /bin blocks each against the 50 MHz checksum:
+80 MHz, 4-line data at 100 MHz. Sweep of the data delay, 3 reads of 64 /bin blocks each against the 50 MHz checksum
+([split100_out.txt](split100_out.txt)):
 
 | Data at 100 MHz | Clean delays | Failing |
 |---|---|---|
@@ -103,11 +104,11 @@ patch now also keeps a clock divider per phase (`dw_spi_set_multi_hz()`, bench `
 | Edge 1 | 4-8 | 2-3, 9 |
 
 Edge 1 samples half a step (0.625 ns) later, so the window is 9 contiguous half steps (~5.6 ns); centre = delay 6
-edge 1, set as SPI0's boot default in the patch. At the boot defaults (verify100.py):
+edge 1, set as SPI0's boot default in the patch. At the boot defaults (verify100.py, [verify100_out.txt](verify100_out.txt)):
 all of /bin (160 blocks) read 10/10 with the reference checksum, 0 errors, 23.0 MB/s (20.6 at 80 MHz: +12 %);
 program + read-back of 32 spare blocks 10/10 without errors (quad programs run at the data clock too), program
 5.1 MB/s, read back 20.9 MB/s (2 KiB pages); K230 heap free 7.03 -> 7.31 MB (no fall), chip 42.8 -> 43.7 C.
-10 cold boots (boots100.py): all reached app init at 0.311-0.312 s with /bin
+10 cold boots (boots100.py, [boots100_out.txt](boots100_out.txt)): all reached app init at 0.311-0.312 s with /bin
 and /sdcard mounted (mounts done 0.302-0.303 s) and read all of /bin with the reference checksum, 23.0 MB/s.
 Adopted. One of verify100's 10 reads ran at 12.3 MB/s with correct data (open; not seen in the 10 boot reads).
 

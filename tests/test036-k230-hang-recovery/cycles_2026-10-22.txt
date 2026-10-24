@@ -1,0 +1,211 @@
+== pt_session 90000 hang 5000 17:52:24
+rails on (3V3 in 1691 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1439 ms after power-on (READY stand-in)
+K230 held in reset (hang) at 5004 ms
+heartbeat stopped: 9 edges, the last 5004 ms after power-on; no edge for 2005 ms
+rails off 7320 ms after power-on (session 5881 ms after the first edge); ALIVE now 0
+== pt_session 90000 hang 5000 17:52:34
+rails on (3V3 in 1690 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1459 ms after power-on (READY stand-in)
+K230 held in reset (hang) at 5004 ms
+heartbeat stopped: 9 edges, the last 5004 ms after power-on; no edge for 2005 ms
+rails off 7320 ms after power-on (session 5861 ms after the first edge); ALIVE now 0
+== pt_session 90000 hang 5000 17:52:45
+rails on (3V3 in 1688 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 939 ms after power-on (READY stand-in)
+K230 held in reset (hang) at 5004 ms
+heartbeat stopped: 11 edges, the last 5004 ms after power-on; no edge for 2005 ms
+rails off 7320 ms after power-on (session 6381 ms after the first edge); ALIVE now 0
+== pt_session 90000 hang 5000 17:52:55
+rails on (3V3 in 1690 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1439 ms after power-on (READY stand-in)
+K230 held in reset (hang) at 5004 ms
+heartbeat stopped: 9 edges, the last 5004 ms after power-on; no edge for 2005 ms
+rails off 7320 ms after power-on (session 5881 ms after the first edge); ALIVE now 0
+== pt_session 90000 hang 5000 17:53:05
+rails on (3V3 in 1688 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1444 ms after power-on (READY stand-in)
+K230 held in reset (hang) at 5004 ms
+heartbeat stopped: 9 edges, the last 5004 ms after power-on; no edge for 2005 ms
+rails off 7320 ms after power-on (session 5876 ms after the first edge); ALIVE now 0
+== pt_session 90000 hang 5000 17:53:16
+rails on (3V3 in 1684 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1440 ms after power-on (READY stand-in)
+K230 held in reset (hang) at 5000 ms
+heartbeat stopped: 9 edges, the last 5000 ms after power-on; no edge for 2005 ms
+rails off 7316 ms after power-on (session 5876 ms after the first edge); ALIVE now 0
+== pt_session 90000 hang 5000 17:53:27
+rails on (3V3 in 1688 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1440 ms after power-on (READY stand-in)
+K230 held in reset (hang) at 5000 ms
+heartbeat stopped: 9 edges, the last 5000 ms after power-on; no edge for 2005 ms
+rails off 7316 ms after power-on (session 5876 ms after the first edge); ALIVE now 0
+== pt_session 90000 hang 5000 17:53:37
+rails on (3V3 in 1697 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1444 ms after power-on (READY stand-in)
+K230 held in reset (hang) at 5004 ms
+heartbeat stopped: 9 edges, the last 5004 ms after power-on; no edge for 2005 ms
+rails off 7320 ms after power-on (session 5876 ms after the first edge); ALIVE now 0
+== pt_session 90000 hang 5000 17:53:47
+rails on (3V3 in 1690 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1449 ms after power-on (READY stand-in)
+K230 held in reset (hang) at 5004 ms
+heartbeat stopped: 9 edges, the last 5004 ms after power-on; no edge for 2005 ms
+rails off 7320 ms after power-on (session 5871 ms after the first edge); ALIVE now 0
+== pt_session 90000 hang 5000 17:55:24
+rails on (3V3 in 1692 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 934 ms after power-on (READY stand-in)
+K230 held in reset (hang) at 5004 ms
+heartbeat stopped: 11 edges, the last 5004 ms after power-on; no edge for 2005 ms
+rails off 7320 ms after power-on (session 6386 ms after the first edge); ALIVE now 0
+== pt_session 15000 noboot 17:55:42
+rails on (3V3 in 1687 us), reset released; waiting 15000 ms for the first heartbeat edge
+END_NO_BOOT: no heartbeat within 15000 ms
+rails off 15315 ms after power-on (session 0 ms after the first edge); ALIVE now 0
+== pt_session 15000 noboot 17:56:01
+rails on (3V3 in 1685 us), reset released; waiting 15000 ms for the first heartbeat edge
+END_NO_BOOT: no heartbeat within 15000 ms
+rails off 15315 ms after power-on (session 0 ms after the first edge); ALIVE now 0
+== pt_session 15000 noboot 17:56:20
+rails on (3V3 in 1685 us), reset released; waiting 15000 ms for the first heartbeat edge
+END_NO_BOOT: no heartbeat within 15000 ms
+rails off 15315 ms after power-on (session 0 ms after the first edge); ALIVE now 0
+== pt_session 15000 noboot 17:56:38
+rails on (3V3 in 1682 us), reset released; waiting 15000 ms for the first heartbeat edge
+END_NO_BOOT: no heartbeat within 15000 ms
+rails off 15315 ms after power-on (session 0 ms after the first edge); ALIVE now 0
+== pt_session 15000 noboot 17:56:57
+rails on (3V3 in 1686 us), reset released; waiting 15000 ms for the first heartbeat edge
+END_NO_BOOT: no heartbeat within 15000 ms
+rails off 15315 ms after power-on (session 0 ms after the first edge); ALIVE now 0
+== pt_session 15000 noboot 17:57:15
+rails on (3V3 in 1685 us), reset released; waiting 15000 ms for the first heartbeat edge
+END_NO_BOOT: no heartbeat within 15000 ms
+rails off 15315 ms after power-on (session 0 ms after the first edge); ALIVE now 0
+== pt_session 15000 noboot 17:57:34
+rails on (3V3 in 1679 us), reset released; waiting 15000 ms for the first heartbeat edge
+END_NO_BOOT: no heartbeat within 15000 ms
+rails off 15316 ms after power-on (session 0 ms after the first edge); ALIVE now 0
+== pt_session 15000 noboot 17:57:37
+rails on (3V3 in 1685 us), reset released; waiting 15000 ms for the first heartbeat edge
+== pt_session 15000 noboot 17:57:52
+END_NO_BOOT: no heartbeat within 15000 ms
+rails off 15315 ms after power-on (session 0 ms after the first edge); ALIVE now 0
+rails on (3V3 in 1668 us), reset released; waiting 15000 ms for the first heartbeat edge
+== pt_session 15000 noboot 17:58:08
+END_NO_BOOT: no heartbeat within 15000 ms
+rails off 15315 ms after power-on (session 0 ms after the first edge); ALIVE now 0
+rails on (3V3 in 1674 us), reset released; waiting 15000 ms for the first heartbeat edge
+== pt_session 90000 reboot 5000 17:58:23
+END_NO_BOOT: no heartbeat within 15000 ms
+rails off 15315 ms after power-on (session 0 ms after the first edge); ALIVE now 0
+rails on (3V3 in 1678 us), reset released; waiting 90000 ms for the first heartbeat edge
+== pt_session 90000 reboot 5000 17:58:55
+K230 reset pulse (reboot) at 5004 ms
+heartbeat gap 1015 ms (resumed 6139 ms after power-on)
+heartbeat stopped: 59 edges, the last 30144 ms after power-on; no edge for 2005 ms
+rails off 32460 ms after power-on (session 31066 ms after the first edge); ALIVE now 0
+rails on (3V3 in 1668 us), reset released; waiting 90000 ms for the first heartbeat edge
+== pt_session 90000 reboot 5000 17:59:28
+K230 reset pulse (reboot) at 5004 ms
+heartbeat gap 1015 ms (resumed 6139 ms after power-on)
+heartbeat stopped: 59 edges, the last 30144 ms after power-on; no edge for 2005 ms
+rails off 32460 ms after power-on (session 31066 ms after the first edge); ALIVE now 0
+rails on (3V3 in 1670 us), reset released; waiting 90000 ms for the first heartbeat edge
+== pt_session 90000 reboot 5000 18:00:00
+K230 reset pulse (reboot) at 5004 ms
+heartbeat stopped: 61 edges, the last 30154 ms after power-on; no edge for 2005 ms
+rails off 32470 ms after power-on (session 31076 ms after the first edge); ALIVE now 0
+rails on (3V3 in 1665 us), reset released; waiting 90000 ms for the first heartbeat edge
+== pt_session 90000 reboot 5000 18:00:32
+K230 reset pulse (reboot) at 5004 ms
+heartbeat gap 1015 ms (resumed 6139 ms after power-on)
+heartbeat stopped: 59 edges, the last 30144 ms after power-on; no edge for 2005 ms
+rails off 32460 ms after power-on (session 31066 ms after the first edge); ALIVE now 0
+rails on (3V3 in 1665 us), reset released; waiting 90000 ms for the first heartbeat edge
+== pt_session 90000 reboot 5000 18:03:24
+rails on (3V3 in 1686 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1439 ms after power-on (READY stand-in)
+K230 reset pulse (reboot) at 5004 ms
+heartbeat gap 1015 ms (resumed 6139 ms after power-on)
+heartbeat stopped: 59 edges, the last 30144 ms after power-on; no edge for 2005 ms
+rails off 32460 ms after power-on (session 31021 ms after the first edge); ALIVE now 0
+== pt_session 90000 reboot 5000 18:03:59
+rails on (3V3 in 1680 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1449 ms after power-on (READY stand-in)
+K230 reset pulse (reboot) at 5004 ms
+heartbeat gap 1015 ms (resumed 6139 ms after power-on)
+heartbeat stopped: 59 edges, the last 30144 ms after power-on; no edge for 2005 ms
+rails off 32460 ms after power-on (session 31011 ms after the first edge); ALIVE now 0
+== pt_session 90000 reboot 5000 18:04:34
+rails on (3V3 in 1683 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 934 ms after power-on (READY stand-in)
+K230 reset pulse (reboot) at 5004 ms
+heartbeat gap 1015 ms (resumed 6139 ms after power-on)
+heartbeat stopped: 61 edges, the last 30144 ms after power-on; no edge for 2005 ms
+rails off 32460 ms after power-on (session 31526 ms after the first edge); ALIVE now 0
+== pt_session 90000 reboot 5000 18:05:10
+rails on (3V3 in 1676 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1449 ms after power-on (READY stand-in)
+K230 reset pulse (reboot) at 5004 ms
+heartbeat gap 1015 ms (resumed 6139 ms after power-on)
+heartbeat stopped: 59 edges, the last 30144 ms after power-on; no edge for 2005 ms
+rails off 32460 ms after power-on (session 31011 ms after the first edge); ALIVE now 0
+== pt_session 90000 reboot 5000 18:05:45
+rails on (3V3 in 1678 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1449 ms after power-on (READY stand-in)
+K230 reset pulse (reboot) at 5004 ms
+heartbeat gap 1015 ms (resumed 6139 ms after power-on)
+heartbeat stopped: 59 edges, the last 30144 ms after power-on; no edge for 2005 ms
+rails off 32460 ms after power-on (session 31011 ms after the first edge); ALIVE now 0
+== pt_session 18:06:16
+rails on (3V3 in 1673 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 934 ms after power-on (READY stand-in)
+heartbeat stopped: 51 edges, the last 25454 ms after power-on; no edge for 2005 ms
+rails off 27770 ms after power-on (session 26836 ms after the first edge); ALIVE now 0
+== pt_session 18:06:47
+rails on (3V3 in 1672 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1439 ms after power-on (READY stand-in)
+heartbeat stopped: 49 edges, the last 25449 ms after power-on; no edge for 2005 ms
+rails off 27765 ms after power-on (session 26326 ms after the first edge); ALIVE now 0
+== pt_session 18:07:18
+rails on (3V3 in 1675 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1434 ms after power-on (READY stand-in)
+heartbeat stopped: 49 edges, the last 25444 ms after power-on; no edge for 2005 ms
+rails off 27760 ms after power-on (session 26326 ms after the first edge); ALIVE now 0
+== pt_session 18:07:49
+rails on (3V3 in 1674 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1445 ms after power-on (READY stand-in)
+heartbeat stopped: 49 edges, the last 25455 ms after power-on; no edge for 2005 ms
+rails off 27771 ms after power-on (session 26326 ms after the first edge); ALIVE now 0
+== pt_session 18:08:19
+rails on (3V3 in 1673 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1449 ms after power-on (READY stand-in)
+heartbeat stopped: 49 edges, the last 25454 ms after power-on; no edge for 2005 ms
+rails off 27770 ms after power-on (session 26321 ms after the first edge); ALIVE now 0
+== pt_session 18:08:50
+rails on (3V3 in 1678 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1435 ms after power-on (READY stand-in)
+heartbeat stopped: 49 edges, the last 25445 ms after power-on; no edge for 2005 ms
+rails off 27761 ms after power-on (session 26326 ms after the first edge); ALIVE now 0
+== pt_session 18:09:21
+rails on (3V3 in 1669 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 934 ms after power-on (READY stand-in)
+heartbeat stopped: 51 edges, the last 25454 ms after power-on; no edge for 2005 ms
+rails off 27770 ms after power-on (session 26836 ms after the first edge); ALIVE now 0
+== pt_session 18:09:52
+rails on (3V3 in 1673 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1434 ms after power-on (READY stand-in)
+heartbeat stopped: 49 edges, the last 25444 ms after power-on; no edge for 2005 ms
+rails off 27760 ms after power-on (session 26326 ms after the first edge); ALIVE now 0
+== pt_session 18:10:23
+rails on (3V3 in 1672 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1444 ms after power-on (READY stand-in)
+heartbeat stopped: 49 edges, the last 25454 ms after power-on; no edge for 2005 ms
+rails off 27770 ms after power-on (session 26326 ms after the first edge); ALIVE now 0
+== pt_session 18:10:54
+rails on (3V3 in 1672 us), reset released; waiting 90000 ms for the first heartbeat edge
+first heartbeat edge 1439 ms after power-on (READY stand-in)
+heartbeat stopped: 49 edges, the last 25444 ms after power-on; no edge for 2005 ms
+rails off 27760 ms after power-on (session 26321 ms after the first edge); ALIVE now 0
+ALL DONE 18:10:56

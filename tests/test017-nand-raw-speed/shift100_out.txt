@@ -1,0 +1,36 @@
+50 MHz block 9 page 0: 00 ff 56 19 01 00 00 00 51 e2 dc 6a 51 e2 dc 6a 00 00 00 00 00 00 00 00 0a 00 00 00 63 6f 6e 66
+50 MHz block 11 page 0: 00 ff 40 d0 01 00 00 00 51 e2 dc 6a 51 e2 dc 6a 00 00 00 00 00 00 00 00 1b 00 00 00 6f 76 35 36
+50 MHz block 13 page 0: 00 ff a0 42 01 00 00 00 51 e2 dc 6a 51 e2 dc 6a 00 00 00 00 00 00 00 00 13 00 00 00 6f 76 35 36
+100 MHz multi delay  0 edge 0: shift +0 nibbles 52/64 | shift +0 nibbles 60/64 | shift +0 nibbles 64/64
+100 MHz multi delay  0 edge 1: shift +4 nibbles 19/64 | shift -4 nibbles 2/64 | shift -4 nibbles 2/64
+100 MHz multi delay  1 edge 0: shift +4 nibbles 18/64 | shift +4 nibbles 18/64 | shift -4 nibbles 2/64
+100 MHz multi delay  1 edge 1: shift -4 nibbles 2/64 | shift -4 nibbles 2/64 | shift -4 nibbles 2/64
+100 MHz multi delay  2 edge 0: shift +1 nibbles 63/64 | shift +1 nibbles 63/64 | shift -4 nibbles 2/64
+100 MHz multi delay  2 edge 1: shift -4 nibbles 2/64 | shift -4 nibbles 2/64 | shift -4 nibbles 2/64
+100 MHz multi delay  3 edge 0: shift -4 nibbles 2/64 | shift +1 nibbles 63/64 | shift -4 nibbles 2/64
+100 MHz multi delay  3 edge 1: shift -4 nibbles 2/64 | shift -4 nibbles 2/64 | shift -4 nibbles 2/64
+100 MHz multi delay  4 edge 0: shift +0 nibbles 63/64 | shift -4 nibbles 2/64 | shift +0 nibbles 63/64
+100 MHz multi delay  4 edge 1: shift -4 nibbles 2/64 | shift +0 nibbles 64/64 | shift -4 nibbles 2/64
+100 MHz multi delay  5 edge 0: shift +0 nibbles 64/64 | shift -4 nibbles 2/64 | shift +0 nibbles 64/64
+100 MHz multi delay  5 edge 1: shift +0 nibbles 52/64 | shift -4 nibbles 2/64 | shift -4 nibbles 2/64
+100 MHz multi delay  6 edge 0: shift +0 nibbles 64/64 | shift -4 nibbles 2/64 | shift +0 nibbles 64/64
+100 MHz multi delay  6 edge 1: shift -4 nibbles 2/64 | shift -4 nibbles 2/64 | shift -4 nibbles 2/64
+100 MHz multi delay  7 edge 0: shift +0 nibbles 0/64 | shift -4 nibbles 2/64 | shift -4 nibbles 2/64
+100 MHz multi delay  7 edge 1: shift -4 nibbles 2/64 | shift +0 nibbles 64/64 | shift -4 nibbles 2/64
+100 MHz multi delay  8 edge 0: shift -4 nibbles 2/64 | shift -4 nibbles 2/64 | shift +0 nibbles 0/64
+100 MHz multi delay  8 edge 1: shift -4 nibbles 2/64 | shift -4 nibbles 2/64 | shift -4 nibbles 2/64
+100 MHz multi delay  9 edge 0: shift -4 nibbles 2/64 | shift +1 nibbles 63/64 | shift -4 nibbles 2/64
+100 MHz multi delay  9 edge 1: shift -4 nibbles 2/64 | shift -4 nibbles 2/64 | shift -4 nibbles 2/64
+100 MHz multi delay 10 edge 0: shift -4 nibbles 2/64 | shift -4 nibbles 2/64 | shift -4 nibbles 2/64
+100 MHz multi delay 10 edge 1: shift +1 nibbles 63/64 | shift +1 nibbles 63/64 | shift +1 nibbles 59/64
+100 MHz multi delay 11 edge 0: shift -4 nibbles 2/64 | shift -4 nibbles 2/64 | shift -4 nibbles 2/64
+100 MHz multi delay 11 edge 1: shift -4 nibbles 2/64 | shift -4 nibbles 2/64 | shift -4 nibbles 2/64
+100 MHz multi delay 12 edge 0: shift -4 nibbles 2/64 | shift -4 nibbles 2/64 | shift -4 nibbles 2/64
+100 MHz multi delay 12 edge 1: shift -4 nibbles 2/64 | shift -4 nibbles 2/64 | shift -4 nibbles 2/64
+100 MHz multi delay 13 edge 0: shift +1 nibbles 63/64 | shift +1 nibbles 63/64 | shift +1 nibbles 59/64
+100 MHz multi delay 13 edge 1: shift -4 nibbles 2/64 | shift -4 nibbles 2/64 | shift -4 nibbles 2/64
+100 MHz multi delay 14 edge 0: shift -4 nibbles 2/64 | shift -4 nibbles 2/64 | shift +1 nibbles 63/64
+100 MHz multi delay 14 edge 1: shift +1 nibbles 63/64 | shift +1 nibbles 63/64 | shift -4 nibbles 2/64
+100 MHz multi delay 15 edge 0: shift -4 nibbles 2/64 | shift -4 nibbles 2/64 | shift +0 nibbles 0/64
+100 MHz multi delay 15 edge 1: shift -4 nibbles 2/64 | shift -4 nibbles 2/64 | shift -4 nibbles 2/64
+back at 80 MHz, rails off

@@ -1,0 +1,21 @@
+reference 50 MHz: 00ca8fec
+plain 80 MHz: [True, True, True], [20.7, 20.6, 20.7] MB/s
+data 100 MHz delay 2 edge 0: FAIL ['0ae9873c', '0ae9873c', '0ae9873c'] [23.0, 23.0, 23.0] MB/s
+data 100 MHz delay 3 edge 0: FAIL ['0ae9873c', '0ae9873c', '0ae9873c'] [23.0, 23.0, 23.1] MB/s
+data 100 MHz delay 4 edge 0: FAIL ['00ca8ffc', '00ca8ffc', '00ca8fbc'] [23.0, 23.1, 23.0] MB/s
+data 100 MHz delay 5 edge 0: clean ['00ca8fec', '00ca8fec', '00ca8fec'] [23.1, 23.1, 23.1] MB/s
+data 100 MHz delay 6 edge 0: clean ['00ca8fec', '00ca8fec', '00ca8fec'] [23.0, 23.0, 23.0] MB/s
+data 100 MHz delay 7 edge 0: clean ['00ca8fec', '00ca8fec', '00ca8fec'] [23.0, 23.1, 23.0] MB/s
+data 100 MHz delay 8 edge 0: clean ['00ca8fec', '00ca8fec', '00ca8fec'] [23.0, 23.0, 23.0] MB/s
+data 100 MHz delay 9 edge 0: FAIL ['0ae9873c', '0ae9873c', '0ae9873c'] [23.0, 23.1, 23.1] MB/s
+data 100 MHz delay 2 edge 1: FAIL ['0ae9873c', '0ae9873c', '0ae9873c'] [23.0, 23.0, 23.0] MB/s
+data 100 MHz delay 3 edge 1: FAIL ['fa60d5b6', 'e97c12c6', 'd4d201a9'] [23.1, 23.0, 23.1] MB/s
+data 100 MHz delay 4 edge 1: clean ['00ca8fec', '00ca8fec', '00ca8fec'] [23.0, 23.0, 23.0] MB/s
+data 100 MHz delay 5 edge 1: clean ['00ca8fec', '00ca8fec', '00ca8fec'] [23.1, 23.1, 23.1] MB/s
+data 100 MHz delay 6 edge 1: clean ['00ca8fec', '00ca8fec', '00ca8fec'] [23.1, 23.1, 23.0] MB/s
+data 100 MHz delay 7 edge 1: clean ['00ca8fec', '00ca8fec', '00ca8fec'] [23.1, 23.0, 23.0] MB/s
+data 100 MHz delay 8 edge 1: clean ['00ca8fec', '00ca8fec', '00ca8fec'] [23.1, 23.1, 23.1] MB/s
+data 100 MHz delay 9 edge 1: FAIL ['0ae9873c', '0ae9873c', '0ae9873c'] [23.1, 23.1, 23.1] MB/s
+WINDOW edge 0 delays 5-8, centre 7: 30/30 clean, 23.0-23.1 MB/s (plain 80 MHz 20.7)
+back at plain 80 MHz, rails off
+exit 0

@@ -1,0 +1,11 @@
+20:26:15 boot 1: mounts/app init ['0.303', '0.312'] s, read ('0', '79270e8e') 23.0 MB/s ok
+20:26:33 boot 2: mounts/app init ['0.302', '0.312'] s, read ('0', '79270e8e') 23.0 MB/s ok
+20:26:51 boot 3: mounts/app init ['0.303', '0.312'] s, read ('0', '79270e8e') 23.0 MB/s ok
+20:27:09 boot 4: mounts/app init ['0.302', '0.312'] s, read ('0', '79270e8e') 23.0 MB/s ok
+20:27:27 boot 5: mounts/app init ['0.303', '0.312'] s, read ('0', '79270e8e') 23.0 MB/s ok
+20:27:45 boot 6: mounts/app init ['0.302', '0.311'] s, read ('0', '79270e8e') 23.0 MB/s ok
+20:28:02 boot 7: mounts/app init ['0.302', '0.312'] s, read ('0', '79270e8e') 23.0 MB/s ok
+20:28:20 boot 8: mounts/app init ['0.302', '0.311'] s, read ('0', '79270e8e') 23.0 MB/s ok
+20:28:38 boot 9: mounts/app init ['0.302', '0.312'] s, read ('0', '79270e8e') 23.0 MB/s ok
+20:28:56 boot 10: mounts/app init ['0.302', '0.311'] s, read ('0', '79270e8e') 23.0 MB/s ok
+20:28:57 10/10 cold boots clean - rails off

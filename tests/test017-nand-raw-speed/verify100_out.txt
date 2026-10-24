@@ -1,0 +1,16 @@
+20:24:33 boot_times: boot_times | boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI) | boot_times 0.118 s  board init done | boot_times 0.134 s  prev init done | boot_times 0.135 s  device init done | boot_times 0.136 s  component init done | boot_times 0.303 s  env init done (/bin, /sdcard mounted) | boot_times 0.312 s  app init done | boot_times 9.538 s  first boot_times call | boot_times 9.538 s  now | msh /> | msh />leakcam_agent: READY not answered | leakcam_agent: READY not answered
+20:24:37 timing: nand_rxsd
+nand_rxsd: 1-line delay 5 edge 0, multi-line delay 6 edge 1 (boot: 5 0, 6 1)
+msh />
+msh />leakcam_agent: READY not answered | nand_clk2
+nand_clk2: multi-line data clock 100000000 Hz (0 = the 1-line clock)
+msh />
+msh />leakcam_agent: READY not answered
+20:24:40 start free: [{'pool': 8388608, 'max_used': 1390848, 'free': 7025152}]
+20:24:43 start temp: ['chip_temp', 'chip temperature: 42.780 C']
+20:25:07 reference 50 MHz: 79270e8e (15.7 MB/s)
+20:25:07 default reads: 10/10 clean, 12.3-23.0 MB/s, checksums ['79270e8e']
+20:25:07 writes: 10/10 without errors, [{'program': 5.1, 'read back': 20.9}, {'program': 5.1, 'read back': 20.9}] ...
+20:25:10 end free: [{'pool': 8388608, 'max_used': 1525248, 'free': 7311808}]
+20:25:13 end temp: ['chip_temp', 'chip temperature: 43.685 C']
+20:25:15 PASS - rails off
