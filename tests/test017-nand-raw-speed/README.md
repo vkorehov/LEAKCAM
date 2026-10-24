@@ -90,6 +90,18 @@ Not tried yet: the W25N02KV's own output driver strength (its configuration regi
 difference, test017 2026-10-21) - the NAND drives the read data, a weak default would explain slow data edges.
 80 MHz, delay 5 stays.
 
+### U-Boot/SPL at the same timing, 2026-10-24 (install.sh designware_spi.c patch, boots100.py)
+
+U-Boot's DW SPI driver gets the same per-phase timing from the device tree (`data-max-frequency` 100 MHz,
+`rx-sample-delay-data-ps` 8125 = delay 6 + edge; commands and status 80 MHz, `rx-sample-delay-ns` 6 -> delay 5).
+Canaan's driver had computed the delay step as NSEC_PER_SEC / bus clock in whole ns: 1 ns instead of 1.25 at
+800 MHz, so U-Boot/SPL had sampled at delay 6, not the intended 5 (inside the window by luck); the step is in ps now
+and the delay is written before every operation (it was written once at probe). 20 cold boots: kernel init start
+0.118 -> 0.110 s (the SPL loads OpenSBI + kernel 8 ms faster); 19 boots mounted in 0.286 s and read all of /bin with
+the new image's 50 MHz reference (c4050e6c), 0 errors, 23.0 MB/s. **Boot 5: mounts 0.629 s, then the /bin read gave
+no result within 40 s** (open: the runner kept no console; boots100.py now writes every boot's console to
+boots100_console.txt). Boot 10's boot_times line was unreadable (console interleave), its read was clean.
+
 ### 100 MHz data with the 1-line phase at 80 MHz, 2026-10-24 (split100.py, verify100.py, boots100.py)
 
 The nibble check (shift100.py, [shift100_out.txt](shift100_out.txt)) showed the 4-line data correct at 100 MHz with
@@ -173,8 +185,8 @@ Battery current during raw reads, programs, erases at each NAND clock; energy pe
   K230 USB boot device", and the chained split100.py then ran on the old image (every read None) -> `pt_on`: "FAIL: 3V3
   not up 100 ms after K230_PWR (0 of 5 lines high)", also after a BL616 reboot (sense pins re-inited as inputs, so the
   reading is real); USB-C 1 on the Mac, 540 mA charging, no 29f1 device in VMware -> the RPi camera on the
-  connector held the rail down: unplugged, 3V3 up in 1.7 ms again (cause on the camera side open: check the camera
-  and its flex before plugging it back); it was plugged in around shift100.py (user): sweep100 and the 2026-10-21 runs
+  connector held the rail down: unplugged, 3V3 up in 1.7 ms again (the 15-to-22 cable lands camera 3V3 on J4 pin 1 =
+  GND: bugs/bug-005); it was plugged in around shift100.py (user): sweep100 and the 2026-10-21 runs
   ran without it, shift100's result was confirmed without it by split100/verify100, so no result is void; runners now chain the test only after a successful flash (`&&`).
 - **`leakcam_docker_build.sh log` stopped at once: "empty string invalid as file name"** (2026-10-24) -> my pipefail
   fix quoted the extra make arguments with `printf '%q '`, which prints `''` when there are none -> only real

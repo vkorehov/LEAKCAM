@@ -324,6 +324,60 @@ grep -q 'LEAKCAM: BL616 SDU' "$SDIOC" || { echo "SDIO FUNCE patch not applied"; 
 cp "$HERE/uboot/configs/k230d_leakcam_defconfig" "$UB/configs/"
 cp "$HERE"/uboot/dts/k230d_leakcam.dts "$HERE"/uboot/dts/k230d_leakcam_pins.dtsi "$UB/arch/riscv/dts/"
 
+# SPI timing per phase in U-Boot/SPL too (tests/test017, 2026-10-24), as the kernel's drv_spi.c patch above: spi-mem
+# operations with a 2/4/8-line data phase use "data-max-frequency" and "rx-sample-delay-data-ps" from the bus node,
+# the rest (commands, status polls) "spi-max-frequency" and "rx-sample-delay-ns". The delay goes to RX_SAMPLE_DLY
+# before every operation (Canaan's driver wrote it once at probe). Canaan's step was NSEC_PER_SEC / bus clock in
+# whole ns: 1 ns at 800 MHz instead of 1.25, so 6 ns gave delay 6, not 5; the step is computed in ps now.
+DWS=$UB/drivers/spi/designware_spi.c
+grep -q 'LEAKCAM: per-phase SPI timing' "$DWS" || python3 - "$DWS" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+def rep(a, b):
+    global s
+    assert s.count(a) == 1, 'designware_spi.c changed, cannot apply the per-phase SPI timing: ' + a[:60]
+    s = s.replace(a, b)
+rep('    s32 def_rxdly_ns;\n',
+    '    s32 def_rxdly_ns;\n'
+    '\ts32 data_frequency;\t/* LEAKCAM: per-phase SPI timing: multi-line data phase clock, 0 = frequency */\n'
+    '\ts32 data_rxdly_ps;\t/* and its RX sample delay, -1 = the default one */\n')
+rep('    unsigned int def_rxdly;\n',
+    '    unsigned int def_rxdly;\n'
+    '\tunsigned int data_freq;\n'
+    '\tunsigned int data_rxdly;\t/* RX_SAMPLE_DLY value: delay | other edge << 16 */\n')
+rep('\tif (dev_read_bool(bus, "spi-slave"))\n',
+    '\tplat->data_frequency = dev_read_u32_default(bus, "data-max-frequency", 0);\n'
+    '\tplat->data_rxdly_ps = dev_read_u32_default(bus, "rx-sample-delay-data-ps", -1);\n\n'
+    '\tif (dev_read_bool(bus, "spi-slave"))\n')
+rep('\tpriv->def_rxdly = DIV_ROUND_CLOSEST(plat->def_rxdly_ns,\n'
+    '\t\t\t\t\t\t\tNSEC_PER_SEC /\n'
+    '\t\t\t\t\t\t\tpriv->bus_clk_rate);\n',
+    '\t{\n'
+    '\t\t/* steps of one bus clock (1250 ps at 800 MHz), the data delay in half steps (bit 16: other edge) */\n'
+    '\t\tu32 step_ps = DIV_ROUND_CLOSEST(1000000000000ULL, priv->bus_clk_rate);\n'
+    '\t\tu32 half;\n\n'
+    '\t\tpriv->def_rxdly = DIV_ROUND_CLOSEST(plat->def_rxdly_ns * 1000, step_ps);\n'
+    '\t\tpriv->data_rxdly = priv->def_rxdly;\n'
+    '\t\tif (plat->data_rxdly_ps >= 0) {\n'
+    '\t\t\thalf = DIV_ROUND_CLOSEST(plat->data_rxdly_ps * 2, step_ps);\n'
+    '\t\t\tpriv->data_rxdly = half / 2 | (half & 1) << 16;\n'
+    '\t\t}\n'
+    '\t\tpriv->data_freq = plat->data_frequency;\n'
+    '\t}\n')
+rep('\tdw_write(priv, DW_SPI_SSIENR, 0);\n\n\tclk_div = priv->bus_clk_rate / priv->freq;\n',
+    '\tdw_write(priv, DW_SPI_SSIENR, 0);\n\n'
+    '\t/* LEAKCAM: per-phase SPI timing: the multi-line data phase has its own clock and sample delay */\n'
+    '\tif (priv->spi_frf != CTRLR0_SPI_FRF_BYTE && op->data.buswidth > 1) {\n'
+    '\t\tif (priv->data_freq)\n\t\t\tpriv->freq = priv->data_freq;\n'
+    '\t\tdw_write(priv, DW_SPI_RX_SAMPLE_DLY, priv->data_rxdly);\n'
+    '\t} else {\n'
+    '\t\tdw_write(priv, DW_SPI_RX_SAMPLE_DLY, priv->def_rxdly);\n'
+    '\t}\n\n'
+    '\tclk_div = priv->bus_clk_rate / priv->freq;\n')
+open(p, 'w').write(s)
+PY
+grep -q 'LEAKCAM: per-phase SPI timing' "$DWS" || { echo "U-Boot SPI timing patch not applied"; exit 1; }
+
 # SPL and OpenSBI print on UART1 at the link's rate (4 Mbaud), as RT-Smart does since the link mux (tests/test039):
 # their console reaches the BL616's /dev/ttyACM1 from the first SPL line. U-Boot's ns16550 has neither the K230's
 # UART clock divider nor the DesignWare fractional divisor that 4 Mbaud needs (100 MHz / 16 / 4 M = 1 + 9/16):

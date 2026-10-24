@@ -1,0 +1,24 @@
+20:38:19 boot 1: kernel start/mounts/app init ['0.110', '0.286', '0.295'] s, read ('0', 'c4050e6c') 23.0 MB/s FAIL
+20:38:36 boot 2: kernel start/mounts/app init ['0.110', '0.286', '0.295'] s, read ('0', 'c4050e6c') 23.0 MB/s FAIL
+20:38:54 boot 3: kernel start/mounts/app init ['0.110', '0.286', '0.295'] s, read ('0', 'c4050e6c') 23.0 MB/s FAIL
+20:39:12 boot 4: kernel start/mounts/app init ['0.110', '0.286', '0.295'] s, read ('0', 'c4050e6c') 23.0 MB/s FAIL
+20:40:10 boot 5: kernel start/mounts/app init ['0.110', '0.629', '0.638'] s, read None ? MB/s FAIL
+20:40:27 boot 6: kernel start/mounts/app init ['0.110', '0.286', '0.295'] s, read ('0', 'c4050e6c') 23.0 MB/s FAIL
+20:40:45 boot 7: kernel start/mounts/app init ['0.110', '0.286', '0.295'] s, read ('0', 'c4050e6c') 23.0 MB/s FAIL
+20:41:03 boot 8: kernel start/mounts/app init ['0.110', '0.286', '0.295'] s, read ('0', 'c4050e6c') 23.0 MB/s FAIL
+20:41:21 boot 9: kernel start/mounts/app init ['0.110', '0.286', '0.295'] s, read ('0', 'c4050e6c') 23.1 MB/s FAIL
+20:41:39 boot 10: kernel start/mounts/app init [] s, read ('0', 'c4050e6c') 23.0 MB/s FAIL
+20:41:57 boot 11: kernel start/mounts/app init ['0.110', '0.286', '0.295'] s, read ('0', 'c4050e6c') 23.0 MB/s FAIL
+20:42:15 boot 12: kernel start/mounts/app init ['0.110', '0.286', '0.295'] s, read ('0', 'c4050e6c') 23.0 MB/s FAIL
+20:42:32 boot 13: kernel start/mounts/app init ['0.110', '0.286', '0.295'] s, read ('0', 'c4050e6c') 23.0 MB/s FAIL
+20:42:50 boot 14: kernel start/mounts/app init ['0.110', '0.286', '0.295'] s, read ('0', 'c4050e6c') 23.0 MB/s FAIL
+20:43:08 boot 15: kernel start/mounts/app init ['0.110', '0.286', '0.295'] s, read ('0', 'c4050e6c') 23.0 MB/s FAIL
+20:43:26 boot 16: kernel start/mounts/app init ['0.110', '0.286', '0.295'] s, read ('0', 'c4050e6c') 23.0 MB/s FAIL
+20:43:44 boot 17: kernel start/mounts/app init ['0.110', '0.286', '0.295'] s, read ('0', 'c4050e6c') 23.0 MB/s FAIL
+20:44:02 boot 18: kernel start/mounts/app init ['0.109', '0.286', '0.295'] s, read ('0', 'c4050e6c') 23.0 MB/s FAIL
+20:44:20 boot 19: kernel start/mounts/app init ['0.110', '0.286', '0.295'] s, read ('0', 'c4050e6c') 23.0 MB/s FAIL
+20:44:37 boot 20: kernel start/mounts/app init ['0.110', '0.286', '0.295'] s, read ('0', 'c4050e6c') 23.0 MB/s FAIL
+20:44:39 0/20 cold boots clean - rails off
+exit 0
+
+[exited with code 0]

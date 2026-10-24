@@ -49,6 +49,9 @@ part can be re-sourced from any vendor.
 - Standard Raspberry Pi Zero camera cable: 15-pin 1.0 mm end into the camera board,
   22-pin 0.5 mm end into J4/J5 (05B20L22P, verified compatible with the Pi Zero camera
   connector pinout).
+- **Do not use on J4/J5 as is (bugs/bug-005, 2026-10-24):** the pin numbering matches, but this cable lands the
+  camera's 3V3 on J4 pin 1 (GND) and holds the K230's 3V3 at 0 V. Needs a cable with the contacts on opposite
+  sides at the two ends, or the custom FPC.
 - Four cables in total (one on 20 Sep, three more on 22 Sep), enough for two cameras plus
   spares. The 15-pin FFC usually bundled with the camera board does not fit the 22-pin
   connector.
