@@ -1397,94 +1397,6 @@
     "skin": 1.0
    },
    {
-    "name": "fit 2026-10-24b Sketch4/5: S1 wire run from above the base's top there (Y 5.6: the parting rises to 5.5 by the side) down to the plug pocket's floor (Y 1.4), its outer face the Sketch5 plane parallel to the skin (a wall across the skin left a needle, Sketch4)",
-    "pts": [
-     [
-      16.95,
-      5.6,
-      -32.8
-     ],
-     [
-      25.0,
-      5.6,
-      -32.8
-     ],
-     [
-      25.0,
-      5.6,
-      -17.17
-     ],
-     [
-      16.95,
-      5.6,
-      -17.17
-     ]
-    ],
-    "dir": [
-     0,
-     -1,
-     0
-    ],
-    "d0": -0.1,
-    "d1": 4.2,
-    "clip": [
-     [
-      19.89,
-      4.93,
-      -32.8
-     ],
-     [
-      22.37,
-      0.74,
-      -32.8
-     ],
-     [
-      21.29,
-      4.4,
-      -17.17
-     ],
-     [
-      16.95,
-      3.0,
-      -25.0
-     ]
-    ],
-    "skin": false
-   },
-   {
-    "name": "fit 2026-10-24b Sketch5: deeper at the camera end (that plastic has no job): the Sketch5 quad back along -X to X 16.95, floor from Y 0.74 at Z -32.8 up to 4.4 at the S1 plug",
-    "pts": [
-     [
-      19.89,
-      4.93,
-      -32.8
-     ],
-     [
-      22.37,
-      0.74,
-      -32.8
-     ],
-     [
-      21.29,
-      4.4,
-      -17.17
-     ],
-     [
-      20.67,
-      5.46,
-      -17.17
-     ]
-    ],
-    "dir": [
-     -1,
-     0,
-     0
-    ],
-    "d0": 0.0,
-    "d1": 5.42,
-    "skin": false
-   },
-   {
     "name": "fit 2026-10-24b Sketch1: the board support rib at Z 26..28 past the pocket wall to the skin (no job) (from X 18.55, inside the pocket: no 0.01 skin left on its wall)",
     "pts": [
      [
@@ -1518,32 +1430,93 @@
     "skin": true
    },
    {
-    "name": "fit 2026-10-24b Sketch2: the side fill's outer strip beside the S3 plug, Z 20.9 back to the S3 pocket (Z 14.1)",
+    "name": "fit 2026-10-24c Sketch35-37 (S1): the wire run cleared to the 2 mm skin, from above the base's top (Y 5.6) to the plug pocket's floor (Y 1.4); its outer face follows the skin, no walls across it (needles, slabs)",
     "pts": [
      [
-      20.56,
-      0.79,
-      20.9
+      16.95,
+      5.6,
+      -32.8
      ],
      [
-      23.61,
-      -2.26,
-      20.9
+      30.0,
+      5.6,
+      -32.8
      ],
      [
-      23.51,
-      8.72,
-      20.9
+      30.0,
+      5.6,
+      -17.17
      ],
      [
-      21.2,
-      2.69,
-      20.9
+      16.95,
+      5.6,
+      -17.17
+     ]
+    ],
+    "dir": [
+     0,
+     -1,
+     0
+    ],
+    "d0": -0.1,
+    "d1": 4.2,
+    "skin": true
+   },
+   {
+    "name": "fit 2026-10-24c Sketch35-37 (S1): deeper at the camera end, down to Y -1.0 (below the old bore: the slabs between the earlier cuts go), up to the S1 plug pocket (Z -23.0)",
+    "pts": [
+     [
+      16.95,
+      5.6,
+      -32.8
      ],
      [
-      20.56,
-      1.58,
-      20.9
+      30.0,
+      5.6,
+      -32.8
+     ],
+     [
+      30.0,
+      5.6,
+      -23.0
+     ],
+     [
+      16.95,
+      5.6,
+      -23.0
+     ]
+    ],
+    "dir": [
+     0,
+     -1,
+     0
+    ],
+    "d0": -0.1,
+    "d1": 6.6,
+    "skin": true
+   },
+   {
+    "name": "fit 2026-10-24c Sketch32-34 (S3): everything beside the S3 plug from its flange pocket's end (X 19.26) to the 2 mm skin, Z 14.1..20.9 (the stepped 45 deg face and the X 20.56 wall go)",
+    "pts": [
+     [
+      19.26,
+      -3.0,
+      20.95
+     ],
+     [
+      30.0,
+      -3.0,
+      20.95
+     ],
+     [
+      30.0,
+      16.0,
+      20.95
+     ],
+     [
+      19.26,
+      16.0,
+      20.95
      ]
     ],
     "dir": [
@@ -1551,8 +1524,8 @@
      0,
      -1
     ],
-    "d0": -0.1,
-    "d1": 6.8,
+    "d0": 0.0,
+    "d1": 6.85,
     "skin": true
    }
   ]
