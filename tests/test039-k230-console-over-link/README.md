@@ -100,3 +100,10 @@ U-Boot `CONFIG_BAUDRATE=4000000` (U-Boot ignores the rate in stdout-path).
 - **Design correction during the work:** "output only" was not possible - with the console on UART1, msh reads the
   same device and would swallow the agent's frames -> the split is symmetric (K230 link_mux + BL616 splitter).
 - **A wrong test expectation** (my mistake): "$$" + a frame that itself starts with '$' is three '$', not two.
+
+- **The console bridge starved the BL616's IDLE task and later lost bytes** (2026-10-24, found in tests/test100) ->
+  `k230con` polled the UART and only yielded while the K230 was on: at priority 1 IDLE never ran, deleted tasks were
+  never freed and a Wi-Fi connect hung after a few joins; at idle priority it missed the 32-byte RX FIFO (80 us at
+  4 Mbaud) under Wi-Fi load ("ip 10.63.22", cut tables). Fix: UART RX interrupt into a 4 KB ring, the task blocks on
+  it (priority 5); `pt_status` shows `rx dropped` (0 since). The product firmware has no console bridge; its link
+  poll sleeps 5 ms per round.

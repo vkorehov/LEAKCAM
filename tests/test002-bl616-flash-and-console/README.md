@@ -85,3 +85,11 @@ n/a: flashing and the console run from USB power.
 - **`--boot` refused once ("b''", 2026-10-22 22:29)** -> the ROM had closed the ISP session: it ends one after ~2 s
   without a command, and the flasher's container took longer than that to exit -> `--boot` hand-shakes again
   (0x55 bytes until "OK") and retries; done by hand once, then built into bl616_isp.py.
+
+- **`reboot uart` with the watchdog running looped the ROM until a 3V3 cut** (2026-10-23) -> the 8 s watchdog survived
+  the reset into the ROM and reset it before USB came up; the kept user-boot field sent every reset back -> `isp`
+  (firmware/bl616/wdg_guard.c: watchdog off, USB detach 0.5 s, then the ROM); every BL616 firmware has it,
+  `bl616_isp.py` sends it. `bl616_isp.py` also took the firmware's second port (the K230 console) for the shell ->
+  interface 0 only.
+- **`isp` still missed the ROM 5 times of ~20** (2026-10-23/24) -> VMware prompts missed or held; popups off since
+  2026-10-24, devices attach by themselves; tools wait 20 s, a miss is now a fault to debug.

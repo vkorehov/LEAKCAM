@@ -192,3 +192,37 @@ Battery current: Wi-Fi join (energy per join, paid on every networked session), 
   field, kept across resets, sent each reset back into the ROM. Not the cable. Fix: `isp` command in wdg_guard.c
   (watchdog off, then the same reset), `bl616_isp.py` sends it; rule: every BL616 firmware has `isp`. The earlier
   flash with the watchdog running (16:26) passed by luck: inside the first 8 s.
+
+- **K230 scan list short (1 of 6-8 APs) and its join waiting 10 s** (2026-10-23/24) -> instrumented both ends (BL616
+  `wl_trace` 0x33/0x34 per failed send, K230 "scan done: n received, the BL616 sent m"): the BL616's upload pool holds
+  5 messages and `nethub_vchan_user_send()` waits only 100 ms for one; items 6+ waited 69 ms in a good scan and were
+  dropped in back-to-back scans, the DONE with them (so RT-Thread's join waited out its 10 s). Fix: `vchan_send()`
+  retries for up to 2 s; one scan at a time (`scan_pending`: a request during a scan is answered by its DONE).
+- **After join / leave / join every K230 scan failed "scan sync fail"** (2026-10-24) -> BL616 `virtualchan status`:
+  2 K230 messages waiting, unprocessed; the trace: the JOIN's `wifi_mgmr_sta_connect()` never returned, and it ran in
+  the NetHub virtual-channel task (`ctrl_rx`): nothing consumed, no credit back, the K230's channel stopped. Fix:
+  `ctrl_rx` only queues (struct wl_item) and the worker handles the message; a join leaves first and waits for the
+  DISCONNECT (own leaves counted, so their late events do not fail the next join).
+- **The connect still hung, now in the worker** (2026-10-24) -> narrowed on the BL616 alone (join/leave/join with and
+  without autoconnect, with a scan between, with `use_dhcp=0`: all fine, so bridge-only), finer marks (0x62 connect
+  called, no 0x63), then `ps`: `wifi_mgmr`, `CONNECT_ENTRY`, `CONNECT` in state D (deleted, not freed) and `k230con`
+  always R. The console bridge polled the UART and only `taskYIELD()`ed at priority 1 whenever the K230 was on, so
+  IDLE (priority 0, which frees deleted tasks) never ran; the manager's per-connect tasks piled up until a connect
+  could not get its tasks. Fix: the bridge no longer busy-polls (UART receive by interrupt, below). Seen in `mem` as
+  `deleted` > 0 that stays: why every test now records memory (tests/README.md, `mem_leak.py`).
+- **K230 console lost bytes during Wi-Fi runs** ("ip 10.63.22", cut tables; 2026-10-24) -> the first IDLE fix put the
+  polling bridge at idle priority, where it missed the 32-byte RX FIFO (80 us at 4 Mbaud) while the Wi-Fi tasks ran.
+  Fix: UART RX interrupt into a 4 KB ring, the bridge task blocks on it (priority 5); `pt_status` shows `rx dropped`
+  (0 since).
+- **Link-up status said 0 dBm** -> the RSSI read at the connect event is 0 -> the status is sent again 1 s later
+  (-29 dBm).
+- **My loop runner misjudged the bridge three times** (2026-10-24) -> (1) every command "took" 0.0 s: the leftover
+  prompt matched before the command ran -> drain the console before each command; (2) "NO DONE LINE" with a working
+  bridge: the K230 kernel log and the shell table interleave character by character, the text match failed -> the
+  verdict comes from the BL616's counters (`pt_trace counts`) and `mem`, the console only for timing; (3) joins
+  without an IP: fixed 5 s / 15 s waits shorter than a join with its scan and DHCP -> wait for the prompt, then up to
+  15 s for DHCP.
+- **`isp` did not reach the ROM 5 times of ~20** (2026-10-23/24), each time after the BL616 had run a while, a 3V3 cut
+  fixed it -> USB detach before the reset added (`isp`: `usbd_deinitialize`, 0.5 s); then the user turned VMware's USB
+  popups off (devices attach to Linux by themselves): missed or held prompts are the likely cause. Watch: one more
+  miss now would be a firmware fault (then: the app writes its own update, no ROM).

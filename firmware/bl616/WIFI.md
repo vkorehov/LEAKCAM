@@ -101,7 +101,7 @@ Each one is a hang found on rev 1 (skill `bl616-wifi-firmware` has the obstacles
 | `wifi_event()` (the Wi-Fi manager's callback) | no: flags, event bits, `xQueueSend(..., 0)` only | runs with the scheduler suspended: a wait never returns, even the watchdog feeder starves (the first scan result hung the BL616) |
 | `ctrl_rx()` (NetHub virtual-channel task) | no: copies the message to the worker's queue | while it blocks no message is consumed and no credit goes back: the K230's control channel stops ("scan sync fail") |
 | `wl_ev_task` (the worker, priority 10) | yes | runs the K230's requests (join leaves first, one scan at a time) and every send (`vchan_send`: retries up to 2 s, the upload pool is 5 messages, one try waits 100 ms) |
-| any polling loop on the BL616 | only at idle priority or blocking | IDLE frees deleted tasks; the manager makes and deletes tasks per connect: starved IDLE = a connect that hangs (`mem`: `deleted` > 0) |
+| any loop that waits for data (UART, ...) | must block (interrupt + notify), never busy-poll | IDLE frees deleted tasks and the manager makes and deletes tasks per connect: a poller above IDLE starved it and a connect hung (`mem`: `deleted` > 0); at idle priority the poller lost UART bytes under Wi-Fi load |
 
 Breadcrumbs: `wl_trace()` codes listed in wifi_link.c; the test firmware keeps them across a reset (`pt_trace`).
 

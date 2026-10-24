@@ -7,6 +7,11 @@
  *   pt_wifi leave                 DHCP lease released, disconnected
  *   pt_wifi net [host]            DNS, TCP connect, GET /generate_204 (the product's internet check), each timed
  *   pt_wifi bridge                step 2: the product's NetHub bridge over SDIO for the K230 (rails on first: pt_on)
+ *   pt_wifi join <ssid> <psk> auto | nodhcp    experiments of 2026-10-24 (tests/test100 Obstacles): autoconnect on
+ *                                 before the connect, or join as the bridge does (use_dhcp 0); both cleared the
+ *                                 Wi-Fi stack itself, the hang was IDLE starvation
+ *   pt_trace [clear | counts]     wifi_link.c's breadcrumbs, kept across a reset; counts: every code since boot (the
+ *                                 loop runners judge the bridge by them, not by the interleaving K230 console)
  *
  * The radio is the product's: RF parameters as main.c radio_init(), then firmware/bl616/wifi_link.c owns lwIP and the
  * Wi-Fi task (wifi_link_local_begin(): the BL616 alone, as the product's credential check; wifi_link_start(): the
