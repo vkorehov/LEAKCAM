@@ -36,14 +36,22 @@ cmd(fd, None, 4)
 k230_free("start")
 bl616_mem("before")
 for i in range(20):
-    cmd(fd, "wifi scan", 6)
+    cmd(fd, "wifi scan", 15, r"msh />\s*$")
     if i % 5 == 4:
         bl616_mem(f"after scan {i + 1}")
 for i in range(8):
-    cmd(fd, "wifi disc", 5)
-    out = cmd(fd, f"wifi join {ssid} {psk}", 15)
-    a = re.search(r"ip address: ([\d.]+)", cmd(fd, "ifconfig", 3))
-    print(f"join {i + 1}: ip {a.group(1) if a else '-'}", flush=True)
+    cmd(fd, "wifi disc", 40, r"msh />\s*$")          # the console is complete since the UART interrupt: wait for it
+    t = time.time()
+    out = cmd(fd, f"wifi join {ssid} {psk}", 40, r"msh />\s*$")
+    tj = time.time() - t
+    a = None
+    for _ in range(15):                                 # DHCP after the link is up
+        a = re.search(r"ip address: (\d+\.\d+\.\d+\.\d+)", cmd(fd, "ifconfig", 2))
+        if a and a.group(1) != "0.0.0.0":
+            break
+        time.sleep(1)
+    print(f"join {i + 1}: {tj:.1f} s, {'connect success' if 'connect success' in out else 'NO connect success'}, "
+          f"ip {a.group(1) if a else '-'}", flush=True)
     bl616_mem(f"after join {i + 1}")
 k230_free("end")
 os.close(fd); time.sleep(1)

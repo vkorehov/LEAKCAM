@@ -130,6 +130,12 @@ peak / 80 mA joined (user): the same as on the test-only path.
 | BL616 memory, 20 scans | free 194748 -> 194748 B, blocks 84, deleted 0: **no leak** |
 | BL616 memory, 8 joins | 11 KB once at the first join (station buffers), then 183528 -> 183544 B, blocks 119, deleted 0: **no leak** |
 
+**Rerun 2026-10-24 ~10:15 with the K230 console by UART interrupt:** bridge PASS again (27/27 scans, 7/7 connects,
+0 lost), BL616 `rx dropped 0`, K230 heap 6982656 -> 7269504 B free (max used 1.56 MB): no leak on either chip. By
+hand then: `wifi disc` **1.1 s** (was 16-31 s), `wifi join` **9.1 s** (scan 3 s + join; was 14 s with the 10 s
+scan wait), link-up RSSI -29 dBm (was 0), an IP every time. The loop's two odd joins (no IP, one join not sent)
+were its fixed 5 s / 15 s waits: the runner now waits for the prompt and up to 15 s for DHCP.
+
 **Pass** for the bridge. The K230 console lost bytes during the run ("ip 10.63.22", tables cut): the console bridge
 (k230con) polls the UART at idle priority since the IDLE fix and misses the 32-byte FIFO at 4 Mbaud when the Wi-Fi
 tasks run -> UART receive by interrupt (next).
