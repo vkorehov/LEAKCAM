@@ -1397,39 +1397,6 @@
     "skin": 1.0
    },
    {
-    "name": "fit 2026-10-24b Sketch1: the board support rib at Z 26..28 past the pocket wall to the skin (no job) (from X 18.55, inside the pocket: no 0.01 skin left on its wall)",
-    "pts": [
-     [
-      18.55,
-      -4.0,
-      28.1
-     ],
-     [
-      26.0,
-      -4.0,
-      28.1
-     ],
-     [
-      26.0,
-      3.5,
-      28.1
-     ],
-     [
-      18.55,
-      3.5,
-      28.1
-     ]
-    ],
-    "dir": [
-     0,
-     0,
-     -1
-    ],
-    "d0": 0.0,
-    "d1": 2.2,
-    "skin": true
-   },
-   {
     "name": "fit 2026-10-24c Sketch35-37 (S1): the wire run cleared to the 2 mm skin, from above the base's top (Y 5.6) to the plug pocket's floor (Y 1.4); its outer face follows the skin, no walls across it (needles, slabs)",
     "pts": [
      [
@@ -1496,16 +1463,16 @@
     "skin": true
    },
    {
-    "name": "fit 2026-10-24c Sketch32-34 (S3): everything beside the S3 plug from its flange pocket's end (X 19.26) to the 2 mm skin, Z 14.1..20.9 (the stepped 45 deg face and the X 20.56 wall go)",
+    "name": "fit 2026-10-24c Sketch32-34 (S3): everything beside the S3 plug from its flange pocket's end (X 19.26) to the 2 mm skin, Z 14.1..20.9 (the stepped 45 deg face and the X 20.56 wall go); from Y -2.2, above LED clamp 4's screw boss (top -2.36, fit 2026-10-25 Sketch34/35)",
     "pts": [
      [
       19.26,
-      -3.0,
+      -2.2,
       20.95
      ],
      [
       30.0,
-      -3.0,
+      -2.2,
       20.95
      ],
      [
@@ -1531,6 +1498,130 @@
   ]
  },
  "user_fills": {
-  "base": []
+  "base": [
+   {
+    "name": "fit 2026-10-25 Sketch32/33: the small notch under the Y 4.41 face before the S3 area (one flat face)",
+    "pts": [
+     [
+      19.6,
+      3.8,
+      11.7
+     ],
+     [
+      20.4,
+      3.8,
+      11.7
+     ],
+     [
+      20.4,
+      3.8,
+      14.15
+     ],
+     [
+      19.6,
+      3.8,
+      14.15
+     ]
+    ],
+    "dir": [
+     0,
+     1,
+     0
+    ],
+    "d0": 0.0,
+    "d1": 0.61
+   },
+   {
+    "name": "fit 2026-10-25 Sketch36/37: the +X wall from the S3 area to the antenna-end seam wall solid (Z 20.95..32.7, Y -4 up, inside the skin): no long hollow along the wall; the S3 bore and the clamp ways stay cut",
+    "pts": [
+     [
+      18.65,
+      -4.0,
+      20.95
+     ],
+     [
+      30.0,
+      -4.0,
+      20.95
+     ],
+     [
+      30.0,
+      -4.0,
+      32.7
+     ],
+     [
+      18.65,
+      -4.0,
+      32.7
+     ]
+    ],
+    "dir": [
+     0,
+     1,
+     0
+    ],
+    "d0": 0.0,
+    "d1": 12.0,
+    "skin": true
+   },
+   {
+    "name": "fit 2026-10-25 Sketch38: the camera-end wall below the S1 run thickened from its face (Z -33.9) to the S1 cut's end (Z -32.8): one face there",
+    "pts": [
+     [
+      16.25,
+      -0.42,
+      -33.9
+     ],
+     [
+      16.25,
+      -8.41,
+      -33.9
+     ],
+     [
+      23.86,
+      -6.76,
+      -33.9
+     ],
+     [
+      22.81,
+      -1.44,
+      -33.9
+     ],
+     [
+      22.44,
+      -1.52,
+      -33.9
+     ],
+     [
+      22.02,
+      -0.81,
+      -33.9
+     ],
+     [
+      21.65,
+      -0.79,
+      -33.9
+     ],
+     [
+      21.02,
+      -0.94,
+      -33.9
+     ],
+     [
+      19.99,
+      0.81,
+      -33.9
+     ]
+    ],
+    "dir": [
+     0,
+     0,
+     1
+    ],
+    "d0": -0.05,
+    "d1": 1.1,
+    "skin": true
+   }
+  ]
  }
 }
