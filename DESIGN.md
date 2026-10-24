@@ -80,6 +80,7 @@ These apply to every part of the project.
 | Area | Decision | Why |
 |---|---|---|
 | View | Two OV5647 Pi-v1.3-format boards with 222° M12 fisheye lenses, back to back (CAM1 J5 top, CAM2 J4 bottom), folded over the board | Spherical coverage is a hard requirement: a leak can be anywhere in the room. Sensors are judged by pixels across the image circle. |
+| Camera orientation | The enclosure takes each camera in **both** orientations (rotated 180° about the lens axis): pilots for both hole patterns, a pocket and a flex channel for the connector at either short edge | Rev 1 J4/J5 (bottom contact) need the cameras rotated with the standard 15-to-22 cable, rev 2 reverses the pinout (bugs/bug-005, bugs/v2.txt 10); one enclosure serves both boards and either cable |
 | Camera placement | Camera boards (and LED strips) stay at y ≤ 43 mm | 12 mm from the antenna element, about λ/10 at 2.45 GHz |
 | Camera clock | No MCLK from the K230; the modules' own 25 MHz oscillator | As on the Raspberry Pi; K230 MCLK pins stay free |
 | Camera pin 18 | IO62/IO63, driven low at boot | It is the red status LED on Pi-style boards; it must not light the lenses |
