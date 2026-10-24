@@ -49,3 +49,6 @@ CONFIG_CHERRYUSB_DEVICE_CDC     =y
 CONFIG_CHERRYUSB_DEVICE_CDC_ACM =y
 CONFIG_BSP_CONSOLE_USB_CDC      =y
 CONFIG_PM                       =y
+
+# mem_stat.c (`mem`): the lowest free heap since boot, a memory metric of every test
+CONFIG_MM_ENABLE_MIN_FREE_TRACKING=y

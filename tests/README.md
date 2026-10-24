@@ -26,6 +26,20 @@ line, every value at its maximum), `## Boot time`, `## Battery energy`, `## Obst
 written when it happens). Nothing is left out: an empty part says so ("Not run yet.", "None yet.", "not measured:
 <reason>"). The status here and in the README's Status line say the same.
 
+**Memory (user rule, 2026-10-24):** every run records memory on both chips (BL616 `mem`, K230 `free`: the Metrics
+row "Memory BL616 / K230"), and every operation a test repeats is a leak test: a snapshot before and after each cycle,
+`tools/power-bringup/mem_leak.py report <log>`, a leak fails the test (skill leakcam-test-metrics 5b). The leak test
+cases, one per operation the product repeats:
+
+| Operation repeated | Leak test | Cycles |
+|---|---|---|
+| Wi-Fi scan / leave + join over the bridge | test100 (`wloop.py`: 20 scans, 8 joins) | >= 8 |
+| K230 session (power on, agent, power off) | test036 (`pt_session` loop) | >= 8 |
+| NAND power cut + remount | test028 (`plt_loop.py`, K230 `free` per cycle) | >= 8 |
+| DDR stress pass | test025 (memtest passes, K230 `free`) | >= 8 |
+| HBN sleep / wake | test021 / test034 (BL616 `mem` after each wake: HBN RAM and the heap restart clean) | >= 8 |
+| The detector itself | `tools/power-bringup/test_mem_leak.py` (stable, noise, warm-up, steady leak, deleted tasks, blocks, single drop) | - |
+
 | Test | Date | Result |
 |---|---|---|
 | [test001 power and charging](test001-power-and-charging/README.md) | 2026-10-17/20 | pass: battery rails; charging with the bug-001 47 k |

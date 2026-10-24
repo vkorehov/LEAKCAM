@@ -19,6 +19,7 @@
 #include <string.h>
 
 #include <FreeRTOS.h>
+#include <event_groups.h>
 #include <queue.h>
 #include <task.h>
 
@@ -56,6 +57,10 @@ static volatile uint8_t state = WCP_STATE_DOWN;
 static volatile bool want_link;     /* a join was asked for and not cancelled by WCP_LEAVE */
 static volatile bool host_seen;     /* the K230 has spoken since we booted */
 static volatile bool scan_pending;
+#define WL_EVB_DISC (1u << 0)               /* the manager reported a disconnect (set in wifi_event, waited in join) */
+#define LEAVE_MS    3000
+static EventGroupHandle_t wl_evg;
+static volatile int own_disc;               /* DISCONNECT events still to come from our own leaves: not link losses */
 static bool lwip_up, wifi_up, bridge_up;   /* tcpip_init(); Wi-Fi task + fhost; NetHub + SDIO */
 static volatile uint8_t owner = WIFI_OWNER_NONE;
 static volatile bool local_only;            /* the credential check: every frame to lwIP here */
@@ -66,13 +71,35 @@ static bool rejoin;                         /* a check dropped the bridge's asso
 /* Breadcrumbs for a hang (tests/test100 step 2, 2026-10-23: the BL616 stopped dead after the control channel opened
  * and the watchdog reset it): empty here, the test firmware keeps the last marks in HBN RAM across the reset.
  * Codes: 0x1n ctrl_rx of WCP type n, 0x1f its end; 0x20/0x21 send_status in/out; 0x30/0x31 scan_done in/out, 0x32
- * per item; 0x4n Wi-Fi event n (low bits); 0x5n set_state n. */
+ * per item, 0x33 an item's send failed, 0x34 the DONE's send failed, 0x35 a leave got no DISCONNECT in 3 s; 0x4n Wi-Fi event n (low bits); 0x5n set_state n;
+ * 0x22/0x23 around each upload try; 0x60 join in, 0x61 autoconnect on, 0x62 connect called, 0x63 connect returned;
+ * 0x3e a K230 message lost, 0x3f an event lost (the worker's queue full). */
 __attribute__((weak)) void wl_trace(uint8_t code)
 {
     (void)code;
 }
 
 /* ------------------------------------------------------------------ K230 side */
+
+/*
+ * The upload pool holds 5 messages, freed as the K230 reads them; nethub_vchan_user_send() waits 100 ms for one and
+ * then fails (tests/test100, 2026-10-24: a scan with 7 APs waited 69 ms for items 6-7; with scans back to back items
+ * and the DONE were dropped: the K230's list came up short and its join waited 10 s for a DONE that never came).
+ * Wait up to VCHAN_SEND_MS. Only from a task (ctrl_rx, wl_ev_task), never from the Wi-Fi event callback.
+ */
+#define VCHAN_SEND_MS 2000
+
+static int vchan_send(const void *msg, uint16_t len)
+{
+    for (int waited = 0; waited < VCHAN_SEND_MS; waited += 100) {
+        wl_trace(0x22);
+        int r = nethub_vchan_user_send(msg, len);   /* each try waits up to 100 ms for a buffer */
+        wl_trace(0x23);
+        if (r == 0)
+            return 0;
+    }
+    return -1;
+}
 
 static void send_status(void)
 {
@@ -95,7 +122,7 @@ static void send_status(void)
             memcpy(s.ssid, info.ssid, s.ssid_len);
         }
     }
-    if (nethub_vchan_user_send(&s, sizeof(s)) != 0)
+    if (vchan_send(&s, sizeof(s)) != 0)
         LOG_W("status not sent\r\n");
     wl_trace(0x21);
 }
@@ -114,9 +141,28 @@ static void set_state(uint8_t s)
 
 /* ------------------------------------------------------------------ Wi-Fi */
 
+/* disconnect and wait for it, if associated or associating (wifi_check.c leave()): wifi_mgmr_sta_connect() on a busy
+ * station never returned (2026-10-24). Not from the Wi-Fi event callback (it waits for an event). */
+static void leave_and_wait(void)
+{
+    if (state != WCP_STATE_UP && state != WCP_STATE_JOINING)
+        return;
+    xEventGroupClearBits(wl_evg, WL_EVB_DISC);
+    own_disc++;
+    wifi_mgmr_sta_autoconnect_disable();
+    if (wifi_sta_disconnect() != 0 ||
+        !(xEventGroupWaitBits(wl_evg, WL_EVB_DISC, pdTRUE, pdFALSE, pdMS_TO_TICKS(LEAVE_MS)) & WL_EVB_DISC)) {
+        own_disc = 0;                       /* no event came: none to ignore later */
+        wl_trace(0x35);
+    }
+}
+
 static int join(const char *ssid, uint8_t ssid_len, const char *psk, uint8_t psk_len)
 {
     wifi_mgmr_sta_connect_params_t p;
+
+    wl_trace(0x60);
+    leave_and_wait();
 
     memset(&p, 0, sizeof(p));
     memcpy(p.ssid, ssid, ssid_len);
@@ -127,9 +173,13 @@ static int join(const char *ssid, uint8_t ssid_len, const char *psk, uint8_t psk
     p.use_dhcp = 0;     /* DHCP is the K230's, through the bridge */
 
     want_link = true;
+    wl_trace(0x61);
     wifi_mgmr_sta_autoconnect_enable();
     set_state(WCP_STATE_JOINING);
-    if (wifi_mgmr_sta_connect(&p) != 0) {
+    wl_trace(0x62);
+    int r = wifi_mgmr_sta_connect(&p);
+    wl_trace(0x63);
+    if (r != 0) {
         LOG_E("connect request refused\r\n");
         set_state(WCP_STATE_FAILED);
         return -1;
@@ -174,7 +224,9 @@ static void scan_item(void *env, void *arg, wifi_mgmr_scan_item_t *item)
     memcpy(m.bssid, item->bssid, sizeof(m.bssid));
     m.ssid_len = (uint8_t)(item->ssid_len > WCP_SSID_MAX ? WCP_SSID_MAX : item->ssid_len);
     memcpy(m.ssid, item->ssid, m.ssid_len);
-    if (nethub_vchan_user_send(&m, sizeof(m)) == 0 && *count < 255)
+    if (vchan_send(&m, sizeof(m)) != 0)
+        wl_trace(0x33);
+    else if (*count < 255)
         (*count)++;
 }
 
@@ -185,7 +237,8 @@ static void scan_done(void)
     wl_trace(0x30);
     scan_pending = false;
     wifi_mgmr_scan_ap_all(NULL, &d.count, scan_item);
-    nethub_vchan_user_send(&d, sizeof(d));
+    if (vchan_send(&d, sizeof(d)) != 0)
+        wl_trace(0x34);
     wl_trace(0x31);
 }
 
@@ -196,19 +249,34 @@ static void scan_done(void)
  * bits, the manager start) and queues the code; the bridge's handling, which sends to the K230, runs in wl_ev_task.
  */
 #define WL_EV_DEPTH 8
+#define WL_CTRL     (-1)                /* a K230 control message, not a Wi-Fi event */
+
+/* The K230's control messages are handled here too, not in ctrl_rx (the NetHub virtual-channel task): a blocking
+ * manager call there (wifi_mgmr_sta_connect() right after a leave never returned, 2026-10-24) stopped the channel:
+ * no message consumed, no credit back to the K230, its scans failed "scan sync fail" until a reset. */
+struct wl_item {
+    int code;                           /* CODE_WIFI_ON_* or WL_CTRL */
+    uint16_t len;
+    uint8_t msg[sizeof(struct wcp_join)];   /* the largest WCP message */
+};
 
 static QueueHandle_t wl_ev_q;
 
 static void bridge_event(int code);
+static void ctrl_handle(const uint8_t *data, uint16_t len);
 
 static void wl_ev_task(void *arg)
 {
-    int code;
+    struct wl_item it;
 
     (void)arg;
     while (1) {
-        if (xQueueReceive(wl_ev_q, &code, portMAX_DELAY) == pdTRUE)
-            bridge_event(code);
+        if (xQueueReceive(wl_ev_q, &it, portMAX_DELAY) != pdTRUE)
+            continue;
+        if (it.code == WL_CTRL)
+            ctrl_handle(it.msg, it.len);
+        else
+            bridge_event(it.code);
     }
 }
 
@@ -221,6 +289,8 @@ static void wifi_event(async_input_event_t ev, void *priv)
     wl_trace(0x40 | (code & 0x0f));
     if (code == CODE_WIFI_ON_MGMR_DONE)
         mgmr_ready = true;
+    if (code == CODE_WIFI_ON_DISCONNECT && wl_evg)
+        xEventGroupSetBits(wl_evg, WL_EVB_DISC);
     if (code == CODE_WIFI_ON_INIT_DONE) {
         wifi_mgmr_task_start();
         return;
@@ -230,7 +300,8 @@ static void wifi_event(async_input_event_t ev, void *priv)
         check(code);
         return;
     }
-    if (xQueueSend(wl_ev_q, &code, 0) != pdTRUE)
+    struct wl_item it = { .code = code, .len = 0 };
+    if (xQueueSend(wl_ev_q, &it, 0) != pdTRUE)
         wl_trace(0x3f);                     /* lost: the queue was full */
 }
 
@@ -246,8 +317,16 @@ static void bridge_event(int code)
             break;
         case CODE_WIFI_ON_CONNECTED:
             set_state(WCP_STATE_UP);
+            /* the RSSI read at the connect event is 0 (the K230 logged "0 dBm"): send it again once beacons came */
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            if (state == WCP_STATE_UP)
+                send_status();
             break;
         case CODE_WIFI_ON_DISCONNECT:
+            if (own_disc > 0) {             /* the leave of a JOIN or LEAVE: already accounted for */
+                own_disc--;
+                break;
+            }
             /* a loss while up is the start of a reconnect; a loss while joining is a failed
              * attempt (the manager's autoconnect decides whether it tries again) */
             if (!want_link)
@@ -266,14 +345,26 @@ static void bridge_event(int code)
 
 /* ------------------------------------------------------------------ control channel */
 
+/* the NetHub virtual-channel task: only queue (see struct wl_item) */
 static int ctrl_rx(void *arg, uint8_t *data, uint16_t len)
 {
-    const struct wcp_join *j = (const struct wcp_join *)data;
-    wifi_mgmr_scan_params_t sp;
+    struct wl_item it = { .code = WL_CTRL };
 
     (void)arg;
     if (len < 1)
         return 0;
+    it.len = len < sizeof(it.msg) ? len : sizeof(it.msg);
+    memcpy(it.msg, data, it.len);
+    if (xQueueSend(wl_ev_q, &it, 0) != pdTRUE)
+        wl_trace(0x3e);                     /* lost: the worker's queue was full */
+    return 0;
+}
+
+static void ctrl_handle(const uint8_t *data, uint16_t len)
+{
+    const struct wcp_join *j = (const struct wcp_join *)data;
+    wifi_mgmr_scan_params_t sp;
+
     wl_trace(0x10 | (data[0] & 0x0f));
     host_seen = true;
     switch (data[0]) {
@@ -290,11 +381,17 @@ static int ctrl_rx(void *arg, uint8_t *data, uint16_t len)
             break;
         case WCP_LEAVE:
             want_link = false;
+            if (state == WCP_STATE_UP || state == WCP_STATE_JOINING)
+                own_disc++;                 /* its DISCONNECT event is not a loss for a later JOIN */
             wifi_mgmr_sta_autoconnect_disable();
             wifi_sta_disconnect();
             set_state(WCP_STATE_DOWN);
             break;
         case WCP_SCAN:
+            /* one scan at a time: a request during a scan is answered by that scan's DONE (RT-Thread's join scans
+             * right after a user's scan; a second wifi_mgmr_sta_scan() failed and sent a short list at once) */
+            if (scan_pending)
+                break;
             memset(&sp, 0, sizeof(sp));    /* all channels, active */
             scan_pending = true;
             if (wifi_mgmr_sta_scan(&sp) != 0)
@@ -304,7 +401,6 @@ static int ctrl_rx(void *arg, uint8_t *data, uint16_t len)
             break;
     }
     wl_trace(0x1f);
-    return 0;
 }
 
 /*
@@ -368,7 +464,8 @@ void wifi_link_release(enum wifi_owner who)
  * Wi-Fi on USB power, as in examples/wifi/coex/wifi_ble */
 static void start_wifi(void)
 {
-    wl_ev_q = xQueueCreate(WL_EV_DEPTH, sizeof(int));
+    wl_ev_q = xQueueCreate(WL_EV_DEPTH, sizeof(struct wl_item));
+    wl_evg = xEventGroupCreate();
     xTaskCreate(wl_ev_task, "wl_ev", 1024, NULL, 10, NULL);   /* below the Wi-Fi tasks, above the app */
     async_register_event_filter(EV_WIFI, wifi_event, NULL);
     wifi_task_create();

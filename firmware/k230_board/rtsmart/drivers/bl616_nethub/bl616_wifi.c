@@ -32,6 +32,7 @@ static rt_bool_t registered;
 static rt_uint8_t sta_mac[6];
 static struct wcp_status status;   /* last one received, state starts DOWN */
 static rt_bool_t told_up;          /* the WLAN manager has been told CONNECT */
+static rt_uint16_t scan_items;     /* items of the scan under way (logged with its DONE) */
 
 static void report(rt_uint8_t was);
 
@@ -254,9 +255,15 @@ void bl616_wifi_ctrl_rx(const rt_uint8_t *msg, rt_size_t len)
         break;
     case WCP_SCAN_ITEM:
         if (registered && len >= sizeof(struct wcp_scan_item))
+        {
+            scan_items++;
             on_scan_item((const struct wcp_scan_item *)msg);
+        }
         break;
     case WCP_SCAN_DONE:
+        LOG_I("scan done: %u items received, the BL616 sent %u", scan_items,
+              len >= sizeof(struct wcp_scan_done) ? ((const struct wcp_scan_done *)msg)->count : 0);
+        scan_items = 0;
         if (registered)
             rt_wlan_dev_indicate_event_handle(&wlan, RT_WLAN_DEV_EVT_SCAN_DONE, RT_NULL);
         break;

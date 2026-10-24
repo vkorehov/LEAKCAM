@@ -60,6 +60,7 @@ U-Boot `CONFIG_BAUDRATE=4000000` (U-Boot ignores the rate in stdout-path).
 | Clicks per K230 power cycle | 0 (was 1 for the CH340) | the BL616 port stays |
 | Image | kdimg 45.4 MB; BL616 test firmware ~153 KB | |
 | Current | 568 mA (charging the cell, BL616 + K230 off, 08:33) | user reading |
+| Memory BL616 / K230 (start / min / end), leak | to fill | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 
 ## Obstacles
 

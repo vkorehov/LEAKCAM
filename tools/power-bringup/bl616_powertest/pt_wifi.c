@@ -169,7 +169,9 @@ static void print_ip(void)
     printf("  dns %s\r\n", ip4addr_ntoa((const ip4_addr_t *)&d));
 }
 
-static void do_join(const char *ssid, const char *psk)
+static bool nodhcp;                     /* test100: join as the bridge does (use_dhcp 0, leave without the DHCP step) */
+
+static void do_join(const char *ssid, const char *psk, bool autoconn)
 {
     wifi_mgmr_sta_connect_params_t p;
     size_t sl = strlen(ssid), pl = psk ? strlen(psk) : 0;
@@ -184,10 +186,12 @@ static void do_join(const char *ssid, const char *psk)
     memcpy(p.key, psk, pl);
     p.key_len = (uint8_t)pl;
     p.pmf_cfg = 1;
-    p.use_dhcp = 1;
+    p.use_dhcp = nodhcp ? 0 : 1;
     p.dhcp_timeout_event_only = 1;
     xEventGroupClearBits(evg, EV_CONNECTED | EV_DISCONNECTED | EV_GOT_IP | EV_IP_TIMEOUT);
     uint64_t t0 = bflb_mtimer_get_time_ms();
+    if (autoconn)                           /* as the bridge's join() does (test100: does it hang a later connect?) */
+        wifi_mgmr_sta_autoconnect_enable();
     if (wifi_mgmr_sta_connect(&p) != 0) {
         printf("pt_wifi join: the manager refused the request\r\n");
         return;
@@ -203,6 +207,10 @@ static void do_join(const char *ssid, const char *psk)
         return;
     }
     printf("pt_wifi join: associated + WPA in %lu ms\r\n", (unsigned long)(t1 - t0));
+    if (nodhcp) {
+        printf("pt_wifi join: DHCP skipped (nodhcp)\r\n");
+        return;
+    }
     b = wait(EV_GOT_IP | EV_IP_TIMEOUT | EV_DISCONNECTED, DHCP_MS);
     uint64_t t2 = bflb_mtimer_get_time_ms();
     if (!(b & EV_GOT_IP)) {
@@ -236,7 +244,8 @@ static void do_status(void)
 static void do_leave(void)
 {
     xEventGroupClearBits(evg, EV_DISCONNECTED);
-    net_al_ext_dhcp_disconnect();
+    if (!nodhcp)
+        net_al_ext_dhcp_disconnect();
     wifi_mgmr_sta_autoconnect_disable();
     if (wifi_sta_disconnect() == 0 && wait(EV_DISCONNECTED, LEAVE_MS))
         printf("pt_wifi leave: disconnected\r\n");
@@ -301,8 +310,11 @@ static struct {
     } e[TRACE_N];
 } trace __attribute__((section(".hbn_noinit")));
 
+static uint32_t trace_count[256];        /* per code since boot: loop verdicts without parsing the K230 console */
+
 void wl_trace(uint8_t code)
 {
+    trace_count[code]++;
     if (trace.magic != TRACE_MAGIC) {
         memset(&trace, 0, sizeof(trace));
         trace.magic = TRACE_MAGIC;
@@ -314,6 +326,14 @@ void wl_trace(uint8_t code)
 
 static int cmd_trace(int argc, char **argv)
 {
+    if (argc > 1 && !strcmp(argv[1], "counts")) {
+        printf("trace counts:");
+        for (int i = 0; i < 256; i++)
+            if (trace_count[i])
+                printf(" %02x=%lu", i, (unsigned long)trace_count[i]);
+        printf("\r\n");
+        return 0;
+    }
     if (argc > 1 && !strcmp(argv[1], "clear")) {
         trace.magic = 0;
         printf("pt_trace: cleared\r\n");
@@ -330,7 +350,7 @@ static int cmd_trace(int argc, char **argv)
         printf("  %8lu ms  0x%02x\r\n", (unsigned long)trace.e[i % TRACE_N].ms, trace.e[i % TRACE_N].code);
     return 0;
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_trace, pt_trace, wifi_link breadcrumbs kept across a reset [clear]);
+SHELL_CMD_EXPORT_ALIAS(cmd_trace, pt_trace, wifi_link breadcrumbs kept across a reset [clear | counts]);
 
 /* step 2: the K230 takes the radio over the NetHub SDIO bridge (wifi_link_start(); the K230's 3V3 must be up: the
  * SDIO pads' pull-ups sit on it). The K230 then binds the card when it boots (pt_run) and drives Wi-Fi itself. */
@@ -383,7 +403,10 @@ static int cmd_wifi(int argc, char **argv)
     if (!strcmp(op, "scan"))
         do_scan();
     else if (!strcmp(op, "join") && argc > 2)
-        do_join(argv[2], argc > 3 ? argv[3] : NULL);
+    {
+        nodhcp = argc > 4 && !strcmp(argv[4], "nodhcp");
+        do_join(argv[2], argc > 3 ? argv[3] : NULL, argc > 4 && !strcmp(argv[4], "auto"));
+    }
     else if (!strcmp(op, "status"))
         do_status();
     else if (!strcmp(op, "leave"))

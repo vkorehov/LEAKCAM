@@ -768,7 +768,7 @@ static int cmd_uart(int argc, char **argv)
             return 0;
         }
         if (!task)
-            task = xTaskCreate(uart_echo_task, "uecho", 512, NULL, tskIDLE_PRIORITY + 1, NULL) == pdPASS;
+            task = xTaskCreate(uart_echo_task, "uecho", 512, NULL, tskIDLE_PRIORITY, NULL) == pdPASS;   /* see k230con */
         uart_echo = true;
         printf("UART0 echo at %lu baud (pt_uart off to stop)\r\n", (unsigned long)LINK_BAUD);
     } else {
@@ -1633,7 +1633,10 @@ int main(void)
     hw = xSemaphoreCreateMutex();
     xTaskCreate(background_task, "pt", 2048, NULL, 2, NULL);
 #if PT_TEST_UART
-    xTaskCreate(uart_bridge_task, "k230con", 1024, NULL, tskIDLE_PRIORITY + 1, NULL);
+    /* at the idle priority: the loop only yields while the K230 is powered, and above IDLE it starved it, so the
+     * memory of deleted tasks was never freed: the Wi-Fi manager's per-connect tasks piled up until a connect hung
+     * (2026-10-24, tests/test100); at the same priority taskYIELD() alternates with IDLE */
+    xTaskCreate(uart_bridge_task, "k230con", 1024, NULL, tskIDLE_PRIORITY, NULL);
 #endif
     vTaskStartScheduler();
     while (1) {

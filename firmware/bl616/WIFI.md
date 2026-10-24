@@ -92,6 +92,19 @@ the BL616 booted. The K230 driver turns STATUS into WLAN manager events: up = CO
 the link up and starts DHCP), up -> anything = DISCONNECT, failed = CONNECT_FAIL. `wifi join`,
 `wifi scan` and `wifi disconnect` in msh map to JOIN, SCAN and LEAVE.
 
+## Task rules (tests/test100, 2026-10-23/24)
+
+Each one is a hang found on rev 1 (skill `bl616-wifi-firmware` has the obstacles in full):
+
+| Context | May block? | Why |
+|---|---|---|
+| `wifi_event()` (the Wi-Fi manager's callback) | no: flags, event bits, `xQueueSend(..., 0)` only | runs with the scheduler suspended: a wait never returns, even the watchdog feeder starves (the first scan result hung the BL616) |
+| `ctrl_rx()` (NetHub virtual-channel task) | no: copies the message to the worker's queue | while it blocks no message is consumed and no credit goes back: the K230's control channel stops ("scan sync fail") |
+| `wl_ev_task` (the worker, priority 10) | yes | runs the K230's requests (join leaves first, one scan at a time) and every send (`vchan_send`: retries up to 2 s, the upload pool is 5 messages, one try waits 100 ms) |
+| any polling loop on the BL616 | only at idle priority or blocking | IDLE frees deleted tasks; the manager makes and deletes tasks per connect: starved IDLE = a connect that hangs (`mem`: `deleted` > 0) |
+
+Breadcrumbs: `wl_trace()` codes listed in wifi_link.c; the test firmware keeps them across a reset (`pt_trace`).
+
 ## Build
 
 The BL616 side is part of the one BL616 firmware, `firmware/bl616` (BUILD.md section 4).

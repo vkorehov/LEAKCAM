@@ -40,6 +40,10 @@ These apply to every part of the project.
   part with the identical footprint. Fee-free JLC parts (Basic, Promotional Extended) are
   preferred.
 - **Rev 1 is the first board.** Hardware findings are changes to make before the first fab.
+- **Memory is measured and leaks fail.** Every test records the BL616 (`mem`: free, lowest free, live allocations,
+  tasks not yet freed) and the K230 (`free`); every operation the product repeats (session, join, scan, wake, power
+  cut) has a leak test over >= 8 cycles (`tools/power-bringup/mem_leak.py`, tests/README.md). No task may keep the
+  BL616's IDLE task from running: it frees the memory of deleted tasks (tests/test100, 2026-10-24).
 
 ## 2. System architecture
 
@@ -368,6 +372,10 @@ is `leak`, or the probe node is below 850 mV), or always / never with `--leak`.
   - It is a clean reimplementation: Bouffalo's Linux host driver is GPL.
 - **Control messages** (status, join, leave, scan) go on the USER virtual channel. They are
   defined once in `wifi_ctrl_proto.h`, shared by both sides.
+- **BL616 task rules (rev 1 bring-up, tests/test100):** the Wi-Fi manager's event callback never blocks (it runs
+  with the scheduler suspended) and the NetHub virtual-channel task never blocks (the K230's credits stop): both only
+  queue, one worker (`wl_ev`) does the work and the sends; sends retry for up to 2 s (5 upload buffers); one scan at
+  a time; a join leaves first.
 - **Throughput.** Plan for 10-25 Mbit/s: two H.265 streams fit, high-resolution MJPEG does not.
 
 ### 5.6 Imaging pipeline per camera

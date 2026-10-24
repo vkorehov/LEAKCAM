@@ -34,3 +34,6 @@ CONFIG_NETHUB_PROFILE_DUAL             =n
 CONFIG_NETHUB_PROFILE_SDIO             =y
 CONFIG_NETHUB_PROFILE_USB              =n
 CONFIG_NETHUB                          =y
+
+# mem_stat.c (`mem`): the lowest free heap since boot, a memory metric of every test
+CONFIG_MM_ENABLE_MIN_FREE_TRACKING=y

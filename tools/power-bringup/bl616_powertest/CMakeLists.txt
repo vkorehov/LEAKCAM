@@ -19,6 +19,8 @@ target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/a
 
 # the product's watchdog (the BL616 never stays hung)
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/wdg_guard.c)
+# the product's memory metrics (`mem`: every test logs it, leak detection)
+target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/mem_stat.c)
 sdk_add_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616)
 
 # pt_wifi (test100): the product's Wi-Fi library build options (firmware/bl616/CMakeLists.txt, from the SDK's NetHub example)
