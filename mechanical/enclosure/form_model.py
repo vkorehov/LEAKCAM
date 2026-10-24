@@ -734,9 +734,16 @@ def main():
                  [k[:6] for k in P.get("shell", {}).get("board_supports", [])]
     grooves, seats, leg_models, report["legs"] = legs(form0, P["legs"], blocks=leg_blocks)
     base, cover, sheet = parting(form0, P["parting"])
-    for x0, x1, z0, z1 in P["parting"].get("flat_rects", []):   # the seam flat at YS there (round the end seam
-        prism = b.Pos((x0 + x1) / 2, (YS - 60) / 2, (z0 + z1) / 2) * b.Box(x1 - x0, YS + 60, z1 - z0)   # screws):
-        base = base + (prism & form0)                            # the base up to it, the cover cut square above
+    for fr in P["parting"].get("flat_rects", []):              # the seam flat at YS there (round the end seam
+        x0, x1, z0, z1 = fr[:4]                                  # screws): the base up to it, the cover cut square above
+        c = fr[4] if len(fr) > 4 else 0.0                        # optional: 45 deg chamfer of the two corners at the
+        ze, zi = (z1, z0) if abs(z1) > abs(z0) else (z0, z1)     # form's end (fit 2026-10-24 Sketch4: the cover keeps
+        s_ = 1.0 if ze > zi else -1.0                            # those triangles, its end cap thicker beside them)
+        poly = [(x0, zi), (x1, zi), (x1, ze - s_ * c), (x1 - c, ze), (x0 + c, ze), (x0, ze - s_ * c)] if c else \
+               [(x0, zi), (x1, zi), (x1, ze), (x0, ze)]
+        face = b.Face(b.Wire.make_polygon([b.Vector(x_, -60.0, z_) for x_, z_ in poly], close=True))
+        prism = b.extrude(face, amount=YS + 60.0, dir=(0, 1, 0))
+        base = base + (prism & form0)
         cover = cover - prism
     for poly, z0, z1 in P["parting"].get("base_prisms", []):    # regions moved from the cover to the base (a crag in
         face = b.Face(b.Wire.make_polygon([b.Vector(x_, y_, z0) for x_, y_ in poly], close=True))   # the seam filled)

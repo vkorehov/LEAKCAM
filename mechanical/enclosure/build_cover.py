@@ -201,6 +201,8 @@ def build_cradle(path):
          (SCREW_HEAD_FLOOR, rim + 0.1), False),   # the counterbore widened to the S2 pocket: tangent, its depth only
         ("-X edge for the S2 wires", dict(rects=[(-CRADLE_X - 0.1, 1.75, -17.2, CRADLE_Z1 + 0.1)]), (CRADLE_BOTTOM - 0.1, rim + 0.1), False),   # fit Sketch3 (10-10)
         ("+X tongues", dict(rects=TONGUES), (CRADLE_BOTTOM, rim), True),   # fit Sketch4 (10-10): into the cover's slots opposite the screw
+        ("+X foot on the board", dict(rects=[(17.05, -17.32, 18.25, -8.40)]), (1.6, CRADLE_BOTTOM + 0.01), True),   # fit Sketch5
+                                    # (2026-10-24): the tray's +X side stood free; it rests on the board back there (no parts)
     ]
     for name, geo, (ya, yb), boss in parts:
         f = top_span(ya=ya, yb=yb, boss=boss, **geo)

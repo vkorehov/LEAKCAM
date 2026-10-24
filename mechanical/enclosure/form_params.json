@@ -579,7 +579,8 @@
     -14.82,
     13.96,
     33.65,
-    37.2
+    37.2,
+    1.2
    ]
   ]
  },
@@ -1394,6 +1395,39 @@
     "d0": -0.19,
     "d1": 2.2,
     "skin": 1.0
+   },
+   {
+    "name": "fit 2026-10-24 Sketch6: S1 wire run as one rectangular cut from the seam down to the wire level (the plug pocket's floor, Y 1.4): no slanted bore-to-pocket shapes; the tube bore below stays round",
+    "pts": [
+     [
+      16.95,
+      4.7,
+      -32.8
+     ],
+     [
+      21.17,
+      4.7,
+      -32.8
+     ],
+     [
+      21.17,
+      4.7,
+      -18.05
+     ],
+     [
+      16.95,
+      4.7,
+      -18.05
+     ]
+    ],
+    "dir": [
+     0,
+     -1,
+     0
+    ],
+    "d0": -0.1,
+    "d1": 3.3,
+    "skin": 1.2
    }
   ]
  },
