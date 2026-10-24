@@ -39,3 +39,8 @@ From the rev 1 bugs
    EN2 low. Through an ammeter (10 A range, leads, spliced cable) the input collapsed when charging started
    and D1 blinked, no charge; the same Mac port without the meter, or a wall adapter, charges. Rev 2: EN2/EN1 from the BL616 (USB500 by default, ILIM only when the
    USB-C CC level says 1.5 A or 3 A), or USB500 (EN1 high, EN2 low) fixed.
+10. bug-005: J4/J5 camera connectors - reverse the pinout (pad k -> signal of pin 23-k) so a standard Pi Zero
+   15-to-22 cable folded 180 degrees over the board (cameras folded back, lens out, DESIGN.md) lands camera 3V3 on
+   3V3. Rev 1: 05B20L22P (bottom contact) + that cable mirrors the order (camera 3V3 on GND); rev 1 fix is a
+   top-contact connector (Molex 52435-2271) with the cameras rotated 180 degrees and longer cables. Before
+   ordering: trace each conductor camera -> cable -> connector -> pad in the folded, mounted position.

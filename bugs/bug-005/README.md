@@ -1,6 +1,6 @@
 # bug-005: the Pi Zero camera cable lands camera 3V3 on J4 pin 1 (GND)
 
-Found: 2026-10-24, test017 (the K230's 3V3 stopped coming up). Status: open, cause found; bench: opposite-side cable, product: crossover FPC (no rework).
+Found: 2026-10-24, test017 (the K230's 3V3 stopped coming up). Status: open, cause found; rev 1: top-contact connector + rotated cameras, rev 2: reversed pinout.
 
 ## What happened
 
@@ -39,17 +39,14 @@ bottom-contact" and its footprint verified; the contact side was never compared 
 
 ## Fix
 
-The geometry ties the pin order to the camera's facing: with a straight cable folded 180 degrees over the board (the
-design), the camera's pin-1 end lies over the board connector's pin-22 end. A top-contact connector or an
-opposite-side cable each fix the pin order only by flipping the camera (lens towards the board), so:
+Folding, rotating or twisting a flat cable never changes which end pin meets which: only the cable type (same- or
+opposite-side contacts), the connector's contact type or a crossover does. Decided 2026-10-24 (user):
 
-- No connector rework (a top-contact part, e.g. JUSHUO AFC07-S22ECA-00 C262642 or Molex 52435-2271, flips the
-  camera in the enclosure; checked and dropped 2026-10-24).
-- Bench (test020/030): an opposite-side 22-to-15 cable (Raspberry Pi / Adafruit 5818-5820, 5-20 cm) in the existing
-  J4/J5; the camera faces the other way, irrelevant on the bench.
-- Product: custom 2-layer FPC with a conductor crossover (pin k on the board to pin k on the camera in the folded
-  position), ~45 mm top camera, ~38 mm bottom, into the existing bottom-contact J4/J5.
-- Before power after any cable change: continuity camera pin 15 (3V3) -> J4/J5 pin 22.
+- Rev 1: J4/J5 reworked to a top-contact connector, Molex 52435-2271 (Farnell 2679571; signal pads land on ours,
+  side tabs ~1 mm wider, partial overlap), with the existing cable type; on the plain fold the camera then faces
+  the board, so the cameras are rotated 180 degrees (lens out) and need longer cables to reach their connectors.
+- Rev 2: reverse the J4/J5 pinout (bugs/v2.txt item 10).
+- Before power after any connector or cable change: continuity camera pin 15 (3V3) -> J4/J5 pin 22.
 - Review rule: for every connector, trace each conductor from the far end through the cable's contact sides and
   the connector's contact type to the pad, in the mounted (folded) position, not only the pin numbers.
 
