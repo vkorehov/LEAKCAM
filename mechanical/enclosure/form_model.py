@@ -765,6 +765,12 @@ def main():
         pts_ = [np.array(q, float) - d * ((np.array(q, float) - q0) @ d) for q in uc["pts"]]
         face = b.Face(b.Wire.make_polygon([b.Vector(*(q + d * uc["d0"])) for q in pts_], close=True))
         pr = b.extrude(face, amount=uc["d1"] - uc["d0"], dir=tuple(map(float, d)))
+        if uc.get("clip"):                                    # cut back to a plane (three points on it) on the side of a
+            p1, p2, p3, keep = (np.array(q, float) for q in uc["clip"])   # fourth point: a face parallel to the skin
+            nrm = unit(np.cross(p2 - p1, p3 - p1))              # instead of a wall across it, no sliver (fit 2026-10-24 Sketch5)
+            if (keep - p1) @ nrm > 0:
+                nrm = -nrm
+            pr = b.split(pr, bisect_by=b.Plane(origin=tuple(map(float, p1)), z_dir=tuple(map(float, nrm))), keep=b.Keep.BOTTOM)
         sk_ = uc.get("skin")                                  # True: the 2 mm skin; a number: that much
         if sk_:
             return pr & (inner_ if sk_ is True else b.offset(form0, amount=-float(sk_), kind=b.Kind.INTERSECTION))

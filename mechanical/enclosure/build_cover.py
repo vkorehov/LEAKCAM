@@ -202,6 +202,8 @@ def build_cradle(path):
         ("-X edge for the S2 wires", dict(rects=[(-CRADLE_X - 0.1, 1.75, -17.2, CRADLE_Z1 + 0.1)]), (CRADLE_BOTTOM - 0.1, rim + 0.1), False),   # fit Sketch3 (10-10)
         ("+X tongues", dict(rects=TONGUES), (CRADLE_BOTTOM, rim), True),   # fit Sketch4 (10-10): into the cover's slots opposite the screw
         ("+X foot on the board", dict(rects=[(17.05, -17.32, 18.25, -8.40)]), (1.6, CRADLE_BOTTOM + 0.01), True),   # fit Sketch5
+        ("+X rail on the board", dict(rects=[(RAILS[0][0], RAIL_Z[0], RAILS[0][1], RAIL_Z[1])]), (1.6, RAIL_BOTTOM + 0.01), True),
+                                    # fit 2026-10-24b Sketch3: the +X rail down onto the board back too (no parts under it)
                                     # (2026-10-24): the tray's +X side stood free; it rests on the board back there (no parts)
     ]
     for name, geo, (ya, yb), boss in parts:
