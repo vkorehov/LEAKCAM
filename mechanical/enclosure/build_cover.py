@@ -39,6 +39,13 @@ LENS_BORE = 8.1                                         # past the old top: roun
 CAM_PILOT = 3.5                                         # camera screw pilot depth: M2x5 through the 2.4 board leaves 2.6 of
                                                         # thread, 0.9 spare; >= 1 mm of plastic past the tip
 CAM_SCREWS = [(10.5, -7.52), (-10.5, -7.52), (10.5, 4.98), (-10.5, 4.98)]   # camera x, y of its Ø2.2 holes
+# The camera fits both ways round: as modelled and rotated 180 degrees about the lens axis (DESIGN.md "Camera
+# orientation", bugs/bug-005: rev 1 J4/J5 need it rotated with the standard cable). Rotated, camera y -> -2.2 - y:
+# the board spans y -9.18..14.68, its FFC connector y 10.2..15.4 (opening towards the antenna end), the holes move
+# 0.34 mm (y -7.18, 5.32). One pilot per hole half way between: 0.17 off either, inside the Ø2.2 hole's clearance.
+PILOTS = [(10.5, -7.35), (-10.5, -7.35), (10.5, 5.15), (-10.5, 5.15)]
+FFC_ROT = (9.9, 15.7 + 2.5)     # rotated connector pocket, camera y; 2.5 past it for the flex's turn round the board
+                                # edge into the connector (it comes from under the camera: S route, camera/README.md)
 FLEX_X = (-9.1, 8.4)                                    # J4 (x 33.8-49.3) and the camera FFC, as the base channel
 FLEX_TOP = CAM2_BACK + 4.39 + 0.3                       # over the camera's FFC connector
 RISER_TOP, FLEX_RAMP = 21.19, (-30.0, -17.9)            # the J4 riser stays low (the form is low at the end: 3.5 over the
@@ -124,20 +131,22 @@ feature("Flex channel over the cells", dict(rects=[(FLEX_X[0], -37.5, FLEX_X[1],
 rp_feature("Flex channel ramp", [(FLEX_RAMP[0], CELL_TOP + 0.2), (FLEX_RAMP[0], RISER_TOP), (FLEX_RAMP[1], FLEX_TOP),
                                  (cz(-16.6), FLEX_TOP), (cz(-16.6), CELL_TOP + 0.2)], FLEX_X[0], FLEX_X[1], False,
            f"up to the camera's connector, Y {FLEX_TOP:.2f} at Z {FLEX_RAMP[1]}")
-feature("Camera board pocket", dict(rects=[(-12.8, cz(-17.2), 12.8, cz(7.3))]), lambda: span(CELL_TOP + 0.2, LEDGE),
-        f"X +-12.8 Y ..{LEDGE:.2f}")
+feature("Camera board pocket", dict(rects=[(-12.8, cz(-17.2), 12.8, cz(15.0))]), lambda: span(CELL_TOP + 0.2, LEDGE),
+        f"X +-12.8 Y ..{LEDGE:.2f}: the board either way round")
 feature("Holder pocket", dict(rects=[(-7.3, CAM_Z - 6.8, 7.3, CAM_Z + 6.8)]), lambda: span(LEDGE - 0.1, LEDGE + FLANGE),
         f"Y ..{LEDGE + FLANGE:.2f}")
 feature("Holder ear pocket", dict(rects=[(-11.3, CAM_Z - 2.3, 11.3, CAM_Z + 2.3)]), lambda: span(LEDGE - 0.1, LEDGE + FLANGE),
         f"Y ..{LEDGE + FLANGE:.2f}")
 feature("Camera FFC pocket", dict(rects=[(-9.1, cz(-17.9), 9.1, cz(-12.1))]), lambda: span(CELL_TOP + 0.2, FLEX_TOP),
         f"Y ..{FLEX_TOP:.2f}")
+feature("Camera FFC pocket, rotated", dict(rects=[(-9.1, cz(FFC_ROT[0]), 9.1, cz(FFC_ROT[1]))]),
+        lambda: span(CELL_TOP + 0.2, FLEX_TOP), f"Y ..{FLEX_TOP:.2f}, with the flex's turn past it")
 feature("Barrel hole", dict(circles=[(0, CAM_Z, 7.3)]), lambda: span(CELL_TOP + 0.2, BARREL_END),
         f"R 7.3 Y ..{BARREL_END:.2f}")
 feature("Lens thread hole", dict(circles=[(0, CAM_Z, LENS_THREAD)]), lambda: span(BARREL_END - 0.1),
         f"R {LENS_THREAD} Y {BARREL_END:.2f}..")
 feature("Lens bore", dict(circles=[(0, CAM_Z, LENS_BORE)]), lambda: span(TOP), f"R {LENS_BORE} from Y {TOP:.2f} out: the lens body")
-feature("Camera screw pilots", dict(circles=[(x, cz(y), 0.8) for x, y in CAM_SCREWS]), lambda: span(LEDGE - 0.1, LEDGE + CAM_PILOT),
+feature("Camera screw pilots", dict(circles=[(x, cz(y), 0.8) for x, y in PILOTS]), lambda: span(LEDGE - 0.1, LEDGE + CAM_PILOT),
         f"4x Ø1.6 Y {LEDGE:.2f}..{LEDGE + CAM_PILOT:.2f} (M2x5 thread-forming, button head)")
 feature("Mic slot", dict(rects=[(POCKET_X - 0.1, MIC[1] - MIC_SLOT / 2, SKIN_OUT, MIC[1] + MIC_SLOT / 2)]),
         lambda: span(PARTING, MIC_TOP), f"the cradle's mic slot out through the +X wall, Y {PARTING}..{MIC_TOP}, open to the seam")
