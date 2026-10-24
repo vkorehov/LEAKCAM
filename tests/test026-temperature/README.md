@@ -76,4 +76,8 @@ The current at each load step logged next to the temperature (self-heating follo
 
 ## Obstacles
 
-None yet.
+None in the run of 2026-10-21.
+
+- **Three die readings of 5.5 C in the 8 h DDR soak** (2026-10-24, tests/test025 runner) -> the runner's regex took the
+  first number after `chip_temp`, and a memtest pass line ("in 5.5 s") was interleaved into its answer -> no data,
+  dropped from the summary; read the "chip temperature: x C" line explicitly in later runners.

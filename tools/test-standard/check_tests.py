@@ -12,6 +12,9 @@ Standard (user rule, 2026-10-24: all tests the same, missing metrics marked, non
   rate row). A value is measured, or `n/a: <reason>` when the metric does not apply to that test, or **MISSING**.
 - A run of a test fills every **MISSING** of its Metrics (skill leakcam-test-metrics); `check_tests.py testNNN`
   says which are left.
+- Obstacles (user rule, 2026-10-24: document obstacles in every test): after a run the section holds its bullets
+  (problem -> how found -> cause -> fix -> where the fix lives) or a dated line "None in the run of <date>."; empty,
+  **MISSING** or the old "None yet." fails `check_tests.py testNNN`.
 """
 import glob
 import os
@@ -158,6 +161,16 @@ def metrics_missing(text):
     return out + missing_rows(metric_rows(m.group(1)))
 
 
+def obstacles_ok(text):
+    m = re.search(r"^## Obstacles[^\n]*\n(.*?)(?=^## |\Z)", text, re.M | re.S)
+    if not m:
+        return False
+    body = m.group(1)
+    if MISSING in body or re.search(r"(?m)^None yet\.?\s*$", body):
+        return False
+    return bool(re.search(r"(?m)^- ", body) or re.search(r"None in the run of \d{4}-\d\d-\d\d", body))
+
+
 def main():
     files = sorted(glob.glob(os.path.join(ROOT, "test*", "README.md")))
     args = sys.argv[1:]
@@ -165,14 +178,22 @@ def main():
         want = [f for f in files if os.path.basename(os.path.dirname(f)).startswith(args[0])]
         if not want:
             sys.exit(f"no test {args[0]}")
-        left = metrics_missing(open(want[0]).read())
+        text = open(want[0]).read()
+        left = metrics_missing(text)
         name = os.path.basename(os.path.dirname(want[0]))
+        bad = False
         if left:
             print(f"{name}: {len(left)} metric(s) still MISSING after this run - fill them or write `n/a: <reason>`:")
             for r in left:
                 print(f"  - {r}")
+            bad = True
+        if not obstacles_ok(text):
+            print(f"{name}: Obstacles not documented for this run - a bullet per obstacle, or \"None in the run of "
+                  f"<date>.\"")
+            bad = True
+        if bad:
             sys.exit(1)
-        print(f"{name}: every metric filled")
+        print(f"{name}: every metric filled, obstacles documented")
         return
     total = 0
     for f in files:
@@ -185,7 +206,8 @@ def main():
         left = metrics_missing(text)
         total += len(left)
         name = os.path.basename(os.path.dirname(f))
-        print(f"{name:45s} sections missing {len(secs)}  metrics MISSING {len(left):2d}")
+        obs = "ok" if obstacles_ok(text) else "NOT DOCUMENTED"
+        print(f"{name:45s} sections missing {len(secs)}  metrics MISSING {len(left):2d}  obstacles {obs}")
     print(f"{len(files)} tests, {total} metric values MISSING")
 
 

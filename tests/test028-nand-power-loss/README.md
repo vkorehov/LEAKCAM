@@ -103,5 +103,8 @@ n/a: a robustness test (the energy of writes is test017).
   stopped after 0 cycles (csv header only). At 09:47:08 that session's 60 s heartbeat limit ran out: rails off, then
   the lockout HBN, so the BL616 left USB (not a crash, not this test). Details and the fix: tests/test038, Obstacles.
   Rerun the loop on its own, on the charger or a full cell.
-
-None yet.
+- **4 of 400 checks unparsed in the 400-cut run** (2026-10-23 cycles 66, 106, 142, 174, ~40-50 s against ~25 s) -> the
+  loop's 30 s read of `plt_check` ended before its result line; no data lost (the next check counted both cycles'
+  commits) -> cause open; the loop now keeps the raw text of a failed check (`<csv>.fail.txt`) for the next run.
+- **A 9 min gap after cycle 50 of the 100-cut run** (2026-10-23 16:55-17:04) -> the Linux VM was paused (no log, then
+  "Clock change detected"), not the board -> keep the Mac awake for long runs; the loop simply continues.

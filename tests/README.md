@@ -32,6 +32,11 @@ README against the sections above and the 14 metric rows of skill leakcam-test-m
 "every metric filled" before the run is reported (2026-10-24: 476 values MISSING over 44 tests; the count falls as
 tests are re-run).
 
+**Obstacles in every test, every run (user rule, 2026-10-24):** each one as `problem -> how found -> cause -> fix
+-> where the fix lives`, in every test it touches; the fix's code carries a comment naming it (date, test); a rule
+that follows goes into the design doc and the skill. A run with none writes `None in the run of <date>.`.
+`check_tests.py testNNN` fails while the section is empty, MISSING or "None yet." after a run.
+
 **Memory (user rule, 2026-10-24):** every run records memory on both chips (BL616 `mem`, K230 `free`: the Metrics
 row "Memory BL616 / K230"), and every operation a test repeats is a leak test: a snapshot before and after each cycle,
 `tools/power-bringup/mem_leak.py report <log>`, a leak fails the test (skill leakcam-test-metrics 5b). The leak test
