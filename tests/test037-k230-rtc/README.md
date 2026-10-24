@@ -92,4 +92,4 @@ n/a on its own (inside every K230 session); a slow RTC start would show in the b
 - **msh `date` 8 h ahead of the RTC** -> RT-Thread's musl `sys/time.h` defines RT_LIBC_USING_LIGHT_TZ_DST with a +8 h
   default (time.c) -> install.sh sets it to 0 (UTC, user rule); the RTC driver itself was UTC (timegm/gmtime).
 - **Flash chain stopped silently** -> the USB boot device came after my 4 s check (VMware click) -> wait up to 60 s
-  for 29f1:0230 before flashing.
+  for 29f1:0230 before flashing. (Since 2026-10-24: no click, the device attaches in ~2 s; the runners wait 20 s.)
