@@ -55,3 +55,10 @@ opposite-side contacts), the connector's contact type or a crossover does. Decid
 - Which way the cable sat when the rails still came up at ~19:50.
 - Camera health: ohms between its 15-pin connector pin 1 (GND) and pin 15 (3V3), unpowered.
 - Do not plug a camera into J4/J5 with the current cables.
+
+## Ordered (2026-10-24)
+
+- Farnell: Molex 52435-2271 top-contact connectors (order code 2679571) for the J4/J5 rework.
+- AliExpress: same-side 15-to-22 camera cables, 8 cm (bottom camera, J5, ~70 mm needed) and 15 cm (top camera, J4,
+  ~83 mm needed; no 10 cm sold), COME ON DIY Store listing 1005005609470913. Check same-side contacts on arrival.
+- On arrival: rework J4/J5, then continuity camera pin 15 -> J4/J5 pin 22 before any power, then test020/test030.
