@@ -163,6 +163,7 @@ seam_cover_features(POCKET_X, *SEAM_Z, side_gaps=plug_gaps(POCKET_X),
 legs_cut("cover")
 leds_cut("cover")
 shell_cut("cover")
+solid_fills("cover")
 sm.AddToDB = False
 
 print("part box:", [round(v * 1000, 2) for v in model.GetPartBox(True)])

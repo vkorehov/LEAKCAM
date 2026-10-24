@@ -220,6 +220,7 @@ LEGS_STEP = r"C:\hw\LEAKCAM\mechanical\enclosure\legs_{}.step"   # the probe leg
 LEDS_STEP = r"C:\hw\LEAKCAM\mechanical\enclosure\leds_{}.step"   # the LED strips' seats and LED holes
 SHELL_STEP = r"C:\hw\LEAKCAM\mechanical\enclosure\shell_{}.step"   # the hollow (form_model.py): all but the skin and structures
 SKIN_OUT = 40.0
+BODY_ADD = 15901
 BODY_SUBTRACT = 15902                                             # swBodyOperationType_e
 
 
@@ -334,6 +335,30 @@ def shell_cut(part):
     f.Name = "Shell: the hollow off (form_model.py)"
     drop_loose(pd, "Loose bits of the shell removed")       # bits the hollow cut loose (left between two cuts)
     print(f"shell: {len(tools)} hollow bodies off,", len(pd.GetBodies2(0, False)), "body left")
+
+
+def solid_fills(part):
+    """form_model.py's fills_<part>.step (marked faces fused into one solid, fit 2026-10-25) added to the part after every
+    cut and the hollow: nothing takes them away again"""
+    import pythoncom, win32com.client
+    p = SHELL_STEP.replace("shell_", "fills_").format(part)
+    if not os.path.exists(p):
+        print("no solid fills:", p)
+        return
+    pd = typed(model, "IPartDoc")
+    names = lambda: {get(typed(b_, "IBody2"), "Name"): b_ for b_ in pd.GetBodies2(0, False)}
+    main = names()
+    form_body(p)
+    tools = [v for k, v in names().items() if k not in main]
+    if not tools:
+        print("solid fills: none")
+        return
+    f = fm.InsertCombineFeature(BODY_ADD, list(main.values())[0],
+                                win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_DISPATCH, tools))
+    if f is None:
+        raise RuntimeError("solid fills: combine failed")
+    f.Name = "Solid fills (form_model.py)"
+    print(f"solid fills: {len(tools)} added,", len(pd.GetBodies2(0, False)), "body left")
 
 
 def drop_loose(pd, name):

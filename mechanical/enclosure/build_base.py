@@ -230,6 +230,7 @@ form_trim("base")
 legs_cut("base")
 leds_cut("base")
 shell_cut("base")
+solid_fills("base")
 sm.AddToDB = False
 
 print("part box:", [round(v * 1000, 2) for v in model.GetPartBox(True)])

@@ -861,6 +861,32 @@ def main():
             if fz1 < z1:
                 side_force[pt_].append(b.Pos(sd * (x0 + 30), 0, (fz1 + z1) / 2) * b.Box(60, 200, z1 - fz1))
             report.setdefault("side_fills", []).append({"part": pt_, "side": sd, "y_at_wall": round(y0, 2)})
+        # solid fills (fit 2026-10-25): marked faces fused into one solid - the convex hull of a pair of sketched faces
+        # (or one sketch swept along dir) - in the part's piece, minus the legs' bores and pockets and the LED ways and
+        # seats; added after every cut and the hollow (clips.py solid_fills), so nothing takes it away again
+        from scipy.spatial import ConvexHull
+        def hull_solid(pts):
+            pts = np.array(pts, float)
+            h = ConvexHull(pts)
+            faces = [b.Face(b.Wire.make_polygon([b.Vector(*pts[i]) for i in tri], close=True)) for tri in h.simplices]
+            return b.Solid(b.Shell(faces)).fix()
+        for part, piece in (("base", base), ("cover", cover)):
+            out = []
+            for sf in P.get("solid_fills", {}).get(part, []):
+                sol = hull_solid(sf["pts"]) if "dir" not in sf else user_prism(sf)
+                sol = sol & piece
+                for g_ in (grooves if part == "base" else seats) + (led_cuts[part] if P.get("leds") else []) + \
+                          (clamp_room[part] if P.get("leds") else []):
+                    if sol is None or not sol.solids():
+                        break
+                    gs = g_.solids() if hasattr(g_, "solids") else []
+                    if gs:
+                        sol = b.Compound(sol.solids()) - b.Compound(gs)
+                if sol is not None and sol.solids():
+                    out += sol.solids()
+                report.setdefault("solid_fills", []).append({"part": part, "name": sf["name"][:60],
+                                                             "mm3": round(sum(s_.volume for s_ in (sol.solids() if sol else [])), 2)})
+            b.export_step(b.Compound(out), os.path.join(a.out, f"fills_{part}.step"))
         report["shell"] = {}
         voids = {}
         for part, piece, other, walls in (("base", base, cover, walls_b), ("cover", cover, base, walls_c)):
