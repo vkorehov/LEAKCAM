@@ -18,9 +18,9 @@ or a measurement yet. Keep this file current when a test or a setting changes it
                               delay 5 (kernel + U-Boot)    erase 2.46 ms/block; 80 MHz: read     100 MHz: no sample-               test016
                                                            20.6, program 5.0; 100 MHz: zeros     delay window (test016)
                                                            file system: read 9.4-12.7, write 1.8
-  DDR (K230D SiP)             2667 MT/s (U-Boot            write 4.05, read 4.08, copy 1.86      3200 MT/s: Canaan's     no        test015,
-                              K230D_SIP_LPDDR4_2667)       GB/s (76 % of 5.33 GB/s)              K230D SiP settings                test024
-                                                                                                 (3200_HWODT / _ALLODT)
+  DDR (K230D SiP)             3200 MT/s all-ODT (U-Boot    write 6.08, read 4.84, copy 2.77      3200 MT/s (the SiP's    yes       test016,
+                              K230D_SIP_LPDDR4_3200_       GB/s; 8 h memtest 0 errors; 2667      top); HWODT flipped a             test025
+                              ALLODT, 2026-10-23)          was 4.05 / 4.08 / 1.86                bit: not stable
   CPU (C908)                  1.6 GHz (power manager       1599-1600 MHz (rdcycle / rdtime)      1.6 GHz (top profile,   yes       test015
                               profile 0, manual)                                                 0.8 V)
   KPU                         800 MHz (PLL3 / 2)           change net int8: 0.5 ms per           800 MHz (top profile,   yes       test012

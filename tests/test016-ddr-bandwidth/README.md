@@ -1,6 +1,6 @@
 # test016: K230 DDR bandwidth
 
-Status: **pass at 2667** (2026-10-21; 3200 not tried yet). Image: SDK copy + [leakcam_bench.c](../test017-nand-raw-speed/leakcam_bench.c).
+Status: **pass at 3200** (2026-10-23, all-ODT: write 6.08 / read 4.84 / copy 2.77 GB/s; 2667 before: 4.05 / 4.08 / 1.86). Image: SDK copy + [leakcam_bench.c](../test017-nand-raw-speed/leakcam_bench.c).
 
 DDR runs at 2667 MT/s (SPL training, test006), 64 MB. Bandwidth decides how much the KPU, the encoder and the
 camera pipeline can do at once.
@@ -37,7 +37,8 @@ Recorded MB/s per case; the drop under concurrent load; no errors (compare with 
 | copy (`memcpy`, bytes moved; 2x traffic) | 1.86 GB/s | 1854-1868 |
 | CPU clock (rdcycle / rdtime) | 1599-1600 MHz | top profile confirmed |
 
-Not done yet: the uncached alias (step 2), 3200 MT/s (SPEEDS.txt 3, with test025).
+**At 3200 MT/s all-ODT (2026-10-23, test025):** write 6.08 GB/s (+50 %), read 4.84 (+18 %), copy 2.77 (+49 %);
+3200 HW-ODT gave the same figures but flipped a bit (test025). Not done yet: the uncached alias (step 2).
 
 ## Metrics (2026-10-21, bench image, 2667 MT/s)
 

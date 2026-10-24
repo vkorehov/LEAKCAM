@@ -1,6 +1,6 @@
-# test025: DDR stress (128 MB at 2667 MT/s)
+# test025: DDR stress (128 MB; 2667, then 3200 MT/s)
 
-Status: **pass so far** (2026-10-21): 0 errors in 61 passes (5 min run + 5 cold starts). Open: the >= 1 h run and the run with KPU + encoder busy.
+Status: **pass at 3200 MT/s** (2026-10-24: 8 h, 5230 passes, 0 errors; HW-ODT flipped a bit, all-ODT adopted). Earlier, 2667 (2026-10-21): 0 errors in 61 passes (5 min run + 5 cold starts). Open: the >= 1 h run and the run with KPU + encoder busy.
 
 SPL trains the DDR at 2667 MT/s on every boot (test006). A marginal setting shows only as rare random crashes.
 This test runs a pattern memory test over most of the free RAM for a long time.
@@ -64,9 +64,18 @@ The >= 1 h run stays open. Image: the test008 bench image (kdimg 17:47, memtest 
 |---|---|---|---|---|
 | 2667 (before, test016) | pass | write 4.05, read 4.08, copy 1.86 GB/s | 0 errors | |
 | 3200 HW-ODT (`K230D_SIP_LPDDR4_3200_HWODT`) | pass, app init 0.347 s | write **6.08**, read **4.83**, copy **2.77** GB/s | **kernel crash at its start**: Illegal Instruction in `rt_calloc` (0x17c2c2): fetched `0x8527`, the binary has `0x8526` (`mv a0,s1`): **one bit flipped** in kernel text in DDR | fail |
-| 3200 all-ODT (`K230D_SIP_LPDDR4_3200_ALLODT`) | pass, app init 0.345 s | write 6.08, read 4.84, copy 2.77 GB/s (+50 / +18 / +49 %) | 3 passes 0 errors; **8 h soak started 22:40:56** (109 MB, temperatures every minute, unattended runner restarts after any reset) | running |
+| 3200 all-ODT (`K230D_SIP_LPDDR4_3200_ALLODT`) | pass, app init 0.345 s | write 6.08, read 4.84, copy 2.77 GB/s (+50 / +18 / +49 %) | 3 passes 0 errors; **8 h soak 22:40:56 - 06:41:04: 5230 passes x 109 MB x 5 patterns (~570 GB written and verified), 0 errors, 0 resets**; 198 MB/s write+verify (167 at 2667) | **pass, adopted** |
 
-: skill leakcam-test-metrics)
+8 h soak temperatures (476 readings, one a minute, no gap over 2 min: the VM never paused): K230 die 48.2 C at the
+start, **60.5 C peak** (after ~2 h), 56.6-58.4 C later; board (AHT20) 36.4 -> **43.8 C peak**, 42.1 C at the end;
+open board on the bench, room ~29 C. The agent's hook could not load leakcam_wake once at the start ("Memory
+exhaustion": memtest holds the RAM), expected. Three temperature readings were the runner's parse mixing a memtest
+line ("5.5 s") into chip_temp: no data.
+
+**Pass at 3200 MT/s all-ODT** (with run 1 and the cold starts at 2667): 3200 all-ODT is the board's DDR setting from
+now on (u-boot k230d_leakcam_defconfig). Still open: the same with the KPU and the encoder busy (step 3).
+
+## Metrics (to fill on every run: skill leakcam-test-metrics)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
 
