@@ -355,8 +355,10 @@ def solid_fills(part):
         return
     f = fm.InsertCombineFeature(BODY_ADD, nothing(),      # add: no main body, every body in the list
                                 win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_DISPATCH, list(main.values()) + tools))
-    if f is None:
-        raise RuntimeError("solid fills: combine failed")
+    if f is None:                                      # open (2026-10-25): the Sketch38 fill would not combine - left
+        drop_loose(pd, "Solid fills left out")         # out with a warning until that is solved
+        print("WARNING solid fills: combine failed, left out")
+        return
     f.Name = "Solid fills (form_model.py)"
     print(f"solid fills: {len(tools)} added,", len(pd.GetBodies2(0, False)), "body left")
 
