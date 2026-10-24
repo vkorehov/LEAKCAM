@@ -24,14 +24,15 @@ while f:
                 gone.append(n)
             s = get(s, "GetNextSubFeature")
     f = get(f, "GetNextFeature")
+m.ClearSelection2(True)                       # by the feature (SelectByID2 cannot select names with ':', mate_fit.py)
 for n in gone:
-    m.ClearSelection2(True)
-    if m.Extension.SelectByID2(f"{n}@{asm}", "MATE", 0, 0, 0, False, 0, nothing(), 0):
-        m.Extension.DeleteSelection2(0)
+    typed(m.FeatureByName(n), "IFeature").Select2(True, 0)
+if gone:
+    m.EditDelete()
+m.ClearSelection2(True)
 print(f"deleted {len(gone)} mates")
-mu = get(sw, "GetMathUtility")
 # about the axis X = 0, Z = LENS_Z (along Y): x -> -x, z -> 2 LENS_Z - z (metres)
-turn = mu.CreateTransform([-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 2 * LENS_Z / 1000, 1.0, 0, 0, 0])
+turn = typed(transform([-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0], [0.0, 0.0, 2 * LENS_Z / 1000]), "IMathTransform")
 for p in PARTS:
     c = C[p]
     if get(c, "IsFixed"):
@@ -39,7 +40,11 @@ for p in PARTS:
         m.Extension.SelectByID2(f"{p}@{asm}", "COMPONENT", 0, 0, 0, False, 0, nothing(), 0)
         m.UnfixComponent()
     b0 = [round(v * 1000, 2) for v in c.GetBox(False, False)]
-    c.Transform2 = get(c, "Transform2").Multiply(turn)
+    c.Transform2 = typed(get(c, "Transform2"), "IMathTransform").Multiply(turn)
     print(p, b0, "->", [round(v * 1000, 2) for v in c.GetBox(False, False)])
-m.GraphicsRedraw2()
+get(m, "EditRebuild3")
+z = [round(v * 1000, 2) for v in C[PARTS[0]].GetBox(False, False)][2]
+if abs(z - (-9.18)) > 0.05 and abs(z - (-17.6)) > 0.05:
+    raise RuntimeError(f"unexpected camera position after the rebuild: Z from {z}")
+print("after the rebuild, bottom camera from Z", z)
 print("saved", m.Save3(1, e, w), e.value)
