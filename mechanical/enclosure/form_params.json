@@ -1485,10 +1485,10 @@
     "skin": false
    },
    {
-    "name": "fit 2026-10-24b Sketch1: the board support rib at Z 26..28 past the pocket wall to the skin (no job)",
+    "name": "fit 2026-10-24b Sketch1: the board support rib at Z 26..28 past the pocket wall to the skin (no job) (from X 18.55, inside the pocket: no 0.01 skin left on its wall)",
     "pts": [
      [
-      18.66,
+      18.55,
       -4.0,
       28.1
      ],
@@ -1503,7 +1503,7 @@
       28.1
      ],
      [
-      18.66,
+      18.55,
       3.5,
       28.1
      ]
