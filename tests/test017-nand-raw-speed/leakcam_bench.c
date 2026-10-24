@@ -248,21 +248,27 @@ static int nand_clk(int argc, char **argv)
 }
 MSH_CMD_EXPORT(nand_clk, test017: show or set the NAND QSPI clock [hz]);
 
-/* The driver writes RX_SAMPLE_DLY only in configure (from RT_SPI0_RXSD), so a value set here holds until the next
- * nand_clk. Bit 16 (RSD edge) stays 0. */
+/* tests/test017 (2026-10-24): the driver writes the RX sample delay per transfer - the 1-line pair (status reads,
+ * commands) and the multi-line pair (quad data reads); dw_spi_set_rx_sample() sets both for the next transfer.
+ * nand_rxsd [delay [edge [multi_delay [multi_edge]]]]: delay in ssi_clk cycles (1.25 ns), edge 1 = sample on the
+ * other edge (half step); the multi pair defaults to the 1-line one. */
+extern int dw_spi_set_rx_sample(int bus, int sd, int se, int sd_multi, int se_multi);
 static int nand_rxsd(int argc, char **argv)
 {
-    dw_spi_reg_t *r = spi0_regs();
+    static int sd = RT_SPI0_RXSD, se, sdm = RT_SPI0_RXSD, sem;
     if (argc > 1)
     {
-        r->ssienr = 0;
-        r->rx_sample_delay = (rt_uint32_t)atoi(argv[1]) & 0xffu;
+        sd = atoi(argv[1]);
+        se = argc > 2 ? atoi(argv[2]) : 0;
+        sdm = argc > 3 ? atoi(argv[3]) : sd;
+        sem = argc > 4 ? atoi(argv[4]) : se;
+        dw_spi_set_rx_sample(0, sd, se, sdm, sem);
     }
-    rt_kprintf("nand_rxsd: RX_SAMPLE_DLY %u ssi_clk cycles (boot default %d)\n", (unsigned)(r->rx_sample_delay & 0xffu),
+    rt_kprintf("nand_rxsd: 1-line delay %d edge %d, multi-line delay %d edge %d (boot default %d)\n", sd, se, sdm, sem,
                RT_SPI0_RXSD);
     return 0;
 }
-MSH_CMD_EXPORT(nand_rxsd, test017: show or set the NAND SPI read sample delay [cycles]);
+MSH_CMD_EXPORT(nand_rxsd, test017: NAND SPI read sample delays [delay [edge [multi_delay [multi_edge]]]]);
 
 /* test022 boot time: rdtime counts from the SoC reset, so these are times after reset release (ROM, SPL, DDR
  * training and OpenSBI are all before "kernel init start"). The sections sort by name: "N.9" runs last in level N. */

@@ -125,6 +125,51 @@ open(p, 'w').write(s[:i] + open(f).read() + s[j + len(tail):])
 PY
 grep -q 'LEAKCAM: wait on real time' "$SPN" || { echo "busy-wait patch not applied"; exit 1; }
 
+# SPI read sample delay per phase (tests/test017, 2026-10-24): the DW SSI samples RX data RX_SAMPLE_DLY ssi_clk
+# cycles (1.25 ns, bit 16 = the other edge) after the clock. Canaan's driver writes one delay at configure time.
+# At 100 MHz (the W25N02KV's quad-read top) the 1-line status reads and the 4-line data reads want different delays
+# and no single value serves both (test017 sweep); so the standard (1-line) path and the multi-line path each write
+# their own, the multi pair (rdsd_multi / rdse_multi) defaulting to the boot value. dw_spi_set_rx_sample() lets
+# the bench (nand_rxsd) sweep them.
+SPID=$RTT/drivers/interdrv/spi/drv_spi.c
+grep -q 'LEAKCAM: per-phase RX sample delay' "$SPID" || python3 - "$SPID" "$RTT/drivers/interdrv/spi/drv_spi.h" <<'PY'
+import sys
+p, h = sys.argv[1], sys.argv[2]; s = open(p).read()
+def rep(a, b):
+    global s
+    assert s.count(a) == 1, 'drv_spi.c changed, cannot apply the per-phase sample delay: ' + a[:60]
+    s = s.replace(a, b)
+rep('    uint8_t                 rdse;\n    uint8_t                 rdsd;\n',
+    '    uint8_t                 rdse;\n    uint8_t                 rdsd;\n'
+    '    uint8_t                 rdse_multi;  /* LEAKCAM: per-phase RX sample delay, 2/4/8-line data phase */\n'
+    '    uint8_t                 rdsd_multi;\n')
+rep('} dw_spi_hw_info_t;\n', '} dw_spi_hw_info_t;\n\nstatic void *leakcam_spi_bus[3];   /* LEAKCAM: the registered buses, for dw_spi_set_rx_sample() */\n')
+rep('        writel(0, &spi->ssienr);\n        writel(spi_ctrlr0, &spi->spi_ctrlr0);\n',
+    '        writel(0, &spi->ssienr);\n'
+    '        writel(spi_bus->rdse_multi << 16 | spi_bus->rdsd_multi, &spi->rx_sample_delay);\n'
+    '        writel(spi_ctrlr0, &spi->spi_ctrlr0);\n')
+rep('    /* Standard transfers must not inherit enhanced instruction/address state. */\n',
+    '    writel(spi_bus->rdse << 16 | spi_bus->rdsd, &spi->rx_sample_delay);   /* the 1-line delay */\n'
+    '    /* Standard transfers must not inherit enhanced instruction/address state. */\n')
+rep('    spi_bus->rdse = 0;\n    spi_bus->rdsd = rdsd;\n',
+    '    spi_bus->rdse = 0;\n    spi_bus->rdsd = rdsd;\n    spi_bus->rdse_multi = 0;\n    spi_bus->rdsd_multi = rdsd;\n'
+    '    if (info->idx < 3)\n        leakcam_spi_bus[info->idx] = spi_bus;\n')
+s += ('\n/* LEAKCAM: set the RX sample delays of a bus (tests/test017 sweep); applied from the next transfer */\n'
+      'int dw_spi_set_rx_sample(int bus, int sd, int se, int sd_multi, int se_multi)\n{\n'
+      '    dw_spi_bus_t *b = bus >= 0 && bus < 3 ? leakcam_spi_bus[bus] : RT_NULL;\n'
+      '    if (!b)\n        return -1;\n'
+      '    b->rdsd = (uint8_t)sd; b->rdse = (uint8_t)se; b->rdsd_multi = (uint8_t)sd_multi; b->rdse_multi = (uint8_t)se_multi;\n'
+      '    return 0;\n}\n')
+open(p, 'w').write(s)
+t = open(h).read()
+if 'dw_spi_set_rx_sample' not in t:
+    t = t.rstrip('\n')
+    i = t.rfind('#endif')
+    t = t[:i] + 'int dw_spi_set_rx_sample(int bus, int sd, int se, int sd_multi, int se_multi);   /* LEAKCAM */\n\n' + t[i:] + '\n'
+    open(h, 'w').write(t)
+PY
+grep -q 'LEAKCAM: per-phase RX sample delay' "$SPID" || { echo "SPI sample delay patch not applied"; exit 1; }
+
 # poll(): RT-Thread's poll_do() never clears pt->triggered, so after one wake-up whose event leaves
 # the fd not ready, poll_wait_timeout() skips the wait and poll() re-checks in a busy loop until the
 # fd becomes ready, ignoring its timeout. The agent's poll() on the hook's stdout pipe spun at

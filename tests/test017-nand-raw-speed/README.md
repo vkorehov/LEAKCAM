@@ -73,6 +73,19 @@ The NAND is on SPI0 (OSPI, DW SSI): ssi_clk **800 MHz**, SCLK = 800 / BAUDR (50 
   booted too (the CH340 attached ~10 s after power-on in the VM, after the script's read; since test039 the console
   is /dev/ttyACM1, up across cold boots).
 
+### 100 MHz with per-phase sample delays, 2026-10-24 (driver patch, sweep100.py)
+
+The SPI driver now writes the RX sample delay per transfer: one pair for 1-line transfers (commands, status reads),
+one for 2/4-line data reads (install.sh "per-phase RX sample delay", `dw_spi_set_rx_sample()`, bench
+`nand_rxsd d e dm em`). Sweep at 100 MHz, 64 /bin blocks per point against the 50 MHz checksum: 1-line delay 0-10 x
+edge 0/1 x multi-line delay 0-10 x edge 0/1 = **484 points, 0 clean** (sweep100.csv). 1-line delays 0-3: the driver
+reports read errors at every multi setting; 4-7: "0 errors" (the mis-sampled status, as before) and wrong data at
+every multi setting; 8-10: errors again. So the 4-line data has no sampling point at 100 MHz at any delay or edge:
+not a conflict between the phases. Failing reads ran at 25.9 MB/s (the gain at stake, 20.6 at 80 MHz).
+Not tried yet: the W25N02KV's own output driver strength (its configuration register; the K230 pad drive made no
+difference, test017 2026-10-21) - the NAND drives the read data, a weak default would explain slow data edges.
+80 MHz, delay 5 stays.
+
 ## Metrics (2026-10-21, bench image)
 
 Setup (2026-10-21): USB-C 1 the only power path (USB-C 2 VBUS cut, PR1 VBUS cut), meter (10 A range, 0.1 mA
@@ -120,3 +133,8 @@ Battery current during raw reads, programs, erases at each NAND clock; energy pe
 - **`install.sh` run with `sh`** stopped at `set -o pipefail`, and without its SDK argument it only printed usage: the
   next build used the old settings -> `bash install.sh ~/k230_rtos_sdk`, then `leakcam_docker_build.sh
   k230d_rtos_leakcam_defconfig` and `log`; check `rtconfig.h` and the dtb before flashing.
+- **Sweep progress invisible for minutes** (2026-10-24) -> `python3 -u ... | tr -d '\r'` buffers in `tr` -> read the
+  CSV the sweep writes per point; runners print to a file, not through `tr`.
+- **BL616 scanning for "Vlad" by itself after the bridge sessions** (2026-10-24, seen at the sweep's end, rails off) ->
+  autoconnect left enabled by the bridge's join -> open: the bridge must disable autoconnect when the K230 goes off
+  (radio current while it should be idle).
