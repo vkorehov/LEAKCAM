@@ -44,6 +44,11 @@ Keep this file current when a test or a change moves a figure. The audit that cl
   joined, light traffic (checks in a loop)    80 mA avg [m test100] TX bursts too short for the meter
   K230 running + bridge up, idle              211-221 mA, peak 223 [m test100]
   join cost on battery: ~4 s at ~88 mA        ~0.1 mAh per join [e from m]
+  BL616-only server check (pt_poll, 2026-10-25), awake 1.71 s per wake: radio up 0.64 s @64, remembered-AP
+    join 0.24 s @88, DHCP 0.75 s @80, DNS + TCP + HTTP 0.05 s @80, boot 0.03 s @62
+                                              ~128 mA*s = ~0.036 mAh per check [e from m test100]
+    -> every 15 min ~3.4 mAh/day (~100 mAh/month), every 5 min ~10 mAh/day (~310 mAh/month);
+       radio up + DHCP are 81 % of it (levers: RF/manager start, lease reuse without DHCP)
 
 
 3. Wakes
@@ -76,6 +81,7 @@ Keep this file current when a test or a change moves a figure. The audit that cl
   Humidity slices            144 x ?                      ?                test020 / test102
   Report sessions            4 x (30 uAh boot to app      ?                test021, test101, test102
                              init + work ?)
+  Live-view polls (BL616)    96 x 0.036 mAh (15 min)      ~100 mAh         test100 pt_poll [e from m]
   Self-discharge             -                            ~25 mAh / cell   [d]
   Total, battery life        ?                            ?                test104
 

@@ -170,6 +170,38 @@ never calls it (the BL616 joins by itself), so it stays.
 
 Current during the runs (USB-C 1 VBUS, user, run before the fix): **220 mA average, 243 mA peak**.
 
+### Step 4, TCP throughput on the home router "VK" (2026-10-25 10:13, ch 11, RSSI -47 dBm, board on the bench)
+
+`throughput.py` (K230 RT-Thread `iperf`, PC 192.168.1.131 wired, `pc_tcp_bench.py`); remembered-AP join, K230
+address 3 s after `pt_run`.
+
+| What | Result |
+|---|---|
+| Upload K230 -> PC, 10 s | **17.1 Mbit/s** (12.1-19.7 per second) |
+| Download PC -> K230, 14 s | **~26 Mbit/s** (18.3-31.2 per second) |
+| `bl616_stat` | card irqs 17212, safety polls 20, late 0 |
+| BL616 memory, one run | free 177544 -> 177252 B, blocks 128 -> 141, deleted 0 (one run: no leak verdict) |
+| K230 memory | **MISSING**: the runner's `free` parse found nothing |
+
+**Pass** against the plan: two H.265 streams (~1 Mbit/s with audio) use ~6 % of the upload.
+
+### BL616-only server check (`pt_poll`, 2026-10-25 10:20; DESIGN 5.1 "Live view on request")
+
+Test firmware `pt_poll <n> <s>`: every wake from HBN runs radio up, join at the remembered AP, DHCP, DNS + TCP + HTTP
+(connectivitycheck.gstatic.com, standing in for `GET /v1/poll`), then HBN `<s>` again. 3 of 3 cycles ok:
+
+| Step | Mean |
+|---|---|
+| radio up (RF params, lwIP, Wi-Fi task, manager) | 642 ms |
+| association + WPA (remembered AP) | 240 ms |
+| DHCP (BL616's lwIP) | 747 ms |
+| DNS + TCP + HTTP 204 | 49 ms |
+| **awake, core reset to HBN** | **1709 ms** |
+
+Energy, from these times and step 1's currents (the USB meter cannot follow a 1.7 s burst; it showed 80 mA = joined
+idle, the board after the last cycle): **~0.036 mAh per check**, so ~3.4 mAh/day every 15 min, ~10 mAh/day every 5 min
+(ENERGY.txt). Radio up and DHCP are 81 % of the awake time: the levers.
+
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
@@ -252,9 +284,12 @@ Battery current: Wi-Fi join (energy per join, paid on every networked session), 
   rescan) waits for READY, which the powertest firmware does not answer -> the runner sends `bl616_rescan`; (2) the
   whole boot log had one timestamp: the console was read only after `pt_run` returned (1.5 s wait) -> a reader thread
   from before the reset.
+- **The first `pt_poll` cycles did not repeat** (2026-10-25) -> on USB power the RTC wake left no HBN interrupt state
+  ("cold start / reset") -> the loop resumes on pt_sleep's own wake mark; the first cycle also starts from a sleep
+  (it had run in the open session: radio already up, 209 s "awake").
 - **Step 4 on the home router "VK" (2026-10-25): no association** -> the AP rejected the key (`auth_failures=1
   reason=WRONG_KEY`; VK seen ch 11, -48 dBm, WPA2; `~/.leakcam_wifi` holds exactly the 10 characters given) -> waiting
-  for the right key from the user.
+  for the right key from the user -> the second key given worked.
 - **My throughput runner gave up on the address after 4 s** (2026-10-25): 60 `ifconfig` tries that each returned at
   once -> a 30 s deadline.
 - **Link-up status said 0 dBm** -> the RSSI read at the connect event is 0 -> the status is sent again 1 s later

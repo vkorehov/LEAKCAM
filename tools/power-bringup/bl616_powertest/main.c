@@ -1437,10 +1437,11 @@ static void poll_task(void *arg)
     vTaskDelete(NULL);
 }
 
-/* boot: an RTC wake inside a pt_poll run starts the next cycle */
+/* boot: a pt_sleep wake inside a pt_poll run starts the next cycle. Judged by pt_sleep's own mark (wake_due): on USB
+ * power the RTC wake left no HBN interrupt state (2026-10-25, "cold start / reset") */
 static void poll_resume(void)
 {
-    if ((last_wake & WAKE_RTC) && t021.poll_magic == T021_POLL && t021.poll_left)
+    if ((wake_due || (last_wake & WAKE_RTC)) && t021.poll_magic == T021_POLL && t021.poll_left)
         xTaskCreate(poll_task, "poll", 4096, NULL, 3, NULL);
 }
 
@@ -1458,8 +1459,11 @@ static int cmd_poll(int argc, char **argv)
     for (int i = 0; i < 5; i++)
         t021.poll_sum[i] = 0;
     t021.poll_magic = T021_POLL;
-    xTaskCreate(poll_task, "poll", 4096, NULL, 3, NULL);
-    return 0;
+    /* the first cycle starts from a wake too: radio cold, awake time from the reset */
+    char *sv[2] = { "pt_sleep", argv[2] };
+    cmd_sleep(2, sv);
+    t021.poll_magic = 0;
+    return -1;
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_poll, pt_poll, BL616-only server check loop: <cycles> <sleep_s> (no args: results));
 #endif
