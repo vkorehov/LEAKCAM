@@ -153,6 +153,8 @@ def side_cut(name, profile, x0, x1, expect):     # a profile on the Right Plane,
 
 def fbox(f):
     bs = [[round(v * 1000, 2) for v in get(face, "GetBox")] for face in (get(f, "GetFaces") or ())]
+    if not bs:          # a boss wholly inside the solid owns no faces (2026-10-25: a weld after the legs moved last)
+        return "no faces of its own: absorbed, already solid there"
     return [min(b[i] for b in bs) for i in range(3)] + [max(b[i] for b in bs) for i in range(3, 6)]
 
 
