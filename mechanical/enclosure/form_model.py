@@ -890,7 +890,11 @@ def main():
                     out += sol.solids()
                 report.setdefault("solid_fills", []).append({"part": part, "name": sf["name"][:60],
                                                              "mm3": round(sum(s_.volume for s_ in (sol.solids() if sol else [])), 2)})
-            b.export_step(b.Compound(out), os.path.join(a.out, f"fills_{part}.step"))
+            fp_ = os.path.join(a.out, f"fills_{part}.step")
+            if out:
+                b.export_step(b.Compound(out), fp_)
+            elif os.path.exists(fp_):                          # none: no file (an empty STEP does not import)
+                os.remove(fp_)
         report["shell"] = {}
         voids = {}
         for part, piece, other, walls in (("base", base, cover, walls_b), ("cover", cover, base, walls_c)):
