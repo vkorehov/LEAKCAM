@@ -862,7 +862,8 @@ def main():
         if P.get("leds"):                    # so do the marked fills: the strips, clamps and screws get in
             for pt_ in ("base", "cover"):
                 room_ = sum(clamp_room[pt_][1:], clamp_room[pt_][0]) if clamp_room[pt_] else None
-                user_fills[pt_] = [f_ - room_ if room_ is not None and (f_ & room_).solids() else f_ for f_ in user_fills[pt_]]
+                user_fills[pt_] = [f_ - room_ if room_ is not None and (lambda x: x is not None and x.solids())(f_ & room_) else f_
+                                  for f_ in user_fills[pt_]]   # (an empty intersection can be None)
         side_force = {"base": [], "cover": []}
         for sf in P["shell"].get("side_fills", []):      # one 45 deg face along a side wall: solid above, open below
             pt_, sd, x0, (z0, z1) = sf["part"], sf["side"], sf["x0"], sf["z"]
