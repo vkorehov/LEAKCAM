@@ -1354,8 +1354,10 @@ static bool rtc_on_xtal(void)
 static int cmd_sleep(int argc, char **argv)
 {
     uint32_t s = argc > 1 ? (uint32_t)atoi(argv[1]) : 60, t;
+    /* nousb (test031 battery floor, 2026-10-25): no USB wake, so every cable can be pulled while it sleeps */
+    bool nousb = argc > 2 && !strcmp(argv[2], "nousb");
     if (s < 2 || s > 86400) {
-        printf("usage: pt_sleep <2..86400 s>\r\n");
+        printf("usage: pt_sleep <2..86400 s> [nousb]\r\n");
         return -1;
     }
 #if PT_TEST_SDU
@@ -1372,8 +1374,13 @@ static int cmd_sleep(int argc, char **argv)
     /* test035: USB wakes it on the next PGOOD edge, as the product's usb_arm_hbn_wake() (plug = falling) */
     bool usb = !usb_pgood_high();
     HBN_Clear_IRQ(HBN_INT_ACOMP0);
-    HBN_Enable_AComp_IRQ(AON_ACOMP0_ID, usb ? HBN_ACOMP_INT_EDGE_POSEDGE : HBN_ACOMP_INT_EDGE_NEGEDGE);
-    if (usb != !usb_pgood_high()) {     /* changed before the arming: that edge is gone, the armed one is wrong */
+    if (!nousb) {
+        HBN_Enable_AComp_IRQ(AON_ACOMP0_ID, usb ? HBN_ACOMP_INT_EDGE_POSEDGE : HBN_ACOMP_INT_EDGE_NEGEDGE);
+    } else {                            /* an earlier sleep's arming survives in the AON registers */
+        HBN_Disable_AComp_IRQ(AON_ACOMP0_ID, HBN_ACOMP_INT_EDGE_POSEDGE);
+        HBN_Disable_AComp_IRQ(AON_ACOMP0_ID, HBN_ACOMP_INT_EDGE_NEGEDGE);
+    }
+    if (!nousb && usb != !usb_pgood_high()) {     /* changed before the arming: that edge is gone, the armed one is wrong */
         printf("pt_sleep: USB changed while arming, not sleeping\r\n");
         return -1;
     }
@@ -1382,7 +1389,7 @@ static int cmd_sleep(int argc, char **argv)
     HBN_Hw_Pu_Pd_Cfg(DISABLE);
     printf("pt_sleep: K230 off, HBN level 0 for %lu s (RTC on %s), leak wakes it on going %s, USB on %s; unplug PR1 "
            "now for the sleep current\r\n", (unsigned long)s, y3 ? "Y3" : "RC32K", wet ? "dry" : "wet",
-           usb ? "unplug" : "plug-in");
+           nousb ? "never (nousb)" : usb ? "unplug" : "plug-in");
     bflb_mtimer_delay_ms(50);           /* let the USB console send the line */
     WAKE_MARK = (uint32_t)(rtc_now() + (uint64_t)s * 32768u) | 1u;  /* pm_hbn_mode_enter() reads it <= 1 tick later */
     /* the last write to HBN RAM is done: retention on now and no HBN RAM access after it (HBN RAM rule at main()) */
@@ -1392,7 +1399,7 @@ static int cmd_sleep(int argc, char **argv)
     }
     return 0;
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_sleep, pt_sleep, K230 off and HBN level 0 for <s> seconds (RTC wake));
+SHELL_CMD_EXPORT_ALIAS(cmd_sleep, pt_sleep, K230 off and HBN level 0 for <s> seconds (RTC wake) [nousb: no USB wake]);
 
 #if PT_TEST_WIFI
 /* test100 (2026-10-25): the BL616-only server check as a duty cycle the USB meter can average: each RTC wake runs

@@ -1,6 +1,6 @@
 # test031: sleep and minimal currents (every power state's floor)
 
-Status: **RTC wake fixed** (2026-10-22): HBN on Y3 wakes (5 of 5, cold start included); sleep 1.23 mA through USB (mostly the charger); battery-lead figure open.
+Status: **RTC wake fixed** (2026-10-22): HBN on Y3 wakes (5 of 5, cold start included); sleep 1.23 mA through USB (mostly the charger); **on the battery 36 uA** (2026-10-25).
 
 The lowest current each power state can reach, measured on its own, so every other test's figure reads as a rise
 above a known floor (user, 2026-10-21: minimal currents too). First the sleep: what the board draws between wakes,
@@ -117,6 +117,22 @@ sleep** (the counter runs on Y3 while awake: the oscillator or its clock path ap
 (leak_wake.c) selects Y3 at once on a cold boot and assumes the RTC keeps running on RC32K until the crystal
 starts: measured wrong, the counter stops. Until the Y3 path is proven, the safe product choice is RC32K for the
 HBN wake (+0.44 % = 2.6 s per 10-min wake) with the wall clock corrected against the 40 MHz crystal while awake.
+
+### 2026-10-25: the battery floor (meter in the cell's + lead, soldered; test firmware `pt_sleep 3600 nousb`)
+
+`nousb` (new): the USB wake is disarmed (also an earlier sleep's arming, kept in the AON registers), so every cable
+can come out while it sleeps. Sent on USB power, then USB-C 1, USB-C 2 and PR1 unplugged, meter to the uA range.
+
+| State | Battery current |
+|---|---|
+| HBN level 0, K230 off, probes dry, Y3 RTC, USB still plugged | 36 uA |
+| Same, **every USB cable out** | **36 uA** |
+
+Pull audit (same day, schematic + SDK): HBN powers the core domain off, so every non-AON pad is high-Z with no pull;
+every external pull sits at its own rail (R19, R76, R35, R23, R73/R74; the 3V3-switched pull-ups at 0 V): no pin
+costs current. Parts: U5 TPS63802 11 uA + its divider 5.5 uA, BQ24072T 4.3 uA typ (6.5 max), BL616 HBN0 ~3-6 uA, probe
+divider 1.65 uA, the rest ~2 uA = 26-29 uA typ, 35 max; measured 36 uA. Rev 2 lever: a nano-amp regulator for 3V3_SLEEP
+(~-16 uA). Battery: 0.86 mAh/day, ~26 mAh/month (ENERGY.txt).
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
