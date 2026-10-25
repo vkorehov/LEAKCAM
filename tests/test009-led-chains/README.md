@@ -51,6 +51,29 @@ Probe sheets: [led_drivers.png](led_drivers.png), [r66_white_return.png](r66_whi
 
 **Pass.** Brightness at 2-3 m: with the cameras.
 
+### Re-run with currents, 2026-10-25 12:11 (`led_steps.py 15`, battery, meter in the cell lead, mA range)
+
+K230 at msh, BL616 test firmware, both chains stepped on the K230 PWM (25 kHz), 15 s per step; die (`chip_temp`) and
+board (AHT20) after each step. Meter: 600 mA range (shunt + fuse drop the board's supply at ~0.5 A).
+
+| Step | Battery | Above idle | Die / board C |
+|---|---|---|---|
+| K230 idle, LEDs off | 221 mA | - | 36.4 / 29.6 |
+| white 10 / 25 / 50 % | 257 / 312 / 411 mA | +36 / +91 / +190 | 39.8 / 30.6-32.4 |
+| white 75 / 100 % | 515 / 519 mA | +294 / **+298** | 42.2-43.1 / 33.5-34.3 |
+| white off | 221 mA | 0 | 44.9 / 34.6 |
+| IR 10 / 25 / 50 / 75 % | 257 / 313 / 413 / 511 mA | the same as white | 45.2-46.7 / 34.9-36.3 |
+| IR 100 % or both 100 % (one reading missing) | 500 mA | | 47.3-48.2 / 37.0-38.1 |
+| both off | 223 mA | | |
+
+- Both chains take the same input power per step (designed: white 67 mA x ~22 V = IR 133 mA x ~11 V = ~1.47 W).
+- **75 -> 100 % adds nothing**: the TPS61161 switch current limit (the knee LED_STRIPS.txt designs for) is reached at
+  ~70 % duty. +0.30 A at 100 % is ~2/3 of the +0.42 A the full target needs from 4.1 V. The meter's mA range lowers the
+  board supply at 0.5 A, which moves the knee down; repeat 75 / 100 % and both on a 10 A range
+  (`led_steps.py 15 top`) to tell the meter from the board.
+- Heat over the 4 min run (K230 idle, LEDs stepping): die 34.6 -> 48.2 C, board 28.7 -> 38.1 C.
+- Obstacle: my run call was interrupted at its end, before `pt_off`: the K230 stayed on until switched off by hand.
+
 ### Temperature
 
 Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
