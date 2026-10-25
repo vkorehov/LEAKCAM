@@ -1,6 +1,6 @@
 # test105: maximum current - can the battery carry everything at once?
 
-Status: **handover run 1 done** (2026-10-25): USB -> cell under every camera-free load, no power fault; K230 activity after 19 s not proven (rerun with the liveness probe). Planned since 2026-10-25 ( user, after test009: the cell carried K230 + both LED chains, ~1.15 A, on a USB
+Status: **handover runs 1-2 done** (2026-10-25): USB -> cell under every camera-free load (1.06 A at 5 V), no power fault, K230 alive at 60.2 C afterwards; "no reset on the cell" still to prove with an on-board log (the console goes with USB). Planned since 2026-10-25 ( user, after test009: the cell carried K230 + both LED chains, ~1.15 A, on a USB
 unplug with no brownout and no visible dimming).
 
 The worst case the cell and the power path must survive: every consumer on the board busy at the same time, on a
@@ -81,11 +81,29 @@ Loads without cameras: both LED chains 100 %, Wi-Fi TCP upload to the LAN PC (ip
   and at 15 s the kernel logged "ELF loading failed" - the memory was gone. Rerun: memtest keeps 24 MB free and runs
   as a background job; the runner asks for `chip_temp` every 5 s so a stall shows within seconds.
 
+### Handover run 2, 2026-10-25 12:53 (memtest with 24 MB reserved, `chip_temp` probe every 5 s)
+
+| What | Result |
+|---|---|
+| USB input, every load on | 1.06 A at 5 V |
+| Until the unplug (24 s) | 4 of 4 probes answered (39.8 -> 44.6 C), memtest passes 0-3 with 0 errors (89 MB), iperf ~28.7 Mbit/s |
+| USB unplugged | **the BL616's USB console on PR1 disappeared with it** (no /dev/ttyACM*): nothing could be read or switched off; the LEDs stayed lit, the rails on (the runner's final `pt_off` found no port) |
+| USB back, ~4 min later | the K230 answered `chip_temp`: **60.2 C** after ~5 min of full load (~3 min of it on the cell); then `pt_off` by hand |
+
+- Run 1's "silent at 19 s" was the same thing: the console went with the unplug.
+- Power: no fault in either run (rails on, LEDs lit, K230 answering afterwards).
+- **Not proven yet: no K230 reset while on the cell** - a rebooted K230 also answers the probe, and lit LEDs prove
+  nothing (an unconfigured PWM channel lights at full, test009). Next run: the K230 writes memtest's pass numbers and
+  the probe answers to a file on /sdcard, read back after USB returns; a pass count that runs on = no reset.
+
 ## Metrics (skill leakcam-test-metrics)
 
 **MISSING** until the first run.
 
 ## Obstacles
 
+- **Unplugging USB-C 1 takes the BL616's USB console (PR1) away** (2026-10-25, both runs; the BL616's USB device
+  presumably follows the board's VBUS) -> nothing reaches the host while on the cell: battery runs must log on the
+  board and be read back after USB returns; the runner's final `pt_off` needs USB back (a `finally` cannot reach it).
 - **The K230 went silent 19 s into handover run 1** (2026-10-25) -> memtest left the system no memory (109 of 128 MB,
   a program failed to load) -> memtest with 24 MB reserved, plus a `chip_temp` liveness probe every 5 s.
