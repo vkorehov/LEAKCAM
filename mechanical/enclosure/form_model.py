@@ -781,6 +781,10 @@ def main():
             lst.append(user_prism(uc))
     user_fills = {"base": [user_prism(uf) for uf in P.get("user_fills", {}).get("base", [])],     # marked solid: kept
                   "cover": [user_prism(uf) for uf in P.get("user_fills", {}).get("cover", [])]}   # by the hollow
+    for part_, lst in (("base", grooves), ("base", user_cuts["base"]), ("cover", seats), ("cover", user_cuts["cover"])):
+        for keep_ in P.get("cut_keeps", {}).get(part_, []):          # marked areas no cut may take (fit 2026-10-25:
+            k_ = user_prism(keep_)                                     # avoid the cut there instead of welding after)
+            lst[:] = [c_ - k_ if (c_ & k_).solids() else c_ for c_ in lst]
     b.export_step(b.Compound(grooves + user_cuts["base"]), os.path.join(a.out, "legs_base.step"))     # the base: bores,
     b.export_step(b.Compound(seats + user_cuts["cover"]), os.path.join(a.out, "legs_cover.step"))     # JST pockets, marked cuts
     b.export_step(b.Compound(leg_models), os.path.join(a.out, "probe_legs.step"))       # tubes and wires, for the assembly

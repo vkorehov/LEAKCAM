@@ -204,7 +204,7 @@
    ],
    [
     8.700000000000001,
-    14.9,
+    16.25,
     -60.0,
     60.0,
     32.2,
@@ -226,7 +226,7 @@
     -60.0,
     4.7,
     -40.1,
-    -33.9,
+    -32.8,
     "seam_wall"
    ],
    [
@@ -1430,7 +1430,7 @@
     "skin": true
    },
    {
-    "name": "fit 2026-10-24c Sketch35-37 (S1): the wire run cleared to the 2 mm skin, from above the base's top (Y 5.6) to the plug pocket's floor (Y 1.4); its outer face follows the skin, no walls across it (needles, slabs)",
+    "name": "fit 2026-10-24c Sketch35-37 (S1): the wire run cleared to the 2 mm skin, from above the base's top (Y 5.6) to the plug pocket's floor (Y 1.4); its outer face follows the skin, no walls across it (needles, slabs); ends at Z -18.45, a whole wall before the S1 plug (fit 2026-10-25 Sketch41: no wedge)",
     "pts": [
      [
       16.95,
@@ -1445,12 +1445,12 @@
      [
       30.0,
       5.6,
-      -17.17
+      -18.45
      ],
      [
       16.95,
       5.6,
-      -17.17
+      -18.45
      ]
     ],
     "dir": [
@@ -1463,7 +1463,7 @@
     "skin": true
    },
    {
-    "name": "fit 2026-10-24c Sketch35-37 (S1): deeper at the camera end, down to Y -1.0 (below the old bore: the slabs between the earlier cuts go), up to the S1 plug pocket (Z -23.0)",
+    "name": "fit 2026-10-24c Sketch35-37 (S1): deeper at the camera end, down to Y -1.0 (below the old bore: the slabs between the earlier cuts go), up to the S1 plug pocket (Z -23.0); to Z -22.9, flush with the face beyond (fit 2026-10-25 Sketch42: no 0.1 sliver)",
     "pts": [
      [
       16.95,
@@ -1478,12 +1478,12 @@
      [
       30.0,
       5.6,
-      -23.0
+      -22.9
      ],
      [
       16.95,
       5.6,
-      -23.0
+      -22.9
      ]
     ],
     "dir": [
@@ -1534,209 +1534,39 @@
   "base": []
  },
  "solid_fills": {
+  "base": [],
+  "cover": []
+ },
+ "cut_keeps": {
   "base": [
    {
-    "name": "fit 2026-10-25 Sketch32+33: the two faces of the notch before the S3 area fused (one solid)",
+    "name": "fit 2026-10-25 Sketch41: the corner at the S1 plug pocket's +Z end, beside the leg's bend (no wedge left by the channel)",
     "pts": [
      [
-      19.72,
-      4.41,
-      11.76
-     ],
-     [
-      20.05,
-      3.85,
-      14.1
-     ],
-     [
-      20.27,
-      4.41,
-      14.1
-     ],
-     [
-      19.72,
-      4.41,
-      14.1
-     ]
-    ]
-   },
-   {
-    "name": "fit 2026-10-25 Sketch34+35: LED clamp 4's screw boss corner: the floor (Y -4) and the wall (X 18.65) faces fused",
-    "pts": [
-     [
-      16.64,
-      -4.0,
-      23.83
+      18.65,
+      3.05,
+      -17.17
      ],
      [
       18.65,
-      -4.0,
-      24.14
+      1.4,
+      -18.45
      ],
      [
       18.65,
-      -4.0,
-      23.11
-     ],
-     [
-      18.65,
-      -4.0,
-      21.51
-     ],
-     [
-      18.65,
-      -4.0,
-      20.47
-     ],
-     [
-      16.98,
-      -4.0,
-      20.21
-     ],
-     [
-      16.92,
-      -4.0,
-      20.36
-     ],
-     [
-      18.65,
-      -2.36,
-      23.92
-     ],
-     [
-      18.65,
-      -2.61,
-      22.72
-     ],
-     [
-      18.65,
-      -2.88,
-      21.41
-     ],
-     [
-      18.65,
-      -3.1,
-      20.35
-     ]
-    ]
-   },
-   {
-    "name": "fit 2026-10-25 Sketch36+37: the +X wall's inner face (Z 14.2..34.6) and the antenna-end corner face fused: the long hollow along the wall solid",
-    "pts": [
-     [
-      23.68,
-      13.2,
-      14.24
-     ],
-     [
-      23.24,
-      1.42,
-      31.74
-     ],
-     [
-      22.54,
-      -0.41,
-      31.74
-     ],
-     [
-      22.89,
-      -1.01,
-      34.24
-     ],
-     [
-      23.17,
-      -0.51,
-      34.6
-     ],
-     [
-      23.69,
-      13.23,
-      14.25
-     ],
-     [
-      20.78,
-      2.6,
-      31.74
-     ],
-     [
-      20.78,
-      2.6,
-      32.7
-     ],
-     [
-      19.55,
-      4.7,
-      32.7
-     ],
-     [
-      19.55,
-      4.7,
-      34.0
-     ],
-     [
-      21.82,
-      0.82,
-      35.25
-     ]
-    ]
-   },
-   {
-    "name": "fit 2026-10-25 Sketch38: the camera-end wall below the S1 run thickened from its face (Z -33.9) to the S1 cut's end (Z -32.8)",
-    "pts": [
-     [
-      16.25,
-      -0.42,
-      -33.9
-     ],
-     [
-      16.25,
-      -8.41,
-      -33.9
-     ],
-     [
-      23.86,
-      -6.76,
-      -33.9
-     ],
-     [
-      22.81,
-      -1.44,
-      -33.9
-     ],
-     [
-      22.44,
-      -1.52,
-      -33.9
-     ],
-     [
-      22.02,
-      -0.81,
-      -33.9
-     ],
-     [
-      21.65,
-      -0.79,
-      -33.9
-     ],
-     [
-      21.02,
-      -0.94,
-      -33.9
-     ],
-     [
-      19.99,
-      0.81,
-      -33.9
+      1.4,
+      -17.17
      ]
     ],
     "dir": [
+     1,
      0,
-     0,
-     1
+     0
     ],
-    "d0": -0.05,
-    "d1": 1.1
+    "d0": 0.0,
+    "d1": 3.26
    }
-  ]
+  ],
+  "cover": []
  }
 }
