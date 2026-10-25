@@ -4,6 +4,8 @@ protocol), so the PC needs no iperf install.
   pc_tcp_bench.py sink [port]              receive every connection (K230: iperf -c <pc> -t N), print Mbit/s per second
                                            and the total per connection
   pc_tcp_bench.py send <host> <secs> [port]  send to the K230's `iperf -s` for <secs>, print the total
+  pc_tcp_bench.py usink [port]             UDP: count datagrams and bytes per second (K230: iperf -u -c <pc> -b <rate>);
+                                           loss from the iperf sequence numbers (first 4 bytes, big endian)
 Output also goes to pc_tcp_bench.log next to the script."""
 import os, socket, sys, threading, time
 
@@ -55,7 +57,37 @@ def send(host, secs, port):
     log(f"send {host} done: {total} B in {dt:.2f} s = {total * 8 / dt / 1e6:.2f} Mbit/s")
 
 
-if sys.argv[1] == "sink":
+def usink(port):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4 << 20)
+    s.bind(("0.0.0.0", port))
+    log(f"udp sink on {port}")
+    n = b = 0
+    first = last = None
+    tick = time.time()
+    s.settimeout(1)
+    while True:
+        try:
+            d, peer = s.recvfrom(65536)
+        except socket.timeout:
+            if n:
+                log(f"udp done: {n} datagrams, seq {first}..{last}, lost {max(0, last - first + 1 - n)}")
+                n = b = 0
+                first = last = None
+            continue
+        seq = int.from_bytes(d[:4], "big", signed=True)
+        if seq >= 0:
+            first = seq if first is None else min(first, seq)
+            last = seq if last is None else max(last, seq)
+        n += 1; b += len(d)
+        if time.time() - tick >= 1:
+            log(f"{peer[0]} udp {b * 8 / (time.time() - tick) / 1e6:.2f} Mbit/s")
+            tick, b = time.time(), 0
+
+
+if sys.argv[1] == "usink":
+    usink(int(sys.argv[2]) if len(sys.argv) > 2 else 5001)
+elif sys.argv[1] == "sink":
     sink(int(sys.argv[2]) if len(sys.argv) > 2 else 5001)
 else:
     send(sys.argv[2], float(sys.argv[3]), int(sys.argv[4]) if len(sys.argv) > 4 else 5001)
