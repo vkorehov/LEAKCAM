@@ -87,7 +87,8 @@ at once (0.9 A, tapering). With no cable in either port the path is all on the b
 not remove it: the CH340X (U2) on the switched 3V3 pulls its D+ up internally, D3's steering diode passes that into
 VUSB (D3 VCC = VUSB), the USB-C source sees ~2.2 V and never turns VBUS on.
 
-**To pin the path** (rails on with `pt_on`, K230 held in reset, no cable in either port): VUSB (C2 pad 1) ~2.2 V and
+**To pin the path** ([probe_points.png](probe_points.png), whole side [probe_points_board.png](probe_points_board.png); rails
+on with `pt_on`, K230 held in reset, no cable in either port; D = U2 pin 1, the CH340X's UD+, same net as D3 pin 6): VUSB (C2 pad 1) ~2.2 V and
 D3 pin 6 (DBGP_D_P) ~3.3 V confirm D3; then lift D3 pin 5 (VCC): VUSB below 0.8 V = fixed (rev 1 rework: D3 out or its
 VCC pin lifted; USB-C 2 is buried in the enclosure and unused in the product). **Rework only with hot air** (D3 off
 whole): no pin lifting, and no trace cut (the D3 VCC track runs on an inner layer) (user, 2026-10-25); until then the firmware's end-of-session

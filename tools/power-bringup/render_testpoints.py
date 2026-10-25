@@ -578,6 +578,19 @@ def main():
     # the K230 boot straps (BOOT0 = 1, BOOT1 = 0: SPI NAND), bottom side; not in testpoints.json (no rail)
     straps = [{"id": "B0", "rail": "BOOT0", "pad": "R64.1", "gnd": "R31.2", "side": "bottom"},
               {"id": "B1", "rail": "BOOT1", "pad": "R31.1", "gnd": "R31.2", "side": "bottom"}]
+    # bug-002: the back-feed into VUSB (2026-10-25), probed with the K230 rails on and no USB-C cable
+    b2 = [{"id": "V", "rail": "VUSB", "pad": "C2.1", "gnd": "C2.2", "side": "top", "nominal": None, "note": "VUSB"},
+          {"id": "D", "rail": "DBGP_D_P", "pad": "U2.1", "gnd": "U2.3", "side": "top", "nominal": None,
+           "note": "CH340X D+"}]
+    b2_req = {"V": "~2.2 V = back-fed (pass: < 0.8 V)", "D": "~3.3 V = CH340X pull-up on"}
+    b2_notes = ("K230 rails on (pt_on), NO cable in USB-C 1 or USB-C 2; PR1 stays (console).",
+                "V: VUSB at C2 pad 1 (black lead C2 pad 2). D: CH340X pin 1 = UD+ (black lead U2 pin 3, GND).",
+                "Then hold 470 ohm across C2: V should fall below 0.8 V.")
+    b2_dir = os.path.join(REPO, "bugs", "bug-002")
+    render_points_sheet(pcb, comps, b2, os.path.join(b2_dir, "probe_points.png"), (30.0, 58.5, 8.0, 30.0), 45.0,
+                        ", bug-002 back-feed", b2_req, b2_notes)
+    render_points_sheet(pcb, comps, b2, os.path.join(b2_dir, "probe_points_board.png"), None, 22.0,
+                        ", bug-002 back-feed (whole top side)", b2_req, b2_notes)
     render_points_sheet(pcb, comps, straps, os.path.join(TESTS, "test006-k230-nand-boot-spl", "boot_straps.png"), (30.0, 44.0, 12.0, 26.0), 60.0,
                         ", K230 boot straps", {"B0": "~1.8 V (R64 to 1V8)", "B1": "~0 V (R31 to GND)"},
                         ("K230 on (pt_on). BOOT0 = 1, BOOT1 = 0 selects SPI NAND (BPI K230D-Zero strap table).",
