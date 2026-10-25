@@ -231,6 +231,14 @@ legs_cut("base")
 leds_cut("base")
 shell_cut("base")
 solid_fills("base")
+# welds (fit 2026-10-25, the user's own sketches and extrudes): areas that must be one solid for stability, added after
+# every cut and the hollow, a little past the marked faces so they bond to both neighbours
+fp_feature("Weld: camera-end wall to the S1 cut", [(16.25, -0.42), (16.25, -8.41), (23.86, -6.76), (22.81, -1.44), (19.99, 0.81)],
+           -33.95, -32.8, True, "the camera-end wall below the S1 run thickened to the S1 cut's end (fit Sketch40)")
+rp_feature("Weld: antenna-end screw block", [(32.2, -6.5), (34.85, -5.95), (34.75, -5.28), (34.73, -5.19), (32.8, 1.01), (32.2, -4.0)],
+           14.85, 16.27, True, "the gap between the +X antenna-end screw block and the wall closed (fit Sketch32-35)")
+rp_feature("Weld: corner by the S1 plug", [(-17.17, 3.05), (-18.45, 1.4), (-17.17, 1.4)],
+           18.6, 21.91, True, "the corner at the S1 plug pocket's +Z end beside the leg's bend (fit Sketch41)")
 sm.AddToDB = False
 
 print("part box:", [round(v * 1000, 2) for v in model.GetPartBox(True)])
