@@ -1,6 +1,6 @@
 # test100: Wi-Fi throughput, K230 -> SDIO -> BL616 -> AP
 
-Status: **step 1 in progress** (2026-10-23): `pt_wifi` scan and join pass: (radio up 635 ms, 11 APs in 2.9 s, own AP -29 dBm); step 1 pass (BL616 alone: join 3.8 s, internet 70-158 ms, joined 80 mA); steps 2+3 pass (K230 over the NetHub bridge: scan 4 s, join, DHCP, ping 8.8.8.8); open: the join's 10 s scan wait, step 4 throughput.
+Status: **steps 1-4 pass** (2026-10-25): BL616 alone (scan, join, internet); bridge (scan, join, DHCP, ping); K230 card bound -> address 0.33-0.59 s after the SDIO card-interrupt and DHCP ARP fixes (was 5.05 s); TCP up 17.1 / down ~26 Mbit/s; BL616-only server check 1.71 s awake. Open: the upload limit, step 5 (two RTMP streams, needs the cameras), the metrics table.
 
 The product path for clips and checks: the K230's lwIP over the NetHub SDIO bridge (test015: bus 21 MB/s, not the
 limit) to the BL616's 2.4 GHz radio. Needs the product BL616 firmware (open on rev 1) and stored credentials
