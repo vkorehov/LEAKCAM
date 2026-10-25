@@ -59,6 +59,15 @@ KEEP = [(-18.45, 18.45, 4.7, 18.8, -33.6, 21.7),       # cells and cradle on the
 CORNERS = np.array([(x, y, z) for x0, x1, y0, y1, z0, z1 in KEEP for x in (x0, x1) for y in (y0, y1) for z in (z0, z1)])
 
 
+def hull_solid(pts):
+    """the convex hull of marked points as a solid (fit sketches: faces to be fused into one block)"""
+    from scipy.spatial import ConvexHull
+    pts = np.array(pts, float)
+    h = ConvexHull(pts)
+    return b.Solid(b.Shell([b.Face(b.Wire.make_polygon([b.Vector(*pts[i]) for i in t], close=True))
+                            for t in h.simplices])).fix()
+
+
 def unit(v):
     v = np.asarray(v, float)
     return v / np.linalg.norm(v)
@@ -750,6 +759,10 @@ def main():
         prism = b.extrude(face, amount=z1 - z0, dir=(0, 0, 1))
         base = base + (prism & form0)
         cover = cover - prism
+    for pts in P["parting"].get("base_hulls", []):              # regions moved from the cover to the base: the hull of
+        hs = hull_solid(pts)                                     # marked faces (fit 2026-10-25: no thin base slab beside
+        base = base + (hs & form0)                               # the cover's skirt at the +X antenna-end corner)
+        cover = cover - hs
     base, cover, form = base.solids()[0].clean(), cover.solids()[0].clean(), form.solids()[0].clean()   # coplanar faces merged
     b.export_step(form, os.path.join(a.out, "form_outer.step"))
     b.export_step(base, os.path.join(a.out, "base_outer.step"))          # each SolidWorks part starts from its piece
@@ -760,6 +773,8 @@ def main():
     # skin: not nearer the outside than the 2 mm skin)
     inner_ = b.offset(form0, amount=-P["shell"]["skin_mm"], kind=b.Kind.INTERSECTION)
     def user_prism(uc):                                  # a marked sketch: its profile from d0 to d1 along dir
+        if "dir" not in uc:                              # (no dir: the hull of the marked points)
+            return hull_solid(uc["pts"])
         d = unit(uc["dir"])
         q0 = np.array(uc["pts"][0], float)                   # onto the sketch's plane (rounded points)
         pts_ = [np.array(q, float) - d * ((np.array(q, float) - q0) @ d) for q in uc["pts"]]
@@ -868,12 +883,6 @@ def main():
         # solid fills (fit 2026-10-25): marked faces fused into one solid - the convex hull of a pair of sketched faces
         # (or one sketch swept along dir) - in the part's piece, minus the legs' bores and pockets and the LED ways and
         # seats; added after every cut and the hollow (clips.py solid_fills), so nothing takes it away again
-        from scipy.spatial import ConvexHull
-        def hull_solid(pts):
-            pts = np.array(pts, float)
-            h = ConvexHull(pts)
-            faces = [b.Face(b.Wire.make_polygon([b.Vector(*pts[i]) for i in tri], close=True)) for tri in h.simplices]
-            return b.Solid(b.Shell(faces)).fix()
         for part, piece in (("base", base), ("cover", cover)):
             out = []
             for sf in P.get("solid_fills", {}).get(part, []):
