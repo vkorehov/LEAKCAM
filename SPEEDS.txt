@@ -14,10 +14,9 @@ or a measurement yet. Keep this file current when a test or a setting changes it
   SDIO K230 MMC0 <-> BL616    50 MHz, 4-bit, high speed    bus writes 21.4 MB/s, reads 21.5 MB/s 50 MHz (BL616 SDIO 2.0)  yes       test014
                                                            end to end 9.4 MB/s (echo device)
                                                            soak 109 MB, 0 CRC errors
-  SPI NAND (W25N02KV)         quad SPI; kernel: 1-line     raw: read 15.6 MB/s, program 4.6,     100 MHz data (chip     yes (100) test010,
-                              80 MHz delay 5, 4-line data  erase 2.46 ms/block; 80 MHz: read     104 MHz): 23.0 MB/s              test016,
-                              100 MHz delay 6+edge;        20.6, program 5.0; data at 100 MHz:                                    test017
-                              U-Boot/SPL 80 MHz delay 5    read 23.0, program 5.1 (2026-10-24)
+  SPI NAND (W25N02KV)         quad SPI, 80 MHz, sample     raw: read 15.6 MB/s, program 4.6,     80 MHz (raw 20.6 MB/s); yes (80)  test010,
+                              delay 5 (kernel + U-Boot)    erase 2.46 ms/block; 80 MHz: read     100 MHz data tried and           test016,
+                                                           20.6, program 5.0                     dropped (test017)                test017
                                                            file system: read 9.4-12.7, write 1.8
   DDR (K230D SiP)             3200 MT/s all-ODT (U-Boot    write 6.08, read 4.84, copy 2.77      3200 MT/s (the SiP's    yes       test016,
                               K230D_SIP_LPDDR4_3200_       GB/s; 8 h memtest 0 errors; 2667      top); HWODT flipped a             test025
@@ -87,7 +86,8 @@ or a measurement yet. Keep this file current when a test or a setting changes it
                                                   2026-10-24: per-phase SPI timing (install.sh): 1-line transfers
                                                   (status polls, no window at 100) at 80 MHz, 4-line data at 100 MHz,
                                                   delay 6 + edge (window 4-8 both edges); /bin 10x equal, 10 write
-                                                  runs verified, 10 cold boots clean: adopted (kernel; SPL/U-Boot 80).
+                                                  runs verified, 10 cold boots clean; with the SPL patched too 2 of 70 cold
+                                                  boots lost the NAND ID: dropped 2026-10-25 (user), 80 MHz kept.
   UART link      115200 -> ... 4 -> 6 Mbaud       test018: 10 MB both ways, 0 errors; both firmwares changed together
                                                   Adopted 2026-10-22: 4 Mbaud (6 Mbaud corrupts bulk data); code only,
                                                   product images not rebuilt yet (rewrite after the tests)

@@ -39,7 +39,14 @@ def cmd(fd, c, secs, until=None):
                 os.read(fd, 65536)
             except OSError:
                 break
-        os.write(fd, c.encode() + b"\r\n")
+        data, t1 = c.encode() + b"\r\n", time.time()
+        while data:                                  # non-blocking port: a full buffer says EAGAIN, wait for room
+            try:
+                data = data[os.write(fd, data):]
+            except BlockingIOError:
+                if time.time() - t1 > 5:
+                    raise
+                select.select([], [fd], [], 0.1)
     out = b""
     t0 = time.time()
     while time.time() - t0 < secs:

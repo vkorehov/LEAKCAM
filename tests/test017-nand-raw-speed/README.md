@@ -1,7 +1,8 @@
 # test017: SPI NAND raw speed and SPI clock
 
-Status: **100 MHz data adopted** (2026-10-24, kernel): 1-line transfers (commands, status polls) at 80 MHz delay 5,
-4-line data at 100 MHz delay 6 + edge (per-phase SPI timing patch in install.sh); U-Boot/SPL stay at 80 MHz delay 5. Bench: [leakcam_bench.c](leakcam_bench.c) (SDK copy, `bsp/maix3/board/`).
+Status: **80 MHz kept** (decided 2026-10-25, user): kernel + U-Boot/SPL at 80 MHz, sample delay 5. 100 MHz data (per-phase
+SPI timing) was built and tested on 2026-10-24/25 and dropped: +12 % raw read for two driver patches, and 2 lost-ID cold
+boots in 70 with the patched SPL (below). Bench: [leakcam_bench.c](leakcam_bench.c) (SDK copy, `bsp/maix3/board/`).
 
 test011 measured the file system: read 9.4 MB/s (shell) / 12.7 MB/s (user program), write 1.8 MB/s. This splits
 it into the NAND itself and UFFS, and checks the SPI clock's headroom.
@@ -123,6 +124,20 @@ program + read-back of 32 spare blocks 10/10 without errors (quad programs run a
 10 cold boots (boots100.py, [boots100_out.txt](boots100_out.txt)): all reached app init at 0.311-0.312 s with /bin
 and /sdcard mounted (mounts done 0.302-0.303 s) and read all of /bin with the reference checksum, 23.0 MB/s.
 Adopted. One of verify100's 10 reads ran at 12.3 MB/s with correct data (open; not seen in the 10 boot reads).
+
+### Decision 2026-10-25: 100 MHz dropped, 80 MHz kept
+
+The per-phase timing (data 100 MHz, commands 80 MHz) read correctly whenever a read completed: /bin 10/10, 30/30 and
+1567/1567 reads in the hot soak (memtest load, die 48-57 C; 14 of 1780 reads gave no result line, the console shared
+with memtest), writes 10/10. But with U-Boot/SPL patched too, 2 cold boots in 70 lost the NAND: boot 5 of 20 (slow
+mounts, then no read result) and boot 43 of 50 (boots100_console.txt: the kernel read the ID one byte late, `unknown
+raw ID aa220000` instead of EF AA 22, "SPINAND flash init fail", nothing mounted). The gain was small for the product:
+raw read +12 % (23.0 against 20.6 MB/s), the file system's 9-13 MB/s is software-bound, the SPL 8 ms faster. User:
+keep 80 MHz and remove the patches. Removed: the kernel per-phase drv_spi.c patch, U-Boot's per-phase patch, the dts
+data properties, the bench's nand_clk2 / nand_dump / multi-line nand_rxsd, the 100 MHz runners (sweep/shift/split/verify/hot100.py; the cold-boot runner stays as boots.py). Kept: U-Boot's RX
+sample delay step in ps (Canaan's whole-ns step gave delay 6 for 6 ns at 800 MHz, the kernel uses 5: a real bug).
+80 MHz after the cleanup: 20/20 cold boots clean, /bin read correct every time (2026-10-25). Logs kept: sweep100.csv, shift100_out.txt, split100_out.txt, verify100_out.txt, boots100_out.txt,
+boots_uboot_out.txt, boots100_console.txt.
 
 ## Metrics (2026-10-21, bench image)
 

@@ -125,69 +125,6 @@ open(p, 'w').write(s[:i] + open(f).read() + s[j + len(tail):])
 PY
 grep -q 'LEAKCAM: wait on real time' "$SPN" || { echo "busy-wait patch not applied"; exit 1; }
 
-# SPI timing per phase (tests/test017, 2026-10-24): the DW SSI samples RX data RX_SAMPLE_DLY ssi_clk cycles (1.25 ns,
-# bit 16 = the other edge) after the clock; Canaan's driver writes one delay and one clock at configure time. At
-# 100 MHz (the W25N02KV's top, 104 MHz) the 4-line data has a window (delay 4-6), the 1-line status reads do not, and
-# a mis-read status starts a data read before the page is ready. So the standard (1-line: commands, status polls)
-# path and the multi-line (data) path each write their own sample delay and clock divider: 1-line at the configured
-# clock, multi-line at div_multi when set. SPI0 (the NAND): 1-line 80 MHz delay 5 (Kconfig), 4-line data 100 MHz
-# delay 6 + edge (30/30 clean reads, 23.1 against 20.7 MB/s at 80 MHz). dw_spi_set_rx_sample() / dw_spi_set_multi_hz() let the bench sweep them.
-SPID=$RTT/drivers/interdrv/spi/drv_spi.c
-grep -q 'LEAKCAM: per-phase SPI timing' "$SPID" || python3 - "$SPID" "$RTT/drivers/interdrv/spi/drv_spi.h" <<'PY'
-import sys
-p, h = sys.argv[1], sys.argv[2]; s = open(p).read()
-def rep(a, b):
-    global s
-    assert s.count(a) == 1, 'drv_spi.c changed, cannot apply the per-phase sample delay: ' + a[:60]
-    s = s.replace(a, b)
-rep('    uint8_t                 rdse;\n    uint8_t                 rdsd;\n',
-    '    uint8_t                 rdse;\n    uint8_t                 rdsd;\n'
-    '    uint8_t                 rdse_multi;  /* LEAKCAM: per-phase SPI timing, 2/4/8-line data phase */\n'
-    '    uint8_t                 rdsd_multi;\n'
-    '    uint32_t                div_cfg;     /* the configured divider (1-line transfers) */\n'
-    '    uint32_t                div_multi;   /* multi-line data divider, 0 = the configured one */\n')
-rep('} dw_spi_hw_info_t;\n', '} dw_spi_hw_info_t;\n\nstatic void *leakcam_spi_bus[3];   /* LEAKCAM: the registered buses, for dw_spi_set_rx_sample() */\n')
-rep('        writel(0, &spi->ssienr);\n        writel(spi_ctrlr0, &spi->spi_ctrlr0);\n',
-    '        writel(0, &spi->ssienr);\n'
-    '        writel(spi_bus->rdse_multi << 16 | spi_bus->rdsd_multi, &spi->rx_sample_delay);\n'
-    '        if (spi_bus->div_multi)\n            writel(spi_bus->div_multi, &spi->baudr);\n'
-    '        writel(spi_ctrlr0, &spi->spi_ctrlr0);\n')
-rep('    /* Standard transfers must not inherit enhanced instruction/address state. */\n',
-    '    writel(spi_bus->rdse << 16 | spi_bus->rdsd, &spi->rx_sample_delay);   /* the 1-line delay */\n'
-    '    if (spi_bus->div_multi)\n        writel(spi_bus->div_cfg, &spi->baudr);   /* and the 1-line clock */\n'
-    '    /* Standard transfers must not inherit enhanced instruction/address state. */\n')
-rep('    writel(div, &spi->baudr);\n', '    writel(div, &spi->baudr);\n    spi_bus->div_cfg = div;\n')
-rep('    spi_bus->rdse = 0;\n    spi_bus->rdsd = rdsd;\n',
-    '    spi_bus->rdse = 0;\n    spi_bus->rdsd = rdsd;\n    spi_bus->rdse_multi = 0;\n    spi_bus->rdsd_multi = rdsd;\n'
-    '    spi_bus->div_multi = 0;\n'
-    '    if (info->idx == 0) {   /* the NAND: 4-line data at 100 MHz, delay 6 + other edge, the centre of the clean\n'
-    '                             * window delay 4-8 (both edges) found by tests/test017 split100.py */\n'
-    '        spi_bus->rdsd_multi = 6;\n        spi_bus->rdse_multi = 1;\n'
-    '        spi_bus->div_multi = sysctl_clk_get_leaf_freq(info->clk) / 100000000;\n    }\n'
-    '    if (info->idx < 3)\n        leakcam_spi_bus[info->idx] = spi_bus;\n')
-s += ('\n/* LEAKCAM: set the RX sample delays of a bus (tests/test017 sweep); applied from the next transfer */\n'
-      'int dw_spi_set_rx_sample(int bus, int sd, int se, int sd_multi, int se_multi)\n{\n'
-      '    dw_spi_bus_t *b = bus >= 0 && bus < 3 ? leakcam_spi_bus[bus] : RT_NULL;\n'
-      '    if (!b)\n        return -1;\n'
-      '    b->rdsd = (uint8_t)sd; b->rdse = (uint8_t)se; b->rdsd_multi = (uint8_t)sd_multi; b->rdse_multi = (uint8_t)se_multi;\n'
-      '    return 0;\n}\n'
-      '\n/* LEAKCAM: the multi-line data clock of a bus (0 = the configured clock), from the next transfer */\n'
-      'int dw_spi_set_multi_hz(int bus, uint32_t hz)\n{\n'
-      '    dw_spi_bus_t *b = bus >= 0 && bus < 3 ? leakcam_spi_bus[bus] : RT_NULL;\n'
-      '    if (!b)\n        return -1;\n'
-      '    b->div_multi = hz ? sysctl_clk_get_leaf_freq(b->hw->clk) / hz : 0;\n'
-      '    return 0;\n}\n')
-open(p, 'w').write(s)
-t = open(h).read()
-if 'dw_spi_set_rx_sample' not in t:
-    t = t.rstrip('\n')
-    i = t.rfind('#endif')
-    t = t[:i] + 'int dw_spi_set_rx_sample(int bus, int sd, int se, int sd_multi, int se_multi);   /* LEAKCAM */\n' \
-        'int dw_spi_set_multi_hz(int bus, uint32_t hz);   /* LEAKCAM */\n\n' + t[i:] + '\n'
-    open(h, 'w').write(t)
-PY
-grep -q 'LEAKCAM: per-phase SPI timing' "$SPID" || { echo "SPI timing patch not applied"; exit 1; }
-
 # poll(): RT-Thread's poll_do() never clears pt->triggered, so after one wake-up whose event leaves
 # the fd not ready, poll_wait_timeout() skips the wait and poll() re-checks in a busy loop until the
 # fd becomes ready, ignoring its timeout. The agent's poll() on the hook's stdout pipe spun at
@@ -324,59 +261,23 @@ grep -q 'LEAKCAM: BL616 SDU' "$SDIOC" || { echo "SDIO FUNCE patch not applied"; 
 cp "$HERE/uboot/configs/k230d_leakcam_defconfig" "$UB/configs/"
 cp "$HERE"/uboot/dts/k230d_leakcam.dts "$HERE"/uboot/dts/k230d_leakcam_pins.dtsi "$UB/arch/riscv/dts/"
 
-# SPI timing per phase in U-Boot/SPL too (tests/test017, 2026-10-24), as the kernel's drv_spi.c patch above: spi-mem
-# operations with a 2/4/8-line data phase use "data-max-frequency" and "rx-sample-delay-data-ps" from the bus node,
-# the rest (commands, status polls) "spi-max-frequency" and "rx-sample-delay-ns". The delay goes to RX_SAMPLE_DLY
-# before every operation (Canaan's driver wrote it once at probe). Canaan's step was NSEC_PER_SEC / bus clock in
-# whole ns: 1 ns at 800 MHz instead of 1.25, so 6 ns gave delay 6, not 5; the step is computed in ps now.
+# U-Boot/SPL RX sample delay step (tests/test017, 2026-10-24): Canaan's designware_spi.c computes the step as
+# NSEC_PER_SEC / bus clock in whole ns - 1 ns at the 800 MHz SPI0 clock instead of 1.25 - so the dts's 6 ns gave delay
+# 6, not the 5 the kernel uses (RT_SPI0_RXSD). The step in ps: 6 ns -> 5. (A per-phase 100 MHz data clock was tried
+# here and dropped: test017 README.)
 DWS=$UB/drivers/spi/designware_spi.c
-grep -q 'LEAKCAM: per-phase SPI timing' "$DWS" || python3 - "$DWS" <<'PY'
+grep -q 'LEAKCAM: delay step in ps' "$DWS" || python3 - "$DWS" <<'PY'
 import sys
 p = sys.argv[1]; s = open(p).read()
-def rep(a, b):
-    global s
-    assert s.count(a) == 1, 'designware_spi.c changed, cannot apply the per-phase SPI timing: ' + a[:60]
-    s = s.replace(a, b)
-rep('    s32 def_rxdly_ns;\n',
-    '    s32 def_rxdly_ns;\n'
-    '\ts32 data_frequency;\t/* LEAKCAM: per-phase SPI timing: multi-line data phase clock, 0 = frequency */\n'
-    '\ts32 data_rxdly_ps;\t/* and its RX sample delay, -1 = the default one */\n')
-rep('    unsigned int def_rxdly;\n',
-    '    unsigned int def_rxdly;\n'
-    '\tunsigned int data_freq;\n'
-    '\tunsigned int data_rxdly;\t/* RX_SAMPLE_DLY value: delay | other edge << 16 */\n')
-rep('\tif (dev_read_bool(bus, "spi-slave"))\n',
-    '\tplat->data_frequency = dev_read_u32_default(bus, "data-max-frequency", 0);\n'
-    '\tplat->data_rxdly_ps = dev_read_u32_default(bus, "rx-sample-delay-data-ps", -1);\n\n'
-    '\tif (dev_read_bool(bus, "spi-slave"))\n')
-rep('\tpriv->def_rxdly = DIV_ROUND_CLOSEST(plat->def_rxdly_ns,\n'
-    '\t\t\t\t\t\t\tNSEC_PER_SEC /\n'
-    '\t\t\t\t\t\t\tpriv->bus_clk_rate);\n',
-    '\t{\n'
-    '\t\t/* steps of one bus clock (1250 ps at 800 MHz), the data delay in half steps (bit 16: other edge) */\n'
-    '\t\tu32 step_ps = DIV_ROUND_CLOSEST(1000000000000ULL, priv->bus_clk_rate);\n'
-    '\t\tu32 half;\n\n'
-    '\t\tpriv->def_rxdly = DIV_ROUND_CLOSEST(plat->def_rxdly_ns * 1000, step_ps);\n'
-    '\t\tpriv->data_rxdly = priv->def_rxdly;\n'
-    '\t\tif (plat->data_rxdly_ps >= 0) {\n'
-    '\t\t\thalf = DIV_ROUND_CLOSEST(plat->data_rxdly_ps * 2, step_ps);\n'
-    '\t\t\tpriv->data_rxdly = half / 2 | (half & 1) << 16;\n'
-    '\t\t}\n'
-    '\t\tpriv->data_freq = plat->data_frequency;\n'
-    '\t}\n')
-rep('\tdw_write(priv, DW_SPI_SSIENR, 0);\n\n\tclk_div = priv->bus_clk_rate / priv->freq;\n',
-    '\tdw_write(priv, DW_SPI_SSIENR, 0);\n\n'
-    '\t/* LEAKCAM: per-phase SPI timing: the multi-line data phase has its own clock and sample delay */\n'
-    '\tif (priv->spi_frf != CTRLR0_SPI_FRF_BYTE && op->data.buswidth > 1) {\n'
-    '\t\tif (priv->data_freq)\n\t\t\tpriv->freq = priv->data_freq;\n'
-    '\t\tdw_write(priv, DW_SPI_RX_SAMPLE_DLY, priv->data_rxdly);\n'
-    '\t} else {\n'
-    '\t\tdw_write(priv, DW_SPI_RX_SAMPLE_DLY, priv->def_rxdly);\n'
-    '\t}\n\n'
-    '\tclk_div = priv->bus_clk_rate / priv->freq;\n')
+a = ('\tpriv->def_rxdly = DIV_ROUND_CLOSEST(plat->def_rxdly_ns,\n'
+     '\t\t\t\t\t\t\tNSEC_PER_SEC /\n'
+     '\t\t\t\t\t\t\tpriv->bus_clk_rate);\n')
+assert s.count(a) == 1, 'designware_spi.c changed, cannot apply the delay step fix'
+s = s.replace(a, '\tpriv->def_rxdly = DIV_ROUND_CLOSEST(plat->def_rxdly_ns * 1000,   /* LEAKCAM: delay step in ps */\n'
+                 '\t\t\t\t\t    DIV_ROUND_CLOSEST(1000000000000ULL, priv->bus_clk_rate));\n')
 open(p, 'w').write(s)
 PY
-grep -q 'LEAKCAM: per-phase SPI timing' "$DWS" || { echo "U-Boot SPI timing patch not applied"; exit 1; }
+grep -q 'LEAKCAM: delay step in ps' "$DWS" || { echo "U-Boot delay step fix not applied"; exit 1; }
 
 # SPL and OpenSBI print on UART1 at the link's rate (4 Mbaud), as RT-Smart does since the link mux (tests/test039):
 # their console reaches the BL616's /dev/ttyACM1 from the first SPL line. U-Boot's ns16550 has neither the K230's

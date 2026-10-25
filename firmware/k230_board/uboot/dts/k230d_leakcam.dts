@@ -60,15 +60,11 @@
 	status = "okay";
 };
 
-/* U16 W25N02KV on OSPI CS0, quad I/O. Commands and status polls: 80 MHz, rx-sample-delay 6 ns = 5 x 1.25 ns, the
- * middle of the clean window 3-8 (none at 100 MHz). 4-line data: 100 MHz, 8125 ps = delay 6 + the other edge, the
- * centre of the window delay 4-8 (both edges). Same as the kernel (RT_SPI0_RXSD=5, install.sh per-phase patch);
- * tests/test017. data-max-frequency / rx-sample-delay-data-ps: install.sh's designware_spi.c patch. */
+/* U16 W25N02KV on OSPI CS0, quad I/O at 80 MHz; rx-sample-delay 6 ns = 5 x 1.25 ns (install.sh's delay step fix), the
+ * middle of the clean window 3-8, as the kernel (RT_SPI0_RXSD=5). 100 MHz was dropped (tests/test017). */
 &spi0 {
 	status = "okay";
 	rx-sample-delay-ns = <6>;
-	data-max-frequency = <100000000>;
-	rx-sample-delay-data-ps = <8125>;
 	u-boot,dm-pre-reloc;
 
 	spi-flash@0 {

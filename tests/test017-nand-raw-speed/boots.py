@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""test017 (2026-10-24): cold boots at the adopted NAND timing (4-line data 100 MHz, kernel and U-Boot/SPL): each boot
+"""test017: cold boots at the adopted NAND timing (80 MHz, kernel and U-Boot/SPL): each boot
 must reach msh with /bin and /sdcard mounted (boot_times) and read all of /bin with the 50 MHz reference checksum
 (verify100.py). "kernel init start" is the time from reset release through ROM, SPL (loads OpenSBI + kernel from
-the NAND), DDR training and OpenSBI. Usage: boots100.py [checksum [boots]]"""
+the NAND), DDR training and OpenSBI. Usage: boots.py [checksum [boots]]"""
 import os
 import re
 import sys
@@ -12,7 +12,7 @@ from board import bl, cmd, k230, log   # noqa: E402
 
 REF = sys.argv[1] if len(sys.argv) > 1 else "79270e8e"
 N = int(sys.argv[2]) if len(sys.argv) > 2 else 10
-RAW = os.path.join(os.path.dirname(os.path.abspath(__file__)), "boots100_console.txt")   # every boot's console
+RAW = os.path.join(os.path.dirname(os.path.abspath(__file__)), "boots_console.txt")   # every boot's console
 
 
 def main():
