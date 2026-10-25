@@ -128,6 +128,9 @@ can come out while it sleeps. Sent on USB power, then USB-C 1, USB-C 2 and PR1 u
 | HBN level 0, K230 off, probes dry, Y3 RTC, USB still plugged | 36 uA |
 | Same, **every USB cable out** | **36 uA** |
 
+Cell at **4.17 V** (just charged): 36 uA x 4.17 V = **150 uW**. The regulator's share depends on the cell voltage;
+repeat near 3.6 V (half charge) for the life estimate.
+
 Pull audit (same day, schematic + SDK): HBN powers the core domain off, so every non-AON pad is high-Z with no pull;
 every external pull sits at its own rail (R19, R76, R35, R23, R73/R74; the 3V3-switched pull-ups at 0 V): no pin
 costs current. Parts: U5 TPS63802 11 uA + its divider 5.5 uA, BQ24072T 4.3 uA typ (6.5 max), BL616 HBN0 ~3-6 uA, probe
