@@ -1,6 +1,6 @@
 # test031: sleep and minimal currents (every power state's floor)
 
-Status: **RTC wake fixed** (2026-10-22): HBN on Y3 wakes (5 of 5, cold start included); sleep 1.23 mA through USB (mostly the charger); **on the battery 36 uA** (2026-10-25).
+Status: **RTC wake fixed** (2026-10-22): HBN on Y3 wakes (5 of 5, cold start included); sleep 1.23 mA through USB (mostly the charger); **on the battery 19 uA settled** (36 uA right after the cables came out, 2026-10-25).
 
 The lowest current each power state can reach, measured on its own, so every other test's figure reads as a rise
 above a known floor (user, 2026-10-21: minimal currents too). First the sleep: what the board draws between wakes,
@@ -126,16 +126,18 @@ can come out while it sleeps. Sent on USB power, then USB-C 1, USB-C 2 and PR1 u
 | State | Battery current |
 |---|---|
 | HBN level 0, K230 off, probes dry, Y3 RTC, USB still plugged | 36 uA |
-| Same, **every USB cable out** | **36 uA** |
+| Same, every USB cable out, first reading | 36 uA |
+| Same, **settled (minutes later)** | **19 uA** |
 
-Cell at **4.17 V** (just charged): 36 uA x 4.17 V = **150 uW**. The regulator's share depends on the cell voltage;
+Cell at **4.17 V** (just charged): 19 uA x 4.17 V = **79 uW**. The regulator's share depends on the cell voltage;
 repeat near 3.6 V (half charge) for the life estimate.
 
 Pull audit (same day, schematic + SDK): HBN powers the core domain off, so every non-AON pad is high-Z with no pull;
 every external pull sits at its own rail (R19, R76, R35, R23, R73/R74; the 3V3-switched pull-ups at 0 V): no pin
 costs current. Parts: U5 TPS63802 11 uA + its divider 5.5 uA, BQ24072T 4.3 uA typ (6.5 max), BL616 HBN0 ~3-6 uA, probe
-divider 1.65 uA, the rest ~2 uA = 26-29 uA typ, 35 max; measured 36 uA. Rev 2 lever: a nano-amp regulator for 3V3_SLEEP
-(~-16 uA). Battery: 0.86 mAh/day, ~26 mAh/month (ENERGY.txt).
+divider 1.65 uA, the rest ~2 uA = 26-29 uA typ, 35 max; measured 19 uA settled (the parts run below their typical
+figures at this load; 36 uA in the first minutes after unplugging: the supply side settling). Rev 2 lever: a nano-amp regulator for 3V3_SLEEP
+(~-16 uA). Battery: 0.46 mAh/day, ~14 mAh/month (ENERGY.txt).
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
