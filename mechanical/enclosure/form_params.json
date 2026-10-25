@@ -1496,39 +1496,6 @@
     "skin": 1.0
    },
    {
-    "name": "fit 2026-10-24b Sketch1: the board support rib at Z 26..28 past the pocket wall to the skin (no job) (from X 18.55, inside the pocket: no 0.01 skin left on its wall)",
-    "pts": [
-     [
-      18.55,
-      -4.0,
-      28.1
-     ],
-     [
-      26.0,
-      -4.0,
-      28.1
-     ],
-     [
-      26.0,
-      3.5,
-      28.1
-     ],
-     [
-      18.55,
-      3.5,
-      28.1
-     ]
-    ],
-    "dir": [
-     0,
-     0,
-     -1
-    ],
-    "d0": 0.0,
-    "d1": 2.2,
-    "skin": true
-   },
-   {
     "name": "fit 2026-10-24c Sketch35-37 (S1): the wire run cleared to the 2 mm skin, from above the base's top (Y 5.6) to the plug pocket's floor (Y 1.4); its outer face follows the skin, no walls across it (needles, slabs); ends at Z -18.45, a whole wall before the S1 plug (fit 2026-10-25 Sketch41: no wedge)",
     "pts": [
      [
