@@ -269,7 +269,27 @@ is `leak`, or the probe node is below 850 mV), or always / never with `--leak`.
 |---|---|---|
 | `POST /v1/check?reason=<reasons>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>&nn=<CRC>&thr=<cam0>,<cam1>&cam<i>=<state>,<distance>[&sample=1]` (reasons joined by `+`, sent as `%2B`; state first, same, changed or light) | binary PGMs, 320x240, back to back: per camera its frame, then its history view where imgdiff saw a change | `{"leak":true}` or `{"leak":false}`, plus `"nn":"<CRC>","thr":[<cam0>,<cam1>]` when the server has another change net or thresholds, and `"video":<seconds>` when the server wants a clip, for a leak or on request: its length is the server's (the board caps it at 300 s) |
 | `GET /v1/nn/<CRC>` | | the kmodel ([firmware/NN.txt](firmware/NN.txt) 3.4) |
+| `GET /v1/poll?id=<device>` (the BL616, see below) | | `{"stream":0}`, or `{"stream":<seconds>}` when a viewer asked for live video and audio |
 | RTMP `rtmp://<host>:1935/leakcam/cam<N>` (publish, to MediaMTX) | 5 s live: the camera's H.265 from an IDR (Enhanced RTMP) plus the microphone (Opus 16 kHz mono, E-RTMP v2); both cameras at once | the RTMP server's `NetStream.Publish.Start` |
+
+**Live view on request, checked by the BL616 alone (decided 2026-10-25).** Since Wi-Fi is fast (tests/test100: the
+remembered AP joins in 0.24-0.47 s, DHCP ~0.6 s, a request 70-158 ms), the BL616 asks the server on its own whether
+anyone wants to watch, without waking the K230:
+
+```
+RTC wake (poll interval) -> radio up -> join the stored network at the remembered AP -> DHCP (the BL616's lwIP)
+  -> GET /v1/poll
+     |-- {"stream":0} or no answer -> radio off, hibernate (K230 never powered)
+     |-- {"stream":<s>} -> power the K230, WAKE reason "stream": leakcam_stream streams <s> seconds of both cameras
+                           with audio (RTMP), then the session ends as usual
+```
+
+- **What it costs:** one short radio burst per interval; the energy per check and the resulting interval for the
+  battery budget come from tests/test100 (`pt_poll`, the same cycle in the test firmware). The latency a viewer
+  sees is up to one interval plus the K230 boot (~2 s) and its join.
+- **Split exception:** the BL616's own lwIP serves only this request (as the BLE credential check, wifi_check.c);
+  when the K230 runs, it owns the IP address as before (same MAC, so the same lease).
+- **The interval is the server's:** each answer may carry `"poll":<seconds>`; the BL616 keeps it in HBN RAM.
 
 ### 5.2 BL616 power manager ([firmware/README.md](firmware/README.md))
 

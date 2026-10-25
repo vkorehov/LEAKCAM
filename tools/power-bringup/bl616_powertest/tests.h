@@ -20,6 +20,8 @@
 #include <stdbool.h>
 bool rails_are_on(void);              /* main.c: the K230 rails are commanded on */
 void pt_wifi_rails_off(void);         /* pt_wifi.c: stop the NetHub bridge (wifi_link_stop) before the rails drop */
+#include <stdint.h>
+bool pt_wifi_poll_cycle(uint32_t t[4]);  /* pt_wifi.c: one BL616-only server check (pt_poll) */
 
 #if PT_TEST_WIFI && !PT_TEST_POWER
 #error "PT_TEST_WIFI needs PT_TEST_POWER: the bridge's SDIO pads may only be driven while the K230 3V3 is up"

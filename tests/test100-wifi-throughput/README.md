@@ -252,6 +252,11 @@ Battery current: Wi-Fi join (energy per join, paid on every networked session), 
   rescan) waits for READY, which the powertest firmware does not answer -> the runner sends `bl616_rescan`; (2) the
   whole boot log had one timestamp: the console was read only after `pt_run` returned (1.5 s wait) -> a reader thread
   from before the reset.
+- **Step 4 on the home router "VK" (2026-10-25): no association** -> the AP rejected the key (`auth_failures=1
+  reason=WRONG_KEY`; VK seen ch 11, -48 dBm, WPA2; `~/.leakcam_wifi` holds exactly the 10 characters given) -> waiting
+  for the right key from the user.
+- **My throughput runner gave up on the address after 4 s** (2026-10-25): 60 `ifconfig` tries that each returned at
+  once -> a 30 s deadline.
 - **Link-up status said 0 dBm** -> the RSSI read at the connect event is 0 -> the status is sent again 1 s later
   (-29 dBm).
 - **My loop runner misjudged the bridge three times** (2026-10-24) -> (1) every command "took" 0.0 s: the leftover

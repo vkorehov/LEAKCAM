@@ -359,7 +359,11 @@ static volatile struct {
     uint32_t os1;
     int32_t os2;
     uint32_t tsen;
+    uint32_t poll_magic;                           /* T021_POLL: the pt_poll fields below are valid */
+    uint32_t poll_left, poll_s, poll_ok, poll_fail;
+    uint32_t poll_sum[5];                          /* ms summed over the good cycles: radio, assoc, DHCP, net, awake */
 } t021 __attribute__((section(".hbn_noinit")));
+#define T021_POLL 0x504f4cu                        /* "POL" */
 #define T021_CAL 0x43414cu                         /* "CAL" */
 
 /* bflb_adc.c (SDK 2.3.35) keeps its calibration in these globals, and bflb_adc_init() runs the calibration (28.6 ms:
@@ -1390,6 +1394,76 @@ static int cmd_sleep(int argc, char **argv)
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_sleep, pt_sleep, K230 off and HBN level 0 for <s> seconds (RTC wake));
 
+#if PT_TEST_WIFI
+/* test100 (2026-10-25): the BL616-only server check as a duty cycle the USB meter can average: each RTC wake runs
+ * pt_wifi_poll_cycle() (radio, remembered-AP join, DHCP, internet check), adds its times to HBN RAM and sleeps
+ * <s> again, <n> times. Awake = core reset to the sleep call (the wake latency before main is not in it). */
+static void poll_print(void)
+{
+    uint32_t n = t021.poll_ok ? t021.poll_ok : 1;
+    printf("pt_poll: %lu left, %lu ok, %lu failed; mean ms: radio %lu, assoc %lu, DHCP %lu, net %lu, awake %lu\r\n",
+           (unsigned long)t021.poll_left, (unsigned long)t021.poll_ok, (unsigned long)t021.poll_fail,
+           (unsigned long)(t021.poll_sum[0] / n), (unsigned long)(t021.poll_sum[1] / n),
+           (unsigned long)(t021.poll_sum[2] / n), (unsigned long)(t021.poll_sum[3] / n),
+           (unsigned long)(t021.poll_sum[4] / n));
+}
+
+static void poll_task(void *arg)
+{
+    uint32_t t[4] = { 0 };
+    char s[12];
+    char *argv[2] = { "pt_sleep", s };
+
+    (void)arg;
+    bool ok = pt_wifi_poll_cycle(t);
+    uint32_t awake = (uint32_t)bflb_mtimer_get_time_ms();
+    if (ok) {
+        t021.poll_ok++;
+        for (int i = 0; i < 4; i++)
+            t021.poll_sum[i] += t[i];
+        t021.poll_sum[4] += awake;
+    } else {
+        t021.poll_fail++;
+    }
+    t021.poll_left--;
+    printf("pt_poll: cycle %s, awake %lu ms (radio %lu, assoc %lu, DHCP %lu, net %lu)\r\n", ok ? "ok" : "FAILED",
+           (unsigned long)awake, (unsigned long)t[0], (unsigned long)t[1], (unsigned long)t[2], (unsigned long)t[3]);
+    poll_print();
+    if (t021.poll_left) {
+        snprintf(s, sizeof(s), "%lu", (unsigned long)t021.poll_s);
+        cmd_sleep(2, argv);
+    }
+    t021.poll_magic = 0;
+    vTaskDelete(NULL);
+}
+
+/* boot: an RTC wake inside a pt_poll run starts the next cycle */
+static void poll_resume(void)
+{
+    if ((last_wake & WAKE_RTC) && t021.poll_magic == T021_POLL && t021.poll_left)
+        xTaskCreate(poll_task, "poll", 4096, NULL, 3, NULL);
+}
+
+static int cmd_poll(int argc, char **argv)
+{
+    if (argc < 3) {
+        if (t021.poll_magic == T021_POLL || t021.poll_ok || t021.poll_fail)
+            poll_print();
+        printf("usage: pt_poll <cycles> <sleep_s>: radio, join, DHCP, internet check, HBN; repeated on the RTC\r\n");
+        return 0;
+    }
+    t021.poll_left = (uint32_t)atoi(argv[1]);
+    t021.poll_s = (uint32_t)atoi(argv[2]);
+    t021.poll_ok = t021.poll_fail = 0;
+    for (int i = 0; i < 5; i++)
+        t021.poll_sum[i] = 0;
+    t021.poll_magic = T021_POLL;
+    xTaskCreate(poll_task, "poll", 4096, NULL, 3, NULL);
+    return 0;
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_poll, pt_poll, BL616-only server check loop: <cycles> <sleep_s> (no args: results));
+#endif
+
 /* test031/032: does the HBN RTC counter run? It counts the selected 32 kHz clock (Y3 crystal or RC32K): 32768
  * ticks per second expected. A counter that stands still never reaches the HBN wake compare value. */
 static int cmd_rtc(int argc, char **argv)
@@ -1694,6 +1768,9 @@ int main(void)
     pins_init();
     hw = xSemaphoreCreateMutex();
     xTaskCreate(background_task, "pt", 2048, NULL, 2, NULL);
+#if PT_TEST_SLEEP && PT_TEST_WIFI
+    poll_resume();
+#endif
 #if PT_TEST_UART
     /* blocks on the RX interrupt (uart_rx_isr): no busy loop, IDLE always runs (it frees deleted tasks) */
     xTaskCreate(uart_bridge_task, "k230con", 1024, NULL, 5, NULL);

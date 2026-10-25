@@ -12,6 +12,8 @@
  *   pt_wifi join <ssid> <psk> auto | nodhcp    experiments of 2026-10-24 (tests/test100 Obstacles): autoconnect on
  *                                 before the connect, or join as the bridge does (use_dhcp 0); both cleared the
  *                                 Wi-Fi stack itself, the hang was IDLE starvation
+ *   pt_poll <n> <s> (main.c)      2026-10-25: the BL616-only server check as a duty cycle: radio, remembered-AP join,
+ *                                 DHCP, internet check, HBN <s>, n times; pt_poll alone prints the mean times
  *   pt_trace [clear | counts]     wifi_link.c's breadcrumbs, kept across a reset; counts: every code since boot (the
  *                                 loop runners judge the bridge by them, not by the interleaving K230 console)
  *
@@ -60,6 +62,7 @@ static EfErrCode ef_once(void)
     return r;
 }
 
+#include "wifi_ctrl_proto.h"
 #include "wifi_link.h"
 
 #define EV_READY        (1u << 0)
@@ -195,15 +198,16 @@ static bool nodhcp;                     /* test100: join as the bridge does (use
 static uint8_t last_bssid[6], last_ch;  /* the AP of the last join: "fast" connects to it without a scan */
 
 enum join_mode { JOIN_FULL, JOIN_QUICK, JOIN_FAST };
+static uint32_t assoc_ms, dhcp_ms, net_ms;  /* the last join's and internet check's times (pt_poll) */
 
-static void do_join(const char *ssid, const char *psk, bool autoconn, enum join_mode mode)
+static bool do_join(const char *ssid, const char *psk, bool autoconn, enum join_mode mode)
 {
     wifi_mgmr_sta_connect_params_t p;
     size_t sl = strlen(ssid), pl = psk ? strlen(psk) : 0;
 
     if (sl > sizeof(p.ssid) || pl > sizeof(p.key)) {
         printf("pt_wifi join: SSID or key too long\r\n");
-        return;
+        return false;
     }
     memset(&p, 0, sizeof(p));
     memcpy(p.ssid, ssid, sl);
@@ -229,7 +233,7 @@ static void do_join(const char *ssid, const char *psk, bool autoconn, enum join_
         wifi_mgmr_sta_autoconnect_enable();
     if (wifi_mgmr_sta_connect(&p) != 0) {
         printf("pt_wifi join: the manager refused the request\r\n");
-        return;
+        return false;
     }
     EventBits_t b = wait(EV_CONNECTED | EV_DISCONNECTED, JOIN_MS);
     uint64_t t1 = bflb_mtimer_get_time_ms();
@@ -239,8 +243,9 @@ static void do_join(const char *ssid, const char *psk, bool autoconn, enum join_
         wifi_mgmr_sta_connect_ind_stat_get(&info);
         printf("pt_wifi join: not associated after %lu ms (status %u reason %u)\r\n", (unsigned long)(t1 - t0),
                info.status_code, info.reason_code);
-        return;
+        return false;
     }
+    assoc_ms = (uint32_t)(t1 - t0);
     printf("pt_wifi join: associated + WPA in %lu ms (%s)\r\n", (unsigned long)(t1 - t0),
            mode == JOIN_FAST && last_ch ? "remembered AP: its channel + BSSID" : mode != JOIN_FULL ? "quick scan" : "full scan");
     {
@@ -252,13 +257,13 @@ static void do_join(const char *ssid, const char *psk, bool autoconn, enum join_
     }
     if (nodhcp) {
         printf("pt_wifi join: DHCP skipped (nodhcp)\r\n");
-        return;
+        return true;
     }
     b = wait(EV_GOT_IP | EV_IP_TIMEOUT | EV_DISCONNECTED, DHCP_MS);
     uint64_t t2 = bflb_mtimer_get_time_ms();
     if (!(b & EV_GOT_IP)) {
         printf("pt_wifi join: no DHCP address after %lu ms\r\n", (unsigned long)(t2 - t1));
-        return;
+        return false;
     }
     int rssi = 0;
     uint8_t ch = 0;
@@ -267,6 +272,8 @@ static void do_join(const char *ssid, const char *psk, bool autoconn, enum join_
     printf("pt_wifi join: DHCP in %lu ms; join to address %lu ms; RSSI %d dBm, channel %u\r\n",
            (unsigned long)(t2 - t1), (unsigned long)(t2 - t0), rssi, ch);
     print_ip();
+    dhcp_ms = (uint32_t)(t2 - t1);
+    return true;
 }
 
 static void do_status(void)
@@ -297,7 +304,7 @@ static void do_leave(void)
 }
 
 /* step 1c: the product's internet check (wifi_check.c internet()), each part timed */
-static void do_net(const char *host)
+static bool do_net(const char *host)
 {
     struct addrinfo hints, *ai = NULL;
     char req[160], buf[64];
@@ -309,7 +316,7 @@ static void do_net(const char *host)
     uint64_t t0 = bflb_mtimer_get_time_ms();
     if (lwip_getaddrinfo(host, "80", &hints, &ai) != 0 || ai == NULL) {
         printf("pt_wifi net: DNS for %s failed after %lu ms\r\n", host, (unsigned long)(bflb_mtimer_get_time_ms() - t0));
-        return;
+        return false;
     }
     uint64_t t1 = bflb_mtimer_get_time_ms();
     printf("pt_wifi net: DNS %s -> %s in %lu ms\r\n", host,
@@ -324,7 +331,7 @@ static void do_net(const char *host)
     if (c != 0) {
         printf("pt_wifi net: TCP connect failed after %lu ms\r\n", (unsigned long)(t2 - t1));
         lwip_close(fd);
-        return;
+        return false;
     }
     printf("pt_wifi net: TCP connect in %lu ms\r\n", (unsigned long)(t2 - t1));
     snprintf(req, sizeof(req), "GET /generate_204 HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", host);
@@ -339,7 +346,54 @@ static void do_net(const char *host)
         *eol = 0;
     printf("pt_wifi net: answer \"%s\" in %lu ms; DNS to answer %lu ms\r\n", n ? buf : "(none)",
            (unsigned long)(t3 - t2), (unsigned long)(t3 - t0));
+    net_ms = (uint32_t)(t3 - t0);
+    return n > 0;
 }
+
+/* test100 (2026-10-25): the BL616-only server check, one cycle per RTC wake (pt_poll, main.c): radio up, the stored
+ * credentials joined at the remembered AP (wifi_link.c's "wifi_ap" blob, same layout as its struct wifi_ap; a quick
+ * scan when none, then stored), DHCP on the BL616's lwIP, and the internet check standing in for the server's "is
+ * anyone asking for a stream?". t[]: radio up, association + WPA, DHCP, DNS + TCP + HTTP (ms) */
+bool pt_wifi_poll_cycle(uint32_t t[4])
+{
+    struct { uint8_t channel; uint8_t bssid[6]; uint8_t ssid_len; char ssid[WCP_SSID_MAX]; } ap;
+    char ssid[WCP_SSID_MAX + 1], psk[WCP_PSK_MAX + 1];
+
+    if (!bring_up())
+        return false;
+    t[0] = up_ms;
+    size_t sl = ef_get_env_blob("wifi_ssid", ssid, WCP_SSID_MAX, NULL);
+    size_t pl = ef_get_env_blob("wifi_psk", psk, WCP_PSK_MAX, NULL);
+    ssid[sl] = 0;
+    psk[pl] = 0;
+    if (!sl) {
+        printf("pt_poll: no stored credentials (pt_wifi store)\r\n");
+        return false;
+    }
+    bool known = ef_get_env_blob("wifi_ap", &ap, sizeof(ap), NULL) == sizeof(ap) && ap.ssid_len == sl &&
+                 !memcmp(ap.ssid, ssid, sl) && ap.channel >= 1 && ap.channel <= 14;
+    if (known) {
+        last_ch = ap.channel;
+        memcpy(last_bssid, ap.bssid, sizeof(last_bssid));
+    }
+    nodhcp = false;
+    if (!do_join(ssid, psk, false, known ? JOIN_FAST : JOIN_QUICK))
+        return false;
+    if (!known) {
+        memset(&ap, 0, sizeof(ap));
+        ap.channel = last_ch;
+        memcpy(ap.bssid, last_bssid, sizeof(ap.bssid));
+        ap.ssid_len = (uint8_t)sl;
+        memcpy(ap.ssid, ssid, sl);
+        ef_set_env_blob("wifi_ap", &ap, sizeof(ap));
+    }
+    t[1] = assoc_ms;
+    t[2] = dhcp_ms;
+    bool ok = do_net(NET_HOST);
+    t[3] = net_ms;
+    return ok;
+}
+
 
 /* wifi_link.c's breadcrumbs (wl_trace) in HBN RAM: they survive the watchdog reset of a hang; pt_trace prints them.
  * Own marks: 0x01 bridge start, 0x02 started, 0x03 bridge stopped (rails off). */
