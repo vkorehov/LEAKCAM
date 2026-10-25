@@ -7,6 +7,8 @@
  *   pt_wifi leave                 DHCP lease released, disconnected
  *   pt_wifi net [host]            DNS, TCP connect, GET /generate_204 (the product's internet check), each timed
  *   pt_wifi bridge                step 2: the product's NetHub bridge over SDIO for the K230 (rails on first: pt_on)
+ *   pt_wifi join <ssid> <psk> quick | remembered  2026-10-25: quick scan (first AP with the SSID) / the last AP's
+ *                                 channel + BSSID, no scan
  *   pt_wifi join <ssid> <psk> auto | nodhcp    experiments of 2026-10-24 (tests/test100 Obstacles): autoconnect on
  *                                 before the connect, or join as the bridge does (use_dhcp 0); both cleared the
  *                                 Wi-Fi stack itself, the hang was IDLE starvation
@@ -36,12 +38,27 @@
 
 #include "bflb_mtimer.h"
 #include "easyflash.h"
+#include "bflb_mtd.h"
 #include "net_al.h"
 #include "net_al_ext.h"
 #include "rfparam_adapter.h"
 #include "shell.h"
 #include "wifi_mgmr.h"
 #include "wifi_mgmr_ext.h"
+
+/* easyflash once per boot: a second easyflash_init() re-inits littlefs and can leave it unusable (EF 7, 2026-10-25) */
+static EfErrCode ef_once(void)
+{
+    static bool done;
+    static EfErrCode r;
+    if (!done) {
+        bflb_mtd_init();                    /* the partition table first, as the product's storage_init(): without it
+                                             * littlefs found no PSM partition and easyflash never worked here (EF 7) */
+        r = easyflash_init();
+        done = true;
+    }
+    return r;
+}
 
 #include "wifi_link.h"
 
@@ -98,7 +115,7 @@ static bool bring_up(void)
     uint64_t t0 = bflb_mtimer_get_time_ms();
     if (!rf_ready) {                        /* once per boot */
         evg = xEventGroupCreate();
-        easyflash_init();                   /* rfparam reads its calibration through the partition table */
+        ef_once();                          /* rfparam reads its calibration through the partition table */
         if (rfparam_init(0, NULL, 0) != 0) {
             printf("pt_wifi: RF init failed\r\n");
             return false;
@@ -175,8 +192,11 @@ static void print_ip(void)
 }
 
 static bool nodhcp;                     /* test100: join as the bridge does (use_dhcp 0, leave without the DHCP step) */
+static uint8_t last_bssid[6], last_ch;  /* the AP of the last join: "fast" connects to it without a scan */
 
-static void do_join(const char *ssid, const char *psk, bool autoconn)
+enum join_mode { JOIN_FULL, JOIN_QUICK, JOIN_FAST };
+
+static void do_join(const char *ssid, const char *psk, bool autoconn, enum join_mode mode)
 {
     wifi_mgmr_sta_connect_params_t p;
     size_t sl = strlen(ssid), pl = psk ? strlen(psk) : 0;
@@ -193,6 +213,16 @@ static void do_join(const char *ssid, const char *psk, bool autoconn)
     p.pmf_cfg = 1;
     p.use_dhcp = nodhcp ? 0 : 1;
     p.dhcp_timeout_event_only = 1;
+    /* test100 (2026-10-25): the connect's own scan of every channel is ~3 s of a 4 s join. quick: stop at the first
+     * AP with the SSID; fast: the last AP's channel and BSSID, no scan */
+    if (mode == JOIN_FAST && last_ch) {
+        p.freq1 = (uint16_t)(last_ch == 14 ? 2484 : 2407 + 5 * last_ch);
+        snprintf(p.bssid_str, sizeof(p.bssid_str), "%02X:%02X:%02X:%02X:%02X:%02X", last_bssid[0], last_bssid[1],
+                 last_bssid[2], last_bssid[3], last_bssid[4], last_bssid[5]);
+        p.quick_connect = 1;
+    } else if (mode != JOIN_FULL) {
+        p.scan_mode = 1;
+    }
     xEventGroupClearBits(evg, EV_CONNECTED | EV_DISCONNECTED | EV_GOT_IP | EV_IP_TIMEOUT);
     uint64_t t0 = bflb_mtimer_get_time_ms();
     if (autoconn)                           /* as the bridge's join() does (test100: does it hang a later connect?) */
@@ -211,7 +241,15 @@ static void do_join(const char *ssid, const char *psk, bool autoconn)
                info.status_code, info.reason_code);
         return;
     }
-    printf("pt_wifi join: associated + WPA in %lu ms\r\n", (unsigned long)(t1 - t0));
+    printf("pt_wifi join: associated + WPA in %lu ms (%s)\r\n", (unsigned long)(t1 - t0),
+           mode == JOIN_FAST && last_ch ? "remembered AP: its channel + BSSID" : mode != JOIN_FULL ? "quick scan" : "full scan");
+    {
+        wifi_mgmr_connect_ind_stat_info_t info;
+        memset(&info, 0, sizeof(info));
+        if (wifi_mgmr_sta_connect_ind_stat_get(&info) == 0)
+            memcpy(last_bssid, info.bssid, sizeof(last_bssid));
+        wifi_mgmr_sta_channel_get(&last_ch);
+    }
     if (nodhcp) {
         printf("pt_wifi join: DHCP skipped (nodhcp)\r\n");
         return;
@@ -384,6 +422,13 @@ static void do_bridge(void)
     bridged = r == 0;
     printf("pt_wifi bridge: wifi_link_start %d in %lu ms; now pt_run, then on the K230: wifi scan\r\n", r,
            (unsigned long)(bflb_mtimer_get_time_ms() - t0));
+    /* test100 (2026-10-25): the product's own join from the stored credentials (join_stored at MGMR_DONE, the
+     * remembered AP first): time to associated + WPA */
+    while (r == 0 && !wifi_mgmr_sta_state_get() && bflb_mtimer_get_time_ms() - t0 < 10000)
+        vTaskDelay(pdMS_TO_TICKS(5));
+    if (r == 0)
+        printf("pt_wifi bridge: %s %lu ms after wifi_link_start (stored credentials)\r\n",
+               wifi_mgmr_sta_state_get() ? "associated + WPA" : "not associated", (unsigned long)(bflb_mtimer_get_time_ms() - t0));
 }
 
 void pt_wifi_rails_off(void)
@@ -400,7 +445,9 @@ static int cmd_wifi(int argc, char **argv)
 {
     const char *op = argc > 1 ? argv[1] : "";
 
-    if (!strcmp(op, "scan") || !strcmp(op, "join") || !strcmp(op, "status") || !strcmp(op, "leave") ||
+    if (!strcmp(op, "store") || !strcmp(op, "forget"))
+        ;                                   /* flash only, no radio */
+    else if (!strcmp(op, "scan") || !strcmp(op, "join") || !strcmp(op, "status") || !strcmp(op, "leave") ||
         !strcmp(op, "net")) {
         if (!bring_up())
             return -1;
@@ -409,13 +456,26 @@ static int cmd_wifi(int argc, char **argv)
         do_scan();
     else if (!strcmp(op, "join") && argc > 2)
     {
-        nodhcp = argc > 4 && !strcmp(argv[4], "nodhcp");
-        do_join(argv[2], argc > 3 ? argv[3] : NULL, argc > 4 && !strcmp(argv[4], "auto"));
+        const char *opt = argc > 4 ? argv[4] : "";
+        nodhcp = !strcmp(opt, "nodhcp");
+        do_join(argv[2], argc > 3 ? argv[3] : NULL, !strcmp(opt, "auto"),
+                !strcmp(opt, "remembered") ? JOIN_FAST : !strcmp(opt, "quick") ? JOIN_QUICK : JOIN_FULL);
     }
     else if (!strcmp(op, "status"))
         do_status();
     else if (!strcmp(op, "leave"))
         do_leave();
+    else if (!strcmp(op, "store") && argc > 3) {     /* the credentials as BLE provisioning writes them */
+        printf("pt_wifi store: easyflash init %d\r\n", (int)ef_once());
+        EfErrCode e1 = ef_set_env_blob("wifi_ssid", argv[2], strlen(argv[2]));
+        EfErrCode e2 = ef_set_env_blob("wifi_psk", argv[3], strlen(argv[3]));
+        printf("pt_wifi store: %s (easyflash %d %d)\r\n", e1 == EF_NO_ERR && e2 == EF_NO_ERR ? "credentials stored" : "failed",
+               (int)e1, (int)e2);
+    } else if (!strcmp(op, "forget")) {                /* the remembered AP off: the next join scans (quick) */
+        ef_once();
+        ef_del_env("wifi_ap");
+        printf("pt_wifi forget: remembered AP cleared\r\n");
+    }
     else if (!strcmp(op, "bridge"))
         do_bridge();
     else if (!strcmp(op, "net"))

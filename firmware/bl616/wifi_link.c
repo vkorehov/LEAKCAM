@@ -67,6 +67,19 @@ static volatile bool local_only;            /* the credential check: every frame
 static void (*volatile local_ev)(int code);
 static volatile bool mgmr_ready;
 static bool rejoin;                         /* a check dropped the bridge's association */
+/* the remembered AP (test100, 2026-10-25): the connect's own scan of every channel was ~3 s of a 4 s join; with the
+ * last AP's channel and BSSID the association + WPA took 0.23 s (quick scan, first AP with the SSID: 1.4 s). Kept in
+ * easyflash beside the credentials, for the SSID it belongs to; written only when it changes */
+struct wifi_ap {
+    uint8_t channel;
+    uint8_t bssid[6];
+    uint8_t ssid_len;
+    char ssid[WCP_SSID_MAX];
+};
+enum join_mode { JOIN_REMEMBERED, JOIN_QUICK, JOIN_FULL };
+static enum join_mode join_mode;
+static char join_ssid[WCP_SSID_MAX], join_psk[WCP_PSK_MAX];   /* the running join, for its fallback */
+static uint8_t join_ssid_len, join_psk_len;
 
 /* Breadcrumbs for a hang (tests/test100 step 2, 2026-10-23: the BL616 stopped dead after the control channel opened
  * and the watchdog reset it): empty here, the test firmware keeps the last marks in HBN RAM across the reset.
@@ -157,20 +170,59 @@ static void leave_and_wait(void)
     }
 }
 
-static int join(const char *ssid, uint8_t ssid_len, const char *psk, uint8_t psk_len)
+static bool remembered_ap(const char *ssid, uint8_t ssid_len, struct wifi_ap *ap)
+{
+    return ef_get_env_blob("wifi_ap", ap, sizeof(*ap), NULL) == sizeof(*ap) && ap->channel >= 1 && ap->channel <= 14 &&
+           ap->ssid_len == ssid_len && memcmp(ap->ssid, ssid, ssid_len) == 0;
+}
+
+/* at CONNECTED: the AP joined, for the next join (written only when it changed: no flash wear on reconnects) */
+static void remember_ap(void)
+{
+    wifi_mgmr_connect_ind_stat_info_t info;
+    struct wifi_ap ap, old;
+
+    memset(&info, 0, sizeof(info));
+    memset(&ap, 0, sizeof(ap));
+    if (wifi_mgmr_sta_connect_ind_stat_get(&info) != 0 || info.channel < 1 || info.channel > 14)
+        return;
+    ap.channel = info.channel;
+    memcpy(ap.bssid, info.bssid, sizeof(ap.bssid));
+    ap.ssid_len = (uint8_t)strnlen(info.ssid, WCP_SSID_MAX);
+    memcpy(ap.ssid, info.ssid, ap.ssid_len);
+    if (ef_get_env_blob("wifi_ap", &old, sizeof(old), NULL) == sizeof(old) && memcmp(&old, &ap, sizeof(ap)) == 0)
+        return;
+    if (ef_set_env_blob("wifi_ap", &ap, sizeof(ap)) != EF_NO_ERR)
+        LOG_W("remembered AP not stored\r\n");
+}
+
+/* join: the remembered AP first (no scan), else a quick scan; a failed attempt falls back one step (bridge_event) */
+static int join_as(enum join_mode mode)
 {
     wifi_mgmr_sta_connect_params_t p;
+    struct wifi_ap ap;
 
     wl_trace(0x60);
     leave_and_wait();
 
     memset(&p, 0, sizeof(p));
-    memcpy(p.ssid, ssid, ssid_len);
-    p.ssid_len = ssid_len;
-    memcpy(p.key, psk, psk_len);
-    p.key_len = psk_len;
+    memcpy(p.ssid, join_ssid, join_ssid_len);
+    p.ssid_len = join_ssid_len;
+    memcpy(p.key, join_psk, join_psk_len);
+    p.key_len = join_psk_len;
     p.pmf_cfg = 1;      /* PMF capable, the SDK AT module's default for this Wi-Fi stack */
     p.use_dhcp = 0;     /* DHCP is the K230's, through the bridge */
+    if (mode == JOIN_REMEMBERED && !remembered_ap(join_ssid, join_ssid_len, &ap))
+        mode = JOIN_QUICK;
+    if (mode == JOIN_REMEMBERED) {
+        p.freq1 = (uint16_t)(ap.channel == 14 ? 2484 : 2407 + 5 * ap.channel);
+        snprintf(p.bssid_str, sizeof(p.bssid_str), "%02X:%02X:%02X:%02X:%02X:%02X", ap.bssid[0], ap.bssid[1],
+                 ap.bssid[2], ap.bssid[3], ap.bssid[4], ap.bssid[5]);   /* the SDK wants it upper case */
+        p.quick_connect = 1;
+    } else if (mode == JOIN_QUICK) {
+        p.scan_mode = 1;    /* the first AP with the SSID, not a scan of every channel */
+    }
+    join_mode = mode;
 
     want_link = true;
     wl_trace(0x61);
@@ -188,6 +240,15 @@ static int join(const char *ssid, uint8_t ssid_len, const char *psk, uint8_t psk
 }
 
 /* credentials written by BLE provisioning (ble_pairing.c), no terminating NUL */
+static int join(const char *ssid, uint8_t ssid_len, const char *psk, uint8_t psk_len)
+{
+    memcpy(join_ssid, ssid, ssid_len);
+    join_ssid_len = ssid_len;
+    memcpy(join_psk, psk, psk_len);
+    join_psk_len = psk_len;
+    return join_as(JOIN_REMEMBERED);
+}
+
 static void join_stored(void)
 {
     char ssid[WCP_SSID_MAX], psk[WCP_PSK_MAX];
@@ -317,6 +378,7 @@ static void bridge_event(int code)
             break;
         case CODE_WIFI_ON_CONNECTED:
             set_state(WCP_STATE_UP);
+            remember_ap();
             /* the RSSI read at the connect event is 0 (the K230 logged "0 dBm"): send it again once beacons came */
             vTaskDelay(pdMS_TO_TICKS(1000));
             if (state == WCP_STATE_UP)
@@ -329,10 +391,15 @@ static void bridge_event(int code)
             }
             /* a loss while up is the start of a reconnect; a loss while joining is a failed
              * attempt (the manager's autoconnect decides whether it tries again) */
-            if (!want_link)
+            if (!want_link) {
                 set_state(WCP_STATE_DOWN);
-            else
+            } else if (state != WCP_STATE_UP && join_mode != JOIN_FULL) {
+                /* a failed attempt with the remembered AP or a quick scan: once more one step wider (the AP moved
+                 * channel or was replaced); after a full scan the manager's autoconnect goes on as before */
+                join_as(join_mode == JOIN_REMEMBERED ? JOIN_QUICK : JOIN_FULL);
+            } else {
                 set_state(state == WCP_STATE_UP ? WCP_STATE_JOINING : WCP_STATE_FAILED);
+            }
             break;
         case CODE_WIFI_ON_SCAN_DONE:
             if (scan_pending)
