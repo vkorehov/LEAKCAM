@@ -61,7 +61,7 @@ cases, one per operation the product repeats:
 | [test006 K230 NAND boot (SPL)](test006-k230-nand-boot-spl/README.md) | 2026-10-17 | pass |
 | [test007 RT-Smart boot](test007-rtsmart-boot/README.md) | 2026-10-18/20 | pass; PMU RTC with R45 bridged (bug-003) |
 | [test008 minimal image: the fewest bits that boot and pass](test008-minimal-image/README.md) | | planned: run first after board bring-up (after test007): the floor the feature tests build on |
-| [test009 LED chains](test009-led-chains/README.md) | 2026-10-16/18 | pass |
+| [test009 LED chains](test009-led-chains/README.md) | 2026-10-25 | pass; re-run with currents: each chain ~1.7 W in at 100 % (white 1.7, IR 1.9 W), both 0.95 A at 5 V, the knee at ~70 % duty on a 600 mA meter range (its drop), not on 10 A; the cell carried both on a USB unplug |
 | [test010 K230 <-> BL616 UART link](test010-uart-link/README.md) | 2026-10-18 | pass |
 | [test011 NAND persistence, full disk, speed](test011-nand-fill-speed/README.md) | 2026-10-18 | pass |
 | [test012 microphone](test012-microphone/README.md) | 2026-10-18 | pass |
@@ -83,7 +83,7 @@ cases, one per operation the product repeats:
 | [test028 NAND power loss](test028-nand-power-loss/README.md) | 2026-10-23 | **pass**: 500 random cuts (100 + 400), 0 lost/corrupt files; 4 check results unparsed (no loss, cause open) |
 | [test029 camera buses idle](test029-camera-bus-idle/README.md) | 2026-10-21 | pass: I2C buses scan clean and idle high, CAM GPIOs low |
 | [test030 cameras: detection, capture, image](test030-camera-capture/README.md) | | skipped: cameras not delivered (user, 2026-10-22: skip camera tests) |
-| [test031 sleep and minimal currents](test031-sleep-current/README.md) | 2026-10-22 | RTC wake fixed (HBN pin pulls off + wait for Y3), 5/5 wakes; 1.23 mA asleep through USB; battery figure open |
+| [test031 sleep and minimal currents](test031-sleep-current/README.md) | 2026-10-25 | **done, not to be repeated**: battery floor 35-36 uA as the product sleeps (HBN0, leak + USB comparators), 29 uA RTC only, 26 uA level 1 (loses HBN RAM); pins cost nothing; rev 2: nano-amp 3V3_SLEEP regulator (-16 uA) |
 | [test032 RTC wake](test032-rtc-wake/README.md) | 2026-10-22 | wake works on Y3 (5/5); Y3 -110 ppm open |
 | [test033 every BL616 pin: function, levels, back-feed](test033-bl616-pins/README.md) | 2026-10-22 | pass: all pins as the table in 5 states (pt_pins + pin_check.py); product BOOT1 (IO27) fix; back-feed none |
 | [test034 leak probe wake](test034-leak-probe-wake/README.md) | 2026-10-22 | pass with opens: product threshold fixed (was 1.65 V = dry, now 0.85 V); S1-S3 detected; HBN wake wet and dry works; water types, sweep, 8 h dry open |
@@ -93,12 +93,12 @@ cases, one per operation the product repeats:
 | [test038 battery brown-out below 3.10 V](test038-battery-brownout/README.md) | 2026-10-23 | **pass**: K230 VBAT cut -> rails off -> lockout HBN -> USB plug wakes (no EN); lockout skipped when USB is in; BL616 watchdog (12.9 s recovery); below 3 V needs a lab supply |
 | [test039 K230 console over the BL616 link](test039-k230-console-over-link/README.md) | 2026-10-23 | pass: SPL, OpenSBI, kernel, msh, agent on /dev/ttyACM1 (4 Mbaud from the first line, 0 garbage), typing works, frames split; boot to app init 0.484 -> 0.30 s |
 | **High level (100+): the product's whole flow** | | |
-| [test100 Wi-Fi throughput end to end](test100-wifi-throughput/README.md) | 2026-10-24 | steps 1-3 pass; robustness + leak loop pass (28/28 scans, 8/8 joins, 0 dropped, no BL616 leak) after 4 bridge fixes (event callback, upload retries, control task, IDLE starvation); open: K230 console byte loss (UART interrupt fix built), throughput (step 4) |
+| [test100 Wi-Fi throughput end to end](test100-wifi-throughput/README.md) | 2026-10-25 | steps 1-4 pass: card bound -> address 0.33-0.59 s (SDIO card interrupt armed, no DHCP ARP check; was 5.05 s); TCP up 27.5 Mbit/s (was 17.1: K230 waits for a slot, BL616 26 buffers / 23 credits), down 22-26; BL616-only server check 1.71 s awake; open: step 5 (RTMP, cameras) |
 | [test101 session length](test101-boot-and-session-time/README.md) | | planned |
 | [test102 session current](test102-session-current/README.md) | | planned |
 | [test103 leak pipeline timing](test103-leak-pipeline-timing/README.md) | | later: after the cameras, Wi-Fi and the product firmware |
 | [test104 battery energy audit](test104-battery-energy-audit/README.md) | | planned |
-| [test105 maximum current](test105-max-current/README.md) | | planned (2026-10-25): every load at once (CPU, DDR, KPU, VPU, NAND, Wi-Fi TX, both LED chains), full and low cell |
+| [test105 maximum current](test105-max-current/README.md) | 2026-10-25 | handover runs 1-2: every camera-free load (LEDs 100 %, Wi-Fi TX, memtest) 1.06 A at 5 V, USB -> cell with no power fault, cells cold, K230 alive at 60.2 C; open: no-reset proof on the cell, the BL616 console leaving the bus at the unplug, the full load with cameras |
 
 ## Status by subsystem (2026-10-21)
 

@@ -78,3 +78,18 @@ Cannot fix or detect it: while VUSB sits at ~2.2 V (below the BQ24072's 3.3 V UV
 BL616 does not see the plug. It is limited by itself: the source turns VBUS on once a session ends and 3V3 drops,
 so on battery charging waits for the current session at most; with the low-battery cutoff (bug-004) a low cell
 never starts the K230, so a plugged charger always gets through.
+
+## Seen again under full load (2026-10-25, tests/test105)
+
+Every camera-free load on (both LED chains 100 %, Wi-Fi upload, memtest), USB-C 1 and USB-C 2 unplugged, the cell
+carrying it for minutes, then USB-C 1 plugged back in with the K230 still running: **no charging** until `pt_off`, then
+at once (0.9 A, tapering). With no cable in either port the path is all on the board, so "both USB cables out" does
+not remove it: the CH340X (U2) on the switched 3V3 pulls its D+ up internally, D3's steering diode passes that into
+VUSB (D3 VCC = VUSB), the USB-C source sees ~2.2 V and never turns VBUS on.
+
+**To pin the path** (rails on with `pt_on`, K230 held in reset, no cable in either port): VUSB (C2 pad 1) ~2.2 V and
+D3 pin 6 (DBGP_D_P) ~3.3 V confirm D3; then lift D3 pin 5 (VCC): VUSB below 0.8 V = fixed (rev 1 rework: D3 out or its
+VCC pin lifted; USB-C 2 is buried in the enclosure and unused in the product). VUSB still high = another path: D5 (the
+K230 USB ESD array, same VCC wiring; only with the K230's D+ pulled up as a device, and test003 saw 2.2 V with the
+K230 in reset) or R63 (30 k, VUSB to K230 B7).
+
