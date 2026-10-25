@@ -67,9 +67,21 @@ $(CAPTURE): $(CAP_OBJS)
 # leakcam_cpubench.c, is copied next to the others for that build); never in the product image
 BENCH      := $(SDK_APPS_IMAGE_DIR)/leakcam_cpubench
 BENCH_OBJS := $(addprefix $(BUILD)/cap/, leakcam_cpubench.o $(CORE:.c=.o))
+# tests/test013: the change net on the KPU without a camera (tests/test013-kpu-change-net/leakcam_kputest.c, copied
+# in the same way), also only with LEAKCAM_BENCH=1
+KPUTEST      := $(SDK_APPS_IMAGE_DIR)/leakcam_kputest
+KPUTEST_OBJS := $(addprefix $(BUILD)/cap/, leakcam_kputest.o change.o)
 ifeq ($(LEAKCAM_BENCH),1)
-all: $(BENCH)
+all: $(BENCH) $(KPUTEST)
 endif
+
+# the MPP libraries after nncase: its allocators call kd_mpi_sys_mmz_*, which leakcam_wake's camera code pulls in
+# first and kputest has none of
+$(KPUTEST): $(KPUTEST_OBJS)
+	@echo "[LD] $@"
+	@mkdir -p $(dir $@)
+	$(Q)$(CXX) $(CFLAGS) $^ $(LDFLAGS) $(NNCASE_LDFLAGS) $(LIB_LDFLAGS) -o $@
+	$(Q)$(STRIP) $@
 # test008: prebuilt bench variants (one per flag set) copied in for a full image build, which cleans the image dir
 ifneq ($(LEAKCAM_BENCH_DIR),)
 all: bench-variants

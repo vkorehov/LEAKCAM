@@ -71,26 +71,36 @@ the product image with it boots and the agent ends its session normally.
 
 Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
 
+### Automated run 2026-10-25 (run.py, 54 s): pass
+
+8 x leakcam_kputest 50: PASS, PASS, PASS, PASS, PASS, PASS, PASS, PASS; distance same 0.0000, light 0.0231, change 0.0694 (threshold 0.43).
+
+The frames are synthetic (two checkerboards with noise): the run times the KPU and shows identical output on
+every run; the distances are not detection quality (the synthetic change is far below the 0.43 threshold) - that
+stays the 219 real pairs of 2026-10-19 above.
+
+- meter K230 at msh idle (agent running): 0.220 A (read in test006-k230-nand-boot-spl)
+
 ## Metrics (**MISSING** on a re-run: skill leakcam-test-metrics, every value at its maximum)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
 
 | Metric | Value (typical / max) | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> app init (median / max of runs) | **MISSING** (2026-10-21); fill on a re-run | test022 | longest step: |
-| This part's boot share | **MISSING** (2026-10-21); fill on a re-run | - | |
-| Test run time | **MISSING** (2026-10-21); fill on a re-run | - | setup (flashing, plugging, waiting) separately |
-| Speed / rate against the top | **MISSING** (2026-10-21); fill on a re-run | SPEEDS.txt | % of the top |
-| Current floor / typical / peak | **MISSING** (2026-10-21); fill on a re-run | floor (test031) | at the probe above |
-| Voltage under load (min) | **MISSING** (2026-10-21); fill on a re-run | cutoff 3.10 V (bug-004) | at the probes above |
+| Boot, power-on -> app init (median / max of runs) | pt_run -> msh 0.46 / 0.46 s (median / max of 1; SPL 0.16, OpenSBI 0.24, RT-Smart 0.25, mounted 0.45, msh 0.46); longest step to mounted 0.20 s (2026-10-25, run.py) | test022 | longest step: |
+| This part's boot share | n/a: the model loads in the program (kputest prints the load time) (2026-10-25) | - | |
+| Test run time | 54 s automated (run.py, 2026-10-25), no setup | - | setup (flashing, plugging, waiting) separately |
+| Speed / rate against the top | one distance (2 inferences + cosine) 2.9 / 2.9 / 3.1 ms (min / median / max, 8 x 50) (2026-10-25) | SPEEDS.txt | % of the top |
+| Current floor / typical / peak | 0.220 / 0.220 / 0.220 A at 5 V (USB-C 1 VBUS meter; K230 at msh idle (agent running): 0.220 A (read in test006-k230-nand-boot-spl)) (2026-10-25) | floor (test031) | at the probe above |
+| Voltage under load (min) | VBAT 4.35 V min (K230 ADC ch 1, test023 calibration, 9 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | **MISSING** (2026-10-21); fill on a re-run | - | scripts/energy.py |
 | Per day | **MISSING** (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | **MISSING** (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Temperature die / board (start / peak / end) | die 39.5 / 42.5 / 42.5 C; board 31.8 / 32.8 / 32.8 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 208608 / min 204396 / 208608 B, blocks 14 -> 14, deleted 0; K230 heap available 7025152 / 7025152 / 7312064 B; BL616 no leak (mem_leak.py, 9 snapshots); K230 no leak (mem_leak.py, 9 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | not recorded at the time (before the metrics rule) | minimal image (rule) | the image this run used |
 | Compile flags | not recorded at the time (before the metrics rule) | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | leakcam_kputest 4 397 680 B on /sdcard (test only; mostly the nncase runtime the product's leakcam_wake carries anyway); 0 ms boot (2026-10-25) | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | n/a: hardware-bound (the KPU runs the net; the CPU part is the cosine): compiler flags do not change the result (2026-10-25) | the faster one stays | |
 
 ## Boot time
 
@@ -124,3 +134,5 @@ Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: extra
   client -> name the container, `docker stop <name>`; run with `-w /tmp` so a qemu core dump stays out of the repo.
 - **K230 USB boot device never reached the VM** -> plug order (bug-002): the CH340 attached first -> CH340 out,
   USB-C 1 in, then `pt_on`, `pt_run`; CH340 back after the popup. (Since test039 the console is /dev/ttyACM1: no CH340.)
+
+None in the run of 2026-10-25.

@@ -1,0 +1,29 @@
+d
+leakcam_agent: done, heartbeat s
+msh />
+msh />/sdcard/app/venctest 2 15 0
+ fps, 15 s
+t= 1 ch0: in  23 out  20 fps, 38t= 2 ch0: in  48 out  48 fps,  8t= 3 ch0: in  46 out  46 fps, 10t= 4 ch0: in  46 out  46 fps, 13t= 5 ch0: in  40 out  40 fps, 22t= 6 ch0: in  45 out  45 fps, 178034 B, I 0
+t= 6 ch1: in  44 out= 7 ch0: in  43 out  44 fps, 132812 B, I 0
+t= 7 ch1: in  40 ou4493 B, I 1
+t= 8 ch1: in  47 out  47 fps, 179501 B, I 1
+6152 B, I 0
+t= 9 ch1: in  44 out  44 fps, 188303 B, I 0
+t  39 fps, 159910 B, I 0
+t=11 ch0: in  45 out  45 fps, 18t=12 ch0: in  43 out  43 fps, 175793 B, I 0
+t=12 ch1: in  41 ou6400 B, I 0
+t=13 ch1: in  38 out  38 fps, 154977 B, I 0
+t=14 ch0: in  44 out  44 fps, 181685 B, I 0
+t=14 ch1: in  43 out  43 fps, 184358 B, I 0
+t=15 ch0: in  39 out  39 fps, 197201 B, I 1
+t=15 ch1: in  43 out  43 fps, 170631 B, I 1
+ch 0: 627 pictures encoded. Average FrameRate = 41 Fps
+ch 0: total used pages 1119
+ch0: 628 in, 625 out in 15.1 s = 41.3 fps, 1393 kbit/s, I frames 5 (spacing 148-150), latency avg 17 max 175 ms
+ch 1: 619 pictures encoded. Average FrameRate = 41 Fps
+ch 1: total used pages 1119
+ch1: 619 in, 616 out in 15.1 s = 40.7 fps, 1367 kbit/s, I frames 5 (spacing 148-150), latency avg 18 max 205 ms
+venctest: done
+vpu_exit>q_wm 0
+msh />
+msh />

@@ -25,10 +25,13 @@ or a measurement yet. Keep this file current when a test or a setting changes it
                               profile 0, manual)                                                 0.8 V)
   KPU                         800 MHz (PLL3 / 2)           change net int8: 0.5 ms per           800 MHz (top profile,   yes       test012
                                                            inference, 4.4 ms per check           pm_domain_kpu.c)
+                                                           2026-10-25 kputest: 2.9 ms per distance (2 inferences)
   Video encoder (VPU)         800 MHz                      H.265 1280x960: 84 fps (1 ch), 82 (2 ch); 800 MHz (only profile)  yes       test026
                                                            product 2 x 15 fps = 36 % of the top
+                                                           2026-10-25: 1 ch top 75.9 fps (one 15 s run; to explain)
   UART link K230 <-> BL616    4 Mbaud 8N1 (was 115200)     clean up to 4 Mbaud (10 MB, 0 err),   4 Mbaud (6 fails)       yes       test018
                                                            16 B round trip 1.48 ms -> 55 us
+                                                           2026-10-25: 350 KB/s (87 %), 70 us (BL616 echo in its ISR)
   K230 console (CH340, USBC2) 115200 8N1                   -                                     -                       n/a       -
   BL616 console (PR1)         USB CDC (full speed)         -                                     -                       n/a       -
   BL616 I2C -> AHT20          400 kHz (2026-10-25)         read 36.5 ms (35 ms conversion)       400 kHz (AHT20)         yes       test020

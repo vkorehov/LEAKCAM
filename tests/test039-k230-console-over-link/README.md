@@ -1,6 +1,6 @@
 # test039: K230 console over the BL616 link (no CH340)
 
-Status: **pass, stage A** (2026-10-23): the kernel console, msh and the agent on `/dev/ttyACM1` (the BL616's second
+Status: **pass, stage A** (2026-10-23); **open (2026-10-25): ~0.7 % of typed commands lost** (Results): the kernel console, msh and the agent on `/dev/ttyACM1` (the BL616's second
 USB port), typing reaches msh, link frames split out correctly; boot to app init 0.484 -> 0.385 s. Stage B open:
 SPL and OpenSBI still print on UART0 (CH340).
 
@@ -63,6 +63,22 @@ U-Boot `CONFIG_BAUDRATE=4000000` (U-Boot ignores the rate in stdout-path).
 | `/dev/ttyACM1` from power-on | `U-Boot SPL 2022.10...`, the DDR training lines, `OpenSBI v0.9`, RT-Smart: **0 non-printable bytes** |
 | boot, 3 cold boots | kernel init start **0.100-0.104 s** (was 0.197), app init **0.296-0.301 s** (was 0.385; 0.484 before the link console) |
 
+### Automated run 2026-10-25 (run.py, 172 s): **FAIL**
+
+8 boots, 399 of 400 `version` round trips answered; host-timed command -> answer 55 / 55 / 106 ms (min / median / max).
+
+### Automated run 2026-10-25 (run.py, 165 s): **FAIL**
+
+4 boots, 993 of 1000 `version` round trips answered; host-timed command -> answer 55 / 55 / 111 ms (min / median / max); 0 late (> 2 s).
+
+**Finding: ~0.7 % of commands typed on /dev/ttyACM1 are lost** (none late: a 5 s window changed nothing; 2 of 400
+and 1 of 400 in the shorter runs before). Each loss shows no echo of the command at all, so the line never reached
+the shell. Several coincide with the agent starting leakcam_wake (a 5 MB program load, "capture failed" without
+cameras), the others with the agent's own console lines. Two places can drop it: the K230's link_mux puts console
+input into kcon_rb without checking the space (link_mux.c, uart_rx_ind path), or the BL616 bridge loses USB OUT data
+while it forwards console output (usb_k230_rx -> UART0). Next: drop counters on both ends. It matters beyond the
+console: the agent's link frames arrive the same way (they retry, LINK_TRIES 5, but a lost WAKE costs a resend).
+
 ## Metrics
 
 | Metric | Value | Note |
@@ -72,16 +88,16 @@ U-Boot `CONFIG_BAUDRATE=4000000` (U-Boot ignores the rate in stdout-path).
 | Clicks per K230 power cycle | 0 (was 1 for the CH340) | the BL616 port stays |
 | Image | kdimg 45.4 MB; BL616 test firmware ~153 KB | |
 | Current | 568 mA (charging the cell, BL616 + K230 off, 08:33) | user reading |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
-| This part's boot share | **MISSING** | - | driver / mount / probe |
-| Test run time | **MISSING** | - | setup separately |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | probe points named |
-| Power, energy per operation | **MISSING** | - |  |
-| Per day | **MISSING** | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
-| Compile flags | **MISSING** | smallest code (rule) |  |
-| Features over the minimal image | **MISSING** | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING** | the faster one stays |  |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 206440 / min 204396 / 206440 B, blocks 16 -> 16, deleted 0; K230 heap available 7025152 B steady; BL616 no leak (mem_leak.py, 8 snapshots); K230 no leak (mem_leak.py, 8 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| This part's boot share | link_mux registers at 0.27 s with the other drivers; the console is up from the SPL banner (2026-10-25) | - | driver / mount / probe |
+| Test run time | 172 s automated (run.py, 2026-10-25), no setup | - | setup separately |
+| Voltage under load (min) | VBAT 4.33 V min (K230 ADC ch 1, test023 calibration, 8 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | probe points named |
+| Power, energy per operation | n/a: the console bridge's own current is below the meter's step next to the K230 (2026-10-25) | - |  |
+| Per day | n/a: the console is a bring-up path, not used in a product session (2026-10-25) | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | die 39.5 / 42.2 / 40.7 C; board 32.6 / 32.7 / 32.4 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os -march=rv64imafdcv, sections + --gc-sections, strip, no LTO; BL616 test firmware -O2 (SDK default), no LTO (2026-10-25) | smallest code (rule) |  |
+| Features over the minimal image | link_mux in the kernel: 2.4 KB code + 3.5 KB RAM, part of the product; the BL616 bridge is test firmware (2026-10-25) | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | n/a: hardware-bound (the UART line and USB CDC): compiler flags do not change the result (2026-10-25) | the faster one stays |  |
 
 ## Boot time
 
@@ -107,3 +123,13 @@ U-Boot `CONFIG_BAUDRATE=4000000` (U-Boot ignores the rate in stdout-path).
   4 Mbaud) under Wi-Fi load ("ip 10.63.22", cut tables). Fix: UART RX interrupt into a 4 KB ring, the task blocks on
   it (priority 5); `pt_status` shows `rx dropped` (0 since). The product firmware has no console bridge; its link
   poll sleeps 5 ms per round.
+
+- lost `version` answer, raw: boot 5: 'leakcam_agent: READY not answered\nleakcam_agent: READY not answered\n' (2026-10-25, automated run)
+
+- lost `version` answer, raw: boot 1 command 178 (29 s into the run): 'leakcam_agent: READY not answered\nleakcam_agent: READY not answered\nleakcam_agent: READY not answered\nleakcam_agent: READY not answered\n' (2026-10-25, automated run)
+- lost `version` answer, raw: boot 1 command 238 (37 s into the run): 'cap: dev 0 init failed (sensor not answering on its I2C bus?)\ncapture failed\nleakcam_agent: hook exited 0, next wake in 3600 s\nleakcam_agent: SLEEP not answered\nleakcam_agent: done, heartbeat stopped\n' (2026-10-25, automated run)
+- lost `version` answer, raw: boot 2 command 133 (68 s into the run): 'leakcam_agent: READY not answered\nleakcam_agent: READY not answered\nleakcam_agent: READY not answered\n' (2026-10-25, automated run)
+- lost `version` answer, raw: boot 3 command 112 (104 s into the run): 'leakcam_agent: READY not answered\nleakcam_agent: READY not answered\nleakcam_agent: READY not answered\n' (2026-10-25, automated run)
+- lost `version` answer, raw: boot 3 command 209 (114 s into the run): 'ason: cold\n[W/LWP] not use fast load, out of memory 8388608 < 15543000\nvicap: dev 0 init failed (sensor not answering on its I2C bus?)\ncapture failed\nleakcam_agent: hook exited 0, next wake in 3600 s\n' (2026-10-25, automated run)
+- lost `version` answer, raw: boot 4 command 204 (151 s into the run): 'leakcam_agent: READY not answered\nleakcam_agent: READY not answered\nleakcam_agent: READY not answered\nleakcam_agent: READY not answered\n' (2026-10-25, automated run)
+- lost `version` answer, raw: boot 4 command 248 (158 s into the run): 'cap: dev 0 init failed (sensor not answering on its I2C bus?)\ncapture failed\nleakcam_agent: hook exited 0, next wake in 3600 s\nleakcam_agent: SLEEP not answered\nleakcam_agent: done, heartbeat stopped\n' (2026-10-25, automated run)

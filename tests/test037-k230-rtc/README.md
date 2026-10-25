@@ -58,26 +58,34 @@ RTC within 1 s of the BL616 after every handover, Y1 within +-20 ppm, roll-overs
 Steps 1-6 (handover from the BL616, roll-overs, 10 cold starts) still to do: the handover needs the product BL616
 firmware.
 
+### Automated run 2026-10-25 (run.py, 236 s): pass
+
+3 boots: rtc_ppm 60 = +27.0, +27.0, +27.0 ppm. rtc_raw:
+
+    rtc_raw
+    rtc_raw: date 14190101 time 03000002 alarm_date 00010101 alarm_time 00000000 count 7fff391b int_ctrl 00000002
+    rtc_raw: 2025-01-01 00:00:02 week 3 leap 0, curr_count 14619 sum_count 32767
+
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | **MISSING** | target (test022) | longest step: |
-| This part's boot share | **MISSING** | - | |
-| Test run time | **MISSING** | - | setup (flashing, plugging, waiting) separately |
-| RTC offset after handover, Y1 ppm | **MISSING** | <= 1 s, +-20 ppm | % of the top |
-| Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING** | - | scripts/energy.py |
-| Per day | **MISSING** | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Boot, power-on -> READY (median of 5) | pt_run -> msh 0.64 / 0.64 s (median / max of 3; SPL 0.16, OpenSBI 0.24, RT-Smart 0.25, mounted 0.63, msh 0.64); longest step to mounted 0.38 s (2026-10-25, run.py) | target (test022) | longest step: |
+| This part's boot share | rtc driver registers at 0.255 s in the boot, no wait of its own (console milestones) (2026-10-25) | - | |
+| Test run time | 236 s automated (run.py, 2026-10-25), no setup | - | setup (flashing, plugging, waiting) separately |
+| RTC offset after handover, Y1 ppm | Y1 +27.0, +27.0, +27.0 ppm vs the 27 MHz rdtime (rtc_ppm 60, 3 boots); offset after handover not measured (needs an NTP reference) (2026-10-25) | <= 1 s, +-20 ppm | % of the top |
+| Current idle / during (min / avg / peak) | msh idle 0.220 A (test006, 2026-10-25); the RTC's own share sits in the 35 uA sleep floor (test031) (2026-10-25, from recorded readings) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
+| Voltage under load (min) | VBAT 4.36 V min (K230 ADC ch 1, test023 calibration, 3 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
+| Power, energy per operation | n/a: the RTC runs on the PMU always-on domain; its share is in the sleep floor (test031) (2026-10-25) | - | scripts/energy.py |
+| Per day | n/a: as energy (2026-10-25) | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | die 43.4 / 44.9 / 44.9 C; board 33.7 / 35.0 / 35.0 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 208608 / min 204396 / 208608 B, blocks 14 -> 14, deleted 0; K230 heap available 7311744 B steady; leak: n/a, 3 snapshots (mem_leak.py needs >= 8 cycles) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | kdimg 45.4 MB (/sdcard 32 MiB, /bin 8 MiB one ISP set), kernel 3.75 MB, /bin 0.68 MB, /sdcard programs 6.76 MB | minimal image (rule) | the image this run used |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, -ffunction/-fdata-sections, --gc-sections, strip (no LTO) | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | kernel test commands in leakcam_bench.o: 11.2 KB code + 0.6 KB RAM for all 13 (ddr/nand/uart_bench, boot_times, plt_*, rtc_*, pad_read, bat_watch); no init, 0 ms boot; not in the product image (2026-10-25) | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | n/a: hardware-bound (crystal frequencies): compiler flags do not change the result (2026-10-25) | the faster one stays | |
 
 ## Boot time
 
@@ -93,3 +101,5 @@ n/a on its own (inside every K230 session); a slow RTC start would show in the b
   default (time.c) -> install.sh sets it to 0 (UTC, user rule); the RTC driver itself was UTC (timegm/gmtime).
 - **Flash chain stopped silently** -> the USB boot device came after my 4 s check (VMware click) -> wait up to 60 s
   for 29f1:0230 before flashing. (Since 2026-10-24: no click, the device attaches in ~2 s; the runners wait 20 s.)
+
+None in the run of 2026-10-25.

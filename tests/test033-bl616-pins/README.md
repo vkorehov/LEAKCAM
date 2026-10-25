@@ -89,26 +89,36 @@ Every pin as in the table in every state; no back-feed; unused pins in a defined
 - HBN state: the pins cannot report themselves in HBN; R19 (K230_PWR) and R76 (RSTN) hold the K230 off there, shown
   by test031 (1.23 mA asleep, the K230 stays off).
 
+### Automated run 2026-10-25 (run.py, 106 s): pass
+
+pt_pins + pin_check.py:
+
+- off: [pins_off.txt](pins_off.txt): 0 pin(s) off the table
+- on_reset: [pins_on_reset.txt](pins_on_reset.txt): 0 pin(s) off the table
+- running: [pins_running.txt](pins_running.txt): 0 pin(s) off the table
+- boot1_high: [pins_boot1_high.txt](pins_boot1_high.txt): 0 pin(s) off the table
+- uart_on: [pins_uart_on.txt](pins_uart_on.txt): 0 pin(s) off the table
+
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - each pin's level (table), 3V3 switched rail, VBAT C15.1.
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | **MISSING** | target (test022) | longest step: |
-| This part's boot share | **MISSING** | - | |
+| Boot, power-on -> READY (median of 5) | n/a: a pin check; the boot is test022 (2026-10-25) | target (test022) | longest step: |
+| This part's boot share | n/a: pin init is part of the BL616's main() (test021) (2026-10-25) | - | |
 | Test run time | ~4 min of dumps (5 states); setup: 4 builds + flashes (~2 clicks each) | - | setup (flashing, plugging, waiting) separately |
-| Speed / rate (none for this test) | **MISSING** | - | % of the top |
+| Speed / rate (none for this test) | n/a: a pin check (2026-10-25) | - | % of the top |
 | Current idle / during (min / avg / peak) | 63 mA rails off (BL616 awake, USB VBUS); the dumps are instant | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | K230 3V3 rail 0 V with the rails off (C87.1, back-feed check) | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING** | - | scripts/energy.py |
-| Per day | **MISSING** | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Power, energy per operation | n/a: pins cost nothing measurable (test031 pull audit) (2026-10-25) | - | scripts/energy.py |
+| Per day | n/a: as energy (2026-10-25) | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | die 40.7 / 40.7 / 40.7 C; board 34.8 / 34.8 / 34.0 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 206440 / min 204396 / 206440 B, blocks 16 -> 16, deleted 0; K230 heap available 7025152 B steady; leak: n/a, 5 snapshots (mem_leak.py needs >= 8 cycles) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | BL616 test firmware ~151 KB (pt_pins +1.4 KB) | minimal image (rule) | the image this run used |
 | Compile flags | BL616 SDK -Os -g, sections, --gc-sections, -flto | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | BL616 test firmware commands (pt_*); test firmware 1 114 864 B; not in the product firmware (2026-10-25) | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | n/a: BL616 test firmware (SDK -O2, no LTO), not the product firmware; the product BL616's flags are test008 step 6 (2026-10-25) | the faster one stays | |
 
 ## Boot time
 
@@ -125,3 +135,10 @@ A floating or back-feeding pin shows as extra sleep current: compare test031 bef
   outputs (pt_on said "held" while IO00 read 0) -> pt_pins reads the pad with the input buffer on for that read.
 - **UART signal read from the wrong register** (BL602 layout, both 0) -> BL616: signal = pin % 12 in GLB_UART_CFG1/2
   (0x154/0x158).
+
+None in the run of 2026-10-25.
+- **The first automated run (2026-10-25) reported IO00 missing in every state** -> the shell colours every line
+  (ANSI codes before "pin 00") and pin_check.py's pattern missed it -> run.py strips the codes before saving.
+- **IO21/IO22 as UART with the pull-up while the rails are on** failed the old table -> since test039 (2026-10-23)
+  `pt_on` starts the K230 console bridge whenever the K230 has power: by design, no back-feed with 3V3 up -> the
+  table (pin_check.py) now expects UART in every rails-on state.

@@ -63,6 +63,10 @@ NAND at 80 MHz (test017), 11 cold boots read: kernel init 0.207 s (-23 ms: SPL/U
 mount reads and the kernel load. Still to time: main/msh and the agent's READY (needs the product BL616 or a K230-side
 hook), and 5 cold boots (each costs a VMware click for the CH340).
 
+### Automated run 2026-10-25 (run.py, 170 s): pass
+
+8 of 8 cold boots reached msh with `boot_times`: reset release -> app init 0.320 / 0.320 / 0.321 s (min / median / max); mounts done at 0.311-0.312 s.
+
 ## Metrics (2026-10-21, bench image)
 
 Setup (2026-10-21): USB-C 1 the only power path (USB-C 2 VBUS cut, PR1 VBUS cut), meter (10 A range, 0.1 mA
@@ -80,15 +84,15 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Test run time | 1 command; setup: reflash (USB boot) ~5 min with clicks | - | |
 | NAND clock in the boot | 80 MHz (since 2026-10-21) | 100 MHz has no window (test017) | |
 | Current: rails in reset / boot peak / msh idle | 86.3 / ~227 / 204 mA | - | USB-C 1 VBUS |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
+| Voltage under load (min) | VBAT 4.34 V min (K230 ADC ch 1, test023 calibration, 8 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per boot (to app init) | ~215 mA x 0.88 s = 0.72 J, 53 uAh (1.0 s: 0.82 J) | - | 3.8 V nominal |
 | Per day | 4 report sessions: 0.24 mAh/day (boot to app init only) | ENERGY.txt 3 | 0.7 % of 1000 mAh / month |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Temperature die / board (start / peak / end) | die 34.0 / 37.6 / 37.6 C; board 28.3 / 30.1 / 30.1 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 208608 / min 204396 / 208608 B, blocks 14 -> 14, deleted 0; K230 heap available 7025152 / 7025152 / 7025152 B (max used 1390848); BL616 no leak: free 208608 -> 208608 B (slope +0 B per cycle) over 6 cycles (mem_leak.py, 8 snapshots); K230 no leak: free 7025152 -> 7025152 B (slope +0 B per cycle) over 6 cycles (mem_leak.py, 8 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | kdimg 45.4 MB (/sdcard 32 MiB, /bin 8 MiB one ISP set), kernel 3.75 MB, /bin 0.68 MB, /sdcard programs 6.76 MB (latest run) | minimal image (rule) | the image this run used |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, -ffunction/-fdata-sections, --gc-sections, strip (no LTO) | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | kernel test commands in leakcam_bench.o: 11.2 KB code + 0.6 KB RAM for all 13 (ddr/nand/uart_bench, boot_times, plt_*, rtc_*, pad_read, bat_watch); no init, 0 ms boot; not in the product image (2026-10-25); boot_times reads rdtime at each init level (no cost) | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | kernel stays -O1: -O2 faults in the LWP signal return (test008 Flags A, 2026-10-22), kept -O1 by the user's decision; this result is kernel/driver code, no faster build to compare until that is fixed (2026-10-25) | the faster one stays | |
 
 ## Boot time
 
@@ -125,3 +129,4 @@ up across cold boots (tests/test039): the CH340 problems below are history, kept
 - **Build failed after limiting the ISP pattern to `ov5647-1280x960`** -> the SDK rule appends `.json`/`.xml` to the
   pattern for the rsync copy (`ov5647-*` only worked through the shell glob) -> pattern `ov5647-1280x960*`; check
   images/bin holds config.txt + the 4 files before flashing.
+None in the run of 2026-10-25.

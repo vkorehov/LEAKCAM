@@ -95,26 +95,30 @@ protection in the pack. U1's heat: not seen; it holds 0.89 A.
 
 Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
 
+### Automated run 2026-10-25 (run.py, 169 s): pass
+
+8 cycles: USB detected (PGOOD low) every time, K230 booted on the charger rail; VBAT in the Voltage row.
+
 ## Metrics (**MISSING** on a re-run: skill leakcam-test-metrics, every value at its maximum)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VUSB C2.1, VBAT C15.1, BAT C11.1, 3V3_SLEEP (charging.png / battery_only.png).
 
 | Metric | Value (typical / max) | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> app init (median / max of runs) | **MISSING** (2026-10-21); fill on a re-run | test022 | longest step: |
-| This part's boot share | **MISSING** (2026-10-21); fill on a re-run | - | |
-| Test run time | **MISSING** (2026-10-21); fill on a re-run | - | setup (flashing, plugging, waiting) separately |
-| Speed / rate against the top | **MISSING** (2026-10-21); fill on a re-run | SPEEDS.txt | % of the top |
-| Current floor / typical / peak | **MISSING** (2026-10-21); fill on a re-run | floor (test031) | at the probe above |
-| Voltage under load (min) | **MISSING** (2026-10-21); fill on a re-run | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING** (2026-10-21); fill on a re-run | - | scripts/energy.py |
-| Per day | **MISSING** (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | **MISSING** (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Boot, power-on -> app init (median / max of runs) | pt_run -> msh 0.47 / 0.47 s (median / max of 8; SPL 0.16, OpenSBI 0.24, RT-Smart 0.25, mounted 0.46, msh 0.47); longest step to mounted 0.21 s (2026-10-25, run.py) | test022 | longest step: |
+| This part's boot share | n/a: the rails ramp in 1.7 ms (test003) (2026-10-25) | - | |
+| Test run time | 169 s automated (run.py, 2026-10-25), no setup | - | setup (flashing, plugging, waiting) separately |
+| Speed / rate against the top | n/a: power path test (2026-10-25) | SPEEDS.txt | % of the top |
+| Current floor / typical / peak | rails off 0.061 A, K230 at msh idle 0.220 A (test006, 2026-10-25); charge currents: Results (2026-10-17/20) (2026-10-25, from recorded readings) | floor (test031) | at the probe above |
+| Voltage under load (min) | VBAT 4.33 V min (K230 ADC ch 1, test023 calibration, 8 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
+| Power, energy per operation | n/a: power path test; the board's states are priced in test006/007/031 (2026-10-25) | - | scripts/energy.py |
+| Per day | n/a: as energy (2026-10-25) | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | die 37.0 / 37.0 / 34.9 C; board 29.5 / 29.5 / 28.2 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 206440 / min 204396 / 206440 B, blocks 16 -> 16, deleted 0; K230 heap available 7025152 B steady; BL616 no leak (mem_leak.py, 8 snapshots); K230 no leak (mem_leak.py, 8 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | not recorded at the time (before the metrics rule) | minimal image (rule) | the image this run used |
 | Compile flags | not recorded at the time (before the metrics rule) | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | BL616 test firmware commands (pt_*); test firmware 1 114 864 B; not in the product firmware (2026-10-25) | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | n/a: hardware-bound (power path, BQ24072 and regulators): compiler flags do not change the result (2026-10-25) | the faster one stays | |
 
 ## Boot time
 
@@ -153,3 +157,5 @@ Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: the b
 - **Rework (2026-10-21):** the cell's + now goes by copper wire straight to C11 pad 1 (BAT), bypassing the JB1 joint.
   The BAT copper itself is fine (0.51 mm tracks + pour on top, good for ~1.5-2 A; the board charges at <= 1 A);
   the JB1 failures were mechanical. Fix the wire down near C11 so it does not load the small pad.
+
+None in the run of 2026-10-25.

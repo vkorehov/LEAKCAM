@@ -67,6 +67,10 @@ Cause open (a slow check? text lost on the console?): the loop now keeps the raw
 Pass. The app init after a cut (0.478 s) is this image (it mounts the 32 MiB `/sdcard`): it was 0.660 s on a clean
 boot with the 115200 console (test022); the 0.30 s of test039 is the minimal image without that mount.
 
+### Automated run 2026-10-25 (run.py, 435 s): pass
+
+20 random cuts during plt_write ([run4_2026-10-25.csv](run4_2026-10-25.csv)): 0 bad files, 0 checks unparsed, 638 commits before the cuts; app init after a cut 0.330-0.520 s; free 25216 -> 17280 KB; plt_check after the run: clean.
+
 ## Metrics (2026-10-21, short run)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
@@ -79,15 +83,15 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Recovery after a cut | every mount clean, no fsck-like delay seen | - | |
 | Current | msh idle with charging 540 mA (USB VBUS, D1 on); during writes not read | floor 202 mA w/o charging | |
 | Current, 100-cut run (2026-10-23) | 507-537 mA VBUS (peak 537), cell charging the whole run while the K230 cycles | - | USB-C 1 on the Mac kept VBUS on with the K230 up: no bug-002 effect without the CH340 |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
+| Voltage under load (min) | VBAT 4.35 V min (K230 ADC ch 1, test023 calibration, 8 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | n/a | - | |
 | Per day | n/a | - | |
 | Temperature die / board | not measured: missed in the short run (taken in the long run) | - | |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 207136 / min 204396 / 207136 B, blocks 19 -> 19, deleted 0; K230 heap available 7025152 / 7023168 / 7312064 B; BL616 no leak (mem_leak.py, 8 snapshots); K230 no leak (mem_leak.py, 8 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | kdimg 58.4 MB (/sdcard 32 MiB, /bin 20 MiB), kernel 3.75 MB | minimal image (rule) | the image this run used |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, -ffunction/-fdata-sections, --gc-sections, strip (no LTO) | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | kernel test commands in leakcam_bench.o: 11.2 KB code + 0.6 KB RAM for all 13 (ddr/nand/uart_bench, boot_times, plt_*, rtc_*, pad_read, bat_watch); no init, 0 ms boot; not in the product image (2026-10-25) | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | n/a: hardware-bound (NAND program/erase and UFFS commit, kernel -O1 (see test007)): compiler flags do not change the result (2026-10-25) | the faster one stays | |
 
 ## Boot time
 
@@ -108,3 +112,5 @@ n/a: a robustness test (the energy of writes is test017).
   commits) -> cause open; the loop now keeps the raw text of a failed check (`<csv>.fail.txt`) for the next run.
 - **A 9 min gap after cycle 50 of the 100-cut run** (2026-10-23 16:55-17:04) -> the Linux VM was paused (no log, then
   "Clock change detected"), not the board -> keep the Mac awake for long runs; the loop simply continues.
+
+None in the run of 2026-10-25.

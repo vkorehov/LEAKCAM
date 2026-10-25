@@ -100,6 +100,9 @@ only meant for the moment before HBN; the product called it at boot (aon_init) a
 - the SDK's fixed HBN RAM users stay below it: `hbn_ram` section +000 (low-power code, reloaded at boot),
   bl616_lp.h +000 pre-jump stub, +300 boot2 parameters, +400 low-power parameters.
 
+### Automated run 2026-10-25 (run.py, 140 s): pass
+
+RTC wake -> main() 17.3 / 17.4 / 17.4 ms; core reset -> main() 8.0 / 8.0 / 8.0 ms; K230_PWR -> 3V3 1.7 / 1.7 / 1.7 ms; AHT20 trigger -> data 36.5 / 36.5 / 36.5 ms (min / median / max of 8 wakes).
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
@@ -107,20 +110,20 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | **MISSING** | target (test022) | longest step: |
-| This part's boot share | **MISSING** | - | |
-| Test run time | **MISSING** | - | setup (flashing, plugging, waiting) separately |
-| BL616 step times (wake -> K230 power-on, I2C read) | **MISSING** | I2C 400 kHz (now 100) | % of the top |
+| Boot, power-on -> READY (median of 5) | n/a: BL616-only test; its own boot (RTC wake -> main) 17.3 / 17.4 / 17.4 ms (2026-10-25) | target (test022) | longest step: |
+| This part's boot share | wake -> main() is the BL616's whole share of a wake: 17.3 / 17.4 / 17.4 ms (2026-10-25) | - | |
+| Test run time | 140 s automated (run.py, 2026-10-25), no setup | - | setup (flashing, plugging, waiting) separately |
+| BL616 step times (wake -> K230 power-on, I2C read) | RTC wake -> main() 17.3 / 17.4 / 17.4 ms; core reset -> main() 8.0 / 8.0 / 8.0 ms; K230_PWR -> 3V3 1.7 / 1.7 / 1.7 ms; AHT20 trigger -> data 36.5 / 36.5 / 36.5 ms (min / median / max of 8 wakes) (2026-10-25) | I2C 400 kHz (now 100) | % of the top |
 | Current idle / during (min / avg / peak) | 88 mA at 10:19, 86 mA at 11:09 (BL616 awake idle, K230 rails on and held in reset after pt_time; 87 mA on 2026-10-21 in the same state); the timed jobs last < 0.1 s, too short for the meter | floor (test031) | USB-C 1 VBUS |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING** | - | scripts/energy.py |
-| Per day | **MISSING** | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Voltage under load (min) | n/a: BL616-only test, rails off - VBAT is read by the K230 ADC (test023) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
+| Power, energy per operation | n/a: the BL616's wake (~15 ms) is below what the USB meter resolves; on the cell: test104 (2026-10-25) | - | scripts/energy.py |
+| Per day | n/a: as energy; the wake cost sits in the sleep floor of test031 (2026-10-25) | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | die n/a: K230 off; board 32.4 / 32.4 / 29.3 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 207136 / min 204396 / 207136 B, blocks 19 -> 19, deleted 0; BL616 no leak (mem_leak.py, 8 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | BL616 test firmware 149 984 B (+29 KB storage stack) | minimal image (rule) | the image this run used |
 | Compile flags | BL616 SDK -Os -g, sections, --gc-sections, -flto | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | BL616 test firmware commands (pt_*); test firmware 1 114 864 B; not in the product firmware (2026-10-25) | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | n/a: BL616 test firmware (SDK -O2, no LTO), not the product firmware; the product BL616's flags are test008 step 6 (2026-10-25) | the faster one stays | |
 
 ## Boot time
 
@@ -155,3 +158,5 @@ The BL616's current while awake (humidity slice, wake handling) and how long; en
   mark only if < 2 s old.
 - **`SHELL_CMD_EXPORT_ALIAS` failed on commas in the help text** (the macro splits on them) -> no commas.
 - **Test firmware +29 KB** (120 784 -> 149 984 B): littlefs + easyflash + MTD (the product's storage stack), this test's Needs.
+
+None in the run of 2026-10-25.

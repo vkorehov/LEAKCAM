@@ -104,26 +104,30 @@ Cell charged first (charge current tapered 0.24 -> 0.06 A, D1 off), so the USB i
 
 Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
 
+### Automated run 2026-10-25 (run.py, 227 s): pass
+
+white and IR stepped 25 / 50 / 100 %, both 100 % for 2 min: die 41.6 -> 48.2 C.
+
 ## Metrics (**MISSING** on a re-run: skill leakcam-test-metrics, every value at its maximum)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - LED boost outputs J1.1 / J2.1 and LED_CTL2 (led_drivers.png), VBAT C15.1.
 
 | Metric | Value (typical / max) | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> app init (median / max of runs) | **MISSING** (2026-10-21); fill on a re-run | test022 | longest step: |
-| This part's boot share | **MISSING** (2026-10-21); fill on a re-run | - | |
-| Test run time | **MISSING** (2026-10-21); fill on a re-run | - | setup (flashing, plugging, waiting) separately |
-| Speed / rate against the top | **MISSING** (2026-10-21); fill on a re-run | SPEEDS.txt | % of the top |
-| Current floor / typical / peak | **MISSING** (2026-10-21); fill on a re-run | floor (test031) | at the probe above |
-| Voltage under load (min) | **MISSING** (2026-10-21); fill on a re-run | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING** (2026-10-21); fill on a re-run | - | scripts/energy.py |
-| Per day | **MISSING** (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | **MISSING** (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Boot, power-on -> app init (median / max of runs) | pt_run -> msh 0.49 / 0.49 s (median / max of 1; SPL 0.16, OpenSBI 0.24, RT-Smart 0.25, mounted 0.48, msh 0.49); longest step to mounted 0.23 s (2026-10-25, run.py) | test022 | longest step: |
+| This part's boot share | n/a: the LEDs start in the program, not in the boot (2026-10-25) | - | |
+| Test run time | 227 s automated (run.py, 2026-10-25), no setup | - | setup (flashing, plugging, waiting) separately |
+| Speed / rate against the top | n/a: light output by design (LED_STRIPS.txt), brightness not measured | SPEEDS.txt | % of the top |
+| Current floor / typical / peak | 0.22 A idle / white 100 % 0.56 A / IR 100 % 0.60 A / both 100 % 0.95 A at 5 V (10 A meter, 2026-10-25 12:24, Results) | floor (test031) | at the probe above |
+| Voltage under load (min) | VBAT 4.00 V min (K230 ADC ch 1, test023 calibration, 20 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
+| Power, energy per operation | both chains 100 %: 0.95 A x 4.35 V = 4.1 W; per 20 s of light 83 J, 5.3 mAh (0.73 A above idle: 4.1 mAh) (2026-10-25, from recorded readings) | - | scripts/energy.py |
+| Per day | light only on alarms (rare, no daily budget line): 1 alarm a day with 20 s of light = 5.3 mAh/day, 8 % of 2000 mAh per month (2026-10-25, from recorded readings) | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | die 41.6 / 48.2 / 48.2 C; board 33.7 / 41.2 / 41.2 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 206440 / min 204396 / 206440 B, blocks 16 -> 16, deleted 0; K230 heap available 7025152 / 7025152 / 7312064 B; BL616 no leak (mem_leak.py, 20 snapshots); K230 no leak (mem_leak.py, 20 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | not recorded at the time (before the metrics rule) | minimal image (rule) | the image this run used |
 | Compile flags | not recorded at the time (before the metrics rule) | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | n/a: the PWM driver is part of the product floor (the LEDs light every alarm) (2026-10-25) | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | n/a: hardware-bound (TPS61161 LED drivers): compiler flags do not change the result (2026-10-25) | the faster one stays | |
 
 ## Boot time
 
@@ -140,3 +144,5 @@ Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: batte
 - **The "wrong" chain lit** -> PWM0..2 share one counter; a channel's output is high while the counter is at or above
   its compare register, 0 after reset -> shell: disable the other channel first; firmware `led_set()` disables the
   off channels before enabling.
+
+None in the run of 2026-10-25.

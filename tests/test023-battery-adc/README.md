@@ -63,6 +63,10 @@ between reads.
   mV). The low-cell point will tell gain from offset; re-fit then.
 - **C11 at 3.30 V with D1 off** (should charge, D1 on): the JB1 cell joint was open - see Obstacles.
 
+### Automated run 2026-10-25 (run.py, 66 s): pass
+
+VBAT 4355-4395 mV over 8 samples (idle, then memtest), spread 40 mV.
+
 ## Metrics (2026-10-21)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1 (ADC input), BAT C11.1 (adc_points.png).
@@ -74,16 +78,16 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Test run time | 20 reads ~45 s; 64 reads ~16 s (script, 0.25 s each); battery case 19:31-19:41 | - | |
 | ADC accuracy / noise | +60 mV / sd 52 mV single; calibrated 64-read mean within +-10 mV, sd ~6 mV | +-30 mV / 10 mV | pass averaged |
 | Current on battery, K230 at msh | not measured (meter in USB-C 1 path, unplugged); 202-203 mA on USB (above) | - | VBAT 4.07-4.12 V |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
+| Voltage under load (min) | VBAT 4.36 V min (K230 ADC ch 1, test023 calibration, 8 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Current during reads | 202-203 mA (= msh idle) | floor 202 | reads cost nothing measurable |
 | Power, energy per reading | below the meter's resolution | - | |
 | Per day | n/a | - | |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Temperature die / board (start / peak / end) | die 34.9 / 43.7 / 43.7 C; board 29.2 / 31.8 / 31.8 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 207136 / min 204396 / 207136 B, blocks 19 -> 19, deleted 0; K230 heap available 7025152 / 6822976 / 7111808 B; BL616 no leak (mem_leak.py, 8 snapshots); K230 no leak (mem_leak.py, 8 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB | minimal image (rule) | the image this run used |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, -ffunction/-fdata-sections, --gc-sections, strip (no LTO) | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | n/a: the ADC driver is part of the product floor (battery cut-off, test038) (2026-10-25) | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | n/a: hardware-bound (ADC conversion): compiler flags do not change the result (2026-10-25) | the faster one stays | |
 
 ## Boot time
 
@@ -129,3 +133,6 @@ up across cold boots (tests/test039): the CH340 problems below are history, kept
   away in rev 2 (U2 on USBC2's VBUS, D3 VCC off VUSB: bugs/v2.txt 3/5). Scope 3V3 (U2 VCC) and D+ on the plug to tell.
 - **BL616 console gone after the battery reading (2026-10-21 22:16)** -> a PR1 cable pin had slipped out of
   alignment (moved while probing / unplugging USB-C 1) -> re-seated; not a firmware or power event.
+
+None in the run of 2026-10-25.
+- **The first automated run (2026-10-25) was cut off**: a one-off K230 command run by hand switched the rails off in the middle of it -> its README changes reverted, run again cleanly -> never touch the board while run_tests.py runs.

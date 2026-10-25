@@ -40,6 +40,15 @@ Recorded MB/s per case; the drop under concurrent load; no errors (compare with 
 **At 3200 MT/s all-ODT (2026-10-23, test025):** write 6.08 GB/s (+50 %), read 4.84 (+18 %), copy 2.77 (+49 %);
 3200 HW-ODT gave the same figures but flipped a bit (test025). Not done yet: the uncached alias (step 2).
 
+### Automated run 2026-10-25 (run.py, 82 s): pass
+
+8 x `ddr_bench 3072`; last run:
+
+    copy (memcpy, bytes moved)      64512 KB in  23841 us: 2770.8 MB/s
+    write (memset)                  64512 KB in  10860 us: 6082.8 MB/s
+    read (64-bit sum)               64512 KB in  13655 us: 4837.8 MB/s
+    copy (memcpy, bytes moved)      64512 KB in  23831 us: 2772.0 MB/s
+
 ## Metrics (2026-10-21, bench image, 2667 MT/s)
 
 Setup (2026-10-21): USB-C 1 the only power path (USB-C 2 VBUS cut, PR1 VBUS cut), meter (10 A range, 0.1 mA
@@ -57,15 +66,15 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Test run time | 12 s (60 runs) | - | setup: reflash 2 x (USB boot, 3 clicks) |
 | DDR write / read / copy | 4.05 / 4.08 / 1.86 GB/s | 5.33 GB/s (2667 x 16 bit) | 76 % (write, read) |
 | Current idle / during (min / avg / peak) | 204 / - / 270 mA | floor 204 (msh idle) | USB-C 1 VBUS |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
+| Voltage under load (min) | VBAT 4.31 V min (K230 ADC ch 1, test023 calibration, 9 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | +66 mA = +251 mW over idle; 18 mJ per 64 MB pass set | - | 3.8 V nominal |
 | Per day | n/a (no DDR-only work in a session) | - | |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Temperature die / board (start / peak / end) | die 46.4 / 48.5 / 48.5 C; board 37.3 / 37.4 / 37.4 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 206440 / min 204396 / 206440 B, blocks 16 -> 16, deleted 0; K230 heap available 7025152 / 7023232 / 7312064 B; BL616 no leak (mem_leak.py, 9 snapshots); K230 no leak (mem_leak.py, 9 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB | minimal image (rule) | the image this run used |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, -ffunction/-fdata-sections, --gc-sections, strip (no LTO) | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | kernel test commands in leakcam_bench.o: 11.2 KB code + 0.6 KB RAM for all 13 (ddr/nand/uart_bench, boot_times, plt_*, rtc_*, pad_read, bat_watch); no init, 0 ms boot; not in the product image (2026-10-25) | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | n/a: hardware-bound (DDR bandwidth; memcpy/memset are the C library's): compiler flags do not change the result (2026-10-25) | the faster one stays | |
 
 ## Boot time
 
@@ -80,3 +89,5 @@ Battery current during each bench (copy, read, write) vs idle; energy per GB mov
 - **`ddr_bench 16384` crashed the kernel** (Load Page Fault, reboot) -> the 8 MB kernel heap has no 2 x 16 MB; the
   error path called `rt_free_align(NULL)`, which faults -> NULL guards in the bench (rebuilt with the next image);
   keep buffers <= 3 MB.
+
+None in the run of 2026-10-25.

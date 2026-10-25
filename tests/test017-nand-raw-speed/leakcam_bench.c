@@ -14,7 +14,8 @@
  *   rtc_ppm [s]               test037: RTC ticks (32768/s) against rdtime (27 MHz) over s seconds: crystal ppm
  *   pad_read <pin>...         test029: pad input level (IOMUX di bit) of the given pads
  *   uart_bench [kb]           test018: UART1 <-> BL616 echo (pt_uart echo): latency and checked throughput at the
- *                             link's one rate, set by the UART driver at boot (LINK_BAUD); never changes it
+ *                             link's one rate, set by the UART driver at boot (LINK_BAUD); never changes it; results
+ *                             printed 1.5 s after the run (the BL616 bridges the console again after 1 s idle)
  *   boot_times                tests/test022: rdtime (from reset release) at the end of each init level
  *
  * Timing: rdtime, 27 MHz. Every loop sleeps 1 ms now and then (outside the timed part): the 20 s watchdog's
@@ -576,6 +577,9 @@ static int uart_bench(int argc, char **argv)
     struct serial_configure cfg = RT_SERIAL_CONFIG_DEFAULT;
     rt_uint8_t tx[64], rx[64];
     rt_uint32_t lat[200], n = 0, errs = 0, i;
+    static char res[512];                       /* printed after the mux resumes: during the bench the console is the
+                                                 * echo line, and the BL616 bridges it again only after 1 s idle */
+    int len = 0;
     if (!d || rt_device_open(d, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_INT_RX) != RT_EOK)
     {
         rt_kprintf("uart_bench: uart1 not available (leakcam_agent running?)\n");
@@ -584,7 +588,8 @@ static int uart_bench(int argc, char **argv)
     link_mux_pause(1);
     cfg = ((struct rt_serial_device *)d)->config;
     baud = cfg.baud_rate;
-    rt_kprintf("uart_bench: uart1 at %u baud (bufsz %u)\n", (unsigned)baud, (unsigned)cfg.bufsz);
+    len += rt_snprintf(res + len, sizeof(res) - len, "uart_bench: uart1 at %u baud (bufsz %u)\n", (unsigned)baud,
+                       (unsigned)cfg.bufsz);
     rt_thread_mdelay(20);
     while (rt_device_read(d, 0, rx, sizeof(rx)) > 0)       /* drain */
         ;
@@ -612,7 +617,7 @@ static int uart_bench(int argc, char **argv)
         {
             rt_uint32_t t = lat[j]; lat[j] = lat[j - 1]; lat[j - 1] = t;
         }
-    rt_kprintf("uart_bench %u: latency 16 B round trip: median %u us, max %u us, %u of 200 ok, %u bad\n",
+    len += rt_snprintf(res + len, sizeof(res) - len, "uart_bench %u: latency 16 B round trip: median %u us, max %u us, %u of 200 ok, %u bad\n",
                (unsigned)baud, (unsigned)(n ? lat[n / 2] : 0), (unsigned)(n ? lat[n - 1] : 0), (unsigned)n, (unsigned)errs);
     /* throughput: window of 64 bytes */
     rt_uint32_t total = kb * 1024, sent = 0, recv = 0, bad = 0, seed = 1;
@@ -639,11 +644,13 @@ static int uart_bench(int argc, char **argv)
                 bad++;
     }
     rt_uint64_t us = (now() - t0) / 27;
-    rt_kprintf("uart_bench %u: %u of %u bytes back in %u us = %u B/s (line max %u B/s), %u bad bytes%s\n",
+    len += rt_snprintf(res + len, sizeof(res) - len, "uart_bench %u: %u of %u bytes back in %u us = %u B/s (line max %u B/s), %u bad bytes%s\n",
                (unsigned)baud, (unsigned)recv, (unsigned)total, (unsigned)us, (unsigned)(us ? (rt_uint64_t)recv * 1000000 / us : 0),
                (unsigned)(baud / 10), (unsigned)bad, recv < total ? " (TIMEOUT)" : "");
     rt_device_close(d);
+    rt_thread_mdelay(1500);                     /* the BL616 leaves its echo after 1 s of silence */
     link_mux_pause(0);
+    rt_kprintf("%s", res);
     return 0;
 }
 MSH_CMD_EXPORT(uart_bench, test018: UART1 echo latency and throughput at the link rate [kb]);

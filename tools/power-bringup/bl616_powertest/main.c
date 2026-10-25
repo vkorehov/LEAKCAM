@@ -114,6 +114,9 @@ static unsigned sense_high(void)
 static struct bflb_device_s *uart0;
 static bool uart_on;
 static volatile bool uart_echo;      /* test018: every received byte sent straight back */
+static volatile uint32_t echo_bytes, echo_dropped;   /* test018: bytes echoed, bytes dropped before the echo */
+static volatile uint64_t echo_drop_until, echo_last;  /* ms: the shell's echo of a sent command is dropped; last byte */
+static volatile bool echo_seen;
 
 /* The K230 console arrives by interrupt (2026-10-24): polled, the 32-byte RX FIFO overflows in 80 us at 4 Mbaud, so the
  * poller had to run without blocking - at priority 1 it starved IDLE (deleted tasks never freed, a Wi-Fi connect hung),
@@ -133,6 +136,18 @@ static void uart_rx_isr(int irq, void *arg)
         bflb_uart_int_clear(uart0, UART_INTCLR_RTO);
     while (bflb_uart_rxavailable(uart0)) {
         uint8_t c = (uint8_t)bflb_uart_getchar(uart0);
+        if (uart_echo) {                    /* test018: straight back from the ISR (a task misses bytes, see above) */
+            uint64_t now = bflb_mtimer_get_time_ms();
+            if (now < echo_drop_until) {
+                echo_dropped++;
+            } else {
+                bflb_uart_putchar(uart0, c);
+                echo_bytes++;
+                echo_last = now;
+                echo_seen = true;
+            }
+            continue;
+        }
         uint32_t next = (rx_head + 1) % RX_RING;
         if (next == rx_tail)
             rx_dropped++;
@@ -184,25 +199,27 @@ static bool uart_start(void)
     bflb_uart_init(uart0, &cfg);
     rx_head = rx_tail = 0;
     uart_on = true;
-    uart_rx_irq(!uart_echo);
+    uart_rx_irq(true);
     return true;
 }
 
-/* test018: the echo runs in its own task and polls: at 2 Mbaud a byte arrives every 5 us and the RX FIFO holds 32,
- * so it may not sleep while echoing (it only yields when the line is idle). */
+/* test018: the echo itself runs in the RX interrupt (uart_rx_isr). This task ends it after the bench: bytes echoed,
+ * then ECHO_IDLE_END_MS of silence -> back to the console bridge (the K230 console shares UART1, and uart_bench prints
+ * its results 1.5 s after the run, which must reach /dev/ttyACM1; 2026-10-25). */
+#define ECHO_IDLE_END_MS 300u   /* below uart_bench's 1.5 s pause before it prints: after it the K230 shell would echo leftovers back and forth */
+
 static void uart_echo_task(void *arg)
 {
     (void)arg;
     for (;;) {
-        if (!uart_echo) {
-            vTaskDelay(pdMS_TO_TICKS(20));
-            continue;
+        vTaskDelay(pdMS_TO_TICKS(20));
+        if (uart_echo && echo_seen && bflb_mtimer_get_time_ms() - echo_last > ECHO_IDLE_END_MS) {
+            rx_head = rx_tail = 0;
+            echo_seen = false;
+            uart_echo = false;
+            printf("pt_uart: echo ended (line idle %u ms, %lu bytes), K230 console bridge again\r\n",
+                   ECHO_IDLE_END_MS, (unsigned long)echo_bytes);
         }
-        int c = bflb_uart_getchar(uart0);
-        if (c >= 0)
-            bflb_uart_putchar(uart0, (uint8_t)c);
-        else
-            taskYIELD();
     }
 }
 
@@ -534,6 +551,8 @@ static void print_status(bool line)
         printf("AHT20       : FAIL, %s\r\n", aht20_err(r));
 #endif
 #if PT_TEST_UART
+    printf("UART0 echo  : %lu bytes echoed, %lu dropped before it\r\n", (unsigned long)echo_bytes,
+           (unsigned long)echo_dropped);
     printf("UART0 link  : %s, rx dropped %lu\r\n",
            uart_on ? (uart_echo ? "on, echo" : "on, K230 console bridge (/dev/ttyACM1)") : "off",
            (unsigned long)rx_dropped);
@@ -822,8 +841,17 @@ static int cmd_uart(int argc, char **argv)
         }
         if (!task)
             task = xTaskCreate(uart_echo_task, "uecho", 512, NULL, tskIDLE_PRIORITY, NULL) == pdPASS;   /* see k230con */
-        uart_rx_irq(false);             /* the echo task polls the FIFO itself */
+        /* pt_uart echo <command>: the command goes to the K230 shell over the link, then the echo runs - typed on
+         * /dev/ttyACM1 it could not arrive, the bridge stops while echoing. The shell's echo of the line comes back
+         * within the first 5 ms and is dropped (echoed, it would loop as input); uart_bench waits 20 ms. */
+        echo_bytes = echo_dropped = 0;
+        echo_seen = false;
+        echo_drop_until = argc > 2 ? bflb_mtimer_get_time_ms() + 5 : 0;
         uart_echo = true;
+        for (int i = 2; i < argc; i++) {
+            uart_send(argv[i]);
+            uart_send(i + 1 < argc ? " " : "\r\n");
+        }
         printf("UART0 echo at %lu baud (pt_uart off to stop)\r\n", (unsigned long)LINK_BAUD);
     } else {
         bool ok;
@@ -833,7 +861,7 @@ static int cmd_uart(int argc, char **argv)
     }
     return 0;
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_uart, pt_uart, UART0 link: on (K230 console bridge) | off | send <text> | echo);
+SHELL_CMD_EXPORT_ALIAS(cmd_uart, pt_uart, UART0 link: on (K230 console bridge) | off | send <text> | echo [k230 command]);
 #endif
 
 #if PT_TEST_I2C

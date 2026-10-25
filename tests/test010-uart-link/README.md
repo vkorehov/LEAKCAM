@@ -35,26 +35,30 @@ K230 UART1 driver; BL616 PT_TEST_UART.
 
 Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
 
+### Automated run 2026-10-25 (run.py, 243 s): pass
+
+8 boots: 112 READY frames with valid checksums on the BL616, echo runs clean.
+
 ## Metrics (**MISSING** on a re-run: skill leakcam-test-metrics, every value at its maximum)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
 
 | Metric | Value (typical / max) | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> app init (median / max of runs) | **MISSING** (2026-10-21); fill on a re-run | test022 | longest step: |
-| This part's boot share | **MISSING** (2026-10-21); fill on a re-run | - | |
-| Test run time | **MISSING** (2026-10-21); fill on a re-run | - | setup (flashing, plugging, waiting) separately |
-| Speed / rate against the top | **MISSING** (2026-10-21); fill on a re-run | SPEEDS.txt | % of the top |
+| Boot, power-on -> app init (median / max of runs) | pt_run -> msh 0.46 / 0.46 s (median / max of 8; SPL 0.16, OpenSBI 0.24, RT-Smart 0.25, mounted 0.45, msh 0.46); longest step to mounted 0.20 s (2026-10-25, run.py) | test022 | longest step: |
+| This part's boot share | n/a: the agent sends READY right after app init; the link adds no boot step (2026-10-25) | - | |
+| Test run time | 243 s automated (run.py, 2026-10-25), no setup | - | setup (flashing, plugging, waiting) separately |
+| Speed / rate against the top | link at 4 Mbaud (test018); 112 READY frames, every checksum valid (2026-10-25) | SPEEDS.txt | % of the top |
 | Current floor / typical / peak | **MISSING** (2026-10-21); fill on a re-run | floor (test031) | at the probe above |
-| Voltage under load (min) | **MISSING** (2026-10-21); fill on a re-run | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING** (2026-10-21); fill on a re-run | - | scripts/energy.py |
-| Per day | **MISSING** (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | **MISSING** (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Voltage under load (min) | VBAT 4.33 V min (K230 ADC ch 1, test023 calibration, 7 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
+| Power, energy per operation | n/a: below the meter's step next to the K230 (2026-10-25) | - | scripts/energy.py |
+| Per day | n/a: a few frames per session (2026-10-25) | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | die 29.4 / 34.9 / 34.6 C; board 21.6 / 26.7 / 26.7 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 206440 / min 204396 / 206440 B, blocks 16 -> 16, deleted 0; K230 heap available 7313600 B steady; BL616 no leak (mem_leak.py, 8 snapshots); K230 no leak (mem_leak.py, 8 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | not recorded at the time (before the metrics rule) | minimal image (rule) | the image this run used |
 | Compile flags | not recorded at the time (before the metrics rule) | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | link_mux in the kernel: 2.4 KB code + 3.5 KB RAM, registers at boot with the other drivers (no visible ms); part of the product (2026-10-25) | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | n/a: hardware-bound (the UART line rate (4 Mbaud)): compiler flags do not change the result (2026-10-25) | the faster one stays | |
 
 ## Boot time
 
@@ -69,3 +73,5 @@ n/a: the link's own current is negligible next to the K230 running; its time cos
 - **Each READY 5 times** -> by design: the agent resends while no ACK comes (the test firmware sends none).
 - **`cat /dev/uart1` hangs the shell (no Ctrl-C)** -> reset the K230 from the BL616 (`pt_hold`, `pt_run`).
 - **`killall leakcam_agent` did not stop it** -> still listed afterwards; it did not get in the way.
+
+None in the run of 2026-10-25.

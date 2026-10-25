@@ -32,6 +32,20 @@ README against the sections above and the 14 metric rows of skill leakcam-test-m
 "every metric filled" before the run is reported (2026-10-24: 476 values MISSING over 44 tests; the count falls as
 tests are re-run).
 
+**Automated runs (2026-10-25, user: "aiming at automating all"):** a test with a `run.py` runs unattended through
+PR1 alone; `tools/test-standard/run_tests.py [testNNN ...]` runs them one after another (in the order given; a fresh
+process each, output in the test's `run.log`, not kept in git) and `check_tests.py` after each. The shared
+`tools/test-standard/harness.py` times the K230 cold boot from its console milestones and samples die / board
+temperature, VBAT (K230 ADC, test023 calibration), memory on both chips (leak verdict from 8 snapshots) after each
+step; it writes **only cells that still say MISSING** (readings already recorded, the user's meter readings above
+all, are never overwritten), appends a dated `### Automated run` to Results and the run's obstacles. Meter readings
+are asked only with `LEAKCAM_METER=ask`, one per state per day (cached in ~/.leakcam_meter_cache.json, given through
+the FIFO ~/.leakcam_meter). The test tools sit in one K230 test image, built by
+`tools/test-standard/build_test_image.sh` and flashed by test019's run (USB boot, no hands). Never touch the board
+while a run is going (2026-10-25: a hand-run command cut test023 off). Not automated: the cameras (020, 030, 103),
+cables and probes by hand (001's charge readings, 034 wet probe, 035 plug, 038 low cell, 105 unplug), the product
+firmware sessions (101, 102, 104), test015's SDIO bench (needs its own driver patch and BL616 firmware).
+
 **Obstacles in every test, every run (user rule, 2026-10-24):** each one as `problem -> how found -> cause -> fix
 -> where the fix lives`, in every test it touches; the fix's code carries a comment naming it (date, test); a rule
 that follows goes into the design doc and the skill. A run with none writes `None in the run of <date>.`.
@@ -91,7 +105,7 @@ cases, one per operation the product repeats:
 | [test036 K230 hang recovery](test036-k230-hang-recovery/README.md) | 2026-10-22 | pass: hang ends in 2.3 s, no-boot at the timeout; a restart is invisible to the heartbeat -> product session backstop 15 min + restart limit, boot timeout 90 -> 10 s |
 | [test037 K230 PMU RTC](test037-k230-rtc/README.md) | 2026-10-21 | step 0 pass: runs from Y1 (+25 ppm vs 27 MHz), UTC fixed; handover open |
 | [test038 battery brown-out below 3.10 V](test038-battery-brownout/README.md) | 2026-10-23 | **pass**: K230 VBAT cut -> rails off -> lockout HBN -> USB plug wakes (no EN); lockout skipped when USB is in; BL616 watchdog (12.9 s recovery); below 3 V needs a lab supply |
-| [test039 K230 console over the BL616 link](test039-k230-console-over-link/README.md) | 2026-10-23 | pass: SPL, OpenSBI, kernel, msh, agent on /dev/ttyACM1 (4 Mbaud from the first line, 0 garbage), typing works, frames split; boot to app init 0.484 -> 0.30 s |
+| [test039 K230 console over the BL616 link](test039-k230-console-over-link/README.md) | 2026-10-23 | pass: SPL, OpenSBI, kernel, msh, agent on /dev/ttyACM1; open: ~0.7 % of typed commands lost (2026-10-25) (4 Mbaud from the first line, 0 garbage), typing works, frames split; boot to app init 0.484 -> 0.30 s |
 | **High level (100+): the product's whole flow** | | |
 | [test100 Wi-Fi throughput end to end](test100-wifi-throughput/README.md) | 2026-10-25 | steps 1-4 pass: card bound -> address 0.33-0.59 s (SDIO card interrupt armed, no DHCP ARP check; was 5.05 s); TCP up 27.5 Mbit/s (was 17.1: K230 waits for a slot, BL616 26 buffers / 23 credits), down 22-26; BL616-only server check 1.71 s awake; open: step 5 (RTMP, cameras) |
 | [test101 session length](test101-boot-and-session-time/README.md) | | planned |

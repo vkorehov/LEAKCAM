@@ -32,7 +32,8 @@ def rules(state):
     for p in K230_SIDE:
         # never driven and never pulled while the K230 is off; with the rails on, inputs (3V3 sense) or analog
         r[p] = ("K230 side, 10 k up to switched 3V3", dict(oe=0, pu=0, pd=0))
-    if state == "uart_on":                       # the link: UART0 (SDK adds its internal pull-up; rails are up)
+    if on:   # the link: UART0 whenever the K230 has power (pt_on starts the console bridge since test039,
+             # 2026-10-23); the SDK adds its internal pull-up, harmless with the rails up
         r[21] = ("UART0 TX -> K230 UART1 RX", dict(func="UART", uart_func=2))
         r[22] = ("UART0 RX <- K230 UART1 TX", dict(func="UART", uart_func=3))
     for p in UNUSED:

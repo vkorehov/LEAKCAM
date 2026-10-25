@@ -60,26 +60,30 @@ reports "uart1 at 4000000 baud" without setting it. **10 x 1 MB: 0 bad bytes, 35
 line); 16 B round trip median 53-56 us, max 66 us, 2000 of 2000 ok. Die 48.2 C before and after. Boot to app init
 0.483 s (unchanged). Current during the soak not measured (asked, no reading).
 
+### Automated run 2026-10-25 (run.py, 97 s): pass
+
+8 of 8 runs of uart_bench 1024 at 4 Mbaud: 0 errors, 344360-349858 B/s.
+
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | **MISSING** | target (test022) | longest step: |
-| This part's boot share | **MISSING** | - | |
-| Test run time | **MISSING** | - | setup (flashing, plugging, waiting) separately |
-| UART link throughput, round trip | **MISSING** | 115200 now; 2 Mbaud top (both chips) | % of the top |
-| Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING** | - | scripts/energy.py |
-| Per day | **MISSING** | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
-| Image (sizes) | **MISSING** | minimal image (rule) | the image this run used |
-| Compile flags | **MISSING** | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Boot, power-on -> READY (median of 5) | pt_run -> msh 0.47 / 0.47 s (median / max of 1; SPL 0.16, OpenSBI 0.24, RT-Smart 0.25, mounted 0.46, msh 0.47); longest step to mounted 0.21 s (2026-10-25, run.py) | target (test022) | longest step: |
+| This part's boot share | n/a: the link is up from the UART driver's init (0.27 s), no step of its own (2026-10-25) | - | |
+| Test run time | 97 s automated (run.py, 2026-10-25), no setup | - | setup (flashing, plugging, waiting) separately |
+| UART link throughput, round trip | 349858 B/s = 87 % of the 4 Mbaud line; 16 B round trip median 70-71 us, max 74 us; 0 bad bytes / frames over 8 x 1 MB (2026-10-25) | 115200 now; 2 Mbaud top (both chips) | % of the top |
+| Current idle / during (min / avg / peak) | msh idle 0.220 A (test006, 2026-10-25); during the bench not read (the link's share is below the meter's step, test010) (2026-10-25, from recorded readings) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
+| Voltage under load (min) | VBAT 4.35 V min (K230 ADC ch 1, test023 calibration, 9 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
+| Power, energy per operation | n/a: the link's own current is below the meter's step next to the K230 (test010) (2026-10-25) | - | scripts/energy.py |
+| Per day | n/a: a few link frames per session, negligible (2026-10-25) | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | die 35.2 / 43.1 / 41.9 C; board 29.6 / 32.5 / 32.5 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 206440 / min 204396 / 206440 B, blocks 16 -> 16, deleted 0; K230 heap available 7313600 B steady; BL616 no leak (mem_leak.py, 9 snapshots); K230 no leak (mem_leak.py, 9 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Image (sizes) | K230 kdimg 45441024 B, BL616 test firmware 1114848 B (2026-10-25, on the board at the run) | minimal image (rule) | the image this run used |
+| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os -march=rv64imafdcv, sections + --gc-sections, strip, no LTO; BL616 test firmware -O2 (SDK default), no LTO (2026-10-25) | smallest code (rule) | |
+| Features over the minimal image | kernel test commands in leakcam_bench.o: 11.2 KB code + 0.6 KB RAM for all 13 (ddr/nand/uart_bench, boot_times, plt_*, rtc_*, pad_read, bat_watch); no init, 0 ms boot; not in the product image (2026-10-25) | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | n/a: hardware-bound (the UART line rate (4 Mbaud)): compiler flags do not change the result (2026-10-25) | the faster one stays | |
 
 ## Boot time
 
@@ -110,3 +114,16 @@ up across cold boots (tests/test039): the CH340 problems below are history, kept
   board USB devices 0666 on every plug; user: "remember already permissions").
 - **Queued msh commands** (my mistake): commands sent every 3.6 s while each run took 35 s queued up in msh ->
   send the next only after the previous result line.
+
+None in the run of 2026-10-25.
+- **uart_bench results never reached the console** (2026-10-25, automated run): since test039 the K230 console shares
+  UART1 with the link, so while the BL616 echoes for the bench the result lines were echoed back into the K230 ->
+  uart_bench buffers its lines and prints them 1.5 s after the run; the BL616 leaves the echo after 300 ms of silence
+  (tests/test017-nand-raw-speed/leakcam_bench.c, bl616_powertest main.c).
+- **The command could not be typed** -> the bridge stops while echoing -> `pt_uart echo <command>` sends it over the
+  link itself; the K230 shell's echo of that line came back and looped as input -> dropped for the first 5 ms.
+- **The idle-priority echo task managed ~5 KB/s** (the Wi-Fi tasks of the test firmware take the CPU; the 32-byte FIFO
+  overflows in 80 us at 4 Mbaud) -> the echo moved into the UART RX interrupt: 347 KB/s, round trip 70 us (55 us
+  polled on 2026-10-22, the ISR's cost).
+- **leakcam_agent's READY frames corrupted the bench stream** (40 of 200 frames bad, bulk stalled) -> the runner stops
+  the agent first (on 2026-10-22 it had ended by itself).

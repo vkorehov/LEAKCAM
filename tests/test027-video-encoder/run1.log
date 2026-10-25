@@ -1,0 +1,49 @@
+TÕIÔë‹¤*T¦: command not found.
+msh />
+msh />chip_temp
+chip temperature: 47.900 C
+msh />
+/sdcard/app/venctest 1 20 15
+venctest: 1 channel(s) H.265 1280x960 CBR 500 kbit/s, feed 15 fps, 20 s
+t= 1 ch0: in  15 out  15 fps, 362658 B, I 1
+t= 2 ch0: in  16 out  15 fps,  33457 B, I 0
+t= 3 ch0: in  15 out  15 fps,  21995 B, I 0
+t= 4 ch0: in  15 out  15 fps,  31751 B, I 0
+t= 5 ch0: in  15 out  15 fps,  26066 B, I 0
+t= 6 ch0: in  15 out  15 fps,  24857 B, I 0
+leakcam_agent: no WAKE from BL616, assuming cold start
+leakcam_agent: sensors: -0.1 %RH, 0.0 C, probe -1 mV, battery 4477 mV
+leakcam_agent: wake reason: cold
+[W/LWP] not use fast load, out of memory 8388608 < 15543000
+t= 7 ch0: in  15 out  15 fps,  44685 B, I 0
+<3>[4] [Func]:vb_set_config [Line]:1371 [Info]:VB is initialized!
+vicap: video buffer pools failed (MMZ too small?)
+capture failed
+leakcam_agent: hook exited 0, next wake in 3600 s
+t= 8 ch0: in  15 out  15 fps,  30409 B, I 0
+leakcam_agent: SLEEP not answered
+leakcam_agent: done, heartbeat stopped
+t= 9 ch0: in  15 out  15 fps,  30625 B, I 0
+t=10 ch0: in  15 out  14 fps,  47678 B, I 0
+t=11 ch0: in  15 out  16 fps,  67418 B, I 1
+t=12 ch0: in  15 out  15 fps,  87089 B, I 0
+t=13 ch0: in  15 out  15 fps,  85251 B, I 0
+t=14 ch0: in  15 out  15 fps,  67431 B, I 0
+t=15 ch0: in  15 out  15 fps,  59725 B, I 0
+t=16 ch0: in  15 out  15 fps,  60660 B, I 0
+t=17 ch0: in  15 out  15 fps,  58777 B, I 0
+t=18 ch0: in  15 out  15 fps,  50112 B, I 0
+t=19 ch0: in  16 out  15 fps,  35003 B, I 0
+t=20 ch0: in  15 out  15 fps,  49432 B, I 1
+ch 0: 302 pictures encoded. Average FrameRate = 15 Fps
+ch 0: total used pages 1119
+ch0: 303 in, 302 out in 20.1 s = 15.0 fps, 510 kbit/s, I frames 3 (spacing 150-150), latency avg 10 max 38 ms
+venctest: done
+vpu_exit>q_wm 0
+msh />
+msh />chip_temp
+chip temperature: 48.502 C
+msh />
+msh />/sdcard/app/venctest 2 20 15
+venctest: 2 channel(s) H.265 128s, 20 s
+t= 1 ch0: in  15 out  14 fps, 36

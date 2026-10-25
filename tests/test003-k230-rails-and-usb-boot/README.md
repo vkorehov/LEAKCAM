@@ -41,26 +41,30 @@ BL616 test firmware PT_TEST_POWER (GPIO K230_PWR/RSTN); K230 boot ROM USB mode (
 
 Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
 
+### Automated run 2026-10-25 (run.py, 220 s): pass
+
+8 rail cycles: 3V3 up in 1.69-1.70 ms, off after pt_off every time; USB boot ROM enumerated (29f1:0230).
+
 ## Metrics (**MISSING** on a re-run: skill leakcam-test-metrics, every value at its maximum)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - K230 rails 0V8 / 1V1 / 1V8 / 3V3 (k230_rails.png), VBAT C15.1.
 
 | Metric | Value (typical / max) | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> app init (median / max of runs) | **MISSING** (2026-10-21); fill on a re-run | test022 | longest step: |
-| This part's boot share | **MISSING** (2026-10-21); fill on a re-run | - | |
-| Test run time | **MISSING** (2026-10-21); fill on a re-run | - | setup (flashing, plugging, waiting) separately |
-| Speed / rate against the top | **MISSING** (2026-10-21); fill on a re-run | SPEEDS.txt | % of the top |
-| Current floor / typical / peak | **MISSING** (2026-10-21); fill on a re-run | floor (test031) | at the probe above |
-| Voltage under load (min) | **MISSING** (2026-10-21); fill on a re-run | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING** (2026-10-21); fill on a re-run | - | scripts/energy.py |
-| Per day | **MISSING** (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | **MISSING** (2026-10-21); fill on a re-run | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Boot, power-on -> app init (median / max of runs) | n/a: rails test; reset release -> ROM on USB seen within 10 s (2026-10-25) | test022 | longest step: |
+| This part's boot share | K230_PWR -> 3V3 up 1.69-1.70 ms (pt_on, 8 cycles) (2026-10-25) | - | |
+| Test run time | 220 s automated (run.py, 2026-10-25), no setup | - | setup (flashing, plugging, waiting) separately |
+| Speed / rate against the top | n/a: rails test (2026-10-25) | SPEEDS.txt | % of the top |
+| Current floor / typical / peak | rails off 0.061 A (BL616 awake on USB, test006 2026-10-25); rails on, K230 in reset 0.086 A (test022, 2026-10-21) (2026-10-25, from recorded readings) | floor (test031) | at the probe above |
+| Voltage under load (min) | n/a: no K230 ADC reading with the K230 in reset or in its ROM; VBAT at msh idle 4.34 V (test007) | cutoff 3.10 V (bug-004) | at the probes above |
+| Power, energy per operation | n/a: the rails' share is inside the boot energy (test007: 28 uAh per cold boot) | - | scripts/energy.py |
+| Per day | n/a: the rails come up once per session; the session energy is test102 (2026-10-25) | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | die n/a: K230 off; board 34.9 / 34.9 / 31.9 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 208608 / min 204396 / 208608 B, blocks 14 -> 14, deleted 0; BL616 no leak (mem_leak.py, 8 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | not recorded at the time (before the metrics rule) | minimal image (rule) | the image this run used |
 | Compile flags | not recorded at the time (before the metrics rule) | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | BL616 test firmware commands (pt_*); test firmware 1 114 864 B; not in the product firmware (2026-10-25) | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | n/a: hardware-bound (regulator ramps): compiler flags do not change the result (2026-10-25) | the faster one stays | |
 
 ## Boot time
 
@@ -76,3 +80,5 @@ Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: curre
   waits for < 0.8 V -> plug USB before `pt_on`; rev 2 fix (bugs/v2.txt).
 - **PG_1V8 pad too small** -> implied by 1V1 being up.
 - **`pt_off` 12 ms vs 56-82 ms** -> noted, harmless.
+
+- **The automated run (2026-10-25) flagged the USB boot as a failed NAND boot** -> the harness expected msh after every boot -> `boot(expect_msh=False)` for USB boots (tools/test-standard/harness.py); the run also waited 1 min on a meter prompt nobody answered -> prompts only with LEAKCAM_METER=ask.

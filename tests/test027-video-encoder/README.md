@@ -61,26 +61,33 @@ lines good, 0 disagreeing, 0 missing in both): [venc0_1s.h265](venc0_1s.h265). f
 the generated gradient, chroma columns, noise band, and the square at the input pattern's position (frame 14 =
 pattern 6, x 240 y 150). **Pass.**
 
+### Automated run 2026-10-25 (run.py, 63 s): pass
+
+2 x 15 fps: ch0 15.0 fps 511 kbit/s, ch1 15.0 fps 510 kbit/s; 1 channel max: ch0 75.9 fps 2535 kbit/s.
+
+The 1-channel top is 10 % below 2026-10-21's 84.2 fps (DDR is faster since, 3200 vs 2667): to explain - one 15 s
+run here against one there; repeat several times before calling it a regression (the product needs 2 x 15).
+
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | **MISSING** | target (test022) | longest step: |
-| This part's boot share | **MISSING** | - | |
+| Boot, power-on -> READY (median of 5) | pt_run -> msh 0.47 / 0.47 s (median / max of 1; SPL 0.16, OpenSBI 0.24, RT-Smart 0.25, mounted 0.46, msh 0.47); longest step to mounted 0.21 s (2026-10-25, run.py) | target (test022) | longest step: |
+| This part's boot share | n/a: the encoder starts in the program (2026-10-25) | - | |
 | Test run time | runs 20:44:53-20:46:30 | - | setup 20:33-20:44: write, 2 builds (one failed), flash 33 s, boot |
 | encoder fps, bitrate | 2 x 15 fps at 510 kbit/s each; top 84 fps (1 ch) / 82 fps (2 ch) | VPU 800 MHz | product load = 36 % of the top |
 | Current idle / during | 205 / 207 (1 ch) / 220 mA, peaks 245 (2 ch) / 270 mA at max rate | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT ~4.15 V |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
+| Voltage under load (min) | VBAT 4.36 V min (K230 ADC ch 1, test023 calibration, 3 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | 2 channels: +62 mW over idle; a 5 s two-camera clip +0.31 J (21 uAh) for the encoder alone | - | by hand |
-| Per day | **MISSING** | ENERGY.txt line | n per day |
+| Per day | 4 alarm clips a day x 20 s of 2 x 15 fps: see ENERGY.txt (the encoder adds ~15 mA, 2026-10-21) (2026-10-25) | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | 47.9 / 48.5 / 47.9 C (board not read) | K230 limit (datasheet) | encoder adds no measurable heat in 20 s |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 206440 / min 204396 / 206440 B, blocks 16 -> 16, deleted 0; K230 heap available 7025152 / 7025152 / 7312064 B; leak: n/a, 3 snapshots (mem_leak.py needs >= 8 cycles) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB | minimal image (rule) | the image this run used |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, -ffunction/-fdata-sections, --gc-sections, strip (no LTO) | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | venctest 79 600 B on /sdcard (test only); the encoder (MPP) is in the product's leakcam_stream (2026-10-25) | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | n/a: hardware-bound (the VPU encodes; the CPU only queues frames): compiler flags do not change the result (2026-10-25) | the faster one stays | |
 
 ## Boot time
 
@@ -107,3 +114,5 @@ Battery current with one and two encoder channels running; energy per second of 
   was still open (unusable); a clean single-reader dump still drops ~16 lines in 23k and can garble one into a line
   that parses -> unhexdump.py checks each line's ASCII column and merges dumps; always list and kill earlier readers
   (by PID) before a capture.
+
+None in the run of 2026-10-25.

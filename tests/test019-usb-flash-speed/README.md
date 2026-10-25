@@ -51,26 +51,34 @@ K230 26.9 s (erase 8.0 s; one `LIBUSB_ERROR_TIMEOUT` during the erase, normal, i
 
 Production per board (both chips, no hand action but plugging): ~45 s plus the K230 boot-device wait.
 
+### Automated run 2026-10-25 (run.py, 56 s): pass
+
+flash_nand.sh (erase 0..248M + write 45441024 B): 24.6 s, ok; 1.85 MB/s overall incl. erase; then booted to msh. Log: flash_last.txt
+
+### Automated run 2026-10-25 (run.py, 56 s): pass
+
+flash_nand.sh (erase 0..248M + write 45441024 B): 24.6 s, ok; 1.85 MB/s overall incl. erase; then booted to msh. Log: flash_last.txt
+
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | **MISSING** | target (test022) | longest step: |
-| This part's boot share | **MISSING** | - | |
+| Boot, power-on -> READY (median of 5) | pt_run -> msh 0.46 / 0.46 s (median / max of 1; SPL 0.16, OpenSBI 0.24, RT-Smart 0.25, mounted 0.45, msh 0.46); longest step to mounted 0.20 s (2026-10-25, run.py) | target (test022) | longest step: |
+| This part's boot share | n/a: flashing is not part of a boot (2026-10-25) | - | |
 | Test run time | 25.7 s K230 + 18 s BL616 | - | |
 | USB NAND flashing write speed | 5.3-5.6 MB/s large parts, 3.1-3.7 small | NAND program limit (test017) | whole flash 25.7 s |
 | Current idle / during (min / avg / peak) | 207 mA rails on in USB boot; write not measured (15 s, too short to read) | floor (test031) | USB-C 1 VBUS meter |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING** | - | scripts/energy.py |
-| Per day | **MISSING** | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
-| Image (sizes) | **MISSING** | minimal image (rule) | the image this run used |
-| Compile flags | **MISSING** | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Voltage under load (min) | VBAT 4.37 V min (K230 ADC ch 1, test023 calibration, 1 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
+| Power, energy per operation | n/a: on USB power, never from the cell (2026-10-25) | - | scripts/energy.py |
+| Per day | n/a: flashing is a factory / update step (2026-10-25) | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | die 39.8 / 39.8 / 39.8 C; board 31.8 / 31.8 / 31.8 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 208608 / min 204396 / 208608 B, blocks 14 -> 14, deleted 0; K230 heap available 7025152 B steady; leak: n/a, 1 snapshots (mem_leak.py needs >= 8 cycles) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Image (sizes) | kdimg 45441024 B (test image: product programs + test tools) (2026-10-25) | minimal image (rule) | the image this run used |
+| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os -march=rv64imafdcv, sections + --gc-sections, strip, no LTO; BL616 test firmware -O2 (SDK default), no LTO (2026-10-25) | smallest code (rule) | |
+| Features over the minimal image | n/a: flashing writes the image itself (2026-10-25) | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | n/a: hardware-bound (NAND erase/program and USB 2.0 rates): compiler flags do not change the result (2026-10-25) | the faster one stays | |
 
 ## Boot time
 
@@ -89,3 +97,7 @@ n/a: flashing runs from USB power.
   answers back.
 - **Build line `An error occurred: 'CONFIG_FAST_BOOT_DELETE_ORIGIIN_FILE'`** (the SDK's image script reading an option
   the leakcam defconfig does not set): the build ends 0 and the kdimg is complete; harmless.
+
+None in the run of 2026-10-25.
+
+None in the run of 2026-10-25.

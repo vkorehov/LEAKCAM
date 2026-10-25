@@ -1,0 +1,51 @@
+UK¡oot: command not found.
+msh />
+msh />/sdcard/app/venctest 1 15 0
+venctest: 1 channel(s) H.265 1280x960 CBR 500 kbit/s, feed max 0 fps, 15 s
+t= 1 ch0: in  81 out  78 fps, 482458 B, I 1
+t= 2 ch0: in  86 out  88 fps, 246993 B, I 1
+t= 3 ch0: in  83 out  83 fps, 390861 B, I 0
+t= 4 ch0: in  91 out  91 fps, 316758 B, I 1
+t= 5 ch0: in  87 out  87 fps, 344820 B, I 0
+t= 6 ch0: in  82 out  82 fps, 336488 B, I 1
+t= 7 ch0: in  89 out  89 fps, 367658 B, I 0
+t= 8 ch0: in  81 out  82 fps, 360880 B, I 1
+t= 9 ch0: in  87 out  86 fps, 350444 B, I 1
+t=10 ch0: in  82 out  82 fps, 333190 B, I 0
+t=11 ch0: in  82 out  82 fps, 397351 B, I 1
+t=12 ch0: in  91 out  92 fps, 369744 B, I 0
+t=13 ch0: in  77 out  76 fps, 286684 B, I 1
+leakcam_agent: no WAKE from BL616, assuming cold start
+leakcam_agent: sensors: -0.1 %RH, 0.0 C, probe -1 mV, battery 4470 mV
+leakcam_agent: wake reason: cold
+[W/LWP] not use fast load, out of memory 8388608 < 15543000
+<3>[4] [Func]:vb_set_config [Line]:1371 [Info]:VB is initialized!
+vicap: video buffer pools failed (MMZ too small?)
+capture failed
+t=14 ch0: in  88 out  89 fps, 361662 B, I 0
+leakcam_agent: hook exited 0, next wake in 3600 s
+t=15 ch0: in  83 out  82 fps, 321087 B, I 1
+ch 0: 1272 pictures encoded. Average FrameRate = 84 Fps
+ch 0: total used pages 1119
+ch0: 1273 in, 1270 out in 15.1 s = 84.2 fps, 2797 kbit/s, I frames 9 (spacing 149-150), latency avg 20 max 82 ms
+venctest: done
+vpu_exit>q_wm 0
+msh />
+msh />leakcam_agent: SLEEP not answeretopped
+venctest: 2 channel(s) H.265 1280x960 CBR 500 kbit/s, feed max 02979 B, I 1
+t= 1 ch1: in  16 out  13 fps, 393143 B, I 1
+5525 B, I 0
+t= 2 ch1: in  50 out  50 fps,  92017 B, I 0
+0248 B, I 0
+t= 3 ch1: in  45 out  45 fps,  87215 B, I 0
+3424 B, I 1
+t= 4 ch1: in  45 out  45 fps, 107929 B, I 1
+6864 B, I 0
+t= 5 ch1: in  39 out  39 fps, 159177 B, I 0
+t  44 fps, 182286 B, I 0
+t  40 fps, 169232 B, I 0
+t= 8 ch0: in  44 out  43 fps, 16t= 9 ch0: in  40 out  40 fps, 16t=10 ch0: in  41 out  41 fps, 159665 B, I 0
+t=10 ch1: in  39 ou8720 B, I 1
+t=11 ch1: in  44 out  44 fps, 182827 B, I 1
+t  41 fps, 169634 B, I 0
+t=13 ch0: in  40 out  40 fps, 15

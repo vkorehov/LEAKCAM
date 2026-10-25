@@ -1,0 +1,53 @@
+0x960 CBR 500 kbit/s, feed 15 fp2658 B, I 1
+t= 1 ch1: in  15 out  14 fps, 388046 B, I 1
+t= 2 ch0: in  15 out  15 fps,  33457 B, I 0
+t= 2 ch1: in  16 out  15 fps,  34298 B, I 0
+t= 3 ch0: in  15 out  15 fps,  22876 B, I 0
+t= 3 ch1: in  15 out  16 fps,  27419 B, I 0
+t= 4 ch0: in  15 out  15 fps,  31751 B, I 0
+t= 4 ch1: in  15 out  15 fps,  28831 B, I 0
+t= 5 ch0: in  15 out  15 fps,  26066 B, I 0
+t= 5 ch1: in  15 out  15 fps,  24708 B, I 0
+t= 6 ch0: in  15 out  15 fps,  24857 B, I 0
+t= 6 ch1: in  15 out  15 fps,  29441 B, I 0
+t= 7 ch0: in  15 out  15 fps,  44685 B, I 0
+t= 7 ch1: in  15 out  15 fps,  34440 B, I 0
+t= 8 ch0: in  15 out  15 fps,  30409 B, I 0
+t= 8 ch1: in  15 out  15 fps,  24880 B, I 0
+t= 9 ch0: in  15 out  15 fps,  30625 B, I 0
+t= 9 ch1: in  15 out  15 fps,  22889 B, I 0
+t=10 ch0: in  16 out  14 fps,  47678 B, I 0
+t=10 ch1: in  15 out  14 fps,  45735 B, I 0
+t=11 ch0: in  15 out  16 fps,  72906 B, I 1
+t=11 ch1: in  15 out  15 fps,  62144 B, I 1
+t=12 ch0: in  15 out  14 fps,  87159 B, I 0
+t=12 ch1: in  15 out  14 fps,  61388 B, I 0
+t=13 ch0: in  15 out  16 fps,  85311 B, I 0
+t=13 ch1: in  15 out  17 fps,  67448 B, I 0
+t=14 ch0: in  15 out  14 fps,  65464 B, I 0
+t=14 ch1: in  15 out  14 fps,  62888 B, I 0
+t=15 ch0: in  15 out  16 fps,  59811 B, I 0
+t=15 ch1: in  15 out  16 fps,  62395 B, I 0
+t=16 ch0: in  15 out  15 fps,  61006 B, I 0
+t=16 ch1: in  15 out  15 fps,  62790 B, I 0
+t=17 ch0: in  15 out  15 fps,  59250 B, I 0
+t=17 ch1: in  15 out  15 fps,  62476 B, I 0
+t=18 ch0: in  15 out  15 fps,  49207 B, I 0
+t=18 ch1: in  15 out  15 fps,  63732 B, I 0
+t=19 ch0: in  16 out  15 fps,  34036 B, I 0
+t=19 ch1: in  16 out  15 fps,  62289 B, I 0
+t=20 ch0: in  15 out  15 fps,  49625 B, I 1
+t=20 ch1: in  15 out  15 fps,  49060 B, I 1
+ch 0: 304 pictures encoded. Average FrameRate = 15 Fps
+ch 0: total used pages 1119
+ch0: 304 in, 302 out in 20.2 s = 15.0 fps, 511 kbit/s, I frames 3 (spacing 149-149), latency avg 110 max 171 ms
+ch 1: 304 pictures encoded. Average FrameRate = 15 Fps
+ch 1: total used pages 1119
+ch1: 304 in, 301 out in 20.2 s = 14.9 fps, 508 kbit/s, I frames 3 (spacing 149-149), latency avg 116 max 167 ms
+venctest: done
+vpu_exit>q_wm 0
+msh />
+msh />chip_temp
+chip temperature: 47.900 C
+msh />
+msh />

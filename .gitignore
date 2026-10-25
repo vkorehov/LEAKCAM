@@ -129,6 +129,8 @@ tools/jlcpcb-cart/package-lock.json
 # results the READMEs link to (2026-10-24)
 !/*.txt
 !tests/**/*.txt
+!tests/**/*.csv
+!tests/**/*.log
 !bugs/**/*.txt
 !firmware/**/*.txt
 !tools/**/*.txt
@@ -143,3 +145,6 @@ tools/jlcpcb-cart/package-lock.json
 # SolidWorks/Office lock files of open documents
 ~$*
 __pycache__/
+
+# run_tests.py console logs (raw, overwritten each run; the results go into the README)
+tests/*/run.log

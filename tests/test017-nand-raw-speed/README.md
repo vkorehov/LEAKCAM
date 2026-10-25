@@ -139,6 +139,28 @@ sample delay step in ps (Canaan's whole-ns step gave delay 6 for 6 ns at 800 MHz
 80 MHz after the cleanup: 20/20 cold boots clean, /bin read correct every time (2026-10-25). Logs kept: sweep100.csv, shift100_out.txt, split100_out.txt, verify100_out.txt, boots100_out.txt,
 boots_uboot_out.txt, boots100_console.txt.
 
+### Automated run 2026-10-25 (run.py, 127 s): pass
+
+8 x `nand_bench read 64`, checksums equal; last:
+
+    nand_bench read: nand0 blocks 384..447, 0 read errors, checksum 58fab9bb
+    nand_bench read: nand0 blocks 384..447, 0 read errors, checksum 58fab9bb
+    nand_bench read: nand0 blocks 384..447, 0 read errors, checksum 58fab9bb
+
+- meter K230 at msh idle (agent running): 0.220 A (read in test006-k230-nand-boot-spl)
+- meter K230 running nand_bench read 64 over and over: 0.222 A
+
+### Automated run 2026-10-25 (run.py, 54 s): pass
+
+8 x `nand_bench read 64`, checksums equal (7fcbfcbe); last:
+
+    raw page read (2 KiB pages)      8192 KB in 406001 us:   20.6 MB/s
+    nand_bench read: nand0 blocks 384..447, 0 read errors, checksum 7fcbfcbe
+    raw page read (2 KiB pages)      8192 KB in 405788 us:   20.6 MB/s
+
+- meter K230 at msh idle (agent running): 0.220 A (read in test006-k230-nand-boot-spl)
+- meter K230 running nand_bench read 64 over and over: 0.222 A (read in test017-nand-raw-speed)
+
 ## Metrics (2026-10-21, bench image)
 
 Setup (2026-10-21): USB-C 1 the only power path (USB-C 2 VBUS cut, PR1 VBUS cut), meter (10 A range, 0.1 mA
@@ -158,7 +180,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Raw read, data at 100 MHz (2026-10-24, adopted) | 23.0 MB/s | 50 MB/s bus | 46 %; 1-line phases at 80 MHz; one of 10 reads 12.3 MB/s (open) |
 | Program | 4.6-5.0 MB/s | chip limit | |
 | Current idle / read 50 / read 80 / program | 204 / 225 / 232 / 235-236 mA | floor 204 | USB-C 1 VBUS |
-| Voltage under load (min) | **MISSING**: 2026-10-24 the cell was charging (530 mA at idle, user), which hides the board's draw; retake with the cell full (D1 off) | cutoff 3.10 V (bug-004) | at the probes above |
+| Voltage under load (min) | VBAT 4.34 V min (K230 ADC ch 1, test023 calibration, 9 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Energy per MiB read, whole board | 57 mJ at 50 MHz, 45 mJ at 80 MHz | - | 21 % less: shorter time at the 204 mA floor |
 | Per day | inside the boot (mounts) and sessions | ENERGY.txt 3 | |
 | Temperature die / board (start / peak / end) | die 42.8 / 43.7 / 43.1 C, board (AHT20) 33.4 / 33.9 / 33.9 C (2026-10-24, 10 /bin reads + writes) | K230 limit (datasheet) | chip_temp, AHT20 |
@@ -166,8 +188,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB | minimal image (rule) | the image this run used |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, -ffunction/-fdata-sections, --gc-sections, strip (no LTO) | smallest code (rule) | |
 | Features over the minimal image | n/a: the NAND driver is the boot device, part of test008's floor; the per-phase patch adds two fields and two setters | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
-| Power, energy per operation | **MISSING**: as voltage, cell charging on 2026-10-24; at 100 MHz the read takes 10 % less time than at 80 MHz | - |  |
+| Optimised build (-O3, LTO, -march) | n/a: hardware-bound (NAND QSPI bus at 80 MHz): compiler flags do not change the result (2026-10-25) | the faster one stays | |
+| Power, energy per operation | 222 mA x 4.34 V = 963 mW; per 8 MB raw read (64 blocks) (0.41 s) 0.39 J, 25 uAh; over idle (220 mA) 0.00 J (2026-10-25) | - |  |
 
 ## Boot time
 
@@ -206,3 +228,7 @@ Battery current during raw reads, programs, erases at each NAND clock; energy pe
 - **`leakcam_docker_build.sh log` stopped at once: "empty string invalid as file name"** (2026-10-24) -> my pipefail
   fix quoted the extra make arguments with `printf '%q '`, which prints `''` when there are none -> only real
   arguments are quoted now (comment at the fix, docker/leakcam_docker_build.sh).
+
+None in the run of 2026-10-25.
+
+None in the run of 2026-10-25.
