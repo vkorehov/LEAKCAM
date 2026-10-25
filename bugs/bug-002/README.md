@@ -89,7 +89,9 @@ VUSB (D3 VCC = VUSB), the USB-C source sees ~2.2 V and never turns VBUS on.
 
 **To pin the path** (rails on with `pt_on`, K230 held in reset, no cable in either port): VUSB (C2 pad 1) ~2.2 V and
 D3 pin 6 (DBGP_D_P) ~3.3 V confirm D3; then lift D3 pin 5 (VCC): VUSB below 0.8 V = fixed (rev 1 rework: D3 out or its
-VCC pin lifted; USB-C 2 is buried in the enclosure and unused in the product). VUSB still high = another path: D5 (the
+VCC pin lifted; USB-C 2 is buried in the enclosure and unused in the product). **Rework only with hot air** (D3 off
+whole): no pin lifting and no trace cut on this board (user, 2026-10-25); until then the firmware's end-of-session
+handling stands, the hardware fix is rev 2. VUSB still high = another path: D5 (the
 K230 USB ESD array, same VCC wiring; only with the K230's D+ pulled up as a device, and test003 saw 2.2 V with the
 K230 in reset) or R63 (30 k, VUSB to K230 B7).
 
