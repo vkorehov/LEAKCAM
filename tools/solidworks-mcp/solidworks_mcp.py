@@ -500,12 +500,19 @@ async def save_as(path: str) -> str:
 
 
 @mcp.tool()
-async def snapshot(view: str = "*Isometric") -> Image:
-    """PNG of the active document in a named view (*Isometric, *Front, *Top, *Right, ...), zoomed to fit."""
+async def snapshot(view: str = "*Isometric", box: list[float] | None = None) -> Image:
+    """PNG of the active document in a named view (*Isometric, *Front, *Top, *Right, ...), zoomed to fit,
+    or to box = [x0, y0, z0, x1, y1, z1] in model mm (a close-up of a small feature)."""
+    if box is not None and len(box) != 6:
+        raise ValueError("box needs 6 numbers: x0, y0, z0, x1, y1, z1 in mm")
+
     def run():
         model = active()
         model.ShowNamedView2(view, -1)
-        get(model, "ViewZoomtofit2")
+        if box is None:
+            get(model, "ViewZoomtofit2")
+        else:
+            model.ViewZoomTo2(*(v / 1000.0 for v in box))
         path = os.path.join(tempfile.gettempdir(), "solidworks_mcp_snapshot.png")
         err, warn = byref_int(), byref_int()
         if not model.Extension.SaveAs(path, 0, SILENT, nothing(), err, warn):
