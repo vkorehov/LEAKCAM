@@ -16,7 +16,8 @@
  * Transmit queues are fixed rings of pre-sized slots, so the data path never allocates:
  * lwIP's tcpip thread copies a frame into a slot (the driver advertises copy-before-return,
  * so lwIP hands pbufs over directly) and the worker sends it when a port and a credit are
- * free.
+ * free. A full netdev ring makes the sender wait for a slot (up to TX_WAIT_MS) instead of dropping the frame: the
+ * drops made TCP retransmit and back off (tests/test100, 2026-10-25: 10796 of 15227 frames dropped in a 10 s upload).
  */
 #include <rthw.h>
 #include <rtthread.h>
@@ -28,13 +29,14 @@
 #define DBG_LVL DBG_INFO
 #include <rtdbg.h>
 
-#define DATA_SLOTS       8
+#define DATA_SLOTS       16     /* bursts while the BL616 has no credit (8 were full most of the time) */
 #define DATA_SLOT_SIZE   1536   /* 8-byte header + Ethernet frame up to 1514, as 3 blocks */
 #define CTRL_SLOTS       4
 #define CTRL_SLOT_SIZE   128    /* 12 bytes of headers + the largest control message (100) */
 #define RX_BURST         16     /* uploads per wake-up before the transmit side gets a turn */
 #define START_TIMEOUT_MS 1000   /* resend HOST_READY when DEVICE_START does not come */
 #define SAFETY_POLL_MS   1000   /* a missed card interrupt costs at most this much latency */
+#define TX_WAIT_MS       20     /* a frame waits this long for a free slot, then it is dropped */
 
 #define WORKER_STACK     8192
 #define WORKER_PRIORITY  14     /* just above the WLAN work queue (15), below the SDIO IRQ thread */
@@ -84,6 +86,10 @@ static rt_thread_t worker;
 static struct rt_completion worker_done;
 static volatile rt_bool_t running;
 static rt_uint32_t polls, late_polls;   /* safety-poll timeouts; those that found uploads waiting (bl616_stat) */
+static struct rt_semaphore tx_space;    /* given by the worker when it frees a netdev slot and someone waits */
+static volatile rt_uint32_t tx_waiters;
+static rt_uint32_t tx_frames, tx_full, credit_stalls;   /* frames queued; dropped on a full ring; passes that found
+                                                         * frames waiting and no credit (bl616_stat) */
 
 static void ring_init(struct ring *r, rt_uint8_t *buf, rt_uint16_t slot_size, rt_uint8_t slots,
                       const char *name)
@@ -157,13 +163,25 @@ static rt_err_t queue(struct chan *ch, const void *a, rt_size_t alen, const void
         return -RT_EIO;
     if (len > ch->ring.slot_size)
         return -RT_EINVAL;
+    rt_tick_t until = rt_tick_get() + rt_tick_from_millisecond(TX_WAIT_MS);
     rt_mutex_take(&ch->ring.lock, RT_WAITING_FOREVER);
-    slot = ring_tail(&ch->ring);
-    if (!slot)
+    while (!(slot = ring_tail(&ch->ring)))
     {
-        rt_mutex_release(&ch->ring.lock);
-        return -RT_EFULL;
+        rt_int32_t left = (rt_int32_t)(until - rt_tick_get());
+        if (ch != &netdev || left <= 0 || rt_thread_self() == worker)
+        {
+            rt_mutex_release(&ch->ring.lock);
+            if (ch == &netdev)
+                tx_full++;
+            return -RT_EFULL;
+        }
+        tx_waiters++;
+        bl616_link_wake();
+        rt_sem_take(&tx_space, left);   /* the lock stays held: producers queue in order */
+        tx_waiters--;
     }
+    if (ch == &netdev)
+        tx_frames++;
     ch_hdr_fill((struct bl616_ch_hdr *)slot, ch->tag, BL616_FLAG_DNLD_DATA, alen + blen);
     rt_memcpy(slot + sizeof(struct bl616_ch_hdr), a, alen);
     if (blen)
@@ -290,6 +308,8 @@ static rt_err_t ch_service(struct chan *ch)
     if (ch->state != CH_RUN)
         return RT_EOK;
 
+    if (ch == &netdev && r->count && (rt_int8_t)(ch->credit - ch->sent) <= 0)
+        credit_stalls++;
     while (r->count && (rt_int8_t)(ch->credit - ch->sent) > 0)
     {
         err = bl616_sdio_write(r->buf + (rt_size_t)r->head * r->slot_size, r->len[r->head]);
@@ -300,6 +320,8 @@ static rt_err_t ch_service(struct chan *ch)
         else
             ch->sent++;
         ring_pop(r);
+        if (ch == &netdev && tx_waiters)
+            rt_sem_release(&tx_space);
     }
     return RT_EOK;
 }
@@ -354,6 +376,7 @@ rt_err_t bl616_link_start(void)
     if (!once)
     {
         rt_event_init(&link_event, "bl616", RT_IPC_FLAG_PRIO);
+        rt_sem_init(&tx_space, "bl616t", 0, RT_IPC_FLAG_PRIO);
         ring_init(&netdev.ring, data_buf, DATA_SLOT_SIZE, DATA_SLOTS, "bl616d");
         ring_init(&vchan.ring, ctrl_buf, CTRL_SLOT_SIZE, CTRL_SLOTS, "bl616c");
         once = RT_TRUE;
@@ -395,8 +418,9 @@ extern rt_uint32_t bl616_card_irqs;
 /* tests/test100: card interrupts against safety polls; a late poll is a message that waited up to SAFETY_POLL_MS */
 static int bl616_stat(void)
 {
-    rt_kprintf("bl616_stat: card irqs %u, safety polls %u, late %u\n", (unsigned)bl616_card_irqs, (unsigned)polls,
-               (unsigned)late_polls);
+    rt_kprintf("bl616_stat: card irqs %u, safety polls %u, late %u; tx frames %u, dropped (ring full) %u, credit "
+               "stalls %u\n", (unsigned)bl616_card_irqs, (unsigned)polls, (unsigned)late_polls, (unsigned)tx_frames,
+               (unsigned)tx_full, (unsigned)credit_stalls);
     return 0;
 }
 MSH_CMD_EXPORT(bl616_stat, test100: card interrupts and safety polls of the BL616 link);

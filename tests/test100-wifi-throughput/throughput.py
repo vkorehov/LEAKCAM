@@ -14,8 +14,8 @@ ssid, psk = wifi_credentials()
 
 def mem(fd, tag):
     b = re.findall(r"free[^\n]*", bl("mem", 2))
-    k = re.findall(r"(?:total|used|maximum|free)[^\n]*", cmd(fd, "free", 1.5))
-    log(f"{tag}: BL616 {b[:1]} | K230 {' '.join(k)[:160]}")
+    k = [l.strip() for l in cmd(fd, "free", 1.5).splitlines() if re.search(r"\d{4,}", l)]
+    log(f"{tag}: BL616 {b[:1]} | K230 {' | '.join(k)[:200]}")
 
 
 bl("pt_off", 2); bl("pt_boot1 low"); bl("pt_on", 2)
@@ -43,6 +43,7 @@ for l in out.splitlines():
     if re.search(r"(?i)mbps|kbps|bit|error|connect|stop", l):
         log("  ", l.strip())
 cmd(fd, "iperf --stop", 2)
+log("after upload", re.findall(r"bl616_stat:[^\n]*", cmd(fd, "bl616_stat", 1)))
 log(f"--- download: iperf -s, SERVER UP {ip}")
 cmd(fd, "iperf -s -i 1", 1)
 print(f"SERVER UP {ip}", flush=True)
@@ -52,6 +53,14 @@ for l in out.splitlines():
         log("  ", l.strip())
 cmd(fd, "iperf --stop", 2)
 log(re.findall(r"bl616_stat:[^\n]*", cmd(fd, "bl616_stat", 1)))
+if len(sys.argv) > 2:                    # UDP up at the given rate (PC: pc_tcp_bench.py usink)
+    log(f"--- UDP up: iperf -u -c {PC} -b {sys.argv[2]} -t {UP_S}")
+    out = cmd(fd, f"iperf -u -c {PC} -b {sys.argv[2]} -t {UP_S} -i 1", UP_S + 6, r"(?i)stopped|error")
+    for l in out.splitlines():
+        if re.search(r"(?i)mbps|kbps|error", l):
+            log("  ", l.strip())
+    cmd(fd, "iperf --stop", 2)
+    log(re.findall(r"bl616_stat:[^\n]*", cmd(fd, "bl616_stat", 1)))
 log(re.findall(r"pt_wifi status[^\n]*", bl("pt_wifi status", 2)))
 mem(fd, "after")
 bl("pt_off", 2)
