@@ -114,6 +114,8 @@ always in, USB-C 2 never plugged.
 | F'' | switched on again with the Mac in | in | - | - | **yes, keeps charging** |
 | G | on, K230 running + both LEDs 100 % (cell discharged a little first) | out | 3.99 V (the cell under load) | 3.1 V | - |
 | G2 | the same, a plain 5 V wall charger plugged in | in | - | - | **yes, at once** (PGOOD low) |
+| H | on (K230 in reset), Mac unplugged and plugged back | in | - | - | **no** (reproduced) |
+| H2 | the same, **D (U2 pin 1) shorted to GND for a moment** | in | - | 0 | **yes, charging started** |
 
 - **The fault is only at plug-in with the rails on, and only with a USB-C source that checks VBUS** (the Mac's port):
   it never starts. **A plain 5 V wall charger charges at once with the rails on** (G2), as in the first finding. Once
@@ -122,8 +124,12 @@ always in, USB-C 2 never plugged.
   stiff path through the charger itself (the only part on VUSB with the battery side behind it). It does **not** block
   the start (plug-in works with it when the rails are off), so it is a separate oddity to check against the BQ24072's
   input blocking spec. It also rules out a bleed resistor across C2 as a fix (it cannot pull a ~10 ohm path down).
-- With the rails on the CH340X pull-up is live (D 2.8-3.0 V). Remaining suspects, both only with the rails on: **D3**
-  (CH340X D+ into VUSB) or **D5** (the K230's USB data lines on USB-C 1). The finer probe points (D5 pins, CC on R4 /
+- **Cause confirmed (H2): the CH340X's D+ pull-up through D3 into VUSB.** Grounding D for a moment let the Mac start
+  at once with the rails on. (D5, the K230's USB lines, is not needed for it.)
+- **Rev 1 fix options:** a solder bridge over U2 pins 1-2-3 (UD+, UD-, GND, adjacent): D+ held at ground, an iron job,
+  undone with wick; costs ~2 mA through the pull-up while the rails are on, nothing asleep; the USB-C 2 debug console is
+  lost (buried, unused: the K230 console runs through the BL616). Or U2 off with hot air (no cost). Rev 2 as above.
+- Was: "remaining suspects D3 or D5" - settled by H2. The finer probe points (D5 pins, CC on R4 /
   R9: [usbc1_top.png](usbc1_top.png), [usbc1_bottom.png](usbc1_bottom.png)) were too fine to probe by hand. Next with
   hot air: D3 off, then one plug-in with the rails on answers D3 vs D5.
 - Product impact unchanged: a plug-in during a K230 session charges when the session ends (firmware handles it).
