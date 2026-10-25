@@ -112,9 +112,12 @@ always in, USB-C 2 never plugged.
 | F | on, the Mac still plugged in (not the wall charger: my mistake) | in | - | - | **no**, PGOOD high |
 | F' | switched off with the Mac in | in | - | - | PGOOD low at once |
 | F'' | switched on again with the Mac in | in | - | - | **yes, keeps charging** |
+| G | on, K230 running + both LEDs 100 % (cell discharged a little first) | out | 3.99 V (the cell under load) | 3.1 V | - |
+| G2 | the same, a plain 5 V wall charger plugged in | in | - | - | **yes, at once** (PGOOD low) |
 
-- **The fault is only at plug-in with the rails on** (Mac USB-C port; a plain wall charger not tried yet): the source
-  never starts. Once the input is accepted, the rails can go on and it keeps charging.
+- **The fault is only at plug-in with the rails on, and only with a USB-C source that checks VBUS** (the Mac's port):
+  it never starts. **A plain 5 V wall charger charges at once with the rails on** (G2), as in the first finding. Once
+  the Mac's input is accepted, the rails can go on and it keeps charging.
 - **U1 back-feeds VUSB from the cell** with nothing plugged: 4.17 V open, 4.15 V into 2.1 kohm (~2 mA, ~10 ohm): a
   stiff path through the charger itself (the only part on VUSB with the battery side behind it). It does **not** block
   the start (plug-in works with it when the rails are off), so it is a separate oddity to check against the BQ24072's
