@@ -74,6 +74,32 @@ board (AHT20) after each step. Meter: 600 mA range (shunt + fuse drop the board'
 - Heat over the 4 min run (K230 idle, LEDs stepping): die 34.6 -> 48.2 C, board 28.7 -> 38.1 C.
 - Obstacle: my run call was interrupted at its end, before `pt_off`: the K230 stayed on until switched off by hand.
 
+### The knee on a 10 A range, 2026-10-25 12:24 (`led_steps.py 15 top`, meter in the USB-C 1 charge line, cell full)
+
+Cell charged first (charge current tapered 0.24 -> 0.06 A, D1 off), so the USB input is the board's load alone, at 5 V.
+
+| Step | USB input | Above idle | Input power above idle | Die / board C |
+|---|---|---|---|---|
+| K230 idle, LEDs off | 0.22 A | - | - | 38 / 33 |
+| white 75 % | 0.50 A | +0.28 A | 1.4 W | |
+| white 100 % | 0.56 A | +0.34 A | **1.7 W** | 42.5 / 34.6 |
+| white off | 0.22 A | 0 | | 44.6 / 35.2 |
+| IR 75 % | 0.50 A | +0.28 A | 1.4 W | 45.5 / 36.2 |
+| IR 100 % | 0.60 A | +0.38 A | **1.9 W** | 46.1 / 37.4 |
+| both 100 % | 0.95 A | +0.73 A | 3.65 W | 47.9 / 39.1 |
+
+- **100 % beats 75 % here**: the flat top of the first run was the 600 mA range's drop on the supply, not the board.
+- Each chain needs ~1.7 W in at its full target (1.47 W out at ~86 %): white draws exactly that, IR a little more, so
+  both reach full current on the USB-fed system rail (~4.4-5 V); on a full cell LED_STRIPS.txt puts them at the knee.
+- Both chains + the K230 from the battery: ~1.1-1.2 A during a lit shot (plan ~1-1.5 A).
+- **USB unplugged during "both 100 %": the battery took the whole load (K230 + both chains) with no brownout**; the
+  K230 kept running. The runner died on the console's I/O error at that moment (the BL616's USB re-enumerated), so
+  "both off" was never sent: switched off by hand (`pt_off`). Fixed: the runner switches the LEDs and the rails off
+  in a `finally`. User: the same brightness on the battery, good enough for the battery test.
+- The cell gave ~1.15 A (0.95 A x 5 V / ~4.1 V) without a sag the LEDs showed; BQ24072 battery FET rated 4.5 A,
+  the 1000 mAh cell ~1C continuous / 2C bursts: a lit shot (< 1 s) is within it.
+- Heat over 2 min: die 38 -> 48 C, board 33 -> 39 C.
+
 ### Temperature
 
 Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.

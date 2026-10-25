@@ -40,13 +40,20 @@ if len(sys.argv) > 2 and sys.argv[2] == "top":   # the knee only: 75 / 100 % and
              ("white off", WHITE, 0), ("IR 75 %", IR, 75), ("IR 100 %", IR, 100), ("both 100 %", WHITE, 100),
              ("both off", None, 0)]
 log(f"start: {temps(fd)}; each step {HOLD_S} s")
-for name, ch, pct in steps:
-    if name == "both off":
+try:
+    for name, ch, pct in steps:
+        if name == "both off":
+            pwm(fd, WHITE, 0); pwm(fd, IR, 0)
+        elif ch is not None:
+            pwm(fd, ch, pct)
+        log(f">>> {name}: read the meter now")
+        time.sleep(HOLD_S - 3)
+        log(f"    {name}: {temps(fd)}")
+finally:
+    # whatever happened (a USB unplug drops the console: OSError), the LEDs and the K230 go off
+    try:
         pwm(fd, WHITE, 0); pwm(fd, IR, 0)
-    elif ch is not None:
-        pwm(fd, ch, pct)
-    log(f">>> {name}: read the meter now")
-    time.sleep(HOLD_S - 3)
-    log(f"    {name}: {temps(fd)}")
-bl("pt_off", 2)
-log("done, K230 off")
+    except OSError:
+        pass
+    bl("pt_off", 2)
+    log("done, LEDs and K230 off")
