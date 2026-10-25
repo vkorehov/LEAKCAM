@@ -12,8 +12,13 @@ limit) to the BL616's 2.4 GHz radio. Needs the product BL616 firmware (open on r
 
 ## Needs (build features and dependencies)
 
-**MISSING**: the kernel options / drivers, SDK components, libraries and programs this test uses (the union over all
-tests is what the minimal image keeps).
+- K230 image: bl616_nethub driver, RT-Thread WLAN + lwIP 2.1.2, the `wifi` / `ifconfig` / `ping` shell commands
+  (RT_WLAN_MSH_CMD_ENABLE, test-only), `bl616_rescan` / `bl616_stat` (same switch), netutils `iperf`
+  (CONFIG_PKG_NETUTILS_IPERF, k230d_leakcam_defconfig, test-only); install.sh patches: SDIO card interrupt armed,
+  no DHCP ARP check.
+- BL616: test firmware `bl616_powertest` with PT_TEST_WIFI (pt_wifi, pt_poll) and the product's wifi_link.c;
+  easyflash (credentials, remembered AP).
+- LAN PC: Python 3 for `pc_tcp_bench.py`, an inbound firewall rule for TCP 5001 (local subnet).
 
 ## Steps
 
@@ -287,6 +292,15 @@ Battery current: Wi-Fi join (energy per join, paid on every networked session), 
 - **The first `pt_poll` cycles did not repeat** (2026-10-25) -> on USB power the RTC wake left no HBN interrupt state
   ("cold start / reset") -> the loop resumes on pt_sleep's own wake mark; the first cycle also starts from a sleep
   (it had run in the open session: radio already up, 209 s "awake").
+- **The PC's firewall blocked port 5001** (2026-10-25) -> `netsh` from the MCP's Python needed elevation -> added
+  with `Start-Process -Verb RunAs` (no prompt on that PC): rule "LEAKCAM TCP bench 5001", local subnet only.
+- **The SDK-level defconfig select failed** (`leakcam_docker_build.sh k230d_rtos_leakcam_defconfig`: Kconfig.app
+  names the removed memtest app) -> not needed: install.sh copies the kernel defconfig and `log` builds with it
+  (iperf.o compiled).
+- **The PC sender aborted at the end** (ConnectionAbortedError) -> the runner stops the K230's iperf after 25 s while
+  the PC still sends: the per-second figures before it are valid.
+- **First DHCP lease from the home router took 4.0 s** (BL616, quick join), 0.75 s on the following polls: the
+  router's first answer, not ours.
 - **Step 4 on the home router "VK" (2026-10-25): no association** -> the AP rejected the key (`auth_failures=1
   reason=WRONG_KEY`; VK seen ch 11, -48 dBm, WPA2; `~/.leakcam_wifi` holds exactly the 10 characters given) -> waiting
   for the right key from the user -> the second key given worked.

@@ -41,7 +41,8 @@ or a measurement yet. Keep this file current when a test or a setting changes it
                                                            check 70-158 ms; remembered AP join
                                                            0.24-0.47 s; K230 card bound -> address
                                                            0.33-0.59 s (SDIO card irq armed, no
-                                                           DHCP ARP check; was 5.05 s)
+                                                           DHCP ARP check; was 5.05 s); TCP up 17.1
+                                                           Mbit/s, down ~26 (home router, -47 dBm)
   Microphone (codec ADC)      16 kHz, 16-bit mono          -42 dBFS floor at 54 dB gain          -                       n/a       test011
   LED PWM (TPS61161 CTRL)     25 kHz (40000 ns period)     white 66.7 mA, IR 133 mA at 100 %     -                       n/a       test008
   USB-C 1 (K230 USB 2.0)      USB boot / flashing only     NAND writes 3.7-5.5 MB/s while        -                       n/a       test018

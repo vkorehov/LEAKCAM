@@ -290,6 +290,27 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
 - **Split exception:** the BL616's own lwIP serves only this request (as the BLE credential check, wifi_check.c);
   when the K230 runs, it owns the IP address as before (same MAC, so the same lease).
 - **The interval is the server's:** each answer may carry `"poll":<seconds>`; the BL616 keeps it in HBN RAM.
+- **Measured (test100 `pt_poll`, test firmware, 2026-10-25):** awake **1.71 s** per check from the wake reset:
+  radio up 642 ms, association at the remembered AP 240 ms, DHCP 747 ms, DNS + TCP + HTTP 49 ms. About **0.036 mAh
+  per check** (times x the measured currents): every 15 min ~3.4 mAh/day, with the 35 uA sleep and the cells'
+  self-discharge ~10 months on 2000 mAh before K230 sessions. Radio up + DHCP are 81 % of it.
+- **Production design (to build; the test firmware proved the cycle):**
+  - *Schedule by time, not by slice count:* HBN RAM keeps the RTC tick each job is due at - humidity sample (10 min),
+    K230 report (the K230's SLEEP), server check (the server's interval); every wake does what is due and sleeps
+    until the earliest. Replaces today's `hum_wakes_left` slice counter.
+  - *Least radio time:* join at the remembered AP; reuse the DHCP lease while it is valid (address, mask, gateway,
+    DNS and the lease time kept in HBN RAM; `wifi_mgmr_sta_ip_set()` after a `use_dhcp = 0` connect; a failed check
+    drops it); no DHCP ARP check on the BL616 either (`lwipopts_user.h`); the server's IP cached; no disconnect
+    before HBN (the radio dies with it). Target ~0.6-0.8 s awake, about half the energy.
+  - *Where the server is:* the agent reads `/sdcard/leakcam/server` and sends `SERVER,<host>,<port>` each session;
+    the BL616 stores it in easyflash when it changed. No server or no credentials: no checks.
+  - *A stream request:* `{"stream":<s>}` starts a K230 session with the wake reason `stream`; `leakcam_wake` takes it
+    like an alarm (capture, report), and the server's answer carries `"video":<s>` as for any clip request.
+  - *Failures* back off (longer interval, lease and cached IP dropped); the check never blocks a leak or humidity
+    wake, which run as before.
+  - *Every wake case is tested on the board:* RTC humidity only, humidity alarm, report due, check (no request /
+    request), leak wet and dry edges, USB plug, and their overlaps (a leak during a check, a check due with a
+    report, a check while USB is in), plus no AP, no server, no credentials.
 
 ### 5.2 BL616 power manager ([firmware/README.md](firmware/README.md))
 
@@ -298,6 +319,13 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
   The linker places them in `.hbn_noinit` (firmware/bl616/bl616_leakcam.ld.in: NOLOAD, the top 1 KB,
   clear of the SDK's fixed HBN RAM blocks at +000/+300/+400). `HBN_RSV0` is not usable because
   `pm_hbn_mode_enter()` overwrites it.
+- **Sleep current, measured once (tests/test031, 2026-10-25, meter in the cell lead; not to be repeated):** the
+  product's sleep (HBN level 0, leak + USB comparators armed) **35-36 uA**. The comparators cost ~3 uA each (RTC
+  alone 29 uA); RC32K off and a lower HBN LDO (0.90 V) change nothing; **HBN level 1** saves 3 uA but **loses HBN
+  RAM**, so the product stays on level 0. The rest (~26 uA) is the board: U5 TPS63802 11 uA + its feedback divider
+  5.5 uA, BQ24072T 4.3 uA, the probe divider 1.65 uA. No pin pull costs anything in HBN (the core domain is off:
+  every non-AON pad is high-Z; every external pull sits at its own rail). Decision: keep the USB-plug comparator
+  (3 uA, ~2 mAh/month) so pairing starts at once. Rev 2: a nano-amp regulator for 3V3_SLEEP (bugs/v2.txt).
 - **HBN RAM rule (tests/test021, 2026-10-22).** While HBN_SRAM has retention (RET) or sleep (SLP) mode
   set, an HBN RAM access right after any AON register write is corrupted (4-12 % of them, both reads
   and writes; none with the mode off). The mode survives every wake and reset. So `aon_init()` turns
@@ -397,7 +425,18 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
   with the scheduler suspended) and the NetHub virtual-channel task never blocks (the K230's credits stop): both only
   queue, one worker (`wl_ev`) does the work and the sends; sends retry for up to 2 s (5 upload buffers); one scan at
   a time; a join leaves first.
-- **Throughput.** Plan for 10-25 Mbit/s: two H.265 streams fit, high-resolution MJPEG does not.
+- **The card interrupt (tests/test100, 2026-10-25).** RT-Thread's SDIO core enables a function's interrupt in the
+  card but never the host's card interrupt, and the K230 SDHCI arms only half of it at init: no BL616 message ever
+  woke the worker, everything ran on the 1 s safety poll (link up 2 s late, DHCP 2.8 s, joins 9-14 s).
+  `k230_board/install.sh` arms it at the first attach; `bl616_stat` counts interrupts against polls (late polls 0).
+- **DHCP without the ARP probe.** lwIP's check of the offered address (500 ms timeouts on its 500 ms DHCP timer) held
+  the address back up to 1 s: off on the K230 (install.sh, lwipopts.h). The lease is the BL616's MAC's anyway.
+  K230 card bound -> address 0.33-0.59 s with the BL616 already joined (was 5.05 s).
+- **Throughput, measured** (test100 step 4, home router ch 11, -47 dBm, LAN PC wired): TCP up **17.1 Mbit/s**
+  (12-20 per second), down **~26 Mbit/s** (18-31). Two H.265 streams at full resolution (2592x1944, an estimated
+  4-8 Mbit/s with audio) fit; RTMP over TCP stalls on the dips, so a steady upload matters more than the peak. Next:
+  find the upload limit (air, BL616 transmit credits, one frame per SDIO transfer, K230 TCP buffers; a UDP run and
+  the counters), then the real load (two RTMP streams, after the cameras).
 
 ### 5.6 Imaging pipeline per camera
 

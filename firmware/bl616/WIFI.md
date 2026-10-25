@@ -150,7 +150,9 @@ Wi-Fi never starts by itself: only the K230's `WIFI` command starts it.
    `drivers/interdrv/sdio/drv_sdhci.c`, and 1 bit would need `MMCSD_BUSWIDTH_4` dropped there.
 4. **The card interrupt.** `wifi scan` must answer within about a second. If replies only come
    once a second, DAT1 interrupts are not reaching the host and everything runs on the 1 s safety
-   poll: check the 10 k pull-up on D1 and the host's card-interrupt enable.
+   poll: check the 10 k pull-up on D1 and the host's card-interrupt enable. On rev 1 it was the latter: RT-Thread's
+   SDIO core never armed the host's card interrupt (`k230_board/install.sh` does since 2026-10-25); `bl616_stat`
+   shows card irqs against safety polls (late polls must stay 0).
 5. **Handshake.** Both `bl616.msg: netdev: started, credit 8` and `vchan: started, credit 3`,
    then `bl616.wifi: station xx:..`. The BL616 console prints `HOST_READY` / `DEVICE_START` lines.
 6. **Frames.** `ifconfig` shows `wlan0` with the BL616 MAC; after the link is up DHCP must give an
