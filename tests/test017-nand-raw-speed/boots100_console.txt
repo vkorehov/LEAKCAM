@@ -1,0 +1,2280 @@
+===== boot 1
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =12
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =13
+dbyte0 add =9a041d00 value =14
+dbyte1 add =9a044100 value =13
+dbyte1 add =9a044500 value =13
+dbyte1 add =9a044900 value =14
+dbyte1 add =9a044d00 value =12
+dbyte1 add =9a045100 value =12
+dbyte1 add =9a045500 value =13
+dbyte1 add =9a045900 value =13
+dbyte1 add =9a045d00 value =13
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.135 s  prev init done
+boot_times 0.135 s  device init done
+boot_times 0.136 s  component init done
+boot_times 0.311 s  env init done (/bin, /sdcard mounted)
+boot_times 0.320 s  app init done
+boot_times 9.542 s  first boot_times call
+boot_times 9.542 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404963 us:   20.7 MB/s
+msh />
+msh />
+===== boot 2
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =12
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =13
+dbyte0 add =9a041d00 value =14
+dbyte1 add =9a044100 value =14
+dbyte1 add =9a044500 value =14
+dbyte1 add =9a044900 value =14
+dbyte1 add =9a044d00 value =13
+dbyte1 add =9a045100 value =13
+dbyte1 add =9a045500 value =13
+dbyte1 add =9a045900 value =13
+dbyte1 add =9a045d00 value =13
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.135 s  prev init done
+boot_times 0.135 s  device init done
+boot_times 0.137 s  component init done
+boot_times 0.311 s  env init done (/bin, /sdcard mounted)
+boot_times 0.320 s  app init done
+boot_times 9.491 s  first boot_times call
+boot_times 9.491 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404248 us:   20.7 MB/s
+msh />
+msh />
+===== boot 3
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =12
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =13
+dbyte0 add =9a041d00 value =15
+dbyte1 add =9a044100 value =14
+dbyte1 add =9a044500 value =13
+dbyte1 add =9a044900 value =14
+dbyte1 add =9a044d00 value =12
+dbyte1 add =9a045100 value =13
+dbyte1 add =9a045500 value =14
+dbyte1 add =9a045900 value =14
+dbyte1 add =9a045d00 value =13
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.135 s  prev init done
+boot_times 0.135 s  device init done
+boot_times 0.137 s  component init done
+boot_times 0.311 s  env init done (/bin, /sdcard mounted)
+boot_times 0.320 s  app init done
+boot_times 9.543 s  first boot_times call
+boot_times 9.543 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404704 us:   20.7 MB/s
+msh />
+msh />
+===== boot 4
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =11
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =13
+dbyte0 add =9a041d00 value =14
+dbyte1 add =9a044100 value =13
+dbyte1 add =9a044500 value =12
+dbyte1 add =9a044900 value =13
+dbyte1 add =9a044d00 value =12
+dbyte1 add =9a045100 value =12
+dbyte1 add =9a045500 value =13
+dbyte1 add =9a045900 value =13
+dbyte1 add =9a045d00 value =13
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.135 s  prev init done
+boot_times 0.135 s  device init done
+boot_times 0.136 s  component init done
+boot_times 0.311 s  env init done (/bin, /sdcard mounted)
+boot_times 0.320 s  app init done
+boot_times 9.493 s  first boot_times call
+boot_times 9.493 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404827 us:   20.7 MB/s
+msh />
+msh />
+===== boot 5
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =10
+dbyte0 add =9a040500 value =12
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =13
+dbyte0 add =9a041d00 value =14
+dbyte1 add =9a044100 value =13
+dbyte1 add =9a044500 value =13
+dbyte1 add =9a044900 value =13
+dbyte1 add =9a044d00 value =12
+dbyte1 add =9a045100 value =12
+dbyte1 add =9a045500 value =13
+dbyte1 add =9a045900 value =13
+dbyte1 add =9a045d00 value =13
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.135 s  prev init done
+boot_times 0.136 s  device init done
+boot_times 0.137 s  component init done
+boot_times 0.311 s  env init done (/bin, /sdcard mounted)
+boot_times 0.320 s  app init done
+boot_times 9.492 s  first boot_times call
+boot_times 9.492 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404763 us:   20.7 MB/s
+msh />
+msh />
+===== boot 6
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =12
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =13
+dbyte0 add =9a041d00 value =14
+dbyte1 add =9a044100 value =13
+dbyte1 add =9a044500 value =13
+dbyte1 add =9a044900 value =13
+dbyte1 add =9a044d00 value =12
+dbyte1 add =9a045100 value =13
+dbyte1 add =9a045500 value =13
+dbyte1 add =9a045900 value =13
+dbyte1 add =9a045d00 value =13
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.135 s  prev init done
+boot_times 0.135 s  device init done
+boot_times 0.137 s  component init done
+boot_times 0.311 s  env init done (/bin, /sdcard mounted)
+boot_times 0.320 s  app init done
+boot_times 9.492 s  first boot_times call
+boot_times 9.492 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404700 us:   20.7 MB/s
+msh />
+msh />
+===== boot 7
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =12
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =13
+dbyte0 add =9a041d00 value =14
+dbyte1 add =9a044100 value =14
+dbyte1 add =9a044500 value =14
+dbyte1 add =9a044900 value =14
+dbyte1 add =9a044d00 value =12
+dbyte1 add =9a045100 value =13
+dbyte1 add =9a045500 value =14
+dbyte1 add =9a045900 value =13
+dbyte1 add =9a045d00 value =13
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.135 s  prev init done
+boot_times 0.135 s  device init done
+boot_times 0.136 s  component init done
+boot_times 0.311 s  env init done (/bin, /sdcard mounted)
+boot_times 0.320 s  app init done
+boot_times 9.542 s  first boot_times call
+boot_times 9.542 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404382 us:   20.7 MB/s
+msh />
+msh />
+===== boot 8
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =11
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =13
+dbyte0 add =9a041d00 value =14
+dbyte1 add =9a044100 value =14
+dbyte1 add =9a044500 value =13
+dbyte1 add =9a044900 value =14
+dbyte1 add =9a044d00 value =12
+dbyte1 add =9a045100 value =13
+dbyte1 add =9a045500 value =14
+dbyte1 add =9a045900 value =14
+dbyte1 add =9a045d00 value =14
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.135 s  prev init done
+boot_times 0.135 s  device init done
+boot_times 0.136 s  component init done
+boot_times 0.311 s  env init done (/bin, /sdcard mounted)
+boot_times 0.320 s  app init done
+boot_times 9.542 s  first boot_times call
+boot_times 9.542 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404674 us:   20.7 MB/s
+msh />
+msh />
+===== boot 9
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =11
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =13
+dbyte0 add =9a041d00 value =14
+dbyte1 add =9a044100 value =13
+dbyte1 add =9a044500 value =13
+dbyte1 add =9a044900 value =14
+dbyte1 add =9a044d00 value =12
+dbyte1 add =9a045100 value =12
+dbyte1 add =9a045500 value =13
+dbyte1 add =9a045900 value =13
+dbyte1 add =9a045d00 value =13
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.135 s  prev init done
+boot_times 0.135 s  device init done
+boot_times 0.137 s  component init done
+boot_times 0.311 s  env init done (/bin, /sdcard mounted)
+boot_times 0.321 s  app init done
+boot_times 9.543 s  first boot_times call
+boot_times 9.543 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404866 us:   20.7 MB/s
+msh />
+msh />
+===== boot 10
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =12
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =13
+dbyte0 add =9a041d00 value =14
+dbyte1 add =9a044100 value =13
+dbyte1 add =9a044500 value =13
+dbyte1 add =9a044900 value =15
+dbyte1 add =9a044d00 value =13
+dbyte1 add =9a045100 value =13
+dbyte1 add =9a045500 value =14
+dbyte1 add =9a045900 value =14
+dbyte1 add =9a045d00 value =14
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.135 s  prev init done
+boot_times 0.135 s  device init done
+boot_times 0.137 s  component init done
+boot_times 0.311 s  env init done (/bin, /sdcard mounted)
+boot_times 0.320 s  app init done
+boot_times 9.541 s  first boot_times call
+boot_times 9.541 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404601 us:   20.7 MB/s
+msh />
+msh />
+===== boot 11
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =11
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =13
+dbyte0 add =9a041d00 value =14
+dbyte1 add =9a044100 value =14
+dbyte1 add =9a044500 value =13
+dbyte1 add =9a044900 value =14
+dbyte1 add =9a044d00 value =13
+dbyte1 add =9a045100 value =12
+dbyte1 add =9a045500 value =14
+dbyte1 add =9a045900 value =13
+dbyte1 add =9a045d00 value =13
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.134 s  prev init done
+boot_times 0.135 s  device init done
+boot_times 0.136 s  component init done
+boot_times 0.311 s  env init done (/bin, /sdcard mounted)
+boot_times 0.320 s  app init done
+boot_times 9.491 s  first boot_times call
+boot_times 9.491 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404270 us:   20.7 MB/s
+msh />
+msh />
+===== boot 12
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =11
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =13
+dbyte0 add =9a041d00 value =14
+dbyte1 add =9a044100 value =13
+dbyte1 add =9a044500 value =13
+dbyte1 add =9a044900 value =13
+dbyte1 add =9a044d00 value =12
+dbyte1 add =9a045100 value =13
+dbyte1 add =9a045500 value =14
+dbyte1 add =9a045900 value =13
+dbyte1 add =9a045d00 value =13
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.135 s  prev init done
+boot_times 0.135 s  device init done
+boot_times 0.137 s  component init done
+boot_times 0.311 s  env init done (/bin, /sdcard mounted)
+boot_times 0.320 s  app init done
+boot_times 9.492 s  first boot_times call
+boot_times 9.492 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404478 us:   20.7 MB/s
+msh />
+msh />
+===== boot 13
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =11
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =12
+dbyte0 add =9a041d00 value =15
+dbyte1 add =9a044100 value =13
+dbyte1 add =9a044500 value =12
+dbyte1 add =9a044900 value =13
+dbyte1 add =9a044d00 value =12
+dbyte1 add =9a045100 value =12
+dbyte1 add =9a045500 value =13
+dbyte1 add =9a045900 value =13
+dbyte1 add =9a045d00 value =13
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.135 s  prev init done
+boot_times 0.136 s  device init done
+boot_times 0.137 s  component init done
+boot_times 0.312 s  env init done (/bin, /sdcard mounted)
+boot_times 0.320 s  app init done
+boot_times 9.492 s  first boot_times call
+boot_times 9.492 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404739 us:   20.7 MB/s
+msh />
+msh />
+===== boot 14
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =12
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =13
+dbyte0 add =9a041d00 value =15
+dbyte1 add =9a044100 value =14
+dbyte1 add =9a044500 value =13
+dbyte1 add =9a044900 value =14
+dbyte1 add =9a044d00 value =13
+dbyte1 add =9a045100 value =12
+dbyte1 add =9a045500 value =14
+dbyte1 add =9a045900 value =13
+dbyte1 add =9a045d00 value =13
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.135 s  prev init done
+boot_times 0.135 s  device init done
+boot_times 0.136 s  component init done
+boot_times 0.311 s  env init done (/bin, /sdcard mounted)
+boot_times 0.320 s  app init done
+boot_times 9.542 s  first boot_times call
+boot_times 9.542 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404858 us:   20.7 MB/s
+msh />
+msh />
+===== boot 15
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =12
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =13
+dbyte0 add =9a041d00 value =14
+dbyte1 add =9a044100 value =14
+dbyte1 add =9a044500 value =13
+dbyte1 add =9a044900 value =14
+dbyte1 add =9a044d00 value =13
+dbyte1 add =9a045100 value =12
+dbyte1 add =9a045500 value =13
+dbyte1 add =9a045900 value =13
+dbyte1 add =9a045d00 value =13
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.135 s  prev init done
+boot_times 0.136 s  device init done
+boot_times 0.137 s  component init done
+boot_times 0.312 s  env init done (/bin, /sdcard mounted)
+boot_times 0.321 s  app init done
+boot_times 9.494 s  first boot_times call
+boot_times 9.494 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404884 us:   20.7 MB/s
+msh />
+msh />
+===== boot 16
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =12
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =13
+dbyte0 add =9a041d00 value =14
+dbyte1 add =9a044100 value =13
+dbyte1 add =9a044500 value =13
+dbyte1 add =9a044900 value =15
+dbyte1 add =9a044d00 value =13
+dbyte1 add =9a045100 value =13
+dbyte1 add =9a045500 value =13
+dbyte1 add =9a045900 value =13
+dbyte1 add =9a045d00 value =13
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.135 s  prev init done
+boot_times 0.135 s  device init done
+boot_times 0.136 s  component init done
+boot_times 0.311 s  env init done (/bin, /sdcard mounted)
+boot_times 0.320 s  app init done
+boot_times 9.492 s  first boot_times call
+boot_times 9.492 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404735 us:   20.7 MB/s
+msh />
+msh />
+===== boot 17
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =12
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =13
+dbyte0 add =9a041d00 value =14
+dbyte1 add =9a044100 value =13
+dbyte1 add =9a044500 value =13
+dbyte1 add =9a044900 value =14
+dbyte1 add =9a044d00 value =12
+dbyte1 add =9a045100 value =12
+dbyte1 add =9a045500 value =13
+dbyte1 add =9a045900 value =13
+dbyte1 add =9a045d00 value =13
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.134 s  prev init done
+boot_times 0.135 s  device init done
+boot_times 0.136 s  component init done
+boot_times 0.311 s  env init done (/bin, /sdcard mounted)
+boot_times 0.320 s  app init done
+boot_times 9.490 s  first boot_times call
+boot_times 9.490 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404818 us:   20.7 MB/s
+msh />
+msh />
+===== boot 18
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =11
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =12
+dbyte0 add =9a041d00 value =15
+dbyte1 add =9a044100 value =14
+dbyte1 add =9a044500 value =13
+dbyte1 add =9a044900 value =14
+dbyte1 add =9a044d00 value =13
+dbyte1 add =9a045100 value =12
+dbyte1 add =9a045500 value =13
+dbyte1 add =9a045900 value =13
+dbyte1 add =9a045d00 value =13
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.135 s  prev init done
+boot_times 0.136 s  device init done
+boot_times 0.137 s  component init done
+boot_times 0.312 s  env init done (/bin, /sdcard mounted)
+boot_times 0.321 s  app init done
+boot_times 9.493 s  first boot_times call
+boot_times 9.493 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404538 us:   20.7 MB/s
+msh />
+msh />
+===== boot 19
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =12
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =13
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =13
+dbyte0 add =9a041d00 value =14
+dbyte1 add =9a044100 value =13
+dbyte1 add =9a044500 value =12
+dbyte1 add =9a044900 value =13
+dbyte1 add =9a044d00 value =12
+dbyte1 add =9a045100 value =12
+dbyte1 add =9a045500 value =13
+dbyte1 add =9a045900 value =13
+dbyte1 add =9a045d00 value =13
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.135 s  prev init done
+boot_times 0.135 s  device init done
+boot_times 0.137 s  component init done
+boot_times 0.311 s  env init done (/bin, /sdcard mounted)
+boot_times 0.320 s  app init done
+boot_times 9.492 s  first boot_times call
+boot_times 9.492 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404569 us:   20.7 MB/s
+msh />
+msh />
+===== boot 20
+
+U-Boot SPL 2022.10-gc096dae6-dirty (Oct 25 2026 - 06:33:58 +0000)
+00000000: PMU Major Msg: End of CA training                                            
+00000000: PMU Major Msg: End of initialization                                         
+00000000: PMU Major Msg: End of read enable training                                   
+00000000: PMU Major Msg: End of fine write leveling                                    
+00000000: PMU Major Msg: End of read dq deskew training                                
+00000000: PMU Major Msg: End of MPR read delay center optimization                     
+00000000: PMU Major Msg: End of Write leveling coarse delay                            
+00000000: PMU Major Msg: End of write delay center optimization                        
+00000000: PMU Major Msg: End of read delay center optimization                         
+00000000: PMU Major Msg: End of max read latency training                              
+00000000: PMU Major Msg: Firmware run has completed                                    
+dbyte0 add =9a040100 value =12
+dbyte0 add =9a040500 value =13
+dbyte0 add =9a040900 value =13
+dbyte0 add =9a040d00 value =13
+dbyte0 add =9a041100 value =14
+dbyte0 add =9a041500 value =13
+dbyte0 add =9a041900 value =13
+dbyte0 add =9a041d00 value =15
+dbyte1 add =9a044100 value =14
+dbyte1 add =9a044500 value =13
+dbyte1 add =9a044900 value =14
+dbyte1 add =9a044d00 value =12
+dbyte1 add =9a045100 value =12
+dbyte1 add =9a045500 value =13
+dbyte1 add =9a045900 value =13
+dbyte1 add =9a045d00 value =13
+dbyte2 add =9a048100 value =37
+dbyte2 add =9a048500 value =37
+dbyte2 add =9a048900 value =37
+dbyte2 add =9a048d00 value =37
+dbyte2 add =9a049100 value =37
+dbyte2 add =9a049500 value =37
+dbyte2 add =9a049900 value =37
+dbyte2 add =9a049d00 value =37
+dbyte3 add =9a04c100 value =37
+dbyte3 add =9a04c500 value =37
+dbyte3 add =9a04c900 value =37
+dbyte3 add =9a04cd00 value =37
+dbyte3 add =9a04d100 value =37
+dbyte3 add =9a04d500 value =37
+dbyte3 add =9a04d900 value =37
+dbyte3 add =9a04dd00 value =37
+spi_nand spi-flash@0: Winbond SPI NAND was found.
+spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+
+OpenSBI v0.9
+heap: [0x004ec2c0 - 0x00cec2c0], size 8192 KB
+page: [0x00cec2c8 - 0x039fec00], size 46154 KB
+
+ \ | /
+- RT -     Thread Smart Operating System
+ / | \     5.0.0 build Oct 23 2026
+ 2006 - 2020 Copyright by rt-thread team
+rtc driver register OK
+lwIP-2.1.2 initialized!
+[I/I2C] I2C bus [i2c0] registered
+[I/I2C] I2C bus [i2c4] registered
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+link_mux: console and /dev/link share uart1
+Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+[I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 2048 bytes
+tree: DIR 0, FILE 5, DATA 4
+os  : system memory alloc 320 bytes
+flsh: UFFS consume spare data size 9
+os  : system memory alloc 84480 bytes
+os  : system memory alloc 53200 bytes
+os  : system memory alloc 8192 bytes
+tree: DIR 2, FILE 7, DATA 47
+/dev/shm file system initialization done!
+Can't find sensor on csi0
+Can't find sensor on csi2
+<3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+<gnne> gnne_device_init done.
+
+
+#############SDK VERSION######################################
+SDK   : unknown-20261025-063343--87cdcc56dced-4162ec7
+nncase: 2.11.0
+##############################################################
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+boot_times
+boot_times 0.118 s  kernel init start (after ROM, SPL, DDR, OpenSBI)
+boot_times 0.118 s  board init done
+boot_times 0.135 s  prev init done
+boot_times 0.135 s  device init done
+boot_times 0.137 s  component init done
+boot_times 0.311 s  env init done (/bin, /sdcard mounted)
+boot_times 0.320 s  app init done
+boot_times 9.492 s  first boot_times call
+boot_times 9.492 s  now
+msh />
+msh />leakcam_agent: READY not answered
+leakcam_agent: READY not answered
+
+nand_bench read 160
+nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b9ab3369
+  raw page read (2 KiB pages)      8192 KB in 404566 us:   20.7 MB/s
+msh />
+msh />
