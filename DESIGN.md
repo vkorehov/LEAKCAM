@@ -433,7 +433,10 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
   the address back up to 1 s: off on the K230 (install.sh, lwipopts.h). The lease is the BL616's MAC's anyway.
   K230 card bound -> address 0.33-0.59 s with the BL616 already joined (was 5.05 s).
 - **Throughput, measured** (test100 step 4, home router ch 11, -47 dBm, LAN PC wired): TCP up **17.1 Mbit/s**
-  (12-20 per second), down **~26 Mbit/s** (18-31). Two H.265 streams at full resolution (2592x1944, an estimated
+  (12-20 per second), down **~26 Mbit/s** (18-31); after the upload fixes below **27.5 up** (peaks 32), UDP 35.4.
+- **Upload limit (2026-10-25):** the bridge, not the radio. The K230 driver now waits up to 20 ms for a transmit slot
+  instead of dropping the frame (drops made TCP back off), with 16 slots; the BL616 gets 26 NetHub download buffers
+  and 23 netdev credits instead of 15 / 8 (`firmware/bl616/sdk_patch.py`, applied by host.mk before every build). Two H.265 streams at full resolution (2592x1944, an estimated
   4-8 Mbit/s with audio) fit; RTMP over TCP stalls on the dips, so a steady upload matters more than the peak. Next:
   find the upload limit (air, BL616 transmit credits, one frame per SDIO transfer, K230 TCP buffers; a UDP run and
   the counters), then the real load (two RTMP streams, after the cameras).

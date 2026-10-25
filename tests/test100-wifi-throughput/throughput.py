@@ -18,6 +18,15 @@ def mem(fd, tag):
     log(f"{tag}: BL616 {b[:1]} | K230 {' | '.join(k)[:200]}")
 
 
+# a clean BL616 first: the test firmware does not take a bridge fully down between runs (a second run stalled in
+# "Device not in RUN state" and starved the shell, 2026-10-25); a 2 s HBN is a reset
+bl("pt_sleep 2 nousb", 2)
+time.sleep(4)
+for _ in range(30):
+    if os.path.exists("/dev/ttyACM0"):
+        break
+    time.sleep(1)
+time.sleep(2)
 bl("pt_off", 2); bl("pt_boot1 low"); bl("pt_on", 2)
 log(bl(f'pt_wifi store "{ssid}" "{psk}"', 3).replace(psk, "***").strip().splitlines()[-2:])
 log(re.findall(r"[^\n]*(?:wifi_link_start|associated|join|connect|radio)[^\n]*",

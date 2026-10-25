@@ -207,6 +207,25 @@ Energy, from these times and step 1's currents (the USB meter cannot follow a 1.
 idle, the board after the last cycle): **~0.036 mAh per check**, so ~3.4 mAh/day every 15 min, ~10 mAh/day every 5 min
 (ENERGY.txt). Radio up and DHCP are 81 % of the awake time: the levers.
 
+### Upload limit found and raised (2026-10-25 11:00-11:45, same router and place)
+
+`bl616_stat` got transmit counters (frames queued, dropped on a full ring, passes stalled for lack of BL616 credit);
+`throughput.py` runs TCP up, TCP down and UDP up (`iperf -u -b`, PC `pc_tcp_bench.py usink`) with the counters after each.
+
+| Step | TCP up | TCP down | UDP up | Counters (10 s upload) |
+|---|---|---|---|---|
+| Before | 17.1 Mbit/s | ~26 | 21 (offered 40; PC got every datagram that left the driver) | 10796 of 15227 frames **dropped** on a full ring, 3552 credit stalls |
+| K230: wait for a slot (TX_WAIT_MS 20) instead of dropping, ring 8 -> 16 | 19.4 | 24.5 | 21.5 | 19 dropped, 8259 credit stalls |
+| + BL616: NetHub download buffers 15 -> 26, netdev credits 8 -> 23 (`firmware/bl616/sdk_patch.py`) | **27.5** (peaks 32) | 22.1 | **35.4** (peaks 37) | 9 dropped, 3880 credit stalls |
+| Credit update threshold 6 -> 2 (tried, reverted) | 23.9 | 23.0 | 24.8 (offered 50) | no difference within the run-to-run spread |
+
+- The radio was not the limit: the bridge was. With 8 credits the K230 waited for the BL616 most of the time, and the
+  driver dropped what did not fit, so TCP retransmitted and backed off.
+- Every run sags in its second half (to ~16 Mbit/s) at the same settings: the air (channel 11), not the bridge.
+- Download (BL616 -> K230) stays 22-26 Mbit/s: one frame per SDIO read on the K230; not needed for streaming.
+- BL616 RAM: free 177.5 -> 155.3 KB with the bigger pool.
+- The product firmware is not rebuilt with the SDK patch yet (stale; it failed to link once, cause not looked at).
+
 ## Metrics (skill leakcam-test-metrics)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
@@ -292,6 +311,10 @@ Battery current: Wi-Fi join (energy per join, paid on every networked session), 
 - **The first `pt_poll` cycles did not repeat** (2026-10-25) -> on USB power the RTC wake left no HBN interrupt state
   ("cold start / reset") -> the loop resumes on pt_sleep's own wake mark; the first cycle also starts from a sleep
   (it had run in the open session: radio already up, 209 s "awake").
+- **A second run in one BL616 boot never got an address** (2026-10-25) -> the test firmware does not take the bridge
+  fully down at `pt_off`: the next `pt_wifi bridge` started on the leftover ("radio up in 0 ms"), the BL616 flooded
+  "NETDEV_STA: Device not in RUN state, dropping RX frame" and the shell stopped answering; EN tap -> the runner now
+  resets the BL616 (`pt_sleep 2 nousb`) before every run. Teardown fix still open.
 - **The PC's firewall blocked port 5001** (2026-10-25) -> `netsh` from the MCP's Python needed elevation -> added
   with `Start-Process -Verb RunAs` (no prompt on that PC): rule "LEAKCAM TCP bench 5001", local subnet only.
 - **The SDK-level defconfig select failed** (`leakcam_docker_build.sh k230d_rtos_leakcam_defconfig`: Kconfig.app

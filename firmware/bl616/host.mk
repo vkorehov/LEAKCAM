@@ -9,6 +9,8 @@
 # the ROM comes up on USB. `reboot uart` leaves the ROM's user-boot field set and a reset keeps it, so after
 # flashing bl616_isp.py --boot clears it and resets through the ROM (no EN tap), then make waits for the new
 # firmware's console.
+#
+# sdk_patch.py applies LEAKCAM's few bouffalo_sdk changes first (idempotent; it stops the build if the SDK moved).
 TOOLCHAIN ?= $(HW_ROOT)/toolchain_gcc_t-head_linux
 IMAGE ?= k230-rtos-sdk-build:arm64-x86tc
 ISP := $(HW_ROOT)/LEAKCAM/tools/power-bringup/bl616_isp.py
@@ -16,6 +18,7 @@ ISP := $(HW_ROOT)/LEAKCAM/tools/power-bringup/bl616_isp.py
 .DEFAULT_GOAL := all
 .PHONY: all build flash clean
 all build:
+	python3 $(HW_ROOT)/LEAKCAM/firmware/bl616/sdk_patch.py $(BL_SDK_BASE)
 	docker run --rm --user $$(id -u):$$(id -g) -e HOME=/tmp -e LEAKCAM_IN_CONTAINER=1 \
 	    -e PATH=$(TOOLCHAIN)/bin:/usr/bin:/bin -v $(HW_ROOT):$(HW_ROOT) -w $(CURDIR) $(IMAGE) make -j5
 	@ls -l build/build_out/*.bin
