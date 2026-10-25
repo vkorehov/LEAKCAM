@@ -1,6 +1,6 @@
 # test105: maximum current - can the battery carry everything at once?
 
-Status: **planned** (2026-10-25; user, after test009: the cell carried K230 + both LED chains, ~1.15 A, on a USB
+Status: **handover run 1 done** (2026-10-25): USB -> cell under every camera-free load, no power fault; K230 activity after 19 s not proven (rerun with the liveness probe). Planned since 2026-10-25 ( user, after test009: the cell carried K230 + both LED chains, ~1.15 A, on a USB
 unplug with no brownout and no visible dimming).
 
 The worst case the cell and the power path must survive: every consumer on the board busy at the same time, on a
@@ -62,7 +62,24 @@ No brownout or reset in any run on a full cell; VBAT under the full load stays a
 
 ## Results
 
-Not run yet.
+### Handover run 1, 2026-10-25 12:31 (`usb_handover.py 150`, 10 A meter in the USB-C 1 VBUS line, cell full)
+
+Loads without cameras: both LED chains 100 %, Wi-Fi TCP upload to the LAN PC (iperf, ~21-25 Mbit/s), DDR + CPU
+(`memtest 0`). Read on USB, then USB unplugged by the user at ~30 s and left out for over a minute.
+
+| What | Result |
+|---|---|
+| USB input, every load on | **1.05-1.07 A at 5 V** (~5.3 W; ~1.25-1.3 A from a 4.1 V cell) |
+| USB unplugged under that load | **no brownout**: K230 rails stayed on, the BL616 console never dropped, both LED chains the same brightness (user) for over a minute |
+| Cell temperature by hand | cold (user) |
+| K230 console | memtest passes 0-2 (0 errors), iperf 21-25 Mbit/s, then **silent from 19 s** (before the unplug); no SPL banner (no reset); the end-of-run `chip_temp` got no answer |
+| After the run | cell recharged at 0.9 A, tapering to 0.6 A within minutes: a small top-up (~50 mAh used, ~3 %) |
+
+- The power path passes: the cell takes ~1.3 A with every camera-free load, cold, with no reset on the USB -> cell
+  switch.
+- The K230 going silent is not a power fault: memtest took 109 of 128 MB (its first MMZ allocation already failed),
+  and at 15 s the kernel logged "ELF loading failed" - the memory was gone. Rerun: memtest keeps 24 MB free and runs
+  as a background job; the runner asks for `chip_temp` every 5 s so a stall shows within seconds.
 
 ## Metrics (skill leakcam-test-metrics)
 
@@ -70,4 +87,5 @@ Not run yet.
 
 ## Obstacles
 
-None yet.
+- **The K230 went silent 19 s into handover run 1** (2026-10-25) -> memtest left the system no memory (109 of 128 MB,
+  a program failed to load) -> memtest with 24 MB reserved, plus a `chip_temp` liveness probe every 5 s.
