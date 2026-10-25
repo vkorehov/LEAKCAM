@@ -227,7 +227,6 @@ f.Name = "Board screw boss"                             # square, out to the poc
 f = top_span(circles=[(*BOARD_HOLE, 0.8)], ya=-3.5, yb=0.1); f.Name = "Board screw pilot"     # its block starts at -4.5
 print(f"{'Board screw boss':26s} {fbox(f)}  M2x8 thread-forming through the cradle and the board")
 form_trim("base")
-legs_cut("base")
 leds_cut("base")
 shell_cut("base")
 solid_fills("base")
@@ -239,6 +238,9 @@ rp_feature("Weld: antenna-end screw block", [(32.2, -6.5), (34.85, -5.95), (34.7
            14.85, 16.27, True, "the gap between the +X antenna-end screw block and the wall closed (fit Sketch32-35)")
 rp_feature("Weld: corner by the S1 plug", [(-17.17, 3.05), (-18.45, 1.4), (-17.17, 1.4)],
            18.6, 21.91, True, "the corner at the S1 plug pocket's +Z end beside the leg's bend (fit Sketch41)")
+# the probe legs last (fit 2026-10-25 Sketch37: the camera-end weld, added after them, closed the S1 leg's round channel
+# with a 1.15 mm wall): the channels run round through every fill and weld
+legs_cut("base")
 sm.AddToDB = False
 
 print("part box:", [round(v * 1000, 2) for v in model.GetPartBox(True)])
