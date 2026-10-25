@@ -96,3 +96,34 @@ handling stands, the hardware fix is rev 2. VUSB still high = another path: D5 (
 K230 USB ESD array, same VCC wiring; only with the K230's D+ pulled up as a device, and test003 saw 2.2 V with the
 K230 in reset) or R63 (30 k, VUSB to K230 B7).
 
+## Measured step by step, 2026-10-25 (cell full or nearly, meter in the USB-C 1 cable; probe sheets in this folder)
+
+V = VUSB at C2 pad 1, D = CH340X UD+ at U2 pin 1 ([probe_points.png](probe_points.png)); PR1 (the BL616 console)
+always in, USB-C 2 never plugged.
+
+| Step | Rails | USB-C 1 | V | D | Charging |
+|---|---|---|---|---|---|
+| A | off | out (PR1 out too) | 4.17 V | 6 mV | - |
+| B | on, K230 in reset | out | 4.17 V | 3.0 V | - |
+| B2/B3 | on | Mac plugged in | 4.15 V | 2.8 V | **no** |
+| C | switched off with the Mac in | in | 4.3 V | ~0 | **yes, at once** |
+| D2 | off, 2.1 kohm across C2 | out | **4.15 V** (~2 mA) | - | - |
+| D2' | off | Mac plugged in (V 4.15 V before) | 4.3 V | - | **yes** |
+| F | on, then a plain 5 V wall charger plugged in | in | - | - | **no**, PGOOD high |
+| F' | switched off with that charger in | in | - | - | PGOOD low at once |
+| F'' | switched on again with the charger in | in | - | - | **yes, keeps charging** |
+
+- **The fault is only at plug-in with the rails on, with any source** (Mac and a plain wall charger): the source never
+  starts. Once the input is accepted, the rails can go on and it keeps charging.
+- **U1 back-feeds VUSB from the cell** with nothing plugged: 4.17 V open, 4.15 V into 2.1 kohm (~2 mA, ~10 ohm): a
+  stiff path through the charger itself (the only part on VUSB with the battery side behind it). It does **not** block
+  the start (plug-in works with it when the rails are off), so it is a separate oddity to check against the BQ24072's
+  input blocking spec. It also rules out a bleed resistor across C2 as a fix (it cannot pull a ~10 ohm path down).
+- With the rails on the CH340X pull-up is live (D 2.8-3.0 V). Remaining suspects, both only with the rails on: **D3**
+  (CH340X D+ into VUSB) or **D5** (the K230's USB data lines on USB-C 1). The finer probe points (D5 pins, CC on R4 /
+  R9: [usbc1_top.png](usbc1_top.png), [usbc1_bottom.png](usbc1_bottom.png)) were too fine to probe by hand. Next with
+  hot air: D3 off, then one plug-in with the rails on answers D3 vs D5.
+- Product impact unchanged: a plug-in during a K230 session charges when the session ends (firmware handles it).
+- Obstacle: the measurements went wrong twice on my side - I asked for readings before switching the rails on, and I
+  mixed up which cable was the "debug cable" (PR1) - which cost several rounds.
+
