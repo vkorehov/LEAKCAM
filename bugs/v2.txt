@@ -12,10 +12,16 @@ Assembly: no hand-soldered wires
 
 Debug console
 -------------
-3. No separate USB-C debug port (USBC2 + CH340X U2). Route the K230 console UART through the BL616
-   and out on the BL616's USB console (the same cable as PR1). One USB cable for both consoles
-   instead of the current mess. This also removes the bug-002 back-feed path (CH340X D+ pull-up via
-   D3 into VUSB). Needs a BL616 UART (or the existing K230 link protocol) for the K230 console.
+3. **No debug USB at all: do not populate the CH340X and its USB-C port.** Parts out (DBG.SchDoc): U2 (CH340X),
+   USBC2, D3 (its ESD array), D2 (its VBUS Schottky), R1 / R11 (its CC Rd), C5 / C6 (U2 decoupling), R2 / R10 (the
+   UART0 pull-ups only U2 needed); best removed from the schematic, so nothing on the board hangs on that path.
+   - The K230 console already runs through the BL616 on rev 1 (link_mux on UART1 at 4 Mbaud, the BL616's second USB
+     port, tests/test039; SPL and OpenSBI print there too): one USB device (PR1) for both consoles.
+   - **This is the bug-002 fix:** the confirmed back-feed path was the CH340X's D+ pull-up (powered from the switched
+     3V3 whenever the K230 runs) through D3's steering diode into VUSB; with U2 and D3 gone it does not exist
+     (rev 1 workaround: U2 pins 1-2-3 bridged, bugs/bug-002).
+   - Lost: only the K230 boot ROM's own messages on UART0 (before SPL); keep two test pads on UART0 TX/RX for a
+     3.3 V USB-serial adapter in the lab.
 
 From the rev 1 bugs
 -------------------
@@ -23,8 +29,12 @@ From the rev 1 bugs
    Charge time: no change needed. The ~6 h / ~0.2-0.3 A on rev 1 were an unwatched night and a wrong estimate;
    measured, U1 charges at the full 0.89 A (tests/test001), ~1-1.5 h for the 1000 mAh cell, well inside the
    6.3 h timer. No sign of U1 throttling for heat.
-5. bug-002: no data line may lift VUSB: ESD arrays' VCC from their own connector's VBUS (or ESD parts
-   without a VCC pin); check R63 / K230 B7. With item 3 the CH340X path is gone; D5 on USBC1 stays.
+5. bug-002 (cause confirmed 2026-10-25: the CH340X path, removed by item 3): the rule for what stays - no data line
+   may lift VUSB. D5 (USB-C 1, the K230's USB) takes its VCC from VUSB the same way: give it an ESD part without a
+   VCC pin, or VCC from a rail that is off when the K230 is (the K230's USB is not used in the product, but the boot
+   ROM's USB mode is). Also check R63 / K230 B7, and U1's input blocking: on rev 1 U1 back-feeds VUSB from the cell
+   (4.15 V into 2.1 kohm with nothing plugged, bugs/bug-002) - harmless for the start-up, but not what the BQ24072's
+   reverse blocking promises.
 6. bug-003: INT4 (ball F14) tied directly to the PMU's 1.8 V, or a pull-up of 4.7 k or less (not 100 k: the
    INT4 pad pulls down ~20 kOhm, rev 1 had 0.3 V and the PMU never woke). The PMU RTC is used: keep Y1 and
    C33/C34.

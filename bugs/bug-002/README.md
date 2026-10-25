@@ -152,7 +152,9 @@ must stay free.
 - Cost: ~2 mA through the CH340X's internal pull-up while the K230 rails are on (~1 % of a session's 220 mA idle),
   nothing asleep; the USB-C 2 debug console stops working (buried in the enclosure, unused: the K230 console runs
   through the BL616 from the first SPL line; only the boot ROM's own messages needed the CH340).
-- Undo: solder wick. The clean variant is U2 off with hot air (no current at all); the real fix is rev 2 (above).
+- Undo: solder wick. The clean variant is U2 off with hot air (no current at all).
+- **Rev 2 (bugs/v2.txt items 3 and 5): the CH340X, USB-C 2 and their parts (U2, USBC2, D3, D2, R1, R11, C5, C6, R2,
+  R10) are not populated at all**, so the path does not exist; D5's VCC must not sit on VUSB either.
 - Check after the bridge: rails on (`pt_on`), Mac into USB-C 1: it charges at once (PGOOD low).
 - **Done on this board 2026-10-25, check passed:** rails on (K230 in reset), Mac unplugged and plugged back in: charging
   at once, PGOOD low. The board's bug-002 is worked around; the same bridge goes on every rev 1 board (with
