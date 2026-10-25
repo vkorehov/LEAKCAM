@@ -31,7 +31,7 @@ or a measurement yet. Keep this file current when a test or a setting changes it
                                                            16 B round trip 1.48 ms -> 55 us
   K230 console (CH340, USBC2) 115200 8N1                   -                                     -                       n/a       -
   BL616 console (PR1)         USB CDC (full speed)         -                                     -                       n/a       -
-  BL616 I2C -> AHT20          100 kHz                      -                                     400 kHz (AHT20)         no        test020
+  BL616 I2C -> AHT20          400 kHz (2026-10-25)         read 36.5 ms (35 ms conversion)       400 kHz (AHT20)         yes       test020
   BL616 flash (XIP)           80 MHz (SDK default)         -                                     module limit            probably  -
   Camera I2C (IIC0, IIC4)     not set up yet               -                                     400 kHz (OV5647)        -         test019
   Camera CSI0 / CSI2          not set up yet               -                                     OV5647 2-lane, 1280x960 -         test019
@@ -92,6 +92,7 @@ or a measurement yet. Keep this file current when a test or a setting changes it
                                                   Adopted 2026-10-22: 4 Mbaud (6 Mbaud corrupts bulk data); code only,
                                                   product images not rebuilt yet (rewrite after the tests)
   AHT20 I2C      100 -> 400 kHz                   1000 reads, 0 CRC errors (cheap, so taken although it gains little)
+                                                  Adopted 2026-10-25: 1000/1000 reads OK at 400 kHz (pt_i2c soak 1000).
   CPU, KPU, VPU  already at the top profile        CPU clock confirmed by test015's cycle count
   SDIO           at the top (50 MHz)              test014 (soak 109 MB, 0 errors)
   Cameras        when they arrive                 test019

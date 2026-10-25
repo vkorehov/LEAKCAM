@@ -855,6 +855,18 @@ static int cmd_i2c(int argc, char **argv)
     }
     int rh, t;
     enum aht20_result r;
+    if (argc > 2 && !strcmp(argv[1], "soak")) {       /* the I2C clock's stability test: n reads, every frame's CRC */
+        unsigned n = (unsigned)atoi(argv[2]), cnt[4] = { 0 };   /* OK, no ACK, busy, CRC */
+        uint64_t t0 = bflb_mtimer_get_time_us();
+        for (unsigned i = 0; i < n; i++) {
+            LOCKED(r = aht20_read(&rh, &t));
+            cnt[r == AHT20_OK ? 0 : r == AHT20_ERR_I2C ? 1 : r == AHT20_ERR_BUSY ? 2 : 3]++;
+        }
+        uint32_t us = (uint32_t)(bflb_mtimer_get_time_us() - t0);
+        printf("pt_i2c soak: %u reads, %u OK, %u no ACK, %u busy, %u CRC; %lu us per read\r\n", n, cnt[0], cnt[1], cnt[2],
+               cnt[3], (unsigned long)(n ? us / n : 0));
+        return 0;
+    }
     LOCKED(r = aht20_read(&rh, &t));
     if (r == AHT20_OK)
         printf("AHT20 OK: %d.%d %%RH, %d.%d C\r\n", rh / 10, rh % 10, t / 10, abs(t % 10));
@@ -862,7 +874,7 @@ static int cmd_i2c(int argc, char **argv)
         printf("AHT20 FAIL: %s\r\n", aht20_err(r));
     return 0;
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_i2c, pt_i2c, AHT20 reading or pt_i2c scan);
+SHELL_CMD_EXPORT_ALIAS(cmd_i2c, pt_i2c, AHT20 reading or pt_i2c scan | soak <n>);
 #endif
 
 #if PT_TEST_USB

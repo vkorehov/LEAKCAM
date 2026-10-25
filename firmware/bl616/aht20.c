@@ -8,7 +8,7 @@
 #include "log.h"
 
 #define AHT20_ADDR      0x38      /* datasheet writes it as 0x70/0x71 (8-bit with R/W) */
-#define AHT20_I2C_HZ    100000    /* datasheet: 10-400 kHz */
+#define AHT20_I2C_HZ    400000    /* the datasheet's top (10-400 kHz); 1000 reads clean at 400 kHz (SPEEDS.txt) */
 /* datasheet 5.2 says wait 80 ms; its note says a read before the end shows status bit 7 (busy)
  * set, so polling from earlier is safe and takes the sample as soon as it is there */
 #define AHT20_FIRST_READ_MS 35        /* measured 36.7 ms trigger -> busy bit clear, every time (tests/test021) */
