@@ -207,26 +207,26 @@ Energy, from these times and step 1's currents (the USB meter cannot follow a 1.
 idle, the board after the last cycle): **~0.036 mAh per check**, so ~3.4 mAh/day every 15 min, ~10 mAh/day every 5 min
 (ENERGY.txt). Radio up and DHCP are 81 % of the awake time: the levers.
 
-## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
+## Metrics (skill leakcam-test-metrics)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | **MISSING** | target (test022) | longest step: |
-| This part's boot share | **MISSING** | - | |
-| Test run time | **MISSING** | - | setup (flashing, plugging, waiting) separately |
-| Wi-Fi TCP up / down | **MISSING** | 802.11ax 20 MHz; SDIO 9.4 MB/s end to end | % of the top |
-| Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING** | - | scripts/energy.py |
-| Per day | **MISSING** | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
-| Image (sizes) | **MISSING** | minimal image (rule) | the image this run used |
-| Compile flags | **MISSING** | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Boot, power-on -> READY (median of 5) | n/a: the powertest firmware does not answer the agent's READY; K230 pt_run -> msh 1.95-1.97 s (3 runs, timeline); READY in test022 | target (test022) | longest step: |
+| This part's boot share | card bound -> address 0.33-0.59 s (3 runs) after the K230 is up; was 5.05 s | - | |
+| Test run time | timeline ~25 s, throughput ~65 s, pt_poll 3 cycles ~25 s; setup: K230 flash 2 min, BL616 flash 1 min each | - | setup (flashing, plugging, waiting) separately |
+| Wi-Fi TCP up / down | 17.1 / ~26 Mbit/s (12-20 / 18-31 per second) | 802.11ax 20 MHz; SDIO 9.4 MB/s end to end | % of the top |
+| Current idle / during (min / avg / peak) | K230 + bridge during the join runs: 220 avg, 243 peak mA (user, VBUS, before the fix); BL616 alone joined 80 mA | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
+| Voltage under load (min) | n/a: on USB power (charger rail), not probed this run | cutoff 3.10 V (bug-004) | at the probes above |
+| Power, energy per operation | BL616-only server check ~0.036 mAh (1.71 s awake x step 1 currents) | - | scripts/energy.py |
+| Per day | checks every 15 min: ~3.4 mAh/day (ENERGY.txt) | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | board 31.2 C (AHT20, pt_status, before the runs); die n/a: chip_temp not read on these runs | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 177544 -> 177252 B, blocks 128 -> 141, deleted 0 (one throughput run); K230 n/a this run (the runner's `free` parse found nothing); leak loops of 2026-10-24: no leak on either chip | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Image (sizes) | K230 kdimg 45436928 B (iperf in); BL616 test firmware 1114848 B | minimal image (rule) | the image this run used |
+| Compile flags | SDK defaults, unchanged by this test | smallest code (rule) | |
+| Features over the minimal image | test-only: msh wifi/ifconfig/ping, bl616_rescan/bl616_stat, iperf (none in the product image); size not measured | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | n/a: the rate is bound by the link and the radio (CPU idle); revisit in the upload-limit work | the faster one stays | |
 
 ## Boot time
 

@@ -165,26 +165,26 @@ options: `noacomp` (both comparators off, RTC wake only), `norc` (RC32K off whil
   cmd_sleep, which runs from flash, and it powered the flash down under itself -> `noinline` (it sits in TCM).
 - Obstacle: my check `pt_sleep` without arguments slept 60 s (its default) instead of printing the usage.
 
-## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
+## Metrics (skill leakcam-test-metrics)
 
 Probes: current - battery lead (cell + wire), uA/mA range, USB out; voltage - BAT C11.1 at rest and on wake.
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | **MISSING** | target (test022) | longest step: |
-| This part's boot share | **MISSING** | - | |
-| Test run time | **MISSING** | - | setup (flashing, plugging, waiting) separately |
-| Speed / rate (none for this test) | **MISSING** | - | % of the top |
-| Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING** | - | scripts/energy.py |
-| Per day | **MISSING** | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Boot, power-on -> READY (median of 5) | n/a: sleep test, the K230 stays off | target (test022) | longest step: |
+| This part's boot share | n/a: no K230 boot; BL616 RTC wake -> main 17 ms (pt_time, level 0) | - | |
+| Test run time | each variant ~2 min to settle and read; the session ~70 min with the wiring | - | setup (flashing, plugging, waiting) separately |
+| Speed / rate (none for this test) | n/a: no rate | - | % of the top |
+| Current idle / during (min / avg / peak) | asleep 35 uA (product), 29 uA RTC only, 26 uA level 1; awake idle ~60 mA (2026-10-21, USB) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
+| Voltage under load (min) | cell 4.17 V at rest (just charged); on wake not probed | cutoff 3.10 V (bug-004) | at the probes above |
+| Power, energy per operation | 35 uA x 4.17 V = 146 uW asleep | - | scripts/energy.py |
+| Per day | 0.84 mAh/day asleep (ENERGY.txt) | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | n/a: not read in the sleep runs (board ~31 C earlier, AHT20) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | n/a: no repeated operation; the sleep state lives in HBN RAM | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | BL616 test firmware 121 KB (+ boot2 53 KB) | minimal image (rule) | the image this run used |
 | Compile flags | BL616 -Os -g, -ffunction/-fdata-sections, --gc-sections, -flto (SDK) | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Features over the minimal image | test-only: pt_sleep variants (noacomp, norc, l1, ldo=), pt_hbn_enter; the product keeps the SDK entry | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | n/a: sleep current is set by the hardware, not by code speed | the faster one stays | |
 
 ## Boot time
 
