@@ -1348,6 +1348,51 @@ static bool rtc_on_xtal(void)
     return false;
 }
 
+/* test031 (2026-10-25): the SDK's pm_hbn_mode_enter() (bl616_pm.c) with its build-time choices as parameters, to find
+ * the lowest sleep current: level 0/1 (2 stops the RTC), the HBN LDO voltage (SDK 1.10 V), RC32K kept on or off
+ * while Y3 runs the RTC. Same register sequence otherwise, flash powered down as the SDK does. Never inlined: after
+ * the flash power-down every instruction must come from TCM (inlined into cmd_sleep it ran from flash and hung awake,
+ * 52 mA, 2026-10-25). */
+static spi_flash_cfg_type *pt_flash_cfg;
+
+ATTR_TCM_SECTION __attribute__((noinline)) static void pt_hbn_enter(int level, uint32_t ldo, bool rc32k_off, uint64_t ticks)
+{
+    uint32_t v, len;
+
+    __ASM volatile("csrc mstatus, 8");
+    v = BL_RD_REG(AON_BASE, AON_GPADC_REG_CMD);
+    BL_WR_REG(AON_BASE, AON_GPADC_REG_CMD, BL_CLR_REG_BIT(v, AON_GPADC_GLOBAL_EN));
+    bflb_irq_clear_pending(HBN_OUT0_IRQn);
+    bflb_irq_clear_pending(HBN_OUT1_IRQn);
+    BL_WR_REG(HBN_BASE, HBN_IRQ_CLR, 0xffffffff);
+    BL_WR_REG(HBN_BASE, HBN_IRQ_CLR, 0);
+    bflb_rtc_set_time(NULL, ticks);
+    if (rc32k_off)
+        HBN_Power_Off_RC32K();
+    else
+        HBN_Keep_On_RC32K();
+    GLB_Set_MCU_System_CLK(GLB_MCU_SYS_CLK_RC32M);
+    bflb_flash_get_cfg((uint8_t **)&pt_flash_cfg, &len);
+    HBN_Power_Down_Flash(pt_flash_cfg);
+    v = BL_RD_REG(HBN_BASE, HBN_CTL);
+    v = BL_SET_REG_BITS_VAL(v, HBN_LDO11_AON_VOUT_SEL, ldo);
+    v = BL_SET_REG_BITS_VAL(v, HBN_LDO11_RT_VOUT_SEL, ldo);
+    BL_WR_REG(HBN_BASE, HBN_CTL, v);
+    BL_WR_REG(HBN_BASE, HBN_RSV0, HBN_STATUS_ENTER_FLAG);
+    v = BL_RD_REG(HBN_BASE, HBN_CTL);
+    v = level ? BL_SET_REG_BIT(v, HBN_PWRDN_HBN_CORE) : BL_CLR_REG_BIT(v, HBN_PWRDN_HBN_CORE);
+    v = BL_CLR_REG_BIT(v, HBN_PWRDN_HBN_RTC);
+    v = BL_CLR_REG_BIT(v, HBN_PWR_ON_OPTION);
+    BL_WR_REG(HBN_BASE, HBN_CTL, v);
+    BL_WR_REG(HBN_BASE, HBN_IRQ_CLR, 0xffffffff);
+    BL_WR_REG(HBN_BASE, HBN_IRQ_CLR, 0);
+    BL_WR_REG(HBN_BASE, HBN_CTL, BL_SET_REG_BIT(v, HBN_MODE));
+    while (1) {
+        arch_delay_ms(100);
+        GLB_SW_POR_Reset();
+    }
+}
+
 /* test031: the board's sleep current. The K230 rails go off first (HBN releases every non-AON pad: R19 then holds
  * K230_PWR low, R76 the reset); the RTC moves to the Y3 crystal (as the product's rtc_use_crystal()), then HBN
  * level 0 until the RTC wakes the BL616 after <s>; the wake is a reset, the test firmware starts again. */
@@ -1355,9 +1400,23 @@ static int cmd_sleep(int argc, char **argv)
 {
     uint32_t s = argc > 1 ? (uint32_t)atoi(argv[1]) : 60, t;
     /* nousb (test031 battery floor, 2026-10-25): no USB wake, so every cable can be pulled while it sleeps */
-    bool nousb = argc > 2 && !strcmp(argv[2], "nousb");
-    if (s < 2 || s > 86400) {
-        printf("usage: pt_sleep <2..86400 s> [nousb]\r\n");
+    bool nousb = false, noacomp = false, norc = false;
+    int level = 0;
+    uint32_t ldo = HBN_LDO_LEVEL_1P10V;     /* the SDK's */
+    for (int i = 2; i < argc; i++) {
+        if (!strcmp(argv[i], "nousb"))
+            nousb = true;
+        else if (!strcmp(argv[i], "noacomp"))    /* both comparators off: only the RTC wakes it */
+            nousb = noacomp = true;
+        else if (!strcmp(argv[i], "norc"))       /* RC32K off while Y3 runs the RTC */
+            norc = true;
+        else if (!strcmp(argv[i], "l1"))
+            level = 1;
+        else if (!strncmp(argv[i], "ldo=", 4))   /* sleep LDO in mV, 700..1350 in 50 mV steps */
+            ldo = 2 + (uint32_t)(atoi(argv[i] + 4) - 700) / 50;
+    }
+    if (s < 2 || s > 86400 || ldo < HBN_LDO_LEVEL_0P70V || ldo > HBN_LDO_LEVEL_1P35V) {
+        printf("usage: pt_sleep <2..86400 s> [nousb] [noacomp] [norc] [l1] [ldo=700..1350]\r\n");
         return -1;
     }
 #if PT_TEST_SDU
@@ -1370,7 +1429,12 @@ static int cmd_sleep(int argc, char **argv)
      * dry again (rising) while wet */
     bool wet = leak_acomp_wet();
     HBN_Clear_IRQ(HBN_INT_ACOMP1);
-    HBN_Enable_AComp_IRQ(AON_ACOMP1_ID, wet ? HBN_ACOMP_INT_EDGE_POSEDGE : HBN_ACOMP_INT_EDGE_NEGEDGE);
+    if (noacomp) {
+        HBN_Disable_AComp_IRQ(AON_ACOMP1_ID, HBN_ACOMP_INT_EDGE_POSEDGE);
+        HBN_Disable_AComp_IRQ(AON_ACOMP1_ID, HBN_ACOMP_INT_EDGE_NEGEDGE);
+    } else {
+        HBN_Enable_AComp_IRQ(AON_ACOMP1_ID, wet ? HBN_ACOMP_INT_EDGE_POSEDGE : HBN_ACOMP_INT_EDGE_NEGEDGE);
+    }
     /* test035: USB wakes it on the next PGOOD edge, as the product's usb_arm_hbn_wake() (plug = falling) */
     bool usb = !usb_pgood_high();
     HBN_Clear_IRQ(HBN_INT_ACOMP0);
@@ -1387,16 +1451,19 @@ static int cmd_sleep(int argc, char **argv)
     /* HBN gives GPIO16-19 hardware pulls unless disabled; on IO16/17 (Y3) they stop the oscillator and the RTC
      * never wakes the chip (2026-10-22). pm_hbn_mode_enter() does not disable them, HBN_Mode_Enter() does. */
     HBN_Hw_Pu_Pd_Cfg(DISABLE);
-    printf("pt_sleep: K230 off, HBN level 0 for %lu s (RTC on %s), leak wakes it on going %s, USB on %s; unplug PR1 "
-           "now for the sleep current\r\n", (unsigned long)s, y3 ? "Y3" : "RC32K", wet ? "dry" : "wet",
+    if (noacomp) {
+        bflb_acomp_disable(AON_ACOMP0_ID);
+        bflb_acomp_disable(AON_ACOMP1_ID);
+    }
+    printf("pt_sleep: K230 off, HBN level %d, LDO %lu mV, RC32K %s, for %lu s (RTC on %s), leak wakes it on going %s, "
+           "USB on %s; unplug PR1 now for the sleep current\r\n", level, (unsigned long)(700 + 50 * (ldo - 2)),
+           norc ? "off" : "on", (unsigned long)s, y3 ? "Y3" : "RC32K", noacomp ? "never (noacomp)" : wet ? "dry" : "wet",
            nousb ? "never (nousb)" : usb ? "unplug" : "plug-in");
     bflb_mtimer_delay_ms(50);           /* let the USB console send the line */
     WAKE_MARK = (uint32_t)(rtc_now() + (uint64_t)s * 32768u) | 1u;  /* pm_hbn_mode_enter() reads it <= 1 tick later */
     /* the last write to HBN RAM is done: retention on now and no HBN RAM access after it (HBN RAM rule at main()) */
     HBN_Set_HRAM_Ret();
-    pm_hbn_mode_enter(PM_HBN_LEVEL_0, (uint64_t)s * 32768u);
-    while (1) {
-    }
+    pt_hbn_enter(level, ldo, norc && y3, (uint64_t)s * 32768u);
     return 0;
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_sleep, pt_sleep, K230 off and HBN level 0 for <s> seconds (RTC wake) [nousb: no USB wake]);

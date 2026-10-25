@@ -1,6 +1,6 @@
 # test031: sleep and minimal currents (every power state's floor)
 
-Status: **RTC wake fixed** (2026-10-22): HBN on Y3 wakes (5 of 5, cold start included); sleep 1.23 mA through USB (mostly the charger); **on the battery 36 uA** (2026-10-25).
+Status: **RTC wake fixed** (2026-10-22): HBN on Y3 wakes (5 of 5, cold start included); sleep 1.23 mA through USB (mostly the charger); **on the battery 35-36 uA** as the product sleeps, **26 uA** with the RTC alone (2026-10-25). **Done: not to be repeated** (the battery-lead wiring is too involved; user).
 
 The lowest current each power state can reach, measured on its own, so every other test's figure reads as a rise
 above a known floor (user, 2026-10-21: minimal currents too). First the sleep: what the board draws between wakes,
@@ -137,6 +137,33 @@ every external pull sits at its own rail (R19, R76, R35, R23, R73/R74; the 3V3-s
 costs current. Parts: U5 TPS63802 11 uA + its divider 5.5 uA, BQ24072T 4.3 uA typ (6.5 max), BL616 HBN0 ~3-6 uA, probe
 divider 1.65 uA, the rest ~2 uA = 26-29 uA typ, 35 max; measured 36 uA. Rev 2 lever: a nano-amp regulator for 3V3_SLEEP
 (~-16 uA). Battery: 0.86 mAh/day, ~26 mAh/month (ENERGY.txt).
+
+### 2026-10-25: what each wake source and HBN setting costs (same wiring; `pt_sleep 600 <variant>`, own HBN entry)
+
+`pt_sleep` got the SDK's pm_hbn_mode_enter() as its own function (`pt_hbn_enter`) with the build-time choices as
+options: `noacomp` (both comparators off, RTC wake only), `norc` (RC32K off while Y3 runs the RTC), `l1` (HBN level
+1), `ldo=<mV>` (HBN LDO, SDK 1100). Each variant read on the uA range after ~30 s with every cable out, cell ~4.17 V.
+
+| # | Variant | Battery current | Step |
+|---|---|---|---|
+| 1 | level 0, leak + USB comparators, RC32K on (the product's sleep) | 35 uA | - |
+| 2 | `noacomp`: RTC only | 29 uA | comparators **-6 uA** (~3 uA each) |
+| 3 | + `norc` | 29 uA | RC32K 0 |
+| 4 | + `l1` | 26 uA | level 1 -3 uA, **but HBN RAM is lost** |
+| 5 | + `ldo=900` | 26 uA (24-27 later readings) | LDO 0 |
+
+- **Level 1 loses HBN RAM**: 5 s sleeps, `pt_time` after each: level 0 kept pt_sleep's mark (wake -> main 17 ms),
+  level 1 (also at 900 mV) did not. The RTC still wakes it (~7 s). The product keeps its clock, flags and schedule
+  there, so level 1 is out (state in flash would mean a flash write per wake).
+- 0.80 / 0.70 V not tried: 0.90 V gave nothing, a lower LDO only risks the wake.
+- **Floors:** RTC alone ~26 uA = the board's hardware (U5 11 + its divider 5.5, BQ24072T 4.3, probe divider 1.65, the
+  rest ~2); BL616 HBN only a few uA. Usable in the product (level 0, leak comparator armed): ~32 uA; +3 uA with the
+  USB-plug comparator (kept: without it BLE pairing would start up to one RTC slice after plugging in, for ~2 mAh/
+  month).
+- Rev 2 lever: a nano-amp regulator for 3V3_SLEEP (about -16 uA).
+- Obstacle: the first `pt_hbn_enter` build hung awake (52 mA): `static` with one caller, GCC inlined it into
+  cmd_sleep, which runs from flash, and it powered the flash down under itself -> `noinline` (it sits in TCM).
+- Obstacle: my check `pt_sleep` without arguments slept 60 s (its default) instead of printing the usage.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 

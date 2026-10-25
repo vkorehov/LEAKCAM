@@ -32,6 +32,7 @@ Keep this file current when a test or a change moves a figure. The audit that cl
   BQ24072T battery drain, no input            4.3 uA typ    [d] 6.5 uA max (was "< 1 uA": wrong figure)
   PGOOD pull-up R23 (no USB: open drain off)  0             [d]
   BL616 pads in HBN: high-Z, no pulls         0             [d] the core domain is off (pull audit 2026-10-25)
+  Leak + USB comparators (ACOMP1, ACOMP0)     ~6 uA         [m test031] ~3 uA each; RTC alone 29 uA, level 1 26 uA
   Total sleep, measured                       36 uA         [m test031, 2026-10-25, meter in the cell lead,
                                                             every USB cable out] -> 0.86 mAh/day, ~26 mAh/month
                                                             (parts sum 26-29 uA typ, 35 max)
