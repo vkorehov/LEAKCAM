@@ -140,6 +140,36 @@ were its fixed 5 s / 15 s waits: the runner now waits for the prompt and up to 1
 (k230con) polls the UART at idle priority since the IDLE fix and misses the 32-byte FIFO at 4 Mbaud when the Wi-Fi
 tasks run -> UART receive by interrupt (next).
 
+### K230 time to an address, 2026-10-25 (`k230_join_timeline.py`; why the join took 14 s / 9.1 s)
+
+Product path: `pt_wifi bridge` (the BL616 joins from its stored credentials, remembered AP: 0.24-0.47 s), K230 boot,
+`bl616_rescan` (the agent's WIFI step by hand: the powertest firmware does not answer the agent's READY), then
+`ifconfig` polled until wlan0 has an address. Test path: msh `wifi disc`, `wifi join`. Every K230 console line is
+timestamped by a reader thread; `bl616_stat` (new) counts card interrupts against the driver's 1 s safety polls.
+
+| Step | Before | Card interrupt armed | + no DHCP ARP check (3 runs) |
+|---|---|---|---|
+| card bound -> netdev/vchan started | 1.000 s | 11 ms | 11 ms |
+| started -> link UP (BL616 already joined) | 1.000 s | 0 ms | 0-11 ms |
+| link UP -> `Got IP` | 2.80 s | 1.30 s | **0.10-0.40 s** |
+| **`bl616_rescan` -> address (product)** | **5.05 s** | 1.38 s | **0.33-0.59 s** |
+| msh `wifi join` -> address (test path) | 10.9 s | 3.96 s | 3.43 s (2.94 s of it RT-Thread's own scan of every channel) |
+| `bl616_stat` card irqs / safety polls / late | 0 / 15 / 12 | 28 / 4 / 0 | 29-32 / 3-4 / 0 |
+
+**The hidden issue: the SDIO card interrupt never fired.** RT-Thread's `sdio_attach_irq()` enables the function's
+interrupt in the card (CCCR) but never the host's card interrupt (Linux does on the first claim), and the K230 SDHCI
+arms only the signal-enable half at init. So no BL616 -> K230 message ever woke the driver: each waited for the 1 s
+safety poll or for a K230 transmit that happened to wake the worker (the DHCP OFFER and ACK, every link status, every
+scan item). Fix in install.sh (RT-Thread SDIO core): arm the host card interrupt when the first function IRQ is
+attached. The 14 s / 9.1 s joins and the step-2 scan's 4.0 s carried it, and the throughput of step 4 would have.
+Then lwIP's ARP probe of the offered address (500 ms timeouts on the 500 ms DHCP timer) held the address back by up to
+1 s: off (install.sh, lwipopts.h); the lease is the BL616's own, same MAC.
+
+The test path's remaining 2.94 s is RT-Thread's WLAN manager scanning before every `rt_wlan_connect()`; the product
+never calls it (the BL616 joins by itself), so it stays.
+
+Current during the runs (USB-C 1 VBUS, user, run before the fix): **220 mA average, 243 mA peak**.
+
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
@@ -214,6 +244,14 @@ Battery current: Wi-Fi join (energy per join, paid on every networked session), 
   polling bridge at idle priority, where it missed the 32-byte RX FIFO (80 us at 4 Mbaud) while the Wi-Fi tasks ran.
   Fix: UART RX interrupt into a 4 KB ring, the bridge task blocks on it (priority 5); `pt_status` shows `rx dropped`
   (0 since).
+- **The K230 got its address 5 s after the card bound, with the BL616 already joined** (2026-10-25) -> two exact
+  1.000 s steps and a 2.8 s DHCP: the SDIO card interrupt was never armed on the host (RT-Thread SDIO core), so the
+  driver ran on its 1 s safety poll (`bl616_stat`: card irqs 0) -> install.sh arms it at the first IRQ attach (0.33-0.59
+  s since, with the DHCP ARP check off).
+- **My first timeline runs measured nothing** (2026-10-25) -> (1) wlan0 never came up: the agent's WIFI step (the
+  rescan) waits for READY, which the powertest firmware does not answer -> the runner sends `bl616_rescan`; (2) the
+  whole boot log had one timestamp: the console was read only after `pt_run` returned (1.5 s wait) -> a reader thread
+  from before the reset.
 - **Link-up status said 0 dBm** -> the RSSI read at the connect event is 0 -> the status is sent again 1 s later
   (-29 dBm).
 - **My loop runner misjudged the bridge three times** (2026-10-24) -> (1) every command "took" 0.0 s: the leftover

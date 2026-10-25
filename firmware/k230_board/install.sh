@@ -257,6 +257,34 @@ open(p, 'w').write(s.replace(a, b))
 PY
 grep -q 'LEAKCAM: BL616 SDU' "$SDIOC" || { echo "SDIO FUNCE patch not applied"; exit 1; }
 
+# RT-Thread SDIO core: sdio_attach_irq() enables the function in the card's CCCR but never the host's card
+# interrupt (Linux does on the first claim); the K230 SDHCI arms only the signal-enable half at init, so no card
+# interrupt ever arrived and every BL616 message waited for the driver's 1 s safety poll (tests/test100, 2026-10-25:
+# card irqs 0, DHCP 2.8 s, join +1 s per step). Arm it when the first function IRQ is attached.
+grep -q 'LEAKCAM: arm the host card interrupt' "$SDIOC" || python3 - "$SDIOC" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = '    host->sdio_irq_num++;\n    return RT_EOK;\n'
+b = ('    if (host->sdio_irq_num++ == 0 && (host->flags & MMCSD_SUP_SDIO_IRQ))  /* LEAKCAM: arm the host card interrupt */\n'
+     '        host->ops->enable_sdio_irq(host, 1);\n'
+     '    return RT_EOK;\n')
+assert s.count(a) == 1, 'sdio.c changed, cannot arm the host card interrupt'
+open(p, 'w').write(s.replace(a, b))
+PY
+grep -q 'LEAKCAM: arm the host card interrupt' "$SDIOC" || { echo "SDIO card interrupt patch not applied"; exit 1; }
+
+# lwIP: no ARP probe of the offered address after the DHCP ACK; it held the address back by up to 1 s (500 ms
+# timeouts on the 500 ms DHCP timer, tests/test100 2026-10-25). The lease is the BL616's own (same MAC).
+LWOPT=$SDK/src/rtsmart/rtsmart/kernel/rt-thread/components/net/lwip-2.1.2/src/lwipopts.h
+grep -q 'LEAKCAM: no DHCP ARP check' "$LWOPT" || python3 - "$LWOPT" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = '#define DHCP_DOES_ARP_CHECK         (LWIP_DHCP)\n'
+assert s.count(a) == 1, 'lwipopts.h changed, cannot drop the DHCP ARP check'
+open(p, 'w').write(s.replace(a, '#define DHCP_DOES_ARP_CHECK         0   /* LEAKCAM: no DHCP ARP check */\n'))
+PY
+grep -q 'LEAKCAM: no DHCP ARP check' "$LWOPT" || { echo "lwIP DHCP ARP check patch not applied"; exit 1; }
+
 # 3. U-Boot/SPL: defconfig, device tree (reuses the BPI-Zero TARGET: same K230D SiP board code)
 cp "$HERE/uboot/configs/k230d_leakcam_defconfig" "$UB/configs/"
 cp "$HERE"/uboot/dts/k230d_leakcam.dts "$HERE"/uboot/dts/k230d_leakcam_pins.dtsi "$UB/arch/riscv/dts/"

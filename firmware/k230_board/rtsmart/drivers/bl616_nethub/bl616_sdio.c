@@ -41,6 +41,7 @@ struct bl616_sdio
 };
 
 static struct bl616_sdio sd;
+rt_uint32_t bl616_card_irqs;   /* card interrupts taken (bl616_stat) */
 
 static rt_err_t reg_read(rt_uint32_t reg, rt_uint8_t *val)
 {
@@ -182,6 +183,7 @@ static void bl616_sdio_irq(struct rt_sdio_function *func)
 {
     /* release DAT1 before the core re-enables the host interrupt, or it fires again at once */
     sdio_io_writeb(func, BL616_REG_HOST_INT_STATUS, 0);
+    bl616_card_irqs++;
     bl616_link_wake();
 }
 

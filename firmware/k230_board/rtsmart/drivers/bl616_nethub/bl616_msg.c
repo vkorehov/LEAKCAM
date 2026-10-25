@@ -83,6 +83,7 @@ static struct rt_event link_event;
 static rt_thread_t worker;
 static struct rt_completion worker_done;
 static volatile rt_bool_t running;
+static rt_uint32_t polls, late_polls;   /* safety-poll timeouts; those that found uploads waiting (bl616_stat) */
 
 static void ring_init(struct ring *r, rt_uint8_t *buf, rt_uint16_t slot_size, rt_uint8_t slots,
                       const char *name)
@@ -314,10 +315,11 @@ static void worker_entry(void *param)
     (void)param;
     while (running)
     {
-        rt_event_recv(&link_event, EV_WAKE | EV_STOP, RT_EVENT_FLAG_OR | RT_EVENT_FLAG_CLEAR,
-                      timeout, &ev);
+        rt_bool_t polled = rt_event_recv(&link_event, EV_WAKE | EV_STOP, RT_EVENT_FLAG_OR | RT_EVENT_FLAG_CLEAR,
+                                         timeout, &ev) == -RT_ETIMEOUT && timeout > 1;
         if (!running)
             break;
+        polls += polled;
 
         for (i = 0; i < RX_BURST; i++)
         {
@@ -331,6 +333,7 @@ static void worker_entry(void *param)
             }
             dispatch(rx_buf, len);
         }
+        late_polls += polled && i > 0;
 
         /* control first: a JOIN must not wait behind a full frame queue */
         err = ch_service(&vchan);
@@ -385,3 +388,16 @@ void bl616_link_stop(void)
     rt_completion_wait(&worker_done, RT_WAITING_FOREVER);
     worker = RT_NULL;
 }
+
+#ifdef RT_WLAN_MSH_CMD_ENABLE
+extern rt_uint32_t bl616_card_irqs;
+
+/* tests/test100: card interrupts against safety polls; a late poll is a message that waited up to SAFETY_POLL_MS */
+static int bl616_stat(void)
+{
+    rt_kprintf("bl616_stat: card irqs %u, safety polls %u, late %u\n", (unsigned)bl616_card_irqs, (unsigned)polls,
+               (unsigned)late_polls);
+    return 0;
+}
+MSH_CMD_EXPORT(bl616_stat, test100: card interrupts and safety polls of the BL616 link);
+#endif
