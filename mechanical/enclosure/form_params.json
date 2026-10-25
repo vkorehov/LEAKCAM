@@ -1595,27 +1595,27 @@
     "skin": true
    },
    {
-    "name": "fit 2026-10-25 Sketch35 (S3): the 0.2 mm wedge between the shell hollow's floor (Y 3.5), the S3 leg channel below it and the board pocket wall (X 18.65) - one box, so the hollow and the channel meet cleanly; from the floor down and only to X 19.3, where the channel is already open (the first box, to X 19.55 from Y 3.6, notched the wall beside it)",
+    "name": "fit 2026-10-25 Sketch35 (S3): the 0.2 mm wedge between the shell hollow's floor (Y 3.5), the S3 leg channel below it and the board pocket wall (X 18.65), cut along the user's outline (it follows the wedge to the wall; boxes left its tip or notched the wall), from the floor down 0.25",
     "pts": [
      [
       18.6,
       3.5,
-      27.3
-     ],
-     [
-      19.3,
-      3.5,
-      27.3
-     ],
-     [
-      19.3,
-      3.5,
-      28.05
+      27.34
      ],
      [
       18.6,
       3.5,
       28.05
+     ],
+     [
+      19.43,
+      3.5,
+      28.05
+     ],
+     [
+      19.48,
+      3.5,
+      27.73
      ]
     ],
     "dir": [
@@ -1624,7 +1624,7 @@
      0
     ],
     "d0": 0.0,
-    "d1": 0.4,
+    "d1": 0.25,
     "skin": false
    }
   ]
