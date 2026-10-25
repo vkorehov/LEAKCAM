@@ -32,10 +32,9 @@ Keep this file current when a test or a change moves a figure. The audit that cl
   BQ24072T battery drain, no input            4.3 uA typ    [d] 6.5 uA max (was "< 1 uA": wrong figure)
   PGOOD pull-up R23 (no USB: open drain off)  0             [d]
   BL616 pads in HBN: high-Z, no pulls         0             [d] the core domain is off (pull audit 2026-10-25)
-  Total sleep, measured                       19 uA         [m test031, 2026-10-25, meter in the cell lead,
-                                                            every USB cable out, cell 4.17 V, settled; 36 uA in
-                                                            the first minutes] -> 0.46 mAh/day, ~14 mAh/month
-                                                            (parts sum 26-29 uA typ: they run below typical)
+  Total sleep, measured                       36 uA         [m test031, 2026-10-25, meter in the cell lead,
+                                                            every USB cable out] -> 0.86 mAh/day, ~26 mAh/month
+                                                            (parts sum 26-29 uA typ, 35 max)
 
 
 2b. Wi-Fi (test100, USB-C 1 VBUS meter, K230 rails off unless named; on USB the charger's own draw is in it)
@@ -82,7 +81,7 @@ Keep this file current when a test or a change moves a figure. The audit that cl
 
   Item                       Per day                      Per month        Source
   -------------------------  ---------------------------  ---------------  ---------------------------------
-  Sleep                      0.46 mAh (19 uA)             ~14 mAh          [m] test031
+  Sleep                      0.86 mAh (36 uA)             ~26 mAh          [m] test031
   Humidity slices            144 x ?                      ?                test020 / test102
   Report sessions            4 x (30 uAh boot to app      ?                test021, test101, test102
                              init + work ?)
