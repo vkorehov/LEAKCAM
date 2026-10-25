@@ -98,6 +98,7 @@ cases, one per operation the product repeats:
 | [test102 session current](test102-session-current/README.md) | | planned |
 | [test103 leak pipeline timing](test103-leak-pipeline-timing/README.md) | | later: after the cameras, Wi-Fi and the product firmware |
 | [test104 battery energy audit](test104-battery-energy-audit/README.md) | | planned |
+| [test105 maximum current](test105-max-current/README.md) | | planned (2026-10-25): every load at once (CPU, DDR, KPU, VPU, NAND, Wi-Fi TX, both LED chains), full and low cell |
 
 ## Status by subsystem (2026-10-21)
 
