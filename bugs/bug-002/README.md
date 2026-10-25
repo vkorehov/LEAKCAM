@@ -136,3 +136,19 @@ always in, USB-C 2 never plugged.
 - Obstacle: the measurements went wrong twice on my side - I asked for readings before switching the rails on, and I
   mixed up which cable was the "debug cable" (PR1) - which cost several rounds.
 
+## Rev 1 workaround: solder bridge over U2 pins 1-2-3 (2026-10-25)
+
+![U2 bridge](fix_bridge_u2.png)
+
+From H2 (grounding the CH340X's D+ let the Mac start with the rails on): one solder blob across **U2 pins 1, 2, 3**
+(UD+, UD-, GND; the three right-most pads of U2's row nearest D3 in [fix_bridge_u2.png](fix_bridge_u2.png)). Pin 4
+must stay free.
+
+- Effect: the CH340X's D+ pull-up is held at ground, nothing reaches VUSB through D3, a USB-C source (Mac) starts at
+  plug-in with the K230 running.
+- Cost: ~2 mA through the CH340X's internal pull-up while the K230 rails are on (~1 % of a session's 220 mA idle),
+  nothing asleep; the USB-C 2 debug console stops working (buried in the enclosure, unused: the K230 console runs
+  through the BL616 from the first SPL line; only the boot ROM's own messages needed the CH340).
+- Undo: solder wick. The clean variant is U2 off with hot air (no current at all); the real fix is rev 2 (above).
+- Check after the bridge: rails on (`pt_on`), Mac into USB-C 1: it charges at once (PGOOD low).
+

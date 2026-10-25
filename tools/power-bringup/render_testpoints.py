@@ -587,6 +587,15 @@ def main():
                 "V: VUSB at C2 pad 1 (black lead C2 pad 2). D: CH340X pin 1 = UD+ (black lead U2 pin 3, GND).",
                 "Then hold 470 ohm across C2: V should fall below 0.8 V.")
     b2_dir = os.path.join(REPO, "bugs", "bug-002")
+    # the rev 1 fix (2026-10-25): a solder bridge over U2 pins 1-2-3 holds the CH340X's D+ at ground
+    bridge = [{"id": "1", "rail": "UD+", "pad": "U2.1", "gnd": "U2.3", "side": "top", "nominal": None, "note": "D+"},
+              {"id": "2", "rail": "UD-", "pad": "U2.2", "gnd": "U2.3", "side": "top", "nominal": None, "note": "D-"}]
+    render_points_sheet(pcb, comps, bridge, os.path.join(b2_dir, "fix_bridge_u2.png"), (32.0, 38.5, 9.5, 16.5), 260.0,
+                        ", bug-002 fix: solder bridge U2 pins 1-2-3",
+                        {"1": "pin 1 UD+ (bridge to 3)", "2": "pin 2 UD- (in between, bridged too)"},
+                        ("U2 = CH340X, left of the K230 BGA, below D3. Pins 1, 2, 3 = the three right-most pins of the row",
+                         "nearest D3 (black ring = pin 3, GND). One solder blob across pins 1-2-3; check pin 4 is NOT joined.",
+                         "Then: rails on, plug the Mac into USB-C 1: it must charge. Undo with solder wick."))
     render_points_sheet(pcb, comps, b2, os.path.join(b2_dir, "probe_points.png"), (30.0, 58.5, 8.0, 30.0), 45.0,
                         ", bug-002 back-feed", b2_req, b2_notes)
     render_points_sheet(pcb, comps, b2, os.path.join(b2_dir, "probe_points_board.png"), None, 22.0,
