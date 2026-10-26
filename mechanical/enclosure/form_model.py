@@ -861,6 +861,13 @@ def main():
             if fr["part"] == "base" and "boss" in fr:
                 pocket_ = pocket_ - fr["boss"]
         b.export_step(pocket_, os.path.join(a.out, "pocket_base.step"))
+        # nor may a marked cut take a clamp boss (fit 2026-10-26 Sketch41-45: the S3 box cut took clamp 3's top corner)
+        for pt_ in ("base", "cover"):
+            for fr in led_frames:
+                if fr["part"] == pt_ and "boss" in fr:
+                    user_cuts[pt_] = [c_ - fr["boss"] if (c_ & fr["boss"]).solids() else c_ for c_ in user_cuts[pt_]]
+        b.export_step(b.Compound(grooves + user_cuts["base"]), os.path.join(a.out, "legs_base.step"))
+        b.export_step(b.Compound(seats + user_cuts["cover"]), os.path.join(a.out, "legs_cover.step"))
     if P.get("shell"):                       # the hollows
         walls_b, walls_c, _, _ = legs(form0, P["legs"], grow=P["legs"]["grip_mm"], blocks=leg_blocks)
         if P.get("leds"):                    # a leg's grip (its bore's box) gives way to a clamp: the clamp stays whole
