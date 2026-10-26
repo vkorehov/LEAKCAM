@@ -175,8 +175,8 @@ for side, ys in RIBS.items():
 
 sm.AddToDB = True
 form_start("base")
-feature("Board pocket", dict(rects=[(-BOARD_X, -32.8, BOARD_X, 32.8)]), lambda: cut(False, 0, 4.0, 1, 0),
-        f"X +-{BOARD_X} Y -4..{PARTING} Z +-32.8")
+cut_bodies(LEGS_STEP.replace("legs_", "pocket_").format("base"), "Board pocket")   # X +-18.65 Y -4..4.7 Z +-32.8, round
+                                                       # the LED clamp bosses (form_model.py: clamp 3's reaches into it)
 feature("USB-C receptacle notches", dict(rects=[(front - 0.05, zc - 4.6, -BOARD_X + 0.01, zc + 4.6) if s < 0 else
                                                  (BOARD_X - 0.01, zc - 4.6, front + 0.05, zc + 4.6) for s, zc, front in USB]),
         lambda: span(-3.4), "fronts 0.05 from the skin, open upwards for the board going in")

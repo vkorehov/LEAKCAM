@@ -853,6 +853,14 @@ def main():
         led_bosses = {pt_: (supports if pt_ == "base" else []) + [fr[k_] for fr in led_frames if fr["part"] == pt_
                                                                    for k_ in ("boss", "slot_block") if k_ in fr]
                       for pt_ in ("base", "cover")}
+        # the board pocket (build_base.py Board pocket: X +-18.65, Y -4..4.7, Z +-32.8) as a body that leaves the clamp
+        # bosses whole: clamp 3's boss reaches 2.2 mm into the pocket's bottom corner under the board's edge (no parts
+        # there, the board 2.4 mm above), and the plain pocket cut took that corner off (fit 2026-10-26 Sketch46-48)
+        pocket_ = b.Pos(0, 0.35, 0) * b.Box(37.3, 8.7, 65.6)
+        for fr in led_frames:
+            if fr["part"] == "base" and "boss" in fr:
+                pocket_ = pocket_ - fr["boss"]
+        b.export_step(pocket_, os.path.join(a.out, "pocket_base.step"))
     if P.get("shell"):                       # the hollows
         walls_b, walls_c, _, _ = legs(form0, P["legs"], grow=P["legs"]["grip_mm"], blocks=leg_blocks)
         if P.get("leds"):                    # a leg's grip (its bore's box) gives way to a clamp: the clamp stays whole
