@@ -1595,36 +1595,36 @@
     "skin": true
    },
    {
-    "name": "fit 2026-10-25 Sketch35 (S3): the 0.2 mm wedge between the shell hollow's floor (Y 3.5), the S3 leg channel below it and the board pocket wall (X 18.65), cut along the user's outline (it follows the wedge to the wall; boxes left its tip or notched the wall), from the floor down 0.25",
+    "name": "fit 2026-10-26 Sketch35-38 (S3): the bore climbs at 15 deg under the seam rebate floor (Y 3.5) and the pocket wall: the slivers between them cut along the bore's top, X 18.6..19.3 (the rebate's width), from inside the bore up past the floor, Z 29.5..26.5 (replaces the 2026-10-25 cut along the wedge's outline: it left specks)",
     "pts": [
      [
       18.6,
-      3.5,
-      27.34
+      1.0,
+      29.5
+     ],
+     [
+      19.3,
+      1.0,
+      29.5
+     ],
+     [
+      19.3,
+      3.6,
+      29.5
      ],
      [
       18.6,
-      3.5,
-      28.0
-     ],
-     [
-      19.43,
-      3.5,
-      28.0
-     ],
-     [
-      19.48,
-      3.5,
-      27.73
+      3.6,
+      29.5
      ]
     ],
     "dir": [
      0,
-     -1,
-     0
+     0,
+     -1
     ],
     "d0": 0.0,
-    "d1": 0.25,
+    "d1": 3.0,
     "skin": false
    }
   ]
@@ -1800,11 +1800,173 @@
       28.0
      ]
     ]
+   },
+   {
+    "name": "fit 2026-10-26 Sketch48: the board pocket's floor where the LED clamp screw's pilot enters the pocket corner - fused (kept by the hollow, down 3 mm)",
+    "pts": [
+     [
+      16.64,
+      -4.0,
+      23.83
+     ],
+     [
+      18.65,
+      -4.0,
+      24.14
+     ],
+     [
+      18.65,
+      -4.0,
+      23.11
+     ],
+     [
+      19.4,
+      -4.0,
+      22.75
+     ],
+     [
+      19.66,
+      -4.0,
+      22.3
+     ],
+     [
+      19.4,
+      -4.0,
+      21.8
+     ],
+     [
+      18.65,
+      -4.0,
+      21.51
+     ],
+     [
+      18.65,
+      -4.0,
+      20.47
+     ],
+     [
+      16.98,
+      -4.0,
+      20.21
+     ],
+     [
+      16.92,
+      -4.0,
+      20.36
+     ]
+    ],
+    "dir": [
+     0,
+     -1,
+     0
+    ],
+    "d0": 0.0,
+    "d1": 3.0
+   },
+   {
+    "name": "fit 2026-10-26 Sketch46-47: the board pocket's wall islands round the clamp screw's pilot - fused (+X 1.5)",
+    "pts": [
+     [
+      18.65,
+      -4.0,
+      20.47
+     ],
+     [
+      18.65,
+      -4.0,
+      24.14
+     ],
+     [
+      18.65,
+      -2.36,
+      23.92
+     ],
+     [
+      18.65,
+      -2.61,
+      22.72
+     ],
+     [
+      18.65,
+      -2.88,
+      21.41
+     ],
+     [
+      18.65,
+      -3.1,
+      20.35
+     ]
+    ],
+    "dir": [
+     1,
+     0,
+     0
+    ],
+    "d0": 0.0,
+    "d1": 1.5
    }
   ]
  },
  "solid_fills": {
-  "base": [],
+  "base": [
+   {
+    "name": "fit 2026-10-26 Sketch49-50: the V of the side fold under the tongue slot (Z 11.8..14.1) - base filled flat to Y 4.41, the cover's ridge cut",
+    "pts": [
+     [
+      19.72,
+      4.41,
+      11.76
+     ],
+     [
+      20.05,
+      3.85,
+      14.1
+     ],
+     [
+      20.27,
+      4.41,
+      14.1
+     ],
+     [
+      19.72,
+      4.41,
+      14.1
+     ]
+    ],
+    "across_parting": true
+   },
+   {
+    "name": "fit 2026-10-26 Sketch39-40: the V of the side fold beside the S3 exit (Z 26..27.8) - base filled, the cover's ridge cut",
+    "pts": [
+     [
+      22.2,
+      2.2,
+      26.0
+     ],
+     [
+      21.73,
+      0.98,
+      26.0
+     ],
+     [
+      21.98,
+      0.55,
+      27.77
+     ],
+     [
+      21.39,
+      1.55,
+      26.27
+     ],
+     [
+      21.38,
+      1.57,
+      26.0
+     ]
+    ],
+    "across_parting": true
+   }
+  ],
   "cover": []
  },
  "cut_keeps": {
@@ -1835,6 +1997,38 @@
     ],
     "d0": 0.0,
     "d1": 3.26
+   },
+   {
+    "name": "fit 2026-10-26 Sketch41-45 (S3): the notch the S3 box cut (Y -3, Z 20.95) left in the block's top - fused: the cut keeps out",
+    "pts": [
+     [
+      20.03,
+      -2.26,
+      20.95
+     ],
+     [
+      20.43,
+      -3.0,
+      20.95
+     ],
+     [
+      19.26,
+      -3.0,
+      20.95
+     ],
+     [
+      19.26,
+      -2.66,
+      20.95
+     ]
+    ],
+    "dir": [
+     0,
+     0,
+     -1
+    ],
+    "d0": -0.05,
+    "d1": 0.6
    }
   ],
   "cover": []
