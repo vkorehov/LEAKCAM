@@ -794,10 +794,6 @@ def main():
     for part_, lst in user_cuts.items():
         for uc in P.get("user_cuts", {}).get(part_, []):
             lst.append(user_prism(uc))
-    for part_, other_ in (("base", "cover"), ("cover", "base")):   # a solid fill across the parting (fit 2026-10-26: a V of the
-        for sf in P.get("solid_fills", {}).get(part_, []):         # side fold under a slot): its part filled flat, the
-            if sf.get("across_parting"):                           # same volume cut from the other part
-                user_cuts[other_].append((hull_solid(sf["pts"]) if "dir" not in sf else user_prism(sf)) & form0)
     user_fills = {"base": [user_prism(uf) for uf in P.get("user_fills", {}).get("base", [])],     # marked solid: kept
                   "cover": [user_prism(uf) for uf in P.get("user_fills", {}).get("cover", [])]}   # by the hollow
     for part_, lst in (("base", grooves), ("base", user_cuts["base"]), ("cover", seats), ("cover", user_cuts["cover"])):
@@ -892,7 +888,7 @@ def main():
             out = []
             for sf in P.get("solid_fills", {}).get(part, []):
                 sol = hull_solid(sf["pts"]) if "dir" not in sf else user_prism(sf)
-                sol = sol & (form0 if sf.get("across_parting") else piece)
+                sol = sol & piece
                 for g_ in (grooves if part == "base" else seats) + (led_cuts[part] if P.get("leds") else []) + \
                           (clamp_room[part] if P.get("leds") else []):
                     if sol is None or not sol.solids():
