@@ -55,8 +55,9 @@ FFC_ROT = (9.9, 15.7 + 2.5)     # rotated connector pocket, camera y; 2.5 past i
                                 # edge into the connector (it comes from under the camera: S route, camera/README.md)
 BOARD_HOLE = (-15.64, -6.64)                           # main board Ø2.6 hole (26.61, 25.86)
 RIB_IN = 3.0              # ribs reach 3 mm in under the board
-RIBS = {-1: [0.55, 58.0], 1: [0.65, 59.5]}      # board y of the 2 mm ribs, per long edge (free
-                                                       # of top-side parts)
+RIBS = {-1: [0.55, 58.0], 1: [0.65]}            # board y of the 2 mm ribs, per long edge (free
+                                                       # of top-side parts; +X 59.5 removed 2026-10-26:
+                                                       # the S3 bore crosses it, fit Sketch38-39)
 # USB-C receptacles (TYPE-C-31-M-12): wall side, mouth centre Z, front face X. Each sits in a notch in
 # the pocket wall (open upwards: the board goes straight down), its front
 # 0.05 from a 0.8 mm skin with a stadium like its mouth; the plug's overmold stops on the flat side
