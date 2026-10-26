@@ -1869,7 +1869,7 @@
     "skin": true
    },
    {
-    "name": "fit 2026-10-26 Sketch35-38 (S3): the bore climbs at 15 deg under the seam rebate floor (Y 3.5) and the pocket wall: the slivers between them cut along the bore's top, X 18.6..19.3 (the rebate's width), from inside the bore up past the floor, Z 29.5..26.5 (replaces the 2026-10-25 cut along the wedge's outline: it left specks)",
+    "name": "fit 2026-10-26 Sketch37-38 (S3): the bore climbs at 15 deg under the seam rebate floor (Y 3.5): the knife between them cut flush with the floor, from the pocket wall plane over the bore's top line (X 18.6..19.5), its bottom inside the bore, Z 29.5..26.5 (the end face meets the bore steeply: no new knife)",
     "pts": [
      [
       18.6,
@@ -1877,18 +1877,18 @@
       29.5
      ],
      [
-      19.3,
+      19.5,
       1.0,
       29.5
      ],
      [
-      19.3,
-      3.6,
+      19.5,
+      3.5,
       29.5
      ],
      [
       18.6,
-      3.6,
+      3.5,
       29.5
      ]
     ],
@@ -2178,6 +2178,58 @@
     ],
     "d0": 0.0,
     "d1": 1.5
+   },
+   {
+    "name": "fit 2026-10-26 Sketch35-36 (S3): 1 mm of plastic round the bore from Z 30 to 25.5 kept by the hollow: the hollow grazed the bore there and left slivers at its side and bottom",
+    "pts": [
+     [
+      18.12,
+      -2.297,
+      29.208
+     ],
+     [
+      16.305,
+      -0.56,
+      29.736
+     ],
+     [
+      16.305,
+      1.916,
+      30.419
+     ],
+     [
+      18.12,
+      3.679,
+      30.857
+     ],
+     [
+      20.688,
+      3.697,
+      30.792
+     ],
+     [
+      22.503,
+      1.959,
+      30.264
+     ],
+     [
+      22.503,
+      -0.517,
+      29.581
+     ],
+     [
+      20.688,
+      -2.28,
+      29.143
+     ]
+    ],
+    "dir": [
+     -0.026,
+     0.2659,
+     -0.9636
+    ],
+    "d0": 0.0,
+    "d1": 4.67
    }
   ]
  },
