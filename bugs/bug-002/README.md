@@ -1,6 +1,6 @@
 # bug-002: K230 rails on back-feed VUSB, USB-C hosts refuse to power the board
 
-Status: **worked around on rev 1** (2026-10-25): solder bridge U2 pins 1-2-3 (below); cause confirmed (the CH340X's
+Status: **solved on rev 1** (2026-10-25): solder bridge U2 pins 1-2-3 (below); cause confirmed (the CH340X's
 D+ pull-up through D3 into VUSB); rev 2 fix in bugs/v2.txt.
 
 Found 2026-10-17 in the K230 rail bring-up (tests/test003-k230-rails-and-usb-boot, k230_rails.png). Board: MIFA rev 1 (fab 11a6a38).
@@ -157,6 +157,6 @@ must stay free.
   R10) are not populated at all**, so the path does not exist; D5's VCC must not sit on VUSB either.
 - Check after the bridge: rails on (`pt_on`), Mac into USB-C 1: it charges at once (PGOOD low).
 - **Done on this board 2026-10-25, check passed:** rails on (K230 in reset), Mac unplugged and plugged back in: charging
-  at once, PGOOD low. The board's bug-002 is worked around; the same bridge goes on every rev 1 board (with
+  at once, PGOOD low. The board's bug-002 is solved; the same bridge goes on every rev 1 board (with
   bug-001's 47 k and bug-003's R45 bridge).
 

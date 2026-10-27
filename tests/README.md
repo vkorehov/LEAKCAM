@@ -69,7 +69,7 @@ cases, one per operation the product repeats:
 |---|---|---|
 | [test001 power and charging](test001-power-and-charging/README.md) | 2026-10-17/20 | pass: battery rails; charging with the bug-001 47 k |
 | [test002 BL616 flash and console](test002-bl616-flash-and-console/README.md) | 2026-10-17 | pass |
-| [test003 K230 rails and USB boot](test003-k230-rails-and-usb-boot/README.md) | 2026-10-17 | pass; USB-C attach with rails on: bug-002 |
+| [test003 K230 rails and USB boot](test003-k230-rails-and-usb-boot/README.md) | 2026-10-17 | pass; USB-C attach with rails on: bug-002, solved by the U2 1-2-3 bridge (2026-10-25) |
 | [test004 K230 hello from SRAM](test004-k230-hello-from-sram/README.md) | 2026-10-17 | pass |
 | [test005 K230 NAND flashing](test005-k230-nand-flashing/README.md) | 2026-10-17 | pass |
 | [test006 K230 NAND boot (SPL)](test006-k230-nand-boot-spl/README.md) | 2026-10-17 | pass |
@@ -101,7 +101,7 @@ cases, one per operation the product repeats:
 | [test032 RTC wake](test032-rtc-wake/README.md) | 2026-10-22 | wake works on Y3 (5/5); Y3 -110 ppm open |
 | [test033 every BL616 pin: function, levels, back-feed](test033-bl616-pins/README.md) | 2026-10-22 | pass: all pins as the table in 5 states (pt_pins + pin_check.py); product BOOT1 (IO27) fix; back-feed none |
 | [test034 leak probe wake](test034-leak-probe-wake/README.md) | 2026-10-22 | pass with opens: product threshold fixed (was 1.65 V = dry, now 0.85 V); S1-S3 detected; HBN wake wet and dry works; water types, sweep, 8 h dry open |
-| [test035 USB plug wake](test035-usb-plug-wake/README.md) | 2026-10-22 | pass: plug/unplug seen, HBN wake both edges, 19 cycles; in-session plug gets no power from a USB-C host (bug-002), product now waits for it and enters USB mode |
+| [test035 USB plug wake](test035-usb-plug-wake/README.md) | 2026-10-22 | pass: plug/unplug seen, HBN wake both edges, 19 cycles; in-session plug got no power from a USB-C host (bug-002, solved by the U2 1-2-3 bridge 2026-10-25) |
 | [test036 K230 hang recovery](test036-k230-hang-recovery/README.md) | 2026-10-22 | pass: hang ends in 2.3 s, no-boot at the timeout; a restart is invisible to the heartbeat -> product session backstop 15 min + restart limit, boot timeout 90 -> 10 s |
 | [test037 K230 PMU RTC](test037-k230-rtc/README.md) | 2026-10-21 | step 0 pass: runs from Y1 (+25 ppm vs 27 MHz), UTC fixed; handover open |
 | [test038 battery brown-out below 3.10 V](test038-battery-brownout/README.md) | 2026-10-23 | **pass**: K230 VBAT cut -> rails off -> lockout HBN -> USB plug wakes (no EN); lockout skipped when USB is in; BL616 watchdog (12.9 s recovery); below 3 V needs a lab supply |
@@ -120,7 +120,7 @@ cases, one per operation the product repeats:
 |---|---|---|
 | Battery rails, 3V3_SLEEP | pass | test001 |
 | Charging | pass with the bug-001 47 k and the cell wired to C11: full 0.89 A measured (end of charge to time); the earlier ~0.2-0.3 A / ~6 h were a wrong estimate and an unwatched night | test001 |
-| USB-C power with K230 on | **open**: bug-002, plug USB before `pt_on` | test003 |
+| USB-C power with K230 on | pass: bug-002 solved by the U2 1-2-3 bridge (2026-10-25) | test003 |
 | BL616 flash, USB console, AHT20, leak ADC (dry) | pass | test002 |
 | K230 rails, boot ROM, debug UART, code from SRAM | pass | test003, test004 |
 | NAND flash + boot (SPL, DDR 2667, OpenSBI, RT-Smart), UFFS | pass | test005-007 |

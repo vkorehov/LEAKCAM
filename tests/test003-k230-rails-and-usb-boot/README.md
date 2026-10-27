@@ -1,6 +1,6 @@
 # test003: K230 rails and USB boot, 2026-10-17
 
-Status: **pass; USB-C attach with rails on: bug-002** (2026-10-17).
+Status: **pass; USB-C attach with rails on: bug-002, solved 2026-10-25** (2026-10-17).
 
 The cell on JB1, `bl616_powertest` on PR1. Probe points and limits: [k230_rails.png](k230_rails.png).
 
@@ -35,7 +35,7 @@ BL616 test firmware PT_TEST_POWER (GPIO K230_PWR/RSTN); K230 boot ROM USB mode (
 | `pt_off`, cable in, `pt_on`, `pt_run` | VUSB 5 V; the K230 ROM enumerates as `29f1:0230 Canaan K230 USB Boot Device` | pass |
 | Debug serial on USBC2 | CH340 on `/dev/ttyUSB0`; blank NAND: ROM prints `boot failed with exit code 13` at 115200 | pass |
 
-**Pass** (all four K230 rails, boot ROM, debug UART); USB-C attach with the rails on: bug-002 open.
+**Pass** (all four K230 rails, boot ROM, debug UART); USB-C attach with the rails on: bug-002, solved by the U2 1-2-3 bridge (2026-10-25).
 
 ### Temperature
 
