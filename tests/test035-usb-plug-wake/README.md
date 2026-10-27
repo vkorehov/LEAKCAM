@@ -1,6 +1,6 @@
 # test035: USB plug wake (PGOOD on ACOMP0)
 
-Status: **pass** (2026-10-22): plug / unplug seen awake, HBN wake on both edges, 19 charger plug transitions all reported; a plug-in during a K230 session gets no power from a USB-C host until the rails go off (bug-002, PGOOD 113 ms later) - product handles it now. Open: the Mac refusing power with the K230 off once.
+Status: **pass** (2026-10-22): plug / unplug seen awake, HBN wake on both edges, 19 charger plug transitions all reported; a plug-in during a K230 session got no power from a USB-C host until the rails went off (bug-002, PGOOD 113 ms later; solved by the U2 1-2-3 bridge 2026-10-25). Open: the Mac refusing power with the K230 off once.
 
 A USB plug wakes the hibernating BL616 through PGOOD on ACOMP0 (threshold 1.65 V today; 0.5 V with the rev 2 battery
 divider, bug-004) and switches it to USB mode (BLE pairing, awake). Unplug returns it to the battery path.
