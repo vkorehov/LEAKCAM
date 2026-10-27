@@ -239,8 +239,8 @@ fp_feature("Weld: camera-end wall to the S1 cut", [(16.25, -0.42), (16.25, -8.41
            -33.95, -32.8, True, "the camera-end wall below the S1 run thickened to the S1 cut's end (fit Sketch40)")
 rp_feature("Weld: antenna-end screw block", [(32.2, -6.5), (34.85, -5.95), (34.75, -5.28), (34.73, -5.19), (32.8, 1.01), (32.2, -4.0)],
            14.85, 16.27, True, "the gap between the +X antenna-end screw block and the wall closed (fit Sketch32-35)")
-rp_feature("Weld: corner by the S1 plug", [(-17.17, 3.05), (-18.45, 1.4), (-17.17, 1.4)],
-           18.6, 21.91, True, "the corner at the S1 plug pocket's +Z end beside the leg's bend (fit Sketch41)")
+# no weld by the S1 plug (fit 2026-10-27): the cut_keep of fit Sketch41 trims the pocket's clearance corner, 0.66 from
+# the USB-C plug way; a weld there filled the plug way's round end
 # the probe legs last (fit 2026-10-25 Sketch37: the camera-end weld, added after them, closed the S1 leg's round channel
 # with a 1.15 mm wall): the channels run round through every fill and weld
 legs_cut("base")
