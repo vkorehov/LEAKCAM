@@ -35,6 +35,9 @@
 static rt_device_t uart;
 static struct linesplit split;
 static volatile int paused;
+/* tests/test039 (2026-10-27): where a typed console command gets lost - bytes from uart1, console text bytes, text
+ * bytes the console ring had no room for, frames taken, frames dropped (link ring full), reads while paused */
+static volatile rt_uint32_t st_rx, st_text, st_text_drop, st_frames, st_frame_drop, st_paused;
 
 /* ---------------- the console's I/O device ---------------- */
 
@@ -181,7 +184,9 @@ static const struct dfs_file_ops link_fops = {
 static void on_text(void *ctx, const char *p, unsigned n)
 {
     (void)ctx;
-    rt_ringbuffer_put(&kcon_rb, (const rt_uint8_t *)p, (rt_uint16_t)n);
+    rt_size_t put = rt_ringbuffer_put(&kcon_rb, (const rt_uint8_t *)p, (rt_uint16_t)n);
+    st_text += n;
+    st_text_drop += n - put;
 }
 
 static void on_frame(void *ctx, const char *line, unsigned n)
@@ -191,6 +196,9 @@ static void on_frame(void *ctx, const char *line, unsigned n)
     if (rt_ringbuffer_space_len(&link_rb) >= n + 1) {
         rt_ringbuffer_put(&link_rb, (const rt_uint8_t *)line, (rt_uint16_t)n);
         rt_ringbuffer_putchar(&link_rb, '\n');
+        st_frames++;
+    } else {
+        st_frame_drop++;
     }
 }
 
@@ -199,11 +207,15 @@ static rt_err_t uart_rx_ind(rt_device_t dev, rt_size_t size)
     (void)size;
     char buf[64];
     rt_size_t n;
-    if (paused)
+    if (paused) {
+        st_paused++;
         return RT_EOK;
+    }
     rt_size_t text_before = rt_ringbuffer_data_len(&kcon_rb), link_before = rt_ringbuffer_data_len(&link_rb);
-    while ((n = rt_device_read(dev, 0, buf, sizeof(buf))) > 0)
+    while ((n = rt_device_read(dev, 0, buf, sizeof(buf))) > 0) {
+        st_rx += n;
         linesplit_feed(&split, buf, (unsigned)n);
+    }
     if (rt_ringbuffer_data_len(&kcon_rb) != text_before && kcon_notify.notify)
         kcon_notify.notify(kcon_notify.dev);
     if (rt_ringbuffer_data_len(&link_rb) != link_before)
@@ -268,3 +280,20 @@ static int link_mux_init(void)
     return 0;
 }
 INIT_COMPONENT_EXPORT(link_mux_init);
+
+extern volatile rt_uint32_t uart_rx_err[12];     /* drv_uart.c (install.sh: rx error, byte, reset and irq counters) */
+
+static int link_stat(void)
+{
+    rt_kprintf("link_stat: rx %u text %u text_drop %u frames %u frame_drop %u paused %u kcon_free %u\n",
+               (unsigned)st_rx, (unsigned)st_text, (unsigned)st_text_drop, (unsigned)st_frames,
+               (unsigned)st_frame_drop, (unsigned)st_paused, (unsigned)rt_ringbuffer_space_len(&kcon_rb));
+    rt_kprintf("link_stat: uart1 errors framing %u parity %u overrun %u, bytes dropped %u, last LSR 0x%02x, fifo bytes %u\n",
+               (unsigned)uart_rx_err[0], (unsigned)uart_rx_err[1], (unsigned)uart_rx_err[2], (unsigned)uart_rx_err[3],
+               (unsigned)uart_rx_err[4], (unsigned)uart_rx_err[5]);
+    rt_kprintf("link_stat: uart1 resets %u, irqs %u (rx data %u, char timeout %u, line status %u, other %u)\n",
+               (unsigned)uart_rx_err[6], (unsigned)uart_rx_err[7], (unsigned)uart_rx_err[8], (unsigned)uart_rx_err[9],
+               (unsigned)uart_rx_err[10], (unsigned)uart_rx_err[11]);
+    return 0;
+}
+MSH_CMD_EXPORT(link_stat, test039: uart1 bytes in / console text / dropped / frames);

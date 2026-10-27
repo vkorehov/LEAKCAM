@@ -412,6 +412,60 @@ open(p, 'w').write(s.replace(a, b))
 PY
 grep -q 'LEAKCAM: link baud' "$UARTC" || { echo "link baud patch not applied"; exit 1; }
 
+# test039 (2026-10-27): typed console commands got lost whole - the driver drops the entire RX FIFO on a framing,
+# parity or overrun error. Count each kind and the bytes dropped (uart_rx_err[], link_mux's link_stat prints them).
+grep -q 'LEAKCAM: rx error counters' "$UARTC" || python3 - "$UARTC" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = 'static void drv_uart_irq_handler(int irq, void* param)\n{'
+b = ('/* LEAKCAM: rx error counters (tests/test039): [0] framing, [1] parity, [2] overrun, [3] bytes dropped, [4] last LSR */\n'
+     'volatile rt_uint32_t uart_rx_err[5];\n\n' + a)
+c = '_on_error_drop_fifo:\n    /* Drain FIFO on error */\n    while (lsr & UART_LSR_DR) {\n        (void)read32(inst->reg + UART_RBR);\n'
+d = ('_on_error_drop_fifo:\n'
+     '    if (inst->uart.index == 1) {   /* LEAKCAM: rx error counters */\n'
+     '        uart_rx_err[0] += !!(lsr & UART_LSR_FE);\n'
+     '        uart_rx_err[1] += !!(lsr & UART_LSR_PE);\n'
+     '        uart_rx_err[2] += !!(lsr & UART_LSR_OE);\n'
+     '        uart_rx_err[4] = lsr;\n'
+     '    }\n'
+     '    /* Drain FIFO on error */\n    while (lsr & UART_LSR_DR) {\n        (void)read32(inst->reg + UART_RBR);\n'
+     '        if (inst->uart.index == 1)\n            uart_rx_err[3]++;\n')
+assert s.count(a) == 1 and s.count(c) == 1, 'drv_uart.c changed, cannot add the rx error counters'
+open(p, 'w').write(s.replace(a, b).replace(c, d))
+PY
+grep -q 'LEAKCAM: rx error counters' "$UARTC" || { echo "rx error counters patch not applied"; exit 1; }
+grep -q 'LEAKCAM: rx byte counter' "$UARTC" || python3 - "$UARTC" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = '    if (!(read32(uart_base + UART_LSR) & UART_LSR_DR)) {\n        return -1;\n    }\n\n    return (int)read32(uart_base + UART_RBR);\n}'
+b = ('    if (!(read32(uart_base + UART_LSR) & UART_LSR_DR)) {\n        return -1;\n    }\n\n'
+     '    if (inst->uart.index == 1)   /* LEAKCAM: rx byte counter (tests/test039: bytes taken from the FIFO) */\n'
+     '        uart_rx_err[5]++;\n'
+     '    return (int)read32(uart_base + UART_RBR);\n}')
+c = 'volatile rt_uint32_t uart_rx_err[5];'
+assert s.count(a) == 1 and s.count(c) == 1, 'drv_uart.c changed, cannot add the rx byte counter'
+open(p, 'w').write(s.replace(a, b).replace(c, 'volatile rt_uint32_t uart_rx_err[6];   /* [5] bytes read from the FIFO */'))
+PY
+grep -q 'LEAKCAM: rx byte counter' "$UARTC" || { echo "rx byte counter patch not applied"; exit 1; }
+grep -q 'LEAKCAM: reset and irq counters' "$UARTC" || python3 - "$UARTC" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+c = 'volatile rt_uint32_t uart_rx_err[6];   /* [5] bytes read from the FIFO */'
+c2 = ('volatile rt_uint32_t uart_rx_err[12];  /* [5] bytes read from the FIFO, [6] resets (configure/close), [7] irqs, '
+      '[8] irq rx data, [9] irq char timeout, [10] irq line status, [11] irq other (LEAKCAM: reset and irq counters) */')
+a = '    // Perform full UART reset (clears RX/TX FIFO, resets internal logic)\n    write32(uart_base + UART_SRR, UART_SRR_UR | UART_SRR_RFR | UART_SRR_XFR);\n'
+a2 = ('    if (inst->uart.index == 1)\n        uart_rx_err[6]++;\n' + a)
+d = '    uint8_t lsr = (uint8_t)read32(inst->reg + UART_LSR);\n\n    /* Data available interrupt */'
+d2 = ('    uint8_t lsr = (uint8_t)read32(inst->reg + UART_LSR);\n'
+      '    if (inst->uart.index == 1) {\n'
+      '        uart_rx_err[7]++;\n'
+      '        uart_rx_err[iir == UART_IIR_IID_RECV_DATA ? 8 : iir == UART_IIR_IID_CHARTO ? 9 : iir == UART_IIR_IID_RECV_LINE_STAT ? 10 : 11]++;\n'
+      '    }\n\n    /* Data available interrupt */')
+assert s.count(c) == 1 and s.count(d) == 1 and s.count(a) >= 1, 'drv_uart.c changed, cannot add the reset and irq counters'
+open(p, 'w').write(s.replace(c, c2).replace(a, a2).replace(d, d2))
+PY
+grep -q 'LEAKCAM: reset and irq counters' "$UARTC" || { echo "reset and irq counters patch not applied"; exit 1; }
+
 # ISP tuning files: the SDK copies every ov5647-* resolution (3.3 MB) into /bin; the product runs 1280x960 only.
 # UFFS mount time follows the used pages, so the other four sets cost ~85 ms per boot (tests/test022, 2026-10-21).
 ISPMK=$SDK/src/rtsmart/mpp/userapps/src/sensor/Makefile
