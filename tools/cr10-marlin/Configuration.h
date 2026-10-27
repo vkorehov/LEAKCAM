@@ -689,9 +689,9 @@
     #define DEFAULT_KI_LIST {   1.72,   1.72 }
     #define DEFAULT_KD_LIST {  73.96,  73.96 }
   #else
-    #define DEFAULT_KP  30.30   // M303 E0 S230 C8: bi-metal heat break, silicone sock, new heatsink fan, Kapton air baffle (2026-10-20)
-    #define DEFAULT_KI   2.82
-    #define DEFAULT_KD  81.29
+    #define DEFAULT_KP  31.66   // M303 E0 S230 C8: bi-metal heat break, silicone sock, new heatsink fan, Kapton baffle removed (2026-10-26)
+    #define DEFAULT_KI   3.00
+    #define DEFAULT_KD  83.64
   #endif
 #else
   #define BANG_MAX 255    // Limit hotend current while in bang-bang mode; 255=full current
@@ -1198,7 +1198,7 @@
  * Override with M92
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 400, 140 }   // E: dual-gear extruder; 200 mm out of the unhooked extruder measured 204.2 at 142, so 139.08, set to 140 (2026-10-12)
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 400, 139.08 }   // E: dual-gear extruder; 200 mm out of the unhooked extruder measured 204.2 at 142, so 139.08 (2026-10-12; 140 until 2026-10-26)
 
 /**
  * Default Max Feed Rate (linear=mm/s, rotational=°/s)
