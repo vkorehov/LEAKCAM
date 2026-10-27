@@ -1,0 +1,113 @@
+/*
+ * test040: the product's BLE provisioning (firmware/bl616/ble_pairing.c + wifi_check.c) on the test firmware. The
+ * phone side is the instrumented test of android/ (BleProvisioningTest), driven over adb.
+ *
+ *   pt_ble on         RF parameters, then BLE as the product starts it: advertising as LEAKCAM-xxyy, pairing only on
+ *                     USB power; an unplug stops it (ble_pairing_stop), as the product's supervisor does
+ *   pt_ble            started?, USB power, the stored credentials (as pt_ble creds)
+ *   pt_ble creds      wifi_ssid / wifi_psk in easyflash: length and CRC-32 each, never the passphrase itself
+ *   pt_ble erase      wifi_ssid, wifi_psk and the remembered AP (wifi_ap) deleted
+ */
+#include "tests.h"
+
+#if PT_TEST_BLE
+#include <stdio.h>
+#include <string.h>
+
+#include <FreeRTOS.h>
+#include <task.h>
+
+#include "easyflash.h"
+#include "shell.h"
+
+#include "ble_pairing.h"
+#include "evlog.h"
+
+bool usb_present(void);                    /* main.c */
+
+static bool started;
+
+/* the product's event log is not in the test firmware: its BLE entry goes to the console */
+void evlog_add(enum ev ev, int arg, unsigned val)
+{
+    printf("evlog: event %d arg %d val %u\r\n", (int)ev, arg, val);
+}
+
+static uint32_t crc32(const uint8_t *p, size_t n)  /* zlib's CRC-32: the runner compares with ~/.leakcam_wifi */
+{
+    uint32_t c = 0xFFFFFFFFu;
+    while (n--) {
+        c ^= *p++;
+        for (int k = 0; k < 8; k++)
+            c = (c >> 1) ^ (0xEDB88320u & -(c & 1));
+    }
+    return ~c;
+}
+
+static void print_key(const char *key)
+{
+    uint8_t v[64];
+    size_t saved = 0;
+    size_t n = ef_get_env_blob(key, v, sizeof(v), &saved);
+    if (saved == 0)
+        printf("pt_ble: %s none\r\n", key);
+    else
+        printf("pt_ble: %s len %u crc %08lx\r\n", key, (unsigned)saved, (unsigned long)crc32(v, n));
+}
+
+/* the product's supervisor: an unplug stops BLE (the product then reboots into the battery path) */
+static void usb_watch_task(void *arg)
+{
+    (void)arg;
+    bool was = usb_present();
+    while (1) {
+        bool now = usb_present();
+        if (was && !now) {
+            printf("pt_ble: USB unplugged, BLE stopped\r\n");
+            ble_pairing_stop();
+        }
+        was = now;
+        vTaskDelay(pdMS_TO_TICKS(200));
+    }
+}
+
+static void ble_task(void *arg)
+{
+    (void)arg;
+    ble_pairing_start();
+    vTaskDelete(NULL);
+}
+
+static void cmd_ble(int argc, char **argv)
+{
+    const char *op = argc > 1 ? argv[1] : "";
+    if (pt_ef_once() != 0) {
+        printf("pt_ble: easyflash init failed\r\n");
+        return;
+    }
+    if (!strcmp(op, "on")) {
+        if (started) {
+            printf("pt_ble: already on\r\n");
+            return;
+        }
+        if (!pt_radio_init())
+            return;
+        started = true;
+        xTaskCreate(ble_task, "ble", 1024, NULL, 3, NULL);
+        xTaskCreate(usb_watch_task, "bleusb", 512, NULL, 2, NULL);
+        printf("pt_ble: starting (USB power %s)\r\n", usb_present() ? "yes" : "no");
+    } else if (!strcmp(op, "erase")) {
+        ef_del_env("wifi_ssid");
+        ef_del_env("wifi_psk");
+        ef_del_env("wifi_ap");
+        printf("pt_ble: credentials and remembered AP erased\r\n");
+    } else if (!strcmp(op, "creds") || !*op) {
+        if (!*op)
+            printf("pt_ble: %s, USB power %s\r\n", started ? "on" : "off", usb_present() ? "yes" : "no");
+        print_key("wifi_ssid");
+        print_key("wifi_psk");
+    } else
+        printf("usage: pt_ble [on | creds | erase]\r\n");
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_ble, pt_ble, test040 BLE provisioning: on | creds | erase);
+#endif

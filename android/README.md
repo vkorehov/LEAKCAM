@@ -78,3 +78,15 @@ cd ~/k230d-hw/LEAKCAM/android
 
 The SDK needs `platforms;android-35` and `build-tools;35.0.0` (`sdkmanager`), and
 `local.properties` with `sdk.dir=<sdk path>`.
+
+## Board tests (test040, test106)
+
+`app/src/androidTest/java/com/leakcam/setup/BleOp.kt` drives a board from the phone for the test runners, one BLE
+operation per `am instrument` call (scan, unpair, a session with pairing, MTU, raw writes and the status
+notifications); it is test code only, the app is unchanged. Build both APKs:
+
+```bash
+./gradlew assembleDebug assembleDebugAndroidTest -Pandroid.aapt2FromMavenOverride=$HOME/.local/opt/aapt2-x86/aapt2
+```
+
+`tests/test040-ble-wifi-credentials/run.py` installs them on the phone (adb over USB) and runs the steps.

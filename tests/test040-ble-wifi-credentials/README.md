@@ -14,9 +14,12 @@ product flow are test106.
   in (today's defconfig has no BLE), and a `pt_ble` shell command: `pt_ble` (advertising, connection, last status),
   `pt_ble creds` (lengths and a CRC of the stored `wifi_ssid` / `wifi_psk`, never the passphrase itself),
   `pt_ble erase` (delete both keys and `wifi_ap`). Console PR1 (`/dev/ttyACM0`).
-- BLE central on the host: a USB Bluetooth dongle passed through to the Linux VM (BlueZ + `bleak`; the VM has no
-  Bluetooth controller of its own, 2026-10-27), or `bleak` on the Mac. Script `tests/test040-ble-wifi-credentials/run.py`
-  (harness) drives it with no hands.
+- BLE central: the user's Android phone on adb over USB (2026-10-27; the VM has no Bluetooth controller of its own).
+  `android/app/src/androidTest/.../BleOp.kt` does one BLE operation per call (scan, unpair, session: pair accept /
+  cancel, MTU, hex writes, the STATUS notifications, a link drop on a given state) and accepts the system pairing
+  dialog with UI Automator; `run.py` (harness) chains the calls and checks the board between them, no hands. APKs:
+  `./gradlew assembleDebug assembleDebugAndroidTest` (android/README.md); the runner installs both with the
+  permissions granted, keeps the screen on while plugged. The phone: unlocked, no other use during the run.
 - Networks: the test network from `~/.leakcam_wifi` (2.4 GHz, internet), a wrong passphrase for it, an SSID that
   does not exist; for the no-internet / captive cases a phone hotspot without data.
 - USB-C 1 in (BLE only on USB power); the cell connected for the unplug steps.
@@ -24,9 +27,10 @@ product flow are test106.
 
 ## Needs (build features and dependencies)
 
-BL616: SDK btble (controller + host, SMP with LE Secure Connections, GATT server), `rfparam_init`, easyflash on
+Phone: the LEAKCAM Setup APK and its test APK (androidx.test runner, ext.junit, UI Automator: test-only
+dependencies). BL616: SDK btble (controller + host, SMP with LE Secure Connections, GATT server), `rfparam_init`, easyflash on
 littlefs (PSM partition, `CONFIG_LITTLEFS_KV_EASYFLASH`), Wi-Fi fhost + lwIP + DHCP + DNS for the check
-(`wifi_check.c`), USB power sense (`usb_present()`, test035). Host: BlueZ, Python `bleak`.
+(`wifi_check.c`), USB power sense (`usb_present()`, test035).
 
 (What this test uses; the union over all tests is the feature set the minimal image keeps.)
 
@@ -96,4 +100,11 @@ connected, and that BLE is fully off on battery (the sleep floor of test031 unch
 
 ## Obstacles
 
-None yet.
+- Wi-Fi RAM overflow (2026-10-27) -> how found: the first build of the test firmware with BLE failed to link,
+  `ram_wifi overflowed by 11712 bytes` -> cause: the BLE controller library (ble1m0s1bredr0) reserves 32 KB of exchange
+  memory out of the BL616's 160 KB Wi-Fi RAM, and the 26 NetHub download buffers of 2026-10-25 (test100, 15 -> 26)
+  filled the remaining 128 KB to 142.8 KB; the product image (BLE + Wi-Fi) had stopped linking with that change too,
+  unnoticed (its last good .bin was built before it) -> fix: the BL616's own lwIP heap 18 -> 6 KB (it carries only DHCP,
+  DNS and the checks' one HTTP GET; the K230's traffic bypasses it), no speed lost; Wi-Fi RAM at 99.6 % (130 496 of 131 072 B), both images
+  -> where: firmware/bl616/lwipopts_user.h (LWIP_HEAP_SIZE, comment names this test). To verify on the board: the
+  credential check and the BL616-only server check (test100 step 4) still pass with the smaller heap.

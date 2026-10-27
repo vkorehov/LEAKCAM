@@ -270,10 +270,17 @@ static void uart_bridge_task(void *arg)
     }
 }
 
+static volatile uint32_t con_in_bytes, con_fwd_bytes, con_put_fail;   /* test039: host -> K230 console bytes */
+
 void usb_k230_rx(const uint8_t *data, uint32_t len)
 {
-    if (uart_on && !uart_echo)
-        bflb_uart_put(uart0, (uint8_t *)data, len);
+    con_in_bytes += len;
+    if (uart_on && !uart_echo) {
+        if (bflb_uart_put(uart0, (uint8_t *)data, len) < 0)
+            con_put_fail++;
+        else
+            con_fwd_bytes += len;
+    }
 }
 #endif
 
@@ -492,6 +499,13 @@ static bool usb_pgood_high(void)
     return bflb_acomp_get_result(AON_ACOMP0_ID) != 0;
 }
 
+#if PT_TEST_BLE
+bool usb_present(void)                             /* firmware/bl616/usb_power.h: ble_pairing.c's pairing gate */
+{
+    return !usb_pgood_high();
+}
+#endif
+
 static void print_status(bool line)
 {
     unsigned n = sense_high();
@@ -551,6 +565,8 @@ static void print_status(bool line)
         printf("AHT20       : FAIL, %s\r\n", aht20_err(r));
 #endif
 #if PT_TEST_UART
+    printf("K230 console: %lu bytes from the host, %lu sent on to the K230, %lu puts failed\r\n",
+           (unsigned long)con_in_bytes, (unsigned long)con_fwd_bytes, (unsigned long)con_put_fail);
     printf("UART0 echo  : %lu bytes echoed, %lu dropped before it\r\n", (unsigned long)echo_bytes,
            (unsigned long)echo_dropped);
     printf("UART0 link  : %s, rx dropped %lu\r\n",

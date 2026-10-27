@@ -16,15 +16,21 @@
 #define PT_TEST_PINS   1   /* pt_pins: every GPIO's live configuration from the GLB registers (test033)      */
 #define PT_TEST_TIMING 1   /* pt_time: test021 timings (wake -> main, rails, AHT20, ADC, easyflash key)   */
 #define PT_TEST_WIFI   1   /* pt_wifi: test100 step 1, the BL616 radio alone: scan, join + DHCP, status (pt_wifi.c) */
+#define PT_TEST_BLE    1   /* pt_ble: test040, the product's BLE provisioning of the Wi-Fi credentials (pt_ble.c) */
 
 #include <stdbool.h>
 bool rails_are_on(void);              /* main.c: the K230 rails are commanded on */
 void pt_wifi_rails_off(void);         /* pt_wifi.c: stop the NetHub bridge (wifi_link_stop) before the rails drop */
 #include <stdint.h>
 bool pt_wifi_poll_cycle(uint32_t t[4]);  /* pt_wifi.c: one BL616-only server check (pt_poll) */
+bool pt_radio_init(void);             /* pt_wifi.c: RF parameters once per boot (BLE and Wi-Fi) */
+int pt_ef_once(void);                 /* pt_wifi.c: easyflash once per boot */
 
 #if PT_TEST_WIFI && !PT_TEST_POWER
 #error "PT_TEST_WIFI needs PT_TEST_POWER: the bridge's SDIO pads may only be driven while the K230 3V3 is up"
+#endif
+#if PT_TEST_BLE && !(PT_TEST_WIFI && PT_TEST_USB)
+#error "PT_TEST_BLE needs PT_TEST_WIFI (radio, the credential check) and PT_TEST_USB (pairing only on USB power)"
 #endif
 #if PT_TEST_UART && !PT_TEST_POWER
 #error "PT_TEST_UART needs PT_TEST_POWER: the link pins may only be driven while the K230 3V3 is up"

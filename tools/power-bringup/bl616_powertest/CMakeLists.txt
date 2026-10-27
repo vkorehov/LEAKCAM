@@ -27,6 +27,10 @@ sdk_add_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616)
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/pt_wifi.c)
 # the product's Wi-Fi link (NetHub bridge + the BL616-only path): pt_wifi runs the code the product ships
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/wifi_link.c)
+# pt_ble (test040): the product's BLE provisioning and its credential check
+target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/pt_ble.c
+                           ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/ble_pairing.c
+                           ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/wifi_check.c)
 sdk_add_compile_definitions(-DCONFIG_RWNX_LWIP)
 sdk_add_compile_definitions(-DBL_RA_EN=1)
 sdk_add_compile_definitions(-DWPA_SUPPLICANT_CLEANUP_INTERVAL=1800)

@@ -341,3 +341,6 @@ Battery current: Wi-Fi join (energy per join, paid on every networked session), 
   fixed it -> USB detach before the reset added (`isp`: `usbd_deinitialize`, 0.5 s); then the user turned VMware's USB
   popups off (devices attach to Linux by themselves): missed or held prompts are the likely cause. Watch: one more
   miss now would be a firmware fault (then: the app writes its own update, no ROM).
+- The 26 download buffers broke the product image's link with BLE (2026-10-27, found in tests/test040) -> the BLE
+  controller's 32 KB exchange memory shares the 160 KB Wi-Fi RAM -> fixed without giving the buffers back: the BL616's
+  own lwIP heap 18 -> 6 KB (firmware/bl616/lwipopts_user.h); re-check step 4 (BL616-only server check) on it.

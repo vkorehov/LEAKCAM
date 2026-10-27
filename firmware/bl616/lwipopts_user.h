@@ -92,7 +92,10 @@
 #define MEM_MIN                       MEM_MIN_TCP
 #define MEM_ALIGNMENT                 4
 
-#define LWIP_HEAP_SIZE (18 * 1024)
+/* LEAKCAM 2026-10-27: 18 -> 6 KB. The BL616's own stack only carries DHCP, DNS and one small HTTP GET (the credential
+ * and server checks); the K230's traffic bypasses it (NetHub). The 12 KB go to the BLE controller's 32 KB exchange
+ * memory, which shares the 160 KB Wi-Fi RAM: with BLE and 26 NetHub buffers it overflowed by 11.7 KB (tests/test040). */
+#define LWIP_HEAP_SIZE (6 * 1024)
 #ifdef LWIP_HEAP_SIZE
 #define MEM_SIZE LWIP_HEAP_SIZE
 #else

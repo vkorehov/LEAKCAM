@@ -62,6 +62,26 @@ static EfErrCode ef_once(void)
     return r;
 }
 
+/* RF parameters once per boot, as the product's radio_init(): shared by pt_wifi and pt_ble (BLE and Wi-Fi) */
+bool pt_radio_init(void)
+{
+    static bool rf_ready;
+    if (!rf_ready) {
+        ef_once();                          /* rfparam reads its calibration through the partition table */
+        if (rfparam_init(0, NULL, 0) != 0) {
+            printf("radio: RF init failed\r\n");
+            return false;
+        }
+        rf_ready = true;
+    }
+    return true;
+}
+
+int pt_ef_once(void)
+{
+    return (int)ef_once();
+}
+
 #include "wifi_ctrl_proto.h"
 #include "wifi_link.h"
 
@@ -114,17 +134,11 @@ static bool bring_up(void)
 {
     if (up)
         return true;
-    static bool rf_ready;
     uint64_t t0 = bflb_mtimer_get_time_ms();
-    if (!rf_ready) {                        /* once per boot */
+    if (!evg)
         evg = xEventGroupCreate();
-        ef_once();                          /* rfparam reads its calibration through the partition table */
-        if (rfparam_init(0, NULL, 0) != 0) {
-            printf("pt_wifi: RF init failed\r\n");
-            return false;
-        }
-        rf_ready = true;
-    }
+    if (!pt_radio_init())
+        return false;
     if (bridged) {
         printf("pt_wifi: the bridge has the radio until the rails go off (pt_off)\r\n");
         return false;
