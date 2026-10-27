@@ -106,6 +106,7 @@ cases, one per operation the product repeats:
 | [test037 K230 PMU RTC](test037-k230-rtc/README.md) | 2026-10-21 | step 0 pass: runs from Y1 (+25 ppm vs 27 MHz), UTC fixed; handover open |
 | [test038 battery brown-out below 3.10 V](test038-battery-brownout/README.md) | 2026-10-23 | **pass**: K230 VBAT cut -> rails off -> lockout HBN -> USB plug wakes (no EN); lockout skipped when USB is in; BL616 watchdog (12.9 s recovery); below 3 V needs a lab supply |
 | [test039 K230 console over the BL616 link](test039-k230-console-over-link/README.md) | 2026-10-23 | pass: SPL, OpenSBI, kernel, msh, agent on /dev/ttyACM1; open: ~0.7 % of typed commands lost (2026-10-25) (4 Mbaud from the first line, 0 garbage), typing works, frames split; boot to app init 0.484 -> 0.30 s |
+| [test040 BLE provisioning: Wi-Fi credentials into the BL616's flash](test040-ble-wifi-credentials/README.md) | | planned: needs BLE in the test firmware and a BLE central on the host (USB dongle in the VM) |
 | **High level (100+): the product's whole flow** | | |
 | [test100 Wi-Fi throughput end to end](test100-wifi-throughput/README.md) | 2026-10-25 | steps 1-4 pass: card bound -> address 0.33-0.59 s (SDIO card interrupt armed, no DHCP ARP check; was 5.05 s); TCP up 27.5 Mbit/s (was 17.1: K230 waits for a slot, BL616 26 buffers / 23 credits), down 22-26; BL616-only server check 1.71 s awake; open: step 5 (RTMP, cameras) |
 | [test101 session length](test101-boot-and-session-time/README.md) | | planned |
@@ -113,6 +114,7 @@ cases, one per operation the product repeats:
 | [test103 leak pipeline timing](test103-leak-pipeline-timing/README.md) | | later: after the cameras, Wi-Fi and the product firmware |
 | [test104 battery energy audit](test104-battery-energy-audit/README.md) | | planned |
 | [test105 maximum current](test105-max-current/README.md) | 2026-10-25 | handover runs 1-2: every camera-free load (LEDs 100 %, Wi-Fi TX, memtest) 1.06 A at 5 V, USB -> cell with no power fault, cells cold, K230 alive at 60.2 C; open: no-reset proof on the cell, the BL616 console leaving the bus at the unplug, the full load with cameras |
+| [test106 Wi-Fi setup from the phone, end to end](test106-wifi-setup-from-phone/README.md) | | planned: after test040; the app driven over adb |
 
 ## Status by subsystem (2026-10-21)
 
