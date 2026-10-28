@@ -24,6 +24,7 @@ import io
 import os
 import shutil
 import socket
+import subprocess
 import sys
 import tempfile
 import threading
@@ -653,6 +654,42 @@ async def stop() -> str:
         if _busy is not b:
             return f"stopped {b[0]} after {time.monotonic() - b[1]:.0f} s"
     return busy_text() + "; stop is set: it ends when the SolidWorks call in progress returns"
+
+
+def own_console():
+    """this server's pids up to start.bat's cmd.exe (python, py launcher, cmd): only these, never
+    SolidWorks (COM starts it outside this tree)"""
+    out = subprocess.run(["powershell", "-NoProfile", "-Command",
+                          "Get-CimInstance Win32_Process | % { '{0} {1} {2}' -f $_.ProcessId,$_.ParentProcessId,$_.Name }"],
+                         capture_output=True, text=True, timeout=60).stdout
+    procs = {int(p): (int(pp), n.lower()) for p, pp, n in (l.split(" ", 2) for l in out.splitlines() if l.strip())}
+    pids, pid = [], os.getpid()
+    while pid in procs and procs[pid][1] in ("python.exe", "py.exe", "cmd.exe"):
+        pids.append(pid)
+        pid = procs[pid][0]
+    return pids
+
+
+@tool()
+async def restart() -> str:
+    """Restart this server in a new console window in ~3 s: start.bat pulls the repo and installs
+    requirements.txt first (use it after pushing a server fix). Runs as a Windows scheduled task, so
+    it is not killed with the server; SolidWorks and its documents stay open. Calls fail until the
+    server is back (~30 s); the client reconnects by itself."""
+    pids = await asyncio.to_thread(own_console)
+    here = os.path.dirname(os.path.abspath(__file__))
+    bat = os.path.join(tempfile.gettempdir(), "solidworks_mcp_restart.bat")
+    with open(bat, "w") as f:
+        f.write("@echo off\r\ntimeout /t 3 /nobreak >nul\r\n"
+                f"taskkill /F {' '.join(f'/PID {p}' for p in pids)} >nul 2>&1\r\n"
+                f'start "solidworks-mcp" /D "{here}" cmd /k start.bat\r\n')
+    task = ["/tn", "solidworks-mcp-restart"]
+    for args in (["/create", *task, "/tr", bat, "/sc", "once", "/st", "00:00", "/f"], ["/run", *task]):
+        r = await asyncio.to_thread(subprocess.run, ["schtasks", *args], capture_output=True, text=True, timeout=60)
+        if r.returncode:
+            raise RuntimeError(f"schtasks {args[0]} failed: {(r.stderr or r.stdout).strip()}")
+    log(f"restart scheduled, ending pids {pids}")
+    return f"restarting in ~3 s (ending pids {pids}); start.bat pulls and installs first"
 
 
 @tool()
