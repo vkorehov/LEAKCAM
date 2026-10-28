@@ -19,6 +19,7 @@ import argparse
 import asyncio
 import concurrent.futures
 import contextlib
+import functools
 import io
 import os
 import shutil
@@ -37,7 +38,8 @@ import win32process
 import win32com.client
 import win32com.client.dynamic
 from win32com.client import gencache
-from mcp.server.fastmcp import FastMCP, Image
+from mcp.server.mcpserver import MCPServer, Image
+from mcp.server.mcpserver.exceptions import ToolError
 from mcp.server.transport_security import TransportSecuritySettings
 
 PROGID = "SldWorks.Application.34"      # SolidWorks 2026
@@ -294,17 +296,35 @@ def active():
     return model
 
 
-mcp = FastMCP("solidworks")
+# MCP 2.x: the 2026-07-28 protocol. On the 1.x legacy one Claude Code closed the connection when the
+# PC slept, spent its 13 reconnects within the hour and never came back (orac-mcp stayed up, 2026-10-28)
+mcp = MCPServer("solidworks")
 
 
-@mcp.tool()
+def tool():
+    """mcp.tool() that keeps the error text: 2.x shows only "Error executing tool X" for anything but
+    a ToolError, and the messages here (missing template, busy, save failed) are what tells the cause"""
+    def deco(fn):
+        @functools.wraps(fn)
+        async def run(*args, **kwargs):
+            try:
+                return await fn(*args, **kwargs)
+            except ToolError:
+                raise
+            except Exception as e:
+                raise ToolError(f"{type(e).__name__}: {e}") from e
+        return mcp.tool()(run)
+    return deco
+
+
+@tool()
 async def status() -> str:
     """Whether SolidWorks is busy (and with what, for how long) - without touching SolidWorks, so it
     answers while a call hangs."""
     return busy_text()
 
 
-@mcp.tool()
+@tool()
 async def dismiss_dialog(button: str = "Cancel") -> str:
     """Close the dialogs SolidWorks shows (they block every call until clicked) by pressing the
     named button (Cancel, No, OK, ...; '&' accelerators ignored), else closing the window. Works
@@ -332,7 +352,7 @@ async def dismiss_dialog(button: str = "Cancel") -> str:
     return "; ".join(done)
 
 
-@mcp.tool()
+@tool()
 async def import_part(step: str, path: str) -> str:
     """Import a STEP/IGES/STL file and save it silently as SolidWorks files at path (.sldprt; a
     STEP that holds an assembly needs .sldasm, its parts are saved next to it). The coordinates are
@@ -355,7 +375,7 @@ async def import_part(step: str, path: str) -> str:
     return await com(run, "import_part")
 
 
-@mcp.tool()
+@tool()
 async def new_assembly(parts: list[str], path: str) -> str:
     """New assembly from saved parts/subassemblies (.sldprt/.sldasm paths), each placed with its
     own origin at the assembly origin (so imported parts keep their positions), saved silently at
@@ -398,7 +418,7 @@ async def new_assembly(parts: list[str], path: str) -> str:
     return await com(run, "new_assembly")
 
 
-@mcp.tool()
+@tool()
 async def sw_info() -> str:
     """SolidWorks revision and the open document windows (title, path); documents loaded only as
     parts of an open assembly are counted, not listed."""
@@ -414,7 +434,7 @@ async def sw_info() -> str:
     return await com(run, "sw_info")
 
 
-@mcp.tool()
+@tool()
 async def close_all() -> str:
     """Close every document without saving (save_as first what should be kept): keeps SolidWorks'
     memory down, one window at a time."""
@@ -426,7 +446,7 @@ async def close_all() -> str:
     return await com(run, "close_all")
 
 
-@mcp.tool()
+@tool()
 async def interference() -> str:
     """Interference detection in the active assembly: each clash as its components, volume (mm3)
     and the bounding box of the overlap (mm, assembly coordinates). Touching faces do not count."""
@@ -455,7 +475,7 @@ async def interference() -> str:
     return await com(run, "interference")
 
 
-@mcp.tool()
+@tool()
 async def open_document(path: str) -> str:
     """Open a .sldprt/.sldasm/.slddrw, or import a .step/.stp/.stl/.igs (e.g. the LEAKCAM board STEP)."""
     def run():
@@ -475,7 +495,7 @@ async def open_document(path: str) -> str:
     return await com(run, "open_document")
 
 
-@mcp.tool()
+@tool()
 async def new_part() -> str:
     """New part from the default part template; becomes the active document."""
     def run():
@@ -487,7 +507,7 @@ async def new_part() -> str:
     return await com(run, "new_part")
 
 
-@mcp.tool()
+@tool()
 async def save_as(path: str) -> str:
     """Save the active document; the extension picks the format (.sldprt, .sldasm, .step, .stl, ...)."""
     def run():
@@ -499,7 +519,7 @@ async def save_as(path: str) -> str:
     return await com(run, "save_as")
 
 
-@mcp.tool()
+@tool()
 async def snapshot(view: str = "*Isometric", box: list[float] | None = None) -> Image:
     """PNG of the active document in a named view (*Isometric, *Front, *Top, *Right, ...), zoomed to fit,
     or to box = [x0, y0, z0, x1, y1, z1] in model mm (a close-up of a small feature)."""
@@ -522,7 +542,7 @@ async def snapshot(view: str = "*Isometric", box: list[float] | None = None) -> 
     return Image(data=await com(run, "snapshot"), format="png")
 
 
-@mcp.tool()
+@tool()
 async def run_python(code: str, wait: bool = True, timeout: float | None = None) -> str:
     """Run Python against the SolidWorks API (anything the tools above do not cover).
 
@@ -617,7 +637,7 @@ def stoppable(deadline):
         sys.settrace(None)
 
 
-@mcp.tool()
+@tool()
 async def stop() -> str:
     """End the run_python that holds SolidWorks (waiting or a background job), without waiting for
     it: it stops between two lines of its code, keeps its output so far, and frees SolidWorks for the
@@ -635,7 +655,7 @@ async def stop() -> str:
     return busy_text() + "; stop is set: it ends when the SolidWorks call in progress returns"
 
 
-@mcp.tool()
+@tool()
 async def job(id: int) -> str:
     """A background run_python job (run_python(..., wait=False)): running or finished, and its
     output so far."""
@@ -682,12 +702,11 @@ def main():
     for f in drop_makepy_cache():
         print("removed the early-binding cache", f, flush=True)
     names = own_names() | set(a.allow_host)
-    mcp.settings.host, mcp.settings.port = a.host, a.port
-    mcp.settings.transport_security = TransportSecuritySettings(
+    security = TransportSecuritySettings(
         enable_dns_rebinding_protection=True, allowed_hosts=sorted(f"{n}:{a.port}" for n in names))
     print("accepting Host:", ", ".join(sorted(names)), flush=True)
     print(f"SolidWorks MCP on http://{a.host}:{a.port}/mcp", flush=True)
-    mcp.run(transport="streamable-http")
+    mcp.run(transport="streamable-http", host=a.host, port=a.port, transport_security=security)
 
 
 if __name__ == "__main__":
