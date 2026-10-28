@@ -42,8 +42,9 @@ bottom-contact" and its footprint verified; the contact side was never compared 
 Folding, rotating or twisting a flat cable never changes which end pin meets which: only the cable type (same- or
 opposite-side contacts), the connector's contact type or a crossover does. Decided 2026-10-24 (user):
 
-- Rev 1: J4/J5 reworked to a top-contact connector, Molex 52435-2271 (Farnell 2679571; signal pads land on ours,
-  side tabs ~1 mm wider, partial overlap), with the existing cable type; on the plain fold the camera then faces
+- Rev 1: J4/J5 reworked to a top-contact connector, JUSHUO AFC07-S22ECA-00 (LCSC C262642, the reference board's
+  part; AFC07-S22ECA-00_drawing.pdf: E = upper contact, land 0.30 x 1.20 / tabs 2.2 x 3.3 at 1.60 beyond the end pins,
+  2.17 below the row; ours 0.30 x 1.30 / 2.0 x 3.0 at 1.65, 2.35: lands pad for pad), with the existing cable type; on the plain fold the camera then faces
   the board, so the cameras are rotated 180 degrees (lens out) and need longer cables to reach their connectors.
 - Rev 2: reverse the J4/J5 pinout (bugs/v2.txt item 10).
 - Before power after any connector or cable change: continuity camera pin 15 (3V3) -> J4/J5 pin 22.
@@ -58,7 +59,8 @@ opposite-side contacts), the connector's contact type or a crossover does. Decid
 
 ## Ordered (2026-10-24)
 
-- Farnell: Molex 52435-2271 top-contact connectors (order code 2679571) for the J4/J5 rework.
+- Farnell: Molex 52435-2271 (2679571), cancelled 2026-10-28: Farnell needs a VAT number on the account.
+- LCSC (2026-10-28, ~10 days): JUSHUO AFC07-S22ECA-00 (C262642) for the J4/J5 rework.
 - AliExpress: same-side 15-to-22 camera cables, 8 cm (bottom camera, J5, ~70 mm needed) and 15 cm (top camera, J4,
   ~83 mm needed; no 10 cm sold), COME ON DIY Store listing 1005005609470913. Check same-side contacts on arrival.
 - On arrival: rework J4/J5, then continuity camera pin 15 -> J4/J5 pin 22 before any power, then test020/test030.
