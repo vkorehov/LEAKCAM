@@ -299,7 +299,10 @@ class MainActivity : Activity() {
         checked = check
         committed = false
         val commit = if (check) COMMIT_CHECK else COMMIT_UNCHECKED
-        writes = ArrayDeque(listOf(SSID to ssid, PSK to psk, COMMIT to byteArrayOf(commit)))
+        /* an open network writes no passphrase: the board starts each connection empty and its BLE stack refuses
+         * zero-length writes (tests/test040) */
+        writes = ArrayDeque(listOfNotNull(SSID to ssid, if (psk.isNotEmpty()) PSK to psk else null,
+            COMMIT to byteArrayOf(commit)))
         sendButton.isEnabled = false
         scanButton.isEnabled = false
         saveAnywayButton.visibility = View.GONE

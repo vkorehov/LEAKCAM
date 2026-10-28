@@ -41,7 +41,6 @@
 #define JOIN_MS    25000     /* association and WPA handshake */
 #define DHCP_MS    20000
 #define TCP_MS     10000     /* connect, then again for the answer */
-#define LEAVE_MS   3000
 
 static EventGroupHandle_t evg;
 
@@ -158,13 +157,11 @@ static enum wifi_check_state internet(uint16_t *detail)
     return WCHK_CAPTIVE;
 }
 
-static void leave(void)
+/* false if the station stayed busy (wifi_link_sta_leave()): no connect then, it would never return */
+static bool leave(void)
 {
-    xEventGroupClearBits(evg, EV_DISCONNECTED);
-    net_al_ext_dhcp_disconnect();          /* the lease must not outlive the check: the K230 */
-    wifi_mgmr_sta_autoconnect_disable();   /* uses the same MAC for its own DHCP later */
-    if (wifi_sta_disconnect() == 0)
-        wait(EV_DISCONNECTED, LEAVE_MS);
+    net_al_ext_dhcp_disconnect();          /* the lease must not outlive the check: the K230 uses the same MAC */
+    return wifi_link_sta_leave();          /* for its own DHCP later */
 }
 
 enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const char *psk, size_t psk_len,
@@ -183,7 +180,10 @@ enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const ch
         st = WCHK_JOIN_FAILED;
         goto out;
     }
-    leave();                               /* a K230 session may have left the station joined */
+    if (!leave()) {                        /* a K230 session may have left it joined, or retrying a network */
+        st = WCHK_BUSY;
+        goto out;
+    }
 
     if (!ssid_seen(ssid, ssid_len)) {
         st = WCHK_NOT_FOUND;
@@ -195,7 +195,7 @@ enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const ch
     memcpy(p.key, psk, psk_len);
     p.key_len = (uint8_t)psk_len;
     p.pmf_cfg = 1;
-    p.use_dhcp = 1;                        /* no K230 running: the MAC is ours for now */
+    p.use_dhcp = 1;                        /* the MAC is ours for now: a K230 session waits (wifi_link.c) */
     p.dhcp_timeout_event_only = 1;         /* a DHCP timeout is a result, not a reason to rejoin */
     xEventGroupClearBits(evg, EV_CONNECTED | EV_DISCONNECTED | EV_GOT_IP | EV_IP_TIMEOUT);
     if (wifi_mgmr_sta_connect(&p) != 0) {

@@ -97,7 +97,7 @@ The board tells the app which step failed. The app goes back to the step the use
   names do not resolve  [chk_no_dns]          4     yes
   no internet           [chk_no_internet]     4     yes
   login page / filter   [chk_captive]         3     yes
-  board busy (leak)     [chk_busy]            4     no
+  check not started     [chk_busy]            4     no
   flash write failed    [chk_save_failed]     4     no
   anything else         [chk_unknown]         4     no
 

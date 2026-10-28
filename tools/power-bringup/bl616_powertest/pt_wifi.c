@@ -7,6 +7,7 @@
  *   pt_wifi leave                 DHCP lease released, disconnected
  *   pt_wifi net [host]            DNS, TCP connect, GET /generate_204 (the product's internet check), each timed
  *   pt_wifi bridge                step 2: the product's NetHub bridge over SDIO for the K230 (rails on first: pt_on)
+ *   pt_wifi link                  the bridge's association (SSID, channel), without taking the radio (test040)
  *   pt_wifi join <ssid> <psk> quick | remembered  2026-10-25: quick scan (first AP with the SSID) / the last AP's
  *                                 channel + BSSID, no scan
  *   pt_wifi join <ssid> <psk> auto | nodhcp    experiments of 2026-10-24 (tests/test100 Obstacles): autoconnect on
@@ -47,6 +48,7 @@
 #include "shell.h"
 #include "wifi_mgmr.h"
 #include "wifi_mgmr_ext.h"
+#include "ble_pairing.h"
 
 /* easyflash once per boot: a second easyflash_init() re-inits littlefs and can leave it unusable (EF 7, 2026-10-25) */
 static EfErrCode ef_once(void)
@@ -143,10 +145,7 @@ static bool bring_up(void)
         printf("pt_wifi: the bridge has the radio until the rails go off (pt_off)\r\n");
         return false;
     }
-    if (!wifi_link_claim(WIFI_OWNER_CHECK)) {
-        printf("pt_wifi: radio busy\r\n");
-        return false;
-    }
+    wifi_link_claim(WIFI_OWNER_CHECK);      /* always granted (BLE first, wifi_link.c) */
     wifi_link_local_begin(wifi_event);
     if (!wait(EV_READY, READY_MS)) {
         printf("pt_wifi: the Wi-Fi manager did not come up in %u ms\r\n", READY_MS);
@@ -499,6 +498,46 @@ static void do_bridge(void)
                wifi_mgmr_sta_state_get() ? "associated + WPA" : "not associated", (unsigned long)(bflb_mtimer_get_time_ms() - t0));
 }
 
+/* "the K230 session" here is the bridge: its association, read without taking the radio (test040) */
+static void do_link(void)
+{
+    wifi_mgmr_connect_ind_stat_info_t info;
+
+    memset(&info, 0, sizeof(info));
+    printf("pt_wifi link: manager state %d\r\n", wifi_mgmr_sta_state_get_ext());
+    printf("pt_wifi link: manager state %d\r\n", wifi_mgmr_sta_state_get_ext());
+    if (!bridged)
+        printf("pt_wifi link: no bridge\r\n");
+    else if (wifi_mgmr_sta_state_get() && wifi_mgmr_sta_connect_ind_stat_get(&info) == 0)
+        printf("pt_wifi link: associated \"%.*s\" channel %u\r\n", (int)strnlen(info.ssid, 32), info.ssid,
+               (unsigned)info.channel);
+    else
+        printf("pt_wifi link: not associated\r\n");
+}
+
+/* ble_pairing.c: new credentials stored. The product ends a running K230 session and starts a new one on them (main.c
+ * END_NEW_WIFI); here the bridge stands in for the session: stopped and started again, so it joins the stored
+ * network. From the BLE host or the check's task: the restart runs in a task of its own */
+static void rebridge_task(void *arg)
+{
+    (void)arg;
+    uint64_t t0 = bflb_mtimer_get_time_ms();
+    wifi_link_stop();
+    int r = wifi_link_start();
+    while (r == 0 && !wifi_mgmr_sta_state_get() && bflb_mtimer_get_time_ms() - t0 < 10000)
+        vTaskDelay(pdMS_TO_TICKS(5));
+    printf("pt_wifi bridge: restarted for new credentials (%d), %s %lu ms\r\n", r,
+           wifi_mgmr_sta_state_get() ? "associated + WPA" : "not associated", (unsigned long)(bflb_mtimer_get_time_ms() - t0));
+    vTaskDelete(NULL);
+}
+
+void ble_credentials_stored(void)
+{
+    wifi_link_credentials_changed();
+    if (bridged)
+        xTaskCreate(rebridge_task, "rebr", 1024, NULL, 3, NULL);
+}
+
 void pt_wifi_rails_off(void)
 {
     if (!bridged)
@@ -539,6 +578,10 @@ static int cmd_wifi(int argc, char **argv)
         EfErrCode e2 = ef_set_env_blob("wifi_psk", argv[3], strlen(argv[3]));
         printf("pt_wifi store: %s (easyflash %d %d)\r\n", e1 == EF_NO_ERR && e2 == EF_NO_ERR ? "credentials stored" : "failed",
                (int)e1, (int)e2);
+        if (e1 == EF_NO_ERR && e2 == EF_NO_ERR)
+            ble_credentials_stored();               /* as a BLE store: a running bridge restarts on them (test040) */
+        if (e1 == EF_NO_ERR && e2 == EF_NO_ERR)
+            ble_credentials_stored();               /* as a BLE store: a running bridge restarts on them (test040) */
     } else if (!strcmp(op, "forget")) {                /* the remembered AP off: the next join scans (quick) */
         ef_once();
         ef_del_env("wifi_ap");
@@ -546,10 +589,12 @@ static int cmd_wifi(int argc, char **argv)
     }
     else if (!strcmp(op, "bridge"))
         do_bridge();
+    else if (!strcmp(op, "link"))
+        do_link();
     else if (!strcmp(op, "net"))
         do_net(argc > 2 ? argv[2] : NET_HOST);
     else
-        printf("usage: pt_wifi scan | join <ssid> [psk] | status | leave | net [host] | bridge\r\n");
+        printf("usage: pt_wifi scan | join <ssid> [psk] | status | leave | net [host] | bridge | link\r\n");
     return 0;
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_wifi, pt_wifi, test100 Wi-Fi on the BL616 alone: scan | join ssid psk | status | leave | net host | bridge);

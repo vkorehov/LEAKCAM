@@ -8,7 +8,7 @@ first run, 2026-10-25: memtest took 109 of 128 MB, a program failed to load and 
 the LEDs stayed lit). Everything off at the end."""
 import os, re, sys, time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "power-bringup"))
-from board import bl, cmd, k230, log, openp, wifi_credentials   # noqa: E402
+from board import BL_PORT, K230_PORT, bl, cmd, k230, log, openp, wifi_credentials   # noqa: E402
 
 PC = "192.168.1.131"
 RUN_S = int(sys.argv[1]) if len(sys.argv) > 1 else 150
@@ -18,7 +18,7 @@ ssid, psk = wifi_credentials()
 bl("pt_sleep 2 nousb", 2)                       # clean BL616 (test100: a leftover bridge stalls the next one)
 time.sleep(4)
 for _ in range(30):
-    if os.path.exists("/dev/ttyACM0"):
+    if os.path.exists(BL_PORT):
         break
     time.sleep(1)
 time.sleep(2)
@@ -71,7 +71,7 @@ while time.time() - t0 < RUN_S:
         while time.time() - t0 < RUN_S:
             time.sleep(1)
             try:
-                fd = openp("/dev/ttyACM1")
+                fd = openp(K230_PORT)
                 log(f"console back at {time.time() - t0:.0f} s")
                 break
             except OSError:

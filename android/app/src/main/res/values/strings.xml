@@ -55,7 +55,7 @@
     <string name="chk_no_dns">The LEAKCAM is on the network, but internet names do not resolve. Is the router connected to the internet?</string>
     <string name="chk_no_internet">The LEAKCAM is on the network, but it cannot reach the internet. Is the router connected to the internet?</string>
     <string name="chk_captive">This network shows a login page or filters traffic (answer %1$d). The LEAKCAM cannot log in to such networks: use one without a login page, such as your home network.</string>
-    <string name="chk_busy">The LEAKCAM is busy: its cameras are running after a leak alarm. Wait a minute and try again.</string>
+    <string name="chk_busy">The LEAKCAM could not start the check. Try again.</string>
     <string name="chk_save_failed">The LEAKCAM could not store the settings. Try again; if it keeps failing, the board needs service.</string>
     <string name="chk_unknown">The LEAKCAM reported an unexpected result (%1$d). Try again.</string>
     <string name="err_lost_during_check">The connection to the LEAKCAM dropped during the check. Nothing was stored. Keep the phone close to it and try again.</string>

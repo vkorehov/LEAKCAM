@@ -1,0 +1,10 @@
+[Unit]
+Description=Bench phone charges from this computer, never the other way (LEAKCAM tools/android-bench)
+
+[Service]
+ExecStart=%h/k230d-hw/LEAKCAM/tools/android-bench/phone_sink.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

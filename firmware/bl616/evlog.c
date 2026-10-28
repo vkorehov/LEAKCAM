@@ -60,6 +60,8 @@ static void print_detail(const struct evlog_entry *e)
         case EV_SESSION_END:
             if (e->arg == -2)
                 printf(" cut: the agent restarted %u times", e->val);
+            else if (e->arg == -3)
+                printf(" after %u s, cut: new Wi-Fi credentials", e->val);
             else
                 printf(" after %u s%s", e->val, e->arg == -1 ? ", cut: too long" : "");
             break;

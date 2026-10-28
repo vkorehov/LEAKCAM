@@ -1,7 +1,7 @@
 """Shared helpers for unattended LEAKCAM test runners (2026-10-24: runners must not live in a scratch folder).
 
-  bl(command, secs=1.5, until=None)   one BL616 shell command on /dev/ttyACM0 (opened per call), its output
-  k230()                              the K230 console /dev/ttyACM1 (raw), waits up to 60 s for the port
+  bl(command, secs=1.5, until=None)   one BL616 shell command on BL_PORT (opened per call), its output
+  k230()                              the K230 console K230_PORT (raw), waits up to 60 s for the port
   cmd(fd, command, secs, until=None)  send a line (or None: only read) and read until `until` (regex) or `secs`;
                                       drains what is already waiting first, so a leftover prompt cannot end the
                                       read early (tests/test100 Obstacles)
@@ -16,6 +16,11 @@ import re
 import select
 import termios
 import time
+
+# the BL616's two CDC ports by USB interface, not ttyACM0/1: a phone on adb adds its own ACM port, and a port held
+# open across a BL616 reset shifts the numbers (tests/test040, 2026-10-28: the board came back as ttyACM1/ttyACM3)
+BL_PORT = "/dev/serial/by-id/usb-Bouffalo_Lab_Bouffalo_Lab_USB_Console_00000001-if00"
+K230_PORT = "/dev/serial/by-id/usb-Bouffalo_Lab_Bouffalo_Lab_USB_Console_00000001-if02"
 
 
 def log(*parts):
@@ -63,7 +68,7 @@ def cmd(fd, c, secs, until=None):
 def bl(c, secs=1.5, until=None):
     for _ in range(30):
         try:
-            fd = openp("/dev/ttyACM0")
+            fd = openp(BL_PORT)
             break
         except OSError:
             time.sleep(1)
@@ -78,7 +83,7 @@ def bl(c, secs=1.5, until=None):
 def k230():
     for _ in range(60):
         try:
-            return openp("/dev/ttyACM1")
+            return openp(K230_PORT)
         except OSError:
             time.sleep(1)
     return None

@@ -22,7 +22,8 @@ enum ev {
     EV_WIFI,            /* arg = 0 started, -1 start failed */
     EV_LINK_LOST,       /* WAKE never answered; val = sends */
     EV_SESSION_END,     /* heartbeat stopped; val = session length, s; arg -1 = cut at SESSION_MAX_MS,
-                         * -2 = cut after too many agent restarts (val = restarts) */
+                         * -2 = cut after too many agent restarts (val = restarts), -3 = cut for new Wi-Fi
+                         * credentials from BLE (a new session follows) */
     EV_RETRY,           /* arg = attempt, val = session_end */
     EV_SLEEP,           /* hibernate; arg = ms awake since reset / 4 (up to 1020), val = seconds
                          * (65535 = longer) */

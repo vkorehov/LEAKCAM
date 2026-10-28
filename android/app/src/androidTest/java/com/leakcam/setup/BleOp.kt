@@ -133,12 +133,17 @@ class BleOp {
                 if (Build.VERSION.SDK_INT < 33) q.offer(Ev("status", value = c.value))
             }
         }
+        /* STATUS notifications that arrive while waiting for something else are kept, not dropped: the board
+         * notifies SAVED inside the commit write, before its write response (tests/test040, 2026-10-28) */
+        val early = ArrayDeque<Ev>()
         fun next(kind: String, secs: Long): Ev? {
+            if (kind == "status" && early.isNotEmpty()) return early.removeFirst()
             val until = SystemClock.elapsedRealtime() + secs * 1000
             while (true) {
                 val left = until - SystemClock.elapsedRealtime()
                 val e = q.poll(maxOf(left, 0), TimeUnit.MILLISECONDS) ?: return null
                 if (e.kind == kind) return e
+                if (e.kind == "status") early.addLast(e)
                 if (e.kind == "disconnected") { out.put("disconnected_ms", ms()); return null }
             }
         }
@@ -147,8 +152,8 @@ class BleOp {
             if (next("connected", 15) == null) { out.put("error", "no connection"); return }
             out.put("connect_ms", ms())
             when (arg("pair", "accept")) {      /* the board asks for encryption on connect: the system dialog */
-                "accept" -> out.put("pair", pairDialog(d, "(?i)pair|allow|ok|connect"))
-                "cancel" -> out.put("pair", pairDialog(d, "(?i)cancel|don.t allow|deny"))
+                "accept" -> out.put("pair", pairDialog(d, "button1"))
+                "cancel" -> out.put("pair", pairDialog(d, "button2"))
             }
             out.put("bond", d.bondState)
             out.put("pair_ms", ms())
@@ -205,21 +210,37 @@ class BleOp {
         }
     }
 
-    /* the system pairing dialog (or the notification that leads to it): press the button matching 'button' */
+    /* the system pairing dialog: press android:id/button1 (pair) or button2 (cancel) - by id, not by text: the
+     * user's phone runs a Russian UI and the English texts never matched (tests/test040, 2026-10-28). Android shows
+     * a notification instead of the dialog when the request comes while another app is in front: tap it first. */
     private fun pairDialog(d: BluetoothDevice, button: String): String {
         val ui = UiDevice.getInstance(inst)
-        val until = SystemClock.elapsedRealtime() + 15000
+        /* Samsung asks twice for one Secure Connections pairing: press every dialog until the bond is there or gone;
+         * returning after the first press left the second open and the board's SMP timed out (tests/test040) */
+        val until = SystemClock.elapsedRealtime() + 25000
+        var shade = false
+        val pressed = mutableListOf<String>()
         while (SystemClock.elapsedRealtime() < until) {
-            if (d.bondState == BluetoothDevice.BOND_BONDED) return "bonded"
-            val b = ui.wait(Until.findObject(By.clazz("android.widget.Button").text(Pattern.compile(button))), 1000)
+            if (d.bondState == BluetoothDevice.BOND_BONDED) return "bonded after ${pressed.joinToString("+")}"
+            if (pressed.isNotEmpty() && d.bondState == BluetoothDevice.BOND_NONE) {
+                SystemClock.sleep(1500)         /* cancelled or failed: give the board its disconnect */
+                return "not bonded after ${pressed.joinToString("+")}"
+            }
+            val b = ui.wait(Until.findObject(By.res("android", button)), 1000)
             if (b != null) {
-                val text = b.text
+                pressed.add("'${b.text}'")
                 b.click()
-                SystemClock.sleep(1500)
-                return "pressed '$text'"
+                SystemClock.sleep(500)
+                continue
+            }
+            if (!shade && pressed.isEmpty() && SystemClock.elapsedRealtime() > until - 22000) {
+                shade = true
+                ui.openNotification()
+                ui.wait(Until.findObject(By.text(Pattern.compile("(?i).*(LEAKCAM|pair|сопряж|подключ).*"))), 2000)?.click()
+                    ?: ui.pressBack()
             }
         }
-        return "no dialog"
+        return if (pressed.isEmpty()) "no dialog" else "still bonding after ${pressed.joinToString("+")}"
     }
 
     companion object {

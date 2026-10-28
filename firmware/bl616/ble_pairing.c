@@ -35,6 +35,13 @@ static char psk[64];
 static uint8_t status[3];                /* state, detail LE16: the STATUS characteristic */
 static volatile bool checking;
 
+/* the controller's init resets the PDS block (SDK weak hook, GLB_AHB_MCU_SW_PDS); the BL616's USB PHY is controlled
+ * from PDS. Suspected of dropping the USB device at BLE start (tests/test040, 2026-10-28), not proven yet: those runs
+ * also had a corrupt WRAM heap; a clean A/B decides whether this stays. No BLE sleep here, so PDS needs no reset. */
+void btblecontroller_software_pds_reset(void)
+{
+}
+
 /* ---------------- GATT ---------------- */
 
 static ssize_t write_str(const void *buf, u16_t len, u16_t offset, char *dst, size_t cap)
@@ -77,6 +84,7 @@ static void store(const char *s, const char *k)
     LOG_I("ble: Wi-Fi credentials stored for \"%s\"\r\n", s);
     evlog_add(EV_BLE_CREDS, 0, 0);
     set_status(WCHK_SAVED, 0);
+    ble_credentials_stored();
 }
 
 static void progress(enum wifi_check_state st, uint16_t detail)
@@ -117,16 +125,14 @@ static ssize_t commit_write(struct bt_conn *conn, const struct bt_gatt_attr *att
         store(ssid, psk);
         return len;
     }
-    /* the check blocks for up to a minute: its own task, never the BLE host's */
-    if (!wifi_link_claim(WIFI_OWNER_CHECK)) {
-        set_status(WCHK_BUSY, 0);
-        return len;
-    }
+    /* the check blocks for up to a minute: its own task, never the BLE host's. The radio is always granted (BLE
+     * first): a K230 session using it hears a link loss and gets it back after the check */
+    wifi_link_claim(WIFI_OWNER_CHECK);
     checking = true;
     if (xTaskCreate(check_task, "wchk", 1536, NULL, 3, NULL) != pdPASS) {
         checking = false;
         wifi_link_release(WIFI_OWNER_CHECK);
-        set_status(WCHK_BUSY, 0);
+        set_status(WCHK_BUSY, 0);    /* no memory for the check's task */
     }
     return len;
 }
@@ -231,7 +237,18 @@ static void on_connected(struct bt_conn *conn, u8_t err)
     struct bt_conn_info info;
     if (err || bt_conn_get_info(conn, &info) || info.type != BT_CONN_TYPE_LE)
         return;
+    /* the USB power gate is here, not only in auth_pairing_confirm: the host skips that consent callback when
+     * pairing follows our own Security Request below (smp.c), and the board paired on battery (tests/test040) */
+    if (!usb_present()) {
+        LOG_W("ble: connection refused, not on USB power\r\n");
+        bt_conn_disconnect(conn, BT_HCI_ERR_REMOTE_USER_TERM_CONN);
+        return;
+    }
     active_conn = conn;
+    /* each connection starts empty: an open network is "no passphrase written" - the SDK's ATT layer refuses
+     * zero-length writes (BFLB_HOST_PARAMETER_CHECK, 0x13) - and an earlier session's values are never reused */
+    memset(ssid, 0, sizeof(ssid));
+    memset(psk, 0, sizeof(psk));
     /* ask for encryption right away so the phone's pairing dialog appears on connect */
     bt_conn_set_security(conn, BT_SECURITY_L2);
 }

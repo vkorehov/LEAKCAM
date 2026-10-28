@@ -8,6 +8,7 @@ import sys
 import time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
 from harness import Run, bl, REPO   # noqa: E402,F401
+from board import BL_PORT   # noqa: E402
 
 r = Run(__file__)
 r.off()
@@ -16,7 +17,7 @@ for i in range(8):
     bl("pt_sleep 3 nousb", 1)
     time.sleep(5)
     for _ in range(30):
-        if os.path.exists("/dev/ttyACM0"):
+        if os.path.exists(BL_PORT):
             break
         time.sleep(1)
     time.sleep(2)

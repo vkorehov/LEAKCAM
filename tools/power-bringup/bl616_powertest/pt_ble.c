@@ -1,9 +1,10 @@
 /*
  * test040: the product's BLE provisioning (firmware/bl616/ble_pairing.c + wifi_check.c) on the test firmware. The
- * phone side is the instrumented test of android/ (BleProvisioningTest), driven over adb.
+ * phone side is the instrumented test of android/ (BleOp), driven over adb by tests/test040's run.py.
  *
  *   pt_ble on         RF parameters, then BLE as the product starts it: advertising as LEAKCAM-xxyy, pairing only on
- *                     USB power; an unplug stops it (ble_pairing_stop), as the product's supervisor does
+ *                     USB power; an unplug stops it (ble_pairing_stop), as the product's supervisor does. Unlike the
+ *                     product (BLE only in its USB mode) it also advertises when started on battery.
  *   pt_ble            started?, USB power, the stored credentials (as pt_ble creds)
  *   pt_ble creds      wifi_ssid / wifi_psk in easyflash: length and CRC-32 each, never the passphrase itself
  *   pt_ble erase      wifi_ssid, wifi_psk and the remembered AP (wifi_ap) deleted

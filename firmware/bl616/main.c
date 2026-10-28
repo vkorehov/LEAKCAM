@@ -110,12 +110,14 @@ enum session_end {
     END_NO_BOOT,         /* READY never arrived */
     END_TOO_LONG,        /* SESSION_MAX_MS reached with the heartbeat still running */
     END_RESTARTS,        /* the agent restarted more than SESSION_MAX_RESTARTS times (crash loop) */
+    END_NEW_WIFI,        /* BLE stored new credentials while the K230 was on the old network */
 };
 
 /* easyflash (BLE bonds, Wi-Fi credentials) and RF calibration: each once, shared by BLE and
  * Wi-Fi, and only when one of them is wanted: a battery session without WIFI powers neither */
 static bool storage_up, radio_up;
 static bool wifi_on;
+static volatile bool new_wifi;          /* BLE stored new credentials during a K230 session (ble_credentials_stored) */
 
 static void storage_init(void)
 {
@@ -288,6 +290,7 @@ static enum session_end run_session(unsigned reason, uint32_t *sleep_s, bool fir
         k230_reset_release();
     }
     uint64_t t_on = bflb_mtimer_get_time_ms();
+    new_wifi = false;
     uint32_t ready_timeout = debug_session ? DEBUG_TIMEOUT_MS : BOOT_TIMEOUT_MS;
     uint32_t heartbeat_stop = debug_session ? DEBUG_TIMEOUT_MS : HEARTBEAT_STOP_MS;
 
@@ -332,6 +335,15 @@ static enum session_end run_session(unsigned reason, uint32_t *sleep_s, bool fir
             return END_TOO_LONG;
         }
 
+        /* new credentials (user, 2026-10-28): the K230's addresses and server connections belong to the old
+         * network, so the session ends and a new one starts on the new network (session_task) */
+        if (new_wifi && wifi_on) {
+            LOG_I("session: new Wi-Fi credentials, the K230 starts again on them\r\n");
+            evlog_add(EV_SESSION_END, -3, (unsigned)((now - t_on) / 1000));
+            k230_off();
+            return END_NEW_WIFI;
+        }
+
         link_tick();
         if (link_poll(&m)) {                    /* already answered by the link layer */
             if (strcmp(m.cmd, "SLEEP") == 0)
@@ -346,6 +358,7 @@ static enum session_end run_session(unsigned reason, uint32_t *sleep_s, bool fir
                 send_wake(reason);
             }
             if (strcmp(m.cmd, "WIFI") == 0 && !wifi_on) {   /* accepted by reply() */
+                new_wifi = false;               /* this start joins whatever is stored now */
                 if (wifi_link_start() == 0) {
                     wifi_on = true;
                     evlog_add(EV_WIFI, 0, 0);
@@ -396,10 +409,18 @@ static void session_task(void *arg)
     if (hr == AHT20_OK)
         hr = aht20_finish(&rh, &t);
     env_take(hr, rh, t);
-    run_session(WAKE_LEAK, &sleep_s, false);    /* K230 captures, then asks to be powered off */
+    while (run_session(WAKE_LEAK, &sleep_s, false) == END_NEW_WIFI)
+        ;                                       /* K230 captures, then asks to be powered off */
     wifi_link_release(WIFI_OWNER_K230);
     session_running = false;
     vTaskDelete(NULL);
+}
+
+void ble_credentials_stored(void)
+{
+    wifi_link_credentials_changed();
+    if (session_running)
+        new_wifi = true;
 }
 
 static void ble_task(void *arg)

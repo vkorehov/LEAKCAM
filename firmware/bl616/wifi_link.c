@@ -19,7 +19,6 @@
 #include <string.h>
 
 #include <FreeRTOS.h>
-#include <event_groups.h>
 #include <queue.h>
 #include <task.h>
 
@@ -29,6 +28,7 @@
 
 #include "async_event.h"
 #include "bflb_gpio.h"
+#include "bflb_mtimer.h"
 #include "bl_fw_api.h"
 #include "easyflash.h"
 #include "fhost_api.h"
@@ -57,12 +57,12 @@ static volatile uint8_t state = WCP_STATE_DOWN;
 static volatile bool want_link;     /* a join was asked for and not cancelled by WCP_LEAVE */
 static volatile bool host_seen;     /* the K230 has spoken since we booted */
 static volatile bool scan_pending;
-#define WL_EVB_DISC (1u << 0)               /* the manager reported a disconnect (set in wifi_event, waited in join) */
-#define LEAVE_MS    3000
-static EventGroupHandle_t wl_evg;
-static volatile int own_disc;               /* DISCONNECT events still to come from our own leaves: not link losses */
+#define IDLE_MS      10000                  /* a supplicant scan cycle (~8 s) and its scan: the longest busy seen */
+#define OWN_DISC_MS  5000                   /* our leave's DISCONNECT may come this late (after the idle wait) */
+static volatile uint64_t own_disc_until;    /* DISCONNECT events before then come from our own leave: not link losses */
 static bool lwip_up, wifi_up, bridge_up;   /* tcpip_init(); Wi-Fi task + fhost; NetHub + SDIO */
 static volatile uint8_t owner = WIFI_OWNER_NONE;
+static volatile bool lent;                  /* a credential check took the radio from a K230 session: it goes back */
 static volatile bool local_only;            /* the credential check: every frame to lwIP here */
 static void (*volatile local_ev)(int code);
 static volatile bool mgmr_ready;
@@ -84,7 +84,7 @@ static uint8_t join_ssid_len, join_psk_len;
 /* Breadcrumbs for a hang (tests/test100 step 2, 2026-10-23: the BL616 stopped dead after the control channel opened
  * and the watchdog reset it): empty here, the test firmware keeps the last marks in HBN RAM across the reset.
  * Codes: 0x1n ctrl_rx of WCP type n, 0x1f its end; 0x20/0x21 send_status in/out; 0x30/0x31 scan_done in/out, 0x32
- * per item, 0x33 an item's send failed, 0x34 the DONE's send failed, 0x35 a leave got no DISCONNECT in 3 s; 0x4n Wi-Fi event n (low bits); 0x5n set_state n;
+ * per item, 0x33 an item's send failed, 0x34 the DONE's send failed, 0x36 the station stayed busy 10 s through a leave; 0x4n Wi-Fi event n (low bits); 0x5n set_state n;
  * 0x22/0x23 around each upload try; 0x60 join in, 0x61 autoconnect on, 0x62 connect called, 0x63 connect returned;
  * 0x3e a K230 message lost, 0x3f an event lost (the worker's queue full). */
 __attribute__((weak)) void wl_trace(uint8_t code)
@@ -154,20 +154,35 @@ static void set_state(uint8_t s)
 
 /* ------------------------------------------------------------------ Wi-Fi */
 
-/* disconnect and wait for it, if associated or associating (wifi_check.c leave()): wifi_mgmr_sta_connect() on a busy
- * station never returned (2026-10-24). Not from the Wi-Fi event callback (it waits for an event). */
-static void leave_and_wait(void)
+/*
+ * wifi_mgmr_sta_connect() into a station that is still busy never returns (2026-10-24; tests/test040 2026-10-28: the
+ * supplicant's retries of a network that is not there, or of a changed password, go on after autoconnect off and a
+ * disconnect - its state stays 3, WPA_SCANNING, or authenticating - and a connect sent then hung the worker). It is
+ * idle at WPA_INACTIVE (2) or below. A disconnect sent during an auth retry was lost (the retries went on 10 s), so
+ * it is sent again every second until the supplicant is idle: 2.5 s after a missing network (test040).
+ */
+bool wifi_link_sta_leave(void)
 {
-    if (state != WCP_STATE_UP && state != WCP_STATE_JOINING)
-        return;
-    xEventGroupClearBits(wl_evg, WL_EVB_DISC);
-    own_disc++;
     wifi_mgmr_sta_autoconnect_disable();
-    if (wifi_sta_disconnect() != 0 ||
-        !(xEventGroupWaitBits(wl_evg, WL_EVB_DISC, pdTRUE, pdFALSE, pdMS_TO_TICKS(LEAVE_MS)) & WL_EVB_DISC)) {
-        own_disc = 0;                       /* no event came: none to ignore later */
-        wl_trace(0x35);
+    own_disc_until = bflb_mtimer_get_time_ms() + IDLE_MS + OWN_DISC_MS;
+    for (int ms = 0; ms < IDLE_MS; ms += 20) {
+        if (ms % 1000 == 0)
+            wifi_sta_disconnect();
+        vTaskDelay(pdMS_TO_TICKS(20));
+        if (wifi_mgmr_sta_state_get_ext() <= 2) {
+            own_disc_until = bflb_mtimer_get_time_ms() + OWN_DISC_MS;
+            return true;
+        }
     }
+    wl_trace(0x36);
+    return false;
+}
+
+/* leave whatever the station does (joined, joining, retrying); false if it stayed busy (a connect now would hang).
+ * DOWN (never joined, or WCP_LEAVE) is idle already. Not from the Wi-Fi event callback (it waits). */
+static bool leave_and_wait(void)
+{
+    return state == WCP_STATE_DOWN || wifi_link_sta_leave();
 }
 
 static bool remembered_ap(const char *ssid, uint8_t ssid_len, struct wifi_ap *ap)
@@ -203,7 +218,11 @@ static int join_as(enum join_mode mode)
     struct wifi_ap ap;
 
     wl_trace(0x60);
-    leave_and_wait();
+    if (!leave_and_wait()) {
+        LOG_E("join: the station stayed busy, not joined\r\n");
+        set_state(WCP_STATE_FAILED);
+        return -1;
+    }
 
     memset(&p, 0, sizeof(p));
     memcpy(p.ssid, join_ssid, join_ssid_len);
@@ -311,6 +330,8 @@ static void scan_done(void)
  */
 #define WL_EV_DEPTH 8
 #define WL_CTRL     (-1)                /* a K230 control message, not a Wi-Fi event */
+#define WL_REJOIN   (-2)                /* join the stored network again (after a check, or new credentials); joins
+                                         * only here, so two never overlap (a connect on a busy station hangs) */
 
 /* The K230's control messages are handled here too, not in ctrl_rx (the NetHub virtual-channel task): a blocking
  * manager call there (wifi_mgmr_sta_connect() right after a leave never returned, 2026-10-24) stopped the channel:
@@ -334,10 +355,19 @@ static void wl_ev_task(void *arg)
     while (1) {
         if (xQueueReceive(wl_ev_q, &it, portMAX_DELAY) != pdTRUE)
             continue;
-        if (it.code == WL_CTRL)
+        /* a credential check has the radio: the K230's requests wait for it (it ends within a minute) */
+        while (local_only)
+            vTaskDelay(pdMS_TO_TICKS(50));
+        if (it.code == WL_CTRL) {
             ctrl_handle(it.msg, it.len);
-        else
+        } else if (it.code == WL_REJOIN) {
+            if (rejoin) {
+                rejoin = false;
+                join_stored();
+            }
+        } else {
             bridge_event(it.code);
+        }
     }
 }
 
@@ -350,8 +380,6 @@ static void wifi_event(async_input_event_t ev, void *priv)
     wl_trace(0x40 | (code & 0x0f));
     if (code == CODE_WIFI_ON_MGMR_DONE)
         mgmr_ready = true;
-    if (code == CODE_WIFI_ON_DISCONNECT && wl_evg)
-        xEventGroupSetBits(wl_evg, WL_EVB_DISC);
     if (code == CODE_WIFI_ON_INIT_DONE) {
         wifi_mgmr_task_start();
         return;
@@ -385,10 +413,10 @@ static void bridge_event(int code)
                 send_status();
             break;
         case CODE_WIFI_ON_DISCONNECT:
-            if (own_disc > 0) {             /* the leave of a JOIN or LEAVE: already accounted for */
-                own_disc--;
+            /* the leave of a JOIN or LEAVE: already accounted for. A late one counted as a loss started a second join
+             * (tests/test040) */
+            if (bflb_mtimer_get_time_ms() < own_disc_until)
                 break;
-            }
             /* a loss while up is the start of a reconnect; a loss while joining is a failed
              * attempt (the manager's autoconnect decides whether it tries again) */
             if (!want_link) {
@@ -449,7 +477,7 @@ static void ctrl_handle(const uint8_t *data, uint16_t len)
         case WCP_LEAVE:
             want_link = false;
             if (state == WCP_STATE_UP || state == WCP_STATE_JOINING)
-                own_disc++;                 /* its DISCONNECT event is not a loss for a later JOIN */
+                own_disc_until = bflb_mtimer_get_time_ms() + OWN_DISC_MS;   /* not a loss for a later JOIN */
             wifi_mgmr_sta_autoconnect_disable();
             wifi_sta_disconnect();
             set_state(WCP_STATE_DOWN);
@@ -506,24 +534,40 @@ static void sdio_pins_low_drive(void)
 
 /* ------------------------------------------------------------------ entry points */
 
+/* BLE first (user, 2026-10-28): a credential check takes the radio from a K230 session too, which gets it back
+ * when the check ends; a K230 session waits for a running check */
 bool wifi_link_claim(enum wifi_owner who)
 {
     bool ok;
 
     taskENTER_CRITICAL();
-    ok = owner == WIFI_OWNER_NONE || owner == who;
-    if (ok)
+    ok = owner == WIFI_OWNER_NONE || owner == who || who == WIFI_OWNER_CHECK;
+    if (ok) {
+        if (owner == WIFI_OWNER_K230 && who == WIFI_OWNER_CHECK)
+            lent = true;
         owner = who;
+    }
     taskEXIT_CRITICAL();
     return ok;
 }
 
 void wifi_link_release(enum wifi_owner who)
 {
+    bool back = false;
+
     taskENTER_CRITICAL();
-    if (owner == who)
-        owner = WIFI_OWNER_NONE;
+    if (owner == who) {
+        back = who == WIFI_OWNER_CHECK && lent;
+        owner = back ? WIFI_OWNER_K230 : WIFI_OWNER_NONE;
+        lent = false;
+    } else if (who == WIFI_OWNER_K230 && owner == WIFI_OWNER_CHECK) {
+        lent = false;                   /* the session ended during the check: nothing to give back */
+    }
     taskEXIT_CRITICAL();
+    if (back) {
+        struct wl_item it = { .code = WL_REJOIN, .len = 0 };
+        xQueueSend(wl_ev_q, &it, portMAX_DELAY);
+    }
 }
 
 /* Wi-Fi start as in the SDK's NetHub example, the rest follows from wifi_event(). Unlike there,
@@ -532,7 +576,6 @@ void wifi_link_release(enum wifi_owner who)
 static void start_wifi(void)
 {
     wl_ev_q = xQueueCreate(WL_EV_DEPTH, sizeof(struct wl_item));
-    wl_evg = xEventGroupCreate();
     xTaskCreate(wl_ev_task, "wl_ev", 1024, NULL, 10, NULL);   /* below the Wi-Fi tasks, above the app */
     async_register_event_filter(EV_WIFI, wifi_event, NULL);
     wifi_task_create();
@@ -557,8 +600,8 @@ int wifi_link_start(void)
         ret = mr_sdio_drv_lowpower_restore();    /* K230 powered up again: re-mux and resync */
         sdio_pins_low_drive();
         if (rejoin) {
-            rejoin = false;
-            join_stored();
+            struct wl_item it = { .code = WL_REJOIN, .len = 0 };
+            xQueueSend(wl_ev_q, &it, portMAX_DELAY);
         }
         return ret;
     }
@@ -587,11 +630,20 @@ void wifi_link_local_begin(void (*ev)(int code))
 {
     local_only = true;
     local_ev = ev;
+    /* taken from a K230 session: the check's leave drops the bridge's association, the K230 hears it as a link
+     * loss (the same JOINING as a lost AP) until the rejoin after the check */
+    if (lent && (state == WCP_STATE_UP || state == WCP_STATE_JOINING))
+        set_state(WCP_STATE_JOINING);
     start_lwip();
     if (!wifi_up)
         start_wifi();                /* ev gets CODE_WIFI_ON_MGMR_DONE */
     else if (mgmr_ready)
         ev(CODE_WIFI_ON_MGMR_DONE);
+}
+
+void wifi_link_credentials_changed(void)
+{
+    rejoin = bridge_up;          /* the association is the old network's: the next start joins the new one */
 }
 
 void wifi_link_local_end(void)

@@ -9,6 +9,7 @@ import sys
 import time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
 from harness import Run, bl, REPO, KDIMG   # noqa: E402,F401
+from board import BL_PORT   # noqa: E402
 
 r = Run(__file__)
 r.off()
@@ -18,9 +19,9 @@ def sleep_once(s):
     t0 = time.time()
     bl(f"pt_sleep {s} nousb", 0.5)
     time.sleep(2)
-    while os.path.exists("/dev/ttyACM0") and time.time() - t0 < 5:
+    while os.path.exists(BL_PORT) and time.time() - t0 < 5:
         time.sleep(0.05)                      # the console leaves
-    while not os.path.exists("/dev/ttyACM0"):
+    while not os.path.exists(BL_PORT):
         if time.time() - t0 > s + 60:
             return None
         time.sleep(0.02)

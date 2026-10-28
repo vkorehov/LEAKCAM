@@ -1,0 +1,117 @@
+LEAKCAM rev 1: security
+=======================
+
+What an attacker could get or do, what protects it today, and what is still open. Keep this file current when a
+test, a design decision or a finding changes it (as SPEEDS.txt and ENERGY.txt). Findings name the test that found
+them.
+
+
+1. What is worth protecting
+---------------------------
+
+  - The Wi-Fi passphrase of the owner's network: stored on the BL616, sent once from the phone over BLE.
+  - The pictures, clips and sound from inside the owner's home: sent to the server.
+  - The device itself: firmware that could be replaced, a camera and microphone that could be turned on.
+  - The server: a device that can post to it could flood it or fake leak reports.
+
+
+2. BLE provisioning (Wi-Fi credentials only)
+--------------------------------------------
+
+  What it does (DESIGN.md 5.3): on USB power the BL616 advertises as LEAKCAM-xxyy, a phone pairs, writes the SSID and
+  the passphrase, the BL616 checks them (join, DHCP, internet) and stores them. BLE does nothing else.
+
+  No pre-shared secret. There is no key, password or passkey built into the firmware or the app.
+
+  Pairing: LE Secure Connections, Just Works. The phone and the board agree a fresh key with P-256 ECDH; the link is
+  AES-CCM encrypted before any characteristic can be written (the characteristics need an encrypted link).
+    Protects against: anyone listening to the radio (passive sniffing) - they see the exchange but cannot derive the
+    key, so they never see the passphrase.
+    Does not protect against: an active man-in-the-middle during the pairing itself (Just Works has no number to
+    compare: the board has no display or button). Mitigated by the gate below: pairing is possible only on USB power,
+    i.e. while the owner has the device on a cable in front of them, a short window.
+    Legacy pairing is not acceptable: its key can be cracked from a sniffed exchange (crackle), so the passphrase would
+    leak. LE Secure Connections must stay on.
+
+  Pairing only on USB power. Plugging in is the proof of physical access:
+    - The product starts BLE only in its USB mode and stops it (dropping any connection) on unplug (main.c).
+    - A connection while not on USB power is refused at once, before any security request (ble_pairing.c
+      on_connected). The consent callback (auth_pairing_confirm) also refuses, for pairings the phone starts.
+    - Written into the stored credentials only after a passed check (commit 0x01) or on request (0x02); never on a
+      failed check or a dropped link.
+
+  Findings (tests/test040, 2026-10-28), all fixed:
+    - LE Secure Connections did not work: the SDK's profile for the BLE controller library we use
+      (ble1m0s1bredr0) compiled out the host's ECC handlers while still offering Secure Connections; Android's
+      pairing failed ("Unhandled SMP code 0x0c"). Fixed in firmware/bl616/sdk_patch.py (CONFIG_DISABLE_BT_ECC n).
+    - The USB power gate could be bypassed: the host skips the consent callback when pairing follows the board's
+      own Security Request, so the board paired while on battery. Fixed: the gate is at connection time.
+    - The SDK printed every link key (LTK) to the console ("BLE LTK: ..."): anyone with the console or a log could
+      decrypt a recorded session. Removed in sdk_patch.py. Rule: never print keys, passphrases or tokens; the test
+      tools print only lengths and CRCs (pt_ble creds).
+
+  Accepted risk (user, 2026-10-28: no further protection now): whenever the device is on USB power - setup, but
+  also every time it charges - anyone in radio range (10-30 m) can pair and overwrite the stored credentials: with
+  junk (the device goes silent) or with their own network (all traffic through their router; with plain HTTP today
+  they see pictures, clips and sound). Reading the stored passphrase is not possible (write-only characteristics).
+  Options kept for later (section 6): a pairing window of a few minutes after plug-in; an owner lock (only the
+  bonded phone may change the credentials, a new phone after a factory reset done on the device); an LED-blinked
+  passkey against MITM.
+
+  Bonds: the board does NOT keep bond keys (CONFIG_BT_SETTINGS off): they live in RAM until its next reset. The phone
+  keeps its half, so after a board reset the phone must forget the device before it pairs again (test040 checks
+  this). Open: either keep bonds (CONFIG_BT_SETTINGS, in easyflash) or pair without bonding, so the phone keeps
+  nothing either (section 6).
+
+
+3. Stored secrets on the board
+------------------------------
+
+  - wifi_ssid / wifi_psk: in easyflash (littlefs on the BL616's SPI flash), NOT encrypted. (BLE bond keys are not
+    stored, section 2.)
+    Anyone with the board in hand can read them: through the BL616 console (PR1 pads, inside the enclosure) or by
+    reading the flash (UART/USB ISP boot, or the chip off the board).
+    Accepted for now: whoever has the device in hand had the physical access anyway. Open: BL616 flash encryption
+    and locking the ISP/JTAG with eFuses for production (section 6).
+  - The passphrase is never printed: wifi_set (debug builds only) prints the SSID and the passphrase length.
+
+
+4. Network and server
+---------------------
+
+  Today (mock server, firmware/k230_capture/mock_server.py): plain HTTP and RTMP, no authentication.
+    - Anyone on the path can read the pictures, clips and sound, and fake the server's answers (e.g. "no leak",
+      a different change net via "nn", a long "video" request).
+    - Anyone can post fake reports as a device.
+  Needed before real use (DESIGN.md 7 "The real server"):
+    - TLS for /v1/check, /v1/nn, /v1/poll and the clips (RTMPS, or the server pulls over TLS).
+    - A per-device identity (a key or certificate made at the factory or at first setup), so the server knows which
+      device posts, and the device knows it talks to the real server (pinned server certificate).
+    - The change net ("nn") and thresholds from the server: check the CRC against a signed value, not only the
+      transport.
+  The Wi-Fi check at provisioning (wifi_check.c) fetches http://connectivitycheck.gstatic.com/generate_204 over plain
+  HTTP and sends nothing of the owner's.
+
+
+5. Firmware, debug and update
+-----------------------------
+
+  - Debug consoles: the BL616 shell (USB CDC on PR1) and the K230 console over the link; both inside the enclosure.
+    LEAKCAM_RELEASE builds drop the debug-session wait and wifi_set (firmware/DEBUG.txt). Open: the release build's
+    shell commands (isp, reboot, pt_*) - which stay in the product.
+  - BL616 ISP boot (UART/USB) and K230 USB boot: anyone with the board open can flash any firmware. Open: secure
+    boot / signed images on both chips, ISP and JTAG locked by eFuse for production.
+  - OTA (DESIGN.md 7, not written yet): images must be signed and checked before ota_meta switches slots;
+    a CRC alone does not stop a forged image.
+
+
+6. Open items (to decide)
+-------------------------
+
+  1. Server: TLS, per-device identity, pinned server certificate (section 4).
+  2. Signed OTA images and signed change nets (sections 4, 5).
+  3. BL616 flash encryption for the credentials; eFuse locks for ISP/JTAG on both chips.
+  4. Which shell commands stay in LEAKCAM_RELEASE builds.
+  5. BLE on USB power is open to anyone in range (accepted for now, section 2): pairing window after plug-in, owner
+     lock with an on-device factory reset (e.g. 3 plug-ins in 10 s), LED-blinked passkey against MITM.
+  6. BLE bonds: keep them on the board (CONFIG_BT_SETTINGS) or pair without bonding (section 2).

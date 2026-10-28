@@ -355,12 +355,39 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
 
 ### 5.3 BLE: Wi-Fi credentials only
 
-- **One GATT service with write-only characteristics:** SSID, passphrase and commit.
-- **Encrypted link, LE Secure Connections Just Works.** Pairing is accepted only while on USB
-  power; plugging in is the proof of physical access.
+- **One GATT service:** SSID, passphrase and commit (write only), and STATUS (read and notify: the
+  check's progress and result).
+- **Encrypted link, LE Secure Connections Just Works.** No pre-shared secret. Pairing is accepted
+  only while on USB power; plugging in is the proof of physical access. The gate is at connection
+  time (the host skips the consent callback after the board's own Security Request), and the SDK's
+  profile for our controller library needs `sdk_patch.py` for Secure Connections at all. Threats,
+  findings and open items: [SECURITY.txt](SECURITY.txt).
 - **Stored in easyflash** (`wifi_ssid`, `wifi_psk`), and nothing else.
-- **No other BLE features:** no shell, OAD or status characteristics. Everything else goes over
-  Wi-Fi.
+- **No other BLE features:** no shell, OAD or device status. Everything else goes over Wi-Fi.
+- **BLE first (user, 2026-10-28).** The check (commit 0x01) takes the radio even from a running K230
+  session (on USB power: a leak alarm): the K230 hears a link loss (JOINING), its requests wait, and
+  the bridge rejoins the stored network when the check ends. The alarm's upload pauses for the
+  check (5-15 s). A K230 session never starts during a check.
+- **New network during a K230 session: the session starts again.** Credentials stored while a
+  session runs (0x01 passed, or 0x02) end it once the K230 uses Wi-Fi: the K230's address, DNS and
+  server connections belong to the old network. `main.c` powers it off (`END_NEW_WIFI`, evlog
+  session-end -3) and starts a new session for the same wake reason, which joins the new network.
+  A failed check stores nothing and the session goes on. Tested in tests/test040 step 8 (the
+  bridge standing in for the session).
+- **Switching networks never waits on the old one.** After a failed join (a network that is gone, a
+  changed router password) the Wi-Fi supplicant keeps retrying, and a connect sent into those
+  retries never returns. Every join and every check first leaves until the supplicant is idle
+  (`wifi_link_sta_leave()`: disconnect each second, at most 10 s). The new network is joined 2.2-2.5 s
+  after the store following a missing network, 5.1 s following a changed password (test040).
+- **BLE start keeps USB alive (suspected, being verified).** The SDK's BLE controller resets the
+  PDS block when it starts (weak hook `btblecontroller_software_pds_reset`); the BL616's USB PHY
+  is controlled from PDS. The USB device dropped at BLE start twice and stayed up with the hook
+  emptied, but all of that ran with a corrupt WRAM heap writing into the BLE exchange memory
+  (fixed since): a clean A/B decides whether `ble_pairing.c`'s empty hook stays
+  (tests/test040, 2026-10-28).
+- **Room for BLE in the Wi-Fi RAM.** The BLE controller library keeps 32 KB of the 160 KB Wi-Fi
+  RAM as exchange memory; the BL616's own lwIP heap is 6 KB so the 26 NetHub buffers still fit
+  (`lwipopts_user.h`, tests/test040).
 
 ### 5.4 K230-BL616 link and time
 

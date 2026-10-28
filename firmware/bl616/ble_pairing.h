@@ -18,8 +18,11 @@
  *
  * The check (wifi_check.h) joins the network, gets an address by DHCP and fetches a well-known
  * URL from the BL616 itself, so a wrong password, a network out of reach and a network without
- * internet are all told apart before anything is stored. It needs the radio, so it is refused
- * (BUSY) while a K230 session runs, and no K230 session starts during it.
+ * internet are all told apart before anything is stored. It needs the radio and takes it even from a
+ * running K230 session (BLE first, user 2026-10-28): the K230 hears a link loss and gets the radio
+ * back after the check; no K230 session starts during it. New credentials stored while a K230
+ * session runs end that session; a new one starts on them (ble_credentials_stored()).
+ * BUSY now only means no memory for the check's task.
  *
  * The credentials live on the BL616 because it is the Wi-Fi device (SDIO Wi-Fi for the K230).
  */
@@ -33,5 +36,8 @@
 void ble_pairing_start(void);
 /* Stop advertising and drop any connection (called when USB is unplugged). */
 void ble_pairing_stop(void);
+/* Called after new credentials are stored, from the BLE host or the check's task (must not block). The product
+ * (main.c) restarts a running K230 session on them; the test firmware (pt_wifi.c) restarts its bridge. */
+void ble_credentials_stored(void);
 
 #endif

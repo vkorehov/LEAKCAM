@@ -26,7 +26,7 @@ enum wifi_check_state {
     WCHK_NO_DNS = 0x14,           /* the probe host did not resolve */
     WCHK_NO_INTERNET = 0x15,      /* resolved, but no TCP connection to it */
     WCHK_CAPTIVE = 0x16,          /* an answer other than 204 (login page, proxy): detail = HTTP status */
-    WCHK_BUSY = 0x17,             /* the K230 has the radio (a leak session on USB) */
+    WCHK_BUSY = 0x17,             /* the check could not start (no memory for its task, or the station stayed busy) */
     WCHK_SAVE_FAILED = 0x18,      /* flash write failed */
 };
 
