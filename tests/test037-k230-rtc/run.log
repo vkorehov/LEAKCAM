@@ -1,0 +1,8 @@
+16:21:48 test037-k230-rtc: 12 metric rows MISSING: Boot, power-on -> READY (median of 5), This part's boot share, Test run time, RTC offset after handover, Y1 ppm, Current idle / during (min / avg / peak), Voltage under load (min), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Features over the minimal image, Optimised build (-O3, LTO, -march)
+16:21:59 boot SPL 0.16 msh 0.16
+16:23:05 sample boot 1 {'board': 33.7, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': 43.384, 'k_free': (7311744, 1521024), 'vbat': 4381}
+16:23:17 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.63 msh 0.64
+16:24:24 sample boot 2 {'board': 34.5, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': 44.288, 'k_free': (7311744, 1521024), 'vbat': 4371}
+16:24:35 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.63 msh 0.64
+16:25:42 sample boot 3 {'board': 35.0, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': 44.891, 'k_free': (7311744, 1521024), 'vbat': 4363}
+16:25:44 test037-k230-rtc: PASS; filled 9: Boot, power-on -> READY (median of 5), Test run time, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Voltage under load (min), RTC offset after handover, Y1 ppm, This part's boot share, Power, energy per operation, Per day; still MISSING 3: Current idle / during (min / avg / peak), Features over the minimal image, Optimised build (-O3, LTO, -march)

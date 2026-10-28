@@ -1,0 +1,7 @@
+17:22:59 test032-rtc-wake: 4 metric rows MISSING: wake time error, crystal ppm, Current idle / during (min / avg / peak), Features over the minimal image, Optimised build (-O3, LTO, -march)
+17:23:22 sample after 10 s {'board': 32.0, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+17:23:42 sample after 10 s {'board': 31.0, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+17:24:03 sample after 10 s {'board': 30.3, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+17:34:13 sample after 600 s {'board': 21.1, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+17:44:23 sample after 600 s {'board': 20.3, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+17:44:23 test032-rtc-wake: PASS; filled 1: wake time error, crystal ppm; still MISSING 3: Current idle / during (min / avg / peak), Features over the minimal image, Optimised build (-O3, LTO, -march)

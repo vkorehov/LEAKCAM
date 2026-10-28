@@ -1,0 +1,12 @@
+15:24:53 test016-ddr-bandwidth: 5 metric rows MISSING: Voltage under load (min), Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Features over the minimal image, Optimised build (-O3, LTO, -march)
+15:25:00 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.45 msh 0.46
+15:25:06 sample idle {'board': 37.3, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 46.396, 'k_free': (7025152, 1390848), 'vbat': 4346}
+15:25:11 sample run 1 {'board': 37.1, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 46.697, 'k_free': (7025152, 7655168), 'vbat': 4364}
+15:25:15 sample run 2 {'board': 37.0, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.201, 'k_free': (7025152, 7655168), 'vbat': 4394}
+15:25:20 sample run 3 {'board': 37.0, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.201, 'k_free': (7025152, 7655168), 'vbat': 4351}
+15:25:24 sample run 4 {'board': 37.1, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.201, 'k_free': (7023232, 7655168), 'vbat': 4353}
+15:25:59 sample run 5 {'board': 37.2, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.201, 'k_free': (7312064, 7657088), 'vbat': 4389}
+15:26:03 sample run 6 {'board': 37.3, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.201, 'k_free': (7312064, 7657088), 'vbat': 4383}
+15:26:08 sample run 7 {'board': 37.3, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.201, 'k_free': (7312064, 7657088), 'vbat': 4369}
+15:26:12 sample run 8 {'board': 37.4, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.502, 'k_free': (7312064, 7657088), 'vbat': 4313}
+15:26:14 test016-ddr-bandwidth: PASS; filled 3: Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Voltage under load (min); still MISSING 2: Features over the minimal image, Optimised build (-O3, LTO, -march)

@@ -1,0 +1,18 @@
+16:04:13 test029-camera-bus-idle: 11 metric rows MISSING: Boot, power-on -> READY (median of 5), This part's boot share, Speed / rate (none for this test), Current idle / during (min / avg / peak), Voltage under load (min), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Features over the minimal image, Optimised build (-O3, LTO, -march)
+16:04:24 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.63 msh 0.64
+16:04:31 sample boot 1 {'board': 34.9, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 42.78, 'k_free': (7025152, 1390848), 'vbat': 4365}
+16:04:43 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.63 msh 0.64
+16:04:49 sample boot 2 {'board': 34.4, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 42.78, 'k_free': (7025152, 1390848), 'vbat': 4386}
+16:05:01 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.63 msh 0.64
+16:05:08 sample boot 3 {'board': 34.1, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 42.177, 'k_free': (7025152, 1390848), 'vbat': 4379}
+16:05:20 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.63 msh 0.64
+16:05:26 sample boot 4 {'board': 33.8, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 41.271, 'k_free': (7025152, 1390848), 'vbat': 4365}
+16:05:38 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.63 msh 0.64
+16:05:45 sample boot 5 {'board': 33.5, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 42.78, 'k_free': (7025152, 1390848), 'vbat': 4387}
+16:05:57 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.63 msh 0.64
+16:06:03 sample boot 6 {'board': 33.3, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 39.76, 'k_free': (7025152, 1390848), 'vbat': 4365}
+16:06:15 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.63 msh 0.63
+16:06:22 sample boot 7 {'board': 33.1, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 38.248, 'k_free': (7025152, 1390848), 'vbat': 4369}
+16:06:34 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.63 msh 0.64
+16:06:40 sample boot 8 {'board': 32.9, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 39.458, 'k_free': (7025152, 1390848), 'vbat': 4370}
+16:06:43 test029-camera-bus-idle: PASS; filled 9: Boot, power-on -> READY (median of 5), Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Voltage under load (min), Current idle / during (min / avg / peak), Speed / rate (none for this test), This part's boot share, Power, energy per operation, Per day; still MISSING 2: Features over the minimal image, Optimised build (-O3, LTO, -march)

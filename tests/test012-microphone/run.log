@@ -1,0 +1,14 @@
+15:21:14 test012-microphone: 12 metric rows MISSING: Boot, power-on -> app init (median / max of runs), This part's boot share, Test run time, Speed / rate against the top, Current floor / typical / peak, Voltage under load (min), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Features over the minimal image, Optimised build (-O3, LTO, -march)
+15:21:21 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.44 msh 0.45
+15:21:28 sample idle {'board': 37.7, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 46.998, 'k_free': (7025152, 1390848), 'vbat': 4368}
+15:21:44 sample run 1 {'board': 37.3, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.201, 'k_free': (6867904, 2463168), 'vbat': 4353}
+15:21:44 >>> METER test012-microphone: K230 recording the microphone (leakcam_stream -m 10, repeated) - reading in amps to /home/vkorehovs/.leakcam_meter
+15:24:00 meter K230 recording the microphone (leakcam_stream -m 10, repeated): 0.232 A
+15:24:15 sample run 2 {'board': 37.7, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 47.9, 'k_free': (7312064, 2465088), 'vbat': 4359}
+15:24:29 sample run 3 {'board': 37.7, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.802, 'k_free': (7312064, 2465088), 'vbat': 4392}
+15:24:34 sample after 1 {'board': 37.8, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 47.9, 'k_free': (7312064, 2465088), 'vbat': 4416}
+15:24:38 sample after 2 {'board': 37.8, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.201, 'k_free': (7312064, 2465088), 'vbat': 4372}
+15:24:42 sample after 3 {'board': 37.7, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.201, 'k_free': (7312064, 2465088), 'vbat': 4379}
+15:24:46 sample after 4 {'board': 37.8, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.502, 'k_free': (7312064, 2465088), 'vbat': 4359}
+15:24:50 sample after 5 {'board': 37.7, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 47.9, 'k_free': (7312064, 2465088), 'vbat': 4376}
+15:24:53 test012-microphone: PASS; filled 10: Boot, power-on -> app init (median / max of runs), Test run time, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Voltage under load (min), Current floor / typical / peak, Speed / rate against the top, This part's boot share, Power, energy per operation, Per day; still MISSING 2: Features over the minimal image, Optimised build (-O3, LTO, -march)

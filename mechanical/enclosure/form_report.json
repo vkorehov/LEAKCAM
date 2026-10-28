@@ -1,0 +1,459 @@
+{
+ "pair_lift_mm": [
+  0.0,
+  0.0,
+  0.9,
+  8.26,
+  3.18,
+  8.04,
+  2.12
+ ],
+ "pair_lift_by": [
+  [
+   [
+    -12.8,
+    -12.4,
+    -17.2
+   ],
+   [
+    12.8,
+    27.4,
+    7.3
+   ]
+  ],
+  [
+   [
+    -19.55,
+    -5.3,
+    -21.0
+   ],
+   [
+    18.45,
+    18.8,
+    21.7
+   ]
+  ],
+  [
+   [
+    -13.6,
+    11.7,
+    -38.8
+   ],
+   [
+    13.6,
+    -7.2,
+    37.6
+   ]
+  ],
+  [
+   [
+    -13.6,
+    -7.2,
+    37.6
+   ],
+   [
+    8.4,
+    21.6,
+    -37.5
+   ]
+  ],
+  [
+   [
+    -13.6,
+    -7.2,
+    -38.8
+   ],
+   [
+    12.8,
+    27.4,
+    7.3
+   ]
+  ],
+  [
+   [
+    8.4,
+    -9.5,
+    -37.5
+   ],
+   [
+    -12.8,
+    27.4,
+    7.3
+   ]
+  ],
+  [
+   [
+    13.6,
+    -7.2,
+    37.6
+   ],
+   [
+    -12.8,
+    27.4,
+    -17.2
+   ]
+  ]
+ ],
+ "folds": [
+  {
+   "side": -1,
+   "triangles": 8,
+   "shortest_fold_mm": 21.5,
+   "depths": [
+    2.07,
+    -3.0
+   ],
+   "ok": true
+  },
+  {
+   "side": 1,
+   "triangles": 8,
+   "shortest_fold_mm": 23.2,
+   "depths": [
+    3.97,
+    -3.0
+   ],
+   "ok": true
+  }
+ ],
+ "legs": [
+  {
+   "plug": "S1",
+   "star": [
+    25.35,
+    -2.6,
+    -46.45
+   ],
+   "hit": [
+    17.176,
+    -0.716,
+    -41.007
+   ],
+   "through_mm": 21.11,
+   "off_corner_axis_deg": null,
+   "inner_dir": [
+    0.097,
+    0.231,
+    0.968
+   ],
+   "bend_deg": 60.6,
+   "tube_axis": [
+    0.818,
+    -0.188,
+    -0.544
+   ],
+   "tube_held_mm": 10.0
+  },
+  {
+   "plug": "S3",
+   "star": [
+    25.09,
+    -2.34,
+    37.73
+   ],
+   "hit": [
+    19.534,
+    -0.63,
+    34.819
+   ],
+   "through_mm": 17.97,
+   "off_corner_axis_deg": null,
+   "inner_dir": [
+    -0.026,
+    0.266,
+    -0.964
+   ],
+   "bend_deg": 58.4,
+   "tube_axis": [
+    0.855,
+    -0.263,
+    0.447
+   ],
+   "tube_held_mm": 6.5
+  },
+  {
+   "plug": "S2",
+   "star": [
+    -26.36,
+    5.83,
+    15.19
+   ],
+   "hit": [
+    -20.031,
+    6.81,
+    15.265
+   ],
+   "through_mm": 2.16,
+   "off_corner_axis_deg": 0.0,
+   "inner_dir": [
+    0.988,
+    0.152,
+    0.011
+   ],
+   "bend_deg": null,
+   "tube_axis": [
+    -0.988,
+    -0.152,
+    -0.011
+   ],
+   "tube_held_mm": 6.4
+  }
+ ],
+ "parting": {
+  "base_mm3": 72659,
+  "cover_mm3": 104045
+ },
+ "leds": [
+  {
+   "lens": 1,
+   "facet_facing": [
+    0.34,
+    0.0,
+    -0.94
+   ],
+   "area": 697,
+   "tries": 0,
+   "failed": {
+    "star": 0,
+    "view": 0,
+    "avoid": 0,
+    "skin": 0,
+    "part": 0
+   }
+  },
+  {
+   "lens": 1,
+   "facet_facing": [
+    -0.41,
+    0.0,
+    0.91
+   ],
+   "area": 893,
+   "tries": 0,
+   "failed": {
+    "star": 0,
+    "view": 0,
+    "avoid": 0,
+    "skin": 0,
+    "part": 0
+   }
+  },
+  {
+   "lens": "top",
+   "part": "cover",
+   "from_lens_axis_mm": 29.9,
+   "facet_facing": [
+    -0.45,
+    0.87,
+    -0.18
+   ],
+   "centre": [
+    -22.4,
+    23.4,
+    -20.9
+   ],
+   "z": [
+    -2.6,
+    -39.1
+   ]
+  },
+  {
+   "lens": "top",
+   "part": "cover",
+   "from_lens_axis_mm": 22.8,
+   "facet_facing": [
+    0.48,
+    0.86,
+    0.2
+   ],
+   "centre": [
+    16.8,
+    27.4,
+    14.4
+   ],
+   "z": [
+    32.3,
+    -3.5
+   ]
+  },
+  {
+   "lens": -1,
+   "facet_facing": [
+    0.41,
+    0.0,
+    -0.91
+   ],
+   "area": 893,
+   "tries": 0,
+   "failed": {
+    "star": 0,
+    "view": 0,
+    "avoid": 0,
+    "skin": 0,
+    "part": 0
+   }
+  },
+  {
+   "lens": -1,
+   "facet_facing": [
+    -0.34,
+    0.0,
+    0.94
+   ],
+   "area": 697,
+   "tries": 0,
+   "failed": {
+    "star": 0,
+    "view": 0,
+    "avoid": 0,
+    "skin": 0,
+    "part": 0
+   }
+  },
+  {
+   "lens": "bottom",
+   "part": "base",
+   "from_lens_axis_mm": 22.5,
+   "facet_facing": [
+    -0.48,
+    -0.86,
+    -0.2
+   ],
+   "centre": [
+    -17.1,
+    -11.7,
+    -15.7
+   ],
+   "z": [
+    -33.7,
+    2.3
+   ]
+  },
+  {
+   "lens": "bottom",
+   "part": "base",
+   "from_lens_axis_mm": 23.1,
+   "facet_facing": [
+    0.45,
+    -0.87,
+    0.18
+   ],
+   "centre": [
+    17.9,
+    -11.1,
+    13.6
+   ],
+   "z": [
+    31.9,
+    -4.6
+   ]
+  },
+  {
+   "clamp": "cover",
+   "x": 9.3,
+   "top": 7.4,
+   "screw": "M2x6",
+   "side": -1,
+   "slot_end": -1,
+   "middle_tried": [],
+   "boss_y": 4.8,
+   "plate": [
+    -21.9,
+    18.1
+   ]
+  },
+  {
+   "clamp": "cover",
+   "x": -9.3,
+   "top": 7.4,
+   "screw": "M2x6",
+   "side": 1,
+   "slot_end": 1,
+   "middle_tried": [],
+   "boss_y": 4.8,
+   "plate": [
+    -18.1,
+    21.9
+   ]
+  },
+  {
+   "clamp": "base",
+   "x": -9.3,
+   "top": 7.4,
+   "screw": "M2x6",
+   "side": -1,
+   "slot_end": 1,
+   "middle_tried": [],
+   "boss_y": 4.8,
+   "plate": [
+    -18.1,
+    21.9
+   ]
+  },
+  {
+   "clamp": "base",
+   "x": -9.3,
+   "top": 7.4,
+   "screw": "M2x6",
+   "side": 1,
+   "slot_end": 1,
+   "middle_tried": [],
+   "boss_y": 4.8,
+   "plate": [
+    -18.1,
+    21.9
+   ]
+  }
+ ],
+ "board_supports_dropped": [
+  [
+   -60.0,
+   -15.25,
+   -60.0,
+   0.0,
+   5.4,
+   7.4
+  ],
+  [
+   -60.0,
+   -15.25,
+   -60.0,
+   0.0,
+   -32.95,
+   -30.95
+  ],
+  [
+   -60.0,
+   -18.65,
+   -4.0,
+   4.7,
+   -32.95,
+   -30.95
+  ]
+ ],
+ "side_fills": [
+  {
+   "part": "base",
+   "side": 1,
+   "y_at_wall": 2.7
+  }
+ ],
+ "shell": {
+  "base": {
+   "pieces": 1,
+   "hollow_mm3": 44267,
+   "joined": [
+    [
+     7,
+     "X-",
+     0.5
+    ]
+   ]
+  },
+  "cover": {
+   "pieces": 1,
+   "hollow_mm3": 66529,
+   "joined": []
+  }
+ }
+}

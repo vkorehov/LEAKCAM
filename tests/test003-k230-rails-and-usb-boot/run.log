@@ -1,0 +1,14 @@
+15:43:14 test003-k230-rails-and-usb-boot: 12 metric rows MISSING: Boot, power-on -> app init (median / max of runs), This part's boot share, Test run time, Speed / rate against the top, Current floor / typical / peak, Voltage under load (min), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Features over the minimal image, Optimised build (-O3, LTO, -march)
+15:43:25 sample cycle 1 {'board': 34.9, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+15:43:40 sample cycle 2 {'board': 34.3, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+15:43:55 sample cycle 3 {'board': 33.8, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+15:44:10 sample cycle 4 {'board': 33.3, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+15:44:25 sample cycle 5 {'board': 32.9, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+15:44:40 sample cycle 6 {'board': 32.5, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+15:44:55 sample cycle 7 {'board': 32.2, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+15:45:10 sample cycle 8 {'board': 31.9, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+15:45:24 boot NO CONSOLE
+15:45:24 OBSTACLE K230 cold boot did not reach msh within 3 s (milestones {})
+15:45:30 >>> METER test003-k230-rails-and-usb-boot: K230 rails on, held in reset - reading in amps to /home/vkorehovs/.leakcam_meter
+15:46:52 no meter reading for K230 rails on, held in reset
+15:46:54 test003-k230-rails-and-usb-boot: PASS; filled 7: Test run time, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Boot, power-on -> app init (median / max of runs), This part's boot share, Speed / rate against the top, Per day; still MISSING 5: Current floor / typical / peak, Voltage under load (min), Power, energy per operation, Features over the minimal image, Optimised build (-O3, LTO, -march)

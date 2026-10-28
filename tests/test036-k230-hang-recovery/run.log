@@ -1,0 +1,14 @@
+16:16:03 test036-k230-hang-recovery: 14 metric rows MISSING: Boot, power-on -> READY (median of 5), This part's boot share, Test run time, time to rails off after a hang, Current idle / during (min / avg / peak), Voltage under load (min), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Image (sizes), Compile flags, Features over the minimal image, Optimised build (-O3, LTO, -march)
+16:16:38 sample normal 1 {'board': 29.6, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+16:17:14 sample normal 2 {'board': 30.6, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+16:17:50 sample normal 3 {'board': 31.5, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+16:18:04 sample hang 1 {'board': 31.5, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+16:18:19 sample hang 2 {'board': 31.4, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+16:18:33 sample hang 3 {'board': 31.3, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+16:19:14 sample reboot 1 {'board': 32.0, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+16:19:54 sample reboot 2 {'board': 32.7, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+16:20:34 sample reboot 3 {'board': 33.3, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+16:20:57 sample noboot 1 {'board': 33.1, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+16:21:20 sample noboot 2 {'board': 33.0, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+16:21:43 sample noboot 3 {'board': 32.8, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0)}
+16:21:48 test036-k230-hang-recovery: PASS; filled 10: Test run time, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Compile flags, Image (sizes), time to rails off after a hang, Boot, power-on -> READY (median of 5), This part's boot share, Power, energy per operation, Per day; still MISSING 4: Current idle / during (min / avg / peak), Voltage under load (min), Features over the minimal image, Optimised build (-O3, LTO, -march)

@@ -1,0 +1,13 @@
+16:32:10 test013-kpu-change-net: 12 metric rows MISSING: Boot, power-on -> app init (median / max of runs), This part's boot share, Test run time, Speed / rate against the top, Current floor / typical / peak, Voltage under load (min), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Features over the minimal image, Optimised build (-O3, LTO, -march)
+16:32:18 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.45 msh 0.46
+16:32:24 sample idle {'board': 31.8, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': 39.458, 'k_free': (7025152, 1390848), 'vbat': 4366}
+16:32:29 sample run 1 {'board': 31.8, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': 39.76, 'k_free': (7025152, 1723200), 'vbat': 4386}
+16:32:34 sample run 2 {'board': 31.9, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': 39.76, 'k_free': (7025152, 1723200), 'vbat': 4369}
+16:32:39 sample run 3 {'board': 32.0, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': 40.365, 'k_free': (7025152, 1723200), 'vbat': 4362}
+16:32:44 sample run 4 {'board': 32.2, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': 41.573, 'k_free': (7312064, 1723200), 'vbat': 4354}
+16:32:48 sample run 5 {'board': 32.4, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': 42.177, 'k_free': (7312064, 1723200), 'vbat': 4377}
+16:32:53 sample run 6 {'board': 32.6, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': 41.573, 'k_free': (7312064, 1723200), 'vbat': 4357}
+16:32:58 sample run 7 {'board': 32.7, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': 41.875, 'k_free': (7312064, 1723200), 'vbat': 4366}
+16:33:03 sample run 8 {'board': 32.8, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': 42.479, 'k_free': (7312064, 1723200), 'vbat': 4348}
+16:33:03 meter K230 running leakcam_kputest 50 over and over: not asked (LEAKCAM_METER=ask to be prompted)
+16:33:05 test013-kpu-change-net: PASS; filled 8: Boot, power-on -> app init (median / max of runs), Test run time, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Voltage under load (min), Current floor / typical / peak, Speed / rate against the top, This part's boot share; still MISSING 4: Power, energy per operation, Per day, Features over the minimal image, Optimised build (-O3, LTO, -march)

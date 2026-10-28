@@ -1,8 +1,7 @@
-data/
 build/
 pyenv/
 dotnet/
 qemu11/
 keras_home/
-gmodel_dump_dir/
 *.log
+!gmodel_dump_dir/*/gmodel.bin

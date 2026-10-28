@@ -1,0 +1,12 @@
+17:16:30 test017-nand-raw-speed: 2 metric rows MISSING: Optimised build (-O3, LTO, -march), Power, energy per operation
+17:16:38 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.48 msh 0.48
+17:16:44 sample idle {'board': 34.2, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 42.78, 'k_free': (7025152, 1390848), 'vbat': 4344}
+17:16:49 sample run 1 {'board': 34.1, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 43.082, 'k_free': (7025152, 1390848), 'vbat': 4351}
+17:16:54 sample run 2 {'board': 34.1, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 43.082, 'k_free': (7025152, 1390848), 'vbat': 4360}
+17:16:59 sample run 3 {'board': 34.2, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 43.082, 'k_free': (7025152, 1390848), 'vbat': 4348}
+17:17:03 sample run 4 {'board': 34.3, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 43.384, 'k_free': (7312064, 1520704), 'vbat': 4355}
+17:17:08 sample run 5 {'board': 34.4, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 43.987, 'k_free': (7312064, 1520704), 'vbat': 4371}
+17:17:13 sample run 6 {'board': 34.5, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 44.891, 'k_free': (7312064, 1520704), 'vbat': 4349}
+17:17:18 sample run 7 {'board': 34.7, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 43.987, 'k_free': (7312064, 1520704), 'vbat': 4363}
+17:17:22 sample run 8 {'board': 34.8, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 44.589, 'k_free': (7312064, 1520704), 'vbat': 4339}
+17:17:24 test017-nand-raw-speed: PASS; filled 1: Power, energy per operation; still MISSING 1: Optimised build (-O3, LTO, -march)

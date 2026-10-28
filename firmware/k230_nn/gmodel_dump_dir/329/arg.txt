@@ -1,0 +1,7 @@
+gmodel_dump_dir/329/gmodel.bin
+231576
+231772
+57600
+"gmodel_dump_dir/329"
+4
+wait-key

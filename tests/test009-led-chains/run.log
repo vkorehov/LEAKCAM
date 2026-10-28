@@ -1,0 +1,23 @@
+16:55:40 test009-led-chains: 12 metric rows MISSING: Boot, power-on -> app init (median / max of runs), This part's boot share, Test run time, Speed / rate against the top, Current floor / typical / peak, Voltage under load (min), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Features over the minimal image, Optimised build (-O3, LTO, -march)
+16:55:48 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.48 msh 0.49
+16:55:54 sample off {'board': 33.7, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 41.573, 'k_free': (7025152, 1390848), 'vbat': 4372}
+16:56:03 sample white 25 % {'board': 33.7, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 43.384, 'k_free': (7025152, 1390848), 'vbat': 4359}
+16:56:15 sample white 50 % {'board': 33.9, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 44.288, 'k_free': (7312064, 1520704), 'vbat': 4347}
+16:56:25 sample white 100 % {'board': 34.5, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 43.987, 'k_free': (7312064, 1520704), 'vbat': 4114}
+16:56:35 sample IR 25 % {'board': 34.9, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 44.891, 'k_free': (7312064, 1520704), 'vbat': 4366}
+16:56:44 sample IR 50 % {'board': 35.0, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 44.891, 'k_free': (7312064, 1520704), 'vbat': 4343}
+16:56:53 sample IR 100 % {'board': 35.3, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 44.891, 'k_free': (7312064, 1520704), 'vbat': 4106}
+16:57:06 sample both 100 % 0 s {'board': 36.2, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 45.192, 'k_free': (7312064, 1520704), 'vbat': 4063}
+16:57:18 sample both 100 % 10 s {'board': 37.1, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 46.396, 'k_free': (7312064, 1520704), 'vbat': 4060}
+16:57:30 sample both 100 % 20 s {'board': 37.7, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 47.299, 'k_free': (7312064, 1520704), 'vbat': 4045}
+16:57:43 sample both 100 % 30 s {'board': 38.3, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 47.9, 'k_free': (7312064, 1520704), 'vbat': 4069}
+16:57:55 sample both 100 % 40 s {'board': 38.8, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.201, 'k_free': (7312064, 1520704), 'vbat': 4064}
+16:58:07 sample both 100 % 50 s {'board': 39.2, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.201, 'k_free': (7312064, 1520704), 'vbat': 4057}
+16:58:19 sample both 100 % 60 s {'board': 39.6, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 47.9, 'k_free': (7312064, 1520704), 'vbat': 4072}
+16:58:32 sample both 100 % 70 s {'board': 40.0, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.201, 'k_free': (7312064, 1520704), 'vbat': 4061}
+16:58:44 sample both 100 % 80 s {'board': 40.2, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 47.9, 'k_free': (7312064, 1520704), 'vbat': 4043}
+16:58:56 sample both 100 % 90 s {'board': 40.5, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.201, 'k_free': (7312064, 1520704), 'vbat': 4005}
+16:59:08 sample both 100 % 100 s {'board': 40.8, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.201, 'k_free': (7312064, 1520704), 'vbat': 4010}
+16:59:21 sample both 100 % 110 s {'board': 41.0, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.201, 'k_free': (7312064, 1520704), 'vbat': 4017}
+16:59:25 sample off again {'board': 41.2, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 48.201, 'k_free': (7312064, 1520704), 'vbat': 4317}
+16:59:27 test009-led-chains: PASS; filled 6: Boot, power-on -> app init (median / max of runs), Test run time, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Voltage under load (min), This part's boot share; still MISSING 6: Speed / rate against the top, Current floor / typical / peak, Power, energy per operation, Per day, Features over the minimal image, Optimised build (-O3, LTO, -march)

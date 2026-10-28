@@ -11,7 +11,6 @@ History
 tools/jlcpcb-cart/node_modules/
 tools/ali-research/node_modules
 tools/jlcpcb-cart/cart_api.json
-tools/jlcpcb-cart/package-lock.json
 *.json
 *.csv
 *.ldb
@@ -146,5 +145,10 @@ tools/jlcpcb-cart/package-lock.json
 ~$*
 __pycache__/
 
-# run_tests.py console logs (raw, overwritten each run; the results go into the README)
-tests/*/run.log
+# kept in git despite the patterns above (user, 2026-10-28: everything but tool installs, download caches and build
+# output): test run logs, fab outputs, reports, lock files, prebuilt test images
+!tests/*/run.log
+!/Project Outputs for LEDS panel/*.csv
+!/mechanical/enclosure/form_report.json
+!/tools/jlcpcb-cart/package-lock.json
+!/tools/power-bringup/k230_hello/k230_hello.bin

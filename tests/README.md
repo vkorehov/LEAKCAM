@@ -34,7 +34,7 @@ tests are re-run).
 
 **Automated runs (2026-10-25, user: "aiming at automating all"):** a test with a `run.py` runs unattended through
 PR1 alone; `tools/test-standard/run_tests.py [testNNN ...]` runs them one after another (in the order given; a fresh
-process each, output in the test's `run.log`, not kept in git) and `check_tests.py` after each. The shared
+process each, output in the test's `run.log`, kept in git) and `check_tests.py` after each. The shared
 `tools/test-standard/harness.py` times the K230 cold boot from its console milestones and samples die / board
 temperature, VBAT (K230 ADC, test023 calibration), memory on both chips (leak verdict from 8 snapshots) after each
 step; it writes **only cells that still say MISSING** (readings already recorded, the user's meter readings above

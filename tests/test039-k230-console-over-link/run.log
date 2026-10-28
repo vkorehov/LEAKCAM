@@ -1,0 +1,17 @@
+17:56:03 test039-k230-console-over-link: 0 metric rows MISSING: none
+17:56:14 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.46 msh 0.47
+17:56:45 sample boot 1 {'board': 28.6, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 39.458, 'k_free': (7312064, 1520704), 'vbat': 4360}
+17:56:56 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.46 msh 0.47
+17:57:22 sample boot 2 {'board': 29.2, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 39.458, 'k_free': (7312064, 1520704), 'vbat': 4333}
+17:57:33 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.46 msh 0.47
+17:58:04 sample boot 3 {'board': 30.0, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 38.551, 'k_free': (7312064, 1520704), 'vbat': 4337}
+17:58:15 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.46 msh 0.47
+17:58:45 sample boot 4 {'board': 30.0, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 39.76, 'k_free': (7312064, 1520704), 'vbat': 4353}
+17:58:45 OBSTACLE lost `version` answer, raw: boot 1 command 178 (29 s into the run): 'leakcam_agent: READY not answered\nleakcam_agent: READY not answered\nleakcam_agent: READY not answered\nleakcam_agent: READY not answered\n'
+17:58:45 OBSTACLE lost `version` answer, raw: boot 1 command 238 (37 s into the run): 'cap: dev 0 init failed (sensor not answering on its I2C bus?)\ncapture failed\nleakcam_agent: hook exited 0, next wake in 3600 s\nleakcam_agent: SLEEP not answered\nleakcam_agent: done, heartbeat stopped\n'
+17:58:45 OBSTACLE lost `version` answer, raw: boot 2 command 133 (68 s into the run): 'leakcam_agent: READY not answered\nleakcam_agent: READY not answered\nleakcam_agent: READY not answered\n'
+17:58:45 OBSTACLE lost `version` answer, raw: boot 3 command 112 (104 s into the run): 'leakcam_agent: READY not answered\nleakcam_agent: READY not answered\nleakcam_agent: READY not answered\n'
+17:58:45 OBSTACLE lost `version` answer, raw: boot 3 command 209 (114 s into the run): 'ason: cold\n[W/LWP] not use fast load, out of memory 8388608 < 15543000\nvicap: dev 0 init failed (sensor not answering on its I2C bus?)\ncapture failed\nleakcam_agent: hook exited 0, next wake in 3600 s\n'
+17:58:45 OBSTACLE lost `version` answer, raw: boot 4 command 204 (151 s into the run): 'leakcam_agent: READY not answered\nleakcam_agent: READY not answered\nleakcam_agent: READY not answered\nleakcam_agent: READY not answered\n'
+17:58:45 OBSTACLE lost `version` answer, raw: boot 4 command 248 (158 s into the run): 'cap: dev 0 init failed (sensor not answering on its I2C bus?)\ncapture failed\nleakcam_agent: hook exited 0, next wake in 3600 s\nleakcam_agent: SLEEP not answered\nleakcam_agent: done, heartbeat stopped\n'
+17:58:47 test039-k230-console-over-link: FAIL; filled 0: -; still MISSING 0: -

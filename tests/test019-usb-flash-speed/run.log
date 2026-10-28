@@ -1,0 +1,13 @@
+09:07:45 test019-usb-flash-speed: 0 metric rows MISSING: none
+09:08:15 BL616 port missing
+09:08:46 BL616 port missing
+09:09:16 BL616 port missing
+Traceback (most recent call last):
+  File "/home/vkorehovs/k230d-hw/LEAKCAM/tests/test019-usb-flash-speed/run.py", line 14, in <module>
+    r.boot(boot1="high", until=b"zzz", secs=3, expect_msh=False)
+  File "/home/vkorehovs/k230d-hw/LEAKCAM/tests/test019-usb-flash-speed/../../tools/test-standard/harness.py", line 102, in boot
+    cmd(self.fd, None, 0.3)
+  File "/home/vkorehovs/k230d-hw/LEAKCAM/tools/power-bringup/board.py", line 53, in cmd
+    if select.select([fd], [], [], 0.05)[0]:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: argument must be an int, or have a fileno() method.
