@@ -8,9 +8,12 @@ from orca_api_token.txt next to this file (not in git). Anyone who can reach the
 the LAN.
 """
 import argparse
+import asyncio
 import contextlib
 import os
 import socket
+import subprocess
+import tempfile
 
 from mcp.server.transport_security import TransportSecuritySettings
 
@@ -28,6 +31,44 @@ def own_names():
     return names
 
 
+
+def own_console():
+    """this server's pids up to start.bat's cmd.exe (python, cmd): only these, never OrcaSlicer (start.bat
+    starts it with start, so it is a child of that cmd, not an ancestor, and it keeps running)"""
+    out = subprocess.run(["powershell", "-NoProfile", "-Command",
+                          "Get-CimInstance Win32_Process | % { '{0} {1} {2}' -f $_.ProcessId,$_.ParentProcessId,$_.Name }"],
+                         capture_output=True, text=True, timeout=60).stdout
+    procs = {int(p): (int(pp), n.lower()) for p, pp, n in (l.split(" ", 2) for l in out.splitlines() if l.strip())}
+    pids, pid = [], os.getpid()
+    while pid in procs and procs[pid][1] in ("python.exe", "py.exe", "cmd.exe"):
+        pids.append(pid)
+        pid = procs[pid][0]
+    return pids
+
+
+def add_restart(mcp):
+    from mcp.server.mcpserver.exceptions import ToolError
+
+    @mcp.tool()
+    async def restart() -> str:
+        """Restart this MCP server in a new console window in ~3 s: start.bat pulls the repo and reinstalls the
+        package first (use it after pushing a server fix). Runs as a Windows scheduled task, so it is not killed
+        with the server; OrcaSlicer and its plate stay open. Calls fail until the server is back (~15 s); the
+        client reconnects by itself."""
+        pids = await asyncio.to_thread(own_console)
+        bat = os.path.join(tempfile.gettempdir(), "orcaslicer_mcp_restart.bat")
+        with open(bat, "w") as f:
+            f.write("@echo off\r\ntimeout /t 3 /nobreak >nul\r\n"
+                    f"taskkill /F {' '.join(f'/PID {p}' for p in pids)} >nul 2>&1\r\n"
+                    f'start "orcaslicer-mcp" /D "{HERE}" cmd /k start.bat\r\n')
+        task = ["/tn", "orcaslicer-mcp-restart"]
+        for args in (["/create", *task, "/tr", bat, "/sc", "once", "/st", "00:00", "/f"], ["/run", *task]):
+            r = await asyncio.to_thread(subprocess.run, ["schtasks", *args], capture_output=True, text=True, timeout=60)
+            if r.returncode:
+                raise ToolError(f"schtasks {args[0]} failed: {(r.stderr or r.stdout).strip()}")
+        return f"restarting in ~3 s (ending pids {pids}); start.bat pulls and reinstalls first"
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--host", default="0.0.0.0")
@@ -40,6 +81,7 @@ def main():
     if not os.environ.get("ORCA_API_TOKEN"):
         raise SystemExit(f"no Remote API token: put it (OrcaSlicer Preferences > Remote API) into {token_file}")
     from orcaslicer_mcp.server import mcp     # after the token is set
+    add_restart(mcp)
     names = own_names() | set(a.allow_host)
     print("accepting Host:", ", ".join(sorted(names)), flush=True)
     print(f"OrcaSlicer MCP on http://{a.host}:{a.port}/mcp", flush=True)
