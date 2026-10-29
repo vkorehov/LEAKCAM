@@ -1,6 +1,7 @@
 # test027: H.265 encoder with synthetic frames
 
-Status: **pass** (2026-10-21): 2 x 15 fps at the product settings, encoder top ~83 fps at 1280x960 (2.8x margin), the stream decodes on the PC.
+Status: **pass** (2026-10-25): 2 x 15 fps at the product settings (511 / 510 kbit/s); 1-channel top 75.9 fps (84.2 fps on
+2026-10-21, open), 2-channel top 82.0 fps (2026-10-21); the stream decodes on the PC (2026-10-21).
 
 The heaviest job of a leak session: two H.265 streams, 1280x960, 15 fps, ~500 kbit/s each (DESIGN.md). The
 encoder can be fed synthetic frames, so speed and memory can be measured before the cameras arrive.
@@ -31,42 +32,27 @@ MPP VENC (H.265), venctest (temporary), VPU clock.
 Both channels hold 15 fps with margin, memory leaves room for the change net and the network stack, the stream
 decodes and keeps the rate and IDR interval.
 
-## Results (2026-10-21, test image flashed 20:42:38-20:43:11, NAND boot 20:44:36)
+## Result
 
-Console logs: [run1.log](run1.log), [run2.log](run2.log), [run3.log](run3.log) (the 1586 enqueue-failure lines of run 3 left out).
+- **15 fps holds on both channels with the product settings** (H.265 Main CBR 500 kbit/s, GOP 150): ch0 15.0 fps
+  511 kbit/s, ch1 15.0 fps 510 kbit/s (2026-10-25, run.py); the CBR keeps 500 kbit/s within 2 %, IDR every 149-150
+  frames, send-to-stream 10 ms avg / 38 ms max on one channel (2026-10-21).
+- The encoder is cheap: +2 mA for one channel, +15 mA for two (x 4.15 V: +8 / +62 mW); no measurable heat in 20 s
+  (2026-10-21).
+- Encoder top at 1280x960 H.265: 1 channel **75.9 fps** (2535 kbit/s, 2026-10-25, run.py); 2 channels 41.3 + 40.7 =
+  **82.0 fps**, latency 17-18 ms avg / 175-205 ms max, 0 send failures (2026-10-21). Bit rate scales with the frame
+  rate at max rate because CBR is set for 15 fps.
+- `kd_mpi_venc_send_frame(..., -1)` does not block when the encoder's input queue is full, it fails at once
+  ("venc_input_enqueue>failed"): the feed keeps at most 3 frames in flight and backs off 2 ms after a failed send
+  (2026-10-21).
+- The bit rate starts high (363 KB in the first second: the first IDR and CBR settling), then 22-90 KB/s (2026-10-21).
+- Decode check: `venctest 1 1 15` -> [venc0_1s.h265](venc0_1s.h265) (367,574 B, 1 IDR + 14 P); ffprobe: hevc Main,
+  1280x960, yuv420p, 16 frames; `ffmpeg -f null` decodes with no error; frames 0 and 14
+  ([decoded_frames_0_14.jpg](decoded_frames_0_14.jpg)) show the input pattern at its position: pass (2026-10-21).
 
-| Run | Time | Result | Meter (USB-C 1) | Die |
-|---|---|---|---|---|
-| idle (msh) | 20:44 | - | 205 mA | 47.9 C |
-| 1: 1 channel, 15 fps, 20 s | 20:44:53-20:45:15 | 15.0 fps, 510 kbit/s, IDR every 150 frames, send-to-stream 10 ms avg / 38 ms max | 207 mA | 48.5 C after |
-| 2: 2 channels, 15 fps, 20 s | 20:45:24-20:45:47 | 15.0 / 14.9 fps, 511 / 508 kbit/s, IDR every 149; SDK: "Average FrameRate = 15 Fps" each | 220 mA, peaks 240-245 | 47.9 C after |
-| idle | after run 2 | - | 205 mA | |
-| 3: 2 channels, as fast as possible, 15 s | 20:46:00-20:46:30 | **hung**: send_frame queue full ("venc_input_enqueue>failed" x 1586), channel 1 no output, program never ended; K230 power-cycled 20:47 | 220 mA, no peak | - |
-| after the power cycle | 20:47 | - | 217 mA (booting) | |
-| 4: 1 channel, max rate (3 in flight), 15 s | 20:50:15-20:50:30 | **84.2 fps**, 0 send failures, IDR every 149-150, latency 20 ms avg / 82 max | 270 mA (during 4-5, not split) | |
-| 5: 2 channels, max rate, 15 s | 20:50:30-20:50:46 | **41.3 + 40.7 = 82.0 fps**, latency 17-18 ms avg / 175-205 max | | |
-
-- **15 fps holds on both channels with the product settings** and the CBR keeps 500 kbit/s within 2 %; the encoder is
-  cheap: +2 mA for one channel, +15 mA for two (x 4.15 V: +8 / +62 mW).
-- **Encoder top: ~83 fps at 1280x960 H.265**, shared by the channels (84 for one, 82 for two): the product's 2 x 15 =
-  30 fps is 36 % of it (2.8x margin). Runs 4-5 with the fixed venctest (logs run4/run5); bit rate scales with the
-  frame rate there because CBR is set for 15 fps.
-- The bit rate starts high (363 KB in the first second: the first IDR and CBR settling), then 22-90 KB/s.
-
-**Decode check (20:51-21:12):** `venctest 1 1 15` -> /sdcard/venc0.h265, 367,574 B (1 s: 1 IDR + 14 P), taken off the
-board with msh `hexdump` over the console (~11 KB/s, 2.5 min per dump) and rebuilt with
-[tools/k230-console/unhexdump.py](../../tools/k230-console/unhexdump.py) from two dumps (22,825 and 22,956 of 22,974
-lines good, 0 disagreeing, 0 missing in both): [venc0_1s.h265](venc0_1s.h265). ffprobe: hevc Main, 1280x960, yuv420p,
-16 frames; `ffmpeg -f null` decodes with no error. Frames 0 and 14 ([decoded_frames_0_14.jpg](decoded_frames_0_14.jpg)):
-the generated gradient, chroma columns, noise band, and the square at the input pattern's position (frame 14 =
-pattern 6, x 240 y 150). **Pass.**
-
-### Automated run 2026-10-25 (run.py, 63 s): pass
-
-2 x 15 fps: ch0 15.0 fps 511 kbit/s, ch1 15.0 fps 510 kbit/s; 1 channel max: ch0 75.9 fps 2535 kbit/s.
-
-The 1-channel top is 10 % below 2026-10-21's 84.2 fps (DDR is faster since, 3200 vs 2667): to explain - one 15 s
-run here against one there; repeat several times before calling it a regression (the product needs 2 x 15).
+Open:
+- The 1-channel top is 10 % below 2026-10-21's 84.2 fps although DDR is faster since (3200 vs 2667): one 15 s run each;
+  repeat several times before calling it a regression (the product needs 2 x 15).
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
@@ -76,8 +62,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 |---|---|---|---|
 | Boot, power-on -> READY (median of 5) | pt_run -> msh 0.47 / 0.47 s (median / max of 1; SPL 0.16, OpenSBI 0.24, RT-Smart 0.25, mounted 0.46, msh 0.47); longest step to mounted 0.21 s (2026-10-25, run.py) | target (test022) | longest step: |
 | This part's boot share | n/a: the encoder starts in the program (2026-10-25) | - | |
-| Test run time | runs 20:44:53-20:46:30 | - | setup 20:33-20:44: write, 2 builds (one failed), flash 33 s, boot |
-| encoder fps, bitrate | 2 x 15 fps at 510 kbit/s each; top 84 fps (1 ch) / 82 fps (2 ch) | VPU 800 MHz | product load = 36 % of the top |
+| Test run time | 63 s automated (run.py, 2026-10-25), no setup | - | setup (flashing, plugging, waiting) separately |
+| encoder fps, bitrate | 2 x 15 fps at 511 / 510 kbit/s (2026-10-25); top 75.9 fps 1 ch (2026-10-25) / 82 fps 2 ch (2026-10-21) | VPU 800 MHz | product load 2 x 15 = 30 fps |
 | Current idle / during | 205 / 207 (1 ch) / 220 mA, peaks 245 (2 ch) / 270 mA at max rate | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT ~4.15 V |
 | Voltage under load (min) | VBAT 4.36 V min (K230 ADC ch 1, test023 calibration, 3 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | 2 channels: +62 mW over idle; a 5 s two-camera clip +0.31 J (21 uAh) for the encoder alone | - | by hand |
@@ -96,23 +82,3 @@ Encoder / media stack init time (VB pools, VENC) at boot or at first use.
 ## Battery energy
 
 Battery current with one and two encoder channels running; energy per second of clip (two cameras, 15 fps).
-
-## Obstacles
-
-- **First build failed: `k_venc_attr` has no `stream_buf_size` / `stream_buf_cnt`** (my mistake: fields assumed, not
-  read from this SDK's k_venc_comm.h) -> removed; the stream buffers come from the attached VB pool.
-- **Run 3 (max rate) hung the K230 shell** (my bug) -> `kd_mpi_venc_send_frame(..., -1)` does not block when the
-  encoder's input queue is full, it fails at once ("venc_input_enqueue>failed"); the feed loop spun on it, flooded the
-  console and channel 1 never produced a frame -> fix: in max mode keep at most 3 frames in flight (feed waits for the
-  drain), back off 2 ms after a failed send; latency by pts. Redone as runs 4-5: 0 failures.
-- **"vicap: video buffer pools failed (MMZ too small?) / capture failed" during run 1** -> the agent's test hook
-  tried to capture while venctest held the VB pools; not from venctest, expected while it runs.
-- **Run 2's latency (110 ms avg) is not a real figure** -> latency pairs frames by count; one dropped frame shifts all
-  later ones by 67 ms -> use per-frame pts in the redo.
-- **Console dumps lose lines** (msh `hexdump`, 2026-10-21) -> the first dump had a stale reader for its first
-  seconds (my mistake again: the `ls` step's `cat` still open), the second ran while the first dump's 330 s reader
-  was still open (unusable); a clean single-reader dump still drops ~16 lines in 23k and can garble one into a line
-  that parses -> unhexdump.py checks each line's ASCII column and merges dumps; always list and kill earlier readers
-  (by PID) before a capture.
-
-None in the run of 2026-10-25.

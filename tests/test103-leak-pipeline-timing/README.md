@@ -1,6 +1,7 @@
 # test103: Whole leak pipeline, end to end
 
-Status: **later** (excluded for now, user 2026-10-21): needs the cameras, Wi-Fi and the product BL616 firmware.
+Status: **later** (2026-10-21): not run yet; excluded for now (user): needs the cameras, Wi-Fi and the product BL616
+firmware.
 
 Every part measured on its own (KPU 0.5 ms, SDIO, NAND, encoder): the time from a wake to the server's answer,
 with everything running together.
@@ -25,7 +26,7 @@ tests is what the minimal image keeps).
 
 Recorded timeline; the longest step named; the leak-to-video time within what the user expects.
 
-## Results
+## Result
 
 Not run yet.
 
@@ -58,6 +59,3 @@ Boot share of the leak-to-video time (test022).
 
 Energy per leak event, wake to clip uploaded and power-off.
 
-## Obstacles
-
-None yet.

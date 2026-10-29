@@ -1,12 +1,18 @@
-# test006: K230 NAND boot (SPL), 2026-10-17
+# test006: K230 NAND boot (SPL)
 
-Status: **pass** (2026-10-17).
+Status: **pass** (2026-10-25): 5 of 5 cold boots from NAND (SPL, DDR trained at 2667, OpenSBI, kernel, msh); reset
+release -> OpenSBI 0.24 s.
+
+The K230 boot ROM loads U-Boot SPL from the SPI NAND; SPL trains the DDR and loads OpenSBI and the kernel. The kernel
+after OpenSBI: test007.
 
 Boot straps: [boot_straps_board.png](boot_straps_board.png) (where), [boot_straps.png](boot_straps.png) (zoom).
 
 ## Setup
 
-**MISSING**; the setup is in the introduction above and in the Results.
+K230 boots from SPI NAND (BOOT1 low; BL616 `pt_boot1` drives it low by default). The image carries the plain
+`fn_u-boot-spl.bin` at offset 0 (genimage-spinand.cfg). BL616 test firmware switches the rails; run.py does the cold
+boots. Probes: Metrics.
 
 ## Needs (build features and dependencies)
 
@@ -16,38 +22,20 @@ K230 SPL: SPI NAND boot, DDR training (K230D_SIP_LPDDR4_2667), TOC.
 
 ## Steps
 
-**MISSING**; the steps are the rows of the Results tables.
+run.py: 5 cold boots from NAND (rails off 3 s between); each boot timed to the SPL banner, DDR training, OpenSBI,
+kernel and msh; meter readings with the K230 rails off and at msh idle.
 
 ## Pass
 
-**MISSING**; every Results row carries its pass / fail.
+SPL boots from NAND, DDR trains at 2667, OpenSBI and the kernel follow, msh comes up: on every cold boot.
 
-## Results
+## Result
 
-| Step | Result | |
-|---|---|---|
-| Full image, reset (BOOT1 low) | ROM: `boot failed with exit code 13` (file error in the boot medium) | **fail** |
-| BOOT1 read 0.5 V with IO27 parked; driven low (`pt_boot1`), ~0 V | still 13 | not the cause |
-| Plain SPL (`fn_u-boot-spl.bin`) at offset 0 | `U-Boot SPL 2022.10`, DDR training `Firmware run has completed 2667`, `Winbond SPI NAND was found`, `OpenSBI v0.9` | pass |
-
-**Pass:** SPL boots from NAND, DDR trains at 2667. The kernel after OpenSBI: test007.
-
-### Temperature
-
-Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
-
-### Automated run 2026-10-25 (run.py, 378 s): pass
-
-5 of 5 cold boots: SPL banner, DDR trained, OpenSBI, kernel, msh.
-
-- meter K230 rails off, BL616 test firmware awake on USB: 0.061 A
-- meter K230 at msh idle (agent running): 0.220 A
-
-### Automated run 2026-10-25 (run.py, 97 s): pass
-
-5 of 5 cold boots: SPL banner, DDR trained, OpenSBI, kernel, msh.
-
-- meter K230 at msh idle (agent running): 0.220 A (read in test006-k230-nand-boot-spl)
+- SPL boots from NAND, DDR trains at 2667, `Winbond SPI NAND was found`, OpenSBI v0.9 follows (first run
+  2026-10-17).
+- 5 of 5 cold boots reach msh; reset release -> OpenSBI 0.24 s, pt_run -> msh 0.45 s (2026-10-25, run.py).
+- The ROM needs the plain `fn_u-boot-spl.bin`, not the EVB's byte-swapped `swap_fn_u-boot-spl.bin`
+  (genimage-spinand.cfg; 2026-10-17).
 
 ## Metrics (**MISSING** on a re-run: skill leakcam-test-metrics, every value at its maximum)
 
@@ -72,19 +60,9 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 
 ## Boot time
 
-Not recorded (before the boot rule, 2026-10-21). If re-run: ROM -> SPL banner and SPL DDR training time (now part of test022).
+Metrics (2026-10-25, run.py, median / max of 5): reset release -> OpenSBI 0.24 / 0.24 s (ROM + SPL + DDR training +
+kernel load); pt_run -> msh 0.45 / 0.45 s. The whole boot is test022.
 
 ## Battery energy
 
-Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: superseded by test022 (boot energy).
-
-## Obstacles
-
-- **"boot failed with exit code 13"** = file error in the boot medium (19 = no medium) -> the ROM reads the NAND.
-- **BOOT1 at 0.5 V** -> BL616 IO27 floating -> `pt_boot1` drives it low by default (not the cause; bugs/v2.txt 7).
-- **Real cause** -> the EVB layout writes the byte-swapped `swap_fn_u-boot-spl.bin`; this ROM wants plain
-  `fn_u-boot-spl.bin` -> genimage-spinand.cfg changed.
-
-None in the run of 2026-10-25.
-
-None in the run of 2026-10-25.
+Metrics (2026-10-25): SPL stage 0.23 J, 15 uAh per boot; 0.06 mAh/day at 4 sessions. The whole boot: test022.

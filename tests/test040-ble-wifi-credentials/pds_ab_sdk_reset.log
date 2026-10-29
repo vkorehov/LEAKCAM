@@ -4,3 +4,15 @@
 21:23:32 BL616 port missing
 21:24:03 BL616 port missing
 21:24:03 CHECK FAIL cycle 2 console did not come back after the watchdog reset
+21:25:09 BL616 port missing
+21:25:39 BL616 port missing
+21:25:40 CHECK FAIL cycle 3 console did not come back after the watchdog reset
+21:26:10 BL616 port missing
+21:26:44 BL616 port missing
+21:27:15 BL616 port missing
+21:27:15 CHECK FAIL cycle 4 console did not come back after the watchdog reset
+21:27:45 BL616 port missing
+21:28:19 BL616 port missing
+21:28:50 BL616 port missing
+21:28:50 CHECK FAIL cycle 5 console did not come back after the watchdog reset
+21:28:50 sdk-reset: 0 of 5 cycles with USB kept

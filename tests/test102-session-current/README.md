@@ -1,6 +1,6 @@
 # test102: K230 session current
 
-Status: **planned** (2026-10-21).
+Status: **planned** (2026-10-21): not run yet.
 
 Battery life = sleep current x time + session energy x wakes. The K230 rails' current at idle, during the change
 net, the encoder and Wi-Fi.
@@ -17,8 +17,7 @@ paid on battery). A / 10 A input, 0.001 A. Rules (2026-10-21):
   200 mA and reset the board on current steps; autorange switching opens the path briefly.
 - **Meter in the red VBUS wire**, GND joined straight through: a meter in GND offsets the board's ground against the
   host and every USB device on the board (PR1, K230) fails.
-- **Check the mA fuse** of a borrowed meter: one with a burned fuse read nothing useful; shorting its leads "fixed"
-  the board. Readings from before the swap are void.
+- **Check the mA fuse** of a borrowed meter: with a burned fuse it reads nothing useful.
 - **Only one cable may carry power**: both USB-C ports feed VUSB, so with two plugged in the meter reads a share.
 - **Meter in after the port is up**: plug USB-C 1 with the meter leads shorted, wait until the board runs (D1 solid
   if charging), then open the short. With the meter in line at plug-in, the voltage sags at the port's switch-on
@@ -38,7 +37,7 @@ tests is what the minimal image keeps).
 
 ## Steps
 
-1. Rails off (BL616 only): sleep-level current (the BL616 test firmware does not hibernate: product firmware later).
+1. Rails off (BL616 only): sleep-level current (measured in test031: 35 uA on the battery, 2026-10-25).
 2. `pt_on` held in reset, booting, agent idle, KPU loop, encoder (test027), LEDs at 100 % (white, IR).
 3. Integrate over a typical session (test101) for the energy per wake.
 
@@ -46,7 +45,7 @@ tests is what the minimal image keeps).
 
 Recorded figures; energy per wake and the number of wakes a 1000 mAh cell allows.
 
-## Results
+## Result
 
 Not run yet.
 
@@ -78,7 +77,3 @@ Boot energy per wake from test022's timing x its current.
 ## Battery energy
 
 This test is the energy measurement of a session; its figures go into ENERGY.txt.
-
-## Obstacles
-
-None yet.

@@ -1,6 +1,7 @@
-# test013: KPU, change net (leakcam_change.kmodel), 2026-10-18/19
+# test013: KPU, change net (leakcam_change.kmodel)
 
-Status: **pass: int8 net, 0.5 ms per inference, threshold 0.43** (2026-10-18/19).
+Status: **pass** (2026-10-25): int8 net whole on the KPU, 0.5 ms per inference, one distance 2.9 ms median, output
+identical on every run; threshold 0.43 from the 219 real pairs (2026-10-19).
 
 The change net ([firmware/k230_nn](../../firmware/k230_nn/README.md)) on the KPU against the 15 check pairs of
 `make_embed.py` (`data/embed_pairs.npy` with TensorFlow's distances). Temporary test programs, in the SDK copy only
@@ -9,7 +10,9 @@ input), `leakcam_kmin` (a one-layer model with known output), Canaan's `yolov8_i
 
 ## Setup
 
-**MISSING**; the setup is in the introduction above and in the Results.
+The test image with `leakcam_kputest` on /sdcard (SDK copy only) and the factory int8 `leakcam_change.kmodel`
+(`compile_embed.py`); `CONFIG_RT_USING_REGULATOR` in `k230d_leakcam_defconfig`. Automated: run.py runs
+`leakcam_kputest 50` 8 times on synthetic frames. Probes: see Metrics.
 
 ## Needs (build features and dependencies)
 
@@ -19,67 +22,32 @@ KPU driver (gnne), nncase runtime, AI2D, the change-net kmodel; leakcam_wake.
 
 ## Steps
 
-**MISSING**; the steps are the rows of the Results tables.
+1. Load the kmodel (through a stream) and run the check pairs through `change_distance()`: distances against
+   TensorFlow, time per inference and per pair.
+2. All 219 `make_embed.py` pairs on the KPU: share of each pair kind above the threshold, threshold choice.
+3. Automated (run.py): 8 x `leakcam_kputest 50` on synthetic frames: time per distance, identical output.
 
 ## Pass
 
-**MISSING**; every Results row carries its pass / fail.
+Distances match TensorFlow closely (same / change separated as TF does), the whole net on the KPU, the output
+identical on every run.
 
-## Results
+## Result
 
-| Step | Result | |
-|---|---|---|
-| First run | hung in the first inference: the runtime waits in `poll()` (no timeout) for the KPU interrupt; the KPU was never powered | fixed |
-| Cause | `pm_core_init()` looks up `regulator_cpu`/`regulator_kpu`, which exist only with `CONFIG_RT_USING_REGULATOR` (dummy regulators; every Canaan board sets it); it failed before switching the KPU clock and power on | defconfig |
-| Canaan YOLOv8 example (`best.kmodel`, `test.jpg`) | banana 0.89, orange 0.86, apple 0.81: the KPU, its clock (PLL3/2 = 800 MHz), power and the runtime work | pass |
-| Minimal model (one 1x1 conv, 8x8x4), loaded from a memory buffer | output all 0, 0.05 ms | fail |
-| Same, loaded through a stream | A sum 191.5132, B 127.9264, A again identical: bit-exact to the nncase simulator | pass |
-| `leakcam_change.kmodel` (int16), stream-loaded | distances right (0.1787 / 0.3680 vs TF 0.179 / 0.368) but **6.3 s per inference** | slow |
-| KPU registers watched during one int16 inference | busy 34 ms, idle until 2.9 s, then short bursts with 0.2-0.8 s idle gaps, done at 6.4 s; timeout register 200000 (set by the runtime) | CPU layers |
-| int16 IR (`dump_ir`, after the quantise pass) | 40 convolutions left in **float32** (plain `Conv2D`, `f32` weights): run on the CPU; only 9 layer groups lowered to the KPU (`GNNE*`) | cause of the 6 s |
-| uint8 variant (217 KB) | 0.5 ms per inference, 23 ms per pair; vs TF max 0.060, mean 0.033; "same" pairs max 0.388 | pass |
-| int8 variant (211 KB) | 0.5 ms per inference, 23 ms per pair; vs TF max 0.078, mean 0.025; "same" pairs max 0.290 | pass |
+- int8 kmodel (211 KB) is the factory `leakcam_change.kmodel`: 0.5 ms per inference, 23 ms per pair, 4.4 ms per check
+  over the 219 pairs; vs TensorFlow mean 0.031, max 0.15 per pair, correlation 0.955 (2026-10-19, user chose int8).
+- Threshold **0.43** (`CHANGE_THRESHOLD`) from the int8 distances on the 219 real pairs: light 0 % and realdry 0 %
+  above it; wet 51 %, wet + light 40 %, small 25 % / small + light 12 %, wipe 53 % (TF at 0.44: 50 / 42 / 25 / 12 /
+  43 %) (2026-10-19).
+- One distance (2 inferences + cosine) 2.9 / 2.9 / 3.1 ms (min / median / max, 8 x 50), identical output every run,
+  no leak (run.py, 2026-10-25; synthetic frames: timing, not detection quality).
+- What it takes (2026-10-18/19): `CONFIG_RT_USING_REGULATOR` (else the KPU is never powered and the first inference
+  hangs); the kmodel loaded through a stream (a memory span gives zeros / NaN); int8, not int16 (int16 leaves 40
+  convolutions in float32 on the CPU: 6.3 s per inference); `change_distance()` returns -1 (change reported) on a
+  non-finite distance. The product image with the int8 net boots and the agent ends its session normally.
 
-Distances per pair (threshold 0.44):
-
-| Kind | TF | uint8 | int8 |
-|---|---|---|---|
-| light (same) | 0.179 0.368 0.172 | 0.140 0.388 0.222 | 0.146 0.290 0.165 |
-| realdry (same) | 0.156 0.178 0.005 | 0.128 0.144 0.015 | 0.110 0.153 0.038 |
-| wet (change) | 0.410 0.426 0.437 | 0.452 0.366 0.458 | 0.425 0.430 0.423 |
-| small (change) | 0.191 0.085 0.208 | 0.150 0.135 0.160 | 0.172 0.087 0.173 |
-| wipe (change) | 0.448 0.417 0.480 | 0.444 0.382 0.492 | 0.437 0.397 0.452 |
-
-**int8 chosen** (user, 2026-10-19). All 219 `make_embed.py` pairs on the KPU (4.4 ms per check):
-
-| Pair kind | n | int8 on the KPU, above 0.43 | TensorFlow, above 0.44 |
-|---|---|---|---|
-| light | 24 | max 0.400, 0 % | max 0.431, 0 % |
-| realdry | 5 | max 0.425, 0 % | max 0.348, 0 % |
-| wet | 72 | p50 0.432, 51 % | p50 0.441, 50 % |
-| wet + light | 72 | p50 0.419, 40 % | p50 0.428, 42 % |
-| small / small + light | 8 / 8 | 25 % / 12 % | 25 % / 12 % |
-| wipe | 30 | p50 0.435, 53 % | p50 0.422, 43 % |
-
-int8 vs TensorFlow: mean 0.031, max 0.15 per pair, correlation 0.955. Threshold from the int8 distances:
-**0.43** (`CHANGE_THRESHOLD`). The int8 kmodel is the factory `leakcam_change.kmodel` (`compile_embed.py` builds it);
-the product image with it boots and the agent ends its session normally.
-
-**Pass.**
-
-### Temperature
-
-Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
-
-### Automated run 2026-10-25 (run.py, 54 s): pass
-
-8 x leakcam_kputest 50: PASS, PASS, PASS, PASS, PASS, PASS, PASS, PASS; distance same 0.0000, light 0.0231, change 0.0694 (threshold 0.43).
-
-The frames are synthetic (two checkerboards with noise): the run times the KPU and shows identical output on
-every run; the distances are not detection quality (the synthetic change is far below the 0.43 threshold) - that
-stays the 219 real pairs of 2026-10-19 above.
-
-- meter K230 at msh idle (agent running): 0.220 A (read in test006-k230-nand-boot-spl)
+Open:
+- Energy per change check not measured (Power / Per day **MISSING**).
 
 ## Metrics (**MISSING** on a re-run: skill leakcam-test-metrics, every value at its maximum)
 
@@ -93,8 +61,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Speed / rate against the top | one distance (2 inferences + cosine) 2.9 / 2.9 / 3.1 ms (min / median / max, 8 x 50) (2026-10-25) | SPEEDS.txt | % of the top |
 | Current floor / typical / peak | 0.220 / 0.220 / 0.220 A at 5 V (USB-C 1 VBUS meter; K230 at msh idle (agent running): 0.220 A (read in test006-k230-nand-boot-spl)) (2026-10-25) | floor (test031) | at the probe above |
 | Voltage under load (min) | VBAT 4.35 V min (K230 ADC ch 1, test023 calibration, 9 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING** (2026-10-21); fill on a re-run | - | scripts/energy.py |
-| Per day | **MISSING** (2026-10-21); fill on a re-run | ENERGY.txt line | n per day |
+| Power, energy per operation | **MISSING**; fill on a re-run | - | scripts/energy.py |
+| Per day | **MISSING**; fill on a re-run | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | die 39.5 / 42.5 / 42.5 C; board 31.8 / 32.8 / 32.8 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
 | Memory BL616 / K230 (start / min / end), leak | BL616 free 208608 / min 204396 / 208608 B, blocks 14 -> 14, deleted 0; K230 heap available 7025152 / 7025152 / 7312064 B; BL616 no leak (mem_leak.py, 9 snapshots); K230 no leak (mem_leak.py, 9 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | not recorded at the time (before the metrics rule) | minimal image (rule) | the image this run used |
@@ -109,30 +77,3 @@ Not recorded (before the boot rule, 2026-10-21). If re-run: KPU power-up and kmo
 ## Battery energy
 
 Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: extra current during inference vs idle; energy per change check (4.4 ms per check).
-
-## Obstacles
-
-- **First inference hangs** -> KPU never powered: `pm_core_init()` fails without `CONFIG_RT_USING_REGULATOR` ->
-  added to `k230d_leakcam_defconfig` (dummy regulators; the core rails are fixed regulators).
-- **NaN, constant or zero outputs; int16 run 6.3 s** -> `change.cc` loaded the kmodel from a memory span: the
-  runtime then runs the caller's heap pages in place and the KPU (physical addresses) reads garbage. Canaan's
-  samples load from a stream, where the runtime copies the model into its own buffers -> `change_load()` loads
-  through a read-only `streambuf` over the bytes. Found with a one-layer model whose output is known exactly.
-- **NaN distance read as "light only"** -> NaN fails every comparison, so a broken net hid every change ->
-  `change_distance()` returns -1 (net failed, change reported) on a non-finite distance.
-- **Canaan's YOLOv8 example finds nothing** -> it decodes 3 classes, its `best.kmodel` has 80 (output 1x84x2100) ->
-  class count from the output shape (test copy only).
-- **Cache invalidate of the output** -> tried, no effect; not the cause.
-- **int16 net takes 6.3 s although correct** -> nncase's int16 PTQ for k230 left 40 convolutions in float32, which
-  run on the CPU; found by watching the KPU status/PC during a run (long idle gaps) and counting ops in the IR
-  (`dump_ir`, `6_QuantizePass/.../End_main.il`) -> int8, whole net on the KPU.
-- **219 pairs (34 MB) did not fit the 50 MB /sdcard image** -> genimage packed it without an error -> test image
-  built with a larger /sdcard in the SDK copy only; the product layout stays 50 MB.
-- **nncase compile aborts at once (`CompileOptionsSetInputShape`)** -> `input_shape` not set -> set it (and
-  `swapRB`) as `compile_embed.py` does.
-- **A crashed qemu compile left its container running for 20 min** -> `timeout` around `docker run` kills only the
-  client -> name the container, `docker stop <name>`; run with `-w /tmp` so a qemu core dump stays out of the repo.
-- **K230 USB boot device never reached the VM** -> plug order (bug-002): the CH340 attached first -> CH340 out,
-  USB-C 1 in, then `pt_on`, `pt_run`; CH340 back after the popup. (Since test039 the console is /dev/ttyACM1: no CH340.)
-
-None in the run of 2026-10-25.

@@ -11,7 +11,7 @@ A test's run.py:
     r.meter("msh idle")                 # asks for the USB meter only while the current row is MISSING
     ... the test's own operation, r.sample() after each step ...
     r.set("speed", "...")               # the test's own rows (key or a regex of the row name)
-    r.finish("result text", ok=True)    # fills MISSING cells, appends a dated Results subsection, switches off
+    r.finish("result text", ok=True)    # fills MISSING cells, the run + obstacles into HISTORY.md, switches off
 
 Keys: boot share runtime speed current voltage energy perday temp memory image flags features optimised, or a regex.
 Values the harness fills by itself when still MISSING: boot, runtime, temp, memory, voltage (VBAT on the K230 ADC,
@@ -286,6 +286,18 @@ class Run:
         return d
 
     # --- write back ----------------------------------------------------------------------------------------------
+    def history(self, run, obstacles):
+        """the run and its obstacles into HISTORY.md, newest first; the README keeps only what is current (its
+        Result and Status are written by hand from the run)"""
+        p = os.path.join(self.dir, "HISTORY.md")
+        h = open(p).read() if os.path.exists(p) else (f"# {self.name}: history\n\nEarlier runs, superseded findings "
+                                                      "and obstacles, newest first. Current state: README.md.\n\n"
+                                                      "## Runs\n\n## Obstacles\n")
+        h = h.replace("## Runs\n", "## Runs\n" + run + "\n", 1)
+        if obstacles:
+            h = h.replace("## Obstacles\n", "## Obstacles\n\n" + "\n".join(obstacles) + "\n", 1)
+        open(p, "w").write(h)
+
     def finish(self, result, ok=True, switch_off=True):
         if switch_off:
             self.off()
@@ -312,14 +324,9 @@ class Run:
                f"{'pass' if ok else '**FAIL**'}\n\n{result.strip()}\n")
         if self.notes:
             run += "\n" + "\n".join(f"- {n}" for n in self.notes) + "\n"
-        text = re.sub(r"(?ms)(^## Results[^\n]*\n.*?)(?=^## )", lambda m: m.group(1).rstrip("\n") + "\n" + run + "\n",
-                      text, count=1)
-        ob = "\n" + ("\n".join(f"- {o} ({self.date}, automated run)" for o in self.obstacles) or
-                     f"None in the run of {self.date}.")
-        text = re.sub(r"(?ms)(^## Obstacles[^\n]*\n)(.*?)(?=^## |\Z)",
-                      lambda m: m.group(1) + m.group(2).rstrip("\n") + "\n" + ob + "\n\n", text, count=1)
         open(self.readme, "w").write(text.rstrip("\n") + "\n")
+        self.history(run, [f"- {o} ({self.date}, automated run)" for o in self.obstacles])
         left = [n for n in self.missing if n not in filled]
         log(f"{self.name}: {'PASS' if ok else 'FAIL'}; filled {len(filled)}: {', '.join(filled) or '-'}; "
-            f"still MISSING {len(left)}: {', '.join(left) or '-'}")
+            f"still MISSING {len(left)}: {', '.join(left) or '-'}; run in HISTORY.md - README Status/Result by hand")
         return ok

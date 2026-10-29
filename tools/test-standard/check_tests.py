@@ -5,16 +5,20 @@
   check_tests.py --fix      add missing sections and metric rows as **MISSING**, turn the old placeholders
                             ("to fill", "not measured yet", ...) into **MISSING** (the hint after them is kept)
   check_tests.py testNNN    after a run of that test: exit 1 while its Metrics still hold a **MISSING**
+  check_tests.py --index    rewrite the test table of tests/README.md from every README's title and Status line
 
-Standard (user rule, 2026-10-24: all tests the same, missing metrics marked, none left after the next run):
-- Sections, in order: Setup, Needs, Steps, Pass, Results, Metrics, Boot time, Battery energy, Obstacles.
+Standard (user rule, 2026-10-24: all tests the same, missing metrics marked, none left after the next run; layout
+user, 2026-10-29: the README holds only what is current, history apart, product lessons in a skill):
+- README.md, sections in order: Setup, Needs, Steps, Pass, Result, Metrics, Boot time, Battery energy. A
+  "Status:" line under the title says the current verdict and its date. Result holds only the findings that hold
+  now (and what is still open); Metrics only current values. Nothing superseded, no run log, no obstacles.
 - The Metrics table carries every row of REQUIRED (variant names match; any other row is the test's own speed /
   rate row). A value is measured, or `n/a: <reason>` when the metric does not apply to that test, or **MISSING**.
 - A run of a test fills every **MISSING** of its Metrics (skill leakcam-test-metrics); `check_tests.py testNNN`
   says which are left.
-- Obstacles (user rule, 2026-10-24: document obstacles in every test): after a run the section holds its bullets
-  (problem -> how found -> cause -> fix -> where the fix lives) or a dated line "None in the run of <date>."; empty,
-  **MISSING** or the old "None yet." fails `check_tests.py testNNN`.
+- HISTORY.md: earlier runs, superseded findings and every obstacle (user rule, 2026-10-24: document obstacles),
+  newest first, under "## Runs" and "## Obstacles". An obstacle that matters for the product build also becomes a
+  rule in skill leakcam-product-build.
 """
 import glob
 import os
@@ -23,17 +27,16 @@ import sys
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tests")
 MISSING = "**MISSING**"
-SECTIONS = ["Setup", "Needs", "Steps", "Pass", "Results", "Metrics", "Boot time", "Battery energy", "Obstacles"]
+SECTIONS = ["Setup", "Needs", "Steps", "Pass", "Result", "Metrics", "Boot time", "Battery energy"]
 SECTION_HINT = {
     "Setup": "hookup, firmware / image, and the probes named in Metrics",
     "Needs": "the kernel options / drivers, SDK components, libraries and programs this test uses",
     "Steps": "the steps of the test",
     "Pass": "the pass criterion",
-    "Results": "dated runs as ### subsections",
+    "Result": "the current findings only (history: HISTORY.md)",
     "Metrics": "the full block of skill leakcam-test-metrics",
     "Boot time": "the boot time of this test's image and its share",
     "Battery energy": "current -> power -> energy per operation and per day",
-    "Obstacles": "problem -> cause -> fix, as it happens",
 }
 # (canonical row name, pattern a row name may match, top / budget, note)
 REQUIRED = [
@@ -161,19 +164,42 @@ def metrics_missing(text):
     return out + missing_rows(metric_rows(m.group(1)))
 
 
-def obstacles_ok(text):
-    m = re.search(r"^## Obstacles[^\n]*\n(.*?)(?=^## |\Z)", text, re.M | re.S)
-    if not m:
+def history_ok(readme):
+    """HISTORY.md next to the README, with its Runs and Obstacles sections"""
+    p = os.path.join(os.path.dirname(readme), "HISTORY.md")
+    if not os.path.exists(p):
         return False
-    body = m.group(1)
-    if MISSING in body or re.search(r"(?m)^None yet\.?\s*$", body):
-        return False
-    return bool(re.search(r"(?m)^- ", body) or re.search(r"None in the run of \d{4}-\d\d-\d\d", body))
+    h = open(p).read()
+    return "## Runs" in h and "## Obstacles" in h
+
+
+def index():
+    """the table between "| Test | Date | Result |" and the blank line after it, from each README's Status line"""
+    rows, high = [], []
+    for f in sorted(glob.glob(os.path.join(ROOT, "test*", "README.md"))):
+        t = open(f).read()
+        d = os.path.basename(os.path.dirname(f))
+        title = re.match(r"# (test(\d+)):\s*(.*)", t)
+        st = re.search(r"^Status:\s*(.*)$", t, re.M)
+        s = st.group(1).strip() if st else f"{MISSING}: no Status line"
+        m = re.match(r"(\*\*[^*]+\*\*)\s*\(([^)]*)\)\s*:?\s*(.*)", s)
+        date, res = (m.group(2), m.group(1) + (": " + m.group(3) if m.group(3) else "")) if m else ("", s)
+        (high if int(title.group(2)) >= 100 else rows).append(
+            f"| [{title.group(1)} {title.group(3)}]({d}/README.md) | {date} | {res} |")
+    table = ("| Test | Date | Result |\n|---|---|---|\n" + "\n".join(rows) +
+             "\n| **High level (100+): the product's whole flow** | | |\n" + "\n".join(high) + "\n")
+    p = os.path.join(ROOT, "README.md")
+    text = open(p).read()
+    text = re.sub(r"(?ms)^\| Test \| Date \| Result \|\n.*?\n\n", lambda _: table + "\n", text, count=1)
+    open(p, "w").write(text)
+    print(f"tests/README.md: {len(rows) + len(high)} tests indexed")
 
 
 def main():
     files = sorted(glob.glob(os.path.join(ROOT, "test*", "README.md")))
     args = sys.argv[1:]
+    if args == ["--index"]:
+        return index()
     if args and args[0] not in ("--fix",):
         want = [f for f in files if os.path.basename(os.path.dirname(f)).startswith(args[0])]
         if not want:
@@ -187,13 +213,12 @@ def main():
             for r in left:
                 print(f"  - {r}")
             bad = True
-        if not obstacles_ok(text):
-            print(f"{name}: Obstacles not documented for this run - a bullet per obstacle, or \"None in the run of "
-                  f"<date>.\"")
+        if not history_ok(want[0]):
+            print(f"{name}: HISTORY.md missing or without its Runs / Obstacles sections")
             bad = True
         if bad:
             sys.exit(1)
-        print(f"{name}: every metric filled, obstacles documented")
+        print(f"{name}: every metric filled, history kept")
         return
     total = 0
     for f in files:
@@ -206,8 +231,8 @@ def main():
         left = metrics_missing(text)
         total += len(left)
         name = os.path.basename(os.path.dirname(f))
-        obs = "ok" if obstacles_ok(text) else "NOT DOCUMENTED"
-        print(f"{name:45s} sections missing {len(secs)}  metrics MISSING {len(left):2d}  obstacles {obs}")
+        hist = "ok" if history_ok(f) else "MISSING"
+        print(f"{name:45s} sections missing {len(secs)}  metrics MISSING {len(left):2d}  history {hist}")
     print(f"{len(files)} tests, {total} metric values MISSING")
 
 

@@ -1,6 +1,6 @@
 # test101: session length (wake to power-off)
 
-Status: **planned** (2026-10-21).
+Status: **planned** (2026-10-21): not run yet.
 
 The whole session: wake, K230 boot (measured on its own in test022), READY, the agent's work, the heartbeat
 stopping, power-off. With test102 it decides the battery cost of a wake.
@@ -26,7 +26,7 @@ tests is what the minimal image keeps).
 Recorded: rails-on -> READY (median, max), and what dominates it (DDR training, NAND read, mounts); first
 candidates to shorten.
 
-## Results
+## Result
 
 Not run yet.
 
@@ -58,7 +58,3 @@ Boot is test022; this test adds the session after READY.
 ## Battery energy
 
 Energy per whole session (with test102): the number the budget multiplies by the wakes per day.
-
-## Obstacles
-
-None yet.

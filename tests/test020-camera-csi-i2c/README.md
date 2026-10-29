@@ -1,6 +1,6 @@
 # test020: Camera interfaces: CSI frame rate, I2C clock
 
-Status: **planned** (2026-10-21).
+Status: **planned** (2026-10-21): not run yet; waits for the cameras.
 
 After the cameras arrive (OV5647 on CSI0 / CSI2, I2C0 / I2C4).
 
@@ -25,7 +25,7 @@ I2C0/I2C4, CSI0/CSI2, VICAP, OV5647 sensor driver (CONFIG_MPP_ENABLE_SENSOR_OV56
 
 Both cameras at the design rate with no dropped frames for 10 min; I2C clean at the configured clock.
 
-## Results
+## Result
 
 Not run yet.
 
@@ -58,6 +58,3 @@ Sensor probe and init time at boot, both sensors (without cameras the probes fai
 
 Battery current with one and two sensors streaming (vs K230 idle); energy per second of capture and per still.
 
-## Obstacles
-
-None yet.

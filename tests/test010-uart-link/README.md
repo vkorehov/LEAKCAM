@@ -1,12 +1,13 @@
-# test010: K230 <-> BL616 UART link, 2026-10-18
+# test010: K230 <-> BL616 UART link
 
-Status: **pass** (2026-10-18).
+Status: **pass** (2026-10-25): 8 boots, 112 READY frames K230 -> BL616 with valid checksums, BL616 -> K230 echo clean.
 
-K230 UART1 (IO40 TX, IO41 RX, `/dev/uart1`) to BL616 UART0 (IO22 RX, IO21 TX), 115200 8N1.
+K230 UART1 (IO40 TX, IO41 RX, `/dev/uart1`) to BL616 UART0 (IO22 RX, IO21 TX), 8N1;
+first run at 115200 (2026-10-18), the link runs 4 Mbaud since test018.
 
 ## Setup
 
-**MISSING**; the setup is in the introduction above and in the Results.
+K230 with the leakcam_agent image, BL616 bl616_powertest (PT_TEST_UART), the link above; BL616 console for `pt_uart`.
 
 ## Needs (build features and dependencies)
 
@@ -16,28 +17,21 @@ K230 UART1 driver; BL616 PT_TEST_UART.
 
 ## Steps
 
-**MISSING**; the steps are the rows of the Results tables.
+1. K230 -> BL616: BL616 `pt_uart on`, reset the K230: the agent sends `READY` frames.
+2. BL616 -> K230: the BL616 sends a numbered line per second; K230 `cat /dev/uart1`.
 
 ## Pass
 
-**MISSING**; every Results row carries its pass / fail.
+Step 1: every READY frame arrives with an intact checksum; step 2: the lines arrive consecutive, none lost.
 
-## Results
+## Result
 
-| Direction | How | Result | |
-|---|---|---|---|
-| K230 -> BL616 | BL616 `pt_uart on`, K230 reset: the agent sends `READY` | `$1,READY*FC` .. `$13,READY*0F`, checksums intact; each frame 5x (resent while no ACK comes) | pass |
-| BL616 -> K230 | BL616 sends a line per second; K230 `cat /dev/uart1` | `LEAKCAM BL616 uart test 27` .. `40`, consecutive, none lost | pass |
+- K230 -> BL616: 112 READY frames over 8 boots, every checksum valid (run.py, 2026-10-25); each frame is resent while
+  no ACK comes (5x with the test firmware, which sends none) (first run, 2026-10-18).
+- BL616 -> K230: consecutive lines, none lost (first run, 2026-10-18); echo clean (run.py, 2026-10-25).
 
-**Pass.**
-
-### Temperature
-
-Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
-
-### Automated run 2026-10-25 (run.py, 243 s): pass
-
-8 boots: 112 READY frames with valid checksums on the BL616, echo runs clean.
+Open:
+- Current floor / typical / peak not read (Metrics **MISSING**).
 
 ## Metrics (**MISSING** on a re-run: skill leakcam-test-metrics, every value at its maximum)
 
@@ -67,11 +61,3 @@ The agent's READY on the link marks the end of the boot (test022's last mileston
 ## Battery energy
 
 n/a: the link's own current is negligible next to the K230 running; its time cost is test018.
-
-## Obstacles
-
-- **Each READY 5 times** -> by design: the agent resends while no ACK comes (the test firmware sends none).
-- **`cat /dev/uart1` hangs the shell (no Ctrl-C)** -> reset the K230 from the BL616 (`pt_hold`, `pt_run`).
-- **`killall leakcam_agent` did not stop it** -> still listed afterwards; it did not get in the way.
-
-None in the run of 2026-10-25.

@@ -1,13 +1,13 @@
-# test004: K230 hello from SRAM, 2026-10-17
+# test004: K230 hello from SRAM
 
-Status: **pass** (2026-10-17).
+Status: **pass** (2026-10-25): k230_hello loads over USB into SRAM in 4.2 s and runs (3 of 3 boots), K230_ALIVE toggles.
 
 [k230_hello](../../tools/power-bringup/k230_hello): 0.8 KB bare-metal program the boot ROM loads into SRAM over
 USB-C 1 (`make run`), nothing written to the NAND.
 
 ## Setup
 
-**MISSING**; the setup is in the introduction above and in the Results.
+K230 in USB boot on USB-C 1; k230_hello built in tools/power-bringup/k230_hello; BL616 `pt_status` to read K230_ALIVE.
 
 ## Needs (build features and dependencies)
 
@@ -17,28 +17,21 @@ K230 ROM USB boot, SRAM image (no RT-Smart).
 
 ## Steps
 
-**MISSING**; the steps are the rows of the Results tables.
+1. `make run` with the K230 in USB boot: the ROM loads k230_hello into SRAM and starts it.
+2. Read K230_ALIVE in `pt_status`.
 
 ## Pass
 
-**MISSING**; every Results row carries its pass / fail.
+Step 1 prints `LEAKCAM K230 hello: running from SRAM, hart 0`, then `status n=... mcycle=...` once a second;
+step 2: K230_ALIVE toggles.
 
-## Results
+## Result
 
-| Step | Result | |
-|---|---|---|
-| `make run` (K230 in USB boot) | `LEAKCAM K230 hello: running from SRAM, hart 0`, then `status n=... mcycle=...` once a second, 800 M cycles apart (core at 800 MHz from the ROM) | pass |
-| K230_ALIVE | toggles in `pt_status` | pass |
+- Pass on 3 of 3 USB boots: k230_hello loaded in 4.2 s each, K230_ALIVE half-period 1000 ms (run.py, 2026-10-25).
+- Status lines 800 M cycles apart: the core runs at 800 MHz from the ROM (first run, 2026-10-17).
 
-**Pass.**
-
-### Temperature
-
-Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
-
-### Automated run 2026-10-25 (run.py, 170 s): pass
-
-3 USB boots: k230_hello loaded in 4.2, 4.2, 4.2 s, K230_ALIVE toggling (avg half-period 1000, 1000, 1000 ms).
+Open:
+- none.
 
 ## Metrics (**MISSING** on a re-run: skill leakcam-test-metrics, every value at its maximum)
 
@@ -68,12 +61,3 @@ n/a: a bring-up step outside the product boot.
 ## Battery energy
 
 n/a: a one-off bring-up step, no product activity.
-
-## Obstacles
-
-- **Loader format** -> `--custom-loader` takes a raw binary at 0x80360000, no header.
-- **No output** -> the ROM leaves UART/GPIO clocks gated -> enable them (CMU 0x91100024).
-- **Slow, garbled lines** -> UART register reads return 0, THRE never seen -> pace characters by time.
-- **Flasher "hang"** -> `timeout` around `docker run` leaves the container holding USB -> `timeout` inside the container.
-
-None in the run of 2026-10-25.

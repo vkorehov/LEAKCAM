@@ -1,6 +1,7 @@
 # test037: K230 PMU RTC: start, set from the BL616, timekeeping
 
-Status: **step 0 pass** (2026-10-21): RTC runs from Y1 (+25 ppm vs the 27 MHz timer), UTC fixed; handover, roll-overs, absolute ppm open.
+Status: **partial: step 0 pass** (2026-10-25): the PMU RTC runs from Y1, +27 ppm against the 27 MHz timer (3 boots),
+`date` in UTC; handover from the BL616, roll-overs, absolute ppm and the 10 cold starts open.
 
 The K230's PMU RTC (Y1, 32.768 kHz, AVDD1P8_RTC on the switched 1V8 rail) restarts at every power-up; the BL616
 hands it the time in the `WAKE` reply and the K230 sets the RTC from it (DESIGN.md 5.4); NTP time goes back as
@@ -8,7 +9,9 @@ hands it the time in the `WAKE` reply and the K230 sets the RTC from it (DESIGN.
 
 ## Setup
 
-**MISSING**: hookup, firmware / image, and the probes named in Metrics.
+The bench image with the temporary kernel commands `rtc_raw` / `rtc_ppm` (leakcam_bench.c), NAND boot from the BL616
+test firmware; R45 bridged (bug-003). Automated: run.py, 3 boots, `rtc_ppm 60` and `rtc_raw` on each. Probes: see
+Metrics.
 
 ## Needs (build features and dependencies)
 
@@ -42,29 +45,19 @@ K230 PMU RTC (RT_USING_RTC, RT_USING_RTC_PMU), musl time (UTC patch), rtc_raw/rt
 
 RTC within 1 s of the BL616 after every handover, Y1 within +-20 ppm, roll-overs correct, 10/10 cold starts.
 
-## Results
+## Result
 
-### 2026-10-21, bench image (rtc_raw, rtc_ppm), NAND 80 MHz
+- `CONFIG_RT_USING_RTC` / `CONFIG_RT_USING_RTC_PMU` in the image; `rtc driver register OK` at boot (2026-10-21),
+  at 0.255 s in the boot with no wait of its own (2026-10-25).
+- Start value 2025-01-01 00:00:00 at every power-up (reset value), counting from there (2026-10-21, 2026-10-25).
+- Oscillator: Y1 crystal (not an RC), sub-second counter 32768 per s; +27.0 ppm against the K230's 27 MHz timer on
+  each of 3 boots (`rtc_ppm 60`, run.py, 2026-10-25).
+- `date` = RTC in UTC: install.sh sets RT-Thread musl's light time zone to 0 (default +8 h) (2026-10-21).
 
-| Check | Result |
-|---|---|
-| Config: RT_USING_RTC / RT_USING_RTC_PMU | in the image (defconfig, rtconfig.h); `rtc driver register OK` at boot |
-| Start value | 2025-01-01 00:00:00 at power-up (reset value), counts from there: 00:00:23 at ~23 s |
-| Raw registers (`rtc_raw`) | date 14190101, time 03000017, count curr 5614 / sum 32767, int_ctrl 2 |
-| Oscillator | sub-second counter 32768 per s: **+25 ppm against the K230's 27 MHz timer** (30 s, twice, equal) -> Y1 crystal, not an RC (that would be % off) |
-| Absolute ppm | not yet: against host NTP the console latency (40 ms) gives +-330 ppm over 120 s; needs >= 20 min |
-| `date` | was 8 h ahead (RT-Thread musl light time zone, default +8 h); **install.sh patch: UTC** -> `date` = RTC |
-
-Steps 1-6 (handover from the BL616, roll-overs, 10 cold starts) still to do: the handover needs the product BL616
-firmware.
-
-### Automated run 2026-10-25 (run.py, 236 s): pass
-
-3 boots: rtc_ppm 60 = +27.0, +27.0, +27.0 ppm. rtc_raw:
-
-    rtc_raw
-    rtc_raw: date 14190101 time 03000002 alarm_date 00010101 alarm_time 00000000 count 7fff391b int_ctrl 00000002
-    rtc_raw: 2025-01-01 00:00:02 week 3 leap 0, curr_count 14619 sum_count 32767
+Open:
+- Absolute ppm: against host NTP the console latency (40 ms) gives +-330 ppm over 120 s; needs >= 20 min (step 3).
+- Steps 1-6 (handover from the BL616, `WAKE` 0, roll-overs, `TIME` back, 10 cold starts): the handover needs the
+  product BL616 firmware.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
@@ -94,12 +87,3 @@ PMU wake + RTC driver register, and the handover to the first valid read: part o
 ## Battery energy
 
 n/a on its own (inside every K230 session); a slow RTC start would show in the boot time.
-
-## Obstacles
-
-- **msh `date` 8 h ahead of the RTC** -> RT-Thread's musl `sys/time.h` defines RT_LIBC_USING_LIGHT_TZ_DST with a +8 h
-  default (time.c) -> install.sh sets it to 0 (UTC, user rule); the RTC driver itself was UTC (timegm/gmtime).
-- **Flash chain stopped silently** -> the USB boot device came after my 4 s check (VMware click) -> wait up to 60 s
-  for 29f1:0230 before flashing. (Since 2026-10-24: no click, the device attaches in ~2 s; the runners wait 20 s.)
-
-None in the run of 2026-10-25.

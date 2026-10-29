@@ -1,12 +1,14 @@
 # test029: Camera buses and IO without cameras
 
-Status: **pass** (2026-10-21): both camera I2C buses scan clean and idle high, CAM GPIOs low; re-check with cameras (test020).
+Status: **pass** (2026-10-25): both camera I2C buses scan clean with no hang over 8 boots, idle high; CAM GPIOs low.
 
 Before the cameras arrive: the two camera I2C buses and the CAM_IO1 lines must be idle and not stuck.
 
 ## Setup
 
-**MISSING**: hookup, firmware / image, and the probes named in Metrics.
+No cameras plugged. K230 booted from NAND to msh (run.py, 8 boots), image with the bench commands (`pad_read` in
+leakcam_bench.c); probes as in Metrics. The meter sheets (j4_bottom.png, j5_top.png, j5_bottom.png) stay for a
+fault hunt.
 
 ## Needs (build features and dependencies)
 
@@ -19,35 +21,28 @@ I2C0/I2C4 drivers, i2cdetect (msh), fpioa (pad_read in leakcam_bench.c).
 1. K230 running: IIC0 (CAM2, J4, CSI0) and IIC4 (CAM1, J5, CSI2) SCL/SDA high (R17/R18, R14/R15 4.7 k to 3V3); an
    I2C scan of both returns no device and does not hang.
 2. GPIO62/63 (J4/J5 pin 18, CAM_IO1) driven low by the pin init.
-3. Pin levels in software instead of a meter (user, 2026-10-21: probing the 0.5 mm FPC side is too hard): `pad_read`
-   reads each pad's input bit (`di`, bit 31 of the IOMUX register): SCL/SDA of IIC0 and IIC4 = 1 (also proves 3V3 and
-   the 4.7 k pull-ups), GPIO62/63 = 0. The meter sheets (j4_bottom.png, j5_top.png, j5_bottom.png) stay for a
-   fault hunt.
+3. Pin levels in software instead of a meter (the 0.5 mm FPC side is too hard to probe): `pad_read` reads each pad's
+   input bit (`di`, bit 31 of the IOMUX register): SCL/SDA of IIC0 and IIC4 = 1 (also proves 3V3 and the 4.7 k
+   pull-ups), GPIO62/63 = 0.
 
 ## Pass
 
 Buses idle high, scans end cleanly, CAM_IO1 low, connector supplies as designed.
 
-## Results
+## Result
 
-### 2026-10-21, image with NAND 80 MHz, /bin 8 MiB (bench commands)
+- `i2cdetect i2c0` (J4, CAM2) and `i2cdetect i2c4` (J5, CAM1): no device, returns, no hang; 8 boots (2026-10-25,
+  run.py).
+- `pad_read 7 8` (IIC4 SCL/SDA, J5) 1, 1 and `pad_read 48 49` (IIC0 SCL/SDA, J4) 1, 1: pull-ups and 3V3 present
+  (2026-10-21).
+- `pad_read 62 63` (CAM GPIO, pin 18): 0, 0 with input enabled (2026-10-21).
+- I2C buses register in the boot at no visible cost (i2c0/i2c4 at 0.27 s, test022) (2026-10-25).
 
-| Check | Result |
-|---|---|
-| `i2cdetect i2c0` (J4, CAM2) | no device, returns (no hang) |
-| `i2cdetect i2c4` (J5, CAM1) | no device, returns (no hang) |
-| `pad_read 7 8` (IIC4 SCL/SDA, J5) | 1, 1 (pull-ups and 3V3 present) |
-| `pad_read 48 49` (IIC0 SCL/SDA, J4) | 1, 1 |
-| `pad_read 62 63` (CAM GPIO, pin 18) | 0, 0 with input enabled |
-| GPIO62/63 configuration at run time | ie 1, pu 1, **pd 1** (both pulls) vs the pin table's ie 0, pu 0, pd 1: something re-configures them after the pin init - to find (both pulls waste a little current) |
-
-### Automated run 2026-10-25 (run.py, 150 s): pass
-
-8 boots: both camera I2C buses scanned with no device and no hang; pad_read:
-
-    pad_read
-
-- meter K230 at msh idle (agent running): 0.220 A (read in test006-k230-nand-boot-spl)
+Open:
+- GPIO62/63 at run time: ie 1, pu 1, **pd 1** (both pulls) vs the pin table's ie 0, pu 0, pd 1: something
+  re-configures them after the pin init - to find (both pulls waste a little current) (2026-10-21).
+- The 2026-10-25 run log shows no `pad_read` values (only the command), so the pad levels are from 2026-10-21.
+- Re-check with cameras (test020); camera standby current while the K230 runs not measured.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
@@ -72,17 +67,9 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 
 ## Boot time
 
-I2C bus init and sensor probe time without cameras (part of today's boot).
+I2C buses i2c0/i2c4 register at 0.27 s in the boot, no visible cost (test022, 2026-10-25); sensor probe time with
+cameras not measured.
 
 ## Battery energy
 
-Current with the cameras powered but idle (their standby draw while the K230 runs).
-
-## Obstacles
-
-- **Meter probing at J4/J5 too hard** (0.5 mm FPC pins, J4 and J5 on opposite sides) -> pin levels read in software
-  (`pad_read`, pad input bits) instead.
-- **Pin table comments had R14/R15 and R17/R18 swapped** (IIC4 = J5 = R17/R18, IIC0 = J4 = R14/R15 in the schematic)
-  -> pins.py comments corrected; function unaffected.
-
-None in the run of 2026-10-25.
+No activity of its own: board at msh idle 220 mA without cameras (2026-10-25). Camera standby draw not measured.

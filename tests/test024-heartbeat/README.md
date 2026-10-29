@@ -1,13 +1,15 @@
 # test024: K230 heartbeat to the BL616 (K230_ALIVE)
 
-Status: **pass** (2026-10-21).
+Status: **pass** (2026-10-25): 8 boots, half-period 500 / 500 / 500 ms (min / avg / max), no back-feed after
+`pt_off`.
 
 The agent toggles K230 GPIO2 every 500 ms (net K230_ALIVE -> BL616 IO01, R32 100 k to 3V3); the BL616 ends a
 session when the edges stop for 2 s. Without it a product session never ends (or ends early).
 
 ## Setup
 
-**MISSING**: hookup, firmware / image, and the probes named in Metrics.
+BL616 test firmware with `pt_alive` (busy-polls IO01, timestamps every edge), K230 NAND test image with the agent.
+Automated: run.py, 8 boots with `pt_alive 10` after each, then `pt_off` and `pt_status`. Probes: Metrics.
 
 ## Needs (build features and dependencies)
 
@@ -26,28 +28,20 @@ K230 GPIO (heartbeat on GPIO2), the agent; BL616 PT_TEST_POWER + pt_alive.
 
 Edges at 1 Hz +-10 % while the agent runs, none after it stops; low with the rails off.
 
-## Results (2026-10-21, BL616 test firmware with `pt_alive`, K230 NAND test image)
+## Result
 
-`pt_on`, `pt_run`, at once `pt_alive 30` (BL616 busy-polls IO01, timestamps every edge):
+- Half-period 500 / 500 / 500 ms over 8 boots; after `pt_off` K230_ALIVE low, 0 of 5 pull-ups high (no back-feed)
+  (2026-10-25, run.py).
+- K230_ALIVE is high (R32 pull-up) until the agent drives GPIO2; first edge 984 ms after the reset release (the
+  agent's start); the first half-period is 1 ms (`alive_open` sets 0, the thread's first toggle sets 1 at once)
+  (2026-10-21).
+- The edges stop when the agent ends its session (~25 s after boot with the test firmware, which does not answer the
+  link: READY 15 x 5 tries x 300 ms = 22.5 s, then hook, WIFI and SLEEP unanswered); none afterwards (2026-10-21).
+- No leak on either chip over 8 boots (2026-10-25).
 
-| Reading | Value | |
-|---|---|---|
-| Level before the agent runs | high (R32 pull-up, GPIO2 not yet driven) | |
-| First edge after the reset release | 984 ms (agent drives GPIO2 low at start) | = the agent's start |
-| Half-period min / avg / max | 1 / 490 / 502 ms (1.02 Hz) | pass (+-10 %); the 1 ms is the start: `alive_open` sets 0, the thread's first toggle sets 1 at once |
-| Edges in 30 s | 51: edges stop ~25 s after boot | pass: the agent ended its session (below) |
-| `pt_alive 5` afterwards | 0 edges, low | pass |
-| `pt_off`, then `pt_status` | 0 of 5 pull-ups high, K230_ALIVE low | pass: no back-feed |
-
-Why it stops after ~25 s: the test firmware does not answer the link, so READY fails 15 x 5 tries x 300 ms = 22.5 s,
-then the hook, WIFI and SLEEP (each unanswered, 1.5 s) -> the agent stops the heartbeat; the product BL616 would cut
-the power 2 s later. As designed.
-
-**Pass.**
-
-### Automated run 2026-10-25 (run.py, 227 s): pass
-
-8 boots, pt_alive 10 after each: half-period 500 / 500 / 500 ms (min / avg / max over 8 boots, agent 500); after pt_off no back-feed (0 of 5 pull-ups).
+Open:
+- 3V3 discharge 10 ms after `pt_off` once the K230 had run (twice) vs 56-82 ms through RD1/RD2 with the K230 in reset
+  (test003): a running/stopped K230 loads 3V3 harder, likely harmless; repeat from reset to compare (2026-10-21).
 
 ## Metrics (2026-10-21, BL616 test firmware 16:56:59 build, K230 NAND test image)
 
@@ -58,8 +52,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Boot, power-on -> READY (median of 5) | not measured: one boot; first heartbeat edge 0.98 s after reset release | test022: 0.88 s to app init | the agent starts ~0.1 s after app init |
 | This part's boot share | ~0 (GPIO open + one write) | - | |
 | Test run time | 35 s (20:04:18-20:04:53) + checks to 20:05:32 | - | |
-| Setup time | 19:52-20:04, 12 min: pt_alive written + built (13 s build) 19:52-19:57; flash 1 failed 19:57:14-19:58:14 (permissions, above); ROM re-attached 20:00:20; flash 2 (4 s) 20:02:22-20:02:26, waited for EN + console to 20:04:09 | - | the flash itself is 4 s; the rest is waiting for hands and the script bug |
-| heartbeat period and jitter | half-period 490 ms avg, 502 max | 500 ms, timeout 2 s | 98 % of the set period, 4x margin to the timeout |
+| Setup time | 19:52-20:04, 12 min: pt_alive written + built (13 s build) 19:52-19:57; flash 1 failed 19:57:14-19:58:14 (permissions, HISTORY.md); ROM re-attached 20:00:20; flash 2 (4 s) 20:02:22-20:02:26, waited for EN + console to 20:04:09 | - | the flash itself is 4 s; the rest is waiting for hands and the script bug |
+| heartbeat period and jitter | half-period 500 / 500 / 500 ms (min / avg / max over 8 boots) (2026-10-25) | 500 ms, timeout 2 s | 100 % of the set period, 4x margin to the timeout |
 | Current idle / during | not measured: no meter reading asked (my omission); msh idle 202 mA (test023) | floor (test031) | |
 | Voltage under load (min) | VBAT 4.34 V min (K230 ADC ch 1, test023 calibration, 8 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | n/a: one GPIO write per 500 ms, below the meter's resolution | - | |
@@ -73,26 +67,9 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 
 ## Boot time
 
-Time from RT-Smart to the first heartbeat edge (the agent's start).
+First heartbeat edge 0.98 s after the reset release (the agent's start); the heartbeat's own share ~0 (GPIO open + one
+write) (2026-10-21).
 
 ## Battery energy
 
 n/a: one GPIO toggling every 500 ms.
-
-## Obstacles
-
-- **First `make flash` flashed nothing** (19:57:14-19:58:14) -> the ROM was attached at 19:57:21 (dmesg), but
-  /dev/ttyACM0 was root:dialout and not writable; `bl616_isp.py` had spent its one-shot hint on the "waiting" line
-  and timed out silently after 60 s -> fixed: the script grants itself access (`sudo -n setfacl`) on every
-  re-enumeration, separate hints (tested with `--wait-app`).
-- **That failure looked like success** (my mistake) -> the background command was piped through `tail`, exit 0 ->
-  never pipe flash/build commands; read the log.
-- **The flash looked "so long"** (my mistake) -> after the 4 s flash, `make flash` waits for the EN tap and the
-  console, and I had not told the user first -> ask for every hand action before the waiting command (skill
-  board-bringup).
-- **3V3 discharge 10 ms after `pt_off`** (twice, K230 had run; test003: 56-82 ms through RD1/RD2 with the K230 in
-  reset) -> open: a running/stopped K230 loads 3V3 harder, likely harmless; repeat from reset to compare.
-- **A Docker `make -j5` container up 11 h** found during the flash (`docker ps`) -> open: left from an earlier build,
-  may slow the qemu builds; asked the user before stopping it.
-
-None in the run of 2026-10-25.

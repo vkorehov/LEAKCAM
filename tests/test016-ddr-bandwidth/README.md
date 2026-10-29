@@ -1,13 +1,15 @@
 # test016: K230 DDR bandwidth
 
-Status: **pass at 3200** (2026-10-23, all-ODT: write 6.08 / read 4.84 / copy 2.77 GB/s; 2667 before: 4.05 / 4.08 / 1.86). Image: SDK copy + [leakcam_bench.c](../test017-nand-raw-speed/leakcam_bench.c).
+Status: **pass at 3200 MT/s all-ODT** (2026-10-25): write 6.08 / read 4.84 / copy 2.77 GB/s, 8 x `ddr_bench 3072`
+(run.py); uncached alias and concurrent load not measured yet.
 
-DDR runs at 2667 MT/s (SPL training, test006), 64 MB. Bandwidth decides how much the KPU, the encoder and the
-camera pipeline can do at once.
+Image: SDK copy + [leakcam_bench.c](../test017-nand-raw-speed/leakcam_bench.c). DDR runs at 3200 MT/s all-ODT
+(test025), 64 MB. Bandwidth decides how much the KPU, the encoder and the camera pipeline can do at once.
 
 ## Setup
 
-**MISSING**: hookup, firmware / image, and the probes named in Metrics.
+USB-C 1 the only power path (USB-C 2 VBUS cut, PR1 VBUS cut), meter (10 A range) in its VBUS; cell charged (D1 off).
+K230 bench image (SDK copy + leakcam_bench.c), `ddr_bench <KB>` from msh.
 
 ## Needs (build features and dependencies)
 
@@ -26,48 +28,33 @@ Kernel only: rdtime/rdcycle, rt_malloc (bench in leakcam_bench.c); no drivers.
 
 Recorded MB/s per case; the drop under concurrent load; no errors (compare with test025's stress).
 
-## Results (2026-10-21)
+## Result
 
-`ddr_bench 3072` (2 x 3 MB, larger than the caches), 60 runs in 12 s, 0 errors:
+- At 3200 MT/s all-ODT: write (`memset`) 6.08 GB/s, read (64-bit sum) 4.84 GB/s, copy (`memcpy`, bytes moved) 2.77
+  GB/s, `ddr_bench 3072` (2 x 3 MB, larger than the caches), 8 runs, 0 errors (run.py, 2026-10-25; same as test025
+  2026-10-23). Against 2667 MT/s (2026-10-21): write +50 %, read +18 %, copy +49 %.
+- CPU clock 1599-1600 MHz (rdcycle / rdtime): top profile (2026-10-21).
+- 3200 HW-ODT gives the same figures but flipped a bit; all-ODT is the clean setting (test025, 2026-10-23).
+- The 8 MB kernel heap has no 2 x 16 MB: keep bench buffers <= 3 MB (2026-10-21).
 
-| | Measured | Spread over 60 runs |
-|---|---|---|
-| write (`memset`) | 4.05 GB/s | 4050-4057 |
-| read (64-bit sum) | 4.06-4.09 GB/s | one outlier 3.76 |
-| copy (`memcpy`, bytes moved; 2x traffic) | 1.86 GB/s | 1854-1868 |
-| CPU clock (rdcycle / rdtime) | 1599-1600 MHz | top profile confirmed |
+Open:
+- Step 2 (uncached alias, as the KPU/VENC see it) not done.
+- Step 3 (under KPU / encoder load) not done.
+- Current and energy were measured at 2667 MT/s (2026-10-21), not at 3200.
 
-**At 3200 MT/s all-ODT (2026-10-23, test025):** write 6.08 GB/s (+50 %), read 4.84 (+18 %), copy 2.77 (+49 %);
-3200 HW-ODT gave the same figures but flipped a bit (test025). Not done yet: the uncached alias (step 2).
-
-### Automated run 2026-10-25 (run.py, 82 s): pass
-
-8 x `ddr_bench 3072`; last run:
-
-    copy (memcpy, bytes moved)      64512 KB in  23841 us: 2770.8 MB/s
-    write (memset)                  64512 KB in  10860 us: 6082.8 MB/s
-    read (64-bit sum)               64512 KB in  13655 us: 4837.8 MB/s
-    copy (memcpy, bytes moved)      64512 KB in  23831 us: 2772.0 MB/s
-
-## Metrics (2026-10-21, bench image, 2667 MT/s)
-
-Setup (2026-10-21): USB-C 1 the only power path (USB-C 2 VBUS cut, PR1 VBUS cut), meter (10 A range, 0.1 mA
-shown) in its VBUS; cell charged (D1 off). VBAT not measured: P uses 3.8 V nominal (`energy.py --vbat 3.8`).
-Board floor: rails off, BL616 awake on USB 60.5 mA; rails on, K230 in reset 86.3 mA; K230 at msh idle (agent running,
-READY not answered by the test firmware) 204 mA. A mA-range meter (2-5 ohm) reset the board; an earlier meter had a
-burned mA fuse: readings from before the swap are void.
+## Metrics (bench image; date per value)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> app init | 1.00 s | test022 | longest step: UFFS mounts 0.70 s |
+| Boot, power-on -> app init | 1.00 s (2026-10-21, 2667 MT/s bench image; the current boot: test022) | test022 | longest step: UFFS mounts 0.70 s |
 | This part's boot share | DDR training inside 0.23 s (ROM..OpenSBI) | - | not split further yet |
-| Test run time | 12 s (60 runs) | - | setup: reflash 2 x (USB boot, 3 clicks) |
-| DDR write / read / copy | 4.05 / 4.08 / 1.86 GB/s | 5.33 GB/s (2667 x 16 bit) | 76 % (write, read) |
-| Current idle / during (min / avg / peak) | 204 / - / 270 mA | floor 204 (msh idle) | USB-C 1 VBUS |
+| Test run time | 82 s automated (run.py, 8 x ddr_bench 3072) (2026-10-25) | - | setup: reflash (USB boot) |
+| DDR write / read / copy | 6.08 / 4.84 / 2.77 GB/s at 3200 MT/s all-ODT (2026-10-25) | - | |
+| Current idle / during (min / avg / peak) | 204 / - / 270 mA (2026-10-21, 2667 MT/s) | floor 204 (msh idle) | USB-C 1 VBUS |
 | Voltage under load (min) | VBAT 4.31 V min (K230 ADC ch 1, test023 calibration, 9 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | +66 mA = +251 mW over idle; 18 mJ per 64 MB pass set | - | 3.8 V nominal |
+| Power, energy per operation | +66 mA = +251 mW over idle; 18 mJ per 64 MB pass set (2026-10-21, 2667 MT/s) | - | 3.8 V nominal |
 | Per day | n/a (no DDR-only work in a session) | - | |
 | Temperature die / board (start / peak / end) | die 46.4 / 48.5 / 48.5 C; board 37.3 / 37.4 / 37.4 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
 | Memory BL616 / K230 (start / min / end), leak | BL616 free 206440 / min 204396 / 206440 B, blocks 16 -> 16, deleted 0; K230 heap available 7025152 / 7023232 / 7312064 B; BL616 no leak (mem_leak.py, 9 snapshots); K230 no leak (mem_leak.py, 9 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
@@ -83,11 +70,3 @@ The DDR clock's effect on boot: training time at 2667 vs 3200 MT/s (SPL), from t
 ## Battery energy
 
 Battery current during each bench (copy, read, write) vs idle; energy per GB moved. With test025 at 3200 MT/s: does the faster clock cost more per GB or save by finishing sooner?
-
-## Obstacles
-
-- **`ddr_bench 16384` crashed the kernel** (Load Page Fault, reboot) -> the 8 MB kernel heap has no 2 x 16 MB; the
-  error path called `rt_free_align(NULL)`, which faults -> NULL guards in the bench (rebuilt with the next image);
-  keep buffers <= 3 MB.
-
-None in the run of 2026-10-25.

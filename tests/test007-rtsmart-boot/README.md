@@ -1,12 +1,14 @@
-# test007: RT-Smart boot, 2026-10-18
+# test007: RT-Smart boot
 
-Status: **pass; PMU RTC with R45 bridged (bug-003)** (2026-10-18/20).
+Status: **pass** (2026-10-25): 5 of 5 cold boots from NAND to msh, /bin and /sdcard mounted, agent starts; PMU RTC
+with R45 bridged (bug-003).
 
 From NAND: SPL -> OpenSBI -> RT-Smart, UFFS on /bin and /sdcard, the agent started from /sdcard/app.
 
 ## Setup
 
-**MISSING**; the setup is in the introduction above and in the Results.
+The image flashed to NAND (`flash_nand.sh`, erase first), NAND boot from the BL616 test firmware; R45 bridged
+(bug-003). Automated: run.py, 5 cold boots. Probes: see Metrics.
 
 ## Needs (build features and dependencies)
 
@@ -16,33 +18,25 @@ RT-Smart kernel: PMU (RT_USING_RTC_PMU, 72-pad table), UFFS mounts (/bin, /sdcar
 
 ## Steps
 
-**MISSING**; the steps are the rows of the Results tables.
+1. Cold boot from NAND: SPL -> OpenSBI -> RT-Smart -> msh.
+2. /bin and /sdcard mounted, no NAND errors, the agent starts from /sdcard/app.
+3. Repeat (run.py: 5 cold boots).
 
 ## Pass
 
-**MISSING**; every Results row carries its pass / fail.
+Every boot reaches `msh />` with UFFS mounted, the agent started and zero NAND errors.
 
-## Results
+## Result
 
-| Step | Result | |
-|---|---|---|
-| Kernel after `OpenSBI v0.9` | hung at pin 64 / RTC init: [bug-003](../../bugs/bug-003/README.md) (PMU) | fixed (R45 bridged) |
-| Kernel boot | fault in the AI2D driver log | fixed (log off) |
-| /bin, /sdcard | not mounted by the SDK | fixed (UFFS mounts) |
-| /sdcard | mount failures, random bad blocks | fixed (busy-wait patch) |
-| Boot after the fixes, 3 reboots + a final flash | `msh />`, UFFS mounted, agent starts, zero NAND errors | pass |
+- Boots from NAND to `msh />`, UFFS mounted, agent starts, zero NAND errors (3 reboots + a final flash, 2026-10-18);
+  5 of 5 cold boots (run.py, 2026-10-25).
+- The boot needs, in the image / on the board: R45 bridged (bug-003, PMU wakes, PMU RTC used, 2026-10-20); Canaan's
+  AI2D log off; UFFS mounts added by install.sh (nand0 /bin, nand1 /sdcard); the `spinand_isbusy()` replacement
+  (`rtsmart/patches/spinand_isbusy.c`); `flash_nand.sh` erasing before writing; gen_config `board=leakcam`
+  (2026-10-18).
 
-**Pass.**
-
-### Temperature
-
-Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
-
-### Automated run 2026-10-25 (run.py, 97 s): pass
-
-5 of 5 cold boots to msh with /bin and /sdcard mounted.
-
-- meter K230 at msh idle (agent running): 0.220 A (read in test006-k230-nand-boot-spl)
+Open:
+- Image sizes and compile flags of this test's image not recorded.
 
 ## Metrics (**MISSING** on a re-run: skill leakcam-test-metrics, every value at its maximum)
 
@@ -72,23 +66,3 @@ Not recorded (before the boot rule, 2026-10-21). If re-run: OpenSBI -> RT-Smart 
 ## Battery energy
 
 Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: superseded by test022 (boot energy) and test101 (session).
-
-## Obstacles
-
-- **Silent after "OpenSBI v0.9"** -> OpenSBI is quiet; the kernel hung -> found with temporary markers
-  (`rt_hw_console_output`, prints via OpenSBI) in the SDK, reverted after.
-- **Hang at pin 64 / RTC** -> INT4 at 0.3 V (R45 100 k against the pad's ~20 kOhm pull-down), the PMU never wakes ->
-  R45 bridged (INT4 = 1V8); the PMU RTC is used (2026-10-20, [bug-003](../../bugs/bug-003/README.md)).
-- **Link error** -> the pins.py footer cut also removed the camera-LED init -> restored.
-- **Fault in AI2D driver** -> Canaan's `ai_2d_log()` drops its arguments -> install.sh turns that log off.
-- **/sdcard empty, agent not found** -> the SDK never mounts the NAND -> install.sh adds UFFS mounts (nand0 /bin, nand1 /sdcard).
-- **/sdcard mount fails, random "bad blocks", "can't find right page"** -> Canaan's `spinand_isbusy()` abandons a
-  page read when its confirm status read still shows BUSY (0x01); UFFS takes the -1 as "ECC corrected", uses
-  stale buffers and marks good blocks bad -> install.sh replaces it (`rtsmart/patches/spinand_isbusy.c`: 20 ms
-  real-time limit, two "ready" reads in a row). Found with `nandtest` (1000 clean repeat reads) + a status print.
-- **Leftover blocks after re-flashing** -> the burn loader does not erase what an image does not cover -> `flash_nand.sh` erases first.
-- **OOB layout** -> checked, fine: the loader puts the image's tag at OOB 4-12, where the kernel reads it.
-- **"Too many pending bad blocks"** -> side effect of the busy-wait bug; gone.
-- **"config command failed (-1)"** -> `config.txt` asks for the SD-card resize -> gen_config writes `board=leakcam`.
-
-None in the run of 2026-10-25.

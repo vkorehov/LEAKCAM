@@ -1,12 +1,13 @@
-# test011: NAND persistence, full disk, speed, 2026-10-18
+# test011: NAND persistence, full disk, speed
 
-Status: **pass** (2026-10-18).
+Status: **pass** (2026-10-25): files survive a power cycle, a full disk fails cleanly, read 14.4 MB/s, write 2.1 MB/s.
 
 K230 shell (`cp`, `df`, `rm`, `hexdump`). `/sdcard` = nand1, UFFS, 169 MB free when empty.
 
 ## Setup
 
-**MISSING**; the setup is in the introduction above and in the Results.
+K230 booted from NAND to msh; `/sdcard` = nand1, UFFS, 169 MB free when empty; RAM `/tmp` as the other end of the
+copies; run.py drives the shell.
 
 ## Needs (build features and dependencies)
 
@@ -16,36 +17,32 @@ UFFS on SPI NAND, dfs, msh file commands.
 
 ## Steps
 
-**MISSING**; the steps are the rows of the Results tables.
+1. Write a file, power-cycle the K230 (`pt_off`, `pt_on`, `pt_run`), read it.
+2. Fill `/sdcard` with 5,180,912-byte copies.
+3. Copy past full.
+4. Read (`/sdcard` -> RAM `/tmp`) and write (RAM `/tmp` -> `/sdcard`) 5,180,912 B with shell `cp`, timed.
+5. Byte-exact: 100,376-byte copy on the nearly full disk, hexdump vs original, again after a power cycle.
+6. Read 5,180,912 B from a user program (64 KB `read()`s).
 
 ## Pass
 
-**MISSING**; every Results row carries its pass / fail.
+The file survives the power cycle; the fill ends without errors; past full the write fails with the other files
+intact; the hexdump is identical; reads and writes complete.
 
-## Results
+## Result
 
-| Test | Result | |
-|---|---|---|
-| Write a file, power-cycle the K230 (`pt_off`, `pt_on`, `pt_run`), read it | 953 bytes, marker intact | pass |
-| Fill with 5,180,912-byte copies | 33 copies (171 MB) to 3.8 MB free, no errors; 3.4-4.5 s per copy | pass |
-| Copy past full | `Write file data failed`, partial file, last 128 KB block kept in reserve; other files intact | pass |
-| Read (`/sdcard` -> RAM `/tmp`), 5,180,912 B, shell `cp` | 0.55 s = **9.4 MB/s** (3 runs) | |
-| Write (RAM `/tmp` -> `/sdcard`), 5,180,912 B | 2.82 s = **1.8 MB/s** (2 runs) | |
-| Byte-exact: 100,376-byte copy on the nearly full disk, hexdump vs original | 6274 / 6274 lines identical, again after a power cycle | pass |
-| Read from a user program (64 KB `read()`s), 5,180,912 B | 195 s (26 KB/s) before the poll patch (test012); after: 0.41 s = **12.7 MB/s** | pass |
+- A 953-byte file survives a K230 power cycle, marker intact (2026-10-18).
+- Fill: 33 copies of 5,180,912 B (171 MB) to 3.8 MB free, no errors; 3.4-4.5 s per copy (2026-10-18).
+- Past full: `Write file data failed`, partial file, last 128 KB block kept in reserve; other files intact (2026-10-18).
+- Byte-exact on the nearly full disk: 6274 / 6274 hexdump lines identical, again after a power cycle (2026-10-18).
+- Shell `cp` of 5,180,912 B: read 14.4 MB/s, write 2.1 MB/s (best of 3, host-timed incl. ~0.1 s prompt)
+  (2026-10-25, run.py).
+- User program read (64 KB `read()`s) 12.7 MB/s = 81 % of test017's raw 15.6 MB/s, with the poll patch (test012)
+  (2026-10-18).
+- Current: K230 idle at msh 0.220 A, copying RAM -> /sdcard 0.259 A (2026-10-25).
 
-**Pass.**
-
-### Temperature
-
-Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
-
-### Automated run 2026-10-25 (run.py, 295 s): pass
-
-cp /sdcard/app/leakcam_wake -> RAM: 0.49, 0.49, 0.36 s; RAM -> /sdcard: 3.31, 3.08, 2.50 s; read 14.4 MB/s, write 2.1 MB/s.
-
-- meter K230 at msh idle (agent running): 0.220 A (read in test006-k230-nand-boot-spl)
-- meter K230 copying RAM -> /sdcard over and over (cp): 0.259 A
+Open:
+- UFFS mount time of a full `/sdcard` against an empty one not measured.
 
 ## Metrics (**MISSING** on a re-run: skill leakcam-test-metrics, every value at its maximum)
 
@@ -70,16 +67,10 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 
 ## Boot time
 
-Not recorded (before the boot rule, 2026-10-21). If re-run: the UFFS mount time of /sdcard and /bin, empty and full (a full /sdcard may mount slower: tree build scans blocks).
+UFFS mounts in the boot: /bin + /sdcard done at 0.31 s (test022 boot_times) (2026-10-25). Mount time with a full
+`/sdcard` (tree build scans blocks) not measured.
 
 ## Battery energy
 
-Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: extra current while reading and writing /sdcard vs idle; energy per MB written (clips) and read.
-
-## Obstacles
-
-- **`echo` cannot create files** -> msh `echo` opens without O_CREAT -> create with `cp` first.
-- **No checksum tool on the K230** -> byte-exact check with `hexdump` of a 100 KB file, compared on the host.
-- **Dump looked corrupted after boot** -> the agent's `READY not answered` lines interleave -> dump on a quiet console.
-
-None in the run of 2026-10-25.
+Copying RAM -> /sdcard 0.259 A against 0.220 A idle at msh; 1128 mW; per 5 MB clip write (2.50 s) 2.82 J, 180 uAh,
+0.42 J over idle; 4 clip writes a day: 0.72 mAh/day (2026-10-25).

@@ -1,6 +1,6 @@
 # test106: Wi-Fi setup from the phone, end to end
 
-Status: **planned** (2026-10-27).
+Status: **planned** (2026-10-29): not run yet; step 6 rewritten 2026-10-29 (the board keeps no BLE pairings).
 
 The installation flow as a user meets it: a new LEAKCAM on USB power, the LEAKCAM Setup app (android/, APP.txt) finds
 it, pairs, sends the Wi-Fi network, the board checks and stores it in the BL616's flash; then, on battery, the
@@ -47,9 +47,12 @@ Android 8.0+, the app's BLE permissions.
 A new board goes from unboxed to a working Wi-Fi wake with only the app; every failure is named in the app and
 stores nothing; a stored network is used on battery by the BL616 and the K230; setup is impossible without USB power.
 
-## Results
+## Result
 
 Not run yet.
+
+Open:
+- The app still asks the user to Forget the stale bond by hand; it must remove it by itself (step 6) before the run.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
@@ -81,7 +84,3 @@ whether the remembered AP skips the scan on the second wake.
 
 Setup is on USB (free for the cell); the battery cost is the wakes' join with the stored network (with test100 and
 test102).
-
-## Obstacles
-
-None yet.

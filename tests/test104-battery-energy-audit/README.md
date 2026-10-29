@@ -31,7 +31,7 @@ tests is what the minimal image keeps).
 
 ENERGY.txt filled with measured figures; the budget and the long run agree within ~20 %; battery life recorded.
 
-## Results
+## Result
 
 Not run yet.
 
@@ -63,7 +63,3 @@ The boot's share of the daily energy (test022 x wakes per day).
 ## Battery energy
 
 This test is the audit: ENERGY.txt filled, battery life.
-
-## Obstacles
-
-None yet.

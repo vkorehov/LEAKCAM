@@ -1,6 +1,7 @@
-# test014: SDIO wiring, K230 MMC0 <-> BL616 SDIO, 2026-10-19
+# test014: SDIO wiring, K230 MMC0 <-> BL616 SDIO
 
-Status: **pass: CLK, CMD, D0-D3 both directions, no shorts** (2026-10-19).
+Status: **pass** (2026-10-25): CLK, CMD, D0-D3 connected both directions, none stuck, no shorts; CLK and CMD toggle
+during the probe.
 
 The Wi-Fi link's six lines (BL616 IO13 CLK, IO12 CMD, IO14/15/10/11 D0-D3, 10 k pull-ups to the switched 3V3) without
 the BL616's SDIO device firmware. BL616: `bl616_powertest` `pt_sdio`; K230: a temporary reader of its SD host's
@@ -9,7 +10,8 @@ NetHub driver's probe (`/dev/bl616` ioctl 0x4c01).
 
 ## Setup
 
-**MISSING**; the setup is in the introduction above and in the Results.
+BL616 test firmware `bl616_powertest` (`pt_sdio`); K230 bench image with the present-state reader (`/dev/mem`) and the
+NetHub driver (`bl616_rescan`). Probes: Metrics. Automated: run.py (8 boots).
 
 ## Needs (build features and dependencies)
 
@@ -19,31 +21,23 @@ BL616 PT_TEST_SDIO; K230 MMC0 pins (no SDIO stack).
 
 ## Steps
 
-**MISSING**; the steps are the rows of the Results tables.
+1. Idle, nobody driving: K230 reads the present state.
+2. BL616 drives CMD/D0-D3: all high, each one low, each one high, all low (12 patterns); K230 reads each.
+3. K230 probes MMC0 (rescan) while the BL616 counts edges on every line for 8 s.
 
 ## Pass
 
-**MISSING**; every Results row carries its pass / fail.
+Idle lines high; every pattern read back exactly (each line connected, none stuck, no two shorted); CLK and CMD
+toggle during the probe (D0-D3 stay idle: no data phase without a card); the probe ends "no card" (expected with the
+test firmware).
 
-## Results
+## Result
 
-| Step | Result | |
-|---|---|---|
-| Idle, nobody driving | CMD and D0-D3 high (present state 0x03ff00f0) | pass |
-| BL616 drives CMD/D0-D3: all high, each one low, each one high, all low (12 patterns), K230 reads | every pattern read back exactly: each line connected, none stuck, no two shorted | pass |
-| K230 probes MMC0 (rescan), BL616 counts edges for 8 s | CLK 4.78 M edges (undercounted at 2.1 M samples/s), CMD 126, D0-D3 0 (no data phase without a card) | pass |
-| Probe result | "no card" after 35 ms: expected, the BL616 runs the test firmware, not its SDIO device | |
-
-**Pass.** Next: the BL616 SDIO device firmware, enumeration, Wi-Fi, and the bus speed raised to the fastest clock
-that runs without CRC errors.
-
-### Temperature
-
-Not recorded (the test ran before the temperature rule, 2026-10-21). If re-run: K230 die (`chip_temp`) and board (AHT20) at start, peak and end.
-
-### Automated run 2026-10-25 (run.py, 210 s): pass
-
-8 boots, pt_sdio watch during bl616_rescan: CLK 5593283-5594738 edges, CMD 126-126 edges, D0-D3 0/0/0/0 (last boot; no data phase without a card).
+- Idle: CMD and D0-D3 high (present state 0x03ff00f0); all 12 drive patterns read back exactly: each line connected,
+  none stuck, no two shorted (2026-10-19).
+- Probe: CLK 5593283-5594738 edges, CMD 126 edges, D0-D3 0 per 8 s watch, 8 boots; "no card" after ~35 ms with the
+  test firmware (2026-10-25, run.py). Edge counts only prove toggling: the BL616 polls at 2.1 M samples/s.
+- Bus speed with the real link: test015 (50 MHz 4-bit). Open: none here.
 
 ## Metrics (**MISSING** on a re-run: skill leakcam-test-metrics, every value at its maximum)
 
@@ -73,12 +67,3 @@ n/a: a wiring check.
 ## Battery energy
 
 n/a: a wiring check.
-
-## Obstacles
-
-- **K230 MMC0 pads are dedicated, not GPIO** (no `pinRead`) -> the SD host's present-state register shows the live
-  line levels.
-- **The BL616 cannot count a 400 kHz-and-up clock exactly** by polling (2.1 M samples/s) -> edges only prove the line
-  toggles; speed comes with the real link.
-
-None in the run of 2026-10-25.

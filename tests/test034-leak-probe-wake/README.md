@@ -1,6 +1,8 @@
 # test034: leak probe wake (ACOMP1) and wet/dry thresholds
 
-Status: **pass with opens** (2026-10-22): the product's leak threshold was wrong (1.65 V = the dry level: a dry probe read WET), fixed to 0.85 V; S1/S2/S3 shorts detected, settled 250 mV; HBN wake on going wet and on going dry works. Open: real water types, resistor sweep, 8 h no-false-wake.
+Status: **pass with opens** (2026-10-22): leak threshold vio_sel 17 = 0.85 V (wet below ~430 kohm); S1/S2/S3 shorts
+detected (settled 247-256 mV); HBN wake on going wet and on going dry works. Open: real water types, resistor sweep,
+8 h no-false-wake.
 
 The leak probes S1-S3 pull LEAK_SENS (1 M / 1 M divider from 3V3_SLEEP, 1.65 V dry) down when water bridges them;
 ACOMP1 wakes the BL616 from hibernate on that edge. The product's first job.
@@ -34,37 +36,28 @@ BL616 ACOMP1 (leak), ADC (pt_leak), HBN wake on ACOMP.
 
 Wet detected at every water type the product must see, dry never woken falsely in 8 h; wake latency recorded.
 
-## Results
+## Result
 
-### 2026-10-22
+- ACOMP1 reference on this input is **vio_sel x 50 mV; the scaling factor does nothing** (`pt_leak sweep`, factors
+  0.25-1 all identical) (2026-10-22). Leak threshold therefore vio_sel 17 = **0.85 V** (wet below ~430 kohm across a
+  probe), in leak_wake.c, the test firmware, the K230's PROBE_WET_MV 850, DESIGN.md, firmware/README.md (2026-10-22).
+  The USB comparator (ACOMP0, vio_sel 33 x 1 = 1.65 V) is right (2026-10-22).
+- Dry: 1648-1650 mV, comparator dry (2026-10-22).
+- Hard short S1, S2, S3 (in turn): WET each, settled **247-256 mV** (calculated 262 mV: 94 k to GND against 1 M)
+  (2026-10-22). Read the ADC only after the node settles: 50 ms (wet) / 250 ms (dry) (C109 tau 8.6 ms).
+- Hand-held contact bounces: several wet/dry changes within ~1 s per touch, the comparator follows each (30 mV
+  hysteresis) (2026-10-22).
+- HBN armed for going wet: woke **by leak** on an S1 short during a 120 s sleep; HBN slept while wet (armed for going
+  dry): the dry edge wakes it (2026-10-22).
+- Comparator current not visible at the meter's resolution: rails off, BL616 awake, comparator on 62 mA (2026-10-22).
+- Wake latency (estimated, not measured): C109 1.65 V -> 0.85 V trip **7.4 ms** for a hard short (slower for water),
+  then the HBN wake path **~15 ms** (test021: 12-16 ms) = ~22 ms to main() (2026-10-22).
 
-**Threshold bug (product):** dry probe, node 1648 mV, comparator **WET**. `pt_leak sweep` against the dry node:
-
-| scaling factor | output for vio_sel 0 .. 63 (1 = node above the reference) |
-|---|---|
-| 0.25, 0.5, 0.75, 1 | all identical: 1 for vio_sel 0-32, 0 from 33 |
-
-So the reference is **vio_sel x 50 mV and the scaling factor does nothing** on this input. The product's vio_sel 33 x
-0.5, meant as 0.825 V, was 1.65 V, the dry level itself: on the board the product would have seen a leak at every
-wake (a K230 session, every time, until the battery is flat). Fixed: vio_sel 17 = **0.85 V** (wet below ~430 kohm
-across a probe), leak_wake.c, the test firmware, the K230's PROBE_WET_MV 825 -> 850, DESIGN.md, firmware/README.md.
-The USB comparator (ACOMP0, vio_sel 33 x 1 = 1.65 V) was right by luck of its scaling 1.
-
-| Test | Result |
-|---|---|
-| dry | 1648-1650 mV, comparator dry |
-| hard short S1, S2, S3 (in turn, by hand) | WET each, settled **247-256 mV** (calculated 262 mV: 94 k to GND against 1 M), = 0 kohm |
-| hand-held contact | bounces: several wet/dry changes within ~1 s per touch, the comparator follows each (30 mV hysteresis) |
-| HBN, armed for going wet, S1 shorted during the 120 s sleep | woke **by leak**, console back 47 s after the sleep started (short + VMware click), not at 120 s |
-| HBN, slept while wet (armed for going dry), contact lost for a moment while clicking | woke **by leak** after ~10 s, read wet again (contact restored): the dry edge wakes it |
-| current, rails off, BL616 awake, comparator on | 62 mA (63 mA before: the comparator is not visible at this resolution) |
-
-Wake latency (wet edge -> main()): not measured directly (no edge timestamp on the board); from parts: C109 falls
-from 1.65 V to the 0.85 V trip in tau x ln(1.39 / 0.59) = 8.6 ms x 0.86 = **7.4 ms** for a hard short (slower for
-water), then the HBN wake path **~15 ms** (test021: 12-16 ms) = ~22 ms to main().
-
-Open: real water (tap, distilled, salt, wet towel) and a resistor sweep 10 k .. 10 M for the threshold in ohms;
-8 h dry without a false wake (step 5; the product's evlog will count wakes); the product firmware build (rewrite).
+Open:
+- Real water (tap, distilled, salt, wet towel) and a resistor sweep 10 k .. 10 M for the threshold in ohms.
+- 8 h dry without a false wake (step 5; the product's evlog will count wakes).
+- The product firmware build (rewrite).
+- Wake latency not measured directly (no edge timestamp on the board).
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
@@ -94,10 +87,3 @@ HBN wake on a leak to the K230's power-on (with test021): the first part of the 
 ## Battery energy
 
 The divider's current wet vs dry (1.65 uA dry; wet up to 3.3 uA): a standing leak raises the sleep current.
-
-## Obstacles
-
-- **The first `pt_leak watch` read 692 mV / 265 kohm for a hard short** -> it read the ADC 2 ms after the comparator
-  flipped, while C109 was still discharging (tau 8.6 ms) -> waits 50 ms (wet) / 250 ms (dry) before the reading.
-  The user pointed at the series resistors in the schematic; they were already in the formula (94 k).
-- **Holding a short while clicking "connect to Linux"** broke the contact for a moment: the dry-again test woke on that.

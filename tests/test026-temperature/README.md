@@ -1,13 +1,15 @@
 # test026: K230 die temperature (TS)
 
-Status: **in progress** (2026-10-21): open board, idle and memtest load measured; KPU/encoder/camera load and the closed enclosure open.
+Status: **in progress** (2026-10-25): open board idle and CPU/DDR (memtest) load pass, die 44.7 C idle, 52.7 C peak;
+KPU/encoder/camera load, the closed enclosure and the die limit open.
 
 `CONFIG_RT_USING_TS=y`: the K230's die temperature sensor. How hot the K230 gets in a session, and with the
 enclosure closed.
 
 ## Setup
 
-**MISSING**: hookup, firmware / image, and the probes named in Metrics.
+Open board on the bench, test image (of test025, with memtest); K230 die from msh `chip_temp`, board from the BL616's
+AHT20 (`pt_status`), every 10 s. Probes: Metrics. Automated: run.py.
 
 ## Needs (build features and dependencies)
 
@@ -26,27 +28,18 @@ K230 temperature sensor (TS driver, chip_temp).
 Readings plausible (idle a few C above room temperature, monotonic warm-up), and under worst-case load well below
 the K230's limit (datasheet); note the margin for the enclosure.
 
-## Results (2026-10-21, open board on the bench, test image, K230 booted at 20:23:43)
+## Result
 
-Every 10 s: K230 die from msh `chip_temp`, board from the BL616's AHT20 (`pt_status`). Log:
-[temp_2026-10-21.csv](temp_2026-10-21.csv).
-
-| Phase | Time | Die (mean / min / max) | Board AHT20 | Meter (USB-C 1) |
-|---|---|---|---|---|
-| idle (msh, agent done) | 20:27:04-20:29:54 | 48.5 / 47.9 / 49.1 C | 39.0-39.2 C | 205 mA |
-| memtest 20 passes (`&`, CPU + DDR) | 20:30:06-20:32:06 | 52.0 / 49.4 / 53.3 C | 39.2-39.9 C | 244 mA avg, 260 peak |
-| cooling | 20:32:16-20:33:06 | 49.7 / 48.8 / 52.4 C | 39.9 -> 39.4 C | - |
-
-- Die ~9.5 C above the board at idle; memtest adds ~+4.5 C in 2 min, not settled yet (still rising at the end);
-  back to idle within ~20 s after the load: a small die, the heat goes into the board.
-- The board itself sits at 39 C: the K230 has been on most of the time since 19:31 (off 19:57-20:04, short power cycles); room temperature not measured.
-- `chip_temp` steps are 0.3-0.9 C (12-bit TS); single readings scatter +-0.6 C at idle.
-- Plausible readings, monotonic warm-up: **pass** for idle and CPU/DDR load. The K230's die limit is not in the repo
-  yet (datasheet to check); the margin for the enclosure follows from it.
-
-### Automated run 2026-10-25 (run.py, 531 s): pass
-
-die idle 44.7 C, memtest peak 52.7 C, end 48.2 C.
+- Open board, CPU + DDR load (memtest): die 44.7 C idle, 52.7 C peak, 48.2 C at the end; rise idle -> memtest 8.0 C
+  (2026-10-25, run.py).
+- Die ~9.5 C above the board at idle; back to idle within ~20 s after the load: a small die, the heat goes into the
+  board (2026-10-21, log [temp_2026-10-21.csv](temp_2026-10-21.csv)).
+- `chip_temp` steps are 0.3-0.9 C (12-bit TS); single readings scatter +-0.6 C at idle (2026-10-21).
+- Load costs: idle 205 mA (0.85 W), memtest 244 mA avg, 260 peak (1.01 W) on USB-C 1 (2026-10-21).
+- Readings plausible, monotonic warm-up: pass for idle and CPU/DDR load (2026-10-21, 2026-10-25).
+- Open: KPU change net, encoder (test027) and camera load; the closed enclosure.
+- Open: the K230's die limit is not in the repo yet (datasheet to check); the enclosure margin follows from it.
+- Open: room temperature not measured (the board sat at 39 C on 2026-10-21).
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
@@ -56,13 +49,13 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 |---|---|---|---|
 | Boot, reset release -> app init | 0.893 s (test025, same image) | test022 | |
 | This part's boot share | none (TS read on demand) | - | |
-| Test run time | 6 min (20:27:04-20:33:06) | - | no setup: image of test025 |
-| SoC temperature vs time and load | idle 48.5 C, memtest 53.3 C peak after 2 min | die limit: datasheet, to check | +4.8 C at +39 mA |
+| Test run time | 531 s automated (run.py, 2026-10-25) | - | no setup: image of test025 |
+| SoC temperature vs time and load | idle 44.7 C, memtest 52.7 C peak (2026-10-25, run.py) | die limit: datasheet, to check | +8.0 C idle -> memtest |
 | Current idle / during | 205 mA / 244 mA avg, 260 peak | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT ~4.15 V |
 | Voltage under load (min) | VBAT 4.32 V min (K230 ADC ch 1, test023 calibration, 42 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | idle 0.85 W, memtest 1.01 W (+0.16 W) | - | x 4.15 V, by hand |
 | Per day | n/a: bench measurement | - | |
-| Temperature die / board (start / peak / end) | 49.1 / 53.3 / 49.1 C, board 39.3 / 39.9 / 39.4 C | K230 limit (datasheet) | this test |
+| Temperature die / board (start / peak / end) | die 44.7 / 52.7 / 48.2 C (2026-10-25, run.py); board 39.3 / 39.9 / 39.4 C (2026-10-21) | K230 limit (datasheet) | this test |
 | Memory BL616 / K230 (start / min / end), leak | BL616 free 206440 / min 204396 / 206440 B, blocks 16 -> 16, deleted 0; K230 heap available 7025152 / 7025152 / 7312064 B; BL616 no leak (mem_leak.py, 42 snapshots); K230 no leak (mem_leak.py, 42 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | kdimg 77.8 MB (/sdcard 176 MiB, /bin 20 MiB layout), kernel ~3.7 MB | minimal image (rule) | the image this run used |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os, -ffunction/-fdata-sections, --gc-sections, strip (no LTO) | smallest code (rule) | |
@@ -77,13 +70,3 @@ n/a (the TS read is in the session); boot temperature recorded at READY.
 ## Battery energy
 
 The current at each load step logged next to the temperature (self-heating follows power).
-
-## Obstacles
-
-None in the run of 2026-10-21.
-
-- **Three die readings of 5.5 C in the 8 h DDR soak** (2026-10-24, tests/test025 runner) -> the runner's regex took the
-  first number after `chip_temp`, and a memtest pass line ("in 5.5 s") was interleaved into its answer -> no data,
-  dropped from the summary; read the "chip temperature: x C" line explicitly in later runners.
-
-None in the run of 2026-10-25.
