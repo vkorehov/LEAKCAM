@@ -20,12 +20,13 @@ ISP := $(HW_ROOT)/LEAKCAM/tools/power-bringup/bl616_isp.py
 # The SDK's own build (project.build) deletes the CMake cache and regenerates autoconfig.h on every make, so every
 # build recompiled the whole SDK: over 10 min (2026-10-28). With the configuration unchanged (defconfig, Kconfig and
 # CMakeLists.txt older than the cache) the generated build in build/ runs directly: only changed files compile, and
-# CMake still re-runs by itself when one of its files changed (sdk_patch.py's .cmake edit). Otherwise the SDK's path.
+# CMake still re-runs by itself when one of its files changed (sdk_patch.py's .cmake edit; it needs BL_SDK_BASE in
+# the container, 2026-10-29). Otherwise the SDK's path.
 INCREMENTAL := [ build/CMakeCache.txt -nt defconfig ] && [ build/CMakeCache.txt -nt Kconfig ] && \
 	[ build/CMakeCache.txt -nt CMakeLists.txt ]
 all build:
 	python3 $(HW_ROOT)/LEAKCAM/firmware/bl616/sdk_patch.py $(BL_SDK_BASE)
-	docker run --rm --user $$(id -u):$$(id -g) -e HOME=/tmp -e LEAKCAM_IN_CONTAINER=1 \
+	docker run --rm --user $$(id -u):$$(id -g) -e HOME=/tmp -e LEAKCAM_IN_CONTAINER=1 -e BL_SDK_BASE=$(BL_SDK_BASE) \
 	    -e PATH=$(TOOLCHAIN)/bin:/usr/bin:/bin -v $(HW_ROOT):$(HW_ROOT) -w $(CURDIR) $(IMAGE) sh -c \
 	    'if $(INCREMENTAL); then for t in pre_build all post_build combine; do \
 	        make --no-print-directory -C build -j8 $$t || exit 1; done; else make -j5; fi'

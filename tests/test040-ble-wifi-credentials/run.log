@@ -1,0 +1,69 @@
+20:23:42 test040-ble-wifi-credentials: 2 metric rows MISSING: Current idle / during (min / avg / peak), Power, energy per operation
+20:23:55 sample start {'board': 36.1, 'bl_mem': (130308, 115956, 109040, 109, 79660, 17, 0)}
+20:23:55 CHECK pass BLE started (pt_ble on) 
+20:24:01 CHECK pass advertises on USB power LEAKCAM-B14A rssi -38 after 6.0 s
+20:24:30 CHECK pass no write succeeds after a cancelled pairing [-1, -1]
+20:24:30 CHECK pass nothing stored without pairing 
+20:24:40 CHECK pass paired (Just Works on USB power) bonded after 'Устан. сопряж.'+'Устан. сопряж.', MTU 247
+20:24:40 CHECK pass ssid 32 bytes accepted GATT 0
+20:24:40 CHECK pass ssid 33 bytes refused GATT 13
+20:24:40 CHECK pass psk 7 bytes refused GATT 13
+20:24:40 CHECK pass psk 64 bytes refused GATT 13
+20:24:40 CHECK pass psk 8 bytes accepted GATT 0
+20:24:40 CHECK pass psk 63 bytes accepted GATT 0
+20:24:40 CHECK pass commit 1 bytes refused GATT 13
+20:24:40 CHECK pass commit 2 bytes refused GATT 13
+20:24:46 CHECK pass commit without an SSID refused GATT 13
+20:24:46 CHECK pass commit without an SSID stores nothing 
+20:24:52 CHECK pass offset (long) write refused GATT 6
+20:24:55 CHECK pass store unchecked 32/63 bytes: SAVED [4]
+20:24:56 CHECK pass stored exactly 32/63 bytes 
+20:24:59 CHECK pass store unchecked 6/8 bytes: SAVED [4]
+20:24:59 CHECK pass stored exactly 6/8 bytes 
+20:25:11 CHECK pass BLE started again after HBN sleep and wake 
+20:25:25 CHECK pass kept over HBN sleep and wake 
+20:25:46 CHECK pass BLE started again after a watchdog reset 
+20:25:58 CHECK pass kept over a watchdog reset 
+20:26:12 CHECK pass check, wrong passphrase: 0x11 [1, 18]
+20:26:12 CHECK pass check, wrong passphrase: old credentials kept 
+20:26:19 CHECK pass check, unknown SSID: 0x10 [1, 16]
+20:26:19 CHECK pass check, unknown SSID: old credentials kept 
+20:27:22 CHECK pass check with the link dropped: nothing stored [1]
+20:27:35 CHECK pass checked store: JOINING -> ADDRESS -> INTERNET -> SAVED [1, 2, 3, 4]
+20:27:35 CHECK pass a second commit during the check starts no second check 
+20:27:35 CHECK pass checked store: the real network stored 
+20:27:40 CHECK pass session: the bridge on the stored network 
+20:27:53 CHECK pass check during a session runs (BLE first): WRONG_PASSWORD [1, 18]
+20:27:54 CHECK pass check during a session: old credentials kept 
+20:27:54 CHECK pass check during a session: the session rejoins 0.1 s after the result
+20:28:07 CHECK pass checked store during a session: SAVED [1, 2, 3, 4]
+20:28:07 CHECK pass checked store during a session: the session restarts on the network 0.1 s after SAVED
+20:28:10 CHECK pass store 0x02 during a session: SAVED [4]
+20:28:10 CHECK pass store 0x02 during a session: the session restarts on the new network (gone from the old one) 
+20:28:33 CHECK pass the real network stored again after a failed join: the session restarts on it 3.4 s
+20:28:36 CHECK pass password changed: the session restarts on the old one and fails 
+20:29:03 CHECK pass password changed: the check of the new one during the retries passes [1, 2, 3, 4]
+20:29:03 CHECK pass password changed: the session back on the network 0.1 s after SAVED
+20:29:12 sample cycle 1 {'board': 35.4, 'bl_mem': (105340, 94568, 90252, 170, 104364, 20, 0)}
+20:29:19 sample cycle 2 {'board': 35.4, 'bl_mem': (105340, 94568, 90252, 170, 104364, 20, 0)}
+20:29:25 sample cycle 3 {'board': 35.3, 'bl_mem': (105340, 94568, 90252, 170, 104364, 20, 0)}
+20:29:33 sample cycle 4 {'board': 35.2, 'bl_mem': (105340, 94568, 90252, 170, 104364, 20, 0)}
+20:29:40 sample cycle 5 {'board': 35.2, 'bl_mem': (105340, 94568, 90252, 170, 104364, 20, 0)}
+20:29:48 sample cycle 6 {'board': 35.2, 'bl_mem': (105340, 94568, 90252, 170, 104364, 20, 0)}
+20:30:17 sample cycle 7 {'board': 35.2, 'bl_mem': (105336, 94568, 90252, 170, 104364, 20, 0)}
+20:30:24 sample cycle 8 {'board': 35.2, 'bl_mem': (105336, 94568, 90252, 170, 104364, 20, 0)}
+20:30:30 sample cycle 9 {'board': 35.1, 'bl_mem': (105336, 94568, 90252, 170, 104364, 20, 0)}
+20:30:37 sample cycle 10 {'board': 35.1, 'bl_mem': (105336, 94568, 90252, 170, 104364, 20, 0)}
+20:30:44 sample cycle 11 {'board': 35.0, 'bl_mem': (105336, 94568, 90252, 170, 104364, 20, 0)}
+20:30:51 sample cycle 12 {'board': 34.9, 'bl_mem': (105336, 94568, 90252, 170, 104364, 20, 0)}
+20:30:59 sample cycle 13 {'board': 34.9, 'bl_mem': (105336, 94568, 90252, 170, 104364, 20, 0)}
+20:31:06 sample cycle 14 {'board': 34.9, 'bl_mem': (105336, 94568, 90252, 170, 104364, 20, 0)}
+20:31:13 sample cycle 15 {'board': 34.8, 'bl_mem': (105336, 94568, 90252, 170, 104364, 20, 0)}
+20:31:20 sample cycle 16 {'board': 34.8, 'bl_mem': (105336, 94568, 90252, 170, 104364, 20, 0)}
+20:31:27 sample cycle 17 {'board': 34.7, 'bl_mem': (105336, 94568, 90252, 170, 104364, 20, 0)}
+20:31:35 sample cycle 18 {'board': 34.6, 'bl_mem': (105336, 94568, 90252, 170, 104364, 20, 0)}
+20:31:41 sample cycle 19 {'board': 34.6, 'bl_mem': (105336, 94568, 90252, 170, 104364, 20, 0)}
+20:31:49 sample cycle 20 {'board': 34.7, 'bl_mem': (105336, 94568, 90252, 170, 104364, 20, 0)}
+20:31:49 CHECK pass 20 store cycles 0 failed
+20:31:52 CHECK pass the real network stored again at the end 
+20:31:56 test040-ble-wifi-credentials: PASS; filled 0: -; still MISSING 2: Current idle / during (min / avg / peak), Power, energy per operation

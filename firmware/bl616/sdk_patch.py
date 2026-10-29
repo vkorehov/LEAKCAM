@@ -20,6 +20,12 @@ building without it.
   No link key on the console: the host printed every LTK (BT_WARN "BLE LTK: ..."), with it anyone at the console or a
   log can decrypt the link the passphrase crosses (tests/test040, 2026-10-28)
 
+  No Wi-Fi passphrase or session keys on the console: every join printed the supplicant's network config line by
+  line, `Exec psk "<passphrase>"` among them (an unconditional printf in the prebuilt fhost library: its format is
+  blanked, same length), and every connect and disconnect dumped the PTK/GTK: mm_sec_keydump() in the prebuilt MAC
+  library (called from its own sm.c, inside LTO: -Wl,--wrap does not reach it) formats each key row and logs it as
+  "%s" through wifi_syslog, which drops those rows (tests/test040, 2026-10-29)
+
     sdk_patch.py <bouffalo_sdk dir>
 """
 import os
@@ -47,9 +53,34 @@ PATCHES = [
     (HOST + "hci_core.c",
      '\t\tBT_WARN("BLE LTK: %s\\r\\n",bt_hex(ltk,BT_SMP_MAX_ENC_KEY_SIZE));\n',
      "\t\t/* LEAKCAM: no LTK on the console (tests/test040) */\n"),
+    ("components/wireless/macsw_plat.c",
+     "void wifi_syslog(int priority, const char *fmt, ...)\n{\n",
+     "void wifi_syslog(int priority, const char *fmt, ...)\n{\n"
+     "    /* LEAKCAM: no session keys on the console (tests/test040): mm_sec_keydump() logs each key row as \"%s\"\n"
+     "     * between its \"Keyram Dump\" and \"MAC Address\" headers */\n"
+     "    static bool keyrows;\n"
+     "    if (strstr(fmt, \"Keyram Dump\"))\n"
+     "        keyrows = true;\n"
+     "    else if (strstr(fmt, \"=  MAC Address =\"))\n"
+     "        keyrows = false;\n"
+     "    else if (keyrows && !strcmp(fmt, \"%s\"))\n"
+     "        return;\n"),
+]
+# binary files: the same length, so nothing else in them moves
+BINARY = [
+    ("components/wireless/wifi6/fhost/lib/libfhost_bl616_default.a", b"\0\0Exec %s\r\n\0", b"\0\0\0xec %s\r\n\0"),
 ]
 
 sdk = sys.argv[1]
+for rel, old, new in BINARY:
+    p = os.path.join(sdk, rel)
+    s = open(p, "rb").read()
+    if new in s:
+        continue
+    if s.count(old) != 1:
+        sys.exit(f"sdk_patch.py: {rel} changed, cannot apply: {old!r}")
+    open(p, "wb").write(s.replace(old, new))
+    print(f"sdk_patch.py: patched {rel}")
 for rel, old, new in PATCHES:
     p = os.path.join(sdk, rel)
     s = open(p).read()

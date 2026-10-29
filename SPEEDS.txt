@@ -46,6 +46,11 @@ or a measurement yet. Keep this file current when a test or a setting changes it
                                                            0.33-0.59 s (SDIO card irq armed, no
                                                            DHCP ARP check; was 5.05 s); TCP up 17.1
                                                            Mbit/s, down ~26 (home router, -47 dBm)
+  BLE (BL616 radio)           LE 1M PHY (SDK default),     start -> advertising 0.29 s (radio    LE 2M PHY, MTU 247      n/a       test040
+                              MTU 247, Just Works on USB   init 0.19 s), seen by the phone 2.1 s (the writes are a few
+                              power only                   after start; connect + pair 11.0 s    hundred bytes once per
+                                                           (two phone dialogs); check JOINING    installation: speed
+                                                           -> SAVED 11.5 s (the Wi-Fi join)      does not matter)
   Microphone (codec ADC)      16 kHz, 16-bit mono          -42 dBFS floor at 54 dB gain          -                       n/a       test011
   LED PWM (TPS61161 CTRL)     25 kHz (40000 ns period)     white 66.7 mA, IR 133 mA at 100 %     -                       n/a       test008
   USB-C 1 (K230 USB 2.0)      USB boot / flashing only     NAND writes 3.7-5.5 MB/s while        -                       n/a       test018

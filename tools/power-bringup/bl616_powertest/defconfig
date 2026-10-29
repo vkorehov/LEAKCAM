@@ -42,3 +42,7 @@ CONFIG_MM_ENABLE_MIN_FREE_TRACKING=y
 CONFIG_BLUETOOTH              =y
 CONFIG_BTBLECONTROLLER_LIB    =ble1m0s1bredr0
 CONFIG_BT_STACK_CLI           =n
+
+# -O3 + LTO, as the product (firmware/bl616/defconfig): the fastest of -O2 / -O3 / -O3 + LTO (tests/test040)
+CONFIG_GCC_OPTIMISE_LEVEL =-O3
+CONFIG_GCC_COMPILE_LTO    =y

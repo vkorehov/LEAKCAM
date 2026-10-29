@@ -89,6 +89,20 @@ the session rejoins; checked and unchecked stores restart the session on the new
 checked during the retries: JOINING -> ADDRESS -> INTERNET -> SAVED, the session back 4.7 s after SAVED. To finish:
 the 20 repeats (leak verdict), the hand steps 1, 2, 5, the current metrics, the feature-cut and optimised builds.
 
+2026-10-29 07:12 (run.py, run 12, same test firmware re-flashed, 464 s): **pass**, 46 of 46 checks, every step
+from 3 to 9 in one run. Step 8: the session rejoins 0.1 s after a check during it; checked and unchecked stores
+restart it on the new network 0.1 s after SAVED; the real network back 4.0 s after a failed join to a missing
+network; router password changed: the new one checked during the auth retries [1, 2, 3, 4], the session back 4.6 s
+after SAVED. Step 9: 20 store cycles, 0 failed; BL616 `mem` identical after every cycle (free 106052 B, min 97420,
+169 blocks): no leak. Left: the hand steps 1, 2, 5 and the current metrics.
+
+2026-10-29 (run.py, run 13, test firmware -O3 + LTO with the console fix of sdk_patch.py, 1633088 B): **pass**, 46
+of 46 checks. Step 8: the session back 0.1 s after a check, 0.1 s after SAVED (checked and unchecked), 3.4 s after a
+failed join to a missing network, 0.1 s after SAVED with the changed password (run 12, -O2: 4.6 s). Step 9: 20
+cycles, 0 failed; BL616 free 105340 -> 105336 B, min 94568, 170 blocks over the 20 cycles: no leak. The phone saw
+the advertising 6.0 s after BLE start (run 12: 2.1 s; the scan's timing, BLE itself starts in 0.28 s).
+measure_build.py on the same image: no passphrase and no key dump on the console over 6 joins and leaves.
+
 ### Automated run 2026-10-28 (run.py, 86 s): **FAIL**
 
 the board was never seen advertising.
@@ -122,6 +136,18 @@ the board was never seen advertising.
 
 - phone USB port was the power source: swapped to sink
 
+### Automated run 2026-10-29 (run.py, 464 s): pass
+
+46 of 46 checks passed. Not automated: advertising stops on unplug, pairing refused on battery, power cut (README Steps 1, 2, 5).
+
+- phone USB port was the power source: swapped to sink
+
+### Automated run 2026-10-29 (run.py, 494 s): pass
+
+46 of 46 checks passed. Not automated: advertising stops on unplug, pairing refused on battery, power cut (README Steps 1, 2, 5).
+
+- phone USB port was the power source: swapped to sink
+
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
 Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted first (test102 Setup); cell full, D1 off; voltage - VBAT C15.1: minimum under the test's load (on battery = the cell; on USB the charger rail).
@@ -129,19 +155,19 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
 | Boot, power-on -> READY (median of 5) | n/a: the K230 is not powered (BL616 only) | target (test022) | |
-| This part's boot share | **MISSING**: BLE init (rfparam, controller, host) -> first advertisement on the BL616 | - | |
-| Test run time | 417 s automated (run.py, run 5, 2026-10-28), no setup | - | setup (flashing, plugging, waiting) separately |
+| This part's boot share | `pt_ble on` -> advertising 0.290 s (median of 5 after watchdog resets, spread 1 ms): radio init (rfparam) 0.187 s, controller + host + advertising 0.103 s; host-timed over the USB console (2026-10-29) | - | |
+| Test run time | 464 s automated (run.py, run 12 with step 8, 2026-10-29), no setup | - | setup (flashing, plugging, waiting) separately |
 | provisioning times: connect + pair, write, store, check (JOINING -> SAVED) | advertising seen 2.1 s after BLE start; connect + pair 11.0 s; store 0x02 3.1 s per session; check 0x01 0x1 2.0 s -> 0x2 7.8 s -> 0x3 11.4 s -> 0x4 11.5 s (2026-10-28, run.py) | - | % of the top |
 | Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | n/a: BL616-only test, rails off - VBAT is read by the K230 ADC (test023) (2026-10-28) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | **MISSING** | - | scripts/energy.py |
 | Per day | n/a: on USB power only, once per installation | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | die n/a: K230 off; board 32.9 / 32.9 / 32.9 C (AHT20) (2026-10-28) | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | BL616 free 175072 / min 97996 / 106100 B, blocks 19 -> 169, deleted 0; BL616 no leak (mem_leak.py, 21 snapshots) (2026-10-28) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 175072 / min 97996 / 106100 B, blocks 19 -> 169, deleted 0; BL616 no leak (mem_leak.py, 21 snapshots) (2026-10-28); run 12: free 106052 / min 97420 B, 169 blocks, unchanged over 20 cycles with BLE first and session restarts (2026-10-29) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | BL616 test firmware 1305360 B (2026-10-28, on the board at the run) | minimal image (rule) | the image this run used |
-| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os -march=rv64imafdcv, sections + --gc-sections, strip, no LTO; BL616 test firmware -O2 (SDK default), no LTO (2026-10-28) | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os -march=rv64imafdcv, sections + --gc-sections, strip, no LTO; BL616 test firmware -O2 (SDK default), no LTO (2026-10-28); since 2026-10-29 product and test -O3 + LTO | smallest code (rule) | |
+| Features over the minimal image | BLE in the product image (leakcam_bl616.map, -O2): controller 113.8 KB + host 66.1 KB + ble_pairing.c 2.1 KB = 182 KB flash (14.8 % of 1233 KB), 14.2 KB static RAM; at run time 18.8 KB heap and 5 tasks (`mem` before / after `pt_ble on`: free 176528 -> 157764 B); start 0.29 s, only on USB power, not on the boot path (2026-10-29) | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | measure_build.py on the test firmware, 2026-10-29: -O2 / -O3 / -O3 + LTO: image 1330080 / 1727920 / 1637200 B; BLE start -> advertising 0.292 / 0.277 / 0.275 s; remembered-AP join (associate + WPA, median of 5) 272 / 250 / 168 ms; full join 3195 / 3170 / 3090 ms; heap after BLE start 157764 / 152260 / 157060 B free. -O3 + LTO adopted in the product and test defconfigs; -march is already the E907's full set (SDK: -march=rv32imafcpzpsfoperand_xtheade -mtune=e907, nothing wider); current not compared (meter, hand step) | the faster one stays | |
 
 ## Boot time
 
@@ -297,4 +323,27 @@ None in the run of 2026-10-28.
   file), the SDK's full path otherwise.
 - The phone powered the laptop again after a reconnect (2026-10-28 20:3x, user) -> the role swap holds only until
   the next USB reconnect -> tools/android-bench/phone_sink.sh re-applies it on every attach (run in the background;
-  a permanent user service is the user's to install, README.txt there).
+  installed for good as the systemd user service phone-sink, 2026-10-28).
+- **The passphrase on the BL616 console** (2026-10-29, found while timing joins for the build comparison): every
+  Wi-Fi join prints the supplicant's network config line by line, `Exec psk "<passphrase>"` among them, and every
+  disconnect dumps the session keys ("Keyram Dump": PTK/GTK in hex). Product and test firmware both (the strings
+  are in leakcam_bl616.elf). Sources: the psk line is an unconditional `printf("Exec %s")` in
+  fhost_wpa_create_network (prebuilt libfhost_bl616_default.a, no switch); the key dump goes through wifi_syslog
+  priority 4 (raw) from prebuilt libmacsw_bl616.a (LTO), the function itself is SDK source (macsw_plat.c).
+  run.py never joined from the console with the real passphrase, so it did not see it; the pass criterion "never on
+  a console" fails until fixed (sdk_patch.py, like the LTK prints of 2026-10-28).
+- `pt_wifi join ... remembered` waits 20 s for DHCP on a rejoin with the same address although lwIP binds it at
+  once (the got-IP event is missed): a test-command flaw, not the product's join (wifi_link.c); measure_build.py
+  reports associate + WPA only for those joins.
+- The key-dump fix took three tries: a filter on wifi_syslog's format missed (mm_sec_keydump() formats each row
+  with snprintf and logs it as "%s"); -Wl,--wrap=mm_sec_keydump missed too (the caller is sm.c in the same prebuilt
+  LTO library, resolved inside LTO; the fhost manager does not call it - own misreading of the map) -> wifi_syslog
+  drops "%s" lines between the "Keyram Dump" and "MAC Address" headers (sdk_patch.py). measure_build.py checks the
+  console for the passphrase and key rows on every run. The first wrap rebuild failed in 0.4 s: CMake re-ran for the changed SDK CMakeLists.txt inside the container without
+  BL_SDK_BASE (own mistake in host.mk's incremental path) -> host.mk passes it.
+- Board and phone left the VM's USB together (2026-10-29 ~09:00, after the LTO measurement, nothing running) -> the
+  user reconnected them; both at once points to the VM / host USB, not the board.
+
+None in run 12 of 2026-10-29.
+
+None in the run of 2026-10-29.

@@ -52,3 +52,8 @@ CONFIG_PM                       =y
 
 # mem_stat.c (`mem`): the lowest free heap since boot, a memory metric of every test
 CONFIG_MM_ENABLE_MIN_FREE_TRACKING=y
+
+# -O3 + LTO: the fastest build (tests/test040, 2026-10-29: Wi-Fi join with a remembered AP 270 -> 180 ms, BLE
+# start 0.292 -> 0.275 s; image +23 %, heap -0.7 KB; -O3 alone +30 % image, 250 ms)
+CONFIG_GCC_OPTIMISE_LEVEL =-O3
+CONFIG_GCC_COMPILE_LTO    =y
