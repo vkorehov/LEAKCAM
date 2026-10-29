@@ -1,0 +1,6 @@
+21:00:11 METER 1: BLE off, idle (60 s)
+21:01:11 METER 2: BLE advertising (60 s)
+21:02:14 METER 3: phone connected and paired, idle link (about 60 s)
+21:03:22 METER 4: Wi-Fi check running (join, DHCP, internet; about 10 s - read the peak)
+21:03:36 CHECK pass check SAVED [1, 2, 3, 4]
+21:03:38 METER done

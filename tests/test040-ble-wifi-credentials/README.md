@@ -1,6 +1,7 @@
 # test040: BLE provisioning on the BL616: Wi-Fi credentials into flash
 
-Status: **planned** (2026-10-27).
+Status: **pass** (2026-10-29): automated run.py 46/46 (runs 12, 13) and the hand steps 1 and 2; step 5's
+full power cut not done (user: the cell stays in). Test firmware only.
 
 The BL616's one BLE job (firmware/bl616/ble_pairing.c): on USB power it advertises as `LEAKCAM-xxyy`, accepts Just
 Works pairing, takes the SSID and passphrase over its provisioning service and stores them in easyflash
@@ -103,6 +104,12 @@ cycles, 0 failed; BL616 free 105340 -> 105336 B, min 94568, 170 blocks over the 
 the advertising 6.0 s after BLE start (run 12: 2.1 s; the scan's timing, BLE itself starts in 0.28 s).
 measure_build.py on the same image: no passphrase and no key dump on the console over 6 joins and leaves.
 
+2026-10-29 hand steps (hand_steps.py, test firmware, cell in): step 1 - advertises on USB power; a held, paired
+connection dropped 0.1 s after USB-C 1 out; no advertising on battery (15 s scan); advertising again after the plug
+(15.3 s incl. the script's watchdog reset and `pt_ble on`: the test firmware does not restart BLE by itself, the
+product reboots into its USB mode). Step 2 - no connection on battery, so no pairing and no write (the board refuses
+connections and pairing without USB power). Meter (hand_steps.py meter, cell full): see Metrics.
+
 ### Automated run 2026-10-28 (run.py, 86 s): **FAIL**
 
 the board was never seen advertising.
@@ -158,9 +165,9 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | This part's boot share | `pt_ble on` -> advertising 0.290 s (median of 5 after watchdog resets, spread 1 ms): radio init (rfparam) 0.187 s, controller + host + advertising 0.103 s; host-timed over the USB console (2026-10-29) | - | |
 | Test run time | 464 s automated (run.py, run 12 with step 8, 2026-10-29), no setup | - | setup (flashing, plugging, waiting) separately |
 | provisioning times: connect + pair, write, store, check (JOINING -> SAVED) | advertising seen 2.1 s after BLE start; connect + pair 11.0 s; store 0x02 3.1 s per session; check 0x01 0x1 2.0 s -> 0x2 7.8 s -> 0x3 11.4 s -> 0x4 11.5 s (2026-10-28, run.py) | - | % of the top |
-| Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
+| Current idle / during (min / avg / peak) | USB-C 1 VBUS, cell full, test firmware -O3 + LTO (hand_steps.py meter, 2026-10-29): BLE off idle 60 / 60.3 mA; advertising 63.4 / peak 63.5 mA; phone connected, idle link 63.1 / 63.2 mA; Wi-Fi check (14 s, JOINING -> SAVED) peak 86 mA. BLE costs ~3.4 mA over idle. With the cell charging the meter read 443 -> 370 -> 144 mA (charge current, not the board) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | n/a: BL616-only test, rails off - VBAT is read by the K230 ADC (test023) (2026-10-28) | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING** | - | scripts/energy.py |
+| Power, energy per operation | at ~5 V VBUS: idle 0.30 W, advertising 0.32 W, check peak 0.43 W; one check <= 86 mA x 5 V x 14 s = 6 J from USB (upper bound, peak held the whole check), ~1.6 J over the connected level; the battery pays nothing: BLE runs on USB power only (2026-10-29) | - | scripts/energy.py |
 | Per day | n/a: on USB power only, once per installation | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | die n/a: K230 off; board 32.9 / 32.9 / 32.9 C (AHT20) (2026-10-28) | K230 limit (datasheet) | chip_temp, AHT20 |
 | Memory BL616 / K230 (start / min / end), leak | BL616 free 175072 / min 97996 / 106100 B, blocks 19 -> 169, deleted 0; BL616 no leak (mem_leak.py, 21 snapshots) (2026-10-28); run 12: free 106052 / min 97420 B, 169 blocks, unchanged over 20 cycles with BLE first and session restarts (2026-10-29) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
@@ -341,6 +348,21 @@ None in the run of 2026-10-28.
   drops "%s" lines between the "Keyram Dump" and "MAC Address" headers (sdk_patch.py). measure_build.py checks the
   console for the passphrase and key rows on every run. The first wrap rebuild failed in 0.4 s: CMake re-ran for the changed SDK CMakeLists.txt inside the container without
   BL_SDK_BASE (own mistake in host.mk's incremental path) -> host.mk passes it.
+- Own mistake (2026-10-29): flashed the product firmware for steps 1 and 2 although the product is preliminary and
+  only the test firmware is tested -> two BOOT + EN recoveries by the user; rule kept: test firmware only. What it
+  showed: the product firmware does not boot (first product run since 7ccef2f: BLE, wifi_link, sdk_patch
+  WRAM guard): after the flash no USB device, no BLE advertising, a USB replug changes nothing, 45-46 mA steady
+  (awake, not in HBN); the same with -O2 (1284912 B) and -O3 + LTO (1608192 B), so not the flags. Its boot log goes to
+  UART0 (the K230 link) and its evlog lives in HBN RAM, which the BOOT + EN recovery wipes -> each recovery needs BOOT
+  + EN by hand. Left for the product rewrite.
+- The meter read 443 -> 370 -> 144 mA while the cell charged (the probes need a full cell) -> waited for the full
+  charge; the user kept the cell in (taking it out is too complex and changes nothing for these readings), so the
+  full power cut of step 5 was not done; persistence over reset, watchdog reset and HBN passed (runs 12, 13).
+- hand_steps.py watched the console port for the unplug, but the BL616 console runs over PR1, not USB-C 1: the
+  port stayed -> the board's own reading (`pt_ble`: USB power yes/no). Then a watchdog-reset race (the old port name
+  outlived the device: EIO) -> wait for the console to answer. Own mistake: killed the first run's shell wrapper, not
+  its Python; it ran on under the next run, wrote into the same log and held the phone -> that run void, a clean
+  run started alone (as runs 6-8 of 2026-10-28).
 - Board and phone left the VM's USB together (2026-10-29 ~09:00, after the LTO measurement, nothing running) -> the
   user reconnected them; both at once points to the VM / host USB, not the board.
 

@@ -1,0 +1,7 @@
+21:10:22 CHECK pass advertises on USB power LEAKCAM-B14A rssi -30
+21:10:43 ACTION: unplug USB-C 1 now (the cell stays in)
+21:10:48 CHECK pass held connection dropped 0.1 s after the unplug
+21:11:04 CHECK pass no advertising on battery (15 s scan)
+21:11:11 CHECK pass no connection on battery, so no pairing and no write no connection
+21:11:11 ACTION: plug USB-C 1 back in
+21:11:46 CHECK pass advertises again after the plug seen 15.3 s after the plug
