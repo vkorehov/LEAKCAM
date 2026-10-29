@@ -363,6 +363,11 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
   profile for our controller library needs `sdk_patch.py` for Secure Connections at all. Threats,
   findings and open items: [SECURITY.txt](SECURITY.txt).
 - **Stored in easyflash** (`wifi_ssid`, `wifi_psk`), and nothing else.
+- **No pairings kept (user, 2026-10-29).** No bond keys in flash (`CONFIG_BT_SETTINGS` off): every
+  setup pairs anew on USB power; after a reset or sleep the board has forgotten the phone. Nothing to
+  steal or wipe; the credentials are written once per installation. Open (tests/test106): the app
+  still asks the user to forget the old pairing by hand (`err_pairing_stale`); it should remove its
+  own stale bond and pair again, as the test's BleOp does.
 - **No other BLE features:** no shell, OAD or device status. Everything else goes over Wi-Fi.
 - **BLE first (user, 2026-10-28).** The check (commit 0x01) takes the radio even from a running K230
   session (on USB power: a leak alarm): the K230 hears a link loss (JOINING), its requests wait, and
@@ -379,12 +384,11 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
   retries never returns. Every join and every check first leaves until the supplicant is idle
   (`wifi_link_sta_leave()`: disconnect each second, at most 10 s). The new network is joined 2.2-2.5 s
   after the store following a missing network, 5.1 s following a changed password (test040).
-- **BLE start keeps USB alive (suspected, being verified).** The SDK's BLE controller resets the
-  PDS block when it starts (weak hook `btblecontroller_software_pds_reset`); the BL616's USB PHY
-  is controlled from PDS. The USB device dropped at BLE start twice and stayed up with the hook
-  emptied, but all of that ran with a corrupt WRAM heap writing into the BLE exchange memory
-  (fixed since): a clean A/B decides whether `ble_pairing.c`'s empty hook stays
-  (tests/test040, 2026-10-28).
+- **BLE start keeps USB alive.** The SDK's BLE controller resets the PDS block when it starts (weak
+  hook `btblecontroller_software_pds_reset`); the BL616's USB PHY is controlled from PDS. A/B on
+  the test firmware (tests/test040, 2026-10-29): with the SDK's reset the USB device dropped at
+  `pt_ble on` and never came back (EN needed); with `ble_pairing.c`'s empty hook BLE started dozens
+  of times in runs 12 and 13 with USB kept. The empty hook stays (no BLE sleep, so PDS needs no reset).
 - **Room for BLE in the Wi-Fi RAM.** The BLE controller library keeps 32 KB of the 160 KB Wi-Fi
   RAM as exchange memory; the BL616's own lwIP heap is 6 KB so the 26 NetHub buffers still fit
   (`lwipopts_user.h`, tests/test040).

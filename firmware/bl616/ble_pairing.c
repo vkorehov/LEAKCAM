@@ -36,8 +36,8 @@ static uint8_t status[3];                /* state, detail LE16: the STATUS chara
 static volatile bool checking;
 
 /* the controller's init resets the PDS block (SDK weak hook, GLB_AHB_MCU_SW_PDS); the BL616's USB PHY is controlled
- * from PDS. Suspected of dropping the USB device at BLE start (tests/test040, 2026-10-28), not proven yet: those runs
- * also had a corrupt WRAM heap; a clean A/B decides whether this stays. No BLE sleep here, so PDS needs no reset. */
+ * from PDS: with the SDK's reset the USB device dropped at BLE start and never came back (A/B, tests/test040,
+ * 2026-10-29). No BLE sleep here, so PDS needs no reset. */
 void btblecontroller_software_pds_reset(void)
 {
 }

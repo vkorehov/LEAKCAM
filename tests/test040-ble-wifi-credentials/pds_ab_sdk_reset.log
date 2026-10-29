@@ -1,0 +1,6 @@
+21:22:28 BL616 port missing
+21:22:28 CHECK FAIL cycle 1 [sdk-reset]: advertising False, USB disconnects 1, console gone
+21:22:58 BL616 port missing
+21:23:32 BL616 port missing
+21:24:03 BL616 port missing
+21:24:03 CHECK FAIL cycle 2 console did not come back after the watchdog reset

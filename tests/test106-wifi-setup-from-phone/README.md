@@ -36,8 +36,9 @@ Android 8.0+, the app's BLE permissions.
    names the reason; the old network still stored and still joined on the next wake.
 4. **Save without checking:** away from the network: stored, the app says it was not checked.
 5. **Change network:** a second setup replaces the first; the next wake joins the new one.
-6. **Board reset (bond lost):** flash erased or board re-flashed: the app detects the stale bond and asks to Forget;
-   after Forget the setup works.
+6. **Board reset (bond lost):** the board keeps no pairings (user, 2026-10-29), so any reset or sleep loses the bond:
+   the app removes its stale bond by itself and pairs again, no Forget by hand (the app still asks for it today:
+   change it first, as BleOp's unpair).
 7. **On battery, no setup:** USB out: the board is not listed by the app, a stored bond cannot connect.
 8. **Repeats:** 10 setups in a row (alternating two networks): every one Done, BL616 memory steady (mem_leak.py).
 

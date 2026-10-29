@@ -110,6 +110,10 @@ connection dropped 0.1 s after USB-C 1 out; no advertising on battery (15 s scan
 product reboots into its USB mode). Step 2 - no connection on battery, so no pairing and no write (the board refuses
 connections and pairing without USB power). Meter (hand_steps.py meter, cell full): see Metrics.
 
+2026-10-29 PDS A/B (pds_ab.py, test firmware): with the SDK's PDS reset at BLE start (ble_pairing.c's empty hook
+removed) cycle 1: one USB disconnect at `pt_ble on`, the console gone for good, no advertising -> EN by hand. With
+the empty hook: every BLE start of runs 12 and 13 kept USB. Decided (user: clear enough): the empty hook stays.
+
 ### Automated run 2026-10-28 (run.py, 86 s): **FAIL**
 
 the board was never seen advertising.
@@ -363,6 +367,8 @@ None in the run of 2026-10-28.
   outlived the device: EIO) -> wait for the console to answer. Own mistake: killed the first run's shell wrapper, not
   its Python; it ran on under the next run, wrote into the same log and held the phone -> that run void, a clean
   run started alone (as runs 6-8 of 2026-10-28).
+- Board and phone left the VM's USB together again (2026-10-29 ~21:30, right after an EN press; both on hub 2-4)
+  -> stopped for the day; the default-flag test firmware rebuild is not flashed yet.
 - Board and phone left the VM's USB together (2026-10-29 ~09:00, after the LTO measurement, nothing running) -> the
   user reconnected them; both at once points to the VM / host USB, not the board.
 
