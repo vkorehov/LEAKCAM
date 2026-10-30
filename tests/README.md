@@ -42,7 +42,7 @@ Leak tests, one per operation the product repeats:
 | [test003 K230 rails and USB boot](test003-k230-rails-and-usb-boot/README.md) | 2026-10-25 | **pass**: all K230 rails within limits, 3V3 up 1.69-1.70 ms after K230_PWR, the K230 USB boot |
 | [test004 K230 hello from SRAM](test004-k230-hello-from-sram/README.md) | 2026-10-25 | **pass**: k230_hello loads over USB into SRAM in 4.2 s and runs (3 of 3 boots), K230_ALIVE toggles. |
 | [test005 K230 NAND flashing](test005-k230-nand-flashing/README.md) | 2026-10-25 | **pass**: the full image flashes to NAND, re-flashes without the B1 short, and boots 5 of 5. |
-| [test006 K230 NAND boot (SPL)](test006-k230-nand-boot-spl/README.md) | 2026-10-25 | **pass**: 5 of 5 cold boots from NAND (SPL, DDR trained at 2667, OpenSBI, kernel, msh); reset |
+| [test006 K230 NAND boot (SPL)](test006-k230-nand-boot-spl/README.md) | 2026-10-25 | **pass**: 5 of 5 cold boots from NAND (SPL, DDR training at 3200 MT/s all-ODT, OpenSBI, kernel, msh); reset |
 | [test007 RT-Smart boot](test007-rtsmart-boot/README.md) | 2026-10-25 | **pass**: 5 of 5 cold boots from NAND to msh, /bin and /sdcard mounted, agent starts; PMU RTC |
 | [test008 minimal image - the fewest bits that still boot and pass](test008-minimal-image/README.md) | 2026-10-23 | **in progress**: builds 1+2 adopted (app init 0.484-0.494 s); kernel stays -O1; programs |
 | [test009 LED chains (white U14/J1, IR U15/J2)](test009-led-chains/README.md) | 2026-10-25 | **pass**: both chains light and reach full current at 100 % duty on the K230 PWM (white +0.34 A, |
@@ -61,7 +61,7 @@ Leak tests, one per operation the product repeats:
 | [test022 K230 boot time](test022-boot-time/README.md) | 2026-10-25 | **0.32 s**: reset release -> app init 0.320 / 0.320 / 0.321 s (min / median / max, 8 of 8 cold |
 | [test023 Battery ADC (K230 ADC_1, VBAT/3)](test023-battery-adc/README.md) | 2026-10-25 | **pass**: calibrated 64-read mean within +-10 mV of the meter at 4.07-4.37 V; low cell and load open. |
 | [test024 K230 heartbeat to the BL616 (K230_ALIVE)](test024-heartbeat/README.md) | 2026-10-25 | **pass**: 8 boots, half-period 500 / 500 / 500 ms (min / avg / max), no back-feed after |
-| [test025 DDR stress (128 MB; 2667, then 3200 MT/s)](test025-ddr-stress/README.md) |  | **pass at 3200 MT/s all-ODT** (2026-10-25: 10 passes, 0 errors; 8 h soak 2026-10-23/24: 5230 passes, 0 |
+| [test025 DDR stress (128 MB, 3200 MT/s all-ODT)](test025-ddr-stress/README.md) |  | **pass at 3200 MT/s all-ODT** (2026-10-25: 10 passes, 0 errors; 8 h soak 2026-10-23/24: 5230 passes, 0 |
 | [test026 K230 die temperature (TS)](test026-temperature/README.md) | 2026-10-25 | **in progress**: open board idle and CPU/DDR (memtest) load pass, die 44.7 C idle, 52.7 C peak; |
 | [test027 H.265 encoder with synthetic frames](test027-video-encoder/README.md) | 2026-10-25 | **pass**: 2 x 15 fps at the product settings (511 / 510 kbit/s); 1-channel top 75.9 fps (84.2 fps on |
 | [test028 NAND / UFFS power-loss robustness](test028-nand-power-loss/README.md) | 2026-10-25 | **pass**: 520 random power cuts during writes over all runs (100 + 400 on 2026-10-23, 20 on |

@@ -29,7 +29,7 @@ Kernel init levels, UFFS mounts (dominant), boot_times (leakcam_bench.c); SPL/U-
 1. Rails off >= 5 s, then `pt_on` (the BL616 prints the 3V3 ramp), `pt_run` at t0 (reset released).
 2. From the K230 console, the time of each milestone after t0:
    - U-Boot SPL banner (ROM read SPL from NAND);
-   - "Firmware run has completed 2667" (DDR training done);
+   - "PMU Major Msg: Firmware run has completed" (DDR training done, 3200 MT/s);
    - OpenSBI banner;
    - RT-Smart banner;
    - UFFS mounted (/bin, /sdcard), `msh />`;

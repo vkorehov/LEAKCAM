@@ -40,7 +40,7 @@ Recorded MB/s per case; the drop under concurrent load; no errors (compare with 
 Open:
 - Step 2 (uncached alias, as the KPU/VENC see it) not done.
 - Step 3 (under KPU / encoder load) not done.
-- Current and energy were measured at 2667 MT/s (2026-10-21), not at 3200.
+- Current and energy at 3200 MT/s: not measured yet (the 2026-10-21 figures were at 2667 MT/s, superseded).
 
 ## Metrics (bench image; date per value)
 
@@ -48,13 +48,13 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> app init | 1.00 s (2026-10-21, 2667 MT/s bench image; the current boot: test022) | test022 | longest step: UFFS mounts 0.70 s |
+| Boot, power-on -> app init | pt_run -> msh 0.52-0.53 s at 3200 MT/s (2026-10-30, test017's 20 boots); boot timing: test022 | test022 | longest step: UFFS mounts 0.70 s |
 | This part's boot share | DDR training inside 0.23 s (ROM..OpenSBI) | - | not split further yet |
 | Test run time | 82 s automated (run.py, 8 x ddr_bench 3072) (2026-10-25) | - | setup: reflash (USB boot) |
 | DDR write / read / copy | 6.08 / 4.84 / 2.77 GB/s at 3200 MT/s all-ODT (2026-10-25) | - | |
-| Current idle / during (min / avg / peak) | 204 / - / 270 mA (2026-10-21, 2667 MT/s) | floor 204 (msh idle) | USB-C 1 VBUS |
+| Current idle / during (min / avg / peak) | **MISSING**: re-measure at 3200 MT/s (2667 figures superseded) | floor 204 (msh idle) | USB-C 1 VBUS |
 | Voltage under load (min) | VBAT 4.31 V min (K230 ADC ch 1, test023 calibration, 9 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | +66 mA = +251 mW over idle; 18 mJ per 64 MB pass set (2026-10-21, 2667 MT/s) | - | 3.8 V nominal |
+| Power, energy per operation | **MISSING**: re-measure at 3200 MT/s | - | 3.8 V nominal |
 | Per day | n/a (no DDR-only work in a session) | - | |
 | Temperature die / board (start / peak / end) | die 46.4 / 48.5 / 48.5 C; board 37.3 / 37.4 / 37.4 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
 | Memory BL616 / K230 (start / min / end), leak | BL616 free 206440 / min 204396 / 206440 B, blocks 16 -> 16, deleted 0; K230 heap available 7025152 / 7023232 / 7312064 B; BL616 no leak (mem_leak.py, 9 snapshots); K230 no leak (mem_leak.py, 9 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |

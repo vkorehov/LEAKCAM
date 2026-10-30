@@ -1,6 +1,6 @@
 # test006: K230 NAND boot (SPL)
 
-Status: **pass** (2026-10-25): 5 of 5 cold boots from NAND (SPL, DDR trained at 2667, OpenSBI, kernel, msh); reset
+Status: **pass** (2026-10-25): 5 of 5 cold boots from NAND (SPL, DDR training, OpenSBI, kernel, msh); DDR 3200 MT/s all-ODT since 2026-10-23 (test025); reset
 release -> OpenSBI 0.24 s.
 
 The K230 boot ROM loads U-Boot SPL from the SPI NAND; SPL trains the DDR and loads OpenSBI and the kernel. The kernel
@@ -16,7 +16,7 @@ boots. Probes: Metrics.
 
 ## Needs (build features and dependencies)
 
-K230 SPL: SPI NAND boot, DDR training (K230D_SIP_LPDDR4_2667), TOC.
+K230 SPL: SPI NAND boot, DDR training (K230D_SIP_LPDDR4_3200_ALLODT, U-Boot k230d_leakcam_defconfig), TOC.
 
 (What this test uses; the union over all tests is the feature set the minimal image keeps.)
 
@@ -27,11 +27,11 @@ kernel and msh; meter readings with the K230 rails off and at msh idle.
 
 ## Pass
 
-SPL boots from NAND, DDR trains at 2667, OpenSBI and the kernel follow, msh comes up: on every cold boot.
+SPL boots from NAND, DDR trains, OpenSBI and the kernel follow, msh comes up: on every cold boot.
 
 ## Result
 
-- SPL boots from NAND, DDR trains at 2667, `Winbond SPI NAND was found`, OpenSBI v0.9 follows (first run
+- SPL boots from NAND, DDR trains (3200 MT/s all-ODT; the PMU's "Firmware run has completed" line), `Winbond SPI NAND was found`, OpenSBI v0.9 follows (first run
   2026-10-17).
 - 5 of 5 cold boots reach msh; reset release -> OpenSBI 0.24 s, pt_run -> msh 0.45 s (2026-10-25, run.py).
 - The ROM needs the plain `fn_u-boot-spl.bin`, not the EVB's byte-swapped `swap_fn_u-boot-spl.bin`
