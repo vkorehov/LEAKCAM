@@ -7,56 +7,21 @@ The steps that need a hand on a cable (unplug, power cut) are not in here: READM
     tests/test040-ble-wifi-credentials/run.py [--flash]    --flash: build output of bl616_powertest flashed first
 """
 import fcntl
-import hashlib
-import json
 import os
 import re
 import subprocess
 import sys
-import threading
 import time
-import zlib
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
 from harness import Run, bl, REPO   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
+from phone import creds, op, ready, want   # noqa: E402
 
-APK = os.path.join(REPO, "android/app/build/outputs/apk/debug/app-debug.apk")
-TEST_APK = os.path.join(REPO, "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk")
-RUNNER = "com.leakcam.setup.test/androidx.test.runner.AndroidJUnitRunner"
 SAVED, NOT_FOUND, WRONG_PSK, JOIN_FAILED = 0x04, 0x10, 0x11, 0x12
-
-
-def adb(*a, secs=180):
-    return subprocess.run(["adb", *a], capture_output=True, text=True, timeout=secs).stdout
-
-
-def op(name, **kw):
-    """one BleOp call; its JSON result (never printed whole: no values in it, but keep the log short)"""
-    a = ["shell", "am", "instrument", "-w", "-r", "-e", "op", name]
-    for k, v in kw.items():
-        if str(v):                              # adb shell drops an empty word: '-e writes ""' would eat the next key
-            a += ["-e", k, str(v)]
-    m = re.search(r"INSTRUMENTATION_STATUS: result=(.*)", adb(*a, RUNNER, secs=240))
-    res = json.loads(m.group(1)) if m else {"error": "no result from the phone"}
-    return res
 
 
 def hexs(s):
     return s.encode().hex() if isinstance(s, str) else s.hex()
-
-
-def creds():
-    """(ssid len, crc), (psk len, crc) as stored on the BL616; None for a missing key"""
-    out = bl("pt_ble creds", 2, r"wifi_psk[^\n]*\n")
-    got = []
-    for key in ("wifi_ssid", "wifi_psk"):
-        m = re.search(key + r" len (\d+) crc ([0-9a-f]{8})", out)
-        got.append((int(m.group(1)), int(m.group(2), 16)) if m else None)
-    return tuple(got)
-
-
-def want(ssid, psk):
-    return tuple((len(v.encode()), zlib.crc32(v.encode())) if v is not None else None for v in (ssid, psk))
 
 
 def states(res):
@@ -81,30 +46,6 @@ def bl_back(what, secs=40):
     op("scan", secs=20)
     op("unpair", address=addr)
     op("session", address=addr, pair="accept", writes="", secs=1)
-
-
-def install(apk):
-    """adb install, answering Play Protect's "verify this app" dialog on the phone (an install over USB waits for it):
-    its "install without checking" button is tapped from a UI dump (2026-10-28, user: no hand on the phone)"""
-    done = threading.Event()
-
-    def press():
-        while not done.wait(1):
-            xml = adb("exec-out", "uiautomator", "dump", "/dev/tty", secs=20)
-            if "com.android.vending" not in xml:
-                continue
-            m = re.search(r'text="[^"]*(?:без проверки|Не проверять|without (?:checking|scanning)|anyway|Не отправлять|Don.t send)[^"]*"'
-                          r'[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml, re.I)
-            if m:
-                x1, y1, x2, y2 = map(int, m.groups())
-                adb("shell", "input", "tap", str((x1 + x2) // 2), str((y1 + y2) // 2))
-                r.notes.append("Play Protect dialog answered at install")
-
-    t = threading.Thread(target=press, daemon=True)
-    t.start()
-    adb("install", "-r", "-g", "-t", apk)       # -g: the Bluetooth permissions granted at install
-    done.set()
-    t.join()
 
 
 def connects():
@@ -150,27 +91,10 @@ if "pt_ble" not in bl("help", 2):
     r.obstacle("the BL616 test firmware on the board has no pt_ble: flash it first (run.py --flash)")
     r.finish("not run: no pt_ble in the BL616 firmware.", False)
     sys.exit(1)
-if "device" not in adb("get-state", secs=10):
-    r.obstacle("no Android phone on adb (USB debugging on, the prompt accepted)")
-    r.finish("not run: no phone on adb.", False)
-    sys.exit(1)
-for pkg, apk in (("com.leakcam.setup", APK), ("com.leakcam.setup.test", TEST_APK)):
-    # only a changed APK is installed: every install over USB brings up Play Protect's "verify this app" (2026-10-28)
-    on_phone = adb("shell", "pm", "path", pkg).strip().replace("package:", "")
-    if not on_phone or adb("shell", "sha256sum", on_phone).split()[:1] != [hashlib.sha256(open(apk, "rb").read()).hexdigest()]:
-        install(apk)
-adb("shell", "svc", "power", "stayon", "usb")   # the screen stays on while plugged: the pairing dialog shows
-adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")
-adb("shell", "cmd", "bluetooth_manager", "enable")
-# the phone charges from the computer, not the other way round: a Samsung on a USB-C port came up as the power source
-# and ran its battery down to 3 % during run 6 (2026-10-28)
-if re.search(r"status=\{[^}]*?power_role=source", adb("shell", "dumpsys", "usb"), re.S):
-    adb("shell", "dumpsys", "usb", "set-port-roles", "port0", "sink", "device")
-    r.notes.append("phone USB port was the power source: swapped to sink")
-# a locked phone shows the pairing dialog over the lock screen, where UI Automator cannot press it (run 6, 2026-10-28)
-if "isKeyguardShowing=true" in adb("shell", "dumpsys", "window"):
-    r.obstacle("the phone is locked: unlock it (screen lock off for the bench phone, or Developer options > Stay awake)")
-    r.finish("not run: the phone is locked.", False)
+why = ready(r.notes)
+if why:
+    r.obstacle(why)
+    r.finish(f"not run: {why.split(' (')[0]}.", False)
     sys.exit(1)
 
 r.off()

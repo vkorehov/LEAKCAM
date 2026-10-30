@@ -450,7 +450,9 @@ class MainActivity : Activity() {
         bondReceiver = receiver
         val filter = IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-            registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)   // system broadcasts still arrive
+            /* exported: the bond broadcast comes from the Bluetooth app's uid, and a NOT_EXPORTED receiver never got it
+             * (Samsung, Android 13, test106 2026-10-30); only the system may send this protected broadcast */
+            registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
         else
             registerReceiver(receiver, filter)
         if (device.bondState == BluetoothDevice.BOND_NONE)

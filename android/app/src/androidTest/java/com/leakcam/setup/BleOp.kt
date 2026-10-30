@@ -44,6 +44,9 @@ import java.util.regex.Pattern
  *   op session  address, pair (accept | cancel | skip), mtu (247; 23 = no exchange: long values go as offset writes),
  *               writes: "char:hex,char:hex,..." (char ssid | psk | commit), each write's GATT status; then the STATUS
  *               notifications until a final state or secs; drop_at: disconnect on that state (hex, e.g. 01)
+ *   op app      the setup app itself, as a user meets it (test106): opens it, Find, the network (ssid, psk: hex; empty =
+ *               open), button (send | save_anyway), the pairing dialogs accepted; every help text with its time
+ *               (the app shows the SSID, never the passphrase) until the buttons are back or secs
  *
  * Values are hex so any length and byte reaches the board unchanged; the passphrase is never logged or returned.
  */
@@ -67,6 +70,7 @@ class BleOp {
                 "scan" -> scan()
                 "unpair" -> unpair()
                 "session" -> session()
+                "app" -> app()
                 else -> out.put("error", "unknown op '$op'")
             }
         } catch (e: Exception) {
@@ -208,6 +212,44 @@ class BleOp {
             gatt.disconnect()
             gatt.close()
         }
+    }
+
+    private fun app() {
+        val ui = UiDevice.getInstance(inst)
+        val pkg = ctx.packageName
+        ctx.startActivity(ctx.packageManager.getLaunchIntentForPackage(pkg)!!.addFlags(
+            android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK))
+        val texts = JSONArray()
+        var last = ""
+        fun help() = ui.findObject(By.res(pkg, "help"))?.text ?: ""
+        fun note() { val h = help(); if (h != last && h.isNotEmpty()) { last = h; texts.put(JSONObject().put("ms", ms()).put("help", h)) } }
+        fun enabled(id: String) = ui.findObject(By.res(pkg, id))?.isEnabled == true
+        ui.wait(Until.findObject(By.res(pkg, "scan")), 10000)!!.click()
+        val found = SystemClock.elapsedRealtime() + 15000
+        while (SystemClock.elapsedRealtime() < found && !enabled("scan")) { note(); SystemClock.sleep(200) }
+        note()
+        out.put("found", ui.findObject(By.res(pkg, "devices"))?.childCount ?: 0)
+        out.put("ms_found", ms())
+        fun hex(k: String) = arg(k, "").chunked(2).map { it.toInt(16).toByte() }.toByteArray().toString(Charsets.UTF_8)
+        ui.findObject(By.res(pkg, "ssid")).text = hex("ssid")
+        ui.findObject(By.res(pkg, "password")).text = hex("psk")
+        /* no pressBack: setting the text opens no keyboard, and Back closed the app (2026-10-30) */
+        val button = if (arg("button", "send") == "save_anyway") "save_anyway" else "send"
+        ui.wait(Until.findObject(By.res(pkg, button)), 5000)!!.click()
+        val until = SystemClock.elapsedRealtime() + arg("secs", "150").toLong() * 1000
+        SystemClock.sleep(500)
+        val pressed = mutableListOf<String>()
+        while (SystemClock.elapsedRealtime() < until) {
+            note()
+            ui.findObject(By.res("android", "button1"))?.let { pressed.add("'${it.text}'"); it.click(); SystemClock.sleep(500) }
+            if (enabled("send") && enabled("scan")) break   /* finishSend: the send is over */
+            SystemClock.sleep(200)
+        }
+        note()
+        out.put("pairing", pressed.joinToString("+"))
+        out.put("save_anyway", ui.findObject(By.res(pkg, "save_anyway")) != null)
+        out.put("help", texts)
+        out.put("ms_end", ms())
     }
 
     /* the system pairing dialog: press android:id/button1 (pair) or button2 (cancel) - by id, not by text: the

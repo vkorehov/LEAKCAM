@@ -9,44 +9,16 @@ board's own USB-C 1 power reading (`pt_ble`; the console stays up on PR1) marks 
                             (no advertising, no connection, so no pairing), advertising again after the plug
                             (BLE restarted by command: the test firmware does not restart it by itself)
 """
-import json
 import os
 import re
-import subprocess
 import sys
 import termios
 import threading
 import time
-import zlib
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "power-bringup"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
 from board import bl, log, wifi_credentials   # noqa: E402
-
-RUNNER = "com.leakcam.setup.test/androidx.test.runner.AndroidJUnitRunner"
-
-
-# op, creds and want as in run.py (that file runs the whole test when imported)
-def op(name, **kw):
-    a = ["adb", "shell", "am", "instrument", "-w", "-r", "-e", "op", name]
-    for k, v in kw.items():
-        if str(v):
-            a += ["-e", k, str(v)]
-    out = subprocess.run(a + [RUNNER], capture_output=True, text=True, timeout=240).stdout
-    m = re.search(r"INSTRUMENTATION_STATUS: result=(.*)", out)
-    return json.loads(m.group(1)) if m else {"error": "no result from the phone"}
-
-
-def creds():
-    out = bl("pt_ble creds", 2, r"wifi_psk[^\n]*\n")
-    got = []
-    for key in ("wifi_ssid", "wifi_psk"):
-        m = re.search(key + r" len (\d+) crc ([0-9a-f]{8})", out)
-        got.append((int(m.group(1)), int(m.group(2), 16)) if m else None)
-    return tuple(got)
-
-
-def want(ssid, psk):
-    return tuple((len(v.encode()), zlib.crc32(v.encode())) for v in (ssid, psk))
-
+from phone import op   # noqa: E402
 
 def console_back(secs=60):
     """the console (PR1) answers again after a watchdog reset; the old port name can outlive the device a moment"""
