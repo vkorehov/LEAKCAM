@@ -23,7 +23,7 @@ BL616 HBN RTC, XTAL32K (Y3), HBN pin config (HBN_Hw_Pu_Pd_Cfg).
 1. Test firmware `pt_sleep <s>` (test031): RTC wake after 10, 60, 600 s; the wake time against the host clock
    (console reappears) and the BL616's own RTC count.
 2. 100 cycles of 60 s: every wake arrives, none missed, spread of the error.
-3. Crystal: Y3 frequency (scope on IO17, or the RTC count against the host over 1 h): ppm.
+3. Crystal: Y3 frequency from the RTC count against the host over 1 h: ppm.
 4. Drift over 24 h without NTP: seconds per day against the 1.7 s/day budget.
 5. The K230 PMU RTC: test037.
 
@@ -38,7 +38,7 @@ Every wake within +-1 s at 600 s, none missed in 100; crystal within +-20 ppm; d
   the sleep (test031, 2026-10-22).
 - Y3 **+17 ppm** (+-35 ppm band: 20 ms host polling at both ends), from the shortest of each: 603.69 - 13.68 =
   590.01 s for 590 s (2026-10-25). Within +-20 ppm, not yet proven inside it.
-- Open: crystal within +-20 ppm not proven (scope on IO17 or 1 h count, step 3); if it is off, check Y3's load
+- Open: crystal within +-20 ppm not proven (the 1 h count, step 3); if it is off, check Y3's load
   capacitors against the crystal's CL.
 - Open: 100 cycles of 60 s (step 2) and 24 h drift (step 4) not run.
 

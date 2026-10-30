@@ -53,9 +53,9 @@ Recorded per step; the biggest steps named as candidates to shorten.
   /sdcard 32 MiB, /bin 8 MiB (2026-10-21).
 
 Open:
-- main/msh and the agent's READY not timed (needs the product BL616 or a K230-side hook).
-- Battery current through the boot per step (scope over a shunt) not measured; energy per boot below still uses the
-  0.88 s boot of 2026-10-21.
+- main/msh and the agent's READY not timed (needs the link protocol in the BL616 test firmware, or a K230-side hook).
+- Energy per boot with today's 0.32 s boot not measured: the meter's average over a loop of cold boots (no scope,
+  user 2026-10-30); the figure below still uses the 0.88 s boot of 2026-10-21.
 
 ## Metrics (bench image; date per value)
 
@@ -84,4 +84,5 @@ This test is the boot time measurement.
 
 ## Battery energy
 
-Battery current through the boot, per step (scope over a shunt in the battery lead): energy per boot = the fixed cost of every wake. Also after each speed change (NAND clock, DDR 3200).
+Battery current through the boot: the meter's average over a loop of cold boots times the boot time (no scope, user
+2026-10-30; no per-step split): energy per boot = the fixed cost of every wake. Also after each speed change (NAND clock, DDR 3200).

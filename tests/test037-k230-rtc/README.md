@@ -28,8 +28,7 @@ K230 PMU RTC (RT_USING_RTC, RT_USING_RTC_PMU), musl time (UTC patch), rtc_raw/rt
      (R45 bridged, bug-003), AVDD1P8_RTC on the 1V8 rail at 1.8 V with the rails on;
    - driver: the `rtc` device registered (`list_device`), its clock source the external crystal, not an internal RC
      (driver / PMU register, read back and printed);
-   - oscillation: the RTC seconds advance between two reads 10 s apart (and, if a scope is at hand, Y1 at 32.768 kHz
-     on the crystal pin, a 10x probe only).
+   - oscillation: the RTC seconds advance between two reads 10 s apart.
    **Raw read:** `date` in msh, and the PMU RTC registers read directly (a temporary MSH command in the SDK copy):
    seconds, date fields, the valid / running flags, before and after a set.
 1. Boot: `rtc driver register OK`; the time the RTC starts with before the handover (expect the reset value), and

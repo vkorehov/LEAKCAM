@@ -49,7 +49,7 @@ Then: BL616 HBN share = (HBN) - (EN low); compare each part with ENERGY.txt sect
 | Agent waiting on the link (READY sent) | the agent running, BL616 not answering | the floor a session sits at while it waits |
 | BL616 awake, idle (test firmware prompt) | K230 rails off | the BL616's own awake floor |
 
-Each state: minimum, average and peak over >= 10 s (meter min/max hold, or a shunt and scope for the peaks); the
+Each state: minimum, average and peak over >= 10 s (meter min/max hold); the
 range that reads it (uA / mA / A) and the meter's resolution there.
 
 ## Pass

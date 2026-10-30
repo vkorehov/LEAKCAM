@@ -14,7 +14,7 @@ lowest rest voltage at which the full load still runs without a brownout.
 - Meter in the cell's + lead, **10 A range, locked** (the 600 mA range's shunt dropped the supply at 0.5 A and hid
   the LED knee, test009), jumper across it while the range or jack changes; every USB power cable out (PR1 only, the
   consoles: `/dev/ttyACM0` BL616, `/dev/ttyACM1` K230).
-- VBAT at C15.1 on a second meter (minimum hold) or a scope for the dips (the LED soft start, the Wi-Fi TX bursts).
+- VBAT at C15.1 on a second meter (minimum hold) for the dips (the LED soft start, the Wi-Fi TX bursts).
 - Full cell (charged, D1 off, ~4.17 V at rest) for runs 1-3; a low cell (~3.5 V and ~3.3 V at rest, drained by
   running run 2 on battery) for run 4.
 - Board in the open (no enclosure) for the first runs; then once in the closed enclosure for the heat.

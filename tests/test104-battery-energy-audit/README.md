@@ -19,7 +19,8 @@ tests is what the minimal image keeps).
 
 1. Sleep current: from test031 (low level, BL616 HBN with the test firmware); here only checked with the product
    firmware's real sleep.
-2. Energy per humidity slice: the current over the ~85 ms wake, integrated (scope over a shunt).
+2. Energy per humidity slice: the meter's average over a loop of slices (a short slice interval, >= 10 min) minus the
+   sleep floor, per slice (no scope: user, 2026-10-30).
 3. Energy per K230 report session: current over the whole session (test101 timing, test102 current), boot part
    separate (test022).
 4. Energy per leak session with a clip upload (Wi-Fi).

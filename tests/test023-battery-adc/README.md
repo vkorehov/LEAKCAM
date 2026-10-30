@@ -52,7 +52,7 @@ Open:
 - Low-cell point (~3.4 V): tells gain from offset; re-fit the calibration then.
 - Reading under load (KPU or LEDs on the cell; the cutoff reads under load).
 - CH340 (U2) drops off USB when USB-C 1 is plugged in while on battery (reproduced 2026-10-21 19:51); candidates
-  D3 VCC back-fed from U2's D+ or a 3V3 dip resetting U2, both gone in rev 2 (bugs/v2.txt 3/5); not scoped.
+  D3 VCC back-fed from U2's D+ or a 3V3 dip resetting U2, both gone in rev 2 (bugs/v2.txt 3/5); the cause not measured.
 - Current on battery with the K230 at msh not measured.
 
 ## Metrics (2026-10-21)
