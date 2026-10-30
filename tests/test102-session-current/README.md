@@ -25,7 +25,7 @@ paid on battery). A / 10 A input, 0.001 A. Rules (2026-10-21):
 - "LEAd" on the GD118B = the red lead's jack does not match the function; it has auto power-off (APO) - disable it
   (key at switch-on, see the manual) for long runs.
 
-**On battery (sleep current only):** with USB present the product BL616 firmware stays awake (USB mode, BLE), so the
+**On battery (sleep current only):** with USB present the BL616 stays awake (USB mode, BLE; test firmware as product), so the
 sleep current needs the meter in the cell's + lead, USB unplugged (test104).
 
 ![USB meter hookup](usb_meter.png)

@@ -3,7 +3,7 @@
 Status: **steps 1-4 pass** (2026-10-25): K230 address 0.33-0.59 s after the card binds; TCP up 27.5 / down 22.1 Mbit/s, UDP up 35.4.
 
 The product path for clips and checks: the K230's lwIP over the NetHub SDIO bridge (test015: bus 21 MB/s, not the
-limit) to the BL616's 2.4 GHz radio. Needs the product BL616 firmware (open on rev 1) and stored credentials
+limit) to the BL616's 2.4 GHz radio. Runs on the BL616 test firmware's bridge (`pt_wifi`, the NetHub code of firmware/bl616) with stored credentials
 (`wifi_set` on the debug console, or BLE).
 
 ## Setup

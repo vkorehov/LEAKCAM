@@ -27,7 +27,7 @@ BL616 ACOMP1 (leak), ADC (pt_leak), HBN wake on ACOMP.
 1. Probe resistance sweep across S1 (resistor decade or fixed values 10 k .. 10 M): LEAK_SENS voltage (pt_leak) and
    the comparator's state; the wet/dry threshold in ohms.
 2. Real water: tap water, distilled, salt water, a wet towel on the probe tips: resistance and detection.
-3. Wake from HBN (test firmware pt_sleep, product firmware): a wet edge wakes within ms; drying (the reverse edge)
+3. Wake from HBN (test firmware `pt_sleep`, comparators armed): a wet edge wakes within ms; drying (the reverse edge)
    too, as the product expects.
 4. All three sockets S1, S2, S3; a probe with a broken wire (open) stays dry.
 5. Noise: no false wake over 8 h dry (user 2026-10-23: 24 h overkill, 8 h overnight) (LED drivers, Wi-Fi bursts on the same rail).
@@ -55,8 +55,7 @@ Wet detected at every water type the product must see, dry never woken falsely i
 
 Open:
 - Real water (tap, distilled, salt, wet towel) and a resistor sweep 10 k .. 10 M for the threshold in ohms.
-- 8 h dry without a false wake (step 5; the product's evlog will count wakes).
-- The product firmware build (rewrite).
+- 8 h dry without a false wake (step 5; the test firmware's evlog counts the wakes).
 - Wake latency not measured directly (no edge timestamp on the board).
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)

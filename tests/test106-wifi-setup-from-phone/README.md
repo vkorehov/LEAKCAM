@@ -1,7 +1,8 @@
 # test106: Wi-Fi setup from the phone, end to end
 
 Status: **pass, steps 1 3 4 5 6 8** (2026-10-30, run.py 18/18): setup 7.3-8.0 s from opening the app to Done; steps 2
-and 7 open (battery wakes need the rewritten product firmware; step 7 by hand).
+and 7 open (step 2: the test firmware's battery wake to the stored network and a K230 session;
+step 7 by hand).
 
 The installation flow as a user meets it: a new LEAKCAM on USB power, the LEAKCAM Setup app (android/, APP.txt) finds
 it, pairs, sends the Wi-Fi network, the board checks and stores it in the BL616's flash; then, on battery, the
@@ -10,8 +11,8 @@ characteristic, is test040.
 
 ## Setup
 
-- Product BL616 firmware with BLE provisioning, or the test firmware of test040 until the product firmware is
-  rewritten (firmware/bl616 hangs before USB on rev 1); K230 test image (test019) for the session step.
+- BL616 test firmware (bl616_powertest, BLE provisioning and the Wi-Fi check from firmware/bl616); K230 test image
+  (test019) for the session step.
 - Android phone with the LEAKCAM Setup app (debug APK, `./gradlew assembleDebug`), on adb (USB to the VM or Wi-Fi
   adb); the app's steps driven by `adb shell uiautomator` / UI Automator so the run needs no hands, the system
   pairing dialog included. One run by hand on a second phone (another Android version) for the dialogs.
@@ -76,8 +77,8 @@ a person adds their own time to those two.
 | **Total, open -> Done** | **6.3-7.7** | **28.5** | |
 
 Open:
-- Step 2 (the stored network used on battery by the BL616's wake and a K230 session) waits for the rewritten product
-  firmware; step 7 (on battery: not listed, no connection) by hand (test040 usb-gate covers the board side).
+- Step 2 (the stored network used on battery by the BL616's wake and a K230 session) needs the battery wake that joins the
+  stored network and starts a session in the test firmware; step 7 (on battery: not listed, no connection) by hand (test040 usb-gate covers the board side).
 - 5 GHz-only and no-data hotspot networks (Setup) not run: no such networks on the bench.
 - The hand run on a second phone (another Android version: the bond removal, the single prompt) not done.
 - Remaining waits: Send -> prompt (connect) and the fast scan could go too if the app connected and paired while the

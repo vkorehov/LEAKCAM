@@ -20,8 +20,8 @@ BL616 product parts: HBN, RTC, ACOMP, I2C (AHT20), K230 power path.
 
 ## Steps
 
-1. Wake to K230_PWR high: from an RTC wake, a leak (ACOMP) edge and a USB plug (product firmware; a GPIO toggled at
-   each step, scope or the K230's rdtime).
+1. Wake to K230_PWR high: from an RTC wake, a leak (ACOMP) edge and a USB plug (test firmware with the wake decision of
+   firmware/bl616/main.c built in; a GPIO toggled at each step, scope or the K230's rdtime).
 2. AHT20 measurement: trigger to data (datasheet 80 ms; the firmware reads at 50 ms then every 5 ms).
 3. Easyflash/littlefs: write and read of a key (Wi-Fi credentials, BLE bonds) on the BL616's flash.
 4. Leak probe ADC conversion time.
@@ -52,8 +52,8 @@ Figures recorded; wake to K230 power-on within the design's budget (DESIGN.md).
   before `pm_hbn_mode_enter()`; aon_state, evlog and t021 linker-placed in `.hbn_noinit` (top 1 KB of HBN RAM); the
   SDK's fixed users stay below (+000 hbn_ram / pre-jump stub, +300 boot2 parameters, +400 low-power parameters). With
   the fix: marker 14.6 ms both wakes, no wrong read anywhere.
-- The product code for the calibration and the HBN RAM rule (leak_probe_mv(), aon_state, 2026-10-22) is not built
-  yet (product rewrite).
+- The calibration and the HBN RAM rule (leak_probe_mv(), aon_state, 2026-10-22) ran on the test firmware;
+  firmware/bl616 carries the same code.
 
 Open:
 - One RTC wake took 245.6 ms (the first sleep after a cold Y3 start, 2026-10-22); not reproduced in 3 more wakes

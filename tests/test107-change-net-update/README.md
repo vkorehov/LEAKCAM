@@ -1,6 +1,7 @@
 # test107: change-net update from the server (GET /v1/nn)
 
-Status: **planned** (2026-10-30): needs the K230 session on the product flow (leakcam_wake, Wi-Fi bridge); the server side runs on the Windows PC.
+Status: **planned** (2026-10-30): K230 test image with `leakcam_wake`, sessions and the Wi-Fi bridge from the BL616 test
+firmware (`pt_session`, `pt_wifi`); the server runs on the Windows PC.
 
 The server may answer a check with `"nn":"<CRC>","thr":[<cam0>,<cam1>]`: a new change net and/or new thresholds.
 `leakcam_wake` downloads `GET /v1/nn/<CRC>`, refuses a body whose CRC-32 differs or that is over 4 MB, and saves it with

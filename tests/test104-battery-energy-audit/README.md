@@ -1,6 +1,6 @@
 # test104: battery energy audit
 
-Status: **planned** (2026-10-21): after the product BL616 firmware runs (hibernate, real sessions).
+Status: **planned** (2026-10-30): when the BL616 test firmware runs the whole wake cycle for days (hibernate, sessions, Wi-Fi).
 
 Adds up the per-part figures that every low-level test records (section "Battery energy" in each) in
 [ENERGY.txt](../../ENERGY.txt), and checks the sum against a multi-day run. It finds no bottleneck itself: those

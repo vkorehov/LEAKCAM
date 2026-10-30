@@ -1,6 +1,7 @@
 # test108: production server check by the BL616 (schedule, lease reuse, server address, back-off)
 
-Status: **planned** (2026-10-30): the production code is not built (DESIGN 5.1 Production design); test100 `pt_poll` proved the cycle on the test firmware. Runs after the product rewrite.
+Status: **planned** (2026-10-30): the scheduler, lease reuse and server address are not written yet (DESIGN 5.1
+Production design): they go into firmware/bl616 and the test firmware, growing test100's `pt_poll`.
 
 The BL616 alone asks the server whether a viewer wants live video (`GET /v1/poll`), without the K230. Production
 design: jobs scheduled by time in HBN RAM (humidity 10 min, the K230's report interval, the server's poll interval);

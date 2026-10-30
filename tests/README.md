@@ -77,26 +77,26 @@ Leak tests, one per operation the product repeats:
 | [test038 battery brown-out below 3.10 V (cutoff, lockout, recovery)](test038-battery-brownout/README.md) | 2026-10-23 | **partial**: with a raised threshold on the cell the chain works - K230 `bat_watch` cut, |
 | [test039 K230 console over the BL616 link (no CH340)](test039-k230-console-over-link/README.md) | 2026-10-25 | **fail**: ~0.7 % of commands typed on `/dev/ttyACM1` are lost (993 of 1000 answered); otherwise the |
 | [test040 BLE provisioning on the BL616: Wi-Fi credentials into flash](test040-ble-wifi-credentials/README.md) | 2026-10-29 | **pass**: run.py 46/46 (run 13, test firmware -O3 + LTO with the sdk_patch.py console fix) and |
-| [test041 humidity alarm (AHT20 threshold wakes the K230)](test041-humidity-alarm/README.md) | 2026-10-30 | **planned**: needs the rewritten product BL616 firmware for steps 3-6; steps 1-2 run on the test firmware. |
+| [test041 humidity alarm (AHT20 threshold wakes the K230)](test041-humidity-alarm/README.md) | 2026-10-30 | **planned**: the BL616 test firmware needs the humidity slice and alarm decision of |
 | **High level (100+): the product's whole flow** | | |
 | [test100 Wi-Fi throughput, K230 -> SDIO -> BL616 -> AP](test100-wifi-throughput/README.md) | 2026-10-25 | **steps 1-4 pass**: K230 address 0.33-0.59 s after the card binds; TCP up 27.5 / down 22.1 Mbit/s, UDP up 35.4. |
 | [test101 session length (wake to power-off)](test101-boot-and-session-time/README.md) | 2026-10-21 | **planned**: not run yet. |
 | [test102 K230 session current](test102-session-current/README.md) | 2026-10-21 | **planned**: not run yet. |
 | [test103 Whole leak pipeline, end to end](test103-leak-pipeline-timing/README.md) | 2026-10-21 | **later**: not run yet; excluded for now (user): needs the cameras, Wi-Fi and the product BL616 |
-| [test104 battery energy audit](test104-battery-energy-audit/README.md) | 2026-10-21 | **planned**: after the product BL616 firmware runs (hibernate, real sessions). |
+| [test104 battery energy audit](test104-battery-energy-audit/README.md) | 2026-10-30 | **planned**: when the BL616 test firmware runs the whole wake cycle for days (hibernate, sessions, Wi-Fi). |
 | [test105 maximum current - can the battery carry everything at once?](test105-max-current/README.md) | 2026-10-25 | **partial**: handover runs 1-2 done - USB -> cell under every camera-free load (1.06 A at 5 V), |
 | [test106 Wi-Fi setup from the phone, end to end](test106-wifi-setup-from-phone/README.md) | 2026-10-30, run.py 18/18 | **pass, steps 1 3 4 5 6 8**: setup 7.3-8.0 s from opening the app to Done; steps 2 |
-| [test107 change-net update from the server (GET /v1/nn)](test107-change-net-update/README.md) | 2026-10-30 | **planned**: needs the K230 session on the product flow (leakcam_wake, Wi-Fi bridge); the server side runs on the Windows PC. |
-| [test108 production server check by the BL616 (schedule, lease reuse, server address, back-off)](test108-server-check-schedule/README.md) | 2026-10-30 | **planned**: the production code is not built (DESIGN 5.1 Production design); test100 `pt_poll` proved the cycle on the test firmware. Runs after the product rewrite. |
+| [test107 change-net update from the server (GET /v1/nn)](test107-change-net-update/README.md) | 2026-10-30 | **planned**: K230 test image with `leakcam_wake`, sessions and the Wi-Fi bridge from the BL616 test |
+| [test108 production server check by the BL616 (schedule, lease reuse, server address, back-off)](test108-server-check-schedule/README.md) | 2026-10-30 | **planned**: the scheduler, lease reuse and server address are not written yet (DESIGN 5.1 |
 | [test109 secure server (TLS, device identity, pinned certificate, signed change net)](test109-secure-server/README.md) | 2026-10-30 | **planned**: the real server is not built (DESIGN 7, SECURITY.txt 4); it will run on the Windows PC for the test. |
 
 ## Not tested yet (audit 2026-10-30)
 
-**Product behaviour no test covers** (DESIGN.md 5; most need the rewritten product firmware or the cameras):
+**Product behaviour no test covers** (DESIGN.md 5; most need the code added to the test firmware, or the cameras):
 
 | Behaviour | Where it belongs |
 |---|---|
-| What the product firmware does after each wake (the wake sources themselves pass on the test firmware: RTC test032, leak probe test034, USB plug test035, timing test021): doing what is due (humidity, report, server check with / without a stream request) and overlaps (a leak during a check, a check with a report due, a check while on USB; no AP, no server, no credentials) | new test, after the product rewrite (DESIGN 5.1 asks for it) |
+| What the BL616 does after each wake (the wake sources themselves pass on the test firmware: RTC test032, leak probe test034, USB plug test035, timing test021): doing what is due (humidity, report, server check with / without a stream request) and overlaps (a leak during a check, a check with a report due, a check while on USB; no AP, no server, no credentials) | new test, on the test firmware with the wake handling from firmware/bl616 (DESIGN 5.1 asks for it) |
 | Humidity alarm (AHT20 threshold -> report) | test041 (planned) |
 | `leakcam_wake` on the board: capture -> history compare (imgdiff + change net) -> `/v1/check` to the mock server -> the sleep it chooses | test103 |
 | Change-net update from the server (`GET /v1/nn`, bad downloads, power cut while saving, unloadable net) | test107 (planned) |
@@ -108,7 +108,7 @@ Leak tests, one per operation the product repeats:
 | The closed enclosure: temperature, Wi-Fi at the install distance | test026, test100 |
 | The real server (TLS, device identity, pinned certificate, signed change net, RTMPS) | test109 (planned; the server is not built, it runs on the Windows PC) |
 
-**Tests not run or partial:** not run - test020, test030 (cameras), test101, test102, test104 (product firmware),
+**Tests not run or partial:** not run - test020, test030 (cameras), test101, test102, test104 (test-firmware features to add),
 test103 (later); partial - test008 (steps 3-7), test026 (KPU / encoder / camera load, enclosure, die limit), test032
 (crystal ppm, 100 cycles, 24 h), test034 (real water, 8 h dry), test035 (100 transitions), test037 (steps 1-6),
 test038 (lab supply), test105 (runs 1-4), test106 (steps 2, 7); **fail** - test039 (0.7 % of console commands lost).

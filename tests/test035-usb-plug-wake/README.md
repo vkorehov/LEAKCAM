@@ -53,7 +53,6 @@ Open:
 - Step 4 ran 19 transitions by hand, not the planned 100.
 - The Mac once gave no power with the K230 **off** (0.02 mA after a few plugs at 17:39-17:41; most likely its port
   protection after repeated plug-ins with the charger's inrush); the plain charger worked at once (2026-10-22).
-- The product firmware build (rewrite).
 - Plug-in during a session not re-run with the U2 1-2-3 bridge.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)

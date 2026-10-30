@@ -10,7 +10,7 @@ battery in hours.
 
 ## Setup
 
-The product firmware does not run on rev 1 yet (rewrite after the tests), so the BL616 test firmware's `pt_session
+The BL616 test firmware's `pt_session
 [boot_ms] [noboot | hang ms | reboot ms]` supervises a session as the product's `run_session()`: rails on, reset
 released (NAND boot), K230_ALIVE (the agent's heartbeat, an edge every 500 ms) watched; the first heartbeat edge
 stands in for READY (no link protocol in the test firmware; edges in the first 400 ms are the boot toggling
@@ -28,7 +28,7 @@ BL616 product power manager (heartbeat watch, READY timeout), K230 GPIO heartbea
 
 ## Steps
 
-1. Product firmware: stop the K230 agent (or a test hook that hangs): power-off after 2 s of no heartbeat, logged.
+1. Test firmware: stop the K230 agent (or a test hook that hangs): power-off after 2 s of no heartbeat, logged.
 2. An image that never sends READY: power-off at the boot timeout, retries, the back-off interval.
 3. The K230 watchdog's own reset (20 s, test015) during a session: what the BL616 sees, and the session's end.
 4. 10 cycles each; the battery path returns to HBN every time (test031 current after).
@@ -54,9 +54,9 @@ Every hang ends in rails off within its timeout, no session runs on; retries and
 - No BL616 leak over 12 sessions (2026-10-25).
 
 Open:
-- Not covered: the product's READY / link path itself (the test firmware has no link protocol) - with the product
-  build (rewrite); a real hang inside the agent (a hook that loops) - the session cap covers it whatever its form.
-- Steps 2-4 (retries / back-off interval, the K230 watchdog's own reset, HBN current after) with the product firmware.
+- Not covered: the READY / link path itself (the test firmware has no link protocol yet: add it from
+  firmware/bl616); a real hang inside the agent (a hook that loops) - the session cap covers it whatever its form.
+- Steps 2-4 (retries / back-off interval, the K230 watchdog's own reset, HBN current after): `pt_session` gets retries and the back-off.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 

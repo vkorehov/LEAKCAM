@@ -56,8 +56,8 @@ RTC within 1 s of the BL616 after every handover, Y1 within +-20 ppm, roll-overs
 
 Open:
 - Absolute ppm: against host NTP the console latency (40 ms) gives +-330 ppm over 120 s; needs >= 20 min (step 3).
-- Steps 1-6 (handover from the BL616, `WAKE` 0, roll-overs, `TIME` back, 10 cold starts): the handover needs the
-  product BL616 firmware.
+- Steps 1-6 (handover from the BL616, `WAKE` 0, roll-overs, `TIME` back, 10 cold starts): the handover needs the link
+  protocol (WAKE / TIME) in the BL616 test firmware, from firmware/bl616.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 

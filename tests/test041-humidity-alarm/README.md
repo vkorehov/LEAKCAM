@@ -1,6 +1,7 @@
 # test041: humidity alarm (AHT20 threshold wakes the K230)
 
-Status: **planned** (2026-10-30): needs the rewritten product BL616 firmware for steps 3-6; steps 1-2 run on the test firmware.
+Status: **planned** (2026-10-30): the BL616 test firmware needs the humidity slice and alarm decision of
+firmware/bl616/main.c (HBN slices, AHT20, alarm -> K230 session); steps 1-2 run on it today.
 
 The BL616 reads the AHT20 on every RTC slice (every 10 min, ~85 ms awake, K230 off). At **85.0 %RH or more**
 (`HUM_ALARM_X10`, firmware/bl616/main.c) it powers the K230 with wake reason `humid`; `leakcam_wake` takes it as a
@@ -27,7 +28,7 @@ WAKE reason; K230: agent + `leakcam_wake` (sensor alarm path), Wi-Fi bridge (tes
 1. Accuracy (test firmware, `pt_status` AHT20): the reading against the reference at room air, NaCl and KCl, each
    after 30 min settling: offset at 75 and 85 %RH (the threshold's real position).
 2. Response: the time from the box closing (KCl) to the reading crossing 85.0 %RH.
-3. Threshold (product firmware): above 85.0 the next slice wakes the K230 with reason `humid` (latency <= 10 min plus
+3. Threshold (test firmware with the humidity slice): above 85.0 the next slice wakes the K230 with reason `humid` (latency <= 10 min plus
    the K230 boot); below (NaCl) no slice powers the K230 (evlog counts).
 4. Sustained alarm: 1 h at KCl/K2SO4 - a K230 session every slice (6 an hour), each reported; the energy per hour this
    costs (Battery energy). Out of the box: the wakes stop at the first slice below.
