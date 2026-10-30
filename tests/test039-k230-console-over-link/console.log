@@ -1,0 +1,104 @@
+    7.476 boot
+    7.476   U-Boot SPL 2022.10-gc096dae6-dirty (Oct 30 2026 - 14:20:09 +0000)
+    7.476   00000000: PMU Major Msg: End of CA training                                            
+    7.476   00000000: PMU Major Msg: End of initialization                                         
+    7.476   00000000: PMU Major Msg: End of read enable training                                   
+    7.476   00000000: PMU Major Msg: End of fine write leveling                                    
+    7.476   00000000: PMU Major Msg: End of read dq deskew training                                
+    7.476   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+    7.476   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+    7.476   00000000: PMU Major Msg: End of write delay center optimization                        
+    7.476   00000000: PMU Major Msg: End of read delay center optimization                         
+    7.476   00000000: PMU Major Msg: End of max read latency training                              
+    7.476   00000000: PMU Major Msg: Firmware run has completed                                    
+    7.476   dbyte0 add =9a040100 value =12
+    7.476   dbyte0 add =9a040500 value =13
+    7.476   dbyte0 add =9a040900 value =13
+    7.476   dbyte0 add =9a040d00 value =13
+    7.476   dbyte0 add =9a041100 value =13
+    7.476   dbyte0 add =9a041500 value =13
+    7.476   dbyte0 add =9a041900 value =12
+    7.476   dbyte0 add =9a041d00 value =14
+    7.476   dbyte1 add =9a044100 value =13
+    7.476   dbyte1 add =9a044500 value =13
+    7.476   dbyte1 add =9a044900 value =14
+    7.476   dbyte1 add =9a044d00 value =12
+    7.476   dbyte1 add =9a045100 value =12
+    7.476   dbyte1 add =9a045500 value =13
+    7.476   dbyte1 add =9a045900 value =13
+    7.476   dbyte1 add =9a045d00 value =13
+    7.476   dbyte2 add =9a048100 value =37
+    7.476   dbyte2 add =9a048500 value =37
+    7.476   dbyte2 add =9a048900 value =37
+    7.476   dbyte2 add =9a048d00 value =37
+    7.476   dbyte2 add =9a049100 value =37
+    7.476   dbyte2 add =9a049500 value =37
+    7.476   dbyte2 add =9a049900 value =37
+    7.476   dbyte2 add =9a049d00 value =37
+    7.476   dbyte3 add =9a04c100 value =37
+    7.476   dbyte3 add =9a04c500 value =37
+    7.476   dbyte3 add =9a04c900 value =37
+    7.476   dbyte3 add =9a04cd00 value =37
+    7.476   dbyte3 add =9a04d100 value =37
+    7.476   dbyte3 add =9a04d500 value =37
+    7.476   dbyte3 add =9a04d900 value =37
+    7.476   dbyte3 add =9a04dd00 value =37
+    7.476   spi_nand spi-flash@0: Winbond SPI NAND was found.
+    7.476   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+    7.476   OpenSBI v0.9
+    7.476   heap: [0x004f24c0 - 0x00cf24c0], size 8192 KB
+    7.476   page: [0x00cf24c8 - 0x039fec00], size 46129 KB
+    7.476    \ | /
+    7.476   - RT -     Thread Smart Operating System
+    7.476    / | \     5.0.0 build Oct 30 2026
+    7.476    2006 - 2020 Copyright by rt-thread team
+    7.476   rtc driver register OK
+    7.476   lwIP-2.1.2 initialized!
+    7.476   [I/I2C] I2C bus [i2c0] registered
+    7.476   [I/I2C] I2C bus [i2c4] registered
+    7.476   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+    7.476   �link_mux: console and /dev/link share uart1
+    7.476   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+    7.476   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+    7.476   os  : system memory alloc 320 bytes
+    7.476   flsh: UFFS consume spare data size 9
+    7.476   os  : system memory alloc 84480 bytes
+    7.476   os  : system memory alloc 53200 bytes
+    7.476   os  : system memory alloc 2048 bytes
+    7.476   tree: DIR 0, FILE 5, DATA 4
+    7.476   os  : system memory alloc 320 bytes
+    7.476   flsh: UFFS consume spare data size 9
+    7.476   os  : system memory alloc 84480 bytes
+    7.476   os  : system memory alloc 53200 bytes
+    7.476   os  : system memory alloc 8192 bytes
+    7.476   tree: DIR 2, FILE 8, DATA 47
+    7.476   /dev/shm file system initialization done!
+    7.476   Can't find sensor on csi0
+    7.476   Can't find sensor on csi2
+    7.476   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+    7.476   <gnne> gnne_device_init done.
+    7.476   #############SDK VERSION######################################
+    7.476   SDK   : unknown-20261030-141944--ee23c393ca0b-4162ec7
+    7.476   nncase: 2.11.0
+    7.476   ##############################################################
+    7.476   msh />
+    9.554 > 'ls /sdcard/app' (0.06 s)
+    9.554   ls /sdcard/app
+    9.554   Directory /sdcard/app:
+    9.554   leakcam_wake                            5181000                  
+    9.554   leakcam_stream                          1030880                  
+    9.554   venctest                                79600                    
+    9.554   leakcam_change.kmodel                   211488                   
+    9.554   leakcam_hist                            100376                   
+    9.554   memtest                                 67120                    
+    9.554   leakcam_agent                           87552                    
+    9.554   msh />
+    9.554   msh />
+    9.616 > 'ls /sdcard' (0.06 s)
+    9.616   ls /sdcard
+    9.616   Directory /sdcard:
+    9.616   app                                     <DIR>                    
+    9.616   leakcam                                 <DIR>                    
+    9.616   revision.txt                            922                      
+    9.616   msh />
+    9.616   msh />

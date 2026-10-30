@@ -57,7 +57,7 @@
 #ifndef CONFIG_CONSOLE_USB_CDC_TX_FLUSH_TIMEOUT_MS
 #define CONFIG_CONSOLE_USB_CDC_TX_FLUSH_TIMEOUT_MS 5U
 #endif
-/* the K230 console: 4 Mbaud of boot log arrives faster than USB drains it in bursts, so a larger ring */
+/* the K230 console: the link rate's boot log arrives faster than USB drains it in bursts, so a larger ring */
 #define K230_TX_RING_SIZE 8192U
 
 #define USB_CONSOLE_RETRY_DELAY_MS 10U

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""test017: cold boots at the adopted NAND timing (80 MHz, kernel and U-Boot/SPL): each boot
+"""test017: cold boots at the adopted NAND timing (50 MHz since 2026-10-30, kernel and U-Boot/SPL): each boot
 must reach msh with /bin and /sdcard mounted (boot_times) and read all of /bin with the 50 MHz reference checksum
 (verify100.py). "kernel init start" is the time from reset release through ROM, SPL (loads OpenSBI + kernel from
 the NAND), DDR training and OpenSBI. Usage: boots.py [checksum [boots]]"""

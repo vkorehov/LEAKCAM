@@ -59,7 +59,7 @@ and the product image set to the smallest one that passes every test's `## Needs
   I2C_BITOPS, AF_UNIX, lwIP IGMP/RAW/loopback/ping, NETDEV and WLAN msh commands, OVERFLOW_CHECK, MPP FFmpeg,
   MPP_DSI_ENABLE_VIRT; memtest/venctest out). Options =y 145 -> 127; rtthread.bin 3 712 016 B (kernel -O1 with the
   KPU fix), /sdcard programs 6 616 314 B, kdimg 45.38 MB. App init 0.484 / 0.494 / 0.493 s (from 0.506 s); ADC,
-  I2C, RTC, NAND 80 MHz (20.6 MB/s, 0 errors) unchanged (Build 1 + 2 on the board).
+  I2C, RTC, NAND (0 errors) unchanged (Build 1 + 2 on the board).
 - Kept because the SDK references them: RT_DEBUG, RT_USING_PROC + DFS_PROCFS, RT_USING_USAGE (2026-10-22, build 1).
 - Kernel stays at the SDK's -O1 (user: safe side). The KPU bandwidth fix (install.sh, mapped address) is kept at -O1
   (2026-10-22, Flags A).

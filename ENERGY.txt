@@ -69,7 +69,7 @@ Keep this file current when a test or a change moves a figure. The audit that cl
 
   Measured board currents (2026-10-21, USB-C 1 VBUS only, cell full; tests 015/016/021):
     rails off, BL616 awake on USB 60.5 mA | rails on, K230 in reset 86.3 | ROM in USB boot 182 | boot peak ~227
-    msh idle 204-206 | DDR bench peak 270 | NAND read 225 (50 MHz), 232 (80 MHz) | NAND program/erase 235
+    msh idle 204-206 | DDR bench peak 270 | NAND read 225 (50 MHz) | NAND program/erase 235
   K230 boot, reset release -> app init: 0.30 s (2026-10-23: console at 4 Mbaud from SPL, tests/test039; 0.506 s with
   the 115200 console, 1.00 s before; UFFS mounts 0.18 s, they follow the used pages): ~0.25 J, ~18 uAh per wake [m test039]
 

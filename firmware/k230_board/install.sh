@@ -125,6 +125,28 @@ open(p, 'w').write(s[:i] + open(f).read() + s[j + len(tail):])
 PY
 grep -q 'LEAKCAM: wait on real time' "$SPN" || { echo "busy-wait patch not applied"; exit 1; }
 
+# NAND ID: the kernel read it once and gave up, so one bad read lost /bin and /sdcard for the boot (test105,
+# 2026-10-30: "unknown raw ID aa220000", Winbond's ef aa 22 one byte late, SPL had read it fine; 0 in 24 boots
+# since, cause open: tests/test017 HISTORY). Reset and read again up to 3 times; each retry is logged.
+grep -q 'LEAKCAM: ID retry' "$SPN" || python3 - "$SPN" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = ('    if ((result = spinand_info_read(flash)) != SPINAND_SUCCESS) {\n'
+     '        goto exit_spinand_init;\n'
+     '    }\n')
+b = ('    /* LEAKCAM: ID retry: reset and read the ID again, each retry logged */\n'
+     '    for (int try = 1; (result = spinand_info_read(flash)) != SPINAND_SUCCESS; try++) {\n'
+     '        if (try == 3)\n'
+     '            goto exit_spinand_init;\n'
+     '        LOG_W("ID retry %d\\n", try);\n'
+     '        if ((result = spinand_reset(flash)) != SPINAND_SUCCESS)\n'
+     '            goto exit_spinand_init;\n'
+     '    }\n')
+assert s.count(a) == 1, 'spinand.c changed, cannot add the ID retry'
+open(p, 'w').write(s.replace(a, b))
+PY
+grep -q 'LEAKCAM: ID retry' "$SPN" || { echo "NAND ID retry patch not applied"; exit 1; }
+
 # poll(): RT-Thread's poll_do() never clears pt->triggered, so after one wake-up whose event leaves
 # the fd not ready, poll_wait_timeout() skips the wait and poll() re-checks in a busy loop until the
 # fd becomes ready, ignoring its timeout. The agent's poll() on the hook's stdout pipe spun at
@@ -307,9 +329,9 @@ open(p, 'w').write(s)
 PY
 grep -q 'LEAKCAM: delay step in ps' "$DWS" || { echo "U-Boot delay step fix not applied"; exit 1; }
 
-# SPL and OpenSBI print on UART1 at the link's rate (4 Mbaud), as RT-Smart does since the link mux (tests/test039):
+# SPL and OpenSBI print on UART1 at the link's rate (2 Mbaud), as RT-Smart does since the link mux (tests/test039):
 # their console reaches the BL616's /dev/ttyACM1 from the first SPL line. U-Boot's ns16550 has neither the K230's
-# UART clock divider nor the DesignWare fractional divisor that 4 Mbaud needs (100 MHz / 16 / 4 M = 1 + 9/16):
+# UART clock divider nor the DesignWare fractional divisor the link rates need (100 MHz / 16 / 2 M = 3 + 2/16):
 # probe sets UART1's clock divider 1/2 -> 1/1 (sysctl uart_i2c_clkdiv_cfg 0x9110002c bits 5:3, bit 31 = write
 # enable, as RT-Smart's sysctl_clk_set_leaf_div), setbrg writes the fraction (DLF, 4 bits at 0xC0) as drv_uart.
 NS=$UB/drivers/serial/ns16550.c
@@ -318,7 +340,7 @@ import sys
 p = sys.argv[1]; s = open(p).read()
 a = '\tcom_port->plat = dev_get_plat(dev);\n\tns16550_init(com_port, -1);\n'
 b = ('\tcom_port->plat = dev_get_plat(dev);\n'
-     '\tif (plat->base == 0x91401000) {\t/* LEAKCAM: UART1 clock 1/1 = 100 MHz (console + BL616 link, 4 Mbaud) */\n'
+     '\tif (plat->base == 0x91401000) {\t/* LEAKCAM: UART1 clock 1/1 = 100 MHz (console + BL616 link, 2 Mbaud) */\n'
      '\t\tu32 v = readl((void *)0x9110002c);\n'
      '\t\twritel((v & ~0x38u) | (1u << 31), (void *)0x9110002c);\n'
      '\t}\n'
@@ -327,7 +349,7 @@ assert s.count(a) == 1, 'ns16550 probe changed, cannot set the UART1 clock'
 s = s.replace(a, b)
 a = '\tclock_divisor = ns16550_calc_divisor(com_port, plat->clock, baudrate);\n\n\tns16550_setbrg(com_port, clock_divisor);\n\n\treturn 0;\n}\n'
 b = ('\t/* LEAKCAM: DesignWare fractional divisor (DLF, 4 bits at 0xC0): divisor x 16 rounded, the integer part in\n'
-     '\t * DLL/DLH, the sixteenths in DLF (4 Mbaud from 100 MHz = 1 + 9/16), as RT-Smart\'s drv_uart */\n'
+     '\t * DLL/DLH, the sixteenths in DLF (2 Mbaud from 100 MHz = 3 + 2/16), as RT-Smart\'s drv_uart */\n'
      '\tunsigned int x16 = (plat->clock + baudrate / 2) / baudrate;\n'
      '\tclock_divisor = x16 / 16 ? x16 / 16 : 1;\n'
      '\tns16550_setbrg(com_port, clock_divisor);\n'
@@ -397,20 +419,24 @@ open(p, 'w').write(s.replace(a, b))
 PY
 grep -q 'LEAKCAM: UTC' "$TZC" || { echo "UTC patch not applied"; exit 1; }
 
-# BL616 link: UART1 registers at the top stable rate (tests/test018: 4 Mbaud clean over 10 MB, 6 Mbaud fails), the
-# same as LINK_BAUD in bl616/k230_link.h. The serial layer has no termios, so the agent cannot set it itself.
+# BL616 link: UART1 registers at LINK_BAUD of bl616/k230_link.h (the one source for both chips; tests/test039: 2 Mbaud,
+# 4 Mbaud lost ~0.5 % of short writes after an idle gap). The serial layer has no termios: the agent cannot set it.
 UARTC=$RTT/drivers/interdrv/uart/drv_uart.c
+LINK_BAUD=$(awk '/^#define LINK_BAUD/ {print $3}' "$HERE/../bl616/k230_link.h")
+[ -n "$LINK_BAUD" ] || { echo "LINK_BAUD not found in bl616/k230_link.h"; exit 1; }
 grep -q 'LEAKCAM: link baud' "$UARTC" || python3 - "$UARTC" <<'PY'
 import sys
 p = sys.argv[1]; s = open(p).read()
 a = '        rt_snprintf(dev_name, sizeof(dev_name), "uart%d", inst->uart.index);\n        rt_hw_interrupt_install('
 b = ('        if (inst->uart.index == 1)\n'
-     '            inst->device.config.baud_rate = 4000000;   /* LEAKCAM: link baud (bl616/k230_link.h LINK_BAUD) */\n'
+     '            inst->device.config.baud_rate = 2000000;   /* LEAKCAM: link baud (bl616/k230_link.h LINK_BAUD) */\n'
      + a)
 assert s.count(a) == 1, 'drv_uart.c changed, cannot set the link baud'
 open(p, 'w').write(s.replace(a, b))
 PY
 grep -q 'LEAKCAM: link baud' "$UARTC" || { echo "link baud patch not applied"; exit 1; }
+sed -i "s|baud_rate = [0-9]*;   /\* LEAKCAM: link baud|baud_rate = $LINK_BAUD;   /* LEAKCAM: link baud|" "$UARTC"
+grep -q "baud_rate = $LINK_BAUD;   /\* LEAKCAM: link baud" "$UARTC" || { echo "link baud not set to $LINK_BAUD"; exit 1; }
 
 # test039 (2026-10-27): typed console commands got lost whole - the driver drops the entire RX FIFO on a framing,
 # parity or overrun error. Count each kind and the bytes dropped (uart_rx_err[], link_mux's link_stat prints them).
@@ -490,8 +516,21 @@ cp "$CAP/rtsmart/Kconfig.app" "$APP/Kconfig"
       third_party/miniz/LICENSE third_party/opus "$APP/src/" )
 # the BL616 link agent, with the protocol header it shares with the BL616 firmware
 cp "$HERE/../k230_agent/leakcam_agent.c" "$HERE/../bl616/k230_link.h" "$APP/src/"
+# the bench programs' sources, built only with LEAKCAM_BENCH=1 (copied by hand before: test105 found kputest
+# missing from the image, 2026-10-30)
+cp "$HERE/../../tests/test008-minimal-image/leakcam_cpubench.c" "$HERE/../../tests/test013-kpu-change-net/leakcam_kputest.c" "$APP/src/"
 grep -q 'CONFIG_APP_ENABLE_LEAKCAM' "$SDK/src/applications/apps.mk" ||
     echo 'subdirs-$(CONFIG_APP_ENABLE_LEAKCAM) += leakcam' >> "$SDK/src/applications/apps.mk"
+
+# 5. the tests' bench programs (memtest test025, venctest test027), built into the image with the apps. The SDK's
+#    defconfig sources a Kconfig from every app folder: without one it failed and every build since kept the old
+#    .config (2026-10-30, found when the link rate changed)
+for t in test025-ddr-stress/memtest test027-video-encoder/venctest; do
+    n=$(basename "$t"); A=$SDK/src/applications/$n
+    rm -rf "$A"; cp -r "$HERE/../../tests/$t" "$A"
+    [ -f "$A/Kconfig" ] || : > "$A/Kconfig"
+    grep -q "subdirs-y += $n" "$SDK/src/applications/apps.mk" || echo "subdirs-y += $n" >> "$SDK/src/applications/apps.mk"
+done
 
 echo "LEAKCAM board installed into $SDK"
 echo "next: cd $SDK && make k230d_rtos_leakcam_defconfig && make"

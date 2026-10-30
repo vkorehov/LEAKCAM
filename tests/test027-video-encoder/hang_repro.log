@@ -1,0 +1,1720 @@
+    6.855    U-Boot SPL 2022.10-gc096dae6-dirty (Oct 27 2026 - 06:41:32 +0000)
+    6.855    00000000: PMU Major Msg: End of CA training                                            
+    6.855    00000000: PMU Major Msg: End of initialization                                         
+    6.855    00000000: PMU Major Msg: End of read enable training                                   
+    6.855    00000000: PMU Major Msg: End of fine write leveling                                    
+    6.855    00000000: PMU Major Msg: End of read dq deskew training                                
+    6.855    00000000: PMU Major Msg: End of MPR read delay center optimization                     
+    6.855    00000000: PMU Major Msg: End of Write leveling coarse delay                            
+    6.855    00000000: PMU Major Msg: End of write delay center optimization                        
+    6.855    00000000: PMU Major Msg: End of read delay center optimization                         
+    6.855    00000000: PMU Major Msg: End of max read latency training                              
+    6.855    00000000: PMU Major Msg: Firmware run has completed                                    
+    6.855    dbyte0 add =9a040100 value =12
+    6.855    dbyte0 add =9a040500 value =13
+    6.855    dbyte0 add =9a040900 value =13
+    6.855    dbyte0 add =9a040d00 value =13
+    6.855    dbyte0 add =9a041100 value =13
+    6.855    dbyte0 add =9a041500 value =13
+    6.855    dbyte0 add =9a041900 value =13
+    6.855    dbyte0 add =9a041d00 value =14
+    6.855    dbyte1 add =9a044100 value =13
+    6.855    dbyte1 add =9a044500 value =12
+    6.855    dbyte1 add =9a044900 value =13
+    6.855    dbyte1 add =9a044d00 value =12
+    6.855    dbyte1 add =9a045100 value =13
+    6.855    dbyte1 add =9a045500 value =14
+    6.855    dbyte1 add =9a045900 value =13
+    6.855    dbyte1 add =9a045d00 value =13
+    6.855    dbyte2 add =9a048100 value =37
+    6.855    dbyte2 add =9a048500 value =37
+    6.855    dbyte2 add =9a048900 value =37
+    6.855    dbyte2 add =9a048d00 value =37
+    6.855    dbyte2 add =9a049100 value =37
+    6.855    dbyte2 add =9a049500 value =37
+    6.855    dbyte2 add =9a049900 value =37
+    6.855    dbyte2 add =9a049d00 value =37
+    6.855    dbyte3 add =9a04c100 value =37
+    6.855    dbyte3 add =9a04c500 value =37
+    6.855    dbyte3 add =9a04c900 value =37
+    6.855    dbyte3 add =9a04cd00 value =37
+    6.855    dbyte3 add =9a04d100 value =37
+    6.855    dbyte3 add =9a04d500 value =37
+    6.855    dbyte3 add =9a04d900 value =37
+    6.855    dbyte3 add =9a04dd00 value =37
+    6.857    spi_nand spi-flash@0: Winbond SPI NAND was found.
+    6.857    spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+    6.936    OpenSBI v0.9
+    6.946    heap: [0x004f14c0 - 0x00cf14c0], size 8192 KB
+    6.946    page: [0x00cf14c8 - 0x039fec00], size 46133 KB
+    6.946     \ | /
+    6.946    - RT -     Thread Smart Operating System
+    6.946     / | \     5.0.0 build Oct 25 2026
+    6.946     2006 - 2020 Copyright by rt-thread team
+    6.951    rtc driver register OK
+    6.966    lwIP-2.1.2 initialized!
+    6.966    [I/I2C] I2C bus [i2c0] registered
+    6.966    [I/I2C] I2C bus [i2c4] registered
+    6.966    [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+    6.966    link_mux: console and /dev/link share uart1
+    6.966    Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+    6.966    [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+    6.966    os  : system memory alloc 320 bytes
+    6.966    flsh: UFFS consume spare data size 9
+    6.966    os  : system memory alloc 84480 bytes
+    6.966    os  : system memory alloc 53200 bytes
+    6.966    os  : system memory alloc 2048 bytes
+    7.024    tree: DIR 0, FILE 5, DATA 4
+    7.024    os  : system memory alloc 320 bytes
+    7.024    flsh: UFFS consume spare data size 9
+    7.024    os  : system memory alloc 84480 bytes
+    7.024    os  : system memory alloc 53200 bytes
+    7.024    os  : system memory alloc 8192 bytes
+    7.076    tree: found bad block 610
+    7.084    tree: found bad block 613
+    7.175    tree: DIR 2, FILE 12, DATA 126
+    7.175    /dev/shm file system initialization done!
+    7.175    Can't find sensor on csi0
+    7.180    Can't find sensor on csi2
+    7.180    <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+    7.180    <gnne> gnne_device_init done.
+    7.180    #############SDK VERSION######################################
+    7.180    SDK   : unknown-20261027-064114--51e0f1f70c2f-4162e
+    7.185    c7
+    7.185    nncase: 2.11.0
+    7.185    ##############################################################
+    7.185    msh />
+    7.185 ## boot ok ['SPL', 'OpenSBI', 'RT-Smart', 'mounted', 'msh']
+    8.698    leakcam_agent: READY not answered
+    9.205    /sdcard/app/venctest 1 15 0
+    9.213    venctest: 1 channel(s) H.265 1280x960 CBR 500 kbit/s, feed max 0 fps, 15 s
+   10.223    leakcam_agent: READY not answered
+   10.265    t= 1 ch0: in  60 out  57 fps, 447679 B, I 1
+   11.266    t= 2 ch0: in  84 out  84 fps, 175999 B, I 0
+   11.725    leakcam_agent: READY not answered
+   12.268    t= 3 ch0: in  72 out  72 fps, 359423 B, I 1
+   13.226    leakcam_agent: READY not answered
+   13.269    t= 4 ch0: in  80 out  81 fps, 267704 B, I 0
+   14.270    t= 5 ch0: in  77 out  77 fps, 315790 B, I 1
+   14.728    leakcam_agent: READY not answered
+   15.271    t= 6 ch0: in  78 out  78 fps, 321054 B, I 1
+   16.230    leakcam_agent: READY not answered
+   16.272    t= 7 ch0: in  74 out  74 fps, 291393 B, I 0
+   17.273    t= 8 ch0: in  74 out  74 fps, 306994 B, I 0
+   17.731    leakcam_agent: READY not answered
+   18.274    t= 9 ch0: in  75 out  75 fps, 333572 B, I 1
+   19.233    leakcam_agent: READY not answered
+   19.275    t=10 ch0: in  76 out  76 fps, 321591 B, I 0
+   20.276    t=11 ch0: in  79 out  79 fps, 305700 B, I 1
+   20.734    leakcam_agent: READY not answered
+   21.277    t=12 ch0: in  74 out  74 fps, 316474 B, I 1
+   22.235    leakcam_agent: READY not answered
+   22.278    t=13 ch0: in  74 out  74 fps, 350465 B, I 0
+   23.279    t=14 ch0: in  74 out  74 fps, 278304 B, I 1
+   23.736    leakcam_agent: READY not answered
+   24.280    t=15 ch0: in  77 out  77 fps, 309381 B, I 0
+   24.336    ch 0: 1130 pictures encoded. Average FrameRate = 75 Fps
+   24.636    ch 0: total used pages 1119
+   24.642    ch0: 1130 in, 1127 out in 15.0 s = 75.1 fps, 2508 kbit/s, I frames 8 (spacing 148-150), latency avg 9 max 174 ms
+   24.642    venctest: done
+   24.642    vpu_exit>q_wm 0
+   24.642 ## delay 0 s: 1 channel top done ['75.1']
+   31.505    U-Boot SPL 2022.10-gc096dae6-dirty (Oct 27 2026 - 06:41:32 +0000)
+   31.505    00000000: PMU Major Msg: End of CA training                                            
+   31.505    00000000: PMU Major Msg: End of initialization                                         
+   31.505    00000000: PMU Major Msg: End of read enable training                                   
+   31.505    00000000: PMU Major Msg: End of fine write leveling                                    
+   31.505    00000000: PMU Major Msg: End of read dq deskew training                                
+   31.505    00000000: PMU Major Msg: End of MPR read delay center optimization                     
+   31.505    00000000: PMU Major Msg: End of Write leveling coarse delay                            
+   31.505    00000000: PMU Major Msg: End of write delay center optimization                        
+   31.505    00000000: PMU Major Msg: End of read delay center optimization                         
+   31.505    00000000: PMU Major Msg: End of max read latency training                              
+   31.505    00000000: PMU Major Msg: Firmware run has completed                                    
+   31.505    dbyte0 add =9a040100 value =12
+   31.505    dbyte0 add =9a040500 value =13
+   31.505    dbyte0 add =9a040900 value =13
+   31.505    dbyte0 add =9a040d00 value =13
+   31.505    dbyte0 add =9a041100 value =13
+   31.505    dbyte0 add =9a041500 value =13
+   31.505    dbyte0 add =9a041900 value =13
+   31.505    dbyte0 add =9a041d00 value =14
+   31.505    dbyte1 add =9a044100 value =14
+   31.505    dbyte1 add =9a044500 value =13
+   31.505    dbyte1 add =9a044900 value =14
+   31.505    dbyte1 add =9a044d00 value =13
+   31.505    dbyte1 add =9a045100 value =13
+   31.505    dbyte1 add =9a045500 value =14
+   31.505    dbyte1 add =9a045900 value =14
+   31.505    dbyte1 add =9a045d00 value =13
+   31.505    dbyte2 add =9a048100 value =37
+   31.505    dbyte2 add =9a048500 value =37
+   31.505    dbyte2 add =9a048900 value =37
+   31.505    dbyte2 add =9a048d00 value =37
+   31.506    dbyte2 add =9a049100 value =37
+   31.506    dbyte2 add =9a049500 value =37
+   31.506    dbyte2 add =9a049900 value =37
+   31.506    dbyte2 add =9a049d00 value =37
+   31.506    dbyte3 add =9a04c100 value =37
+   31.506    dbyte3 add =9a04c500 value =37
+   31.506    dbyte3 add =9a04c900 value =37
+   31.506    dbyte3 add =9a04cd00 value =37
+   31.506    dbyte3 add =9a04d100 value =37
+   31.506    dbyte3 add =9a04d500 value =37
+   31.506    dbyte3 add =9a04d900 value =37
+   31.506    dbyte3 add =9a04dd00 value =37
+   31.508    spi_nand spi-flash@0: Winbond SPI NAND was found.
+   31.508    spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+   31.586    OpenSBI v0.9
+   31.597    heap: [0x004f14c0 - 0x00cf14c0], size 8192 KB
+   31.597    page: [0x00cf14c8 - 0x039fec00], size 46133 KB
+   31.597     \ | /
+   31.597    - RT -     Thread Smart Operating System
+   31.597     / | \     5.0.0 build Oct 25 2026
+   31.597     2006 - 2020 Copyright by rt-thread team
+   31.602    rtc driver register OK
+   31.617    lwIP-2.1.2 initialized!
+   31.617    [I/I2C] I2C bus [i2c0] registered
+   31.617    [I/I2C] I2C bus [i2c4] registered
+   31.617    [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+   31.617    link_mux: console and /dev/link share uart1
+   31.617    Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+   31.617    [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+   31.617    os  : system memory alloc 320 bytes
+   31.617    flsh: UFFS consume spare data size 9
+   31.617    os  : system memory alloc 84480 bytes
+   31.617    os  : system memory alloc 53200 bytes
+   31.617    os  : system memory alloc 2048 bytes
+   31.674    tree: DIR 0, FILE 5, DATA 4
+   31.674    os  : system memory alloc 320 bytes
+   31.674    flsh: UFFS consume spare data size 9
+   31.674    os  : system memory alloc 84480 bytes
+   31.674    os  : system memory alloc 53200 bytes
+   31.674    os  : system memory alloc 8192 bytes
+   31.730    tree: found bad block 610
+   31.730    tree: found bad block 613
+   31.818    tree: DIR 2, FILE 12, DATA 124
+   31.818    /dev/shm file system initialization done!
+   31.818    Can't find sensor on csi0
+   31.823    Can't find sensor on csi2
+   31.823    <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+   31.823    <gnne> gnne_device_init done.
+   31.823    #############SDK VERSION######################################
+   31.823    SDK   : unknown-20261027-064114--51e0f1f70c2f-4162ec7
+   31.823    nncase: 2.11.0
+   31.823    ##############################################################
+   31.823    msh />
+   31.823 ## boot ok ['SPL', 'OpenSBI', 'RT-Smart', 'mounted', 'msh']
+   33.341    leakcam_agent: READY not answered
+   35.843    leakcam_agent: READY not answered
+   35.848    /sdcard/app/venctest 1 15 0
+   35.857    venctest: 1 channel(s) H.265 1280x960 CBR 500 kbit/s, feed max 0 fps, 15 s
+   36.364    leakcam_agent: READY not answered
+   36.909    t= 1 ch0: in  61 out  58 fps, 449910 B, I 1
+   37.866    leakcam_agent: READY not answered
+   37.910    t= 2 ch0: in  83 out  83 fps, 173768 B, I 0
+   38.911    t= 3 ch0: in  73 out  73 fps, 359423 B, I 1
+   39.367    leakcam_agent: READY not answered
+   39.912    t= 4 ch0: in  80 out  80 fps, 267704 B, I 0
+   40.869    leakcam_agent: READY not answered
+   40.913    t= 5 ch0: in  77 out  77 fps, 315790 B, I 1
+   41.914    t= 6 ch0: in  78 out  78 fps, 321054 B, I 1
+   42.370    leakcam_agent: READY not answered
+   42.915    t= 7 ch0: in  73 out  74 fps, 291393 B, I 0
+   43.872    leakcam_agent: READY not answered
+   43.916    t= 8 ch0: in  74 out  74 fps, 306994 B, I 0
+   44.917    t= 9 ch0: in  74 out  74 fps, 329585 B, I 1
+   45.373    leakcam_agent: READY not answered
+   45.918    t=10 ch0: in  77 out  77 fps, 325578 B, I 0
+   46.875    leakcam_agent: READY not answered
+   46.919    t=11 ch0: in  78 out  78 fps, 301832 B, I 1
+   47.920    t=12 ch0: in  74 out  75 fps, 320342 B, I 1
+   48.376    leakcam_agent: READY not answered
+   48.920    t=13 ch0: in  73 out  73 fps, 345878 B, I 0
+   49.877    leakcam_agent: READY not answered
+   49.921    t=14 ch0: in  74 out  74 fps, 282891 B, I 0
+   50.922    t=15 ch0: in  77 out  77 fps, 305055 B, I 1
+   50.949    ch 0: 1129 pictures encoded. Average FrameRate = 75 Fps
+   51.248    ch 0: total used pages 1119
+   51.254    ch0: 1129 in, 1126 out in 15.0 s = 75.0 fps, 2505 kbit/s, I frames 8 (spacing 148-150), latency avg 9 max 167 ms
+   51.254    venctest: done
+   51.254    vpu_exit>q_wm 0
+   51.254 ## delay 2 s: 1 channel top done ['75.0']
+   58.118    msh />
+   58.118    msh />
+   58.118    U-Boot SPL 2022.10-gc096dae6-dirty (Oct 27 2026 - 06:41:32 +0000)
+   58.118    00000000: PMU Major Msg: End of CA training                                            
+   58.118    00000000: PMU Major Msg: End of initialization                                         
+   58.118    00000000: PMU Major Msg: End of read enable training                                   
+   58.118    00000000: PMU Major Msg: End of fine write leveling                                    
+   58.118    00000000: PMU Major Msg: End of read dq deskew training                                
+   58.118    00000000: PMU Major Msg: End of MPR read delay center optimization                     
+   58.118    00000000: PMU Major Msg: End of Write leveling coarse delay                            
+   58.118    00000000: PMU Major Msg: End of write delay center optimization                        
+   58.118    00000000: PMU Major Msg: End of read delay center optimization                         
+   58.118    00000000: PMU Major Msg: End of max read latency training                              
+   58.118    00000000: PMU Major Msg: Firmware run has completed                                    
+   58.118    dbyte0 add =9a040100 value =11
+   58.118    dbyte0 add =9a040500 value =13
+   58.118    dbyte0 add =9a040900 value =13
+   58.118    dbyte0 add =9a040d00 value =13
+   58.118    dbyte0 add =9a041100 value =13
+   58.118    dbyte0 add =9a041500 value =13
+   58.118    dbyte0 add =9a041900 value =13
+   58.118    dbyte0 add =9a041d00 value =13
+   58.118    dbyte1 add =9a044100 value =13
+   58.118    dbyte1 add =9a044500 value =13
+   58.118    dbyte1 add =9a044900 value =13
+   58.118    dbyte1 add =9a044d00 value =12
+   58.118    dbyte1 add =9a045100 value =12
+   58.118    dbyte1 add =9a045500 value =13
+   58.118    dbyte1 add =9a045900 value =13
+   58.118    dbyte1 add =9a045d00 value =13
+   58.118    dbyte2 add =9a048100 value =37
+   58.118    dbyte2 add =9a048500 value =37
+   58.118    dbyte2 add =9a048900 value =37
+   58.118    dbyte2 add =9a048d00 value =37
+   58.118    dbyte2 add =9a049100 value =37
+   58.118    dbyte2 add =9a049500 value =37
+   58.118    dbyte2 add =9a049900 value =37
+   58.118    dbyte2 add =9a049d00 value =37
+   58.118    dbyte3 add =9a04c100 value =37
+   58.118    dbyte3 add =9a04c500 value =37
+   58.118    dbyte3 add =9a04c900 value =37
+   58.118    dbyte3 add =9a04cd00 value =37
+   58.118    dbyte3 add =9a04d100 value =37
+   58.118    dbyte3 add =9a04d500 value =37
+   58.118    dbyte3 add =9a04d900 value =37
+   58.118    dbyte3 add =9a04dd00 value =37
+   58.118 ## boot ok ['SPL', 'msh']
+   59.619    spi_nand spi-flash@0: Winbond SPI NAND was found.
+   59.619    spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+   59.619    OpenSBI v0.9
+   59.619    heap: [0x004f14c0 - 0x00cf14c0], size 8192 KB
+   59.619    page: [0x00cf14c8 - 0x039fec00], size 46133 KB
+   59.619     \ | /
+   59.619    - RT -     Thread Smart Operating System
+   59.619     / | \     5.0.0 build Oct 25 2026
+   59.619     2006 - 2020 Copyright by rt-thread team
+   59.619    rtc driver register OK
+   59.619    lwIP-2.1.2 initialized!
+   59.619    [I/I2C] I2C bus [i2c0] registered
+   59.619    [I/I2C] I2C bus [i2c4] registered
+   59.619    [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+   59.619    link_mux: console and /dev/link share uart1
+   59.619    Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+   59.619    [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+   59.619    os  : system memory alloc 320 bytes
+   59.619    flsh: UFFS consume spare data size 9
+   59.619    os  : system memory alloc 84480 bytes
+   59.619    os  : system memory alloc 53200 bytes
+   59.619    os  : system memory alloc 2048 bytes
+   59.619    tree: DIR 0, FILE 5, DATA 4
+   59.619    os  : system memory alloc 320 bytes
+   59.619    flsh: UFFS consume spare data size 9
+   59.619    os  : system memory alloc 84480 bytes
+   59.619    os  : system memory alloc 53200 bytes
+   59.619    os  : system memory alloc 8192 bytes
+   59.619    tree: found bad block 610
+   59.619    tree: found bad block 613
+   59.619    tree: DIR 2, FILE 12, DATA 124
+   59.619    /dev/shm file system initialization done!
+   59.619    Can't find sensor on csi0
+   59.619    Can't find sensor on csi2
+   59.619    <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+   59.619    <gnne> gnne_device_init done.
+   59.619    #############SDK VERSION######################################
+   59.619    SDK   : unknown-20261027-064114--51e0f1f70c2f-4162ec7
+   59.619    nncase: 2.11.0
+   59.619    ##############################################################
+   59.619    msh />
+   59.957    leakcam_agent: READY not answered
+   64.158    leakcam_agent: READY not answered
+   64.158    leakcam_agent: READY not answered
+   64.163    /sdcard/app/venctest 1 15 0
+   64.171    venctest: 1 channel(s) H.265 1280x960 CBR 500 kbit/s, feed max 0 fps, 15 s
+   64.459    leakcam_agent: READY not answered
+   65.223    t= 1 ch0: in  61 out  58 fps, 449910 B, I 1
+   65.961    leakcam_agent: READY not answered
+   66.224    t= 2 ch0: in  83 out  83 fps, 173768 B, I 0
+   67.226    t= 3 ch0: in  73 out  73 fps, 359423 B, I 1
+   67.462    leakcam_agent: READY not answered
+   68.227    t= 4 ch0: in  80 out  80 fps, 267704 B, I 0
+   68.963    leakcam_agent: READY not answered
+   69.228    t= 5 ch0: in  77 out  77 fps, 315790 B, I 1
+   70.229    t= 6 ch0: in  78 out  78 fps, 321054 B, I 1
+   70.465    leakcam_agent: READY not answered
+   71.230    t= 7 ch0: in  74 out  74 fps, 291393 B, I 0
+   71.967    leakcam_agent: READY not answered
+   72.231    t= 8 ch0: in  75 out  75 fps, 306994 B, I 0
+   73.232    t= 9 ch0: in  74 out  74 fps, 333572 B, I 1
+   73.468    leakcam_agent: READY not answered
+   74.233    t=10 ch0: in  76 out  76 fps, 321591 B, I 0
+   74.970    leakcam_agent: READY not answered
+   75.234    t=11 ch0: in  80 out  80 fps, 309555 B, I 1
+   76.235    t=12 ch0: in  74 out  74 fps, 317496 B, I 1
+   76.471    leakcam_agent: READY not answered
+   77.236    t=13 ch0: in  73 out  73 fps, 349607 B, I 0
+   77.973    leakcam_agent: READY not answered
+   78.237    t=14 ch0: in  75 out  75 fps, 277243 B, I 1
+   79.238    t=15 ch0: in  76 out  76 fps, 306423 B, I 0
+   79.292    ch 0: 1130 pictures encoded. Average FrameRate = 75 Fps
+   79.474    leakcam_agent: READY not answered
+   79.591    ch 0: total used pages 1119
+   79.597    ch0: 1130 in, 1127 out in 15.0 s = 75.1 fps, 2508 kbit/s, I frames 8 (spacing 148-150), latency avg 9 max 167 ms
+   79.597    venctest: done
+   79.597    vpu_exit>q_wm 0
+   79.597 ## delay 4 s: 1 channel top done ['75.1']
+   86.460    U-Boot SPL 2022.10-gc096dae6-dirty (Oct 27 2026 - 06:41:32 +0000)
+   86.460    00000000: PMU Major Msg: End of CA training                                            
+   86.460    00000000: PMU Major Msg: End of initialization                                         
+   86.460    00000000: PMU Major Msg: End of read enable training                                   
+   86.460    00000000: PMU Major Msg: End of fine write leveling                                    
+   86.460    00000000: PMU Major Msg: End of read dq deskew training                                
+   86.460    00000000: PMU Major Msg: End of MPR read delay center optimization                     
+   86.460    00000000: PMU Major Msg: End of Write leveling coarse delay                            
+   86.460    00000000: PMU Major Msg: End of write delay center optimization                        
+   86.460    00000000: PMU Major Msg: End of read delay center optimization                         
+   86.460    00000000: PMU Major Msg: End of max read latency training                              
+   86.460    00000000: PMU Major Msg: Firmware run has completed                                    
+   86.460    dbyte0 add =9a040100 value =12
+   86.460    dbyte0 add =9a040500 value =13
+   86.460    dbyte0 add =9a040900 value =13
+   86.460    dbyte0 add =9a040d00 value =13
+   86.460    dbyte0 add =9a041100 value =13
+   86.460    dbyte0 add =9a041500 value =13
+   86.460    dbyte0 add =9a041900 value =13
+   86.460    dbyte0 add =9a041d00 value =14
+   86.460    dbyte1 add =9a044100 value =13
+   86.460    dbyte1 add =9a044500 value =13
+   86.460    dbyte1 add =9a044900 value =14
+   86.460    dbyte1 add =9a044d00 value =12
+   86.460    dbyte1 add =9a045100 value =12
+   86.460    dbyte1 add =9a045500 value =13
+   86.460    dbyte1 add =9a045900 value =13
+   86.460    dbyte1 add =9a045d00 value =13
+   86.460    dbyte2 add =9a048100 value =37
+   86.460    dbyte2 add =9a048500 value =37
+   86.460    dbyte2 add =9a048900 value =37
+   86.460    dbyte2 add =9a048d00 value =37
+   86.460    dbyte2 add =9a049100 value =37
+   86.460    dbyte2 add =9a049500 value =37
+   86.460    dbyte2 add =9a049900 value =37
+   86.460    dbyte2 add =9a049d00 value =37
+   86.460    dbyte3 add =9a04c100 value =37
+   86.460    dbyte3 add =9a04c500 value =37
+   86.460    dbyte3 add =9a04c900 value =37
+   86.460    dbyte3 add =9a04cd00 value =37
+   86.460    dbyte3 add =9a04d100 value =37
+   86.460    dbyte3 add =9a04d500 value =37
+   86.460    dbyte3 add =9a04d900 value =37
+   86.460    dbyte3 add =9a04dd00 value =37
+   86.463    spi_nand spi-flash@0: Winbond SPI NAND was found.
+   86.463    spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+   86.541    OpenSBI v0.9
+   86.552    heap: [0x004f14c0 - 0x00cf14c0], size 8192 KB
+   86.552    page: [0x00cf14c8 - 0x039fec00], size 46133 KB
+   86.552     \ | /
+   86.552    - RT -     Thread Smart Operating System
+   86.552     / | \     5.0.0 build Oct 25 2026
+   86.552     2006 - 2020 Copyright by rt-thread team
+   86.557    rtc driver register OK
+   86.572    lwIP-2.1.2 initialized!
+   86.572    [I/I2C] I2C bus [i2c0] registered
+   86.572    [I/I2C] I2C bus [i2c4] registered
+   86.572    [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+   86.572    link_mux: console and /dev/link share uart1
+   86.572    Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+   86.572    [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+   86.572    os  : system memory alloc 320 bytes
+   86.572    flsh: UFFS consume spare data size 9
+   86.572    os  : system memory alloc 84480 bytes
+   86.572    os  : system memory alloc 53200 bytes
+   86.572    os  : system memory alloc 2048 bytes
+   86.629    tree: DIR 0, FILE 5, DATA 4
+   86.629    os  : system memory alloc 320 bytes
+   86.629    flsh: UFFS consume spare data size 9
+   86.629    os  : system memory alloc 84480 bytes
+   86.629    os  : system memory alloc 53200 bytes
+   86.629    os  : system memory alloc 8192 bytes
+   86.685    tree: found bad block 610
+   86.685    tree: found bad block 613
+   86.773    tree: DIR 2, FILE 12, DATA 124
+   86.773    /dev/shm file system initialization done!
+   86.773    Can't find sensor on csi0
+   86.778    Can't find sensor on csi2
+   86.778    <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+   86.778    <gnne> gnne_device_init done.
+   86.778    #############SDK VERSION######################################
+   86.778    SDK   : unknown-20261027-064114--51e0f1f70c2f-4162ec7
+   86.778    nncase: 2.11.0
+   86.778    ##############################################################
+   86.778    msh />
+   86.778 ## boot ok ['SPL', 'OpenSBI', 'RT-Smart', 'mounted', 'msh']
+   88.296    leakcam_agent: READY not answered
+   94.798    leakcam_agent: READY not answered
+   94.798    leakcam_agent: READY not answered
+   94.798    leakcam_agent: READY not answered
+   94.798    leakcam_agent: READY not answered
+   94.802    /sdcard/app/venctest 1 15 0
+   94.810    venctest: 1 channel(s) H.265 1280x960 CBR 500 kbit/s, feed max 0 fps, 15 s
+   95.821    leakcam_agent: READY not answered
+   95.862    t= 1 ch0: in  61 out  58 fps, 449910 B, I 1
+   96.864    t= 2 ch0: in  83 out  83 fps, 173768 B, I 0
+   97.322    leakcam_agent: READY not answered
+   97.864    t= 3 ch0: in  73 out  73 fps, 359423 B, I 1
+   98.823    leakcam_agent: READY not answered
+   98.866    t= 4 ch0: in  80 out  80 fps, 267704 B, I 0
+   99.867    t= 5 ch0: in  77 out  77 fps, 315790 B, I 1
+  100.325    leakcam_agent: READY not answered
+  100.868    t= 6 ch0: in  78 out  78 fps, 321054 B, I 1
+  101.827    leakcam_agent: READY not answered
+  101.870    t= 7 ch0: in  74 out  74 fps, 291393 B, I 0
+  102.870    t= 8 ch0: in  75 out  75 fps, 306994 B, I 0
+  103.328    leakcam_agent: READY not answered
+  103.871    t= 9 ch0: in  74 out  74 fps, 333572 B, I 1
+  104.829    leakcam_agent: READY not answered
+  104.872    t=10 ch0: in  76 out  76 fps, 321591 B, I 0
+  105.873    t=11 ch0: in  79 out  79 fps, 305700 B, I 1
+  106.330    leakcam_agent: READY not answered
+  106.874    t=12 ch0: in  74 out  74 fps, 316474 B, I 1
+  107.832    leakcam_agent: READY not answered
+  107.875    t=13 ch0: in  74 out  74 fps, 354484 B, I 0
+  108.876    t=14 ch0: in  74 out  75 fps, 277243 B, I 1
+  109.333    leakcam_agent: READY not answered
+  109.333    leakcam_agent: no WAKE from BL616, assuming cold start
+  109.333    leakcam_agent: sensors: -0.1 %RH, 0.0 C, probe -1 mV, battery 4363 mV
+  109.333    leakcam_agent: wake reason: cold
+  109.339    [W/LWP] not use fast load, out of memory 8388608 < 15543000
+  109.877    t=15 ch0: in  73 out  73 fps, 294292 B, I 0
+  109.902    ch 0: 1127 pictures encoded. Average FrameRate = 75 Fps
+  109.999    <3>[4] [Func]:vb_set_config [Line]:1371 [Info]:VB is initialized!
+  109.999    vicap: video buffer pools failed (MMZ too small?)
+  109.999    capture failed
+  109.999    leakcam_agent: hook exited 0, next wake in 3600 s
+  110.202    ch 0: total used pages 1119
+  110.208    ch0: 1127 in, 1124 out in 15.0 s = 74.9 fps, 2501 kbit/s, I frames 8 (spacing 148-150), latency avg 9 max 167 ms
+  110.208    venctest: done
+  110.208    vpu_exit>q_wm 0
+  110.208 ## delay 6 s: 1 channel top done ['74.9']
+  117.070    msh />
+  117.070    msh />
+  117.070    U-Boot SPL 2022.10-gc096dae6-dirty (Oct 27 2026 - 06:41:32 +0000)
+  117.070    00000000: PMU Major Msg: End of CA training                                            
+  117.070    00000000: PMU Major Msg: End of initialization                                         
+  117.070    00000000: PMU Major Msg: End of read enable training                                   
+  117.070    00000000: PMU Major Msg: End of fine write leveling                                    
+  117.070    00000000: PMU Major Msg: End of read dq deskew training                                
+  117.070    00000000: PMU Major Msg: End of MPR read delay center optimization                     
+  117.070    00000000: PMU Major Msg: End of Write leveling coarse delay                            
+  117.070    00000000: PMU Major Msg: End of write delay center optimization                        
+  117.070    00000000: PMU Major Msg: End of read delay center optimization                         
+  117.070    00000000: PMU Major Msg: End of max read latency training                              
+  117.070    00000000: PMU Major Msg: Firmware run has completed                                    
+  117.070    dbyte0 add =9a040100 value =11
+  117.070    dbyte0 add =9a040500 value =13
+  117.070    dbyte0 add =9a040900 value =13
+  117.070    dbyte0 add =9a040d00 value =13
+  117.070    dbyte0 add =9a041100 value =13
+  117.070    dbyte0 add =9a041500 value =13
+  117.070    dbyte0 add =9a041900 value =13
+  117.070    dbyte0 add =9a041d00 value =14
+  117.070    dbyte1 add =9a044100 value =13
+  117.070    dbyte1 add =9a044500 value =12
+  117.070    dbyte1 add =9a044900 value =13
+  117.070    dbyte1 add =9a044d00 value =12
+  117.070    dbyte1 add =9a045100 value =13
+  117.070    dbyte1 add =9a045500 value =13
+  117.070    dbyte1 add =9a045900 value =13
+  117.070    dbyte1 add =9a045d00 value =13
+  117.070    dbyte2 add =9a048100 value =37
+  117.070    dbyte2 add =9a048500 value =37
+  117.070    dbyte2 add =9a048900 value =37
+  117.070    dbyte2 add =9a048d00 value =37
+  117.070    dbyte2 add =9a049100 value =37
+  117.070    dbyte2 add =9a049500 value =37
+  117.070    dbyte2 add =9a049900 value =37
+  117.070    dbyte2 add =9a049d00 value =37
+  117.070    dbyte3 add =9a04c100 value =37
+  117.070    dbyte3 add =9a04c500 value =37
+  117.070    dbyte3 add =9a04c900 value =37
+  117.070    dbyte3 add =9a04cd00 value =37
+  117.070    dbyte3 add =9a04d100 value =37
+  117.070    dbyte3 add =9a04d500 value =37
+  117.070    dbyte3 add =9a04d900 value =37
+  117.070    dbyte3 add =9a04dd00 value =37
+  117.070 ## boot ok ['SPL', 'msh']
+  118.570    spi_nand spi-flash@0: Winbond SPI NAND was found.
+  118.570    spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+  118.570    OpenSBI v0.9
+  118.570    heap: [0x004f14c0 - 0x00cf14c0], size 8192 KB
+  118.570    page: [0x00cf14c8 - 0x039fec00], size 46133 KB
+  118.570     \ | /
+  118.570    - RT -     Thread Smart Operating System
+  118.570     / | \     5.0.0 build Oct 25 2026
+  118.570     2006 - 2020 Copyright by rt-thread team
+  118.570    rtc driver register OK
+  118.570    lwIP-2.1.2 initialized!
+  118.570    [I/I2C] I2C bus [i2c0] registered
+  118.570    [I/I2C] I2C bus [i2c4] registered
+  118.570    [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+  118.570    link_mux: console and /dev/link share uart1
+  118.570    Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+  118.570    [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+  118.570    os  : system memory alloc 320 bytes
+  118.570    flsh: UFFS consume spare data size 9
+  118.570    os  : system memory alloc 84480 bytes
+  118.570    os  : system memory alloc 53200 bytes
+  118.570    os  : system memory alloc 2048 bytes
+  118.570    tree: DIR 0, FILE 5, DATA 4
+  118.570    os  : system memory alloc 320 bytes
+  118.570    flsh: UFFS consume spare data size 9
+  118.570    os  : system memory alloc 84480 bytes
+  118.570    os  : system memory alloc 53200 bytes
+  118.570    os  : system memory alloc 8192 bytes
+  118.570    tree: found bad block 610
+  118.570    tree: found bad block 613
+  118.570    tree: DIR 2, FILE 12, DATA 124
+  118.570    /dev/shm file system initialization done!
+  118.570    Can't find sensor on csi0
+  118.570    Can't find sensor on csi2
+  118.570    <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+  118.570    <gnne> gnne_device_init done.
+  118.570    #############SDK VERSION######################################
+  118.570    SDK   : unknown-20261027-064114--51e0f1f70c2f-4162ec7
+  118.570    nncase: 2.11.0
+  118.570    ##############################################################
+  118.570    msh />
+  118.909    leakcam_agent: READY not answered
+  127.110    leakcam_agent: READY not answered
+  127.110    leakcam_agent: READY not answered
+  127.110    leakcam_agent: READY not answered
+  127.110    leakcam_agent: READY not answered
+  127.110    leakcam_agent: READY not answered
+  127.115    /sdcard/app/venctest 1 15 0
+  127.124    venctest: 1 channel(s) H.265 1280x960 CBR 500 kbit/s, feed max 0 fps, 15 s
+  127.931    leakcam_agent: READY not answered
+  128.176    t= 1 ch0: in  61 out  58 fps, 449910 B, I 1
+  129.177    t= 2 ch0: in  83 out  83 fps, 173768 B, I 0
+  129.432    leakcam_agent: READY not answered
+  130.178    t= 3 ch0: in  73 out  73 fps, 359423 B, I 1
+  130.934    leakcam_agent: READY not answered
+  131.179    t= 4 ch0: in  81 out  81 fps, 270455 B, I 0
+  132.180    t= 5 ch0: in  76 out  76 fps, 313039 B, I 1
+  132.435    leakcam_agent: READY not answered
+  133.181    t= 6 ch0: in  79 out  79 fps, 324026 B, I 1
+  133.939    leakcam_agent: READY not answered
+  134.182    t= 7 ch0: in  74 out  74 fps, 292368 B, I 0
+  135.183    t= 8 ch0: in  75 out  75 fps, 320977 B, I 1
+  135.440    leakcam_agent: READY not answered
+  136.184    t= 9 ch0: in  74 out  74 fps, 319193 B, I 0
+  136.942    leakcam_agent: READY not answered
+  137.185    t=10 ch0: in  75 out  75 fps, 318040 B, I 0
+  138.187    t=11 ch0: in  80 out  81 fps, 313440 B, I 1
+  138.443    leakcam_agent: READY not answered
+  139.187    t=12 ch0: in  74 out  74 fps, 319747 B, I 1
+  139.945    leakcam_agent: READY not answered
+  139.945    leakcam_agent: no WAKE from BL616, assuming cold start
+  139.945    leakcam_agent: sensors: -0.1 %RH, 0.0 C, probe -1 mV, battery 4373 mV
+  139.945    leakcam_agent: wake reason: cold
+  140.018    [W/LWP] not use fast load, out of memory 8388608 < 15543000
+  140.188    t=13 ch0: in  72 out  72 fps, 339452 B, I 0
+  140.613    <3>[4] [Func]:vb_set_config [Line]:1371 [Info]:VB is initialized!
+  140.613    vicap: video buffer pools failed (MMZ too small?)
+  140.613    capture failed
+  140.613    leakcam_agent: hook exited 0, next wake in 3600 s
+  141.189    t=14 ch0: in  73 out  73 fps, 258017 B, I 0
+  142.116    leakcam_agent: SLEEP not answered
+  142.190    t=15 ch0: in  75 out  75 fps, 317537 B, I 1
+  142.211    ch 0: 1127 pictures encoded. Average FrameRate = 75 Fps
+  142.427    leakcam_agent: done, heartbeat stopped
+  142.511    ch 0: total used pages 1119
+  142.516    ch0: 1127 in, 1124 out in 15.0 s = 74.9 fps, 2501 kbit/s, I frames 8 (spacing 148-150), latency avg 9 max 165 ms
+  142.516    venctest: done
+  142.516    vpu_exit>q_wm 0
+  142.516 ## delay 8 s: 1 channel top done ['74.9']
+  149.379    msh />
+  149.379    msh />
+  149.379    U-Boot SPL 2022.10-gc096dae6-dirty (Oct 27 2026 - 06:41:32 +0000)
+  149.379    00000000: PMU Major Msg: End of CA training                                            
+  149.379    00000000: PMU Major Msg: End of initialization                                         
+  149.379    00000000: PMU Major Msg: End of read enable training                                   
+  149.379    00000000: PMU Major Msg: End of fine write leveling                                    
+  149.379    00000000: PMU Major Msg: End of read dq deskew training                                
+  149.379    00000000: PMU Major Msg: End of MPR read delay center optimization                     
+  149.379    00000000: PMU Major Msg: End of Write leveling coarse delay                            
+  149.379    00000000: PMU Major Msg: End of write delay center optimization                        
+  149.379    00000000: PMU Major Msg: End of read delay center optimization                         
+  149.379    00000000: PMU Major Msg: End of max read latency training                              
+  149.379    00000000: PMU Major Msg: Firmware run has completed                                    
+  149.379    dbyte0 add =9a040100 value =11
+  149.379    dbyte0 add =9a040500 value =13
+  149.379    dbyte0 add =9a040900 value =13
+  149.379    dbyte0 add =9a040d00 value =13
+  149.379    dbyte0 add =9a041100 value =13
+  149.379    dbyte0 add =9a041500 value =13
+  149.379    dbyte0 add =9a041900 value =13
+  149.379    dbyte0 add =9a041d00 value =14
+  149.379    dbyte1 add =9a044100 value =13
+  149.379    dbyte1 add =9a044500 value =12
+  149.379    dbyte1 add =9a044900 value =13
+  149.379    dbyte1 add =9a044d00 value =11
+  149.379    dbyte1 add =9a045100 value =13
+  149.379    dbyte1 add =9a045500 value =13
+  149.379    dbyte1 add =9a045900 value =13
+  149.379    dbyte1 add =9a045d00 value =13
+  149.379    dbyte2 add =9a048100 value =37
+  149.379    dbyte2 add =9a048500 value =37
+  149.379    dbyte2 add =9a048900 value =37
+  149.379    dbyte2 add =9a048d00 value =37
+  149.379    dbyte2 add =9a049100 value =37
+  149.379    dbyte2 add =9a049500 value =37
+  149.379    dbyte2 add =9a049900 value =37
+  149.379    dbyte2 add =9a049d00 value =37
+  149.379    dbyte3 add =9a04c100 value =37
+  149.379    dbyte3 add =9a04c500 value =37
+  149.379    dbyte3 add =9a04c900 value =37
+  149.379    dbyte3 add =9a04cd00 value =37
+  149.379    dbyte3 add =9a04d100 value =37
+  149.379    dbyte3 add =9a04d500 value =37
+  149.379    dbyte3 add =9a04d900 value =37
+  149.379    dbyte3 add =9a04dd00 value =37
+  149.379 ## boot ok ['SPL', 'msh']
+  150.879    spi_nand spi-flash@0: Winbond SPI NAND was found.
+  150.879    spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+  150.879    OpenSBI v0.9
+  150.879    heap: [0x004f14c0 - 0x00cf14c0], size 8192 KB
+  150.879    page: [0x00cf14c8 - 0x039fec00], size 46133 KB
+  150.879     \ | /
+  150.879    - RT -     Thread Smart Operating System
+  150.879     / | \     5.0.0 build Oct 25 2026
+  150.879     2006 - 2020 Copyright by rt-thread team
+  150.879    rtc driver register OK
+  150.879    lwIP-2.1.2 initialized!
+  150.879    [I/I2C] I2C bus [i2c0] registered
+  150.879    [I/I2C] I2C bus [i2c4] registered
+  150.879    [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+  150.879    link_mux: console and /dev/link share uart1
+  150.879    Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+  150.879    [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+  150.879    os  : system memory alloc 320 bytes
+  150.879    flsh: UFFS consume spare data size 9
+  150.879    os  : system memory alloc 84480 bytes
+  150.879    os  : system memory alloc 53200 bytes
+  150.879    os  : system memory alloc 2048 bytes
+  150.879    tree: DIR 0, FILE 5, DATA 4
+  150.879    os  : system memory alloc 320 bytes
+  150.879    flsh: UFFS consume spare data size 9
+  150.879    os  : system memory alloc 84480 bytes
+  150.879    os  : system memory alloc 53200 bytes
+  150.879    os  : system memory alloc 8192 bytes
+  150.879    tree: found bad block 610
+  150.879    tree: found bad block 613
+  150.879    tree: DIR 2, FILE 12, DATA 124
+  150.879    /dev/shm file system initialization done!
+  150.879    Can't find sensor on csi0
+  150.879    Can't find sensor on csi2
+  150.879    <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+  150.879    <gnne> gnne_device_init done.
+  150.879    #############SDK VERSION######################################
+  150.879    SDK   : unknown-20261027-064114--51e0f1f70c2f-4162ec7
+  150.879    nncase: 2.11.0
+  150.879    ##############################################################
+  150.879    msh />
+  151.218    leakcam_agent: READY not answered
+  161.419    leakcam_agent: READY not answered
+  161.419    leakcam_agent: READY not answered
+  161.419    leakcam_agent: READY not answered
+  161.419    leakcam_agent: READY not answered
+  161.419    leakcam_agent: READY not answered
+  161.419    leakcam_agent: READY not answered
+  161.424    /sdcard/app/venctest 1 15 0
+  161.433    venctest: 1 channel(s) H.265 1280x960 CBR 500 kbit/s, feed max 0 fps, 15 s
+  161.722    leakcam_agent: READY not answered
+  162.485    t= 1 ch0: in  61 out  58 fps, 449910 B, I 1
+  163.225    leakcam_agent: READY not answered
+  163.486    t= 2 ch0: in  83 out  83 fps, 173768 B, I 0
+  164.487    t= 3 ch0: in  73 out  73 fps, 359423 B, I 1
+  164.727    leakcam_agent: READY not answered
+  165.488    t= 4 ch0: in  80 out  81 fps, 270455 B, I 0
+  166.228    leakcam_agent: READY not answered
+  166.489    t= 5 ch0: in  76 out  76 fps, 313039 B, I 1
+  167.490    t= 6 ch0: in  79 out  79 fps, 324026 B, I 1
+  167.730    leakcam_agent: READY not answered
+  168.491    t= 7 ch0: in  74 out  74 fps, 292368 B, I 0
+  169.232    leakcam_agent: READY not answered
+  169.492    t= 8 ch0: in  74 out  74 fps, 303047 B, I 0
+  170.493    t= 9 ch0: in  74 out  74 fps, 333572 B, I 1
+  170.734    leakcam_agent: READY not answered
+  171.496    t=10 ch0: in  76 out  76 fps, 321591 B, I 0
+  172.235    leakcam_agent: READY not answered
+  172.235    leakcam_agent: no WAKE from BL616, assuming cold start
+  172.235    leakcam_agent: sensors: -0.1 %RH, 0.0 C, probe -1 mV, battery 4364 mV
+  172.235    leakcam_agent: wake reason: cold
+  172.240    [W/LWP] not use fast load, out of memory 8388608 < 15543000
+  172.497    t=11 ch0: in  78 out  78 fps, 301832 B, I 1
+  172.959    <3>[4] [Func]:vb_set_config [Line]:1371 [Info]:VB is initialized!
+  172.959    vicap: video buffer pools failed (MMZ too small?)
+  172.959    capture failed
+  172.959    leakcam_agent: hook exited 0, next wake in 3600 s
+  173.498    t=12 ch0: in  71 out  71 fps, 285941 B, I 0
+  174.462    leakcam_agent: SLEEP not answered
+  174.499    t=13 ch0: in  75 out  75 fps, 372184 B, I 1
+  174.735    leakcam_agent: done, heartbeat stopped
+  175.500    t=14 ch0: in  75 out  75 fps, 268316 B, I 0
+  176.501    t=15 ch0: in  75 out  75 fps, 315890 B, I 1
+  176.517    ch 0: 1126 pictures encoded. Average FrameRate = 75 Fps
+  176.816    ch 0: total used pages 1119
+  176.822    ch0: 1126 in, 1123 out in 15.0 s = 74.8 fps, 2498 kbit/s, I frames 8 (spacing 148-150), latency avg 9 max 168 ms
+  176.822    venctest: done
+  176.822    vpu_exit>q_wm 0
+  176.822 ## delay 10 s: 1 channel top done ['74.8']
+  183.684    msh />
+  183.684    msh />
+  183.685    U-Boot SPL 2022.10-gc096dae6-dirty (Oct 27 2026 - 06:41:32 +0000)
+  183.685    00000000: PMU Major Msg: End of CA training                                            
+  183.685    00000000: PMU Major Msg: End of initialization                                         
+  183.685    00000000: PMU Major Msg: End of read enable training                                   
+  183.685    00000000: PMU Major Msg: End of fine write leveling                                    
+  183.685    00000000: PMU Major Msg: End of read dq deskew training                                
+  183.685    00000000: PMU Major Msg: End of MPR read delay center optimization                     
+  183.685    00000000: PMU Major Msg: End of Write leveling coarse delay                            
+  183.685    00000000: PMU Major Msg: End of write delay center optimization                        
+  183.685    00000000: PMU Major Msg: End of read delay center optimization                         
+  183.685    00000000: PMU Major Msg: End of max read latency training                              
+  183.685    00000000: PMU Major Msg: Firmware run has completed                                    
+  183.685    dbyte0 add =9a040100 value =11
+  183.685    dbyte0 add =9a040500 value =13
+  183.685    dbyte0 add =9a040900 value =13
+  183.685    dbyte0 add =9a040d00 value =13
+  183.685    dbyte0 add =9a041100 value =13
+  183.685    dbyte0 add =9a041500 value =13
+  183.685    dbyte0 add =9a041900 value =12
+  183.685    dbyte0 add =9a041d00 value =15
+  183.685    dbyte1 add =9a044100 value =13
+  183.685    dbyte1 add =9a044500 value =13
+  183.685    dbyte1 add =9a044900 value =14
+  183.685    dbyte1 add =9a044d00 value =13
+  183.685    dbyte1 add =9a045100 value =12
+  183.685    dbyte1 add =9a045500 value =13
+  183.685    dbyte1 add =9a045900 value =13
+  183.685    dbyte1 add =9a045d00 value =13
+  183.685    dbyte2 add =9a048100 value =37
+  183.685    dbyte2 add =9a048500 value =37
+  183.685    dbyte2 add =9a048900 value =37
+  183.685    dbyte2 add =9a048d00 value =37
+  183.685    dbyte2 add =9a049100 value =37
+  183.685    dbyte2 add =9a049500 value =37
+  183.685    dbyte2 add =9a049900 value =37
+  183.685    dbyte2 add =9a049d00 value =37
+  183.685    dbyte3 add =9a04c100 value =37
+  183.685    dbyte3 add =9a04c500 value =37
+  183.685    dbyte3 add =9a04c900 value =37
+  183.685    dbyte3 add =9a04cd00 value =37
+  183.685    dbyte3 add =9a04d100 value =37
+  183.685    dbyte3 add =9a04d500 value =37
+  183.685    dbyte3 add =9a04d900 value =37
+  183.685    dbyte3 add =9a04dd00 value =37
+  183.685 ## boot ok ['SPL', 'msh']
+  185.185    spi_nand spi-flash@0: Winbond SPI NAND was found.
+  185.185    spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+  185.185    OpenSBI v0.9
+  185.185    heap: [0x004f14c0 - 0x00cf14c0], size 8192 KB
+  185.185    page: [0x00cf14c8 - 0x039fec00], size 46133 KB
+  185.185     \ | /
+  185.185    - RT -     Thread Smart Operating System
+  185.185     / | \     5.0.0 build Oct 25 2026
+  185.185     2006 - 2020 Copyright by rt-thread team
+  185.185    rtc driver register OK
+  185.185    lwIP-2.1.2 initialized!
+  185.185    [I/I2C] I2C bus [i2c0] registered
+  185.185    [I/I2C] I2C bus [i2c4] registered
+  185.185    [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+  185.185    link_mux: console and /dev/link share uart1
+  185.185    Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+  185.185    [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+  185.185    os  : system memory alloc 320 bytes
+  185.185    flsh: UFFS consume spare data size 9
+  185.185    os  : system memory alloc 84480 bytes
+  185.185    os  : system memory alloc 53200 bytes
+  185.185    os  : system memory alloc 2048 bytes
+  185.185    tree: DIR 0, FILE 5, DATA 4
+  185.185    os  : system memory alloc 320 bytes
+  185.185    flsh: UFFS consume spare data size 9
+  185.185    os  : system memory alloc 84480 bytes
+  185.185    os  : system memory alloc 53200 bytes
+  185.185    os  : system memory alloc 8192 bytes
+  185.185    tree: found bad block 610
+  185.185    tree: found bad block 613
+  185.185    tree: DIR 2, FILE 12, DATA 124
+  185.185    /dev/shm file system initialization done!
+  185.185    Can't find sensor on csi0
+  185.185    Can't find sensor on csi2
+  185.185    <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+  185.185    <gnne> gnne_device_init done.
+  185.185    #############SDK VERSION######################################
+  185.185    SDK   : unknown-20261027-064114--51e0f1f70c2f-4162ec7
+  185.185    nncase: 2.11.0
+  185.185    ##############################################################
+  185.185    msh />
+  185.524    leakcam_agent: READY not answered
+  197.725    leakcam_agent: READY not answered
+  197.725    leakcam_agent: READY not answered
+  197.725    leakcam_agent: READY not answered
+  197.725    leakcam_agent: READY not answered
+  197.725    leakcam_agent: READY not answered
+  197.725    leakcam_agent: READY not answered
+  197.725    leakcam_agent: READY not answered
+  197.725    leakcam_agent: READY not answered
+  197.730    /sdcard/app/venctest 1 15 0
+  197.738    venctest: 1 channel(s) H.265 1280x960 CBR 500 kbit/s, feed max 0 fps, 15 s
+  198.790    t= 1 ch0: in  61 out  58 fps, 449910 B, I 1
+  199.048    leakcam_agent: READY not answered
+  199.791    t= 2 ch0: in  84 out  84 fps, 175700 B, I 0
+  200.550    leakcam_agent: READY not answered
+  200.792    t= 3 ch0: in  72 out  72 fps, 357491 B, I 1
+  201.793    t= 4 ch0: in  81 out  81 fps, 270455 B, I 0
+  202.051    leakcam_agent: READY not answered
+  202.794    t= 5 ch0: in  76 out  76 fps, 313039 B, I 1
+  203.553    leakcam_agent: READY not answered
+  203.795    t= 6 ch0: in  79 out  79 fps, 324026 B, I 1
+  204.796    t= 7 ch0: in  74 out  74 fps, 292368 B, I 0
+  205.055    leakcam_agent: READY not answered
+  205.797    t= 8 ch0: in  75 out  75 fps, 320977 B, I 1
+  206.556    leakcam_agent: READY not answered
+  206.556    leakcam_agent: no WAKE from BL616, assuming cold start
+  206.556    leakcam_agent: sensors: -0.1 %RH, 0.0 C, probe -1 mV, battery 4376 mV
+  206.556    leakcam_agent: wake reason: cold
+  206.584    [W/LWP] not use fast load, out of memory 8388608 < 15543000
+  206.798    t= 9 ch0: in  72 out  72 fps, 311655 B, I 0
+  207.179    <3>[4] [Func]:vb_set_config [Line]:1371 [Info]:VB is initialized!
+  207.179    vicap: video buffer pools failed (MMZ too small?)
+  207.179    capture failed
+  207.179    leakcam_agent: hook exited 0, next wake in 3600 s
+  207.799    t=10 ch0: in  77 out  77 fps, 325578 B, I 0
+  208.680    leakcam_agent: SLEEP not answered
+  208.800    t=11 ch0: in  76 out  76 fps, 294446 B, I 1
+  209.038    leakcam_agent: done, heartbeat stopped
+  209.802    t=12 ch0: in  75 out  75 fps, 318144 B, I 1
+  210.803    t=13 ch0: in  74 out  74 fps, 351192 B, I 0
+  211.804    t=14 ch0: in  75 out  75 fps, 287161 B, I 0
+  212.805    t=15 ch0: in  76 out  76 fps, 301129 B, I 1
+  212.827    ch 0: 1128 pictures encoded. Average FrameRate = 75 Fps
+  213.127    ch 0: total used pages 1119
+  213.132    ch0: 1128 in, 1125 out in 15.0 s = 74.9 fps, 2503 kbit/s, I frames 8 (spacing 148-150), latency avg 9 max 165 ms
+  213.132    venctest: done
+  213.132    vpu_exit>q_wm 0
+  213.132 ## delay 12 s: 1 channel top done ['74.9']
+  220.001    msh />
+  220.001    msh />
+  220.001    U-Boot SPL 2022.10-gc096dae6-dirty (Oct 27 2026 - 06:41:32 +0000)
+  220.001    00000000: PMU Major Msg: End of CA training                                            
+  220.001    00000000: PMU Major Msg: End of initialization                                         
+  220.001    00000000: PMU Major Msg: End of read enable training                                   
+  220.001    00000000: PMU Major Msg: End of fine write leveling                                    
+  220.001    00000000: PMU Major Msg: End of read dq deskew training                                
+  220.001    00000000: PMU Major Msg: End of MPR read delay center optimization                     
+  220.001    00000000: PMU Major Msg: End of Write leveling coarse delay                            
+  220.001    00000000: PMU Major Msg: End of write delay center optimization                        
+  220.001    00000000: PMU Major Msg: End of read delay center optimization                         
+  220.001    00000000: PMU Major Msg: End of max read latency training                              
+  220.001    00000000: PMU Major Msg: Firmware run has completed                                    
+  220.001    dbyte0 add =9a040100 value =12
+  220.001    dbyte0 add =9a040500 value =13
+  220.001    dbyte0 add =9a040900 value =13
+  220.001    dbyte0 add =9a040d00 value =13
+  220.001    dbyte0 add =9a041100 value =13
+  220.001    dbyte0 add =9a041500 value =13
+  220.001    dbyte0 add =9a041900 value =13
+  220.001    dbyte0 add =9a041d00 value =13
+  220.001    dbyte1 add =9a044100 value =13
+  220.001    dbyte1 add =9a044500 value =12
+  220.001    dbyte1 add =9a044900 value =13
+  220.001    dbyte1 add =9a044d00 value =12
+  220.001    dbyte1 add =9a045100 value =12
+  220.001    dbyte1 add =9a045500 value =13
+  220.001    dbyte1 add =9a045900 value =13
+  220.001    dbyte1 add =9a045d00 value =13
+  220.001    dbyte2 add =9a048100 value =37
+  220.001    dbyte2 add =9a048500 value =37
+  220.001    dbyte2 add =9a048900 value =37
+  220.001    dbyte2 add =9a048d00 value =37
+  220.001    dbyte2 add =9a049100 value =37
+  220.001    dbyte2 add =9a049500 value =37
+  220.001    dbyte2 add =9a049900 value =37
+  220.001    dbyte2 add =9a049d00 value =37
+  220.001    dbyte3 add =9a04c100 value =37
+  220.001    dbyte3 add =9a04c500 value =37
+  220.001    dbyte3 add =9a04c900 value =37
+  220.001    dbyte3 add =9a04cd00 value =37
+  220.001    dbyte3 add =9a04d100 value =37
+  220.001    dbyte3 add =9a04d500 value =37
+  220.001    dbyte3 add =9a04d900 value =37
+  220.001    dbyte3 add =9a04dd00 value =37
+  220.001    spi_nand spi-flash@0: Winbond SPI NAND was found.
+  220.001    spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+  220.001 ## boot ok ['SPL', 'msh']
+  221.501    OpenSBI v0.9
+  221.501    heap: [0x004f14c0 - 0x00cf14c0], size 8192 KB
+  221.501    page: [0x00cf14c8 - 0x039fec00], size 46133 KB
+  221.501     \ | /
+  221.501    - RT -     Thread Smart Operating System
+  221.501     / | \     5.0.0 build Oct 25 2026
+  221.501     2006 - 2020 Copyright by rt-thread team
+  221.501    rtc driver register OK
+  221.501    lwIP-2.1.2 initialized!
+  221.501    [I/I2C] I2C bus [i2c0] registered
+  221.501    [I/I2C] I2C bus [i2c4] registered
+  221.501    [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+  221.501    link_mux: console and /dev/link share uart1
+  221.501    Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+  221.501    [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+  221.501    os  : system memory alloc 320 bytes
+  221.501    flsh: UFFS consume spare data size 9
+  221.501    os  : system memory alloc 84480 bytes
+  221.501    os  : system memory alloc 53200 bytes
+  221.501    os  : system memory alloc 2048 bytes
+  221.501    tree: DIR 0, FILE 5, DATA 4
+  221.501    os  : system memory alloc 320 bytes
+  221.501    flsh: UFFS consume spare data size 9
+  221.501    os  : system memory alloc 84480 bytes
+  221.501    os  : system memory alloc 53200 bytes
+  221.501    os  : system memory alloc 8192 bytes
+  221.501    tree: found bad block 610
+  221.501    tree: found bad block 613
+  221.501    tree: DIR 2, FILE 12, DATA 124
+  221.501    /dev/shm file system initialization done!
+  221.501    Can't find sensor on csi0
+  221.501    Can't find sensor on csi2
+  221.501    <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+  221.501    <gnne> gnne_device_init done.
+  221.501    #############SDK VERSION######################################
+  221.501    SDK   : unknown-20261027-064114--51e0f1f70c2f-4162ec7
+  221.501    nncase: 2.11.0
+  221.501    ##############################################################
+  221.501    msh />
+  221.835    leakcam_agent: READY not answered
+  236.036    leakcam_agent: READY not answered
+  236.036    leakcam_agent: READY not answered
+  236.036    leakcam_agent: READY not answered
+  236.036    leakcam_agent: READY not answered
+  236.036    leakcam_agent: READY not answered
+  236.036    leakcam_agent: READY not answered
+  236.036    leakcam_agent: READY not answered
+  236.036    leakcam_agent: READY not answered
+  236.036    leakcam_agent: READY not answered
+  236.041    /sdcard/app/venctest 1 15 0
+  236.050    venctest: 1 channel(s) H.265 1280x960 CBR 500 kbit/s, feed max 0 fps, 15 s
+  236.859    leakcam_agent: READY not answered
+  237.102    t= 1 ch0: in  60 out  58 fps, 449910 B, I 1
+  238.103    t= 2 ch0: in  83 out  83 fps, 173768 B, I 0
+  238.360    leakcam_agent: READY not answered
+  239.105    t= 3 ch0: in  72 out  72 fps, 359423 B, I 1
+  239.862    leakcam_agent: READY not answered
+  240.105    t= 4 ch0: in  80 out  80 fps, 265965 B, I 0
+  241.107    t= 5 ch0: in  78 out  78 fps, 317529 B, I 1
+  241.364    leakcam_agent: READY not answered
+  242.107    t= 6 ch0: in  77 out  77 fps, 304050 B, I 0
+  242.865    leakcam_agent: READY not answered
+  242.865    leakcam_agent: no WAKE from BL616, assuming cold start
+  242.865    leakcam_agent: sensors: -0.1 %RH, 0.0 C, probe -1 mV, battery 4378 mV
+  242.865    leakcam_agent: wake reason: cold
+  242.881    [W/LWP] not use fast load, out of memory 8388608 < 15543000
+  243.109    t= 7 ch0: in  72 out  73 fps, 300264 B, I 1
+  243.475    <3>[4] [Func]:vb_set_config [Line]:1371 [Info]:VB is initialized!
+  243.475    vicap: video buffer pools failed (MMZ too small?)
+  243.475    capture failed
+  243.475    leakcam_agent: hook exited 0, next wake in 3600 s
+  244.110    t= 8 ch0: in  76 out  76 fps, 315127 B, I 0
+  244.977    leakcam_agent: SLEEP not answered
+  245.111    t= 9 ch0: in  72 out  72 fps, 320942 B, I 1
+  245.349    leakcam_agent: done, heartbeat stopped
+  246.112    t=10 ch0: in  78 out  79 fps, 314833 B, I 0
+  247.112    t=11 ch0: in  74 out  74 fps, 305205 B, I 1
+  248.114    t=12 ch0: in  74 out  74 fps, 298112 B, I 0
+  249.115    t=13 ch0: in  74 out  74 fps, 368458 B, I 1
+  250.115    t=14 ch0: in  76 out  76 fps, 272714 B, I 0
+  251.116    t=15 ch0: in  74 out  75 fps, 315095 B, I 1
+  251.139    ch 0: 1124 pictures encoded. Average FrameRate = 75 Fps
+  251.438    ch 0: total used pages 1119
+  251.444    ch0: 1124 in, 1122 out in 15.0 s = 74.7 fps, 2496 kbit/s, I frames 8 (spacing 148-150), latency avg 9 max 167 ms
+  251.444    venctest: done
+  251.444    vpu_exit>q_wm 0
+  251.444 ## delay 14 s: 1 channel top done ['74.7']
+  258.306    msh />
+  258.306    msh />
+  258.306    U-Boot SPL 2022.10-gc096dae6-dirty (Oct 27 2026 - 06:41:32 +0000)
+  258.306    00000000: PMU Major Msg: End of CA training                                            
+  258.306    00000000: PMU Major Msg: End of initialization                                         
+  258.306    00000000: PMU Major Msg: End of read enable training                                   
+  258.306    00000000: PMU Major Msg: End of fine write leveling                                    
+  258.306    00000000: PMU Major Msg: End of read dq deskew training                                
+  258.306    00000000: PMU Major Msg: End of MPR read delay center optimization                     
+  258.306    00000000: PMU Major Msg: End of Write leveling coarse delay                            
+  258.306    00000000: PMU Major Msg: End of write delay center optimization                        
+  258.306    00000000: PMU Major Msg: End of read delay center optimization                         
+  258.306    00000000: PMU Major Msg: End of max read latency training                              
+  258.306    00000000: PMU Major Msg: Firmware run has completed                                    
+  258.306    dbyte0 add =9a040100 value =11
+  258.306    dbyte0 add =9a040500 value =13
+  258.306    dbyte0 add =9a040900 value =13
+  258.306    dbyte0 add =9a040d00 value =13
+  258.306    dbyte0 add =9a041100 value =13
+  258.306    dbyte0 add =9a041500 value =13
+  258.306    dbyte0 add =9a041900 value =13
+  258.306    dbyte0 add =9a041d00 value =14
+  258.306    dbyte1 add =9a044100 value =13
+  258.306    dbyte1 add =9a044500 value =13
+  258.306    dbyte1 add =9a044900 value =13
+  258.306    dbyte1 add =9a044d00 value =12
+  258.306    dbyte1 add =9a045100 value =12
+  258.306    dbyte1 add =9a045500 value =14
+  258.306    dbyte1 add =9a045900 value =13
+  258.306    dbyte1 add =9a045d00 value =13
+  258.306    dbyte2 add =9a048100 value =37
+  258.306    dbyte2 add =9a048500 value =37
+  258.306    dbyte2 add =9a048900 value =37
+  258.306    dbyte2 add =9a048d00 value =37
+  258.306    dbyte2 add =9a049100 value =37
+  258.306    dbyte2 add =9a049500 value =37
+  258.306    dbyte2 add =9a049900 value =37
+  258.306    dbyte2 add =9a049d00 value =37
+  258.306    dbyte3 add =9a04c100 value =37
+  258.306    dbyte3 add =9a04c500 value =37
+  258.306    dbyte3 add =9a04c900 value =37
+  258.306    dbyte3 add =9a04cd00 value =37
+  258.306    dbyte3 add =9a04d100 value =37
+  258.306    dbyte3 add =9a04d500 value =37
+  258.306    dbyte3 add =9a04d900 value =37
+  258.306    dbyte3 add =9a04dd00 value =37
+  258.306 ## boot ok ['SPL', 'msh']
+  259.806    spi_nand spi-flash@0: Winbond SPI NAND was found.
+  259.806    spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+  259.806    OpenSBI v0.9
+  259.806    heap: [0x004f14c0 - 0x00cf14c0], size 8192 KB
+  259.806    page: [0x00cf14c8 - 0x039fec00], size 46133 KB
+  259.806     \ | /
+  259.806    - RT -     Thread Smart Operating System
+  259.806     / | \     5.0.0 build Oct 25 2026
+  259.806     2006 - 2020 Copyright by rt-thread team
+  259.806    rtc driver register OK
+  259.806    lwIP-2.1.2 initialized!
+  259.806    [I/I2C] I2C bus [i2c0] registered
+  259.806    [I/I2C] I2C bus [i2c4] registered
+  259.806    [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+  259.806    link_mux: console and /dev/link share uart1
+  259.806    Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+  259.806    [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+  259.806    os  : system memory alloc 320 bytes
+  259.806    flsh: UFFS consume spare data size 9
+  259.806    os  : system memory alloc 84480 bytes
+  259.806    os  : system memory alloc 53200 bytes
+  259.806    os  : system memory alloc 2048 bytes
+  259.806    tree: DIR 0, FILE 5, DATA 4
+  259.806    os  : system memory alloc 320 bytes
+  259.806    flsh: UFFS consume spare data size 9
+  259.806    os  : system memory alloc 84480 bytes
+  259.806    os  : system memory alloc 53200 bytes
+  259.806    os  : system memory alloc 8192 bytes
+  259.806    tree: found bad block 610
+  259.806    tree: found bad block 613
+  259.806    tree: DIR 2, FILE 12, DATA 124
+  259.806    /dev/shm file system initialization done!
+  259.806    Can't find sensor on csi0
+  259.806    Can't find sensor on csi2
+  259.806    <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+  259.806    <gnne> gnne_device_init done.
+  259.806    #############SDK VERSION######################################
+  259.806    SDK   : unknown-20261027-064114--51e0f1f70c2f-4162ec7
+  259.806    nncase: 2.11.0
+  259.806    ##############################################################
+  259.806    msh />
+  260.145    leakcam_agent: READY not answered
+  276.347    leakcam_agent: READY not answered
+  276.347    leakcam_agent: READY not answered
+  276.347    leakcam_agent: READY not answered
+  276.347    leakcam_agent: READY not answered
+  276.347    leakcam_agent: READY not answered
+  276.347    leakcam_agent: READY not answered
+  276.347    leakcam_agent: READY not answered
+  276.347    leakcam_agent: READY not answered
+  276.347    leakcam_agent: READY not answered
+  276.347    leakcam_agent: READY not answered
+  276.352    /sdcard/app/venctest 1 15 0
+  276.360    venctest: 1 channel(s) H.265 1280x960 CBR 500 kbit/s, feed max 0 fps, 15 s
+  276.650    leakcam_agent: READY not answered
+  277.412    t= 1 ch0: in  61 out  58 fps, 449910 B, I 1
+  278.152    leakcam_agent: READY not answered
+  278.413    t= 2 ch0: in  83 out  83 fps, 173768 B, I 0
+  279.414    t= 3 ch0: in  73 out  73 fps, 359423 B, I 1
+  279.653    leakcam_agent: READY not answered
+  280.415    t= 4 ch0: in  80 out  80 fps, 267704 B, I 0
+  281.155    leakcam_agent: READY not answered
+  281.155    leakcam_agent: no WAKE from BL616, assuming cold start
+  281.155    leakcam_agent: sensors: -0.1 %RH, 0.0 C, probe -1 mV, battery 4371 mV
+  281.155    leakcam_agent: wake reason: cold
+  281.160    [W/LWP] not use fast load, out of memory 8388608 < 15543000
+  281.416    t= 5 ch0: in  77 out  77 fps, 315790 B, I 1
+  281.774    <3>[4] [Func]:vb_set_config [Line]:1371 [Info]:VB is initialized!
+  281.774    vicap: video buffer pools failed (MMZ too small?)
+  281.774    capture failed
+  281.774    leakcam_agent: hook exited 0, next wake in 3600 s
+  282.417    t= 6 ch0: in  75 out  75 fps, 294982 B, I 0
+  283.276    leakcam_agent: SLEEP not answered
+  283.418    t= 7 ch0: in  74 out  74 fps, 305544 B, I 1
+  283.658    leakcam_agent: done, heartbeat stopped
+  284.420    t= 8 ch0: in  77 out  77 fps, 318915 B, I 0
+  285.421    t= 9 ch0: in  72 out  72 fps, 325204 B, I 1
+  286.421    t=10 ch0: in  79 out  79 fps, 329959 B, I 0
+  287.423    t=11 ch0: in  76 out  77 fps, 298141 B, I 1
+  288.424    t=12 ch0: in  74 out  74 fps, 314449 B, I 1
+  289.425    t=13 ch0: in  74 out  74 fps, 351192 B, I 0
+  290.426    t=14 ch0: in  75 out  75 fps, 287161 B, I 0
+  291.427    t=15 ch0: in  76 out  76 fps, 301129 B, I 1
+  291.450    ch 0: 1128 pictures encoded. Average FrameRate = 75 Fps
+  291.750    ch 0: total used pages 1119
+  291.755    ch0: 1128 in, 1125 out in 15.0 s = 74.9 fps, 2503 kbit/s, I frames 8 (spacing 148-150), latency avg 9 max 165 ms
+  291.755    venctest: done
+  291.755    vpu_exit>q_wm 0
+  291.755 ## delay 16 s: 1 channel top done ['74.9']
+  298.622    msh />
+  298.622    msh />
+  298.622    U-Boot SPL 2022.10-gc096dae6-dirty (Oct 27 2026 - 06:41:32 +0000)
+  298.622    00000000: PMU Major Msg: End of CA training                                            
+  298.622    00000000: PMU Major Msg: End of initialization                                         
+  298.622    00000000: PMU Major Msg: End of read enable training                                   
+  298.622    00000000: PMU Major Msg: End of fine write leveling                                    
+  298.622    00000000: PMU Major Msg: End of read dq deskew training                                
+  298.622    00000000: PMU Major Msg: End of MPR read delay center optimization                     
+  298.622    00000000: PMU Major Msg: End of Write leveling coarse delay                            
+  298.622    00000000: PMU Major Msg: End of write delay center optimization                        
+  298.622    00000000: PMU Major Msg: End of read delay center optimization                         
+  298.622    00000000: PMU Major Msg: End of max read latency training                              
+  298.622    00000000: PMU Major Msg: Firmware run has completed                                    
+  298.622    dbyte0 add =9a040100 value =10
+  298.622    dbyte0 add =9a040500 value =13
+  298.622    dbyte0 add =9a040900 value =13
+  298.622    dbyte0 add =9a040d00 value =13
+  298.622    dbyte0 add =9a041100 value =13
+  298.622    dbyte0 add =9a041500 value =13
+  298.622    dbyte0 add =9a041900 value =12
+  298.622    dbyte0 add =9a041d00 value =15
+  298.622    dbyte1 add =9a044100 value =13
+  298.622    dbyte1 add =9a044500 value =12
+  298.622    dbyte1 add =9a044900 value =13
+  298.622    dbyte1 add =9a044d00 value =12
+  298.622    dbyte1 add =9a045100 value =12
+  298.622    dbyte1 add =9a045500 value =13
+  298.622    dbyte1 add =9a045900 value =13
+  298.622    dbyte1 add =9a045d00 value =13
+  298.622    dbyte2 add =9a048100 value =37
+  298.622    dbyte2 add =9a048500 value =37
+  298.622    dbyte2 add =9a048900 value =37
+  298.622    dbyte2 add =9a048d00 value =37
+  298.622    dbyte2 add =9a049100 value =37
+  298.622    dbyte2 add =9a049500 value =37
+  298.622    dbyte2 add =9a049900 value =37
+  298.622    dbyte2 add =9a049d00 value =37
+  298.622    dbyte3 add =9a04c100 value =37
+  298.622    dbyte3 add =9a04c500 value =37
+  298.622    dbyte3 add =9a04c900 value =37
+  298.622    dbyte3 add =9a04cd00 value =37
+  298.622    dbyte3 add =9a04d100 value =37
+  298.622    dbyte3 add =9a04d500 value =37
+  298.622    dbyte3 add =9a04d900 value =37
+  298.622    dbyte3 add =9a04dd00 value =37
+  298.622 ## boot ok ['SPL', 'msh']
+  300.123    spi_nand spi-flash@0: Winbond SPI NAND was found.
+  300.123    spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+  300.123    OpenSBI v0.9
+  300.123    heap: [0x004f14c0 - 0x00cf14c0], size 8192 KB
+  300.123    page: [0x00cf14c8 - 0x039fec00], size 46133 KB
+  300.123     \ | /
+  300.123    - RT -     Thread Smart Operating System
+  300.123     / | \     5.0.0 build Oct 25 2026
+  300.123     2006 - 2020 Copyright by rt-thread team
+  300.123    rtc driver register OK
+  300.123    lwIP-2.1.2 initialized!
+  300.123    [I/I2C] I2C bus [i2c0] registered
+  300.123    [I/I2C] I2C bus [i2c4] registered
+  300.123    [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+  300.123    link_mux: console and /dev/link share uart1
+  300.123    Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+  300.123    [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+  300.123    os  : system memory alloc 320 bytes
+  300.123    flsh: UFFS consume spare data size 9
+  300.123    os  : system memory alloc 84480 bytes
+  300.123    os  : system memory alloc 53200 bytes
+  300.123    os  : system memory alloc 2048 bytes
+  300.123    tree: DIR 0, FILE 5, DATA 4
+  300.123    os  : system memory alloc 320 bytes
+  300.123    flsh: UFFS consume spare data size 9
+  300.123    os  : system memory alloc 84480 bytes
+  300.123    os  : system memory alloc 53200 bytes
+  300.123    os  : system memory alloc 8192 bytes
+  300.123    tree: found bad block 610
+  300.123    tree: found bad block 613
+  300.123    tree: DIR 2, FILE 12, DATA 124
+  300.123    /dev/shm file system initialization done!
+  300.123    Can't find sensor on csi0
+  300.123    Can't find sensor on csi2
+  300.123    <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+  300.123    <gnne> gnne_device_init done.
+  300.123    #############SDK VERSION######################################
+  300.123    SDK   : unknown-20261027-064114--51e0f1f70c2f-4162ec7
+  300.123    nncase: 2.11.0
+  300.123    ##############################################################
+  300.123    msh />
+  300.461    leakcam_agent: READY not answered
+  318.663    leakcam_agent: READY not answered
+  318.663    leakcam_agent: READY not answered
+  318.663    leakcam_agent: READY not answered
+  318.663    leakcam_agent: READY not answered
+  318.663    leakcam_agent: READY not answered
+  318.663    leakcam_agent: READY not answered
+  318.663    leakcam_agent: READY not answered
+  318.663    leakcam_agent: READY not answered
+  318.663    leakcam_agent: READY not answered
+  318.663    leakcam_agent: READY not answered
+  318.663    leakcam_agent: READY not answered
+  318.663    leakcam_agent: READY not answered
+  318.668    /sdcard/app/venctest 1 15 0
+  318.676    venctest: 1 channel(s) H.265 1280x960 CBR 500 kbit/s, feed max 0 fps, 15 s
+  319.728    t= 1 ch0: in  61 out  58 fps, 449910 B, I 1
+  319.986    leakcam_agent: READY not answered
+  320.729    t= 2 ch0: in  83 out  83 fps, 173768 B, I 0
+  321.488    leakcam_agent: READY not answered
+  321.488    leakcam_agent: no WAKE from BL616, assuming cold start
+  321.488    leakcam_agent: sensors: -0.1 %RH, 0.0 C, probe -1 mV, battery 4364 mV
+  321.488    leakcam_agent: wake reason: cold
+  321.554    [W/LWP] not use fast load, out of memory 8388608 < 15543000
+  321.730    t= 3 ch0: in  72 out  72 fps, 359423 B, I 1
+  322.148    <3>[4] [Func]:vb_set_config [Line]:1371 [Info]:VB is initialized!
+  322.148    vicap: video buffer pools failed (MMZ too small?)
+  322.148    capture failed
+  322.148    leakcam_agent: hook exited 0, next wake in 3600 s
+  322.731    t= 4 ch0: in  77 out  77 fps, 258123 B, I 0
+  323.650    leakcam_agent: SLEEP not answered
+  323.732    t= 5 ch0: in  81 out  81 fps, 321715 B, I 1
+  323.972    leakcam_agent: done, heartbeat stopped
+  324.733    t= 6 ch0: in  74 out  74 fps, 294352 B, I 0
+  325.734    t= 7 ch0: in  74 out  74 fps, 305820 B, I 1
+  326.736    t= 8 ch0: in  78 out  78 fps, 322925 B, I 0
+  327.737    t= 9 ch0: in  72 out  72 fps, 325204 B, I 1
+  328.738    t=10 ch0: in  79 out  79 fps, 329959 B, I 0
+  329.739    t=11 ch0: in  76 out  76 fps, 294446 B, I 1
+  330.740    t=12 ch0: in  73 out  74 fps, 299476 B, I 0
+  331.741    t=13 ch0: in  74 out  74 fps, 366035 B, I 1
+  332.742    t=14 ch0: in  76 out  76 fps, 270699 B, I 0
+  333.743    t=15 ch0: in  75 out  75 fps, 317537 B, I 1
+  333.767    ch 0: 1127 pictures encoded. Average FrameRate = 75 Fps
+  334.067    ch 0: total used pages 1119
+  334.073    ch0: 1127 in, 1124 out in 15.0 s = 74.9 fps, 2501 kbit/s, I frames 8 (spacing 148-150), latency avg 9 max 168 ms
+  334.073    venctest: done
+  334.073    vpu_exit>q_wm 0
+  334.073 ## delay 18 s: 1 channel top done ['74.9']
+  340.945    msh />
+  340.945    msh />
+  340.945    U-Boot SPL 2022.10-gc096dae6-dirty (Oct 27 2026 - 06:41:32 +0000)
+  340.945    00000000: PMU Major Msg: End of CA training                                            
+  340.945    00000000: PMU Major Msg: End of initialization                                         
+  340.945    00000000: PMU Major Msg: End of read enable training                                   
+  340.945    00000000: PMU Major Msg: End of fine write leveling                                    
+  340.945    00000000: PMU Major Msg: End of read dq deskew training                                
+  340.945    00000000: PMU Major Msg: End of MPR read delay center optimization                     
+  340.945    00000000: PMU Major Msg: End of Write leveling coarse delay                            
+  340.945    00000000: PMU Major Msg: End of write delay center optimization                        
+  340.945    00000000: PMU Major Msg: End of read delay center optimization                         
+  340.945    00000000: PMU Major Msg: End of max read latency training                              
+  340.945    00000000: PMU Major Msg: Firmware run has completed                                    
+  340.945    dbyte0 add =9a040100 value =11
+  340.945    dbyte0 add =9a040500 value =13
+  340.945    dbyte0 add =9a040900 value =13
+  340.945    dbyte0 add =9a040d00 value =13
+  340.945    dbyte0 add =9a041100 value =13
+  340.945    dbyte0 add =9a041500 value =13
+  340.945    dbyte0 add =9a041900 value =13
+  340.945    dbyte0 add =9a041d00 value =13
+  340.945    dbyte1 add =9a044100 value =13
+  340.945    dbyte1 add =9a044500 value =13
+  340.945    dbyte1 add =9a044900 value =14
+  340.945    dbyte1 add =9a044d00 value =12
+  340.945    dbyte1 add =9a045100 value =13
+  340.945    dbyte1 add =9a045500 value =13
+  340.945    dbyte1 add =9a045900 value =13
+  340.945    dbyte1 add =9a045d00 value =13
+  340.945    dbyte2 add =9a048100 value =37
+  340.945    dbyte2 add =9a048500 value =37
+  340.945    dbyte2 add =9a048900 value =37
+  340.945    dbyte2 add =9a048d00 value =37
+  340.945    dbyte2 add =9a049100 value =37
+  340.945    dbyte2 add =9a049500 value =37
+  340.945    dbyte2 add =9a049900 value =37
+  340.945    dbyte2 add =9a049d00 value =37
+  340.945    dbyte3 add =9a04c100 value =37
+  340.945    dbyte3 add =9a04c500 value =37
+  340.945    dbyte3 add =9a04c900 value =37
+  340.945    dbyte3 add =9a04cd00 value =37
+  340.945    dbyte3 add =9a04d100 value =37
+  340.945    dbyte3 add =9a04d500 value =37
+  340.945    dbyte3 add =9a04d900 value =37
+  340.945    dbyte3 add =9a04dd00 value =37
+  340.945 ## boot ok ['SPL', 'msh']
+  342.446    spi_nand spi-flash@0: Winbond SPI NAND was found.
+  342.446    spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+  342.446    OpenSBI v0.9
+  342.446    heap: [0x004f14c0 - 0x00cf14c0], size 8192 KB
+  342.446    page: [0x00cf14c8 - 0x039fec00], size 46133 KB
+  342.446     \ | /
+  342.446    - RT -     Thread Smart Operating System
+  342.446     / | \     5.0.0 build Oct 25 2026
+  342.446     2006 - 2020 Copyright by rt-thread team
+  342.446    rtc driver register OK
+  342.446    lwIP-2.1.2 initialized!
+  342.446    [I/I2C] I2C bus [i2c0] registered
+  342.446    [I/I2C] I2C bus [i2c4] registered
+  342.446    [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+  342.446    link_mux: console and /dev/link share uart1
+  342.446    Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+  342.446    [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+  342.446    os  : system memory alloc 320 bytes
+  342.446    flsh: UFFS consume spare data size 9
+  342.446    os  : system memory alloc 84480 bytes
+  342.446    os  : system memory alloc 53200 bytes
+  342.446    os  : system memory alloc 2048 bytes
+  342.446    tree: DIR 0, FILE 5, DATA 4
+  342.446    os  : system memory alloc 320 bytes
+  342.446    flsh: UFFS consume spare data size 9
+  342.446    os  : system memory alloc 84480 bytes
+  342.446    os  : system memory alloc 53200 bytes
+  342.446    os  : system memory alloc 8192 bytes
+  342.446    tree: found bad block 610
+  342.446    tree: found bad block 613
+  342.446    tree: DIR 2, FILE 12, DATA 124
+  342.446    /dev/shm file system initialization done!
+  342.446    Can't find sensor on csi0
+  342.446    Can't find sensor on csi2
+  342.446    <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+  342.446    <gnne> gnne_device_init done.
+  342.446    #############SDK VERSION######################################
+  342.446    SDK   : unknown-20261027-064114--51e0f1f70c2f-4162ec7
+  342.446    nncase: 2.11.0
+  342.446    ##############################################################
+  342.446    msh />
+  342.784    leakcam_agent: READY not answered
+  362.985    leakcam_agent: READY not answered
+  362.985    leakcam_agent: READY not answered
+  362.985    leakcam_agent: READY not answered
+  362.985    leakcam_agent: READY not answered
+  362.985    leakcam_agent: READY not answered
+  362.985    leakcam_agent: READY not answered
+  362.985    leakcam_agent: READY not answered
+  362.985    leakcam_agent: READY not answered
+  362.985    leakcam_agent: READY not answered
+  362.985    leakcam_agent: READY not answered
+  362.985    leakcam_agent: READY not answered
+  362.985    leakcam_agent: READY not answered
+  362.985    leakcam_agent: READY not answered
+  362.989    /sdcard/app/venctest 1 15 0
+  362.998    venctest: 1 channel(s) H.265 1280x960 CBR 500 kbit/s, feed max 0 fps, 15 s
+  363.805    leakcam_agent: READY not answered
+  363.805    leakcam_agent: no WAKE from BL616, assuming cold start
+  363.805    leakcam_agent: sensors: -0.1 %RH, 0.0 C, probe -1 mV, battery 4365 mV
+  363.805    leakcam_agent: wake reason: cold
+  363.805    [W/LWP] not use fast load, out of memory 8388608 < 15543000
+  364.050    t= 1 ch0: in  59 out  56 fps, 445707 B, I 1
+  364.331    <3>[4] [Func]:vb_set_config [Line]:1371 [Info]:VB is initialized!
+  364.331    vicap: video buffer pools failed (MMZ too small?)
+  364.331    capture failed
+  364.331    leakcam_agent: hook exited 0, next wake in 3600 s
+  365.051    t= 2 ch0: in  81 out  81 fps, 169664 B, I 0
+  365.834    leakcam_agent: SLEEP not answered
+  366.052    t= 3 ch0: in  75 out  75 fps, 359705 B, I 1
+  366.292    leakcam_agent: done, heartbeat stopped
+  367.053    t= 4 ch0: in  78 out  78 fps, 266148 B, I 0
+  368.054    t= 5 ch0: in  81 out  81 fps, 321715 B, I 1
+  369.055    t= 6 ch0: in  74 out  74 fps, 294352 B, I 0
+  370.056    t= 7 ch0: in  74 out  74 fps, 305820 B, I 1
+  371.058    t= 8 ch0: in  78 out  78 fps, 322925 B, I 0
+  372.059    t= 9 ch0: in  72 out  72 fps, 325204 B, I 1
+  373.060    t=10 ch0: in  79 out  79 fps, 329959 B, I 0
+  374.061    t=11 ch0: in  76 out  76 fps, 294446 B, I 1
+  375.063    t=12 ch0: in  74 out  74 fps, 299476 B, I 0
+  376.063    t=13 ch0: in  74 out  74 fps, 366035 B, I 1
+  377.064    t=14 ch0: in  76 out  76 fps, 270699 B, I 0
+  378.065    t=15 ch0: in  75 out  75 fps, 317537 B, I 1
+  378.085    ch 0: 1127 pictures encoded. Average FrameRate = 75 Fps
+  378.385    ch 0: total used pages 1119
+  378.391    ch0: 1127 in, 1124 out in 15.0 s = 74.9 fps, 2501 kbit/s, I frames 8 (spacing 148-150), latency avg 9 max 165 ms
+  378.391    venctest: done
+  378.391    vpu_exit>q_wm 0
+  378.391 ## delay 20 s: 1 channel top done ['74.9']
+  385.255    msh />
+  385.255    msh />
+  385.255    U-Boot SPL 2022.10-gc096dae6-dirty (Oct 27 2026 - 06:41:32 +0000)
+  385.255    00000000: PMU Major Msg: End of CA training                                            
+  385.255    00000000: PMU Major Msg: End of initialization                                         
+  385.255    00000000: PMU Major Msg: End of read enable training                                   
+  385.255    00000000: PMU Major Msg: End of fine write leveling                                    
+  385.255    00000000: PMU Major Msg: End of read dq deskew training                                
+  385.255    00000000: PMU Major Msg: End of MPR read delay center optimization                     
+  385.255    00000000: PMU Major Msg: End of Write leveling coarse delay                            
+  385.255    00000000: PMU Major Msg: End of write delay center optimization                        
+  385.255    00000000: PMU Major Msg: End of read delay center optimization                         
+  385.255    00000000: PMU Major Msg: End of max read latency training                              
+  385.255    00000000: PMU Major Msg: Firmware run has completed                                    
+  385.255    dbyte0 add =9a040100 value =11
+  385.255    dbyte0 add =9a040500 value =13
+  385.255    dbyte0 add =9a040900 value =13
+  385.255    dbyte0 add =9a040d00 value =13
+  385.255    dbyte0 add =9a041100 value =13
+  385.255    dbyte0 add =9a041500 value =13
+  385.255    dbyte0 add =9a041900 value =12
+  385.255    dbyte0 add =9a041d00 value =15
+  385.255    dbyte1 add =9a044100 value =13
+  385.255    dbyte1 add =9a044500 value =13
+  385.255    dbyte1 add =9a044900 value =14
+  385.255    dbyte1 add =9a044d00 value =13
+  385.255    dbyte1 add =9a045100 value =12
+  385.255    dbyte1 add =9a045500 value =14
+  385.255    dbyte1 add =9a045900 value =13
+  385.255    dbyte1 add =9a045d00 value =13
+  385.255    dbyte2 add =9a048100 value =37
+  385.255    dbyte2 add =9a048500 value =37
+  385.255    dbyte2 add =9a048900 value =37
+  385.255    dbyte2 add =9a048d00 value =37
+  385.255    dbyte2 add =9a049100 value =37
+  385.255    dbyte2 add =9a049500 value =37
+  385.255    dbyte2 add =9a049900 value =37
+  385.255    dbyte2 add =9a049d00 value =37
+  385.255    dbyte3 add =9a04c100 value =37
+  385.255    dbyte3 add =9a04c500 value =37
+  385.255    dbyte3 add =9a04c900 value =37
+  385.255    dbyte3 add =9a04cd00 value =37
+  385.255    dbyte3 add =9a04d100 value =37
+  385.255    dbyte3 add =9a04d500 value =37
+  385.255    dbyte3 add =9a04d900 value =37
+  385.255    dbyte3 add =9a04dd00 value =37
+  385.255 ## boot ok ['SPL', 'msh']
+  386.755    spi_nand spi-flash@0: Winbond SPI NAND was found.
+  386.755    spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+  386.755    OpenSBI v0.9
+  386.755    heap: [0x004f14c0 - 0x00cf14c0], size 8192 KB
+  386.755    page: [0x00cf14c8 - 0x039fec00], size 46133 KB
+  386.755     \ | /
+  386.755    - RT -     Thread Smart Operating System
+  386.755     / | \     5.0.0 build Oct 25 2026
+  386.755     2006 - 2020 Copyright by rt-thread team
+  386.755    rtc driver register OK
+  386.755    lwIP-2.1.2 initialized!
+  386.755    [I/I2C] I2C bus [i2c0] registered
+  386.755    [I/I2C] I2C bus [i2c4] registered
+  386.755    [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+  386.755    link_mux: console and /dev/link share uart1
+  386.755    Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+  386.755    [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+  386.755    os  : system memory alloc 320 bytes
+  386.755    flsh: UFFS consume spare data size 9
+  386.755    os  : system memory alloc 84480 bytes
+  386.755    os  : system memory alloc 53200 bytes
+  386.755    os  : system memory alloc 2048 bytes
+  386.755    tree: DIR 0, FILE 5, DATA 4
+  386.755    os  : system memory alloc 320 bytes
+  386.755    flsh: UFFS consume spare data size 9
+  386.755    os  : system memory alloc 84480 bytes
+  386.755    os  : system memory alloc 53200 bytes
+  386.755    os  : system memory alloc 8192 bytes
+  386.755    tree: found bad block 610
+  386.755    tree: found bad block 613
+  386.755    tree: DIR 2, FILE 12, DATA 124
+  386.755    /dev/shm file system initialization done!
+  386.755    Can't find sensor on csi0
+  386.755    Can't find sensor on csi2
+  386.755    <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+  386.755    <gnne> gnne_device_init done.
+  386.755    #############SDK VERSION######################################
+  386.755    SDK   : unknown-20261027-064114--51e0f1f70c2f-4162ec7
+  386.755    nncase: 2.11.0
+  386.755    ##############################################################
+  386.755    msh />
+  387.095    leakcam_agent: READY not answered
+  409.297    leakcam_agent: READY not answered
+  409.297    leakcam_agent: READY not answered
+  409.297    leakcam_agent: READY not answered
+  409.297    leakcam_agent: READY not answered
+  409.297    leakcam_agent: READY not answered
+  409.297    leakcam_agent: READY not answered
+  409.297    leakcam_agent: READY not answered
+  409.297    leakcam_agent: READY not answered
+  409.297    leakcam_agent: READY not answered
+  409.297    leakcam_agent: READY not answered
+  409.297    leakcam_agent: READY not answered
+  409.297    leakcam_agent: READY not answered
+  409.297    leakcam_agent: READY not answered
+  409.297    leakcam_agent: READY not answered
+  409.297    leakcam_agent: no WAKE from BL616, assuming cold start
+  409.297    leakcam_agent: sensors: -0.1 %RH, 0.0 C, probe -1 mV, battery 4369 mV
+  409.297    leakcam_agent: wake reason: cold
+  409.297    [W/LWP] not use fast load, out of memory 8388608 < 15543000
+  409.297    vicap: dev 0 init failed (sensor not answering on its I2C bus?)
+  409.297    capture failed
+  409.297    leakcam_agent: hook exited 0, next wake in 3600 s
+  409.302    /sdcard/app/venctest 1 15 0
+  409.310    venctest: 1 channel(s) H.265 1280x960 CBR 500 kbit/s, feed max 0 fps, 15 s
+  410.119    leakcam_agent: SLEEP not answered
+  410.362    t= 1 ch0: in  61 out  58 fps, 449910 B, I 1
+  410.602    leakcam_agent: done, heartbeat stopped
+  411.363    t= 2 ch0: in  83 out  83 fps, 173768 B, I 0
+  412.364    t= 3 ch0: in  73 out  73 fps, 359423 B, I 1
+  413.365    t= 4 ch0: in  80 out  80 fps, 267704 B, I 0
+  414.366    t= 5 ch0: in  77 out  77 fps, 315790 B, I 1
+  415.367    t= 6 ch0: in  79 out  79 fps, 324026 B, I 1
+  416.368    t= 7 ch0: in  75 out  75 fps, 296341 B, I 0
+  417.369    t= 8 ch0: in  75 out  75 fps, 321159 B, I 1
+  418.370    t= 9 ch0: in  74 out  74 fps, 318498 B, I 0
+  419.372    t=10 ch0: in  74 out  75 fps, 314580 B, I 1
+  420.373    t=11 ch0: in  81 out  81 fps, 317638 B, I 0
+  421.374    t=12 ch0: in  74 out  74 fps, 321329 B, I 1
+  422.375    t=13 ch0: in  72 out  72 fps, 337691 B, I 0
+  423.376    t=14 ch0: in  76 out  76 fps, 283992 B, I 1
+  424.377    t=15 ch0: in  75 out  75 fps, 308575 B, I 0
+  424.432    ch 0: 1131 pictures encoded. Average FrameRate = 75 Fps
+  424.734    ch 0: total used pages 1119
+  424.738    ch0: 1131 in, 1128 out in 15.0 s = 75.1 fps, 2510 kbit/s, I frames 8 (spacing 148-150), latency avg 9 max 168 ms
+  424.738    venctest: done
+  424.738    vpu_exit>q_wm 0
+  424.738 ## delay 22 s: 1 channel top done ['75.1']
+  431.602    U-Boot SPL 2022.10-gc096dae6-dirty (Oct 27 2026 - 06:41:32 +0000)
+  431.602    00000000: PMU Major Msg: End of CA training                                            
+  431.602    00000000: PMU Major Msg: End of initialization                                         
+  431.602    00000000: PMU Major Msg: End of read enable training                                   
+  431.602    00000000: PMU Major Msg: End of fine write leveling                                    
+  431.602    00000000: PMU Major Msg: End of read dq deskew training                                
+  431.602    00000000: PMU Major Msg: End of MPR read delay center optimization                     
+  431.602    00000000: PMU Major Msg: End of Write leveling coarse delay                            
+  431.602    00000000: PMU Major Msg: End of write delay center optimization                        
+  431.602    00000000: PMU Major Msg: End of read delay center optimization                         
+  431.602    00000000: PMU Major Msg: End of max read latency training                              
+  431.602    00000000: PMU Major Msg: Firmware run has completed                                    
+  431.602    dbyte0 add =9a040100 value =11
+  431.602    dbyte0 add =9a040500 value =13
+  431.602    dbyte0 add =9a040900 value =13
+  431.602    dbyte0 add =9a040d00 value =13
+  431.602    dbyte0 add =9a041100 value =13
+  431.602    dbyte0 add =9a041500 value =13
+  431.602    dbyte0 add =9a041900 value =12
+  431.602    dbyte0 add =9a041d00 value =14
+  431.602    dbyte1 add =9a044100 value =14
+  431.602    dbyte1 add =9a044500 value =13
+  431.602    dbyte1 add =9a044900 value =14
+  431.602    dbyte1 add =9a044d00 value =13
+  431.602    dbyte1 add =9a045100 value =12
+  431.602    dbyte1 add =9a045500 value =14
+  431.602    dbyte1 add =9a045900 value =13
+  431.602    dbyte1 add =9a045d00 value =13
+  431.602    dbyte2 add =9a048100 value =37
+  431.602    dbyte2 add =9a048500 value =37
+  431.602    dbyte2 add =9a048900 value =37
+  431.602    dbyte2 add =9a048d00 value =37
+  431.602    dbyte2 add =9a049100 value =37
+  431.602    dbyte2 add =9a049500 value =37
+  431.602    dbyte2 add =9a049900 value =37
+  431.602    dbyte2 add =9a049d00 value =37
+  431.602    dbyte3 add =9a04c100 value =37
+  431.602    dbyte3 add =9a04c500 value =37
+  431.602    dbyte3 add =9a04c900 value =37
+  431.602    dbyte3 add =9a04cd00 value =37
+  431.602    dbyte3 add =9a04d100 value =37
+  431.602    dbyte3 add =9a04d500 value =37
+  431.602    dbyte3 add =9a04d900 value =37
+  431.602    dbyte3 add =9a04dd00 value =37
+  431.605    spi_nand spi-flash@0: Winbond SPI NAND was found.
+  431.605    spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+  431.683    OpenSBI v0.9
+  431.694    heap: [0x004f14c0 - 0x00cf14c0], size 8192 KB
+  431.694    page: [0x00cf14c8 - 0x039fec00], size 46133 KB
+  431.694     \ | /
+  431.694    - RT -     Thread Smart Operating System
+  431.694     / | \     5.0.0 build Oct 25 2026
+  431.694     2006 - 2020 Copyright by rt-thread team
+  431.699    rtc driver register OK
+  431.713    lwIP-2.1.2 initialized!
+  431.713    [I/I2C] I2C bus [i2c0] registered
+  431.713    [I/I2C] I2C bus [i2c4] registered
+  431.713    [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+  431.713    link_mux: console and /dev/link share uart1
+  431.713    Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+  431.713    [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+  431.713    os  : system memory alloc 320 bytes
+  431.713    flsh: UFFS consume spare data size 9
+  431.713    os  : system memory alloc 84480 bytes
+  431.713    os  : system memory alloc 53200 bytes
+  431.713    os  : system memory alloc 2048 bytes
+  431.771    tree: DIR 0, FILE 5, DATA 4
+  431.771    os  : system memory alloc 320 bytes
+  431.771    flsh: UFFS consume spare data size 9
+  431.771    os  : system memory alloc 84480 bytes
+  431.771    os  : system memory alloc 53200 bytes
+  431.771    os  : system memory alloc 8192 bytes
+  431.827    tree: found bad block 610
+  431.827    tree: found bad block 613
+  431.925    tree: DIR 2, FILE 12, DATA 125
+  431.925    /dev/shm file system initialization done!
+  431.925    Can't find sensor on csi0
+  431.931    Can't find sensor on csi2
+  431.931    <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+  431.931    <gnne> gnne_device_init done.
+  431.931    #############SDK VERSION######################################
+  431.931    SDK   : unknown-20261027-064114--51e0f1f70c2f-4162ec7
+  431.931    nncase: 2.11.0
+  431.931    ##############################################################
+  431.931    msh />
+  431.931 ## boot ok ['SPL', 'OpenSBI', 'RT-Smart', 'mounted', 'msh']
+  433.449    leakcam_agent: READY not answered
+  457.952    leakcam_agent: READY not answered
+  457.953    leakcam_agent: READY not answered
+  457.953    leakcam_agent: READY not answered
+  457.953    leakcam_agent: READY not answered
+  457.953    leakcam_agent: READY not answered
+  457.953    leakcam_agent: READY not answered
+  457.953    leakcam_agent: READY not answered
+  457.953    leakcam_agent: READY not answered
+  457.953    leakcam_agent: READY not answered
+  457.953    leakcam_agent: READY not answered
+  457.953    leakcam_agent: READY not answered
+  457.953    leakcam_agent: READY not answered
+  457.953    leakcam_agent: READY not answered
+  457.953    leakcam_agent: READY not answered
+  457.953    leakcam_agent: no WAKE from BL616, assuming cold start
+  457.953    leakcam_agent: sensors: -0.1 %RH, 0.0 C, probe -1 mV, battery 4357 mV
+  457.953    leakcam_agent: wake reason: cold
+  457.953    [W/LWP] not use fast load, out of memory 8388608 < 15543000
+  457.953    vicap: dev 0 init failed (sensor not answering on its I2C bus?)
+  457.953    capture failed
+  457.953    leakcam_agent: hook exited 0, next wake in 3600 s
+  457.953    leakcam_agent: SLEEP not answered
+  457.953    leakcam_agent: done, heartbeat stopped
+  457.956    /sdcard/app/venctest 1 15 0
+  457.964    venctest: 1 channel(s) H.265 1280x960 CBR 500 kbit/s, feed max 0 fps, 15 s
+  459.016    t= 1 ch0: in  61 out  58 fps, 449910 B, I 1
+  460.020    t= 2 ch0: in  83 out  83 fps, 173768 B, I 0
+  461.019    t= 3 ch0: in  73 out  73 fps, 359423 B, I 1
+  462.019    t= 4 ch0: in  80 out  81 fps, 270455 B, I 0
+  463.020    t= 5 ch0: in  76 out  76 fps, 313039 B, I 1
+  464.021    t= 6 ch0: in  79 out  79 fps, 324026 B, I 1
+  465.022    t= 7 ch0: in  74 out  74 fps, 292368 B, I 0
+  466.023    t= 8 ch0: in  75 out  75 fps, 320977 B, I 1
+  467.024    t= 9 ch0: in  74 out  74 fps, 319193 B, I 0
+  468.025    t=10 ch0: in  75 out  75 fps, 318040 B, I 0
+  469.026    t=11 ch0: in  81 out  81 fps, 313440 B, I 1
+  470.027    t=12 ch0: in  74 out  74 fps, 319747 B, I 1
+  471.028    t=13 ch0: in  72 out  72 fps, 343471 B, I 0
+  472.029    t=14 ch0: in  77 out  77 fps, 283992 B, I 1
+  473.030    t=15 ch0: in  75 out  75 fps, 308575 B, I 0
+  473.091    ch 0: 1131 pictures encoded. Average FrameRate = 75 Fps
+  473.391    ch 0: total used pages 1119
+  473.397    ch0: 1131 in, 1128 out in 15.0 s = 75.1 fps, 2510 kbit/s, I frames 8 (spacing 148-150), latency avg 9 max 168 ms
+  473.397    venctest: done
+  473.397    vpu_exit>q_wm 0
+  473.397 ## delay 24 s: 1 channel top done ['75.1']
+  473.397 ## no hang over the delays [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24]

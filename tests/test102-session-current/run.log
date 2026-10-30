@@ -1,5 +1,3 @@
-14:35:02 test102-session-current: 13 metric rows MISSING: Boot, power-on -> READY (median of 5), This part's boot share, Test run time, Speed / rate (none for this test), Current idle / during (min / avg / peak), Voltage under load (min), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Image (sizes), Compile flags, Features over the minimal image
-14:35:05 >>> METER test102-session-current: K230 session, the agent working (no camera, no server) - reading in amps to /home/vkorehovs/.leakcam_meter
-14:38:34 meter K230 session, the agent working (no camera, no server): 0.228 A
-14:38:38 sample after the sessions {'board': 37.3, 'bl_mem': (131124, 111908, 105196, 106, 79552, 17, 0)}
-14:38:40 test102-session-current: PASS; filled 10: Test run time, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Current idle / during (min / avg / peak), Compile flags, Image (sizes), Power, energy per operation, Per day, Voltage under load (min), This part's boot share; still MISSING 3: Boot, power-on -> READY (median of 5), Speed / rate (none for this test), Features over the minimal image; run in HISTORY.md - README Status/Result by hand
+19:08:57 test102-session-current: 3 metric rows MISSING: Boot, power-on -> READY (median of 5), Speed / rate (none for this test), Features over the minimal image
+19:09:04 sample after the sessions {'board': 36.2, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0)}
+19:09:06 test102-session-current: PASS; filled 0: -; still MISSING 3: Boot, power-on -> READY (median of 5), Speed / rate (none for this test), Features over the minimal image; run in HISTORY.md - README Status/Result by hand

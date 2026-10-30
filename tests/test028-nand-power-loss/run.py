@@ -28,6 +28,10 @@ for i in range(8):
     r.sample(f"after cuts {i + 1}")
 chk = r.k("plt_check", 60, r"msh />\s*$")
 bad = re.search(r"(?i)(corrupt|mismatch|fail)", chk)
+# leave /sdcard as found: the files (up to ~7 MB) left 12 MB free and test105's encoder filled it (2026-10-30)
+for n in range(16):
+    r.k(f"rm /sdcard/plt/f{n:02d}.bin", 3)
+r.k("rm /sdcard/plt", 3)
 r.set("runtime", f"20 cuts in {time.time() - t0:.0f} s automated (plt_loop.py), no setup ({r.date})")
 r.finish(f"{len(rows)} random cuts during plt_write ([{os.path.basename(csv)}]({os.path.basename(csv)})): "
          f"{bad_n} bad files, {unparsed} checks unparsed, "

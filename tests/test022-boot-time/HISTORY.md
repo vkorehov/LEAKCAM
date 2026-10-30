@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-30 (run.py, 171 s): pass
+
+8 of 8 cold boots reached msh with `boot_times`: reset release -> app init 0.402 / 0.403 / 0.404 s (min / median / max); mounts done at 0.392-0.394 s.
+
+
 ### Status line before the 2026-10-29 cleanup
 
 Status: **0.30 s** reset release -> app init (2026-10-23: the console on UART1 at 4 Mbaud from SPL, tests/test039; 0.506 s on 2026-10-21, 1.00 s before); msh prompt and READY not timed yet.

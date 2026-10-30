@@ -1,7 +1,7 @@
 # test039: K230 console over the BL616 link (no CH340)
 
-Status: **fail** (2026-10-25): ~0.7 % of commands typed on `/dev/ttyACM1` are lost (993 of 1000 answered); otherwise the
-whole K230 console, from U-Boot SPL on, runs at 4 Mbaud over the BL616 link with 0 garbage bytes (2026-10-23).
+Status: **pass** (2026-10-30): 1000 of 1000 commands answered in each of 4 boots at 2 Mbaud, every drop counter 0;
+the whole K230 console, from U-Boot SPL on, runs over the BL616 link with 0 garbage bytes.
 
 Why: the CH340X (USB-C 2) runs from the K230's switched 3V3, re-enumerates with every K230 power cycle and needs a
 VMware click each time, which VMware stopped offering (tests/test038). User (2026-10-22): forward the K230 output
@@ -11,10 +11,10 @@ Design, files and every SDK patch with its location: [firmware/CONSOLE.md](../..
 
 ## Setup
 
-- **K230:** kernel driver `link_mux` (firmware/k230_board/rtsmart/drivers/link_mux): owns UART1 (4 Mbaud), splits
+- **K230:** kernel driver `link_mux` (firmware/k230_board/rtsmart/drivers/link_mux): owns UART1 (2 Mbaud), splits
   what arrives with the shared k230_linesplit.h (valid frames `$...*XX\n` -> `/dev/link` for the agent, the rest ->
   console device `kcon`); `kcon` is the console's I/O device (`rt_console_set_device`), so kprintf, msh and every
-  program's stdio use it. Console before the driver starts: `uart1` itself (`CONFIG_RTT_CONSOLE_ID 1`, 4000000).
+  program's stdio use it. Console before the driver starts: `uart1` itself (`CONFIG_RTT_CONSOLE_ID 1`, 2000000).
   The agent opens `/dev/link`. `uart_bench` pauses the mux for its raw run.
 - **BL616 test firmware:** two-port USB console `usb_console2.c` (one device ffff:ffff, interfaces 0/1 = BL616 shell
   `/dev/ttyACM0` `-if00`, 2/3 = K230 console `/dev/ttyACM1` `-if02`), swapped for the SDK's file in CMake; UART0
@@ -40,33 +40,32 @@ Design, files and every SDK patch with its location: [firmware/CONSOLE.md](../..
 - USB: one device, two ports: `/dev/ttyACM0` (if00, BL616) and `/dev/ttyACM1` (if02, K230), both opened by the udev
   rule; 0 clicks per K230 power cycle, the BL616 port stays (2026-10-23).
 - From power-on `/dev/ttyACM1` carries `U-Boot SPL 2022.10...`, the DDR training lines, `OpenSBI v0.9` and RT-Smart
-  at 4 Mbaud with **0 non-printable bytes** (2026-10-23, stage B). Needs the install.sh patch: U-Boot ns16550 sets
+  with **0 non-printable bytes** (2026-10-23, stage B; at 2 Mbaud since 2026-10-30). Needs the install.sh patch: U-Boot ns16550 sets
   UART1's clock divider 1/2 -> 1/1 (100 MHz, sysctl 0x9110002c bits 5:3, bit 31 write enable) and writes the
-  DesignWare fractional divisor (DLF at 0xC0: 4 Mbaud = 1 + 9/16); OpenSBI UART_CLK 100 MHz; dts `uart1` alias,
-  `stdout-path = "uart1:4000000n8"`, serial1 on def_100mhz; U-Boot `CONFIG_BAUDRATE=4000000` (SPL and OpenSBI at
-  50 MHz with an integer divider reach 3.125 Mbaud at most).
+  DesignWare fractional divisor (DLF at 0xC0: 2 Mbaud = 3 + 2/16); OpenSBI UART_CLK 100 MHz; dts `uart1` alias,
+  `stdout-path = "uart1:2000000n8"`, serial1 on def_100mhz; U-Boot `CONFIG_BAUDRATE=2000000`, the SDK's
+  `CONFIG_RTT_CONSOLE_BAUD=2000000` (OpenSBI); install.sh takes the kernel driver's rate from bl616/k230_link.h.
 - Boot, 3 cold boots: kernel init start **0.100-0.104 s**, app init **0.296-0.301 s** (2026-10-23).
 - Link frames split out: the agent's `$...*XX` frames came out on the BL616 shell as `link rx:`, none on the console;
   `boot_times`, `chip_temp` typed on `/dev/ttyACM1` ran in msh (2026-10-23).
-- Command -> answer, host-timed: 55 / 55 / 111 ms (min / median / max), 0 late (> 2 s) (2026-10-25, run.py).
+- Command -> answer, host-timed: 55 / 55 / 70 ms (min / median / max), 0 late (> 2 s) (2026-10-30, run.py).
+- Lost commands at 4 Mbaud (~0.5 %): drop counters on both ends (BL616 `pt_status` "K230 console", K230 `link_stat`)
+  showed every byte leaving the BL616 and fewer arriving in the K230's driver (k230_rx 2244-2252 of 2261), no
+  overrun, no ring drop: lost on the wire. Bursts with idle gaps (`pt_uart burst`) lost 0-42 B of 2700 at 4 Mbaud
+  and 0 at 2 Mbaud (10 bursts each); 3 and 2.5 Mbaud gave no working link. 2 Mbaud adopted chain-wide
+  (2026-10-30): 4 boots x 1000 commands, all counters equal, 0 lost.
 - BL616 bridge: UART RX interrupt into a 4 KB ring, the task blocks on it (priority 5); `rx dropped` 0 since
   (2026-10-24, test100). The product BL616 firmware has no console bridge; its link poll sleeps 5 ms per round.
 
 Open:
-- **~0.7 % of commands typed on /dev/ttyACM1 are lost** (993 of 1000 in 4 boots, 2026-10-25; 399 of 400 in 8 boots
-  the same day): no echo of the command at all, so the line never reached the shell; a 5 s window changed nothing.
-  Several coincide with the agent starting leakcam_wake (a 5 MB program load), the others with the agent's own
-  console lines. Suspects: the K230's link_mux puts console input into kcon_rb without checking the space
-  (link_mux.c, uart_rx_ind path), or the BL616 bridge loses USB OUT data while it forwards console output
-  (usb_k230_rx -> UART0). Next: drop counters on both ends. The agent's link frames arrive the same way (they retry,
-  LINK_TRIES 5, but a lost WAKE costs a resend).
+- None.
 
 ## Metrics
 
 | Metric | Value | Note |
 |---|---|---|
-| Boot, power-on -> app init | 0.296-0.301 s (3 cold boots) | console at 4 Mbaud from SPL |
-| Console path | UART1 4 Mbaud -> BL616 -> USB CDC | same wire as the link |
+| Boot, power-on -> app init | 0.296-0.301 s (3 cold boots) | console from SPL |
+| Console path | UART1 2 Mbaud -> BL616 -> USB CDC | same wire as the link |
 | Clicks per K230 power cycle | 0 | the BL616 port stays |
 | Image | kdimg 45.4 MB; BL616 test firmware ~153 KB | |
 | Current | 568 mA (charging the cell, BL616 + K230 off, 08:33) | user reading |

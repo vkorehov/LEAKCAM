@@ -4,6 +4,49 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-30 (run.py, 767 s): **FAIL**
+
+7 load steps on USB; then all loads 10 min: 0 K230 resets. Die 48.2-58.7 C over the steps.
+
+- meter test105: + KPU change net in a loop: 0.242 A (read in test105-max-current)
+- meter test105: + encoder 2 x 15 fps: 0.285 A (read in test105-max-current)
+- meter test105: + NAND writes: 0.275 A (read in test105-max-current)
+- meter test105: + Wi-Fi TCP upload: 0.395 A
+- meter test105: + memtest (CPU + DDR, the memory left): 0.400 A
+- meter test105: + both LED chains 100 %: 0.563 A
+
+
+### Automated run 2026-10-30 (run.py, 34 s): **FAIL**
+
+stopped at '+ KPU change net in a loop': the load did not start
+
+
+### Runs 2026-10-30 afternoon: per-load currents and 10 min full load (pass on USB), after five obstacles
+
+1. The meter cache handed the KPU step 224 mA without asking: the user's reading from the void morning run (/bin
+   unmounted). Entry deleted; the cache keeps only readings of a state that really ran.
+2. memtest started first took all the MMZ (69 MB): the KPU test (`mmz_allocator allocate_segment failed`) and the
+   encoder (`mmz malloc 29491200 failed`) started after it failed, so the "KPU" (283 mA) and "encoder" (280 mA,
+   peak 305) readings were memtest alone: discarded. memtest now last; every load's start-up output is checked
+   (failed / not found / out of memory) and stops the run. The checker first stopped on the kernel's harmless
+   `[W/LWP] not use fast load, out of memory` note: that line is excluded.
+3. The encoder stalled at t=100 s (`out 0 fps`, enqueue failures): /sdcard was full (test028's files + the
+   streams); test027 HISTORY. The KPU / encoder / NAND readings were taken before it (15/15 fps at the time).
+4. The Wi-Fi step found no interface (`ifconfig: network interface device list error`): MMC0 is probed only on
+   request; run.py now sends `bl616_rescan` (card bound in 43 ms, address in < 1 s).
+5. The harness called the run a memory leak: its verdict ran over every sample, including the loads starting.
+   `Run.leak_from` now marks the repeated phase (test105: the 10 min); over it no leak.
+
+Side readings (not a step of the final order): KPU + encoder + NAND + memtest without Wi-Fi 305 mA, peak 320.
+
+### Run 2026-10-30: void (NAND not mounted, no Wi-Fi bridge)
+
+- The K230 booted with `/bin` and `/sdcard` unmounted (kernel `unknown raw ID aa220000`, test017 HISTORY), so every
+  load answered "command not found"; the 224/225 mA readings belong to idle and were discarded.
+- The Wi-Fi step never had a bridge: run.py ran `pt_off` and then `pt_wifi bridge`, which the firmware refuses with
+  the rails off. Fixed: the bridge starts from `Run.boot(after_on=...)` and its reply is checked.
+- `leakcam_kputest` (the KPU load) is not in the image.
+
 ### Status line before the 2026-10-29 cleanup
 
 Status: **handover runs 1-2 done** (2026-10-25): USB -> cell under every camera-free load (1.06 A at 5 V), no power fault, K230 alive at 60.2 C afterwards; "no reset on the cell" still to prove; the BL616's USB console left the bus at the unplug (open). Planned since 2026-10-25 ( user, after test009: the cell carried K230 + both LED chains, ~1.15 A, on a USB
@@ -49,6 +92,10 @@ Loads without cameras: both LED chains 100 %, Wi-Fi TCP upload to the LAN PC (ip
   as a background job; the runner asks for `chip_temp` every 5 s so a stall shows within seconds.
 
 ## Obstacles
+
+- memory leak (mem_leak.py verdict in the Memory row): a leak fails the test (2026-10-30, automated run)
+
+- + KPU change net in a loop: did not start: [W/LWP] not use fast load, out of memory 8388608 < 13193040 (2026-10-30, automated run)
 
 - **The BL616's USB console (PR1) left the bus when USB-C 1 and USB-C 2 were unplugged under load** (2026-10-25,
   both runs; PR1 stayed in, the BL616 kept running) -> unexplained; next run separates USB-C 2 from the USB-C 1

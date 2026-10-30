@@ -1,0 +1,175 @@
+    7.873 boot
+    7.873   U-Boot SPL 2022.10-gc096dae6-dirty (Oct 30 2026 - 16:40:47 +0000)
+    7.873   00000000: PMU Major Msg: End of CA training                                            
+    7.873   00000000: PMU Major Msg: End of initialization                                         
+    7.873   00000000: PMU Major Msg: End of read enable training                                   
+    7.873   00000000: PMU Major Msg: End of fine write leveling                                    
+    7.873   00000000: PMU Major Msg: End of read dq deskew training                                
+    7.873   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+    7.873   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+    7.873   00000000: PMU Major Msg: End of write delay center optimization                        
+    7.873   00000000: PMU Major Msg: End of read delay center optimization                         
+    7.873   00000000: PMU Major Msg: End of max read latency training                              
+    7.873   00000000: PMU Major Msg: Firmware run has completed                                    
+    7.873   dbyte0 add =9a040100 value =12
+    7.873   dbyte0 add =9a040500 value =13
+    7.873   dbyte0 add =9a040900 value =13
+    7.873   dbyte0 add =9a040d00 value =13
+    7.873   dbyte0 add =9a041100 value =14
+    7.873   dbyte0 add =9a041500 value =14
+    7.873   dbyte0 add =9a041900 value =13
+    7.873   dbyte0 add =9a041d00 value =15
+    7.873   dbyte1 add =9a044100 value =14
+    7.873   dbyte1 add =9a044500 value =12
+    7.873   dbyte1 add =9a044900 value =14
+    7.873   dbyte1 add =9a044d00 value =12
+    7.873   dbyte1 add =9a045100 value =13
+    7.873   dbyte1 add =9a045500 value =14
+    7.873   dbyte1 add =9a045900 value =13
+    7.873   dbyte1 add =9a045d00 value =13
+    7.873   dbyte2 add =9a048100 value =37
+    7.873   dbyte2 add =9a048500 value =37
+    7.873   dbyte2 add =9a048900 value =37
+    7.873   dbyte2 add =9a048d00 value =37
+    7.873   dbyte2 add =9a049100 value =37
+    7.873   dbyte2 add =9a049500 value =37
+    7.873   dbyte2 add =9a049900 value =37
+    7.873   dbyte2 add =9a049d00 value =37
+    7.873   dbyte3 add =9a04c100 value =37
+    7.873   dbyte3 add =9a04c500 value =37
+    7.873   dbyte3 add =9a04c900 value =37
+    7.873   dbyte3 add =9a04cd00 value =37
+    7.873   dbyte3 add =9a04d100 value =37
+    7.873   dbyte3 add =9a04d500 value =37
+    7.873   dbyte3 add =9a04d900 value =37
+    7.873   dbyte3 add =9a04dd00 value =37
+    7.873   spi_nand spi-flash@0: Winbond SPI NAND was found.
+    7.873   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+    7.873   OpenSBI v0.9
+    7.873   heap: [0x004f24c0 - 0x00cf24c0], size 8192 KB
+    7.873   page: [0x00cf24c8 - 0x039fec00], size 46129 KB
+    7.873    \ | /
+    7.873   - RT -     Thread Smart Operating System
+    7.873    / | \     5.0.0 build Oct 30 2026
+    7.873    2006 - 2020 Copyright by rt-thread team
+    7.873   rtc driver register OK
+    7.873   lwIP-2.1.2 initialized!
+    7.873   [I/I2C] I2C bus [i2c0] registered
+    7.873   [I/I2C] I2C bus [i2c4] registered
+    7.873   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+    7.873   �link_mux: console and /dev/link share uart1
+    7.873   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+    7.873   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+    7.873   os  : system memory alloc 320 bytes
+    7.873   flsh: UFFS consume spare data size 9
+    7.873   os  : system memory alloc 84480 bytes
+    7.873   os  : system memory alloc 53200 bytes
+    7.873   os  : system memory alloc 2048 bytes
+    7.873   tree: DIR 0, FILE 5, DATA 4
+    7.873   os  : system memory alloc 320 bytes
+    7.873   flsh: UFFS consume spare data size 9
+    7.873   os  : system memory alloc 84480 bytes
+    7.873   os  : system memory alloc 53200 bytes
+    7.873   os  : system memory alloc 8192 bytes
+    7.873   tree: DIR 3, FILE 30, DATA 222
+    7.873   /dev/shm file system initialization done!
+    7.873   Can't find sensor on csi0
+    7.873   Can't find sensor on csi2
+    7.873   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+    7.873   <gnne> gnne_device_init done.
+    7.873   #############SDK VERSION######################################
+    7.873   SDK   : unknown-20261030-164031--8281d0faa531-4162ec7
+    7.873   nncase: 2.11.0
+    7.873   ##############################################################
+    7.873   msh />
+    9.952 > 'rm /sdcard/plt/f00.bin' (0.06 s)
+    9.952   rm /sdcard/plt/f00.bin
+    9.952   msh />
+    9.952   msh />
+   10.007 > 'rm /sdcard/plt/f01.bin' (0.05 s)
+   10.007   rm /sdcard/plt/f01.bin
+   10.007   msh />
+   10.007   msh />
+   10.062 > 'rm /sdcard/plt/f02.bin' (0.05 s)
+   10.062   rm /sdcard/plt/f02.bin
+   10.062   msh />
+   10.062   msh />
+   10.117 > 'rm /sdcard/plt/f03.bin' (0.05 s)
+   10.117   rm /sdcard/plt/f03.bin
+   10.117   msh />
+   10.117   msh />
+   10.181 > 'rm /sdcard/plt/f04.bin' (0.06 s)
+   10.181   rm /sdcard/plt/f04.bin
+   10.181   msh />
+   10.181   msh />
+   10.262 > 'rm /sdcard/plt/f05.bin' (0.08 s)
+   10.262   rm /sdcard/plt/f05.bin
+   10.262   msh />
+   10.262   msh />
+   10.366 > 'rm /sdcard/plt/f06.bin' (0.10 s)
+   10.366   rm /sdcard/plt/f06.bin
+   10.366   msh />
+   10.366   msh />
+   10.428 > 'rm /sdcard/plt/f07.bin' (0.06 s)
+   10.428   rm /sdcard/plt/f07.bin
+   10.428   msh />
+   10.428   msh />
+   10.483 > 'rm /sdcard/plt/f08.bin' (0.05 s)
+   10.483   rm /sdcard/plt/f08.bin
+   10.483   msh />
+   10.483   msh />
+   10.545 > 'rm /sdcard/plt/f09.bin' (0.06 s)
+   10.545   rm /sdcard/plt/f09.bin
+   10.545   msh />
+   10.545   msh />
+   10.607 > 'rm /sdcard/plt/f10.bin' (0.06 s)
+   10.607   rm /sdcard/plt/f10.bin
+   10.607   msh />
+   10.607   msh />
+   10.669 > 'rm /sdcard/plt/f11.bin' (0.06 s)
+   10.669   rm /sdcard/plt/f11.bin
+   10.669   msh />
+   10.669   msh />
+   10.734 > 'rm /sdcard/plt/f12.bin' (0.06 s)
+   10.734   rm /sdcard/plt/f12.bin
+   10.734   msh />
+   10.734   msh />
+   10.807 > 'rm /sdcard/plt/f13.bin' (0.07 s)
+   10.807   rm /sdcard/plt/f13.bin
+   10.807   msh />
+   10.807   msh />
+   10.911 > 'rm /sdcard/plt/f14.bin' (0.10 s)
+   10.911   rm /sdcard/plt/f14.bin
+   10.911   msh />
+   10.911   msh />leakcam_agent: READY not answered
+   10.972 > 'rm /sdcard/plt/f15.bin' (0.06 s)
+   10.972   rm /sdcard/plt/f15.bin
+   10.972   msh />
+   10.972   msh />
+   11.027 > 'rm /sdcard/plt' (0.05 s)
+   11.027   rm /sdcard/plt
+   11.027   cannot remove '/sdcard/plt': Is a directory
+   11.027   msh />
+   11.027   msh />
+   11.216 > 'rm /sdcard/venc0.h265' (0.19 s)
+   11.216   rm /sdcard/venc0.h265
+   11.216   msh />
+   11.216   msh />
+   11.410 > 'rm /sdcard/venc1.h265' (0.19 s)
+   11.410   rm /sdcard/venc1.h265
+   11.410   msh />
+   11.410   msh />
+   11.465 > 'df /sdcard' (0.05 s)
+   11.465   df /sdcard
+   11.465   disk free: 20.1 MB [ 161 block, 131072 bytes per block ]
+   11.465   msh />
+   11.465   msh />
+   11.525 > 'ls /sdcard' (0.06 s)
+   11.525   ls /sdcard
+   11.525   Directory /sdcard:
+   11.525   app                                     <DIR>                    
+   11.525   leakcam                                 <DIR>                    
+   11.525   plt                                     <DIR>                    
+   11.525   revision.txt                            922                      
+   11.525   msh />
+   11.525   msh />

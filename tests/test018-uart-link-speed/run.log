@@ -1,12 +1,12 @@
-16:49:01 test018-uart-link-speed: 14 metric rows MISSING: Boot, power-on -> READY (median of 5), This part's boot share, Test run time, UART link throughput, round trip, Current idle / during (min / avg / peak), Voltage under load (min), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Image (sizes), Compile flags, Features over the minimal image, Optimised build (-O3, LTO, -march)
-16:49:09 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.46 msh 0.47
-16:49:15 sample idle {'board': 29.6, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 35.217, 'k_free': (7313600, 1390848), 'vbat': 4356}
-16:49:24 sample run 1 {'board': 29.8, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 39.156, 'k_free': (7313600, 1390848), 'vbat': 4373}
-16:49:36 sample run 2 {'board': 30.2, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 39.76, 'k_free': (7313600, 1390848), 'vbat': 4377}
-16:49:46 sample run 3 {'board': 30.8, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 39.76, 'k_free': (7313600, 1390848), 'vbat': 4361}
-16:49:56 sample run 4 {'board': 31.2, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 40.365, 'k_free': (7313600, 1390848), 'vbat': 4382}
-16:50:06 sample run 5 {'board': 31.5, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 40.063, 'k_free': (7313600, 1390848), 'vbat': 4399}
-16:50:16 sample run 6 {'board': 31.9, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 40.667, 'k_free': (7313600, 1390848), 'vbat': 4358}
-16:50:25 sample run 7 {'board': 32.2, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 43.082, 'k_free': (7313600, 1390848), 'vbat': 4350}
-16:50:35 sample run 8 {'board': 32.5, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 41.875, 'k_free': (7313600, 1390848), 'vbat': 4351}
-16:50:39 test018-uart-link-speed: PASS; filled 11: Boot, power-on -> READY (median of 5), Test run time, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Voltage under load (min), Compile flags, Image (sizes), UART link throughput, round trip, This part's boot share, Power, energy per operation, Per day; still MISSING 3: Current idle / during (min / avg / peak), Features over the minimal image, Optimised build (-O3, LTO, -march)
+20:12:16 test018-uart-link-speed: 0 metric rows MISSING: none
+20:12:23 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
+20:12:30 sample idle {'board': 34.7, 'bl_mem': (118516, 114324, 114604, 147, 92056, 17, 0), 'die': 42.78, 'k_free': (7313600, 1390848), 'vbat': 4201}
+20:13:14 sample run 1 {'board': 35.6, 'bl_mem': (117744, 114324, 114604, 150, 92796, 17, 0), 'die': 45.493, 'k_free': (7313600, 1390848), 'vbat': 4219}
+20:14:00 sample run 2 {'board': 36.5, 'bl_mem': (117768, 114324, 114604, 149, 92784, 17, 0), 'die': 47.9, 'k_free': (7313600, 1390848), 'vbat': 4236}
+20:14:46 sample run 3 {'board': 37.0, 'bl_mem': (118516, 114324, 114604, 147, 92056, 17, 0), 'die': 48.201, 'k_free': (7313600, 1390848), 'vbat': 4231}
+20:15:31 sample run 4 {'board': 37.6, 'bl_mem': (118524, 114324, 114604, 147, 92048, 17, 0), 'die': 47.9, 'k_free': (7313600, 1390848), 'vbat': 4230}
+20:16:17 sample run 5 {'board': 38.0, 'bl_mem': (117768, 114324, 114604, 149, 92792, 17, 0), 'die': 48.201, 'k_free': (7313600, 1390848), 'vbat': 4252}
+20:17:03 sample run 6 {'board': 38.0, 'bl_mem': (117748, 114324, 114604, 150, 92804, 17, 0), 'die': 48.502, 'k_free': (7313600, 1390848), 'vbat': 4283}
+20:17:49 sample run 7 {'board': 37.9, 'bl_mem': (118520, 114324, 114604, 147, 92052, 17, 0), 'die': 47.9, 'k_free': (7313600, 1390848), 'vbat': 4305}
+20:18:34 sample run 8 {'board': 37.9, 'bl_mem': (118524, 114324, 114604, 147, 92048, 17, 0), 'die': 48.201, 'k_free': (7313600, 1390848), 'vbat': 4337}
+20:18:37 test018-uart-link-speed: FAIL; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

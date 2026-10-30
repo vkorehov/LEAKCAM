@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""test017 automated: nand_bench read 64 at the configured 80 MHz / delay 5, 8 runs (checksums must agree), snapshots."""
+"""test017 automated: nand_bench read 64 at the configured 50 MHz / delay 5, 8 runs (checksums must agree), snapshots."""
 import os
 import re
 import sys
@@ -24,6 +24,6 @@ mb = [float(x) for x in re.findall(r"([\d.]+) MB/s", "\n".join(lines))]
 if mb:
     r.energy(busy, 64 * 128 * 1024 / (max(mb) * 1e6), per_day=4, idle_amps=idle, what="8 MB raw read (64 blocks)")
 ok = bool(lines) and len(sums) == 1
-r.set("speed", f"raw page read {max(mb):.1f} MB/s at 80 MHz (best of 8) ({r.date})" if mb else None)
+r.set("speed", f"raw page read {max(mb):.1f} MB/s at 50 MHz (best of 8) ({r.date})" if mb else None)
 r.finish("8 x `nand_bench read 64`, checksums " + (f"equal ({next(iter(sums))})" if len(sums) == 1 else f"DIFFER: {sums}") +
          "; last:\n\n" + "\n".join(f"    {l}" for l in lines[-3:]), ok)

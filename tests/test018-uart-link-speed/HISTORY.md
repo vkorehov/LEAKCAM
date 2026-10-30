@@ -4,6 +4,19 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Why the 2026-10-30 runs at 2 Mbaud failed (BL616 state, not the rate)
+
+The K230 -> BL616 direction lost 1-16 bytes per 64 KB / 1 MB echo (the BL616 echoed fewer than were sent; the
+K230 received every echoed byte, 0 UART errors). The BL616 test firmware had then run all day with ~50 `pt_wifi
+bridge` starts: heap 117.7-118.5 KB free and 147-150 blocks against 176.5 KB / 14 fresh. Freshly flashed (with a new
+RX FIFO overflow counter in pt_status): 7 x 1 MB, 0 lost, 0 overflows, also with the bridge up and the K230
+power-cycled under it. Open: reproduce the leak by repeated bridge starts. Harness: reset the BL616 between tests.
+
+### Automated run 2026-10-30 (run.py, 382 s): **FAIL**
+
+8 of 8 runs of uart_bench 1024 at 4 Mbaud: 6021895 errors, 69904-69904 B/s.
+
+
 ### Automated run 2026-10-25 (run.py, 97 s): pass
 
 8 of 8 runs of uart_bench 1024 at 4 Mbaud: 0 errors, 344360-349858 B/s.

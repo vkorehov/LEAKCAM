@@ -35,7 +35,7 @@
 #define FRAMES     8                    /* distinct input frames per channel, cycled */
 #define NV12       VB_ALIGN_UP(W * H * 3 / 2, 0x1000)
 #define STREAM_BLK_SIZE VB_ALIGN_UP(W * H / 2, 0x1000)
-#define FILE_LIMIT (30u << 20)
+#define FILE_LIMIT (4u << 20)          /* per channel, ~65 s at 500 kbit/s: /sdcard holds ~20 MB free */
 
 static int nchn = 1, seconds = 20, fps = 15;
 static volatile int running = 1;
@@ -197,9 +197,16 @@ static void *drain(void *arg)
             is_i |= out.pack[i].type == K_VENC_I_FRAME;
             if (fp && written + out.pack[i].len <= FILE_LIMIT) {
                 k_u8 *p = kd_mpi_sys_mmap(out.pack[i].phys_addr, out.pack[i].len);
-                fwrite(p, 1, out.pack[i].len, fp);
+                size_t w = fwrite(p, 1, out.pack[i].len, fp);
                 kd_mpi_sys_munmap(p, out.pack[i].len);
                 written += out.pack[i].len;
+                if (w != out.pack[i].len) {
+                    /* a full /sdcard stalled every write and with them the drain: the input queue filled and both
+                     * channels stopped at t=100 s (2026-10-30, test028's files left 12 MB) */
+                    printf("venctest: ch%d disk full after %llu B, stream no longer saved\n", c, written - out.pack[i].len + w);
+                    fclose(fp);
+                    fp = NULL;
+                }
             }
         }
         unsigned n = st[c].out;

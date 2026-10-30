@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-30 (run.py, 468 s): pass
+
+20 random cuts during plt_write ([run4_2026-10-30.csv](run4_2026-10-30.csv)): 0 bad files, 0 checks unparsed, 685 commits before the cuts; app init after a cut 0.403-0.630 s; free 20992 -> 12032 KB; plt_check after the run: clean.
+
+
 ### Status line before the 2026-10-29 cleanup
 
 Status: **pass** (2026-10-23): 500 random power cuts during writes (100 + 400), 0 lost or corrupt; 4 check results unparsed (cause open, no loss); app init after a cut 0.478 s (short run 2026-10-21: 13 cuts).

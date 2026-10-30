@@ -114,7 +114,7 @@ CONFIG_FAT_WRITE=y
 CONFIG_SPL_GZIP=y
 # CONFIG_EFI_LOADER is not set
 # the console is UART1 at the BL616 link's one rate (dts stdout-path; U-Boot takes the rate from here)
-CONFIG_BAUDRATE=4000000
+CONFIG_BAUDRATE=2000000
 # DDR at the SiP's top rate (tests/test025, 2026-10-23: top stable speed rule; the SPL default is 2667): 3200 MT/s.
 # HWODT (write ODT) trained but flipped a bit in kernel text (rt_calloc 0x8526 -> 0x8527, illegal instruction);
 # trying all-ODT

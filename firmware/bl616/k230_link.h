@@ -66,7 +66,8 @@ static inline uint8_t link_crc8(const char *p, const char *end)
     return c;
 }
 
-#define LINK_BAUD           4000000 /* top stable rate, tests/test018; K230 side: k230_board/install.sh */
+#define LINK_BAUD           2000000 /* tests/test039: 4 Mbaud lost ~0.5 % of short writes after idle, 2 Mbaud 0;
+                                     * K230 side from here (k230_board/install.sh), U-Boot / dts / RT-Smart configs too */
 #define LINK_MAX_LINE       64
 #define LINK_ACK_TIMEOUT_MS 300     /* a 64-byte frame takes 0.16 ms; the rest is the peer's loop */
 #define LINK_TRIES          5

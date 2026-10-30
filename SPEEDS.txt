@@ -14,10 +14,9 @@ or a measurement yet. Keep this file current when a test or a setting changes it
   SDIO K230 MMC0 <-> BL616    50 MHz, 4-bit, high speed    bus writes 21.4 MB/s, reads 21.5 MB/s 50 MHz (BL616 SDIO 2.0)  yes       test014
                                                            end to end 9.4 MB/s (echo device)
                                                            soak 109 MB, 0 CRC errors
-  SPI NAND (W25N02KV)         quad SPI, 80 MHz, sample     raw: read 15.6 MB/s, program 4.6,     80 MHz (raw 20.6 MB/s); yes (80)  test010,
-                              delay 5 (kernel + U-Boot)    erase 2.46 ms/block; 80 MHz: read     100 MHz data tried and           test016,
-                                                           20.6, program 5.0                     dropped (test017)                test017
-                                                           file system: read 9.4-12.7, write 1.8
+  SPI NAND (W25N02KV)         quad SPI, 50 MHz, sample     raw: read 15.7 MB/s, program 4.6,     50 MHz for stability:    yes (50)  test010,
+                              delay 5 (kernel + U-Boot,    erase 2.46 ms/block                   80 read faster but lost           test016,
+                              2026-10-30)                  file system: read 9.4-12.7, write 1.8 the NAND ID at boot               test017
   DDR (K230D SiP)             3200 MT/s all-ODT (U-Boot    write 6.08, read 4.84, copy 2.77      3200 MT/s (the SiP's    yes       test016,
                               K230D_SIP_LPDDR4_3200_       GB/s; 8 h memtest 0 errors; 2667      top); HWODT flipped a             test025
                               ALLODT, 2026-10-23)          was 4.05 / 4.08 / 1.86                bit: not stable
@@ -29,9 +28,10 @@ or a measurement yet. Keep this file current when a test or a setting changes it
   Video encoder (VPU)         800 MHz                      H.265 1280x960: 84 fps (1 ch), 82 (2 ch); 800 MHz (only profile)  yes       test026
                                                            product 2 x 15 fps = 36 % of the top
                                                            2026-10-25: 1 ch top 75.9 fps (one 15 s run; to explain)
-  UART link K230 <-> BL616    4 Mbaud 8N1 (was 115200)     clean up to 4 Mbaud (10 MB, 0 err),   4 Mbaud (6 fails)       yes       test018
-                                                           16 B round trip 1.48 ms -> 55 us
-                                                           2026-10-25: 350 KB/s (87 %), 70 us (BL616 echo in its ISR)
+  UART link K230 <-> BL616    2 Mbaud 8N1 (2026-10-30,     bulk 10 MB 0 err up to 4 Mbaud;      2 Mbaud for stability:  yes (2)   test018,
+                              SPL, OpenSBI, kernel, BL616) console: 0 of 2700 B lost per burst  4 lost short writes             test039
+                                                           at 2 Mbaud; 1000/1000 commands       after idle (~0.5 %)
+
   K230 console (CH340, USBC2) 115200 8N1                   -                                     -                       n/a       -
   BL616 console (PR1)         USB CDC (full speed)         -                                     -                       n/a       -
   BL616 I2C -> AHT20          400 kHz (2026-10-25)         read 36.5 ms (35 ms conversion)       400 kHz (AHT20)         yes       test020
@@ -84,23 +84,33 @@ or a measurement yet. Keep this file current when a test or a setting changes it
   -------------  -------------------------------  ------------------------------------------------------------------
   DDR            2667 -> 3200 (HWODT, ALLODT)     test024 memtest >= 1 h at each, under KPU + encoder load; 10 cold
                                                   starts (each retrains); test025 temperature; test015 bandwidth
-  SPI NAND       50 -> 66 -> 80 -> 100 MHz        test016: whole image area read-verified 10x, free-area write +
-                 (RT-Smart and U-Boot/SPL each)   verify; 10 cold boots (SPL and U-Boot read the image too)
-                                                  2026-10-21, RT-Smart at run time: 66, 80 pass (80: /bin 10x equal,
-                                                  writes verified); 100 fails (reads zeros, driver silent). Next: SPL +
-                                                  U-Boot + Kconfig at 80, 10 cold boots, then adopt 80.
-                                                  Adopted 2026-10-21: 80 MHz, RX sample delay 5 (window 3-8), 18 cold
-                                                  boots clean, boot to app init 1.00 -> 0.88 s. 100 MHz: no window
-                                                  (1-line and 4-line phases want different delays); pad drive 7/10/15 no
-                                                  difference. Kept at 80 (user, 2026-10-21).
-                                                  2026-10-24: per-phase SPI timing (install.sh): 1-line transfers
-                                                  (status polls, no window at 100) at 80 MHz, 4-line data at 100 MHz,
-                                                  delay 6 + edge (window 4-8 both edges); /bin 10x equal, 10 write
-                                                  runs verified, 10 cold boots clean; with the SPL patched too 2 of 70 cold
-                                                  boots lost the NAND ID: dropped 2026-10-25 (user), 80 MHz kept.
-  UART link      115200 -> ... 4 -> 6 Mbaud       test018: 10 MB both ways, 0 errors; both firmwares changed together
-                                                  Adopted 2026-10-22: 4 Mbaud (6 Mbaud corrupts bulk data); code only,
-                                                  product images not rebuilt yet (rewrite after the tests)
+  SPI NAND       50 -> 66 -> 80 -> 100 -> 50 MHz  test016/017: whole image area read-verified 10x, free-area write +
+                 (RT-Smart and U-Boot/SPL each)   verify, cold boots (SPL and U-Boot read the image too).
+                                                  100 MHz: no sampling window (1-line and 4-line phases want different
+                                                  delays); 100 MHz data with 80 MHz commands lost the NAND ID in 2 of
+                                                  70 cold boots: dropped 2026-10-25.
+                                                  80 MHz (adopted 2026-10-21, raw read 20.6 MB/s, boot 0.06 s faster):
+                                                  why it did not work: the kernel's first READ ID after reset came back
+                                                  one byte late ("unknown raw ID aa220000" instead of ef aa 22) in 2 of
+                                                  32 cold boots (2026-10-30, test105 + test017 runs); the kernel read it
+                                                  once, so /bin and /sdcard stayed unmounted and every program was
+                                                  "command not found". Data reads and checksums were always right and
+                                                  the sample delay sat inside its window (3-8), so it is a marginal
+                                                  first transfer, not bit errors. Rare enough (1 in ~20) to pass the
+                                                  earlier 18- and 20-boot checks.
+                                                  50 MHz (2026-10-30, kernel and SPL, user: stability over speed):
+                                                  20/20 cold boots with the Wi-Fi bridge up, 0 ID retries; raw read
+                                                  15.7 MB/s; boot to msh 0.52-0.53 s (+0.06 s). The kernel also resets
+                                                  and re-reads the ID up to 3 times and logs "ID retry" (install.sh).
+  UART link      115200 -> ... 4 -> 6 -> 2 Mbaud  test018: 10 MB both ways, 0 errors; both firmwares changed together.
+                                                  6 Mbaud corrupts bulk data. 4 Mbaud (adopted 2026-10-22): why it did
+                                                  not work: bulk transfers were clean, but short console writes after
+                                                  an idle gap lost bytes, ~0.5 % (148 of 27000 B in 10 bursts; test039
+                                                  lost 3-7 of 1000 commands per run, the test027 "hang" was this). 3 and
+                                                  2.5 Mbaud gave no working link (DW divisor 100 MHz / 16 / baud with a
+                                                  4-bit fraction: no exact step). 2 Mbaud (2026-10-30): 0 of 27000 B
+                                                  lost, test039 1000/1000 x 4 boots, all counters 0; set in U-Boot/SPL,
+                                                  OpenSBI, the kernel driver and the BL616 (k230_link.h LINK_BAUD).
   AHT20 I2C      100 -> 400 kHz                   1000 reads, 0 CRC errors (cheap, so taken although it gains little)
                                                   Adopted 2026-10-25: 1000/1000 reads OK at 400 kHz (pt_i2c soak 1000).
   CPU, KPU, VPU  already at the top profile        CPU clock confirmed by test015's cycle count

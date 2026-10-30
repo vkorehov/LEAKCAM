@@ -4,6 +4,36 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-30 (run.py, 147 s): pass
+
+4 boots, 1000 of 1000 `version` round trips answered; host-timed command -> answer 55 / 55 / 70 ms (min / median / max); 0 late (> 2 s).
+
+- counters boot 1: host_to_bl 2261, bl_to_k230 2261, bl_put_fail 0, k230_rx 2261, k230_text_drop 0, k230_overrun 0, k230_bytes_dropped 0, k230_uart_resets 0
+- counters boot 2: host_to_bl 2261, bl_to_k230 2261, bl_put_fail 0, k230_rx 2261, k230_text_drop 0, k230_overrun 0, k230_bytes_dropped 0, k230_uart_resets 0
+- counters boot 3: host_to_bl 2261, bl_to_k230 2261, bl_put_fail 0, k230_rx 2261, k230_text_drop 0, k230_overrun 0, k230_bytes_dropped 0, k230_uart_resets 0
+- counters boot 4: host_to_bl 2261, bl_to_k230 2261, bl_put_fail 0, k230_rx 2261, k230_text_drop 0, k230_overrun 0, k230_bytes_dropped 0, k230_uart_resets 0
+
+
+### Automated run 2026-10-30 (run.py, 162 s): **FAIL**
+
+4 boots, 997 of 1000 `version` round trips answered; host-timed command -> answer 55 / 55 / 123 ms (min / median / max); 0 late (> 2 s).
+
+- counters boot 1: host_to_bl 2261, bl_to_k230 2261, bl_put_fail 0, k230_rx 2252, k230_text_drop 0, k230_overrun 0, k230_bytes_dropped 0, k230_uart_resets 0
+- counters boot 2: host_to_bl 2261, bl_to_k230 2261, bl_put_fail 0, k230_rx 2261, k230_text_drop 0, k230_overrun 0, k230_bytes_dropped 0, k230_uart_resets 0
+- counters boot 3: host_to_bl 2261, bl_to_k230 2261, bl_put_fail 0, k230_rx 2245, k230_text_drop 0, k230_overrun 0, k230_bytes_dropped 0, k230_uart_resets 0
+- counters boot 4: host_to_bl 2261, bl_to_k230 2261, bl_put_fail 0, k230_rx 2261, k230_text_drop 0, k230_overrun 0, k230_bytes_dropped 0, k230_uart_resets 0
+
+
+### Automated run 2026-10-30 (run.py, 184 s): **FAIL**
+
+4 boots, 996 of 1000 `version` round trips answered; host-timed command -> answer 55 / 55 / 102 ms (min / median / max); 0 late (> 2 s).
+
+- counters boot 1: host_to_bl 2261, bl_to_k230 2261, bl_put_fail 0, k230_rx 2244, k230_text_drop 0, k230_overrun 0, k230_bytes_dropped 0
+- counters boot 2: host_to_bl 2261, bl_to_k230 2261, bl_put_fail 0, k230_rx 2252, k230_text_drop 0, k230_overrun 0, k230_bytes_dropped 0
+- counters boot 3: host_to_bl 2261, bl_to_k230 2261, bl_put_fail 0, k230_rx 2252, k230_text_drop 0, k230_overrun 0, k230_bytes_dropped 0
+- counters boot 4: host_to_bl 2261, bl_to_k230 2261, bl_put_fail 0, k230_rx 2261, k230_text_drop 0, k230_overrun 0, k230_bytes_dropped 0
+
+
 ### Automated run 2026-10-25 (run.py, 165 s): **FAIL**
 
 4 boots, 993 of 1000 `version` round trips answered; host-timed command -> answer 55 / 55 / 111 ms (min / median / max); 0 late (> 2 s).
@@ -57,6 +87,15 @@ SPL and OpenSBI still print on UART0 (CH340).
 - Clicks per K230 power cycle: was 1 for the CH340.
 
 ## Obstacles
+
+- lost `version` answer, raw: boot 1 command 92 (26 s into the run): 'leakcam_agent: READY not answered\nleakcam_agent: READY not answered\nleakcam_agent: READY not answered\n' (2026-10-30, automated run)
+- lost `version` answer, raw: boot 3 command 157 (107 s into the run): 'leakcam_agent: READY not answered\nleakcam_agent: READY not answered\nleakcam_agent: READY not answered\n' (2026-10-30, automated run)
+- lost `version` answer, raw: boot 3 command 163 (112 s into the run): 'ason: cold\n[W/LWP] not use fast load, out of memory 8388608 < 15543000\nvicap: dev 0 init failed (sensor not answering on its I2C bus?)\ncapture failed\nleakcam_agent: hook exited 0, next wake in 3600 s\n' (2026-10-30, automated run)
+
+- lost `version` answer, raw: boot 1 command 39 (25 s into the run): 'leakcam_agent: READY not answered\nleakcam_agent: READY not answered\nleakcam_agent: READY not answered\n' (2026-10-30, automated run)
+- lost `version` answer, raw: boot 1 command 151 (36 s into the run): 'cap: dev 0 init failed (sensor not answering on its I2C bus?)\ncapture failed\nleakcam_agent: hook exited 0, next wake in 3600 s\nleakcam_agent: SLEEP not answered\nleakcam_agent: done, heartbeat stopped\n' (2026-10-30, automated run)
+- lost `version` answer, raw: boot 2 command 101 (78 s into the run): 'leakcam_agent: READY not answered\nleakcam_agent: READY not answered\nleakcam_agent: READY not answered\nleakcam_agent: READY not answered\n' (2026-10-30, automated run)
+- lost `version` answer, raw: boot 3 command 114 (124 s into the run): 'leakcam_agent: READY not answered\nleakcam_agent: READY not answered\nleakcam_agent: READY not answered\n' (2026-10-30, automated run)
 
 - lost `version` answer, raw: boot 5: 'leakcam_agent: READY not answered\nleakcam_agent: READY not answered\n' (2026-10-25, automated run)
 

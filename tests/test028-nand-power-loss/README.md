@@ -9,7 +9,7 @@ can cut the rails. UFFS is log-structured; this proves it on rev 1.
 ## Setup
 
 Board on USB-C 1, K230 console on `/dev/ttyACM1` (BL616 link), BL616 test firmware (`pt_off` / `pt_on` / `pt_run`).
-K230 image with /sdcard 32 MiB, NAND 80 MHz. Writer and checker: `plt_write` / `plt_check` in
+K230 image with /sdcard 32 MiB, NAND 50 MHz. Writer and checker: `plt_write` / `plt_check` in
 [leakcam_bench.c](../test017-nand-raw-speed/leakcam_bench.c) (SDK copy): files of 1 KB..2 MB in /sdcard/plt (16
 slots), each fsynced, then a commit record (two slots, fsynced). `plt_check` verifies the 15 newest committed files
 (the 16th slot may be the one cut mid-write). Host loop: [plt_loop.py](plt_loop.py) (long runs, keeps the raw text of
@@ -40,6 +40,10 @@ UFFS on nand1, dfs_posix (open/write/fsync/statfs), plt_write/plt_check (leakcam
 - App init after an unclean cut 0.330-0.520 s (run.py, 2026-10-25); DDR retrained on every boot, no boot failure
   in 399 boots (2026-10-23).
 - Writer speed: 2 MB file 1.47 s with fsync (~1.4 MB/s through UFFS) (2026-10-21).
+
+- The run removes its 16 `/sdcard/plt` files at the end (2026-10-30): left behind (~7 MB) with the small /sdcard
+  they let test105's encoder streams fill it and stall the encoder (test027).
+- 2026-10-30 at NAND 50 MHz: 20 cuts, 0 bad files, app init after a cut 0.610-0.630 s, plt_check clean.
 
 Open:
 - 4 of 400 checks unparsed in the 400-cut run (2026-10-23, cycles took ~40-50 s against ~25 s), no data lost; cause

@@ -45,11 +45,11 @@ Recorded per step; the biggest steps named as candidates to shorten.
 
 - Reset release -> app init **0.320 s** median (0.320-0.321 s, 8 of 8 cold boots), UFFS mounts done at
   0.311-0.312 s (run.py, 2026-10-25); test039 measured 0.296-0.301 s app init over 3 cold boots (2026-10-23) with the
-  console at 4 Mbaud from SPL.
+  console at 2 Mbaud from SPL.
 - UFFS mount time goes with the **used pages**, not the partition size: it reads the tags of every page holding data
   (~65 us per page) (2026-10-21, /sdcard and /bin resize runs). Levers: less data (ISP tuning files for one
   resolution only, stripped programs) or /sdcard mounted only when a session needs it.
-- NAND at 80 MHz in the boot (100 MHz has no window, test017); /bin holds only the 1280x960 ISP set (0.68 MB),
+- NAND at 50 MHz in the boot, for stability (test017, 2026-10-30); /bin holds only the 1280x960 ISP set (0.68 MB),
   /sdcard 32 MiB, /bin 8 MiB (2026-10-21).
 
 Open:
@@ -66,7 +66,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Boot, reset release -> app init | 0.320 / 0.321 s (median / max of 8 cold boots; mounts done 0.311-0.312 s) (2026-10-25, run.py) | target: to set | longest step: UFFS mounts |
 | This part's boot share | - | - | (the boot is this test) |
 | Test run time | 1 command; setup: reflash (USB boot) ~5 min with clicks | - | |
-| NAND clock in the boot | 80 MHz | 100 MHz has no window (test017) | |
+| NAND clock in the boot | 50 MHz (2026-10-30) | faster clocks misread the NAND ID at boot (test017) | |
 | Current: rails in reset / boot peak / msh idle | 86.3 / ~227 / 204 mA (2026-10-21) | - | USB-C 1 VBUS |
 | Voltage under load (min) | VBAT 4.34 V min (K230 ADC ch 1, test023 calibration, 8 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per boot (to app init) | ~215 mA x 0.88 s = 0.72 J, 53 uAh (2026-10-21, at the 0.88 s boot; not recomputed for 0.32 s) | - | 3.8 V nominal |

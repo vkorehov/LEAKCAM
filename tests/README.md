@@ -53,7 +53,7 @@ Leak tests, one per operation the product repeats:
 | [test014 SDIO wiring, K230 MMC0 <-> BL616 SDIO](test014-sdio-wiring/README.md) | 2026-10-25 | **pass**: CLK, CMD, D0-D3 connected both directions, none stuck, no shorts; CLK and CMD toggle |
 | [test015 SDIO speed, K230 MMC0 <-> BL616 SDIO device](test015-sdio-speed/README.md) | 2026-10-21 | **pass**: 50 MHz 4-bit (the top), bus 21 MB/s, end to end 9.4 MB/s with the echo device, no CRC |
 | [test016 K230 DDR bandwidth](test016-ddr-bandwidth/README.md) | 2026-10-25 | **pass at 3200 MT/s all-ODT**: write 6.08 / read 4.84 / copy 2.77 GB/s, 8 x `ddr_bench 3072` |
-| [test017 SPI NAND raw speed and SPI clock](test017-nand-raw-speed/README.md) | 2026-10-25 | **pass**: NAND at 80 MHz, sample delay 5 (kernel + U-Boot/SPL); raw read 20.6 MB/s, 20/20 cold boots clean. |
+| [test017 SPI NAND raw speed and SPI clock](test017-nand-raw-speed/README.md) | 2026-10-30 | **pass**: NAND at 50 MHz for stability, sample delay 5 (kernel + U-Boot/SPL); raw read 15.7 MB/s, 20/20 cold boots clean, ID read retried by the kernel. |
 | [test018 K230 <-> BL616 UART link: speed, latency, errors](test018-uart-link-speed/README.md) | 2026-10-25 | **pass**: the link runs 4 Mbaud from boot; 8 x 1 MB echoed with 0 errors at 344-350 KB/s (87 % of |
 | [test019 K230 USB-C 1: USB boot and flashing speed](test019-usb-flash-speed/README.md) | 2026-10-25 | **pass**: K230 whole image 24.6 s (erase 0-248 MB 8 s + 45.4 MB write, USB 2.0 high speed); |
 | [test020 Camera interfaces: CSI frame rate, I2C clock](test020-camera-csi-i2c/README.md) | 2026-10-21 | **planned**: not run yet; waits for the cameras. |

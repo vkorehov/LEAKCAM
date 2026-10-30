@@ -4,6 +4,41 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-30 (run.py, 56 s): pass
+
+flash_nand.sh (erase 0..248M + write 45441024 B): 24.8 s, ok; 1.83 MB/s overall incl. erase; then booted to msh. Log: flash_last.txt
+
+
+### Automated run 2026-10-30 (run.py, 57 s): pass
+
+flash_nand.sh (erase 0..248M + write 45441024 B): 25.1 s, ok; 1.81 MB/s overall incl. erase; then booted to msh. Log: flash_last.txt
+
+
+### Automated run 2026-10-30 (run.py, 56 s): pass
+
+flash_nand.sh (erase 0..248M + write 45441024 B): 24.8 s, ok; 1.83 MB/s overall incl. erase; then booted to msh. Log: flash_last.txt
+
+
+### Automated run 2026-10-30 (run.py, 57 s): pass
+
+flash_nand.sh (erase 0..248M + write 45441024 B): 24.8 s, ok; 1.83 MB/s overall incl. erase; then booted to msh. Log: flash_last.txt
+
+
+### Automated run 2026-10-30 (run.py, 56 s): pass
+
+flash_nand.sh (erase 0..248M + write 45441024 B): 24.6 s, ok; 1.84 MB/s overall incl. erase; then booted to msh. Log: flash_last.txt
+
+
+### Automated run 2026-10-30 (run.py, 56 s): pass
+
+flash_nand.sh (erase 0..248M + write 45441024 B): 24.5 s, ok; 1.85 MB/s overall incl. erase; then booted to msh. Log: flash_last.txt
+
+
+### Automated run 2026-10-30 (run.py, 57 s): pass
+
+flash_nand.sh (erase 0..248M + write 45441024 B): 25.0 s, ok; 1.82 MB/s overall incl. erase; then booted to msh. Log: flash_last.txt
+
+
 ### Automated run 2026-10-25 (run.py, 56 s): pass
 
 flash_nand.sh (erase 0..248M + write 45441024 B): 24.6 s, ok; 1.85 MB/s overall incl. erase; then booted to msh. Log: flash_last.txt

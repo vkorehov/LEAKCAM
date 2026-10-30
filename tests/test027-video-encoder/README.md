@@ -22,7 +22,7 @@ MPP VENC (H.265), venctest (temporary), VPU clock.
    += venctest` in apps.mk), built from the SDK examples (sample_venc, smart_ipc's `kd_mpi_venc_send_frame`), no
    product code: 8 generated NV12 frames per channel (scrolling gradient, moving square, noise band) cycled into
    VENC, H.265 Main CBR 500 kbit/s, GOP 150 at 15 fps (the product's settings); `/sdcard/app/venctest [1|2]
-   [seconds] [fps, 0 = max]`; stream to /sdcard/venc<N>.h265 (30 MB max); per second frames in/out, bytes, I
+   [seconds] [fps, 0 = max]`; stream to /sdcard/venc<N>.h265 (4 MB max, the first ~65 s; a short write stops the saving, not the encoder); per second frames in/out, bytes, I
    frames; at the end fps, kbit/s, IDR spacing, send-to-stream latency.
 2. Measure encode time per frame, CPU load, memory (VB pools, heap), the stream's bit rate and its IDR spacing.
 3. Play the stream back on the PC (ffprobe/ffplay) to check it decodes.
@@ -49,6 +49,14 @@ decodes and keeps the rate and IDR interval.
 - Decode check: `venctest 1 1 15` -> [venc0_1s.h265](venc0_1s.h265) (367,574 B, 1 IDR + 14 P); ffprobe: hevc Main,
   1280x960, yuv420p, 16 frames; `ffmpeg -f null` decodes with no error; frames 0 and 14
   ([decoded_frames_0_14.jpg](decoded_frames_0_14.jpg)) show the input pattern at its position: pass (2026-10-21).
+
+- A full /sdcard stalls the encoder (2026-10-30): both channels ran 15/15 fps until t=100 s, then `out 0 fps` with
+  `venc_input_enqueue failed / sys queue no space` (1085 times in 300 s), with no other load. test028's power-cut files
+  had left 12 MB free and the two streams filled it; venctest never checked fwrite, so every write stalled the drain
+  thread and the input queue filled. Fixed in venctest: at most 4 MB per channel (~65 s), and a short write prints
+  `disk full`, closes the file and keeps encoding. Product rule: the clip writer checks every write and space first.
+- The earlier "hang" of 2026-10-30 (hang_repro.py, 29 encodes over 13 start delays: no hang) was the console losing
+  commands at 4 Mbaud (test039), not the encoder.
 
 Open:
 - The 1-channel top is 10 % below 2026-10-21's 84.2 fps although DDR is faster since (3200 vs 2667): one 15 s run each;

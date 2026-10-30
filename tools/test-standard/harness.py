@@ -64,7 +64,11 @@ class Run:
         self.date = datetime.datetime.utcnow().strftime("%Y-%m-%d")
         self.t0 = time.time()
         self.values, self.samples, self.boots, self.notes, self.obstacles = {}, [], [], [], []
+        self.leak_from = 0                      # first sample of the repeated phase (the leak verdict's window)
         self.fd, self.leak, self.console = None, False, ""
+        # every K230 console exchange with its time: a failure's evidence survives the run (test027's 11-minute
+        # stall of 2026-10-30 left nothing to look at)
+        self.clog = open(os.path.join(self.dir, "console.log"), "w", buffering=1)
         text = open(self.readme).read()
         self.rows = metric_rows(metrics_block(text).group(1))
         self.missing = [c[0] for _, c in self.rows if MISSING in c[1]]
@@ -91,12 +95,16 @@ class Run:
         self.values[key] = value
 
     # --- board ---------------------------------------------------------------------------------------------------
-    def boot(self, boot1="low", until=b"msh />", secs=20, expect_msh=True):
-        """K230 off -> on -> reset released, timed by the console milestones; returns the console fd"""
+    def boot(self, boot1="low", until=b"msh />", secs=20, expect_msh=True, after_on=None):
+        """K230 off -> on -> reset released, timed by the console milestones; returns the console fd. after_on runs
+        with the rails up and the K230 still in reset (the Wi-Fi bridge needs the 3V3: test105 started it with the
+        rails off and it was refused, 2026-10-30)"""
         bl("pt_off", 2)
         time.sleep(1)
         bl(f"pt_boot1 {boot1}")
         bl("pt_on", 2)
+        if after_on:
+            after_on()
         if self.fd is None:
             self.fd = k230()
         cmd(self.fd, None, 0.3)
@@ -113,6 +121,7 @@ class Run:
                 break
         if expect_msh:
             self.boots.append(marks)
+        self.clog_write("boot", buf.decode(errors="replace"))
         log("boot", " ".join(f"{k} {v:.2f}" for k, v in marks.items()) or "NO CONSOLE")
         if expect_msh and "msh" not in marks:
             self.obstacle(f"K230 cold boot did not reach msh within {secs} s (milestones {marks})")
@@ -123,9 +132,15 @@ class Run:
     def k(self, c, secs=3, until=r"msh />"):
         """one K230 console command; everything read is also kept in self.console, so a background program's lines
         that arrive while the sampler runs its own commands are not lost (test025, 2026-10-25)"""
+        t1 = time.time()
         out = cmd(self.fd, c, secs, until)
         self.console += out
+        self.clog_write(f"> {c!r} ({time.time() - t1:.2f} s)", out)
         return out
+
+    def clog_write(self, head, text):
+        t = time.time() - self.t0
+        self.clog.write(f"{t:9.3f} {head}\n" + "".join(f"{t:9.3f}   {line}\n" for line in text.splitlines() if line.strip()))
 
     def off(self):
         bl("pt_off", 2)
@@ -248,6 +263,10 @@ class Run:
             d["temp"] = f"die {f(die)}; board {f(brd)} (AHT20) ({self.date})"
         bm = [s["bl_mem"] for s in self.samples if s.get("bl_mem")]
         km = [s["k_free"] for s in self.samples if s.get("k_free")]
+        # the leak verdict only over the repeated phase: programs starting take memory once (test105, 2026-10-30)
+        steady = self.samples[self.leak_from:]
+        lbm = [s["bl_mem"] for s in steady if s.get("bl_mem")]
+        lkm = [s["k_free"] for s in steady if s.get("k_free")]
         if bm or km:
             parts = []
             if bm:
@@ -259,8 +278,8 @@ class Run:
                              f"K230 heap available {kv[0]} / {min(kv)} / {kv[-1]} B")
             if max(len(bm), len(km)) < 8:
                 parts.append(f"leak: n/a, {max(len(bm), len(km))} snapshots (mem_leak.py needs >= 8 cycles)")
-            for chip, series in (("BL616", [{"free": b[0], "blocks": b[3], "deleted": b[6]} for b in bm]),
-                                 ("K230", [{"free": k[0]} for k in km])):
+            for chip, series in (("BL616", [{"free": b[0], "blocks": b[3], "deleted": b[6]} for b in lbm]),
+                                 ("K230", [{"free": k[0]} for k in lkm])):
                 if len(series) >= 8:
                     leak, why = leak_verdict(series)
                     parts.append(f"{chip} {why.split(':')[0]} (mem_leak.py, {len(series)} snapshots)")

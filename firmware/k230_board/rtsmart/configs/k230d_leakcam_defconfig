@@ -77,10 +77,10 @@ CONFIG_RT_BOARD_ENABLE_PINMUX=y
 CONFIG_LPKG_USING_SPINAND=y
 CONFIG_SPI_NAND_ON_OSPI=y
 CONFIG_SPI_NAND_SPI_BUS_WIDTH_4=y
-CONFIG_SPI_NAND_SPI_FREQ=80000000
+CONFIG_SPI_NAND_SPI_FREQ=50000000
 CONFIG_SPI_NAND_WINBOND=y
-# 80 MHz (800 MHz / 10) and sample delay 5 x 1.25 ns: clean window 3-8 at 50 and 80 MHz; 100 MHz dropped (tests/test017;
-# outside the window single bits flip with no error reported)
+# 50 MHz (800 MHz / 16), kernel and U-Boot/SPL, for stability: faster clocks misread the NAND ID at boot (tests/test017).
+# Sample delay 5 x 1.25 ns, inside the clean window 3-8; outside it single bits flip with no error reported
 CONFIG_RT_SPI0_RXSD=5
 CONFIG_RT_USING_DFS_UFFS=y
 CONFIG_RT_UFFS_ECC_MODE_3=y

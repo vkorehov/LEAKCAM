@@ -16,6 +16,7 @@
  * on the wire: the frame then fails its CRC and the link resends it (LINK_ACK_TIMEOUT_MS); nothing is lost.
  * link_mux_pause() hands uart1 to the raw UART bench (uart_bench, tests/test018) for its run.
  */
+#include <stdlib.h>
 #include <rtthread.h>
 #include <rtdevice.h>
 #include <rthw.h>
@@ -297,3 +298,16 @@ static int link_stat(void)
     return 0;
 }
 MSH_CMD_EXPORT(link_stat, test039: uart1 bytes in / console text / dropped / frames);
+
+/* test039: the link's rate for a run (the BL616 follows with pt_uart baud); the boot console stays at its rate */
+static int link_baud(int argc, char **argv)
+{
+    if (argc < 2 || !uart)
+        return -1;
+    struct serial_configure cfg = ((struct rt_serial_device *)uart)->config;   /* the device's own, bufsz included */
+    cfg.baud_rate = (rt_uint32_t)atoi(argv[1]);
+    rt_err_t e = rt_device_control(uart, RT_DEVICE_CTRL_CONFIG, &cfg);
+    rt_kprintf("link_baud: %u -> %d\n", (unsigned)cfg.baud_rate, (int)e);
+    return 0;
+}
+MSH_CMD_EXPORT(link_baud, test039: uart1 baud for a test run);

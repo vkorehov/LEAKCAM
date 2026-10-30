@@ -30,18 +30,18 @@
 		reg = <0x0 0 0x0 0x8000000>;
 	};
 
-	/* the console is UART1, the BL616 link, at its one rate (4 Mbaud): the BL616 shows it on /dev/ttyACM1 from
+	/* the console is UART1, the BL616 link, at its one rate (LINK_BAUD, 2 Mbaud): the BL616 shows it on /dev/ttyACM1 from
 	 * the first SPL line (tests/test039); UART0 (the CH340, USB-C 2) keeps only the BootROM's own lines */
 	aliases {
 		uart1 = &serial1;
 	};
 
 	chosen {
-		stdout-path = "uart1:4000000n8";
+		stdout-path = "uart1:2000000n8";
 	};
 };
 
-/* 100 MHz (the clock divider 1/1, set by the ns16550 patch in install.sh): 4 Mbaud = 1 + 9/16 with the fraction */
+/* 100 MHz (the clock divider 1/1, set by the ns16550 patch in install.sh): 2 Mbaud = 3 + 2/16 with the fraction */
 &serial1 {
 	clocks = <&def_100mhz>;
 };
@@ -60,8 +60,9 @@
 	status = "okay";
 };
 
-/* U16 W25N02KV on OSPI CS0, quad I/O at 80 MHz; rx-sample-delay 6 ns = 5 x 1.25 ns (install.sh's delay step fix), the
- * middle of the clean window 3-8, as the kernel (RT_SPI0_RXSD=5). 100 MHz was dropped (tests/test017). */
+/* U16 W25N02KV on OSPI CS0, quad I/O at 50 MHz as the kernel, for stability: faster clocks misread the NAND ID at boot
+ * (tests/test017). rx-sample-delay 6 ns = 5 x 1.25 ns (install.sh's delay step fix), inside the clean window 3-8, as
+ * the kernel (RT_SPI0_RXSD=5). */
 &spi0 {
 	status = "okay";
 	rx-sample-delay-ns = <6>;
@@ -70,7 +71,7 @@
 	spi-flash@0 {
 		compatible = "spi-nand";
 		reg = <0>;
-		spi-max-frequency = <80000000>;
+		spi-max-frequency = <50000000>;
 		spi-tx-bus-width = <4>;
 		spi-rx-bus-width = <4>;
 		status = "okay";

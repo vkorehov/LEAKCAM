@@ -1,11 +1,11 @@
-15:56:57 test028-nand-power-loss: 4 metric rows MISSING: Voltage under load (min), Memory BL616 / K230 (start / min / end), leak, Features over the minimal image, Optimised build (-O3, LTO, -march)
-16:03:33 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.63 msh 0.64
-16:03:40 sample after cuts 1 {'board': 34.9, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 43.082, 'k_free': (7025152, 1390848), 'vbat': 4352}
-16:03:44 sample after cuts 2 {'board': 34.8, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 43.987, 'k_free': (7025152, 1390848), 'vbat': 4369}
-16:03:48 sample after cuts 3 {'board': 34.8, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 44.589, 'k_free': (7025152, 1390848), 'vbat': 4384}
-16:03:53 sample after cuts 4 {'board': 34.9, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 44.891, 'k_free': (7025152, 1390848), 'vbat': 4352}
-16:03:57 sample after cuts 5 {'board': 35.0, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 45.493, 'k_free': (7023168, 1520704), 'vbat': 4366}
-16:04:01 sample after cuts 6 {'board': 35.1, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 45.192, 'k_free': (7312064, 1520704), 'vbat': 4426}
-16:04:06 sample after cuts 7 {'board': 35.1, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 44.891, 'k_free': (7312064, 1520704), 'vbat': 4371}
-16:04:10 sample after cuts 8 {'board': 35.2, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 45.192, 'k_free': (7312064, 1520704), 'vbat': 4416}
-16:04:13 test028-nand-power-loss: PASS; filled 2: Memory BL616 / K230 (start / min / end), leak, Voltage under load (min); still MISSING 2: Features over the minimal image, Optimised build (-O3, LTO, -march)
+18:54:08 test028-nand-power-loss: 0 metric rows MISSING: none
+19:01:16 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.74 msh 0.75
+19:01:22 sample after cuts 1 {'board': 36.6, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0), 'die': 45.493, 'k_free': (7025152, 1390848), 'vbat': 4364}
+19:01:27 sample after cuts 2 {'board': 36.5, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0), 'die': 46.998, 'k_free': (7025152, 1390848), 'vbat': 4390}
+19:01:31 sample after cuts 3 {'board': 36.6, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0), 'die': 47.299, 'k_free': (7025152, 1390848), 'vbat': 4336}
+19:01:35 sample after cuts 4 {'board': 36.7, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0), 'die': 48.201, 'k_free': (7025152, 1390848), 'vbat': 4346}
+19:01:40 sample after cuts 5 {'board': 36.8, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0), 'die': 47.9, 'k_free': (7023168, 1520896), 'vbat': 4363}
+19:01:44 sample after cuts 6 {'board': 36.9, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0), 'die': 48.201, 'k_free': (7312064, 1520896), 'vbat': 4343}
+19:01:48 sample after cuts 7 {'board': 37.0, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0), 'die': 48.201, 'k_free': (7312064, 1520896), 'vbat': 4334}
+19:01:53 sample after cuts 8 {'board': 37.0, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0), 'die': 48.201, 'k_free': (7312064, 1520896), 'vbat': 4356}
+19:01:55 test028-nand-power-loss: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

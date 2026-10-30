@@ -27,15 +27,19 @@ def pc_sink():
         return False
 
 
-wifi = pc_sink()
-if wifi:                                            # the bridge before the K230 boots (as usb_handover.py)
+def bridge():
+    """the bridge with the rails up and the K230 in reset (as test100); refused with the rails off"""
     ssid, psk = wifi_credentials()
-    bl("pt_off", 2)
     bl(f'pt_wifi store "{ssid}" "{psk}"', 3)
-    bl("pt_wifi bridge", 25, r"after wifi_link_start[^\n]*\n|radio busy")
-else:
+    out = bl("pt_wifi bridge", 25, r"after wifi_link_start[^\n]*\n|radio busy|rails off")
+    if "after wifi_link_start" not in out:
+        r.obstacle("Wi-Fi bridge did not start: " + out.strip().splitlines()[-1][:80])
+
+
+wifi = pc_sink()
+if not wifi:
     r.notes.append(f"Wi-Fi step skipped: no TCP sink on {PC}:{PC_PORT} (pc_tcp_bench.py sink)")
-r.boot()
+r.boot(after_on=bridge if wifi else None)
 r.sample("idle")
 steps = []
 
@@ -43,8 +47,15 @@ steps = []
 def step(name, start, known=None, busy=None):
     """known: a reading taken before of this same state (never read twice, user 2026-10-30); busy: a load the
     runner repeats itself while the meter is read (msh has no loops)"""
-    start()
+    out = str(start())
     time.sleep(5)
+    out += r.k("", 1)                               # a background program's start-up lines
+    out = re.sub(r".*not use fast load.*", "", out)    # the kernel's note that it loads the ELF the slow way
+    bad = re.search(r"(?i).*(failed|not found|out of memory).*", out)
+    if bad:                                         # a load that did not start makes every later reading wrong
+        r.obstacle(f"{name}: did not start: {bad.group(0).strip()[:100]}")
+        r.finish(f"stopped at '{name}': the load did not start", False)
+        sys.exit(1)
     a = known if known is not None else r.meter(f"test105: {name}", force=True, busy=busy)
     s = r.sample(name)
     steps.append((name, a, s.get("die")))
@@ -52,13 +63,16 @@ def step(name, start, known=None, busy=None):
 
 
 step("K230 at msh idle (agent running)", lambda: None, known=0.220)          # test006
-step("+ memtest (CPU + DDR)", lambda: r.k("/sdcard/app/memtest 0 24 &", 2), known=0.244)   # test026, avg
+# memtest last: it takes all the MMZ and system RAM left, so the KPU and the encoder started after it failed
+# (mmz alloc, 2026-10-30) and their readings were memtest alone
 step("+ KPU change net in a loop", lambda: r.k("/sdcard/app/leakcam_kputest 2000000 &", 2))
 step("+ encoder 2 x 15 fps", lambda: r.k(f"/sdcard/app/venctest 2 {FULL_S + 300} 15 &", 2))
 NAND = lambda: (r.k("cp /bin/leakcam_wake /sdcard/t105", 30), r.k("rm /sdcard/t105", 10))
 step("+ NAND writes", lambda: None, busy=NAND)
 if wifi:
     ip = None
+    # MMC0 is probed only on request (no boot-time Wi-Fi probe): bind the BL616's card first, as test100
+    r.k("bl616_rescan", 5, r"wlan init success|no card")
     for _ in range(60):
         m = re.search(r"ip address: (?!0\.0\.0\.0)(\d+\.\d+\.\d+\.\d+)", r.k("ifconfig", 1, r"dns server"))
         if m:
@@ -69,10 +83,12 @@ if wifi:
         step("+ Wi-Fi TCP upload", lambda: r.k(f"iperf -c {PC} -t {FULL_S + 120} -i 10", 2))
     else:
         r.notes.append("Wi-Fi step skipped: the K230 got no address")
+step("+ memtest (CPU + DDR, the memory left)", lambda: r.k("/sdcard/app/memtest 0 24 &", 2))
 step("+ both LED chains 100 %", lambda: [r.k(f"pwm_set pwm {ch} 40000 40000", 1) and r.k(f"pwm_enable pwm {ch}", 1)
                                        for ch in (1, 0)])
 
 t0, resets = time.time(), 0                         # run 2: everything on for 10 min
+r.leak_from = len(r.samples)                        # the leak verdict over the 10 min only, not the loads starting
 while time.time() - t0 < FULL_S:
     out = r.k("cp /bin/leakcam_wake /sdcard/t105", 30) + r.k("rm /sdcard/t105", 10)   # NAND writes go on
     resets += out.count("U-Boot SPL")

@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-30 (run.py, 63 s): pass
+
+cp /sdcard/app/leakcam_wake -> RAM: 0.58, 0.58, 0.44 s; RAM -> /sdcard: 3.83, 3.22, 2.79 s; read 11.7 MB/s, write 1.9 MB/s.
+
+
 ### Automated run 2026-10-25 (run.py, 295 s): pass
 
 cp /sdcard/app/leakcam_wake -> RAM: 0.49, 0.49, 0.36 s; RAM -> /sdcard: 3.31, 3.08, 2.50 s; read 14.4 MB/s, write 2.1 MB/s.

@@ -63,10 +63,10 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | This part's boot share | the session after READY: 24.5 s of agent work, then 2 s to rails off (2026-10-30) | - | |
 | Test run time | 419 s automated (run.py, 2026-10-30), no setup | - | setup (flashing, plugging, waiting) separately |
 | session length per step | wake -> rails off 27.68 / 27.68 s (median / max of 10); the agent's last heartbeat 25.36 s (2026-10-30) | - | % of the top |
-| Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
+| Current idle / during (min / avg / peak) | session, agent working 228 mA; boot ~87 mA (held in reset, test021); 220 mA at msh idle (test006) - test102's readings of these sessions (USB-C 1 meter, 2026-10-30) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | n/a: on USB power (the charger rail); no battery measurements (user, 2026-10-30) | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING** | - | scripts/energy.py |
-| Per day | **MISSING** | ENERGY.txt line | n per day |
+| Power, energy per operation | one wake 1.71 mAh at the board (test102: 0.87 s boot, 24.5 s agent at 228 mA, 2.3 s at 220 mA) | - | scripts/energy.py |
+| Per day | 4 report sessions a day: 6.9 mAh/day (test102) | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | die n/a: K230 off; board 36.3 / 39.2 / 38.9 C (AHT20) (2026-10-30) | K230 limit (datasheet) | chip_temp, AHT20 |
 | Memory BL616 / K230 (start / min / end), leak | BL616 free 131124 / min 105196 / 131124 B, blocks 106 -> 106, deleted 0; BL616 no leak (mem_leak.py, 10 snapshots) (2026-10-30) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | BL616 test firmware 1309616 B (2026-10-30, on the board at the run) | minimal image (rule) | the image this run used |

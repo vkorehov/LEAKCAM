@@ -115,6 +115,7 @@ static struct bflb_device_s *uart0;
 static bool uart_on;
 static volatile bool uart_echo;      /* test018: every received byte sent straight back */
 static volatile uint32_t echo_bytes, echo_dropped;   /* test018: bytes echoed, bytes dropped before the echo */
+static volatile uint32_t rx_fifo_err;                /* ISRs that found the RX FIFO error flag (an overflow), test010 2026-10-30 */
 static volatile uint64_t echo_drop_until, echo_last;  /* ms: the shell's echo of a sent command is dropped; last byte */
 static volatile bool echo_seen;
 
@@ -132,6 +133,8 @@ static void uart_rx_isr(int irq, void *arg)
     (void)irq;
     (void)arg;
     uint32_t st = bflb_uart_get_intstatus(uart0);
+    if (st & UART_INTSTS_RX_FER)            /* sticky: an RX FIFO overflow happened before this ISR (count only) */
+        rx_fifo_err++;
     if (st & UART_INTSTS_RTO)
         bflb_uart_int_clear(uart0, UART_INTCLR_RTO);
     while (bflb_uart_rxavailable(uart0)) {
@@ -185,12 +188,14 @@ static void uart_stop(void)
     uart_on = false;
 }
 
+static uint32_t link_baud = LINK_BAUD;   /* test039: pt_uart baud changes it for a run */
+
 static bool uart_start(void)
 {
     if (!rails_on || sense_high() < SENSE_UP)
         return false;
     struct bflb_uart_config_s cfg = {
-        .baudrate = LINK_BAUD, .direction = UART_DIRECTION_TXRX, .data_bits = UART_DATA_BITS_8,
+        .baudrate = link_baud, .direction = UART_DIRECTION_TXRX, .data_bits = UART_DATA_BITS_8,
         .stop_bits = UART_STOP_BITS_1, .parity = UART_PARITY_NONE, .bit_order = UART_LSB_FIRST,
         .flow_ctrl = UART_FLOWCTRL_NONE, .tx_fifo_threshold = 7, .rx_fifo_threshold = 7,
     };
@@ -569,6 +574,7 @@ static void print_status(bool line)
            (unsigned long)con_in_bytes, (unsigned long)con_fwd_bytes, (unsigned long)con_put_fail);
     printf("UART0 echo  : %lu bytes echoed, %lu dropped before it\r\n", (unsigned long)echo_bytes,
            (unsigned long)echo_dropped);
+    printf("UART0 rx    : FIFO overflow seen in %lu interrupts\r\n", (unsigned long)rx_fifo_err);
     printf("UART0 link  : %s, rx dropped %lu\r\n",
            uart_on ? (uart_echo ? "on, echo" : "on, K230 console bridge (/dev/ttyACM1)") : "off",
            (unsigned long)rx_dropped);
@@ -847,6 +853,28 @@ static int cmd_uart(int argc, char **argv)
         }
         LOCKED(for (int i = 2; i < argc; i++) { uart_send(argv[i]); uart_send(i + 1 < argc ? " " : "\r\n"); });
         printf("sent\r\n");
+    } else if (!strcmp(a, "baud") && argc > 2) {
+        LOCKED(uart_stop(); link_baud = (uint32_t)atoi(argv[2]); uart_start());
+        printf("UART0 at %lu baud\r\n", (unsigned long)link_baud);
+    } else if (!strcmp(a, "burst") && argc > 2) {
+        /* test039: n numbered 9-byte lines "B0000x\r\n" 10 ms apart from this task; irqoff: interrupts off around
+         * each line - whole lines lost only with interrupts on would point at an interrupt during the transmit */
+        if (!uart_on) {
+            printf("UART0 is off: pt_uart on\r\n");
+            return 0;
+        }
+        int n = atoi(argv[2]);
+        bool irqoff = argc > 3 && !strcmp(argv[3], "irqoff");
+        char line[16];
+        for (int i = 0; i < n; i++) {
+            snprintf(line, sizeof(line), "B%04dxx\r\n", i % 10000);
+            uintptr_t flags = irqoff ? bflb_irq_save() : 0;
+            uart_send(line);
+            if (irqoff)
+                bflb_irq_restore(flags);
+            vTaskDelay(pdMS_TO_TICKS(10));
+        }
+        printf("burst %d sent%s\r\n", n, irqoff ? " (interrupts off per line)" : "");
     } else if (!strcmp(a, "echo")) {
         static bool task;
         bool ok;

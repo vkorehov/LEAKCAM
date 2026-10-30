@@ -3,7 +3,7 @@
 Status: **pass** (2026-10-25): 8 boots, 112 READY frames K230 -> BL616 with valid checksums, BL616 -> K230 echo clean.
 
 K230 UART1 (IO40 TX, IO41 RX, `/dev/uart1`) to BL616 UART0 (IO22 RX, IO21 TX), 8N1;
-first run at 115200 (2026-10-18), the link runs 4 Mbaud since test018.
+first run at 115200 (2026-10-18), the link runs 2 Mbaud (test018, test039).
 
 ## Setup
 
@@ -42,7 +42,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Boot, power-on -> app init (median / max of runs) | pt_run -> msh 0.46 / 0.46 s (median / max of 8; SPL 0.16, OpenSBI 0.24, RT-Smart 0.25, mounted 0.45, msh 0.46); longest step to mounted 0.20 s (2026-10-25, run.py) | test022 | longest step: |
 | This part's boot share | n/a: the agent sends READY right after app init; the link adds no boot step (2026-10-25) | - | |
 | Test run time | 243 s automated (run.py, 2026-10-25), no setup | - | setup (flashing, plugging, waiting) separately |
-| Speed / rate against the top | link at 4 Mbaud (test018); 112 READY frames, every checksum valid (2026-10-25) | SPEEDS.txt | % of the top |
+| Speed / rate against the top | link at 2 Mbaud (test039); 112 READY frames, every checksum valid (2026-10-25) | SPEEDS.txt | % of the top |
 | Current floor / typical / peak | K230 at msh idle (agent running) 0.220 A at 5 V (USB-C 1 VBUS meter, test006, 2026-10-25); the link frames add less than the meter's 1 mA step | floor (test031) | at the probe above |
 | Voltage under load (min) | VBAT 4.33 V min (K230 ADC ch 1, test023 calibration, 7 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | n/a: below the meter's step next to the K230 (2026-10-25) | - | scripts/energy.py |
@@ -52,7 +52,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Image (sizes) | not recorded at the time (before the metrics rule) | minimal image (rule) | the image this run used |
 | Compile flags | not recorded at the time (before the metrics rule) | smallest code (rule) | |
 | Features over the minimal image | link_mux in the kernel: 2.4 KB code + 3.5 KB RAM, registers at boot with the other drivers (no visible ms); part of the product (2026-10-25) | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | n/a: hardware-bound (the UART line rate (4 Mbaud)): compiler flags do not change the result (2026-10-25) | the faster one stays | |
+| Optimised build (-O3, LTO, -march) | n/a: hardware-bound (the UART line rate (2 Mbaud)): compiler flags do not change the result (2026-10-25) | the faster one stays | |
 
 ## Boot time
 

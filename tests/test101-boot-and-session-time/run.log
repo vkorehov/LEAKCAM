@@ -1,22 +1,22 @@
-14:09:56 test101-boot-and-session-time: 13 metric rows MISSING: Boot, power-on -> READY (median of 5), This part's boot share, Test run time, session length per step, Current idle / during (min / avg / peak), Voltage under load (min), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Image (sizes), Compile flags, Features over the minimal image
-14:10:34 session 1 {'first': 0.859, 'last': 25.369, 'off': 27.684, 'ready': 0.868, 'SPL': 0.246, 'OpenSBI': 0.353, 'RT-Smart': 0.633, 'mounted': 0.845, 'msh': 0.851}
-14:10:37 sample session 1 {'board': 36.3, 'bl_mem': (131124, 111908, 105196, 106, 79552, 17, 0)}
-14:11:15 session 2 {'first': 1.359, 'last': 25.364, 'off': 27.679, 'ready': 0.865, 'SPL': 0.233, 'OpenSBI': 0.34, 'RT-Smart': 0.629, 'mounted': 0.841, 'msh': 0.847}
-14:11:19 sample session 2 {'board': 37.4, 'bl_mem': (131124, 111908, 105196, 106, 79552, 17, 0)}
-14:11:57 session 3 {'first': 0.859, 'last': 25.369, 'off': 27.684, 'ready': 0.868, 'SPL': 0.23, 'OpenSBI': 0.336, 'RT-Smart': 0.632, 'mounted': 0.845, 'msh': 0.855}
-14:12:01 sample session 3 {'board': 38.2, 'bl_mem': (131124, 111908, 105196, 106, 79552, 17, 0)}
-14:12:39 session 4 {'first': 1.359, 'last': 25.364, 'off': 27.679, 'ready': 0.865, 'SPL': 0.225, 'OpenSBI': 0.33, 'RT-Smart': 0.629, 'mounted': 0.842, 'msh': 0.852}
-14:12:42 sample session 4 {'board': 38.7, 'bl_mem': (131124, 111908, 105196, 106, 79552, 17, 0)}
-14:13:20 session 5 {'first': 1.359, 'last': 25.369, 'off': 27.684, 'ready': 0.867, 'SPL': 0.222, 'OpenSBI': 0.328, 'RT-Smart': 0.632, 'mounted': 0.844, 'msh': 0.85}
-14:13:24 sample session 5 {'board': 39.0, 'bl_mem': (131124, 111908, 105196, 106, 79552, 17, 0)}
-14:14:02 session 6 {'first': 1.359, 'last': 25.369, 'off': 27.684, 'ready': 0.867, 'SPL': 0.221, 'OpenSBI': 0.328, 'RT-Smart': 0.631, 'mounted': 0.844, 'msh': 0.854}
-14:14:06 sample session 6 {'board': 39.2, 'bl_mem': (131124, 111908, 105196, 106, 79552, 17, 0)}
-14:14:44 session 7 {'first': 1.35, 'last': 25.355, 'off': 27.67, 'ready': 0.854, 'SPL': 0.22, 'OpenSBI': 0.326, 'RT-Smart': 0.619, 'mounted': 0.831, 'msh': 0.837}
-14:14:47 sample session 7 {'board': 39.2, 'bl_mem': (131124, 111908, 105196, 106, 79552, 17, 0)}
-14:15:25 session 8 {'first': 1.349, 'last': 25.354, 'off': 27.669, 'ready': 0.854, 'SPL': 0.221, 'OpenSBI': 0.327, 'RT-Smart': 0.619, 'mounted': 0.831, 'msh': 0.837}
-14:15:29 sample session 8 {'board': 39.2, 'bl_mem': (131124, 111908, 105196, 106, 79552, 17, 0)}
-14:16:07 session 9 {'first': 1.359, 'last': 25.364, 'off': 27.679, 'ready': 0.866, 'SPL': 0.22, 'OpenSBI': 0.326, 'RT-Smart': 0.631, 'mounted': 0.843, 'msh': 0.849}
-14:16:10 sample session 9 {'board': 39.2, 'bl_mem': (131124, 111908, 105196, 106, 79552, 17, 0)}
-14:16:49 session 10 {'first': 1.36, 'last': 25.365, 'off': 27.68, 'ready': 0.864, 'SPL': 0.22, 'OpenSBI': 0.326, 'RT-Smart': 0.628, 'mounted': 0.841, 'msh': 0.851}
-14:16:52 sample session 10 {'board': 38.9, 'bl_mem': (131124, 111908, 105196, 106, 79552, 17, 0)}
-14:16:54 test101-boot-and-session-time: PASS; filled 8: Test run time, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Compile flags, Image (sizes), Boot, power-on -> READY (median of 5), This part's boot share, session length per step; still MISSING 5: Current idle / during (min / avg / peak), Voltage under load (min), Power, energy per operation, Per day, Features over the minimal image; run in HISTORY.md - README Status/Result by hand
+19:01:56 test101-boot-and-session-time: 0 metric rows MISSING: none
+19:02:34 session 1 {'first': 1.61, 'last': 25.615, 'off': 27.934, 'ready': 1.115, 'SPL': 0.227, 'OpenSBI': 0.362, 'RT-Smart': 0.624, 'mounted': 1.089, 'msh': 1.1}
+19:02:38 sample session 1 {'board': 36.8, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0)}
+19:03:16 session 2 {'first': 1.114, 'last': 25.624, 'off': 27.943, 'ready': 1.122, 'SPL': 0.23, 'OpenSBI': 0.365, 'RT-Smart': 0.631, 'mounted': 1.096, 'msh': 1.107}
+19:03:20 sample session 2 {'board': 36.6, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0)}
+19:03:58 session 3 {'first': 1.604, 'last': 25.609, 'off': 27.928, 'ready': 1.109, 'SPL': 0.233, 'OpenSBI': 0.367, 'RT-Smart': 0.619, 'mounted': 1.084, 'msh': 1.094}
+19:04:01 sample session 3 {'board': 36.4, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0)}
+19:04:40 session 4 {'first': 1.619, 'last': 25.624, 'off': 27.943, 'ready': 1.124, 'SPL': 0.234, 'OpenSBI': 0.367, 'RT-Smart': 0.633, 'mounted': 1.098, 'msh': 1.107}
+19:04:43 sample session 4 {'board': 36.4, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0)}
+19:05:22 session 5 {'first': 1.62, 'last': 25.625, 'off': 27.944, 'ready': 1.124, 'SPL': 0.233, 'OpenSBI': 0.367, 'RT-Smart': 0.633, 'mounted': 1.098, 'msh': 1.108}
+19:05:25 sample session 5 {'board': 36.4, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0)}
+19:06:04 session 6 {'first': 1.605, 'last': 25.615, 'off': 27.934, 'ready': 1.111, 'SPL': 0.232, 'OpenSBI': 0.367, 'RT-Smart': 0.619, 'mounted': 1.084, 'msh': 1.095}
+19:06:07 sample session 6 {'board': 36.4, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0)}
+19:06:46 session 7 {'first': 1.605, 'last': 25.61, 'off': 27.929, 'ready': 1.109, 'SPL': 0.232, 'OpenSBI': 0.367, 'RT-Smart': 0.618, 'mounted': 1.083, 'msh': 1.094}
+19:06:49 sample session 7 {'board': 36.4, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0)}
+19:07:28 session 8 {'first': 1.615, 'last': 25.625, 'off': 27.944, 'ready': 1.122, 'SPL': 0.232, 'OpenSBI': 0.367, 'RT-Smart': 0.631, 'mounted': 1.096, 'msh': 1.107}
+19:07:31 sample session 8 {'board': 36.4, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0)}
+19:08:09 session 9 {'first': 1.605, 'last': 25.615, 'off': 27.934, 'ready': 1.112, 'SPL': 0.232, 'OpenSBI': 0.367, 'RT-Smart': 0.621, 'mounted': 1.086, 'msh': 1.097}
+19:08:13 sample session 9 {'board': 36.3, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0)}
+19:08:51 session 10 {'first': 1.105, 'last': 25.615, 'off': 27.934, 'ready': 1.113, 'SPL': 0.233, 'OpenSBI': 0.368, 'RT-Smart': 0.622, 'mounted': 1.087, 'msh': 1.097}
+19:08:55 sample session 10 {'board': 36.3, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0)}
+19:08:57 test101-boot-and-session-time: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

@@ -4,6 +4,40 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-30 (run.py, 55 s): pass
+
+8 x `nand_bench read 64`, checksums equal (843c88ac); last:
+
+    raw page read (2 KiB pages)      8192 KB in 533177 us:   15.7 MB/s
+    nand_bench read: nand0 blocks 384..447, 0 read errors, checksum 843c88ac
+    raw page read (2 KiB pages)      8192 KB in 533422 us:   15.7 MB/s
+
+
+### Kernel NAND ID misread at 80 MHz, 2026-10-30: 50 MHz adopted
+
+One boot in test105 (80 MHz, sample delay 5): `[E/spi_nand_core] unknown raw ID aa220000`, then `/bin` and `/sdcard`
+mount failed; SPL had read the ID in the same boot. Winbond's ID is `ef aa 22`: the kernel got it one byte late.
+The kernel's `spinand_flash_init()` resets, waits for busy, reads the ID once (1 dummy byte) and gives up.
+
+- 24 cold boots on the same image, 0 failures (16 with the Wi-Fi bridge off, 8 with it up and joined): the bridge is
+  not the trigger. The data window at 80 MHz is 3-8, delay 5 near its centre; a whole-byte shift is no sampling error.
+- ID retry added (install.sh: reset + read again, up to 3 times, `ID retry <n>` logged). 7 more cold boots with the
+  bridge up: boot 6 read `aa220000` again, `ID retry 1`, the second read found the W25N02KV, both mounts fine. Same
+  value both times, always the first read after the kernel's reset.
+- Rate at 80 MHz: 2 in 32 cold boots that day.
+- 50 MHz in the kernel and U-Boot/SPL (user: stability over speed): 20/20 cold boots with the bridge up, 0 ID retries;
+  raw read 15.7 MB/s (8 runs, checksums equal); pt_run -> msh 0.52-0.53 s (+0.06 s). Tests rerun on it: test008,
+  test011 (file read 11.7 MB/s, write 1.9 MB/s), test022 (app init 0.403 s), test028 (20 cuts, 0 bad files), test101
+  (rails off 27.93 s), test102: all pass.
+
+Obstacles:
+- My first 16 "bridge up" boots had no bridge: `pt_wifi bridge` answers "K230 rails off, pt_on first" when started
+  before `pt_on`, and the script did not check the answer. Fixed by `Run.boot(after_on=...)` (rails up, K230 in
+  reset), which also logs the bridge's own reply.
+- An earlier repro attempt ran `pt_sleep 2 nousb`; the BL616 left USB and the VM's xHCI root hub then failed
+  (`hub_ext_port_status failed (err = -32)`, 5000 times) so nothing re-enumerated: controller unbound + rebound.
+- The VM froze 17:28-18:12 (no log at all, then "Clock change detected"): the run just resumed.
+
 ### Automated run 2026-10-25 (run.py, 54 s): pass
 
 8 x `nand_bench read 64`, checksums equal (7fcbfcbe); last:
