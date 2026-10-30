@@ -4,12 +4,13 @@
  * wifi_link_local_begin() keeps every received frame here and passes the Wi-Fi manager's events
  * to on_event().
  *
- * Not verified on hardware: which 802.11 codes the SDK leaves in its connect indication for a
- * wrong key (wchk_join_failure() reads the usual ones), and the timings.
+ * A wrong WPA2 key on hardware (tests/test106, 2026-10-30): the connect indication holds 0/0, the
+ * SDK's firmware status 33 (no EAPOL 3/4) tells it: wchk_join_failure() reads all three.
  */
 #include "wifi_check.h"
 
 #include <errno.h>
+#include <stdio.h>
 #include <string.h>
 
 #include <FreeRTOS.h>
@@ -38,6 +39,7 @@
 
 #define READY_MS   10000     /* Wi-Fi manager up (first use in this boot) */
 #define SCAN_MS    10000
+#define FAST_TU    40        /* per channel: the probed AP answers in ms; the SDK's 220 TU took 2.9 s (test106) */
 #define JOIN_MS    25000     /* association and WPA handshake */
 #define DHCP_MS    20000
 #define TCP_MS     10000     /* connect, then again for the answer */
@@ -70,6 +72,9 @@ struct seen {
     const char *ssid;
     size_t len;
     bool found;
+    int8_t rssi;                           /* the strongest AP with the SSID: the join goes to it */
+    uint8_t channel;
+    uint8_t bssid[6];
 };
 
 static void scan_item(void *env, void *arg, wifi_mgmr_scan_item_t *item)
@@ -77,23 +82,28 @@ static void scan_item(void *env, void *arg, wifi_mgmr_scan_item_t *item)
     struct seen *s = arg;
 
     (void)env;
-    if (item->ssid_len >= 0 && (size_t)item->ssid_len == s->len && memcmp(item->ssid, s->ssid, s->len) == 0)
+    if (item->ssid_len >= 0 && (size_t)item->ssid_len == s->len && memcmp(item->ssid, s->ssid, s->len) == 0 &&
+        (!s->found || item->rssi > s->rssi)) {
         s->found = true;
+        s->rssi = item->rssi;
+        s->channel = item->channel;
+        memcpy(s->bssid, item->bssid, sizeof(s->bssid));
+    }
 }
 
-static bool ssid_seen(const char *ssid, size_t len)
+static bool ssid_seen(struct seen *s, uint32_t dwell_tu)
 {
     wifi_mgmr_scan_params_t sp;
-    struct seen s = { ssid, len, false };
 
     memset(&sp, 0, sizeof(sp));
-    sp.ssid_length = (uint8_t)len;         /* probe for it: hidden networks answer too */
-    memcpy(sp.ssid_array, ssid, len);
+    sp.ssid_length = (uint8_t)s->len;      /* probe for it: hidden networks answer too */
+    memcpy(sp.ssid_array, s->ssid, s->len);
+    sp.duration = dwell_tu;                /* 0: the SDK's default */
     xEventGroupClearBits(evg, EV_SCANNED);
     if (wifi_mgmr_sta_scan(&sp) != 0 || !wait(EV_SCANNED, SCAN_MS))
         LOG_W("scan did not finish, using what the manager has\r\n");
-    wifi_mgmr_scan_ap_all(NULL, &s, scan_item);
-    return s.found;
+    wifi_mgmr_scan_ap_all(NULL, s, scan_item);
+    return s->found;
 }
 
 /* TCP to the probe host with a deadline (lwIP's blocking connect waits out all SYN retries) */
@@ -164,6 +174,23 @@ static bool leave(void)
     return wifi_link_sta_leave();          /* for its own DHCP later */
 }
 
+/* the GOT_IP event, or the address itself: for a second check in the same boot the SDK bound the lease and sent no
+ * GOT_IP, and the check waited out DHCP_MS to report "no address" (tests/test106, 2026-10-30). The address is 0 here
+ * until this join's DHCP: the last check's leave released it */
+static bool got_address(void)
+{
+    uint32_t ip, mask, gw, dns;
+
+    for (uint32_t ms = 0; ms < DHCP_MS; ms += 50) {
+        EventBits_t b = wait(EV_GOT_IP | EV_IP_TIMEOUT | EV_DISCONNECTED, 50);
+        if (b)
+            return b & EV_GOT_IP;
+        if (wifi_sta_ip4_addr_get(&ip, &mask, &gw, &dns) == 0 && ip != 0)
+            return true;
+    }
+    return false;
+}
+
 enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const char *psk, size_t psk_len,
                                      wifi_check_progress_cb progress, uint16_t *detail)
 {
@@ -185,7 +212,8 @@ enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const ch
         goto out;
     }
 
-    if (!ssid_seen(ssid, ssid_len)) {
+    struct seen s = { ssid, ssid_len, false, 0, 0, { 0 } };
+    if (!ssid_seen(&s, FAST_TU) && !ssid_seen(&s, 0)) {   /* the full dwell before "not seen" */
         st = WCHK_NOT_FOUND;
         goto out;
     }
@@ -197,6 +225,12 @@ enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const ch
     p.pmf_cfg = 1;
     p.use_dhcp = 1;                        /* the MAC is ours for now: a K230 session waits (wifi_link.c) */
     p.dhcp_timeout_event_only = 1;         /* a DHCP timeout is a result, not a reason to rejoin */
+    /* the AP this scan found, as wifi_link.c's remembered join: without it the supplicant scanned every channel a
+     * second time, 2.9 s of the user's wait (tests/test106, 2026-10-30) */
+    p.freq1 = (uint16_t)(s.channel == 14 ? 2484 : 2407 + 5 * s.channel);
+    snprintf(p.bssid_str, sizeof(p.bssid_str), "%02X:%02X:%02X:%02X:%02X:%02X", s.bssid[0], s.bssid[1], s.bssid[2],
+             s.bssid[3], s.bssid[4], s.bssid[5]);   /* the SDK wants it upper case */
+    p.quick_connect = 1;
     xEventGroupClearBits(evg, EV_CONNECTED | EV_DISCONNECTED | EV_GOT_IP | EV_IP_TIMEOUT);
     if (wifi_mgmr_sta_connect(&p) != 0) {
         st = WCHK_JOIN_FAILED;
@@ -207,13 +241,14 @@ enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const ch
         wifi_mgmr_connect_ind_stat_info_t info;
         memset(&info, 0, sizeof(info));
         wifi_mgmr_sta_connect_ind_stat_get(&info);
-        st = wchk_join_failure(info.status_code, info.reason_code, detail);
-        LOG_I("join failed: status %u reason %u\r\n", info.status_code, info.reason_code);
+        uint16_t fw = wifi_mgmr_sta_info_status_code_get();
+        st = wchk_join_failure(fw, info.status_code, info.reason_code, detail);
+        LOG_I("join failed: fw %u status %u reason %u\r\n", fw, info.status_code, info.reason_code);
         goto out;
     }
 
     progress(WCHK_ADDRESS, 0);
-    if (!(wait(EV_GOT_IP | EV_IP_TIMEOUT | EV_DISCONNECTED, DHCP_MS) & EV_GOT_IP)) {
+    if (!got_address()) {
         st = WCHK_NO_ADDRESS;
         goto out;
     }

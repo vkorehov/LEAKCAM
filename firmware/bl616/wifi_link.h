@@ -40,5 +40,11 @@ void wifi_link_local_begin(void (*ev)(int code));
  * never returns. Blocks: not from the Wi-Fi event callback */
 bool wifi_link_sta_leave(void);
 void wifi_link_local_end(void);
+/* setup on USB: a phone connected over BLE and a check will likely follow - Wi-Fi up now, in local mode with its events
+ * dropped, so the check starts at once (Wi-Fi start took 1.3 s of the user's wait, tests/test106). Nothing when a
+ * K230 session or a check has the radio. Blocks ~1 s: its own task. wifi_link_cool() hands it back when the phone left
+ * without a check; a check's wifi_link_local_begin() takes it over. */
+void wifi_link_warm(void);
+void wifi_link_cool(void);
 
 #endif

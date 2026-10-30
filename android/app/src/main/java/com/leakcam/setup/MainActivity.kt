@@ -29,6 +29,7 @@ import android.os.Looper
 import android.os.ParcelUuid
 import android.os.SystemClock
 import android.text.InputType
+import android.util.Log
 import android.view.View
 import android.view.WindowInsets
 import android.widget.Button
@@ -78,8 +79,9 @@ class MainActivity : Activity() {
         const val WCHK_CAPTIVE = 0x16
         const val WCHK_BUSY = 0x17
         const val WCHK_SAVE_FAILED = 0x18
+        const val TAG = "LeakcamSetup"
         const val MTU = 247              // the longest value, a 63-byte passphrase, in one write
-        const val SCAN_MS = 10_000L
+        const val SCAN_MS = 10_000L           // the longest Find: no board by then
         const val SEND_TIMEOUT_MS = 60_000L   // per step: pairing (the user reads and accepts), each check step
         const val REQUEST_PERMISSIONS = 1
         const val REQUEST_ENABLE_BT = 2
@@ -117,6 +119,8 @@ class MainActivity : Activity() {
     private var ssidText = ""
     private var writes = ArrayDeque<Pair<UUID, ByteArray>>()
     private var bondReceiver: BroadcastReceiver? = null
+    private var discovered = false       // services discovered on this connection
+    private var bonded = false           // and encrypted: the writes can start
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -150,6 +154,9 @@ class MainActivity : Activity() {
         sendButton.setOnClickListener { if (ready()) send(true) }
         saveAnywayButton.setOnClickListener { if (ready()) send(false) }
         show(STEP_PLUG, R.string.help_plug)
+        // no tap for Find when nothing has to be asked first: the full Find took 10 s of the setup (test106)
+        if (permissionsGranted() && adapter?.isEnabled == true)
+            startScan()
     }
 
     override fun onDestroy() {
@@ -174,6 +181,8 @@ class MainActivity : Activity() {
             v.setTypeface(null, if (n == current) Typeface.BOLD else Typeface.NORMAL)
         }
         help.text = text
+        // each screen change in the log: setup timings (tests/test106 timeline.py) and support; no passphrase in any text
+        Log.i(TAG, "step $current${if (error) " error" else ""}: ${text.lineSequence().first()}")
         help.setBackgroundColor(getColor(if (error) R.color.error_background else R.color.help_background))
     }
 
@@ -245,16 +254,15 @@ class MainActivity : Activity() {
         scanButton.isEnabled = false
         sendButton.isEnabled = false
         show(STEP_FIND, R.string.help_scanning)
-        main.postDelayed({
-            stopScan()
-            when {
-                found.isEmpty() -> problem(STEP_PLUG,
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) R.string.help_none_found_location
-                    else R.string.help_none_found)
-                found.size == 1 -> show(STEP_WIFI, R.string.help_wifi)
-                else -> show(STEP_WIFI, R.string.help_pick)
-            }
-        }, SCAN_MS)
+        main.postDelayed({ scanDone() }, SCAN_MS)
+    }
+
+    private fun scanDone() {
+        stopScan()
+        if (found.isEmpty())
+            problem(STEP_PLUG,
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) R.string.help_none_found_location
+                else R.string.help_none_found)
     }
 
     private fun stopScan() {
@@ -277,8 +285,16 @@ class MainActivity : Activity() {
             tag = d.address
             text = getString(R.string.device_entry, name, r.rssi)
         })
-        if (found.size == 1)
-            devices.check(devices.getChildAt(0).id)
+        // the first board leads on at once, Find goes on behind (another board nearby joins the list) until Send:
+        // waiting for the whole Find took 10 s of the setup, then 1.7 s (test106)
+        when (found.size) {
+            1 -> {
+                devices.check(devices.getChildAt(0).id)
+                sendButton.isEnabled = true
+                show(STEP_WIFI, R.string.help_wifi)
+            }
+            2 -> show(STEP_WIFI, R.string.help_pick)
+        }
     }
 
     // ---------------- steps 3 and 4: Wi-Fi, pair and save ----------------
@@ -321,8 +337,12 @@ class MainActivity : Activity() {
 
     private fun connectWhenUnpaired(device: BluetoothDevice, until: Long) {
         when {
-            device.bondState == BluetoothDevice.BOND_NONE ->
+            device.bondState == BluetoothDevice.BOND_NONE -> {
                 gatt = device.connectGatt(this, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
+                // the phone starts the pairing: Samsung then asks once, not twice as for the board's Security Request
+                // (2.3 -> 1.2 s and one tap less, test106)
+                device.createBond()
+            }
             SystemClock.elapsedRealtime() > until -> {
                 finishSend(null)
                 problem(STEP_SAVE, R.string.err_unpair, boardName)
@@ -365,6 +385,9 @@ class MainActivity : Activity() {
             main.post {
                 if (g != gatt) return@post
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
+                    // short connection interval for the few seconds of setup: at the phone's 45 ms the discovery,
+                    // the writes and each check step's notification waited on it (test106)
+                    g.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH)
                     if (!g.requestMtu(MTU))
                         pairThenDiscover(g)
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -384,7 +407,8 @@ class MainActivity : Activity() {
         override fun onServicesDiscovered(g: BluetoothGatt, st: Int) {
             main.post {
                 if (g != gatt) return@post
-                if (g.getService(SERVICE) == null) fail(R.string.err_no_service) else subscribe(g)
+                discovered = true
+                startWrites(g)
             }
         }
 
@@ -422,12 +446,15 @@ class MainActivity : Activity() {
         }
     }
 
-    /** the board asks for encryption on connect; wait for the bond before touching the service */
+    /** the board asks for encryption on connect: discovery runs meanwhile (it needs none; after the bond it cost
+     *  0.4 s, test106), the writes wait for both */
     private fun pairThenDiscover(g: BluetoothGatt) {
         val device = g.device
-        if (device.bondState == BluetoothDevice.BOND_BONDED) {
+        discovered = false
+        bonded = device.bondState == BluetoothDevice.BOND_BONDED
+        g.discoverServices()
+        if (bonded) {
             show(STEP_SAVE, R.string.help_sending)          // paired already while the MTU was asked
-            g.discoverServices()
             return
         }
         show(STEP_SAVE, R.string.help_pairing, boardName)
@@ -440,8 +467,9 @@ class MainActivity : Activity() {
                     BluetoothDevice.BOND_BONDED -> {
                         unregisterReceiver(this)
                         bondReceiver = null
+                        bonded = true
                         show(STEP_SAVE, R.string.help_sending)
-                        g.discoverServices()
+                        startWrites(g)
                     }
                     BluetoothDevice.BOND_NONE -> pairingFailed()
                 }
@@ -457,6 +485,12 @@ class MainActivity : Activity() {
             registerReceiver(receiver, filter)
         if (device.bondState == BluetoothDevice.BOND_NONE)
             device.createBond()
+    }
+
+    private fun startWrites(g: BluetoothGatt) {
+        if (!discovered || !bonded)
+            return
+        if (g.getService(SERVICE) == null) fail(R.string.err_no_service) else subscribe(g)
     }
 
     /** STATUS notifications on, before anything is written: the check reports through them */

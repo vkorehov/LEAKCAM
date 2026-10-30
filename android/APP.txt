@@ -46,17 +46,18 @@ Step 1  Plug in                                                         [help_pl
   Shown at start. Explains USB-C to a charger or computer, and why: the board pairs only on USB
   power, so it cannot be paired while it runs on its battery.
 
-Step 2  Find it (Find LEAKCAM)
+Step 2  Find it (starts by itself when the app opens with access and Bluetooth on; else Find LEAKCAM)
   - First tap: Android asks for Bluetooth access ("Nearby devices"; on Android 11 and older
     Location, which BLE scanning needs there). Declined: [err_permission]. Allowed:
     [err_permission_granted], tap again.
   - Bluetooth off: Android's "turn on Bluetooth" dialog, and [err_bluetooth_off].
-  - Scanning for 10 s, [help_scanning]. Every board advertising the LEAKCAM setup service is
-    listed as "LEAKCAM-xxyy (RSSI dBm)"; the first one found is preselected.
-  - None found: back to step 1, [help_none_found] (or [help_none_found_location] on Android 11
-    and older, where Location must be on).
-  - One found: step 3, [help_wifi]. Several: step 3, [help_pick] (the strongest signal is
-    usually the nearest). Picking another board shows [help_wifi].
+  - Scanning, [help_scanning]. The first board found goes straight on to step 3 [help_wifi],
+    preselected (0.3-0.8 s after opening); the scan goes on behind for up to 10 s or until
+    Send, and every further board joins the list as "LEAKCAM-xxyy (RSSI dBm)": with a second one
+    [help_pick] (the strongest signal is usually the nearest). Picking another board shows
+    [help_wifi].
+  - None found in 10 s: back to step 1, [help_none_found] (or [help_none_found_location] on
+    Android 11 and older, where Location must be on).
 
 Step 3  Enter your Wi-Fi network                                        [help_wifi]
   - Says it must be 2.4 GHz (the board has no 5 GHz radio) and to pick the 2.4 GHz name if the
@@ -67,7 +68,8 @@ Step 3  Enter your Wi-Fi network                                        [help_wi
 Step 4  Pair, check and save
   a. Connecting to LEAKCAM-xxyy                                         [help_connecting]
   b. Pairing, every time (the board keeps no pairings; the app removes the
-     phone's old bond first)                                            [help_pairing]
+     phone's old bond first and starts the pairing itself, so the phone
+     asks once)                                                         [help_pairing]
        The phone shows its own pairing request. The help box says: tap Pair (or Allow, OK),
        there is no PIN (the board has no screen or buttons), the request may be in the
        notification shade, pairing keeps the password encrypted; then [help_sending].

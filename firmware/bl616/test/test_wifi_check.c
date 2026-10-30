@@ -12,14 +12,18 @@ static void t_join_failure(void)
 {
     uint16_t d = 0;
 
-    CHECK(wchk_join_failure(0, 15, &d) == WCHK_WRONG_PASSWORD && d == 15, "4-way handshake timeout");
-    CHECK(wchk_join_failure(0, 16, &d) == WCHK_WRONG_PASSWORD && d == 16, "group key handshake timeout");
-    CHECK(wchk_join_failure(0, 14, &d) == WCHK_WRONG_PASSWORD && d == 14, "MIC failure");
-    CHECK(wchk_join_failure(0, 23, &d) == WCHK_WRONG_PASSWORD && d == 23, "802.1X failure");
-    CHECK(wchk_join_failure(15, 0, &d) == WCHK_WRONG_PASSWORD && d == 15, "SAE challenge failure");
-    CHECK(wchk_join_failure(17, 0, &d) == WCHK_JOIN_FAILED && d == 17, "AP full is not a password problem");
-    CHECK(wchk_join_failure(0, 3, &d) == WCHK_JOIN_FAILED && d == 3, "deauth leaving");
-    CHECK(wchk_join_failure(0, 0, &d) == WCHK_JOIN_FAILED && d == 0, "no code at all");
+    CHECK(wchk_join_failure(0, 0, 15, &d) == WCHK_WRONG_PASSWORD && d == 15, "4-way handshake timeout");
+    CHECK(wchk_join_failure(0, 0, 16, &d) == WCHK_WRONG_PASSWORD && d == 16, "group key handshake timeout");
+    CHECK(wchk_join_failure(0, 0, 14, &d) == WCHK_WRONG_PASSWORD && d == 14, "MIC failure");
+    CHECK(wchk_join_failure(0, 0, 23, &d) == WCHK_WRONG_PASSWORD && d == 23, "802.1X failure");
+    CHECK(wchk_join_failure(0, 15, 0, &d) == WCHK_WRONG_PASSWORD && d == 15, "SAE challenge failure");
+    CHECK(wchk_join_failure(0, 17, 0, &d) == WCHK_JOIN_FAILED && d == 17, "AP full is not a password problem");
+    CHECK(wchk_join_failure(0, 0, 3, &d) == WCHK_JOIN_FAILED && d == 3, "deauth leaving");
+    CHECK(wchk_join_failure(0, 0, 0, &d) == WCHK_JOIN_FAILED && d == 0, "no code at all");
+    CHECK(wchk_join_failure(33, 0, 0, &d) == WCHK_WRONG_PASSWORD && d == 33, "WPA2 wrong key: no EAPOL 3/4 (test106)");
+    CHECK(wchk_join_failure(8, 0, 0, &d) == WCHK_WRONG_PASSWORD && d == 8, "PSK timeout");
+    CHECK(wchk_join_failure(30, 0, 0, &d) == WCHK_WRONG_PASSWORD && d == 30, "SAE commit failed");
+    CHECK(wchk_join_failure(12, 0, 0, &d) == WCHK_JOIN_FAILED && d == 0, "other firmware status: not the key");
 }
 
 static void t_http(void)

@@ -33,9 +33,17 @@ enum wifi_check_state {
 /* a join that ended without a connection: the network was seen, so either the key did not
  * match or the access point refused for another reason. Wrong keys show as the 4-way handshake
  * failing (802.11 reason 15, its group-key step 16, a MIC failure 14, 802.1X failure 23) or as
- * an SAE/auth challenge failure (status 15). */
-static inline enum wifi_check_state wchk_join_failure(uint16_t status_code, uint16_t reason_code, uint16_t *detail)
+ * an SAE/auth challenge failure (status 15). The SDK fills neither for a wrong WPA2 key (both 0,
+ * tests/test106 2026-10-30); its own firmware status (fw_status, macsw.h WLAN_FW_*) says it:
+ * 33 no EAPOL 3/4 (the router checked the key and dropped it), 8 PSK timeout, 27 deauth during
+ * the handshake, 29/30 WPA3 SAE confirm/commit failed. */
+static inline enum wifi_check_state wchk_join_failure(uint16_t fw_status, uint16_t status_code, uint16_t reason_code,
+                                                      uint16_t *detail)
 {
+    if (fw_status == 8 || fw_status == 27 || fw_status == 29 || fw_status == 30 || fw_status == 33) {
+        *detail = fw_status;
+        return WCHK_WRONG_PASSWORD;
+    }
     if (status_code == 15 || reason_code == 14 || reason_code == 15 || reason_code == 16 || reason_code == 23) {
         *detail = status_code == 15 ? status_code : reason_code;
         return WCHK_WRONG_PASSWORD;

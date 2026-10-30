@@ -84,7 +84,7 @@ Leak tests, one per operation the product repeats:
 | [test103 Whole leak pipeline, end to end](test103-leak-pipeline-timing/README.md) | 2026-10-21 | **later**: not run yet; excluded for now (user): needs the cameras, Wi-Fi and the product BL616 |
 | [test104 battery energy audit](test104-battery-energy-audit/README.md) | 2026-10-21 | **planned**: after the product BL616 firmware runs (hibernate, real sessions). |
 | [test105 maximum current - can the battery carry everything at once?](test105-max-current/README.md) | 2026-10-25 | **partial**: handover runs 1-2 done - USB -> cell under every camera-free load (1.06 A at 5 V), |
-| [test106 Wi-Fi setup from the phone, end to end](test106-wifi-setup-from-phone/README.md) | 2026-10-29 | **planned**: not run yet; step 6 rewritten 2026-10-29 (the board keeps no BLE pairings). |
+| [test106 Wi-Fi setup from the phone, end to end](test106-wifi-setup-from-phone/README.md) | 2026-10-30, run.py 18/18 | **pass, steps 1 3 4 5 6 8**: setup 7.3-8.0 s from opening the app to Done; steps 2 |
 
 **Always:**
 - Build host = VMware VM on a Mac. Since 2026-10-24 VMware's USB popups are off: every re-enumerated device (K230

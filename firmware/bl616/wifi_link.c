@@ -641,6 +641,30 @@ void wifi_link_local_begin(void (*ev)(int code))
         ev(CODE_WIFI_ON_MGMR_DONE);
 }
 
+static void warm_ev(int code)
+{
+    (void)code;                      /* the warm-up's events: nobody waits for them */
+}
+
+void wifi_link_warm(void)
+{
+    if (bridge_up || local_only)
+        return;                      /* a K230 session or a check has the radio */
+    local_ev = warm_ev;
+    local_only = true;
+    start_lwip();
+    if (!wifi_up)
+        start_wifi();
+}
+
+void wifi_link_cool(void)
+{
+    if (local_ev == warm_ev) {       /* a warm-up no check took over */
+        local_ev = NULL;
+        local_only = false;
+    }
+}
+
 void wifi_link_credentials_changed(void)
 {
     rejoin = bridge_up;          /* the association is the old network's: the next start joins the new one */

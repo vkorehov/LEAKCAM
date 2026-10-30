@@ -45,8 +45,9 @@ import java.util.regex.Pattern
  *               writes: "char:hex,char:hex,..." (char ssid | psk | commit), each write's GATT status; then the STATUS
  *               notifications until a final state or secs; drop_at: disconnect on that state (hex, e.g. 01)
  *   op app      the setup app itself, as a user meets it (test106): opens it, Find, the network (ssid, psk: hex; empty =
- *               open), button (send | save_anyway), the pairing dialogs accepted; every help text with its time
- *               (the app shows the SSID, never the passphrase) until the buttons are back or secs
+ *               open), Pair, check and save, the pairing dialogs accepted; every help text with its time (the app
+ *               shows the SSID, never the passphrase) until the buttons are back or secs; anyway=1: then Save
+ *               without checking, where the app offers it
  *
  * Values are hex so any length and byte reaches the board unchanged; the passphrase is never logged or returned.
  */
@@ -61,7 +62,10 @@ class BleOp {
     private val t0 = SystemClock.elapsedRealtime()
 
     private fun ms() = SystemClock.elapsedRealtime() - t0
-    private fun arg(k: String, d: String) = args.getString(k) ?: d
+    /* the arguments come in a JSON file (argsfile, pushed by tools/test-standard/phone.py and removed after the call):
+     * on the command line adbd logged them, the Wi-Fi passphrase in hex included, into the phone's logcat (2026-10-30) */
+    private val fileArgs = args.getString("argsfile")?.let { JSONObject(java.io.File(it).readText()) } ?: JSONObject()
+    private fun arg(k: String, d: String) = fileArgs.optString(k, args.getString(k) ?: d)
 
     @Test
     fun run() {
@@ -77,6 +81,7 @@ class BleOp {
             out.put("error", e.toString())
         }
         out.put("ms_total", ms())
+        out.put("t0_epoch_ms", System.currentTimeMillis() - ms())   /* the phone's clock at t0: timelines with the board */
         inst.sendStatus(0, Bundle().apply { putString("result", out.toString()) })
     }
 
@@ -221,33 +226,66 @@ class BleOp {
             android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK))
         val texts = JSONArray()
         var last = ""
-        fun help() = ui.findObject(By.res(pkg, "help"))?.text ?: ""
+        /* the app redraws while it is read: a stale object is retried on the next poll, never fatal (three setups
+         * ended on one, test106 2026-10-30) */
+        fun <T> safe(d: T, f: () -> T): T = try { f() } catch (e: androidx.test.uiautomator.StaleObjectException) { d }
+        fun help() = safe("") { ui.findObject(By.res(pkg, "help"))?.text ?: "" }
         fun note() { val h = help(); if (h != last && h.isNotEmpty()) { last = h; texts.put(JSONObject().put("ms", ms()).put("help", h)) } }
-        fun enabled(id: String) = ui.findObject(By.res(pkg, id))?.isEnabled == true
-        ui.wait(Until.findObject(By.res(pkg, "scan")), 10000)!!.click()
+        /* the screen scrolls: a view off it (Save without checking under a long message) is not in the UI tree until
+         * scrolled to, and a tap during the scroll got lost (test106, 2026-10-30) */
+        fun find(id: String): androidx.test.uiautomator.UiObject2? = safe(null) {
+            ui.findObject(By.res(pkg, id)) ?: ui.findObject(By.scrollable(true))?.let { s ->
+                for (dir in listOf(androidx.test.uiautomator.Direction.DOWN, androidx.test.uiautomator.Direction.UP))
+                    if (s.scrollUntil(dir, Until.findObject(By.res(pkg, id))) != null) break
+                ui.waitForIdle()
+                ui.findObject(By.res(pkg, id))
+            }
+        }
+        fun enabled(id: String) = safe(false) { find(id)?.isEnabled == true }
+        fun busy() = !enabled("send") || !enabled("scan")
+        safe(Unit) { ui.wait(Until.findObject(By.res(pkg, "scan")), 10000)?.click() }
         val found = SystemClock.elapsedRealtime() + 15000
-        while (SystemClock.elapsedRealtime() < found && !enabled("scan")) { note(); SystemClock.sleep(200) }
+        /* Send turns on at the first board (Find goes on behind it since test106's timing work) */
+        while (SystemClock.elapsedRealtime() < found && !enabled("send")) { note(); SystemClock.sleep(100) }
         note()
-        out.put("found", ui.findObject(By.res(pkg, "devices"))?.childCount ?: 0)
+        out.put("found", safe(0) { ui.findObject(By.res(pkg, "devices"))?.childCount ?: 0 })
         out.put("ms_found", ms())
         fun hex(k: String) = arg(k, "").chunked(2).map { it.toInt(16).toByte() }.toByteArray().toString(Charsets.UTF_8)
-        ui.findObject(By.res(pkg, "ssid")).text = hex("ssid")
-        ui.findObject(By.res(pkg, "password")).text = hex("psk")
+        find("ssid")!!.text = hex("ssid")
+        find("password")!!.text = hex("psk")
         /* no pressBack: setting the text opens no keyboard, and Back closed the app (2026-10-30) */
-        val button = if (arg("button", "send") == "save_anyway") "save_anyway" else "send"
-        ui.wait(Until.findObject(By.res(pkg, button)), 5000)!!.click()
-        val until = SystemClock.elapsedRealtime() + arg("secs", "150").toLong() * 1000
-        SystemClock.sleep(500)
         val pressed = mutableListOf<String>()
-        while (SystemClock.elapsedRealtime() < until) {
+        fun press(button: String) {
+            /* the app answers a tap at once (buttons off or a new help text): else the tap was lost, tap again */
+            for (attempt in 1..3) {
+                val before = help()
+                safe(Unit) { find(button)?.click() }
+                val seen = SystemClock.elapsedRealtime() + 2000
+                while (SystemClock.elapsedRealtime() < seen && !busy() && help() == before)
+                    SystemClock.sleep(100)
+                if (busy() || help() != before)
+                    break
+                out.put("taps_$button", attempt + 1)
+            }
+            val until = SystemClock.elapsedRealtime() + arg("secs", "150").toLong() * 1000
+            while (SystemClock.elapsedRealtime() < until) {
+                note()
+                safe(Unit) {   /* the dialog can go between finding and pressing */
+                    ui.findObject(By.res("android", "button1"))?.let { pressed.add("'${it.text}'@${ms()}"); it.click(); SystemClock.sleep(500) }
+                }
+                if (!busy()) break   /* finishSend: the send is over */
+                SystemClock.sleep(200)
+            }
             note()
-            ui.findObject(By.res("android", "button1"))?.let { pressed.add("'${it.text}'"); it.click(); SystemClock.sleep(500) }
-            if (enabled("send") && enabled("scan")) break   /* finishSend: the send is over */
-            SystemClock.sleep(200)
         }
-        note()
+        press("send")
+        val offered = find("save_anyway") != null
+        out.put("save_anyway", offered)
+        if (offered && arg("anyway", "") == "1") {
+            out.put("ms_anyway", ms())
+            press("save_anyway")
+        }
         out.put("pairing", pressed.joinToString("+"))
-        out.put("save_anyway", ui.findObject(By.res(pkg, "save_anyway")) != null)
         out.put("help", texts)
         out.put("ms_end", ms())
     }

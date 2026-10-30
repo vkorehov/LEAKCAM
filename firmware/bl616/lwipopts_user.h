@@ -120,6 +120,9 @@
 #define LWIP_SOCKET_SET_ERRNO     1
 
 #define LWIP_DHCP                 1
+/* no ARP probe of the offered address: it held the lease ~0.9 s before use, in the user's wait at setup (tests/test106,
+ * 2026-10-30); the BL616 keeps the address only for the credential check */
+#define DHCP_DOES_ARP_CHECK       0
 #define LWIP_DNS                  1
 #define LWIP_DNS_SERVER           0
 #define LWIP_IGMP                 0

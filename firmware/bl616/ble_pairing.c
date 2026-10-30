@@ -92,12 +92,26 @@ static void progress(enum wifi_check_state st, uint16_t detail)
     set_status(st, detail);
 }
 
+static volatile bool warming;            /* warm_task bringing Wi-Fi up */
+
+static void warm_task(void *arg)
+{
+    (void)arg;
+    wifi_link_warm();
+    if (!active_conn && !checking)
+        wifi_link_cool();                /* the phone left meanwhile */
+    warming = false;
+    vTaskDelete(NULL);
+}
+
 static void check_task(void *arg)
 {
     static char s[33], k[64];            /* this check's copy: the phone may write again meanwhile */
     uint16_t detail;
 
     (void)arg;
+    while (warming)                      /* one Wi-Fi start at a time */
+        vTaskDelay(pdMS_TO_TICKS(10));
     memcpy(s, ssid, sizeof(s));
     memcpy(k, psk, sizeof(k));
     enum wifi_check_state st = wifi_check_run(s, strlen(s), k, strlen(k), progress, &detail);
@@ -251,6 +265,12 @@ static void on_connected(struct bt_conn *conn, u8_t err)
     memset(psk, 0, sizeof(psk));
     /* ask for encryption right away so the phone's pairing dialog appears on connect */
     bt_conn_set_security(conn, BT_SECURITY_L2);
+    /* Wi-Fi up while the phone pairs and writes: the check then starts at once (tests/test106) */
+    if (!warming) {
+        warming = true;
+        if (xTaskCreate(warm_task, "wwarm", 1536, NULL, 3, NULL) != pdPASS)
+            warming = false;             /* no memory: the check starts Wi-Fi itself */
+    }
 }
 
 static void on_disconnected(struct bt_conn *conn, u8_t reason)
@@ -259,6 +279,8 @@ static void on_disconnected(struct bt_conn *conn, u8_t reason)
     if (conn != active_conn)
         return;
     active_conn = NULL;
+    if (!checking && !warming)
+        wifi_link_cool();
     if (usb_present())
         adv_start();                  /* connectable advertising stops on connect; resume it */
 }

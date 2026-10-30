@@ -5,6 +5,7 @@ import json
 import os
 import re
 import subprocess
+import tempfile
 import threading
 import zlib
 
@@ -12,6 +13,7 @@ from harness import REPO, bl   # harness first: it puts tools/power-bringup (boa
 
 APK = os.path.join(REPO, "android/app/build/outputs/apk/debug/app-debug.apk")
 TEST_APK = os.path.join(REPO, "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk")
+ARGS_FILE = "/data/local/tmp/leakcam_bleop.json"
 RUNNER = "com.leakcam.setup.test/androidx.test.runner.AndroidJUnitRunner"
 
 
@@ -20,12 +22,20 @@ def adb(*a, secs=180):
 
 
 def op(name, **kw):
-    """one BleOp call; its JSON result (never printed whole: no values in it, but keep the log short)"""
-    a = ["shell", "am", "instrument", "-w", "-r", "-e", "op", name]
-    for k, v in kw.items():
-        if str(v):                              # adb shell drops an empty word: '-e writes ""' would eat the next key
-            a += ["-e", k, str(v)]
-    m = re.search(r"INSTRUMENTATION_STATUS: result=(.*)", adb(*a, RUNNER, secs=240))
+    """one BleOp call; its JSON result (never printed whole: no values in it, but keep the log short). The arguments go
+    in a file pushed to the phone and removed after the call: on the command line adbd logged them, the Wi-Fi
+    passphrase in hex included, into the phone's logcat (2026-10-30)"""
+    fd, local = tempfile.mkstemp(suffix=".json")          # mode 600
+    try:
+        with os.fdopen(fd, "w") as f:
+            json.dump({"op": name, **{k: str(v) for k, v in kw.items()}}, f)
+        adb("push", local, ARGS_FILE, secs=30)
+        adb("shell", "chmod", "644", ARGS_FILE, secs=30)    # the test app reads it (another uid)
+        out = adb("shell", "am", "instrument", "-w", "-r", "-e", "argsfile", ARGS_FILE, "-e", "op", name, RUNNER, secs=240)
+    finally:
+        os.unlink(local)
+        adb("shell", "rm", "-f", ARGS_FILE, secs=30)
+    m = re.search(r"INSTRUMENTATION_STATUS: result=(.*)", out)
     return json.loads(m.group(1)) if m else {"error": "no result from the phone"}
 
 
