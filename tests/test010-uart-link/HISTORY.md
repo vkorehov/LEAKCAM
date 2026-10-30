@@ -4,6 +4,14 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### BL616 off USB, 2026-10-30 20:55 (open)
+
+After an echo test that ended with the Wi-Fi bridge up and the K230 switched off, the BL616 left USB (kernel: `usb
+2-4.1: USB disconnect` 20:55:01) and did not come back, not even as the ROM; no VM hub errors, so not the VM. Its
+watchdog did not bring it back. The rerun batch started at 20:57 found no port (test010 crashed in boot()) and was
+stopped. Next: replug PR1, read `pt_trace` breadcrumbs and the reset reason; make the harness end the bridge after
+every test. The morning's disappearance also followed bridge activity.
+
 ### Why the 2026-10-30 runs at 2 Mbaud failed (BL616 state, not the rate)
 
 The K230 -> BL616 direction lost 1-16 bytes per 64 KB / 1 MB echo (the BL616 echoed fewer than were sent; the
