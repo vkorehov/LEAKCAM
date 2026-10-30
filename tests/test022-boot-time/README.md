@@ -84,5 +84,5 @@ This test is the boot time measurement.
 
 ## Battery energy
 
-Battery current through the boot: the meter's average over a loop of cold boots times the boot time (no scope, user
+Current through the boot: the USB-C 1 meter's average over a loop of cold boots times the boot time (no scope, user
 2026-10-30; no per-step split): energy per boot = the fixed cost of every wake. Also after each speed change (NAND clock, DDR 3200).

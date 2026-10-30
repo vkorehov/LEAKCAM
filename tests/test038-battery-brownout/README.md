@@ -74,7 +74,7 @@ Probes: current - lab supply in place of the cell, its current; voltage - VBAT C
 | This part's boot share | **MISSING** | - | |
 | Test run time | **MISSING** | - | setup (flashing, plugging, waiting) separately |
 | cut-off voltage vs set 3.10 V, time to rails off | **MISSING** | +-50 mV | % of the top |
-| Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
+| Current idle / during (min / avg / peak) | n/a: no battery measurements (user, 2026-10-30); the chain's thresholds are voltages (lab supply) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | **MISSING** | - | scripts/energy.py |
 | Per day | **MISSING** | ENERGY.txt line | n per day |

@@ -50,10 +50,9 @@ between reads.
 
 Open:
 - Low-cell point (~3.4 V): tells gain from offset; re-fit the calibration then.
-- Reading under load (KPU or LEDs on the cell; the cutoff reads under load).
+- Reading under load on the cell: n/a, no battery measurements (user, 2026-10-30); the cut-off under load is test038's.
 - CH340 (U2) drops off USB when USB-C 1 is plugged in while on battery (reproduced 2026-10-21 19:51); candidates
   D3 VCC back-fed from U2's D+ or a 3V3 dip resetting U2, both gone in rev 2 (bugs/v2.txt 3/5); the cause not measured.
-- Current on battery with the K230 at msh not measured.
 
 ## Metrics (2026-10-21)
 
@@ -65,7 +64,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | This part's boot share | none (ADC probed on demand) | - | |
 | Test run time | 66 s automated (run.py, 2026-10-25), no setup | - | |
 | ADC accuracy / noise | +60 mV / sd 52 mV single; calibrated 64-read mean within +-10 mV, sd ~6 mV | +-30 mV / 10 mV | pass averaged |
-| Current on battery, K230 at msh | not measured (meter in USB-C 1 path, unplugged); 202-203 mA on USB (above) | - | VBAT 4.07-4.12 V |
+| Current on battery, K230 at msh | n/a: no battery measurements (user, 2026-10-30); 202-203 mA on USB (above) | - | VBAT 4.07-4.12 V |
 | Voltage under load (min) | VBAT 4.36 V min (K230 ADC ch 1, test023 calibration, 8 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Current during reads | 202-203 mA (= msh idle) | floor 202 | reads cost nothing measurable |
 | Power, energy per reading | below the meter's resolution | - | |

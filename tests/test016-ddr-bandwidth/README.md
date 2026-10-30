@@ -69,4 +69,4 @@ The DDR clock's effect on boot: training time at 2667 vs 3200 MT/s (SPL), from t
 
 ## Battery energy
 
-Battery current during each bench (copy, read, write) vs idle; energy per GB moved. With test025 at 3200 MT/s: does the faster clock cost more per GB or save by finishing sooner?
+Current (USB-C 1 meter) during each bench (copy, read, write) vs idle; energy per GB moved. With test025 at 3200 MT/s: does the faster clock cost more per GB or save by finishing sooner?

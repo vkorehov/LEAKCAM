@@ -76,9 +76,8 @@ named with a fix (firmware: HBN level, pins; rev 2: parts).
 - Through USB: asleep 1.23 mA (mostly the charger's own input current), awake idle ~60 mA (2026-10-21/22).
 
 Open:
-- The battery figure near 3.6 V (half charge) for the life estimate (the regulator's share depends on the cell
-  voltage); measured only at 4.17 V.
-- Steps not measured: BL616 held in reset (EN low), probes wet, and the K230-on floors (session floor table).
+- Not measured, and not to be (no battery measurements (user, 2026-10-30)): the figure near 3.6 V (half charge; measured at 4.17 V), BL616 held in
+  reset, the K230-on floors. Probes wet: ~1.4 uA over the floor, calculated (test034).
 - The product's copy of the Y3 fix (leak_wake.c rtc_use_crystal(), hbn_sleep()) not run yet.
 
 ## Metrics (skill leakcam-test-metrics)

@@ -17,16 +17,13 @@ tests is what the minimal image keeps).
 
 ## Steps
 
-1. Sleep current: from test031 (low level, BL616 HBN with the test firmware); here only checked with the product
-   firmware's real sleep.
-2. Energy per humidity slice: the meter's average over a loop of slices (a short slice interval, >= 10 min) minus the
-   sleep floor, per slice (no scope: user, 2026-10-30).
+1. Sleep current: from test031 (BL616 HBN with the test firmware, 35 uA).
+2. Energy per humidity slice, calculated: its awake time (test021, ~85 ms) x the BL616 awake current (test031,
+   test040) (no battery measurements (user, 2026-10-30)).
 3. Energy per K230 report session: current over the whole session (test101 timing, test102 current), boot part
    separate (test022).
 4. Energy per leak session with a clip upload (Wi-Fi).
 5. Budget: sleep + 144 slices + 4 reports per day (+ leaks), self-discharge; battery life for 1 and 2 cells.
-6. Long run: a charged cell, the real schedule, BAT logged every report session (the K230's ADC, test023) for days;
-   compare the slope with the budget.
 
 ## Pass
 

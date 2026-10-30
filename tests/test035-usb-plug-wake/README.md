@@ -61,19 +61,19 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | **MISSING** | target (test022) | longest step: |
-| This part's boot share | **MISSING** | - | |
-| Test run time | **MISSING** | - | setup (flashing, plugging, waiting) separately |
-| wake latency on plug | **MISSING** | - | % of the top |
-| Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 VBUS meter |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING** | - | scripts/energy.py |
-| Per day | **MISSING** | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
-| Image (sizes) | **MISSING** | minimal image (rule) | the image this run used |
-| Compile flags | **MISSING** | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
+| Boot, power-on -> READY (median of 5) | n/a: a BL616 wake, no K230 boot; wake -> main() 17.3 ms (test021) | target (test022) | longest step: |
+| This part's boot share | n/a: no K230 boot | - | |
+| Test run time | n/a: hand steps on 2026-10-22, not timed | - | setup (flashing, plugging, waiting) separately |
+| wake latency on plug | ~15 ms estimated: HBN wake path (test021) + PGOOD's fall (BQ24072 open drain, R23 100 k: fast); not measured directly | - | % of the top |
+| Current idle / during (min / avg / peak) | asleep 35 uA, comparators armed (test031); after the plug the BL616 runs from USB: ~60 mA awake (test031, test040), 207 mA with the K230 rails up in USB boot (test019); no battery measurements (user, 2026-10-30) | floor (test031) | USB-C 1 VBUS meter |
+| Voltage under load (min) | n/a: plug events, no load; VUSB and PGOOD as in Result | cutoff 3.10 V (bug-004) | at the probes above |
+| Power, energy per operation | n/a: the plug brings its own power (USB) | - | scripts/energy.py |
+| Per day | n/a: a plug per charge | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | n/a: the BL616 alone, nothing heats; not recorded on 2026-10-22 | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | n/a: every HBN wake restarts the BL616 heap; repeated HBN wakes: test021 | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Image (sizes) | BL616 test firmware ~150 KB (2026-10-22, before the Wi-Fi set) | minimal image (rule) | the image this run used |
+| Compile flags | BL616 test firmware -Os -g (SDK Kconfig default), sections, --gc-sections, no LTO | smallest code (rule) | |
+| Features over the minimal image | `pt_usb`, `pt_sleep` (test firmware commands); the USB comparator setup is firmware/bl616 leak_wake.c's | test008 floor | bytes, boot ms, RAM, current |
 | Optimised build (-O3, LTO, -march) | n/a: not an optimisation test (test builds use the default flags: user, 2026-10-29) | the faster one stays | |
 
 ## Boot time

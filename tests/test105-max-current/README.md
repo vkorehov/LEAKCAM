@@ -45,15 +45,12 @@ Each load is started one by one on top of the previous (the current added by eac
 | 9 | + cameras streaming | (after the cameras arrive) | |
 
 Runs:
-1. **Steps 1-8 on a full cell**, 30 s per step: battery current per step, VBAT minimum, resets (K230 console, BL616
+1. **Steps 1-8 on USB power** (USB-C 1 meter), 30 s per step: current per step, resets (K230 console, BL616
    `evlog`), die / board temperature.
-2. **All loads for 10 min** on a full cell: the current, VBAT and heat over time (does the K230 throttle? does the
+2. **All loads for 10 min** on USB: the current and heat over time (does the K230 throttle? does the
    board reach a limit?).
-3. **Cold start into full load**: rails on with the cell at rest, all loads started at once (inrush + LED soft start
-   + Wi-Fi join at the same moment).
-4. **Low cell**: run 1's step 8 (everything on) at 3.5 V and then 3.3 V rest: the sag under the full load against the
-   3.10 V cutoff (test038) and the rails' minimum (TPS62823 >= 2.4 V, TPS63802 >= 1.3 V); the rest voltage at which
-   the cut first fires under full load = the usable end of the cell.
+3. Cold start into full load and the low-cell runs on the cell: n/a, no battery measurements (user, 2026-10-30); the cut-off under load is test038's
+   (lab supply).
 
 ## Pass
 

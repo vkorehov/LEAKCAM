@@ -60,4 +60,4 @@ Sensor init to first frame, both cameras (adds to every session that captures).
 
 ## Battery energy
 
-Battery current per camera capturing, with white and IR LEDs on; energy per capture of both cameras.
+Current (USB-C 1 meter) per camera capturing, with white and IR LEDs on; energy per capture of both cameras.
