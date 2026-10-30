@@ -116,13 +116,20 @@ def fix_text(text):
         last = rows[-1][0] if rows else None
         if last:
             text = text.replace(last, last + "\n" + add, 1)
+        elif "|---|---|---|---|" in m.group(1):     # a header without rows: the rows under it, not a second table
+            body = m.group(1)
+            text = text.replace(body, body.replace("|---|---|---|---|\n", "|---|---|---|---|\n" + add + "\n", 1), 1)
         else:
             body = m.group(1)
             table = "| Metric | Value | Top / budget | Note |\n|---|---|---|---|\n" + add + "\n"
             text = text.replace(body, body.rstrip("\n") + "\n\n" + table + "\n", 1)
         changed += [f"row {a}" for a in absent]
+    # old placeholders only in the Metrics block: elsewhere "not measured yet" is prose (it rewrote test016's Result,
+    # 2026-10-30)
+    m = metrics_block(text)
+    head, block, tail = text[:m.start(1)], m.group(1), text[m.end(1):]
     new = []
-    for line in text.split("\n"):
+    for line in block.split("\n"):
         if OLD.search(line) and MISSING not in line:
             if line.startswith("|"):
                 cells = line.split("|")
@@ -132,7 +139,7 @@ def fix_text(text):
                 line = OLD.sub(MISSING, line, count=1)
             changed.append("placeholder")
         new.append(line)
-    text = "\n".join(new)
+    text = head + "\n".join(new) + tail
     ordered = reorder(text)
     if ordered != text:
         changed.append("section order")

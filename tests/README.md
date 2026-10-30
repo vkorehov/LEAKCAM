@@ -77,6 +77,7 @@ Leak tests, one per operation the product repeats:
 | [test038 battery brown-out below 3.10 V (cutoff, lockout, recovery)](test038-battery-brownout/README.md) | 2026-10-23 | **partial**: with a raised threshold on the cell the chain works - K230 `bat_watch` cut, |
 | [test039 K230 console over the BL616 link (no CH340)](test039-k230-console-over-link/README.md) | 2026-10-25 | **fail**: ~0.7 % of commands typed on `/dev/ttyACM1` are lost (993 of 1000 answered); otherwise the |
 | [test040 BLE provisioning on the BL616: Wi-Fi credentials into flash](test040-ble-wifi-credentials/README.md) | 2026-10-29 | **pass**: run.py 46/46 (run 13, test firmware -O3 + LTO with the sdk_patch.py console fix) and |
+| [test041 humidity alarm (AHT20 threshold wakes the K230)](test041-humidity-alarm/README.md) | 2026-10-30 | **planned**: needs the rewritten product BL616 firmware for steps 3-6; steps 1-2 run on the test firmware. |
 | **High level (100+): the product's whole flow** | | |
 | [test100 Wi-Fi throughput, K230 -> SDIO -> BL616 -> AP](test100-wifi-throughput/README.md) | 2026-10-25 | **steps 1-4 pass**: K230 address 0.33-0.59 s after the card binds; TCP up 27.5 / down 22.1 Mbit/s, UDP up 35.4. |
 | [test101 session length (wake to power-off)](test101-boot-and-session-time/README.md) | 2026-10-21 | **planned**: not run yet. |
@@ -85,6 +86,9 @@ Leak tests, one per operation the product repeats:
 | [test104 battery energy audit](test104-battery-energy-audit/README.md) | 2026-10-21 | **planned**: after the product BL616 firmware runs (hibernate, real sessions). |
 | [test105 maximum current - can the battery carry everything at once?](test105-max-current/README.md) | 2026-10-25 | **partial**: handover runs 1-2 done - USB -> cell under every camera-free load (1.06 A at 5 V), |
 | [test106 Wi-Fi setup from the phone, end to end](test106-wifi-setup-from-phone/README.md) | 2026-10-30, run.py 18/18 | **pass, steps 1 3 4 5 6 8**: setup 7.3-8.0 s from opening the app to Done; steps 2 |
+| [test107 change-net update from the server (GET /v1/nn)](test107-change-net-update/README.md) | 2026-10-30 | **planned**: needs the K230 session on the product flow (leakcam_wake, Wi-Fi bridge); the server side runs on the Windows PC. |
+| [test108 production server check by the BL616 (schedule, lease reuse, server address, back-off)](test108-server-check-schedule/README.md) | 2026-10-30 | **planned**: the production code is not built (DESIGN 5.1 Production design); test100 `pt_poll` proved the cycle on the test firmware. Runs after the product rewrite. |
+| [test109 secure server (TLS, device identity, pinned certificate, signed change net)](test109-secure-server/README.md) | 2026-10-30 | **planned**: the real server is not built (DESIGN 7, SECURITY.txt 4); it will run on the Windows PC for the test. |
 
 ## Not tested yet (audit 2026-10-30)
 
@@ -93,15 +97,16 @@ Leak tests, one per operation the product repeats:
 | Behaviour | Where it belongs |
 |---|---|
 | What the product firmware does after each wake (the wake sources themselves pass on the test firmware: RTC test032, leak probe test034, USB plug test035, timing test021): doing what is due (humidity, report, server check with / without a stream request) and overlaps (a leak during a check, a check with a report due, a check while on USB; no AP, no server, no credentials) | new test, after the product rewrite (DESIGN 5.1 asks for it) |
-| Humidity alarm (AHT20 threshold -> report) | the same new test |
-| `leakcam_wake` on the board: capture -> history compare (imgdiff + change net) -> `/v1/check` to the mock server -> the sleep it chooses; change-net download `GET /v1/nn` | test103 (`/v1/nn` added there) |
+| Humidity alarm (AHT20 threshold -> report) | test041 (planned) |
+| `leakcam_wake` on the board: capture -> history compare (imgdiff + change net) -> `/v1/check` to the mock server -> the sleep it chooses | test103 |
+| Change-net update from the server (`GET /v1/nn`, bad downloads, power cut while saving, unloadable net) | test107 (planned) |
 | Session protocol end to end (READY / WAKE / ACK / TIME / SLEEP) with the product agent; NTP time back to the BL616 | test101, test037 steps 1-6 |
 | Live stream: both cameras + Opus audio over RTMP to MediaMTX (`leakcam_stream -p`) | test100 step 5 (cameras) |
 | OTA: the writer (inactive slot + `ota_meta`) is not built; the SPL's A/B choice never ran on the board | new test, when the writer exists |
-| Production server check (time schedule, DHCP lease reuse, server interval, `SERVER` from the agent) | not built; test100 `pt_poll` proved the cycle |
+| Production server check (time schedule, DHCP lease reuse, server interval, `SERVER` from the agent, back-off) | test108 (planned; the code is not built, test100 `pt_poll` proved the cycle) |
 | Cameras: CSI/I2C, capture at 2592x1944, LED brightness at 2-3 m, auto-exposure against the LED back-off | test020, test030, test009 |
 | The closed enclosure: temperature, Wi-Fi at the install distance | test026, test100 |
-| The real server (TLS, authentication) | not built |
+| The real server (TLS, device identity, pinned certificate, signed change net, RTMPS) | test109 (planned; the server is not built, it runs on the Windows PC) |
 
 **Tests not run or partial:** not run - test020, test030 (cameras), test101, test102, test104 (product firmware),
 test103 (later); partial - test008 (steps 3-7), test026 (KPU / encoder / camera load, enclosure, die limit), test032

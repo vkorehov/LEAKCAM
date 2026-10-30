@@ -49,6 +49,7 @@ The full list:
 ## Pass
 
 TCP up >= 2 x the two streams' rate with margin at the install distance; no RTMP drops; figures recorded.
+
 ## Result
 
 - Step 1, BL616 radio alone (product path, `wifi_link_local_begin()`): radio up 634 ms, scan all channels 2.93 s,

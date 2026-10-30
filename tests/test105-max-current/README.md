@@ -88,6 +88,23 @@ Open:
 
 **MISSING**: the full block of skill leakcam-test-metrics (the handover runs recorded only the figures in Result).
 
+| Metric | Value | Top / budget | Note |
+|---|---|---|---|
+| Boot, power-on -> READY (median / max of 5) | **MISSING** | target (test022) | longest step |
+| This part's boot share | **MISSING** | - | driver / mount / probe |
+| Test run time | **MISSING** | - | setup separately |
+| Speed / rate against the top | **MISSING** | SPEEDS.txt | % of the top |
+| Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 VBUS meter |
+| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | probe points named |
+| Power, energy per operation | **MISSING** | - |  |
+| Per day | **MISSING** | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; mem_leak.py over >= 8 cycles |
+| Image (sizes) | **MISSING** | minimal image (rule) | the image this run used |
+| Compile flags | **MISSING** | smallest code (rule) |  |
+| Features over the minimal image | **MISSING** | test008 floor | bytes, boot ms, RAM, current |
+| Optimised build (-O3, LTO, -march) | n/a: not an optimisation test (test builds use the default flags: user, 2026-10-29) | the faster one stays |  |
+
 ## Boot time
 
 **MISSING**: the boot time of this test's image and its share.

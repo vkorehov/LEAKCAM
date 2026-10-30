@@ -57,4 +57,3 @@ Sensor probe and init time at boot, both sensors (without cameras the probes fai
 ## Battery energy
 
 Battery current with one and two sensors streaming (vs K230 idle); energy per second of capture and per still.
-

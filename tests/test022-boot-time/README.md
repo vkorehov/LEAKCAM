@@ -85,4 +85,3 @@ This test is the boot time measurement.
 ## Battery energy
 
 Battery current through the boot, per step (scope over a shunt in the battery lead): energy per boot = the fixed cost of every wake. Also after each speed change (NAND clock, DDR 3200).
-
