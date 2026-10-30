@@ -43,7 +43,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | This part's boot share | n/a: the agent sends READY right after app init; the link adds no boot step (2026-10-25) | - | |
 | Test run time | 243 s automated (run.py, 2026-10-25), no setup | - | setup (flashing, plugging, waiting) separately |
 | Speed / rate against the top | link at 4 Mbaud (test018); 112 READY frames, every checksum valid (2026-10-25) | SPEEDS.txt | % of the top |
-| Current floor / typical / peak | **MISSING** (2026-10-21); fill on a re-run | floor (test031) | at the probe above |
+| Current floor / typical / peak | K230 at msh idle (agent running) 0.220 A at 5 V (USB-C 1 VBUS meter, test006, 2026-10-25); the link frames add less than the meter's 1 mA step | floor (test031) | at the probe above |
 | Voltage under load (min) | VBAT 4.33 V min (K230 ADC ch 1, test023 calibration, 7 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | n/a: below the meter's step next to the K230 (2026-10-25) | - | scripts/energy.py |
 | Per day | n/a: a few frames per session (2026-10-25) | ENERGY.txt line | n per day |

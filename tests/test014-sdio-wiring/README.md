@@ -49,7 +49,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | This part's boot share | bl616_rescan's probe ends 'no card' after ~35 ms with the test firmware (no SDIO device) (2026-10-25) | - | |
 | Test run time | 210 s automated (run.py, 2026-10-25), no setup | - | setup (flashing, plugging, waiting) separately |
 | Speed / rate against the top | n/a: wiring test; the bus speed is test015 (50 MHz 4-bit) (2026-10-25) | SPEEDS.txt | % of the top |
-| Current floor / typical / peak | **MISSING** (2026-10-21); fill on a re-run | floor (test031) | at the probe above |
+| Current floor / typical / peak | K230 at msh idle (agent running) 0.220 A at 5 V (USB-C 1 VBUS meter, test006, 2026-10-25); the ~35 ms SDIO probe is below the meter's step | floor (test031) | at the probe above |
 | Voltage under load (min) | VBAT 4.33 V min (K230 ADC ch 1, test023 calibration, 8 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | n/a: a wiring check (2026-10-25) | - | scripts/energy.py |
 | Per day | n/a: a wiring check (2026-10-25) | ENERGY.txt line | n per day |

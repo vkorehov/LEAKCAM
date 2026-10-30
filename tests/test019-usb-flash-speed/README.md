@@ -40,7 +40,6 @@ Figures recorded; a production flash time per board.
 - After a flash, the BL616's NAND-boot commands must each have their answer read back before the next (2026-10-22).
 
 Open:
-- Current during the ~15 s NAND write not read (too short for the meter).
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
@@ -52,7 +51,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | This part's boot share | n/a: flashing is not part of a boot (2026-10-25) | - | |
 | Test run time | 24.6 s K230 flash (run.py 56 s in all, 2026-10-25) + 18 s BL616 (2026-10-22) | - | |
 | USB NAND flashing write speed | 5.3-5.6 MB/s large parts, 3.1-3.7 small | NAND program limit (test017) | whole flash 24.6 s |
-| Current idle / during (min / avg / peak) | 207 mA rails on in USB boot; write not measured (15 s, too short to read) | floor (test031) | USB-C 1 VBUS meter |
+| Current idle / during (min / avg / peak) | 207 mA rails on in USB boot; NAND write 235-236 mA (programming, test017, 2026-10-21) | floor (test031) | USB-C 1 VBUS meter |
 | Voltage under load (min) | VBAT 4.37 V min (K230 ADC ch 1, test023 calibration, 1 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | n/a: on USB power, never from the cell (2026-10-25) | - | scripts/energy.py |
 | Per day | n/a: flashing is a factory / update step (2026-10-25) | ENERGY.txt line | n per day |

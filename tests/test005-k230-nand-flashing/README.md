@@ -37,7 +37,6 @@ re-flash, the image boots 5 of 5.
   leakcam_change.kmodel 211488, leakcam_hist 100376, memtest 67120, leakcam_agent 87552 bytes (2026-10-25, run.py).
 
 Open:
-- Flashing current not read (Metrics).
 
 ## Metrics (**MISSING** on a re-run: skill leakcam-test-metrics, every value at its maximum)
 
@@ -49,7 +48,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | This part's boot share | n/a: flashing is not part of a boot; the mounts take 0.31 s (test022) (2026-10-25) | - | |
 | Test run time | 93 s automated (run.py, 2026-10-25), no setup | - | setup (flashing, plugging, waiting) separately |
 | Speed / rate against the top | flash speed: test019 (2026-10-25) | SPEEDS.txt | % of the top |
-| Current floor / typical / peak | NAND boot to msh idle 0.220 A (test006, 2026-10-25); flashing current not read (2026-10-25, from recorded readings) | floor (test031) | at the probe above |
+| Current floor / typical / peak | NAND boot to msh idle 0.220 A (test006, 2026-10-25); flashing: USB boot, rails on 207 mA (test019), NAND programming 235-236 mA (test017) (recorded readings, no new reading) | floor (test031) | at the probe above |
 | Voltage under load (min) | VBAT 4.36 V min (K230 ADC ch 1, test023 calibration, 5 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | n/a: flashing runs on USB power (2026-10-25) | - | scripts/energy.py |
 | Per day | n/a: a factory / update step (2026-10-25) | ENERGY.txt line | n per day |

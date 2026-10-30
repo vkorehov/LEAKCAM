@@ -53,7 +53,6 @@ setting, or the current one is shown to be the limit.
 
 Open:
 - Boot time and mount time at 80 MHz with the current image not recorded since the 2026-10-25 cleanup.
-- Program current at 80 MHz with the current image not re-measured.
 
 ## Metrics (2026-10-21, bench image)
 

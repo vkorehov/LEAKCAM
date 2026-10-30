@@ -84,10 +84,10 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | This part's boot share | **MISSING** | - | mounts follow used pages |
 | Test run time | **MISSING** | - | build + flash per variant |
 | Speed / rate against the top | **MISSING** | SPEEDS.txt | no regression |
-| Current floor / typical / peak | **MISSING** | floor (test031) | |
+| Current floor / typical / peak | K230 at msh idle (agent running) 0.220 A at 5 V (USB-C 1 VBUS meter, test006, 2026-10-25); the image changes move it below the meter's 1 mA step | floor (test031) | |
 | Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | |
-| Power, energy per operation | **MISSING** | - | |
-| Per day | **MISSING** | ENERGY.txt line | |
+| Power, energy per operation | n/a: the image is not an operation; its boot energy is test022's | - | |
+| Per day | n/a: through the boot (test022) and the sessions (test102) | ENERGY.txt line | |
 | Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
 | Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | kdimg 45.38 MB, rtthread.bin 3 712 016 B, /sdcard programs 6 616 314 B (builds 1+2, 2026-10-22); BL616 product / test firmware 1.27 MB / 121 KB (2026-10-21) | minimal image (rule) | per build |

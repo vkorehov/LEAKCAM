@@ -61,8 +61,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Speed / rate against the top | one distance (2 inferences + cosine) 2.9 / 2.9 / 3.1 ms (min / median / max, 8 x 50) (2026-10-25) | SPEEDS.txt | % of the top |
 | Current floor / typical / peak | 0.220 / 0.220 / 0.220 A at 5 V (USB-C 1 VBUS meter; K230 at msh idle (agent running): 0.220 A (read in test006-k230-nand-boot-spl)) (2026-10-25) | floor (test031) | at the probe above |
 | Voltage under load (min) | VBAT 4.35 V min (K230 ADC ch 1, test023 calibration, 9 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING**; fill on a re-run | - | scripts/energy.py |
-| Per day | **MISSING**; fill on a re-run | ENERGY.txt line | n per day |
+| Power, energy per operation | the KPU loop reads as idle (0.220 A, the meter's 1 mA step): one change check (2.9 ms) costs < 1 mA x 5 V x 2.9 ms = 15 uJ over idle (2026-10-30, from the recorded readings) | - | scripts/energy.py |
+| Per day | < 15 uJ x 2 cameras per wake: negligible next to the session (test102) | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | die 39.5 / 42.5 / 42.5 C; board 31.8 / 32.8 / 32.8 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
 | Memory BL616 / K230 (start / min / end), leak | BL616 free 208608 / min 204396 / 208608 B, blocks 14 -> 14, deleted 0; K230 heap available 7025152 / 7025152 / 7312064 B; BL616 no leak (mem_leak.py, 9 snapshots); K230 no leak (mem_leak.py, 9 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | not recorded at the time (before the metrics rule) | minimal image (rule) | the image this run used |
