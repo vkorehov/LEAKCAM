@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-30 (run.py, 71 s): pass
+
+5 cold boots of the current image to msh; metrics from the harness.
+
+
 Old status line (2026-10-22): **in progress** (2026-10-22): builds 1+2 (unused/inherited off) app init 0.506 -> 0.49 s; kernel -O2 not adopted (two latent bugs, one fixed); programs' flags next. **Runs first after board bring-up** (after test007, the first RT-Smart boot): the
 floor every later test builds its `## Needs` on.
 

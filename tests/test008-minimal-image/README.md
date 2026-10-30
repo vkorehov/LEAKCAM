@@ -80,19 +80,19 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 
 | Metric | Value (typical / max) | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> app init (median / max of runs) | **MISSING** | test022 | per build |
-| This part's boot share | **MISSING** | - | mounts follow used pages |
-| Test run time | **MISSING** | - | build + flash per variant |
-| Speed / rate against the top | **MISSING** | SPEEDS.txt | no regression |
+| Boot, power-on -> app init (median / max of runs) | pt_run -> msh 0.47 / 0.47 s (median / max of 5; SPL 0.16, OpenSBI 0.24, RT-Smart 0.25, mounted 0.46, msh 0.47); longest step to mounted 0.21 s (2026-10-30, run.py) | test022 | per build |
+| This part's boot share | n/a: the whole boot is this test's subject (test022 splits it) (2026-10-30) | - | mounts follow used pages |
+| Test run time | 71 s automated (run.py, 2026-10-30), no setup | - | build + flash per variant |
+| Speed / rate against the top | msh 0.47 s after pt_run in 5 of 5 boots (2026-10-30): no regression against builds 1+2 (app init 0.484-0.494 s) | SPEEDS.txt | no regression |
 | Current floor / typical / peak | K230 at msh idle (agent running) 0.220 A at 5 V (USB-C 1 VBUS meter, test006, 2026-10-25); the image changes move it below the meter's 1 mA step | floor (test031) | |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | |
+| Voltage under load (min) | VBAT 4.40 V min (K230 ADC ch 1, test023 calibration, 5 samples; on USB: the charger rail, not the cell) (2026-10-30) | cutoff 3.10 V (bug-004) | |
 | Power, energy per operation | n/a: the image is not an operation; its boot energy is test022's | - | |
 | Per day | n/a: through the boot (test022) and the sessions (test102) | ENERGY.txt line | |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Temperature die / board (start / peak / end) | die 44.0 / 46.1 / 46.1 C; board 36.9 / 37.2 / 37.2 C (AHT20) (2026-10-30) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 131124 / min 105196 / 131124 B, blocks 106 -> 106, deleted 0; K230 heap available 7025152 B steady; leak: n/a, 5 snapshots (mem_leak.py needs >= 8 cycles) (2026-10-30) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | kdimg 45.38 MB, rtthread.bin 3 712 016 B, /sdcard programs 6 616 314 B (builds 1+2, 2026-10-22); BL616 product / test firmware 1.27 MB / 121 KB (2026-10-21) | minimal image (rule) | per build |
 | Compile flags | kernel `-O1 -g`; programs `-Os`, sections, `--gc-sections`, strip, no LTO; BL616 `-Os -g`, sections, `--gc-sections`, `-flto` (2026-10-22) | smallest code (rule) | per build |
-| Features over the minimal image | **MISSING**: per test, its Needs on top of the floor | - | bytes, boot ms, RAM, current |
+| Features over the minimal image | n/a: this test is the floor; the union of all tests' Needs is steps 3-5 (open) | - | bytes, boot ms, RAM, current |
 | Optimised build (-O3, LTO, -march) | programs -O3 -flto -march=rv64imafdcv fastest: cpubench 314.6 vs 344.5 ms at -Os (-9 %), +11.7 KB leakcam_wake (Flags B); kernel stays -O1 (-O2 faults, Flags A) | the faster one stays | |
 
 ## Boot time
