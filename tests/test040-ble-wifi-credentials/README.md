@@ -75,11 +75,12 @@ power cut; no leak over the repeats; the passphrase never appears on a console o
 
 - Steps 3-9 pass, 46 of 46 checks (run.py runs 12 and 13, 2026-10-29): every write limit enforced; credentials
   stored exactly (no old tail bytes); kept over HBN and a watchdog reset; checked store reports JOINING -> ADDRESS ->
-  INTERNET -> SAVED, wrong passphrase 0x11 WRONG_PASSWORD, unknown SSID 0x10 NOT_FOUND with the old credentials kept;
+  INTERNET -> SAVED; a wrong passphrase fails and stores nothing (0x11 WRONG_PASSWORD since 2026-10-30, the SDK's
+  firmware status read, test106; before it 0x12 JOIN_FAILED), unknown SSID 0x10 NOT_FOUND, the old credentials kept;
   link dropped during a check: nothing stored; a second commit starts no second check; BLE and Wi-Fi run together.
 - Step 8 (BLE first, during a session; run 13, -O3 + LTO, 2026-10-29): the session is back 0.1 s after a check during
   it, 0.1 s after SAVED (checked and unchecked), 3.4 s after a failed join to a missing network, 0.1 s after SAVED with
-  a changed router password (run 12, -O2: 4.0 s after the failed join, 4.6 s after the changed password).
+  a changed router password.
 - Step 9: 20 store cycles, 0 failed, BL616 `mem` flat: no leak (runs 12 and 13, 2026-10-29).
 - Hand step 1 (2026-10-29): advertises on USB power; a held, paired connection drops 0.1 s after USB-C 1 out; no
   advertising on battery (15 s scan); advertising again after the plug (the test firmware needs `pt_ble on`, the
@@ -91,13 +92,13 @@ power cut; no leak over the repeats; the passphrase never appears on a console o
 - PDS A/B decided (pds_ab.py, 2026-10-29): with the SDK's PDS reset at BLE start the BL616's USB device drops for good;
   with the empty `btblecontroller_software_pds_reset()` hook every BLE start kept USB. The empty hook stays (user).
 - No BLE bonds kept (CONFIG_BT_SETTINGS off): after a reset or HBN the phone pairs again (user decision).
-- Test firmware back to default build flags (-O2, no LTO; -O3 / LTO only for optimisation tests, user 2026-10-29);
-  the -O3 / LTO comparison in Metrics stands (the product defconfig uses -O3 + LTO).
+- Test firmware back to the default build flags (-Os -g, the SDK's Kconfig default, no LTO; -O3 / LTO only for
+  optimisation tests, user 2026-10-29), flashed 2026-10-30: `pt_ble on` keeps USB and advertises; test106 ran 18/18
+  on it. The -O2 / -O3 / LTO comparison in Metrics stands (the product defconfig uses -O3 + LTO).
 
 Open:
 - Step 5: the full power cut (cell out, USB out) not done (user keeps the cell in); persistence over reset, watchdog
   reset and HBN passed.
-- The default-flag (-O2) test firmware rebuild is not flashed yet (2026-10-29).
 - The product firmware does not boot after a flash (no USB device, no advertising, 45-46 mA steady, at -O2 and -O3 +
   LTO; 2026-10-29) - left for the product rewrite.
 - 2026-10-28: `pt_ble on` typed on battery advertised (only pairing gated in the test firmware) vs hand step 1 of

@@ -28,7 +28,7 @@ for i in range(5):
     r.sample(f"after {i + 1}")
 rms = [a for a, _ in levels]
 ok = bool(rms) and min(rms) > -60 and not fails
-r.set("speed", f"48 kHz mono, 1 level line per second for 10 s in every run; quiet-room rms {min(rms):.1f} to "
+r.set("speed", f"16 kHz mono (leakcam_stream AUDIO_RATE), 1 level line per second for 10 s in every run; quiet-room rms {min(rms):.1f} to "
                f"{max(rms):.1f} dBFS, peak {max(p for _, p in levels):.1f} dBFS ({r.date})" if rms else None)
 r.set("share", f"n/a: the codec starts in the program, not in the boot ({r.date})")
 r.energy(busy, 10, per_day=4, idle_amps=idle, what="10 s audio")

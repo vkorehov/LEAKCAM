@@ -36,7 +36,6 @@ BL616 memory leak over the rounds.
   (2026-10-25, run.py).
 - `pt_usb`: USB-C 1 plug / unplug reported via BQ24072 PGOOD (2026-10-17).
 - Flash write 204 KB/s, ~100 % of the ROM's UART 2 Mbaud link (2026-10-21).
-- Open: wet leak test and Wi-Fi with the product BL616 firmware.
 
 ## Metrics (2026-10-21, ISP flash of bl616_powertest)
 
@@ -57,7 +56,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Image (sizes) | BL616 test firmware 121 KB (+ boot2 53 KB) (bl616_powertest) | minimal image (rule) | the image this run used |
 | Compile flags | BL616 -Os -g, -ffunction/-fdata-sections, --gc-sections, -flto (SDK) | smallest code (rule) | |
 | Features over the minimal image | BL616 test firmware commands (pt_*); test firmware 1 114 864 B; not in the product firmware (2026-10-25) | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | n/a: BL616 test firmware (SDK -O2, no LTO), not the product firmware; the product BL616's flags are test008 step 6 (2026-10-25) | the faster one stays | |
+| Optimised build (-O3, LTO, -march) | n/a: not an optimisation test (test builds use the default flags: user, 2026-10-29) | the faster one stays | |
 
 ## Boot time
 

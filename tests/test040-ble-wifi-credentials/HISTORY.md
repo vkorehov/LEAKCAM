@@ -4,6 +4,7 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+
 ### Status line before the 2026-10-29 cleanup
 
 Status: **pass** (2026-10-29): automated run.py 46/46 (runs 12, 13) and the hand steps 1 and 2; step 5's
@@ -117,6 +118,13 @@ the board was never seen advertising.
 - Optimised build note (2026-10-29): "-O3 + LTO adopted in the product and test defconfigs".
 
 ## Obstacles
+
+- 2026-10-30 12:20: the re-run after the audit found no BL616 port: board and phone both gone from the VM's USB
+  (the hub drop of 2026-10-29 again); run.py read it as "no pt_ble" - not a test result.
+
+
+- Step 8 at -O2 (run 12, 2026-10-29): the session back 4.0 s after the failed join, 4.6 s after the changed
+  password (run 13 at -O3 + LTO: 3.4 s and 0.1 s; moved out of the README by the 2026-10-30 audit).
 
 - Own mistake (2026-10-29, three times: hand_steps.py, pds_ab.py): runners started as `cd <dir> && nohup python3 ... &`
   - the `&&` chain is backgrounded as one shell, so `$!` (and the "stop" that used it) hit the shell, not Python; the

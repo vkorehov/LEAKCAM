@@ -15,7 +15,7 @@ below is generated from each test's Status line, so the two always agree.
 leakcam-test-metrics (a value measured, `n/a: <reason>`, or `**MISSING**`); after a run `check_tests.py testNNN` must
 pass before the run is reported. Every test records boot time, battery energy, temperature and memory on both chips;
 every repeated operation is a leak test (`tools/power-bringup/mem_leak.py`). Tests run on the **test firmware only**
-(the product firmware is rewritten after the tests), built with the SDK's default flags for fast builds; -O3 / LTO
+(the product firmware is rewritten after the tests), built with the SDK's default flags (-Os -g, no LTO) for fast builds; -O3 / LTO
 only in tests about optimisation (user, 2026-10-29).
 
 **Automated runs:** a test with a `run.py` runs unattended through PR1; `tools/test-standard/run_tests.py` runs them in
@@ -85,6 +85,28 @@ Leak tests, one per operation the product repeats:
 | [test104 battery energy audit](test104-battery-energy-audit/README.md) | 2026-10-21 | **planned**: after the product BL616 firmware runs (hibernate, real sessions). |
 | [test105 maximum current - can the battery carry everything at once?](test105-max-current/README.md) | 2026-10-25 | **partial**: handover runs 1-2 done - USB -> cell under every camera-free load (1.06 A at 5 V), |
 | [test106 Wi-Fi setup from the phone, end to end](test106-wifi-setup-from-phone/README.md) | 2026-10-30, run.py 18/18 | **pass, steps 1 3 4 5 6 8**: setup 7.3-8.0 s from opening the app to Done; steps 2 |
+
+## Not tested yet (audit 2026-10-30)
+
+**Product behaviour no test covers** (DESIGN.md 5; most need the rewritten product firmware or the cameras):
+
+| Behaviour | Where it belongs |
+|---|---|
+| Wake scheduling and every wake case with their overlaps (humidity only, humidity alarm, report due, server check with / without a stream request, leak wet and dry edges, USB plug; a leak during a check, a check with a report due, a check while on USB; no AP, no server, no credentials) | new test, after the product rewrite (DESIGN 5.1 asks for it) |
+| Humidity alarm (AHT20 threshold -> report) | the same new test |
+| `leakcam_wake` on the board: capture -> history compare (imgdiff + change net) -> `/v1/check` to the mock server -> the sleep it chooses; change-net download `GET /v1/nn` | test103 (`/v1/nn` added there) |
+| Session protocol end to end (READY / WAKE / ACK / TIME / SLEEP) with the product agent; NTP time back to the BL616 | test101, test037 steps 1-6 |
+| Live stream: both cameras + Opus audio over RTMP to MediaMTX (`leakcam_stream -p`) | test100 step 5 (cameras) |
+| OTA: the writer (inactive slot + `ota_meta`) is not built; the SPL's A/B choice never ran on the board | new test, when the writer exists |
+| Production server check (time schedule, DHCP lease reuse, server interval, `SERVER` from the agent) | not built; test100 `pt_poll` proved the cycle |
+| Cameras: CSI/I2C, capture at 2592x1944, LED brightness at 2-3 m, auto-exposure against the LED back-off | test020, test030, test009 |
+| The closed enclosure: temperature, Wi-Fi at the install distance | test026, test100 |
+| The real server (TLS, authentication) | not built |
+
+**Tests not run or partial:** not run - test020, test030 (cameras), test101, test102, test104 (product firmware),
+test103 (later); partial - test008 (steps 3-7), test026 (KPU / encoder / camera load, enclosure, die limit), test032
+(crystal ppm, 100 cycles, 24 h), test034 (real water, 8 h dry), test035 (100 transitions), test037 (steps 1-6),
+test038 (lab supply), test105 (runs 1-4), test106 (steps 2, 7); **fail** - test039 (0.7 % of console commands lost).
 
 **Always:**
 - Build host = VMware VM on a Mac. Since 2026-10-24 VMware's USB popups are off: every re-enumerated device (K230

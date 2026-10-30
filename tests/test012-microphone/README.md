@@ -43,10 +43,8 @@ A level reported for every second and rms above the -60 dBFS dead floor in every
 - Gain stays 54 dB for now (PGA 20 dB would give 10 dB headroom).
 
 Open:
-- Sample rate: the 2026-10-18 setup says 16 kHz, the 2026-10-25 Metrics say 48 kHz mono; which one leakcam_stream
-  uses now is not stated.
-- Quiet-room level: -42 dBFS (2026-10-18) vs the Metrics' "quiet-room rms -25.3 to -2.8 dBFS" (2026-10-25); the
-  2026-10-25 room was likely not quiet, not recorded.
+- Audio inside a stream (Opus 24 kbit/s over RTMP, `leakcam_stream -p`): not run; test100 step 5, needs the
+  cameras.
 
 ## Metrics (**MISSING** on a re-run: skill leakcam-test-metrics, every value at its maximum)
 
@@ -57,7 +55,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Boot, power-on -> app init (median / max of runs) | pt_run -> msh 0.45 / 0.45 s (median / max of 1; SPL 0.16, OpenSBI 0.24, RT-Smart 0.25, mounted 0.44, msh 0.45); longest step to mounted 0.19 s (2026-10-25, run.py) | test022 | longest step: |
 | This part's boot share | n/a: the codec starts in the program, not in the boot (2026-10-25) | - | |
 | Test run time | 219 s automated (run.py, 2026-10-25), no setup | - | setup (flashing, plugging, waiting) separately |
-| Speed / rate against the top | 48 kHz mono, 1 level line per second for 10 s in every run; quiet-room rms -25.3 to -2.8 dBFS, peak 0.0 dBFS (2026-10-25) | SPEEDS.txt | % of the top |
+| Speed / rate against the top | 16 kHz mono (leakcam_stream AUDIO_RATE), 1 level line per second for 10 s in every run; rms -25.3 to -2.8 dBFS, peak 0.0 dBFS in a room that was not quiet (2026-10-25); quiet room -42 dBFS (2026-10-18) | SPEEDS.txt | % of the top |
 | Current floor / typical / peak | 0.220 / 0.226 / 0.232 A at 5 V (USB-C 1 VBUS meter; K230 at msh idle (agent running): 0.220 A (read in test006-k230-nand-boot-spl); K230 recording the microphone (leakcam_stream -m 10, repeated): 0.232 A) (2026-10-25) | floor (test031) | at the probe above |
 | Voltage under load (min) | VBAT 4.35 V min (K230 ADC ch 1, test023 calibration, 9 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | 232 mA x 4.35 V = 1010 mW; per 10 s audio (10.00 s) 10.10 J, 644 uAh; over idle (220 mA) 0.52 J (2026-10-25) | - | scripts/energy.py |

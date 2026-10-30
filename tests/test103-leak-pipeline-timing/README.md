@@ -20,7 +20,10 @@ tests is what the minimal image keeps).
 1. Wake -> K230 READY (test101) -> capture both cameras -> change net -> history -> POST /v1/check -> answer ->
    (leak) RTMP clip start: timestamps at each step on the K230 console (console_record.py).
 2. Same with the server answering "leak" (the clip path) and "no leak" (back to sleep).
-3. Battery cost: with test102's current, the energy per wake for each path.
+3. The decisions `leakcam_wake` takes on the board: same / light / new per camera against the history, a sensor alarm
+   without a visible change, no server, server not reached; the sleep it sends each time (6 h / 1 h / 10 min).
+4. A change net offered in the answer: `GET /v1/nn/<CRC>` downloaded, stored, used on the next wake.
+5. Battery cost: with test102's current, the energy per wake for each path.
 
 ## Pass
 

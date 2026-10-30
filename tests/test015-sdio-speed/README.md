@@ -48,9 +48,8 @@ All 2026-10-21 (this test's only run):
 - Round-trip time not measured: the bare echo device raises no upload interrupt, the K230 driver collects echoes on
   its 1 s safety poll.
 
-Open:
-- The product BL616 firmware with NetHub did not reach its USB console on rev 1 at the time of this run, so this test
-  used the SDK's `sdio2_test` echo device; the NetHub end-to-end rate (expected 9.4-21 MB/s) is not measured here.
+- The bus rate here is the SDK's `sdio2_test` echo device; the NetHub bridge end to end is test100's: TCP up
+  27.5 / down 22.1 Mbit/s (2026-10-25).
 
 ## Metrics (**MISSING** on a re-run: skill leakcam-test-metrics, every value at its maximum)
 

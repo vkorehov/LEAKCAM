@@ -49,7 +49,7 @@ BAT_FULL_SCALE_MV = 5329          # test023 calibration (firmware/k230_agent/lea
 # firmware/k230_capture/rtsmart/Makefile (LEAKCAM_OPT), bouffalo_sdk cmake/compiler_flags.cmake (no
 # CONFIG_GCC_OPTIMISE_LEVEL in the test firmware's defconfig)
 FLAGS = ("K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os -march=rv64imafdcv, sections + "
-         "--gc-sections, strip, no LTO; BL616 test firmware -O2 (SDK default), no LTO")
+         "--gc-sections, strip, no LTO; BL616 test firmware -Os -g (SDK Kconfig default), no LTO")
 KEYS = {"boot": 0, "share": 1, "runtime": 2, "speed": 3, "current": 4, "voltage": 5, "energy": 6, "perday": 7,
         "temp": 8, "memory": 9, "image": 10, "flags": 11, "features": 12, "optimised": 13}
 MILESTONES = [("SPL", b"U-Boot SPL"), ("OpenSBI", b"OpenSBI"), ("RT-Smart", b"Thread Smart"),

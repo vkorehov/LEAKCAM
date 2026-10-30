@@ -50,6 +50,10 @@ def ble_on():
 
 ssid, psk = wifi_credentials()
 wifi_ssid = ssid
+if not os.path.exists(BL_PORT):
+    r.obstacle("no BL616 console on USB (board or the VM's USB hub gone): reconnect, then run again")
+    r.finish("not run: no BL616 console on USB.", False, switch_off=False)
+    sys.exit(1)
 if "pt_ble" not in bl("help", 2):
     r.obstacle("the BL616 test firmware on the board has no pt_ble: flash tools/power-bringup/bl616_powertest")
     r.finish("not run: no pt_ble in the BL616 firmware.", False)

@@ -531,8 +531,8 @@ capture (LEDs at 100 %, AE settled)
     7.1+).
   - Quiet leaks: mic PGA 30 dB plus ALC analog +24 dB, all before the ADC; clips near 80 dB SPL.
     The gains are set after the first enable, which resets them.
-  - The MIC_BIAS default voltage is undocumented: measure it at C96 first (the mic needs at
-    least 1.5 V).
+  - MIC_BIAS measured 1.4 V at C96 (mic VDD) and FB4.2 (tests/test012): below the 1.5 V this note once asked for, yet
+    the mic records cleanly (-42 dBFS quiet floor, speech to -7 dBFS); the microphone's datasheet minimum is not checked.
 
 ## 6. Rev 1 changes
 

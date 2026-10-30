@@ -62,8 +62,6 @@ Open:
   2026-10-25: the +2.7 ms core reset -> main() is not explained.
 - `main()` -> K230_PWR not timed (the product decides there, leak_wake.c); wake from a leak (ACOMP) edge and a USB
   plug (Steps 1) not measured.
-- Metrics: Compile flags say -Os -g, -flto while Optimised build says SDK -O2, no LTO for the same test firmware;
-  Image says 149 984 B while Features says 1 114 864 B: which holds is not recorded.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
@@ -81,10 +79,10 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Per day | n/a: as energy; the wake cost sits in the sleep floor of test031 (2026-10-25) | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | die n/a: K230 off; board 32.4 / 32.4 / 29.3 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
 | Memory BL616 / K230 (start / min / end), leak | BL616 free 207136 / min 204396 / 207136 B, blocks 19 -> 19, deleted 0; BL616 no leak (mem_leak.py, 8 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
-| Image (sizes) | BL616 test firmware 149 984 B (+29 KB storage stack) | minimal image (rule) | the image this run used |
-| Compile flags | BL616 SDK -Os -g, sections, --gc-sections, -flto | smallest code (rule) | |
+| Image (sizes) | BL616 test firmware 1 114 864 B at the 2026-10-25 run (with the Wi-Fi set of test100); 149 984 B before it (2026-10-22) | minimal image (rule) | the image this run used |
+| Compile flags | BL616 test firmware -Os -g (the SDK's Kconfig default; bl616_powertest/defconfig sets none), sections, --gc-sections, no LTO | smallest code (rule) | |
 | Features over the minimal image | BL616 test firmware commands (pt_*); test firmware 1 114 864 B; not in the product firmware (2026-10-25) | test008 floor | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | n/a: BL616 test firmware (SDK -O2, no LTO), not the product firmware; the product BL616's flags are test008 step 6 (2026-10-25) | the faster one stays | |
+| Optimised build (-O3, LTO, -march) | n/a: not an optimisation test (test builds use the default flags: user, 2026-10-29) | the faster one stays | |
 
 ## Boot time
 

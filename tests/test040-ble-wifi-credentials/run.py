@@ -17,7 +17,7 @@ from harness import Run, bl, REPO   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
 from phone import creds, op, ready, want   # noqa: E402
 
-SAVED, NOT_FOUND, WRONG_PSK, JOIN_FAILED = 0x04, 0x10, 0x11, 0x12
+SAVED, NOT_FOUND, WRONG_PSK = 0x04, 0x10, 0x11
 
 
 def hexs(s):
@@ -87,6 +87,10 @@ ssid, psk = wifi_credentials()
 if "--flash" in sys.argv:
     subprocess.run(["make", "-C", os.path.join(REPO, "tools/power-bringup/bl616_powertest"), "flash"], check=True)
     time.sleep(5)
+if not os.path.exists(BL_PORT):
+    r.obstacle("no BL616 console on USB (board or the VM's USB hub gone): reconnect, then run again")
+    r.finish("not run: no BL616 console on USB.", False, switch_off=False)
+    sys.exit(1)
 if "pt_ble" not in bl("help", 2):
     r.obstacle("the BL616 test firmware on the board has no pt_ble: flash it first (run.py --flash)")
     r.finish("not run: no pt_ble in the BL616 firmware.", False)
@@ -160,7 +164,7 @@ check("kept over a watchdog reset", creds() == mark)
 
 # 7. checked store: failures keep the old credentials, the right ones are stored after JOINING -> ADDRESS -> INTERNET
 bad = psk[:-1] + ("x" if psk[-1] != "x" else "y")
-for name, s_, p_, final in (("wrong passphrase", ssid, bad, (WRONG_PSK, JOIN_FAILED)),
+for name, s_, p_, final in (("wrong passphrase", ssid, bad, (WRONG_PSK,)),   # 0x11 since the SDK firmware status is read (test106)
                             ("unknown SSID", "LEAKCAM-T040-NONE", psk, (NOT_FOUND,))):
     res = op("session", address=addr, pair="accept", writes=f"ssid:{hexs(s_)},psk:{hexs(p_)},commit:01", secs=90)
     st = states(res)
@@ -185,7 +189,7 @@ check("session: the bridge on the stored network", link(ssid) >= 0)
 n = connects()
 res = op("session", address=addr, pair="accept", writes=f"ssid:{hexs(ssid)},psk:{hexs(bad)},commit:01", secs=90)
 st = states(res)
-check("check during a session runs (BLE first): WRONG_PASSWORD", st[:1] == [1] and st[-1:] in ([WRONG_PSK], [JOIN_FAILED]),
+check("check during a session runs (BLE first): WRONG_PASSWORD", st[:1] == [1] and st[-1:] == [WRONG_PSK],
       str(st))
 check("check during a session: old credentials kept", creds() == want(ssid, psk))
 t = link(ssid)

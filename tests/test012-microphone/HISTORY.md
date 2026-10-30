@@ -56,6 +56,9 @@ Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: extra
 
 ## Obstacles
 
+- The Metrics said "48 kHz mono" from 2026-10-25: a fixed string in run.py, not a reading; the recording is 16 kHz
+  (leakcam_stream AUDIO_RATE, the WAV header). Fixed 2026-10-30 (test audit).
+
 - **Mic check hung after the codec power-up** -> the AI takes its frames from a VB pool and none existed ->
   `vb_setup()` creates an audio pool (as Canaan's sample_audio).
 - **Shell and NAND dead after a mic run; user programs read the NAND at 26 KB/s** (5 MB in 195 s, CPU stalls up to

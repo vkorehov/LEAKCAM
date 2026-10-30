@@ -76,7 +76,8 @@ TCP up >= 2 x the two streams' rate with margin at the install distance; no RTMP
 
 Open:
 - Step 5: two RTMP streams to MediaMTX (needs the cameras); UDP loss and the install distance.
-- BL616-only server check not re-run on the 6 KB lwIP heap (2026-10-27).
+- `pt_poll` (the BL616-only server check) not re-run on the 6 KB lwIP heap; the same stack carried DHCP, DNS and an
+  HTTP GET in every test106 credential check since (2026-10-30, all passed).
 - Test firmware does not take the bridge fully down at `pt_off` (a second run in one BL616 boot gets no address);
   teardown fix open (2026-10-25).
 - K230 memory during throughput not read (the runner's `free` parse found nothing).
