@@ -25,8 +25,7 @@
     <string name="help_pick">Pick your LEAKCAM (the one with the strongest signal is usually the nearest), then enter the Wi-Fi network it should use.</string>
     <string name="help_wifi">Enter the name and password of the Wi-Fi network the LEAKCAM should use. It must be a 2.4 GHz network: the LEAKCAM does not see 5 GHz. If your router shows separate names for the two bands, pick the 2.4 GHz one. Leave the password empty for an open network. Then tap Pair, check and save: the LEAKCAM tries the network before it keeps it.</string>
     <string name="help_connecting">Connecting to %1$s…</string>
-    <string name="help_pairing">Your phone now asks to pair with %1$s.\n\n• Tap Pair (on some phones: Allow or OK).\n• There is no PIN to type: the LEAKCAM has no screen or buttons.\n• If no request appears, pull down the notification shade and tap the Bluetooth pairing notification.\n\nPairing is needed only once. It keeps the Wi-Fi password encrypted on its way to the LEAKCAM.</string>
-    <string name="help_already_paired">%1$s is already paired with this phone. Sending the Wi-Fi settings…</string>
+    <string name="help_pairing">Your phone now asks to pair with %1$s.\n\n• Tap Pair (on some phones: Allow or OK).\n• There is no PIN to type: the LEAKCAM has no screen or buttons.\n• If no request appears, pull down the notification shade and tap the Bluetooth pairing notification.\n\nPairing keeps the Wi-Fi password encrypted on its way to the LEAKCAM. The LEAKCAM keeps no pairing, so the phone asks every time.</string>
     <string name="help_sending">Paired. Sending the Wi-Fi settings…</string>
     <string name="help_check_join">The LEAKCAM is now joining "%1$s" to check the name and password. This takes up to a minute; keep the phone near it.</string>
     <string name="help_check_address">Password accepted. Getting an address from the router…</string>
@@ -46,7 +45,7 @@
     <string name="err_timeout">The LEAKCAM did not answer. Check it is still plugged into USB power and nearby, then try again. If a pairing request is still open on the phone, accept it first.</string>
     <string name="err_disconnected">The LEAKCAM disconnected (status %1$d). Keep it on USB power and nearby, then try again.</string>
     <string name="err_pairing_refused">Pairing did not go through.\n\n• Was the request declined, or did it time out? Try again and tap Pair.\n• Is the LEAKCAM on USB power? It refuses pairing on battery.</string>
-    <string name="err_pairing_stale">The LEAKCAM no longer recognises this phone (it was reset, or paired again elsewhere).\n\nOpen the phone\'s Bluetooth settings, tap %1$s, choose Forget (or Unpair), then tap Pair, check and save again.</string>
+    <string name="err_unpair">This phone keeps an old pairing with %1$s and would not remove it.\n\nOpen the phone\'s Bluetooth settings, tap %1$s, choose Forget (or Unpair), then tap Pair, check and save again.</string>
     <!-- the LEAKCAM's own check of the network (firmware/bl616/wifi_check_calc.h) -->
     <string name="chk_not_found">The LEAKCAM cannot see \"%1$s\".\n\n• Check the name: upper and lower case count.\n• It must be a 2.4 GHz network.\n• The router may be out of reach from where the LEAKCAM is now. If you are setting it up elsewhere, use Save without checking.</string>
     <string name="chk_wrong_password">The router refused the password for \"%1$s\" (code %2$d). Check the password (upper and lower case count) and try again.</string>

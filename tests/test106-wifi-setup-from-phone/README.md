@@ -1,6 +1,6 @@
 # test106: Wi-Fi setup from the phone, end to end
 
-Status: **planned** (2026-10-29): not run yet; step 6 rewritten 2026-10-29 (the board keeps no BLE pairings).
+Status: **planned** (2026-10-30): not run yet; the app now removes its old bond itself before every send (step 6).
 
 The installation flow as a user meets it: a new LEAKCAM on USB power, the LEAKCAM Setup app (android/, APP.txt) finds
 it, pairs, sends the Wi-Fi network, the board checks and stores it in the BL616's flash; then, on battery, the
@@ -37,8 +37,7 @@ Android 8.0+, the app's BLE permissions.
 4. **Save without checking:** away from the network: stored, the app says it was not checked.
 5. **Change network:** a second setup replaces the first; the next wake joins the new one.
 6. **Board reset (bond lost):** the board keeps no pairings (user, 2026-10-29), so any reset or sleep loses the bond:
-   the app removes its stale bond by itself and pairs again, no Forget by hand (the app still asks for it today:
-   change it first, as BleOp's unpair).
+   the app removes its stale bond by itself before every send and pairs again, no Forget by hand.
 7. **On battery, no setup:** USB out: the board is not listed by the app, a stored bond cannot connect.
 8. **Repeats:** 10 setups in a row (alternating two networks): every one Done, BL616 memory steady (mem_leak.py).
 
@@ -52,7 +51,8 @@ stores nothing; a stored network is used on battery by the BL616 and the K230; s
 Not run yet.
 
 Open:
-- The app still asks the user to Forget the stale bond by hand; it must remove it by itself (step 6) before the run.
+- The app's bond removal (`removeBond`, no public API) is proven on the bench phone (Android 13, BleOp); the second
+  phone of the hand run checks another Android version.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 

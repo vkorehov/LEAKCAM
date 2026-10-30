@@ -28,8 +28,9 @@ router refused, no address, no DNS, no internet, or a network with a login page.
 failure may only be about where the board is now, **Save without checking** stores the network
 anyway.
 
-If a board that was paired before was reset, the app says so and asks to remove it in the
-phone's Bluetooth settings (Forget) before saving again.
+The board keeps no pairings, so every setup pairs anew: the app removes the phone's old bond
+itself first. Only a phone that refuses to remove it gets the request to Forget the board in its
+Bluetooth settings.
 
 ## What it sends
 

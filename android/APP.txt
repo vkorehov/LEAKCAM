@@ -66,11 +66,11 @@ Step 3  Enter your Wi-Fi network                                        [help_wi
 
 Step 4  Pair, check and save
   a. Connecting to LEAKCAM-xxyy                                         [help_connecting]
-  b. Pairing, the first time only                                       [help_pairing]
+  b. Pairing, every time (the board keeps no pairings; the app removes the
+     phone's old bond first)                                            [help_pairing]
        The phone shows its own pairing request. The help box says: tap Pair (or Allow, OK),
        there is no PIN (the board has no screen or buttons), the request may be in the
-       notification shade, pairing happens once and keeps the password encrypted.
-     Already paired: [help_already_paired]; then [help_sending].
+       notification shade, pairing keeps the password encrypted; then [help_sending].
   c. The board checks the network itself (commit 0x01), about a minute at most:
        joining the network                                              [help_check_join]
        password accepted, getting an address (DHCP)                     [help_check_address]
@@ -116,8 +116,8 @@ HTTP answer. The codes are for support, the text does not depend on them.
 
   what happened                                        message
   pairing declined, timed out, or board on battery    [err_pairing_refused]
-  paired before, but the board forgot this phone       [err_pairing_stale]: Bluetooth settings,
-    (reset, or paired again elsewhere)                   Forget LEAKCAM-xxyy, try again
+  the phone would not remove its old bond (the board    [err_unpair]: Bluetooth settings,
+    keeps none, so every send removes it, then pairs)    Forget LEAKCAM-xxyy, try again
   connection dropped during the check                  [err_lost_during_check]: nothing stored
   connection dropped at another point                  [err_disconnected] (with the status)
   no answer for 60 s in any step                       [err_timeout], including "accept the

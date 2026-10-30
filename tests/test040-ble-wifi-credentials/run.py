@@ -93,7 +93,7 @@ def install(apk):
             xml = adb("exec-out", "uiautomator", "dump", "/dev/tty", secs=20)
             if "com.android.vending" not in xml:
                 continue
-            m = re.search(r'text="[^"]*(?:без проверки|without (?:checking|scanning)|anyway|Не отправлять|Don.t send)[^"]*"'
+            m = re.search(r'text="[^"]*(?:без проверки|Не проверять|without (?:checking|scanning)|anyway|Не отправлять|Don.t send)[^"]*"'
                           r'[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml, re.I)
             if m:
                 x1, y1, x2, y2 = map(int, m.groups())

@@ -27,6 +27,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.ParcelUuid
+import android.os.SystemClock
 import android.text.InputType
 import android.view.View
 import android.view.WindowInsets
@@ -87,7 +88,7 @@ class MainActivity : Activity() {
         const val STEP_WIFI = 3
         const val STEP_SAVE = 4
         const val STEP_DONE = 5
-        val PAIRING_LOST = setOf(5, 6, 0x3D)  // HCI: authentication failure, key missing, MIC failure
+        const val UNPAIR_MS = 5_000L          // the phone removes an old bond
     }
 
     private lateinit var steps: List<TextView>
@@ -111,7 +112,6 @@ class MainActivity : Activity() {
     // one send at a time
     private var gatt: BluetoothGatt? = null
     private var boardName = ""
-    private var wasBonded = false        // paired before this send: a pairing failure means a stale bond
     private var checked = true           // this send asks the board to check the network first
     private var committed = false        // commit written: STATUS reports from here on
     private var ssidText = ""
@@ -293,9 +293,11 @@ class MainActivity : Activity() {
         if (psk.isNotEmpty() && psk.size !in 8..63)
             return problem(STEP_WIFI, R.string.err_password)
         stopScan()
+        /* the board keeps no pairings (DESIGN.md 5.3): a bond from an earlier setup is stale, every send pairs anew */
+        if (device.bondState != BluetoothDevice.BOND_NONE && !removeBond(device))
+            return problem(STEP_SAVE, R.string.err_unpair, name)
         boardName = name
         ssidText = ssidField.text.toString()
-        wasBonded = device.bondState == BluetoothDevice.BOND_BONDED
         checked = check
         committed = false
         val commit = if (check) COMMIT_CHECK else COMMIT_UNCHECKED
@@ -308,7 +310,25 @@ class MainActivity : Activity() {
         saveAnywayButton.visibility = View.GONE
         show(STEP_SAVE, R.string.help_connecting, name)
         armTimeout()
-        gatt = device.connectGatt(this, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
+        connectWhenUnpaired(device, SystemClock.elapsedRealtime() + UNPAIR_MS)
+    }
+
+    private fun removeBond(d: BluetoothDevice) = try {
+        d.javaClass.getMethod("removeBond").invoke(d) as Boolean    // no public API; test040's BleOp uses it too
+    } catch (e: ReflectiveOperationException) {
+        false
+    }
+
+    private fun connectWhenUnpaired(device: BluetoothDevice, until: Long) {
+        when {
+            device.bondState == BluetoothDevice.BOND_NONE ->
+                gatt = device.connectGatt(this, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
+            SystemClock.elapsedRealtime() > until -> {
+                finishSend(null)
+                problem(STEP_SAVE, R.string.err_unpair, boardName)
+            }
+            else -> main.postDelayed({ connectWhenUnpaired(device, until) }, 100)
+        }
     }
 
     private fun armTimeout() {
@@ -337,9 +357,8 @@ class MainActivity : Activity() {
 
     private fun fail(res: Int, vararg args: Any) = finishSend { problem(STEP_SAVE, res, *args) }
 
-    /** a pairing that did not complete: declined or on battery, or a bond the board no longer has */
-    private fun pairingFailed() =
-        if (wasBonded) fail(R.string.err_pairing_stale, boardName) else fail(R.string.err_pairing_refused)
+    /** a pairing that did not complete: declined, or the board on battery */
+    private fun pairingFailed() = fail(R.string.err_pairing_refused)
 
     private val gattCallback = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(g: BluetoothGatt, st: Int, newState: Int) {
@@ -351,7 +370,6 @@ class MainActivity : Activity() {
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                     when {
                         bondReceiver != null -> pairingFailed()                  // dropped while pairing
-                        wasBonded && st in PAIRING_LOST -> pairingFailed()
                         committed -> fail(R.string.err_lost_during_check)
                         else -> fail(R.string.err_disconnected, st)
                     }
@@ -408,7 +426,7 @@ class MainActivity : Activity() {
     private fun pairThenDiscover(g: BluetoothGatt) {
         val device = g.device
         if (device.bondState == BluetoothDevice.BOND_BONDED) {
-            show(STEP_SAVE, R.string.help_already_paired, boardName)
+            show(STEP_SAVE, R.string.help_sending)          // paired already while the MTU was asked
             g.discoverServices()
             return
         }

@@ -365,9 +365,9 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
 - **Stored in easyflash** (`wifi_ssid`, `wifi_psk`), and nothing else.
 - **No pairings kept (user, 2026-10-29).** No bond keys in flash (`CONFIG_BT_SETTINGS` off): every
   setup pairs anew on USB power; after a reset or sleep the board has forgotten the phone. Nothing to
-  steal or wipe; the credentials are written once per installation. Open (tests/test106): the app
-  still asks the user to forget the old pairing by hand (`err_pairing_stale`); it should remove its
-  own stale bond and pair again, as the test's BleOp does.
+  steal or wipe; the credentials are written once per installation. The app removes the phone's old
+  bond itself before every send and pairs anew (2026-10-30); only a phone that refuses the removal
+  gets the request to Forget the board by hand (`err_unpair`).
 - **No other BLE features:** no shell, OAD or device status. Everything else goes over Wi-Fi.
 - **BLE first (user, 2026-10-28).** The check (commit 0x01) takes the radio even from a running K230
   session (on USB power: a leak alarm): the K230 hears a link loss (JOINING), its requests wait, and
