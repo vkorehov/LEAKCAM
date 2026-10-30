@@ -1,18 +1,22 @@
 # test101: session length (wake to power-off)
 
-Status: **planned** (2026-10-21): not run yet.
+Status: **pass, steps 1-2** (2026-10-30, run.py): 10 of 10 sessions, power-on -> READY 0.87 s, rails off 27.68 s;
+step 3 needs the link protocol in the BL616 test firmware.
 
 The whole session: wake, K230 boot (measured on its own in test022), READY, the agent's work, the heartbeat
 stopping, power-off. With test102 it decides the battery cost of a wake.
 
 ## Setup
 
-**MISSING**: hookup, firmware / image, and the probes named in Metrics.
+BL616 test firmware (`bl616_powertest`: `pt_session`, `pt_uart on` for the link bridge) on PR1; the K230 test image
+on NAND (test019); both consoles (`/dev/ttyACM0`, `/dev/ttyACM1`). USB-C 1 in (USB power). `run.py` runs it all.
 
 ## Needs (build features and dependencies)
 
-**MISSING**: the kernel options / drivers, SDK components, libraries and programs this test uses (the union over all
-tests is what the minimal image keeps).
+BL616: K230 power path, the heartbeat watch (`pt_session`), the UART0 link bridge; K230: the boot chain (test022),
+`link_mux`, `leakcam_agent` (READY, heartbeat) and what it starts in a session.
+
+(What this test uses; the union over all tests is the feature set the minimal image keeps.)
 
 ## Steps
 
@@ -28,7 +32,26 @@ candidates to shorten.
 
 ## Result
 
-Not run yet.
+run.py, 2026-10-30, BL616 test firmware `pt_session`, K230 test image; 10 cold sessions, rails off 5 s between:
+
+| From power-on (median of 10, spread <= 13 ms) | s |
+|---|---|
+| U-Boot SPL banner | 0.22 |
+| OpenSBI | 0.33 |
+| RT-Smart banner | 0.63 |
+| file systems mounted | 0.84 |
+| msh | 0.85 |
+| agent READY frame on the link | 0.87 |
+| first heartbeat edge (BL616-timed) | 1.36 |
+| the agent's last heartbeat edge | 25.36 |
+| rails off (2 s after the last edge) | 27.68 |
+
+- The BL616's heap stays level over the 10 sessions (131124 B free each time): no leak.
+
+Open:
+- The agent works **24.5 s** after READY with no camera and no server on the bench: what fills it (leakcam_wake's
+  camera and Wi-Fi tries and their timeouts) is not split yet; it is most of a session's energy (test102).
+- Step 3: the BL616's own "READY <ms>" and the session end line need the link protocol in the test firmware.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
@@ -36,19 +59,19 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | **MISSING** | target (test022) | longest step: |
-| This part's boot share | **MISSING** | - | |
-| Test run time | **MISSING** | - | setup (flashing, plugging, waiting) separately |
-| session length per step | **MISSING** | - | % of the top |
+| Boot, power-on -> READY (median of 5) | power-on -> READY frame 0.87 / 0.87 s (median / max of 10; SPL 0.22, OpenSBI 0.33, RT-Smart 0.63, mounted 0.84, msh 0.85; first heartbeat 1.36 s) (2026-10-30) | target (test022) | longest step: |
+| This part's boot share | the session after READY: 24.5 s of agent work, then 2 s to rails off (2026-10-30) | - | |
+| Test run time | 419 s automated (run.py, 2026-10-30), no setup | - | setup (flashing, plugging, waiting) separately |
+| session length per step | wake -> rails off 27.68 / 27.68 s (median / max of 10); the agent's last heartbeat 25.36 s (2026-10-30) | - | % of the top |
 | Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
+| Voltage under load (min) | n/a: on USB power (the charger rail); no battery measurements (user, 2026-10-30) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | **MISSING** | - | scripts/energy.py |
 | Per day | **MISSING** | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
-| Image (sizes) | **MISSING** | minimal image (rule) | the image this run used |
-| Compile flags | **MISSING** | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
+| Temperature die / board (start / peak / end) | die n/a: K230 off; board 36.3 / 39.2 / 38.9 C (AHT20) (2026-10-30) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 131124 / min 105196 / 131124 B, blocks 106 -> 106, deleted 0; BL616 no leak (mem_leak.py, 10 snapshots) (2026-10-30) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Image (sizes) | BL616 test firmware 1309616 B (2026-10-30, on the board at the run) | minimal image (rule) | the image this run used |
+| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os -march=rv64imafdcv, sections + --gc-sections, strip, no LTO; BL616 test firmware -Os -g (SDK Kconfig default), no LTO (2026-10-30) | smallest code (rule) | |
+| Features over the minimal image | BL616 test firmware `pt_session` + the UART0 link bridge; K230 test image (test019) as test022 | test008 floor | bytes, boot ms, RAM, current |
 | Optimised build (-O3, LTO, -march) | n/a: not an optimisation test (test builds use the default flags: user, 2026-10-29) | the faster one stays | |
 
 ## Boot time
