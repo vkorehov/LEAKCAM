@@ -92,7 +92,7 @@ Leak tests, one per operation the product repeats:
 
 | Behaviour | Where it belongs |
 |---|---|
-| Wake scheduling and every wake case with their overlaps (humidity only, humidity alarm, report due, server check with / without a stream request, leak wet and dry edges, USB plug; a leak during a check, a check with a report due, a check while on USB; no AP, no server, no credentials) | new test, after the product rewrite (DESIGN 5.1 asks for it) |
+| What the product firmware does after each wake (the wake sources themselves pass on the test firmware: RTC test032, leak probe test034, USB plug test035, timing test021): doing what is due (humidity, report, server check with / without a stream request) and overlaps (a leak during a check, a check with a report due, a check while on USB; no AP, no server, no credentials) | new test, after the product rewrite (DESIGN 5.1 asks for it) |
 | Humidity alarm (AHT20 threshold -> report) | the same new test |
 | `leakcam_wake` on the board: capture -> history compare (imgdiff + change net) -> `/v1/check` to the mock server -> the sleep it chooses; change-net download `GET /v1/nn` | test103 (`/v1/nn` added there) |
 | Session protocol end to end (READY / WAKE / ACK / TIME / SLEEP) with the product agent; NTP time back to the BL616 | test101, test037 steps 1-6 |
