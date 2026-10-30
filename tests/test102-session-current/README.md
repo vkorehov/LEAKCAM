@@ -56,17 +56,17 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
 | Boot, power-on -> READY (median of 5) | **MISSING** | target (test022) | longest step: |
-| This part's boot share | **MISSING** | - | |
-| Test run time | **MISSING** | - | setup (flashing, plugging, waiting) separately |
+| This part's boot share | n/a: the whole session is the subject (test101 has the steps) (2026-10-30) | - | |
+| Test run time | 218 s automated (run.py, 2026-10-30), no setup | - | setup (flashing, plugging, waiting) separately |
 | Speed / rate (none for this test) | **MISSING** | - | % of the top |
-| Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING** | - | scripts/energy.py |
-| Per day | **MISSING** | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
-| Image (sizes) | **MISSING** | minimal image (rule) | the image this run used |
-| Compile flags | **MISSING** | smallest code (rule) | |
+| Current idle / during (min / avg / peak) | session, agent working: 228 mA (new reading); rails off, BL616 awake 61 mA (test006); K230 rails on, held in reset 87 mA (test021); K230 at msh idle (agent running) 220 mA (test006); KPU loop 220 mA (test013); encoder 2 x 15 fps 235 mA (test027: +15 mA); both LED chains 100 % 950 mA (test009: +0.73 A) (2026-10-30) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
+| Voltage under load (min) | n/a: on USB power; no battery measurements (user, 2026-10-30) | cutoff 3.10 V (bug-004) | at the probes above |
+| Power, energy per operation | one wake (test101 timeline: boot 0.87 s at ~87 mA, agent 24.5 s at 228 mA, 2.3 s at 220 mA): 6.17 A*s = 1.71 mAh at the board, 30.8 J from USB (2026-10-30) | - | scripts/energy.py |
+| Per day | 4 report sessions a day (6 h, DESIGN 5.1): 6.9 mAh/day at the board (2026-10-30) | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | die n/a: K230 off; board 37.3 / 37.3 / 37.3 C (AHT20) (2026-10-30) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 131124 / min 105196 / 131124 B, blocks 106 -> 106, deleted 0; leak: n/a, 1 snapshots (mem_leak.py needs >= 8 cycles) (2026-10-30) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Image (sizes) | BL616 test firmware 1309616 B (2026-10-30, on the board at the run) | minimal image (rule) | the image this run used |
+| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os -march=rv64imafdcv, sections + --gc-sections, strip, no LTO; BL616 test firmware -Os -g (SDK Kconfig default), no LTO (2026-10-30) | smallest code (rule) | |
 | Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
 | Optimised build (-O3, LTO, -march) | n/a: not an optimisation test (test builds use the default flags: user, 2026-10-29) | the faster one stays | |
 

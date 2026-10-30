@@ -4,6 +4,13 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-30 (run.py, 218 s): pass
+
+session current read on USB: 228 mA while the agent works
+
+- meter K230 session, the agent working (no camera, no server): 0.228 A
+
+
 Not run yet.
 
 ### Superseded statements
