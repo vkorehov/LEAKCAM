@@ -93,7 +93,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Image (sizes) | kdimg 45.38 MB, rtthread.bin 3 712 016 B, /sdcard programs 6 616 314 B (builds 1+2, 2026-10-22); BL616 product / test firmware 1.27 MB / 121 KB (2026-10-21) | minimal image (rule) | per build |
 | Compile flags | kernel `-O1 -g`; programs `-Os`, sections, `--gc-sections`, strip, no LTO; BL616 `-Os -g`, sections, `--gc-sections`, `-flto` (2026-10-22) | smallest code (rule) | per build |
 | Features over the minimal image | **MISSING**: per test, its Needs on top of the floor | - | bytes, boot ms, RAM, current |
-| Optimised build (-O3, LTO, -march) | **MISSING**: speed / size / boot / current vs the current flags | the faster one stays | |
+| Optimised build (-O3, LTO, -march) | programs -O3 -flto -march=rv64imafdcv fastest: cpubench 314.6 vs 344.5 ms at -Os (-9 %), +11.7 KB leakcam_wake (Flags B); kernel stays -O1 (-O2 faults, Flags A) | the faster one stays | |
 
 ## Boot time
 

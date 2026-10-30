@@ -56,6 +56,9 @@ REQUIRED = [
     ("Features over the minimal image", r"^Features over the minimal image", "test008 floor", "bytes, boot ms, RAM, current"),
     ("Optimised build (-O3, LTO, -march)", r"^Optimised build", "the faster one stays", ""),
 ]
+# test builds use the default flags (user, 2026-10-29): only an optimisation test fills this row
+DEFAULT = {REQUIRED[-1][0]: "n/a: not an optimisation test (test builds use the default flags: user, 2026-10-29)"}
+
 # old placeholders -> MISSING (case-insensitive, at the start of a table cell or a line)
 OLD = re.compile(r"(?i)\b(to fill|not measured yet|not measured: run before the metrics rule|not recorded yet|"
                  r"not written at the time|to measure)\b")
@@ -108,7 +111,8 @@ def fix_text(text):
     rows = metric_rows(m.group(1))
     absent = missing_rows(rows)
     if absent:
-        add = "\n".join(f"| {name} | {MISSING} | {top} | {note} |" for name, _, top, note in REQUIRED if name in absent)
+        add = "\n".join(f"| {name} | {DEFAULT.get(name, MISSING)} | {top} | {note} |" for name, _, top, note in REQUIRED
+                        if name in absent)
         last = rows[-1][0] if rows else None
         if last:
             text = text.replace(last, last + "\n" + add, 1)
