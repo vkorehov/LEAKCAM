@@ -1,9 +1,9 @@
-17:17:25 test033-bl616-pins: 9 metric rows MISSING: Boot, power-on -> READY (median of 5), This part's boot share, Speed / rate (none for this test), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Features over the minimal image, Optimised build (-O3, LTO, -march)
-17:17:31 sample off {'board': 34.8, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0)}
-17:17:39 sample on_reset {'board': 34.6, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0)}
-17:17:46 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.48 msh 0.49
-17:17:53 sample running {'board': 34.1, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 40.667, 'k_free': (7025152, 1390848), 'vbat': 4340}
-17:18:03 boot NO CONSOLE
-17:18:33 sample boot1_high {'board': 33.9, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': None, 'k_free': None, 'vbat': None}
-17:19:08 sample uart_on {'board': 34.0, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': None, 'k_free': None, 'vbat': None}
-17:19:10 test033-bl616-pins: PASS; filled 7: Boot, power-on -> READY (median of 5), Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, This part's boot share, Speed / rate (none for this test), Power, energy per operation, Per day; still MISSING 2: Features over the minimal image, Optimised build (-O3, LTO, -march)
+09:00:56 test033-bl616-pins: 0 metric rows MISSING: none
+09:01:03 sample off {'board': 32.5, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0)}
+09:01:10 sample on_reset {'board': 32.3, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0)}
+09:01:18 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
+09:01:24 sample running {'board': 32.0, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 39.156, 'k_free': (7025152, 1390848), 'vbat': 4151}
+09:01:34 boot NO CONSOLE
+09:02:05 sample boot1_high {'board': 32.0, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': None, 'k_free': None, 'vbat': None}
+09:02:40 sample uart_on {'board': 32.6, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': None, 'k_free': None, 'vbat': None}
+09:02:42 test033-bl616-pins: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

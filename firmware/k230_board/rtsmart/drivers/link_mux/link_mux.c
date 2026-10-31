@@ -39,6 +39,12 @@ static volatile int paused;
 /* tests/test039 (2026-10-27): where a typed console command gets lost - bytes from uart1, console text bytes, text
  * bytes the console ring had no room for, frames taken, frames dropped (link ring full), reads while paused */
 static volatile rt_uint32_t st_rx, st_text, st_text_drop, st_frames, st_frame_drop, st_paused;
+/* console output while the bench has uart1 waits here: written into the bench's echo stream it was taken as bench data
+ * (the NTP line 25 s after Wi-Fi came up, tests/test018 2026-10-31); held, it comes out when the bench resumes the mux */
+#define HOLD_SIZE 1024
+static struct rt_ringbuffer hold_rb;
+static rt_uint8_t hold_pool[HOLD_SIZE];
+static volatile rt_uint32_t st_held, st_hold_drop, st_link_drop;
 
 /* ---------------- the console's I/O device ---------------- */
 
@@ -71,6 +77,14 @@ static rt_size_t kcon_write(rt_device_t dev, rt_off_t pos, const void *buf, rt_s
     (void)pos;
     if (!uart)
         return size;
+    if (paused) {
+        rt_base_t level = rt_hw_interrupt_disable();
+        rt_size_t n = rt_ringbuffer_put(&hold_rb, buf, (rt_uint16_t)size);
+        rt_hw_interrupt_enable(level);
+        st_held += n;
+        st_hold_drop += size - n;
+        return size;
+    }
     if (!(kcon_oflag & RT_DEVICE_FLAG_STREAM))
         return rt_device_write(uart, 0, buf, size);
     /* a stream console: "\n" goes out as "\r\n", as the serial driver does for its console */
@@ -123,6 +137,10 @@ static rt_size_t link_write(rt_device_t dev, rt_off_t pos, const void *buf, rt_s
 {
     (void)dev;
     (void)pos;
+    if (paused) {                       /* not into the bench's stream: the sender repeats a frame without an ACK */
+        st_link_drop++;
+        return size;
+    }
     return uart ? rt_device_write(uart, 0, buf, size) : 0;   /* one frame per write: send_frame() */
 }
 
@@ -228,14 +246,25 @@ static rt_err_t uart_rx_ind(rt_device_t dev, rt_size_t size)
 void link_mux_pause(int pause)
 {
     paused = pause;
-    if (!pause && uart)
+    if (!pause && uart) {
         rt_device_set_rx_indicate(uart, uart_rx_ind);
+        rt_uint8_t b[64];
+        rt_size_t n;
+        do {
+            rt_base_t level = rt_hw_interrupt_disable();
+            n = rt_ringbuffer_get(&hold_rb, b, sizeof(b));
+            rt_hw_interrupt_enable(level);
+            if (n)
+                kcon_write(&kcon, 0, b, n);
+        } while (n);
+    }
 }
 
 static int link_mux_init(void)
 {
     rt_ringbuffer_init(&kcon_rb, kcon_pool, sizeof(kcon_pool));
     rt_ringbuffer_init(&link_rb, link_pool, sizeof(link_pool));
+    rt_ringbuffer_init(&hold_rb, hold_pool, sizeof(hold_pool));
     linesplit_init(&split, on_text, on_frame, RT_NULL);
 
     kcon.type = RT_Device_Class_Char;
@@ -289,6 +318,8 @@ static int link_stat(void)
     rt_kprintf("link_stat: rx %u text %u text_drop %u frames %u frame_drop %u paused %u kcon_free %u\n",
                (unsigned)st_rx, (unsigned)st_text, (unsigned)st_text_drop, (unsigned)st_frames,
                (unsigned)st_frame_drop, (unsigned)st_paused, (unsigned)rt_ringbuffer_space_len(&kcon_rb));
+    rt_kprintf("link_stat: during a bench: console output held %u, dropped (hold full) %u; link frames dropped %u\n",
+               (unsigned)st_held, (unsigned)st_hold_drop, (unsigned)st_link_drop);
     rt_kprintf("link_stat: uart1 errors framing %u parity %u overrun %u, bytes dropped %u, last LSR 0x%02x, fifo bytes %u\n",
                (unsigned)uart_rx_err[0], (unsigned)uart_rx_err[1], (unsigned)uart_rx_err[2], (unsigned)uart_rx_err[3],
                (unsigned)uart_rx_err[4], (unsigned)uart_rx_err[5]);

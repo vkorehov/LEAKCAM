@@ -21,6 +21,7 @@
 #include <stdbool.h>
 bool rails_are_on(void);              /* main.c: the K230 rails are commanded on */
 void pt_wifi_rails_off(void);         /* pt_wifi.c: stop the NetHub bridge (wifi_link_stop) before the rails drop */
+bool pt_wifi_bridged(void);           /* pt_wifi.c: the bridge drives the SDIO lines (their pull-ups say nothing) */
 #include <stdint.h>
 bool pt_wifi_poll_cycle(uint32_t t[4]);  /* pt_wifi.c: one BL616-only server check (pt_poll) */
 bool pt_radio_init(void);             /* pt_wifi.c: RF parameters once per boot (BLE and Wi-Fi) */

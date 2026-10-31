@@ -42,26 +42,26 @@ Leak tests, one per operation the product repeats:
 | [test003 K230 rails and USB boot](test003-k230-rails-and-usb-boot/README.md) | 2026-10-25 | **pass**: all K230 rails within limits, 3V3 up 1.69-1.70 ms after K230_PWR, the K230 USB boot |
 | [test004 K230 hello from SRAM](test004-k230-hello-from-sram/README.md) | 2026-10-25 | **pass**: k230_hello loads over USB into SRAM in 4.2 s and runs (3 of 3 boots), K230_ALIVE toggles. |
 | [test005 K230 NAND flashing](test005-k230-nand-flashing/README.md) | 2026-10-25 | **pass**: the full image flashes to NAND, re-flashes without the B1 short, and boots 5 of 5. |
-| [test006 K230 NAND boot (SPL)](test006-k230-nand-boot-spl/README.md) | 2026-10-25 | **pass**: 5 of 5 cold boots from NAND (SPL, DDR training at 3200 MT/s all-ODT, OpenSBI, kernel, msh); reset |
+| [test006 K230 NAND boot (SPL)](test006-k230-nand-boot-spl/README.md) | 2026-10-31 | **pass**: 5 of 5 cold boots from NAND (SPL, DDR training at 3200 MT/s all-ODT, OpenSBI, kernel, msh); reset |
 | [test007 RT-Smart boot](test007-rtsmart-boot/README.md) | 2026-10-25 | **pass**: 5 of 5 cold boots from NAND to msh, /bin and /sdcard mounted, agent starts; PMU RTC |
 | [test008 minimal image - the fewest bits that still boot and pass](test008-minimal-image/README.md) | 2026-10-23 | **in progress**: builds 1+2 adopted (app init 0.484-0.494 s); kernel stays -O1; programs |
 | [test009 LED chains (white U14/J1, IR U15/J2)](test009-led-chains/README.md) | 2026-10-25 | **pass**: both chains light and reach full current at 100 % duty on the K230 PWM (white +0.34 A, |
-| [test010 K230 <-> BL616 UART link](test010-uart-link/README.md) | 2026-10-25 | **pass**: 8 boots, 112 READY frames K230 -> BL616 with valid checksums, BL616 -> K230 echo clean. |
+| [test010 K230 <-> BL616 UART link](test010-uart-link/README.md) | 2026-10-31 | **pass**: 2 Mbaud, 8 boots, 112 READY frames with valid checksums, echo clean. |
 | [test011 NAND persistence, full disk, speed](test011-nand-fill-speed/README.md) | 2026-10-25 | **pass**: files survive a power cycle, a full disk fails cleanly, read 14.4 MB/s, write 2.1 MB/s. |
 | [test012 microphone U13 (MSM381ACB026) on the K230 inner codec](test012-microphone/README.md) | 2026-10-25 | **pass**: 3 x 10 s recordings, a level every second, rms -25.3..-2.8 dBFS; no dropouts, no |
 | [test013 KPU, change net (leakcam_change.kmodel)](test013-kpu-change-net/README.md) | 2026-10-25 | **pass**: int8 net whole on the KPU, 0.5 ms per inference, one distance 2.9 ms median, output |
 | [test014 SDIO wiring, K230 MMC0 <-> BL616 SDIO](test014-sdio-wiring/README.md) | 2026-10-25 | **pass**: CLK, CMD, D0-D3 connected both directions, none stuck, no shorts; CLK and CMD toggle |
 | [test015 SDIO speed, K230 MMC0 <-> BL616 SDIO device](test015-sdio-speed/README.md) | 2026-10-21 | **pass**: 50 MHz 4-bit (the top), bus 21 MB/s, end to end 9.4 MB/s with the echo device, no CRC |
-| [test016 K230 DDR bandwidth](test016-ddr-bandwidth/README.md) | 2026-10-25 | **pass at 3200 MT/s all-ODT**: write 6.08 / read 4.84 / copy 2.77 GB/s, 8 x `ddr_bench 3072` |
+| [test016 K230 DDR bandwidth](test016-ddr-bandwidth/README.md) | 2026-10-31 | **pass at 3200 MT/s all-ODT**: write 6.08 / read 4.84 / copy 2.77 GB/s, 8 x `ddr_bench 3072` |
 | [test017 SPI NAND raw speed and SPI clock](test017-nand-raw-speed/README.md) | 2026-10-30 | **pass**: NAND at 50 MHz for stability, sample delay 5 (kernel + U-Boot/SPL); raw read 15.7 MB/s, 20/20 cold boots clean, ID read retried by the kernel. |
-| [test018 K230 <-> BL616 UART link: speed, latency, errors](test018-uart-link-speed/README.md) | 2026-10-25 | **pass**: the link runs 4 Mbaud from boot; 8 x 1 MB echoed with 0 errors at 344-350 KB/s (87 % of |
+| [test018 K230 <-> BL616 UART link: speed, latency, errors](test018-uart-link-speed/README.md) | 2026-10-31 | **pass**: 2 Mbaud from boot; 8 x 1 MB, 0 errors, 180740 B/s (90 %), 16 B round trip 131 us; clean with the Wi-Fi bridge bound. |
 | [test019 K230 USB-C 1: USB boot and flashing speed](test019-usb-flash-speed/README.md) | 2026-10-25 | **pass**: K230 whole image 24.6 s (erase 0-248 MB 8 s + 45.4 MB write, USB 2.0 high speed); |
 | [test020 Camera interfaces: CSI frame rate, I2C clock](test020-camera-csi-i2c/README.md) | 2026-10-21 | **planned**: not run yet; waits for the cameras. |
 | [test021 BL616: wake latency, flash storage, sensor reads](test021-bl616-internal-timing/README.md) | 2026-10-25 | **pass**: RTC wake -> main() 17.3-17.4 ms, K230_PWR -> 3V3 1.7 ms, AHT20 36.5 ms, leak ADC 2.6 ms |
 | [test022 K230 boot time](test022-boot-time/README.md) | 2026-10-25 | **0.32 s**: reset release -> app init 0.320 / 0.320 / 0.321 s (min / median / max, 8 of 8 cold |
 | [test023 Battery ADC (K230 ADC_1, VBAT/3)](test023-battery-adc/README.md) | 2026-10-25 | **pass**: calibrated 64-read mean within +-10 mV of the meter at 4.07-4.37 V; low cell and load open. |
 | [test024 K230 heartbeat to the BL616 (K230_ALIVE)](test024-heartbeat/README.md) | 2026-10-25 | **pass**: 8 boots, half-period 500 / 500 / 500 ms (min / avg / max), no back-feed after |
-| [test025 DDR stress (128 MB, 3200 MT/s all-ODT)](test025-ddr-stress/README.md) |  | **pass at 3200 MT/s all-ODT** (2026-10-25: 10 passes, 0 errors; 8 h soak 2026-10-23/24: 5230 passes, 0 |
+| [test025 DDR stress (128 MB, 3200 MT/s all-ODT)](test025-ddr-stress/README.md) | 2026-10-31 | **pass at 3200 MT/s all-ODT**: 10 passes, 5 cold starts and memtest under KPU + encoder, 0 errors; 8 h soak 0 errors. |
 | [test026 K230 die temperature (TS)](test026-temperature/README.md) | 2026-10-25 | **in progress**: open board idle and CPU/DDR (memtest) load pass, die 44.7 C idle, 52.7 C peak; |
 | [test027 H.265 encoder with synthetic frames](test027-video-encoder/README.md) | 2026-10-25 | **pass**: 2 x 15 fps at the product settings (511 / 510 kbit/s); 1-channel top 75.9 fps (84.2 fps on |
 | [test028 NAND / UFFS power-loss robustness](test028-nand-power-loss/README.md) | 2026-10-25 | **pass**: 520 random power cuts during writes over all runs (100 + 400 on 2026-10-23, 20 on |

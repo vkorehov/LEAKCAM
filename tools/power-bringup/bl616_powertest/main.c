@@ -46,6 +46,7 @@
 
 #if PT_TEST_UART
 #include "bflb_uart.h"
+#include "hardware/uart_reg.h"   /* raw RX FIFO overflow bit and fill level (test010 diagnostics) */
 #endif
 #if PT_TEST_I2C
 #include "../../../firmware/bl616/aht20.h"
@@ -57,6 +58,7 @@
 #endif
 #if PT_TEST_SLEEP
 #include "bl616_hbn.h"
+#include "bflb_flash.h"   /* bflb_flash_get_cfg: the flash power-down before HBN */
 #include "bl616_pm.h"
 #endif
 #if PT_TEST_SDU
@@ -110,12 +112,22 @@ static unsigned sense_high(void)
     return n;
 }
 
+static bool k230_3v3_up(void)
+{
+#if PT_TEST_WIFI
+    if (pt_wifi_bridged())              /* the SDIO lines are driven: "3V3 is off" with the bridge up (2026-10-31) */
+        return rails_on;
+#endif
+    return rails_on && sense_high() >= SENSE_UP;
+}
+
 #if PT_TEST_UART
 static struct bflb_device_s *uart0;
 static bool uart_on;
 static volatile bool uart_echo;      /* test018: every received byte sent straight back */
 static volatile uint32_t echo_bytes, echo_dropped;   /* test018: bytes echoed, bytes dropped before the echo */
-static volatile uint32_t rx_fifo_err;                /* ISRs that found the RX FIFO error flag (an overflow), test010 2026-10-30 */
+static volatile uint32_t rx_fifo_err, rx_fifo_max;   /* per echo: RX FIFO overflows (raw sticky bit: the masked interrupt
+                                                        * status never shows it, 2026-10-31), highest fill at ISR entry */
 static volatile uint64_t echo_drop_until, echo_last;  /* ms: the shell's echo of a sent command is dropped; last byte */
 static volatile bool echo_seen;
 
@@ -133,8 +145,9 @@ static void uart_rx_isr(int irq, void *arg)
     (void)irq;
     (void)arg;
     uint32_t st = bflb_uart_get_intstatus(uart0);
-    if (st & UART_INTSTS_RX_FER)            /* sticky: an RX FIFO overflow happened before this ISR (count only) */
-        rx_fifo_err++;
+    uint32_t fill = (getreg32(uart0->reg_base + UART_FIFO_CONFIG_1_OFFSET) & UART_RX_FIFO_CNT_MASK) >> UART_RX_FIFO_CNT_SHIFT;
+    if (fill > rx_fifo_max)
+        rx_fifo_max = fill;
     if (st & UART_INTSTS_RTO)
         bflb_uart_int_clear(uart0, UART_INTCLR_RTO);
     while (bflb_uart_rxavailable(uart0)) {
@@ -158,6 +171,11 @@ static void uart_rx_isr(int irq, void *arg)
             rx_ring[rx_head] = c;
             rx_head = next;
         }
+    }
+    uint32_t f0 = getreg32(uart0->reg_base + UART_FIFO_CONFIG_0_OFFSET);
+    if (f0 & UART_RX_FIFO_OVERFLOW) {       /* sticky; cleared with the (drained) FIFO */
+        rx_fifo_err++;
+        putreg32(f0 | UART_RX_FIFO_CLR, uart0->reg_base + UART_FIFO_CONFIG_0_OFFSET);
     }
     BaseType_t woken = pdFALSE;
     if (bridge_task)
@@ -192,7 +210,7 @@ static uint32_t link_baud = LINK_BAUD;   /* test039: pt_uart baud changes it for
 
 static bool uart_start(void)
 {
-    if (!rails_on || sense_high() < SENSE_UP)
+    if (!k230_3v3_up())
         return false;
     struct bflb_uart_config_s cfg = {
         .baudrate = link_baud, .direction = UART_DIRECTION_TXRX, .data_bits = UART_DATA_BITS_8,
@@ -548,10 +566,16 @@ static void print_status(bool line)
     printf("K230_PWR    : %s\r\n", rails_on ? "HIGH (rails commanded on)" : "low (rails off)");
     printf("K230 reset  : %s\r\n", reset_held ? "held (Q4 on)" : "released");
     printf("K230 BOOT1  : IO27 %s\r\n", boot1_name[boot1]);
+#if PT_TEST_WIFI
+    if (pt_wifi_bridged())
+        printf("3V3 switched: not read, the Wi-Fi bridge drives the SDIO lines (K230_ALIVE %s)\r\n",
+               bflb_gpio_read(gpio, PIN_K230_ALIVE) ? "high" : "low");
+    else
+#endif
     printf("3V3 switched: %s (%u of %u SDIO pull-ups high; K230_ALIVE %s)\r\n",
            n >= SENSE_UP ? "UP" : n == 0 ? "off" : "PARTIAL - check", n, SENSE_ALL,
            bflb_gpio_read(gpio, PIN_K230_ALIVE) ? "high" : "low");
-    if (rails_on != (n >= SENSE_UP))
+    if (rails_on != k230_3v3_up())
         printf("  FAIL: 3V3 does not follow K230_PWR. Check 0V8 (U6, C18) and 3V3 (U8, C87).\r\n");
 #if PT_TEST_LEAK
     int mv = leak_mv();
@@ -574,7 +598,8 @@ static void print_status(bool line)
            (unsigned long)con_in_bytes, (unsigned long)con_fwd_bytes, (unsigned long)con_put_fail);
     printf("UART0 echo  : %lu bytes echoed, %lu dropped before it\r\n", (unsigned long)echo_bytes,
            (unsigned long)echo_dropped);
-    printf("UART0 rx    : FIFO overflow seen in %lu interrupts\r\n", (unsigned long)rx_fifo_err);
+    printf("UART0 rx    : last echo: %lu RX FIFO overflows, FIFO fill at most %lu of 32\r\n", (unsigned long)rx_fifo_err,
+           (unsigned long)rx_fifo_max);
     printf("UART0 link  : %s, rx dropped %lu\r\n",
            uart_on ? (uart_echo ? "on, echo" : "on, K230 console bridge (/dev/ttyACM1)") : "off",
            (unsigned long)rx_dropped);
@@ -888,7 +913,7 @@ static int cmd_uart(int argc, char **argv)
         /* pt_uart echo <command>: the command goes to the K230 shell over the link, then the echo runs - typed on
          * /dev/ttyACM1 it could not arrive, the bridge stops while echoing. The shell's echo of the line comes back
          * within the first 5 ms and is dropped (echoed, it would loop as input); uart_bench waits 20 ms. */
-        echo_bytes = echo_dropped = 0;
+        echo_bytes = echo_dropped = rx_fifo_err = rx_fifo_max = 0;
         echo_seen = false;
         echo_drop_until = argc > 2 ? bflb_mtimer_get_time_ms() + 5 : 0;
         uart_echo = true;

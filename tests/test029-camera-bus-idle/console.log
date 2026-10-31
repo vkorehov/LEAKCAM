@@ -1,0 +1,1376 @@
+   11.633 boot
+   11.633   U-Boot SPL 2022.10-gc096dae6-dirty (Oct 31 2026 - 06:39:49 +0000)
+   11.633   00000000: PMU Major Msg: End of CA training                                            
+   11.633   00000000: PMU Major Msg: End of initialization                                         
+   11.633   00000000: PMU Major Msg: End of read enable training                                   
+   11.633   00000000: PMU Major Msg: End of fine write leveling                                    
+   11.633   00000000: PMU Major Msg: End of read dq deskew training                                
+   11.633   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+   11.633   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+   11.633   00000000: PMU Major Msg: End of write delay center optimization                        
+   11.633   00000000: PMU Major Msg: End of read delay center optimization                         
+   11.633   00000000: PMU Major Msg: End of max read latency training                              
+   11.633   00000000: PMU Major Msg: Firmware run has completed                                    
+   11.633   dbyte0 add =9a040100 value =12
+   11.633   dbyte0 add =9a040500 value =13
+   11.633   dbyte0 add =9a040900 value =13
+   11.633   dbyte0 add =9a040d00 value =13
+   11.633   dbyte0 add =9a041100 value =13
+   11.633   dbyte0 add =9a041500 value =13
+   11.633   dbyte0 add =9a041900 value =13
+   11.633   dbyte0 add =9a041d00 value =14
+   11.633   dbyte1 add =9a044100 value =13
+   11.633   dbyte1 add =9a044500 value =12
+   11.633   dbyte1 add =9a044900 value =13
+   11.633   dbyte1 add =9a044d00 value =12
+   11.633   dbyte1 add =9a045100 value =12
+   11.633   dbyte1 add =9a045500 value =13
+   11.633   dbyte1 add =9a045900 value =13
+   11.633   dbyte1 add =9a045d00 value =13
+   11.633   dbyte2 add =9a048100 value =37
+   11.633   dbyte2 add =9a048500 value =37
+   11.633   dbyte2 add =9a048900 value =37
+   11.633   dbyte2 add =9a048d00 value =37
+   11.633   dbyte2 add =9a049100 value =37
+   11.633   dbyte2 add =9a049500 value =37
+   11.633   dbyte2 add =9a049900 value =37
+   11.633   dbyte2 add =9a049d00 value =37
+   11.633   dbyte3 add =9a04c100 value =37
+   11.633   dbyte3 add =9a04c500 value =37
+   11.633   dbyte3 add =9a04c900 value =37
+   11.633   dbyte3 add =9a04cd00 value =37
+   11.633   dbyte3 add =9a04d100 value =37
+   11.633   dbyte3 add =9a04d500 value =37
+   11.633   dbyte3 add =9a04d900 value =37
+   11.633   dbyte3 add =9a04dd00 value =37
+   11.633   spi_nand spi-flash@0: Winbond SPI NAND was found.
+   11.633   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+   11.633   OpenSBI v0.9
+   11.633   heap: [0x004f24c0 - 0x00cf24c0], size 8192 KB
+   11.633   page: [0x00cf24c8 - 0x039fec00], size 46129 KB
+   11.633    \ | /
+   11.633   - RT -     Thread Smart Operating System
+   11.633    / | \     5.0.0 build Oct 30 2026
+   11.633    2006 - 2020 Copyright by rt-thread team
+   11.633   rtc driver register OK
+   11.633   lwIP-2.1.2 initialized!
+   11.633   [I/I2C] I2C bus [i2c0] registered
+   11.633   [I/I2C] I2C bus [i2c4] registered
+   11.633   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+   11.633   �link_mux: console and /dev/link share uart1
+   11.633   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+   11.633   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+   11.633   os  : system memory alloc 320 bytes
+   11.633   flsh: UFFS consume spare data size 9
+   11.633   os  : system memory alloc 84480 bytes
+   11.633   os  : system memory alloc 53200 bytes
+   11.633   os  : system memory alloc 2048 bytes
+   11.633   tree: DIR 0, FILE 5, DATA 4
+   11.633   os  : system memory alloc 320 bytes
+   11.633   flsh: UFFS consume spare data size 9
+   11.633   os  : system memory alloc 84480 bytes
+   11.633   os  : system memory alloc 53200 bytes
+   11.633   os  : system memory alloc 8192 bytes
+   11.633   tree: DIR 2, FILE 13, DATA 123
+   11.633   /dev/shm file system initialization done!
+   11.633   Can't find sensor on csi0
+   11.633   Can't find sensor on csi2
+   11.633   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+   11.633   <gnne> gnne_device_init done.
+   11.633   #############SDK VERSION######################################
+   11.633   SDK   : unknown-20261031-063929--e23148a66d58-4162ec7
+   11.633   nncase: 2.11.0
+   11.633   ##############################################################
+   11.633   msh />
+   13.816 > 'i2cdetect i2c0' (0.17 s)
+   13.816   i2cdetect i2c0
+   13.816        0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+   13.816   00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   13.816   10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   13.816   20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- $1,R-- EADY-- 
+   13.816   30: *FC
+   13.816   -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   13.816   40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   13.816   50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   13.816   60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   13.816   70: -- -- -- -- -- -- -- --                         
+   13.816   msh />
+   13.816   msh />
+   13.986 > 'i2cdetect i2c4' (0.17 s)
+   13.986   i2cdetect i2c4
+   13.986        0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+   13.986   00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   13.986   10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   13.986   20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   13.986   30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   13.986   40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   13.986   50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   13.986   60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   13.986   70: -- -- -- -- -- -- -- --                         
+   13.986   msh />
+   13.986   msh />
+   14.041 > 'pad_read' (0.05 s)
+   14.041   pad_read
+   14.041   msh />
+   14.041   msh />
+   17.767 > 'chip_temp' (0.06 s)
+   17.767   chip_temp
+   17.767   chip temperature: 40.667 C
+   17.767   msh />
+   17.767   msh />
+   17.822 > 'free' (0.05 s)
+   17.822   free
+   17.822   memheap               pool size  max used size available size
+   17.822   -------------------- ---------- ------------- --------------
+   17.822   heap                 8388608    1390848       7025152
+   17.822   msh />
+   17.822   msh />
+   17.877 > 'adc probe adc' (0.05 s)
+   17.877   adc probe adc
+   17.877   probe adc success 
+   17.877   msh />
+   17.877   msh />
+   17.932 > 'adc read 1' (0.05 s)
+   17.932   adc read 1
+   17.932   adc channel 1  read value is 0x00000C2D 
+   17.932   msh />
+   17.932   msh />
+   17.987 > 'adc read 1' (0.05 s)
+   17.987   adc read 1
+   17.987   adc channel 1  read value is 0x00000C7E 
+   17.987   msh />
+   17.987   msh />
+   18.042 > 'adc read 1' (0.05 s)
+   18.042   adc read 1
+   18.042   adc channel 1  read value is 0x00000CA3 
+   18.042   msh />
+   18.042   msh />
+   18.098 > 'adc read 1' (0.06 s)
+   18.098   adc read 1
+   18.098   adc channel 1  read value is 0x00000C9F 
+   18.098   msh />
+   18.098   msh />
+   18.153 > 'adc read 1' (0.06 s)
+   18.153   adc read 1
+   18.153   adc channel 1  read value is 0x00000C87 
+   18.153   msh />
+   18.153   msh />
+   18.208 > 'adc read 1' (0.05 s)
+   18.208   adc read 1
+   18.208   adc channel 1  read value is 0x00000C44 
+   18.208   msh />
+   18.208   msh />
+   18.263 > 'adc read 1' (0.05 s)
+   18.263   adc read 1
+   18.263   adc channel 1  read value is 0x00000C2A 
+   18.263   msh />
+   18.263   msh />
+   18.318 > 'adc read 1' (0.06 s)
+   18.318   adc read 1
+   18.318   adc channel 1  read value is 0x00000C86 
+   18.318   msh />
+   18.318   msh />
+   29.967 boot
+   29.967   U-Boot SPL 2022.10-gc096dae6-dirty (Oct 31 2026 - 06:39:49 +0000)
+   29.967   00000000: PMU Major Msg: End of CA training                                            
+   29.967   00000000: PMU Major Msg: End of initialization                                         
+   29.967   00000000: PMU Major Msg: End of read enable training                                   
+   29.967   00000000: PMU Major Msg: End of fine write leveling                                    
+   29.967   00000000: PMU Major Msg: End of read dq deskew training                                
+   29.967   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+   29.967   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+   29.967   00000000: PMU Major Msg: End of write delay center optimization                        
+   29.967   00000000: PMU Major Msg: End of read delay center optimization                         
+   29.967   00000000: PMU Major Msg: End of max read latency training                              
+   29.967   00000000: PMU Major Msg: Firmware run has completed                                    
+   29.967   dbyte0 add =9a040100 value =12
+   29.967   dbyte0 add =9a040500 value =13
+   29.967   dbyte0 add =9a040900 value =13
+   29.967   dbyte0 add =9a040d00 value =13
+   29.967   dbyte0 add =9a041100 value =13
+   29.967   dbyte0 add =9a041500 value =13
+   29.967   dbyte0 add =9a041900 value =12
+   29.967   dbyte0 add =9a041d00 value =14
+   29.967   dbyte1 add =9a044100 value =13
+   29.967   dbyte1 add =9a044500 value =12
+   29.967   dbyte1 add =9a044900 value =13
+   29.967   dbyte1 add =9a044d00 value =12
+   29.967   dbyte1 add =9a045100 value =12
+   29.967   dbyte1 add =9a045500 value =13
+   29.967   dbyte1 add =9a045900 value =13
+   29.967   dbyte1 add =9a045d00 value =13
+   29.967   dbyte2 add =9a048100 value =37
+   29.967   dbyte2 add =9a048500 value =37
+   29.967   dbyte2 add =9a048900 value =37
+   29.967   dbyte2 add =9a048d00 value =37
+   29.967   dbyte2 add =9a049100 value =37
+   29.967   dbyte2 add =9a049500 value =37
+   29.967   dbyte2 add =9a049900 value =37
+   29.967   dbyte2 add =9a049d00 value =37
+   29.967   dbyte3 add =9a04c100 value =37
+   29.967   dbyte3 add =9a04c500 value =37
+   29.967   dbyte3 add =9a04c900 value =37
+   29.967   dbyte3 add =9a04cd00 value =37
+   29.967   dbyte3 add =9a04d100 value =37
+   29.967   dbyte3 add =9a04d500 value =37
+   29.967   dbyte3 add =9a04d900 value =37
+   29.967   dbyte3 add =9a04dd00 value =37
+   29.967   spi_nand spi-flash@0: Winbond SPI NAND was found.
+   29.967   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+   29.967   OpenSBI v0.9
+   29.967   heap: [0x004f24c0 - 0x00cf24c0], size 8192 KB
+   29.967   page: [0x00cf24c8 - 0x039fec00], size 46129 KB
+   29.967    \ | /
+   29.967   - RT -     Thread Smart Operating System
+   29.967    / | \     5.0.0 build Oct 30 2026
+   29.967    2006 - 2020 Copyright by rt-thread team
+   29.967   rtc driver register OK
+   29.967   lwIP-2.1.2 initialized!
+   29.967   [I/I2C] I2C bus [i2c0] registered
+   29.967   [I/I2C] I2C bus [i2c4] registered
+   29.967   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+   29.967   �link_mux: console and /dev/link share uart1
+   29.967   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+   29.967   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+   29.967   os  : system memory alloc 320 bytes
+   29.967   flsh: UFFS consume spare data size 9
+   29.967   os  : system memory alloc 84480 bytes
+   29.967   os  : system memory alloc 53200 bytes
+   29.967   os  : system memory alloc 2048 bytes
+   29.967   tree: DIR 0, FILE 5, DATA 4
+   29.967   os  : system memory alloc 320 bytes
+   29.967   flsh: UFFS consume spare data size 9
+   29.967   os  : system memory alloc 84480 bytes
+   29.967   os  : system memory alloc 53200 bytes
+   29.967   os  : system memory alloc 8192 bytes
+   29.967   tree: DIR 2, FILE 13, DATA 123
+   29.967   /dev/shm file system initialization done!
+   29.967   Can't find sensor on csi0
+   29.967   Can't find sensor on csi2
+   29.967   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+   29.967   <gnne> gnne_device_init done.
+   29.967   #############SDK VERSION######################################
+   29.967   SDK   : unknown-20261031-063929--e23148a66d58-4162ec7
+   29.967   nncase: 2.11.0
+   29.967   ##############################################################
+   29.967   msh />
+   32.149 > 'i2cdetect i2c0' (0.17 s)
+   32.149   i2cdetect i2c0
+   32.149        0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+   32.149   00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   32.149   10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   32.149   20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- $1,R-- EADY-- 
+   32.149   30: *FC
+   32.149   -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   32.149   40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   32.149   50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   32.149   60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   32.149   70: -- -- -- -- -- -- -- --                         
+   32.149   msh />
+   32.149   msh />
+   32.319 > 'i2cdetect i2c4' (0.17 s)
+   32.319   i2cdetect i2c4
+   32.319        0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+   32.319   00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   32.319   10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   32.319   20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   32.319   30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   32.319   40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   32.319   50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   32.319   60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   32.319   70: -- -- -- -- -- -- -- --                         
+   32.319   msh />
+   32.319   msh />
+   32.374 > 'pad_read' (0.05 s)
+   32.374   pad_read
+   32.374   msh />
+   32.374   msh />
+   36.100 > 'chip_temp' (0.06 s)
+   36.100   chip_temp
+   36.100   chip temperature: 41.573 C
+   36.100   msh />
+   36.100   msh />
+   36.155 > 'free' (0.05 s)
+   36.155   free
+   36.155   memheap               pool size  max used size available size
+   36.155   -------------------- ---------- ------------- --------------
+   36.155   heap                 8388608    1390848       7025152
+   36.155   msh />
+   36.155   msh />
+   36.210 > 'adc probe adc' (0.05 s)
+   36.210   adc probe adc
+   36.210   probe adc success 
+   36.210   msh />
+   36.210   msh />
+   36.265 > 'adc read 1' (0.05 s)
+   36.265   adc read 1
+   36.265   adc channel 1  read value is 0x00000C55 
+   36.265   msh />
+   36.265   msh />
+   36.320 > 'adc read 1' (0.05 s)
+   36.320   adc read 1
+   36.320   adc channel 1  read value is 0x00000CA1 
+   36.320   msh />
+   36.320   msh />
+   36.375 > 'adc read 1' (0.05 s)
+   36.375   adc read 1
+   36.375   adc channel 1  read value is 0x00000CA0 
+   36.375   msh />
+   36.375   msh />
+   36.430 > 'adc read 1' (0.05 s)
+   36.430   adc read 1
+   36.430   adc channel 1  read value is 0x00000C4E 
+   36.430   msh />
+   36.430   msh />
+   36.485 > 'adc read 1' (0.05 s)
+   36.485   adc read 1
+   36.485   adc channel 1  read value is 0x00000C64 
+   36.485   msh />
+   36.485   msh />
+   36.540 > 'adc read 1' (0.05 s)
+   36.540   adc read 1
+   36.540   adc channel 1  read value is 0x00000C76 
+   36.540   msh />
+   36.540   msh />
+   36.595 > 'adc read 1' (0.05 s)
+   36.595   adc read 1
+   36.595   adc channel 1  read value is 0x00000C46 
+   36.595   msh />
+   36.595   msh />
+   36.651 > 'adc read 1' (0.06 s)
+   36.651   adc read 1
+   36.651   adc channel 1  read value is 0x00000C8B 
+   36.651   msh />
+   36.651   msh />
+   48.294 boot
+   48.294   U-Boot SPL 2022.10-gc096dae6-dirty (Oct 31 2026 - 06:39:49 +0000)
+   48.294   00000000: PMU Major Msg: End of CA training                                            
+   48.294   00000000: PMU Major Msg: End of initialization                                         
+   48.294   00000000: PMU Major Msg: End of read enable training                                   
+   48.294   00000000: PMU Major Msg: End of fine write leveling                                    
+   48.294   00000000: PMU Major Msg: End of read dq deskew training                                
+   48.294   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+   48.294   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+   48.294   00000000: PMU Major Msg: End of write delay center optimization                        
+   48.294   00000000: PMU Major Msg: End of read delay center optimization                         
+   48.294   00000000: PMU Major Msg: End of max read latency training                              
+   48.294   00000000: PMU Major Msg: Firmware run has completed                                    
+   48.294   dbyte0 add =9a040100 value =11
+   48.294   dbyte0 add =9a040500 value =13
+   48.294   dbyte0 add =9a040900 value =13
+   48.294   dbyte0 add =9a040d00 value =13
+   48.294   dbyte0 add =9a041100 value =13
+   48.294   dbyte0 add =9a041500 value =13
+   48.294   dbyte0 add =9a041900 value =13
+   48.294   dbyte0 add =9a041d00 value =14
+   48.294   dbyte1 add =9a044100 value =13
+   48.294   dbyte1 add =9a044500 value =12
+   48.294   dbyte1 add =9a044900 value =13
+   48.294   dbyte1 add =9a044d00 value =12
+   48.294   dbyte1 add =9a045100 value =12
+   48.294   dbyte1 add =9a045500 value =13
+   48.294   dbyte1 add =9a045900 value =13
+   48.294   dbyte1 add =9a045d00 value =13
+   48.294   dbyte2 add =9a048100 value =37
+   48.294   dbyte2 add =9a048500 value =37
+   48.294   dbyte2 add =9a048900 value =37
+   48.294   dbyte2 add =9a048d00 value =37
+   48.294   dbyte2 add =9a049100 value =37
+   48.294   dbyte2 add =9a049500 value =37
+   48.294   dbyte2 add =9a049900 value =37
+   48.294   dbyte2 add =9a049d00 value =37
+   48.294   dbyte3 add =9a04c100 value =37
+   48.294   dbyte3 add =9a04c500 value =37
+   48.294   dbyte3 add =9a04c900 value =37
+   48.294   dbyte3 add =9a04cd00 value =37
+   48.294   dbyte3 add =9a04d100 value =37
+   48.294   dbyte3 add =9a04d500 value =37
+   48.294   dbyte3 add =9a04d900 value =37
+   48.294   dbyte3 add =9a04dd00 value =37
+   48.294   spi_nand spi-flash@0: Winbond SPI NAND was found.
+   48.294   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+   48.294   OpenSBI v0.9
+   48.294   heap: [0x004f24c0 - 0x00cf24c0], size 8192 KB
+   48.294   page: [0x00cf24c8 - 0x039fec00], size 46129 KB
+   48.294    \ | /
+   48.294   - RT -     Thread Smart Operating System
+   48.294    / | \     5.0.0 build Oct 30 2026
+   48.294    2006 - 2020 Copyright by rt-thread team
+   48.294   rtc driver register OK
+   48.294   lwIP-2.1.2 initialized!
+   48.294   [I/I2C] I2C bus [i2c0] registered
+   48.294   [I/I2C] I2C bus [i2c4] registered
+   48.294   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+   48.294   �link_mux: console and /dev/link share uart1
+   48.294   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+   48.294   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+   48.294   os  : system memory alloc 320 bytes
+   48.294   flsh: UFFS consume spare data size 9
+   48.294   os  : system memory alloc 84480 bytes
+   48.294   os  : system memory alloc 53200 bytes
+   48.294   os  : system memory alloc 2048 bytes
+   48.294   tree: DIR 0, FILE 5, DATA 4
+   48.294   os  : system memory alloc 320 bytes
+   48.294   flsh: UFFS consume spare data size 9
+   48.294   os  : system memory alloc 84480 bytes
+   48.294   os  : system memory alloc 53200 bytes
+   48.294   os  : system memory alloc 8192 bytes
+   48.294   tree: DIR 2, FILE 13, DATA 123
+   48.294   /dev/shm file system initialization done!
+   48.294   Can't find sensor on csi0
+   48.294   Can't find sensor on csi2
+   48.294   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+   48.294   <gnne> gnne_device_init done.
+   48.294   #############SDK VERSION######################################
+   48.294   SDK   : unknown-20261031-063929--e23148a66d58-4162ec7
+   48.294   nncase: 2.11.0
+   48.294   ##############################################################
+   48.294   msh />
+   50.478 > 'i2cdetect i2c0' (0.17 s)
+   50.478   i2cdetect i2c0
+   50.478        0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+   50.478   00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   50.478   10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   50.478   20: -- -- -- -- -- -- -- -- -- -- -- -- -- $1,R-- EADY-- *FC
+   50.478   -- 
+   50.478   30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   50.478   40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   50.478   50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   50.478   60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   50.478   70: -- -- -- -- -- -- -- --                         
+   50.478   msh />
+   50.478   msh />
+   50.648 > 'i2cdetect i2c4' (0.17 s)
+   50.648   i2cdetect i2c4
+   50.648        0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+   50.648   00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   50.648   10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   50.648   20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   50.648   30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   50.648   40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   50.648   50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   50.648   60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   50.648   70: -- -- -- -- -- -- -- --                         
+   50.648   msh />
+   50.648   msh />
+   50.703 > 'pad_read' (0.05 s)
+   50.703   pad_read
+   50.703   msh />
+   50.703   msh />
+   54.478 > 'chip_temp' (0.06 s)
+   54.478   chip_temp
+   54.478   chip temperature: 42.177 C
+   54.478   msh />
+   54.478   msh />
+   54.534 > 'free' (0.06 s)
+   54.534   free
+   54.534   memheap               pool size  max used size available size
+   54.534   -------------------- ---------- ------------- --------------
+   54.534   heap                 8388608    1390848       7025152
+   54.534   msh />
+   54.534   msh />
+   54.590 > 'adc probe adc' (0.06 s)
+   54.590   adc probe adc
+   54.590   probe adc success 
+   54.590   msh />
+   54.590   msh />
+   54.645 > 'adc read 1' (0.05 s)
+   54.645   adc read 1
+   54.645   adc channel 1  read value is 0x00000CA0 
+   54.645   msh />
+   54.645   msh />
+   54.700 > 'adc read 1' (0.05 s)
+   54.700   adc read 1
+   54.700   adc channel 1  read value is 0x00000CA1 
+   54.700   msh />
+   54.700   msh />
+   54.755 > 'adc read 1' (0.05 s)
+   54.755   adc read 1
+   54.755   adc channel 1  read value is 0x00000C31 
+   54.755   msh />
+   54.755   msh />
+   54.810 > 'adc read 1' (0.06 s)
+   54.810   adc read 1
+   54.810   adc channel 1  read value is 0x00000C75 
+   54.810   msh />
+   54.810   msh />
+   54.867 > 'adc read 1' (0.06 s)
+   54.867   adc read 1
+   54.867   adc channel 1  read value is 0x00000C56 
+   54.867   msh />
+   54.867   msh />
+   54.922 > 'adc read 1' (0.05 s)
+   54.922   adc read 1
+   54.922   adc channel 1  read value is 0x00000C89 
+   54.922   msh />
+   54.922   msh />
+   54.977 > 'adc read 1' (0.05 s)
+   54.977   adc read 1
+   54.977   adc channel 1  read value is 0x00000C89 
+   54.977   msh />
+   54.977   msh />
+   55.032 > 'adc read 1' (0.05 s)
+   55.032   adc read 1
+   55.032   adc channel 1  read value is 0x00000C71 
+   55.032   msh />
+   55.032   msh />
+   66.692 boot
+   66.692   U-Boot SPL 2022.10-gc096dae6-dirty (Oct 31 2026 - 06:39:49 +0000)
+   66.692   00000000: PMU Major Msg: End of CA training                                            
+   66.692   00000000: PMU Major Msg: End of initialization                                         
+   66.692   00000000: PMU Major Msg: End of read enable training                                   
+   66.692   00000000: PMU Major Msg: End of fine write leveling                                    
+   66.692   00000000: PMU Major Msg: End of read dq deskew training                                
+   66.692   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+   66.692   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+   66.692   00000000: PMU Major Msg: End of write delay center optimization                        
+   66.692   00000000: PMU Major Msg: End of read delay center optimization                         
+   66.692   00000000: PMU Major Msg: End of max read latency training                              
+   66.692   00000000: PMU Major Msg: Firmware run has completed                                    
+   66.692   dbyte0 add =9a040100 value =11
+   66.692   dbyte0 add =9a040500 value =13
+   66.692   dbyte0 add =9a040900 value =13
+   66.692   dbyte0 add =9a040d00 value =13
+   66.692   dbyte0 add =9a041100 value =13
+   66.692   dbyte0 add =9a041500 value =13
+   66.692   dbyte0 add =9a041900 value =13
+   66.692   dbyte0 add =9a041d00 value =14
+   66.692   dbyte1 add =9a044100 value =14
+   66.692   dbyte1 add =9a044500 value =13
+   66.692   dbyte1 add =9a044900 value =14
+   66.692   dbyte1 add =9a044d00 value =13
+   66.692   dbyte1 add =9a045100 value =13
+   66.692   dbyte1 add =9a045500 value =13
+   66.692   dbyte1 add =9a045900 value =13
+   66.692   dbyte1 add =9a045d00 value =13
+   66.692   dbyte2 add =9a048100 value =37
+   66.692   dbyte2 add =9a048500 value =37
+   66.692   dbyte2 add =9a048900 value =37
+   66.692   dbyte2 add =9a048d00 value =37
+   66.692   dbyte2 add =9a049100 value =37
+   66.692   dbyte2 add =9a049500 value =37
+   66.692   dbyte2 add =9a049900 value =37
+   66.692   dbyte2 add =9a049d00 value =37
+   66.692   dbyte3 add =9a04c100 value =37
+   66.692   dbyte3 add =9a04c500 value =37
+   66.692   dbyte3 add =9a04c900 value =37
+   66.692   dbyte3 add =9a04cd00 value =37
+   66.692   dbyte3 add =9a04d100 value =37
+   66.692   dbyte3 add =9a04d500 value =37
+   66.692   dbyte3 add =9a04d900 value =37
+   66.692   dbyte3 add =9a04dd00 value =37
+   66.692   spi_nand spi-flash@0: Winbond SPI NAND was found.
+   66.692   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+   66.692   OpenSBI v0.9
+   66.692   heap: [0x004f24c0 - 0x00cf24c0], size 8192 KB
+   66.692   page: [0x00cf24c8 - 0x039fec00], size 46129 KB
+   66.692    \ | /
+   66.692   - RT -     Thread Smart Operating System
+   66.692    / | \     5.0.0 build Oct 30 2026
+   66.692    2006 - 2020 Copyright by rt-thread team
+   66.692   rtc driver register OK
+   66.692   lwIP-2.1.2 initialized!
+   66.692   [I/I2C] I2C bus [i2c0] registered
+   66.692   [I/I2C] I2C bus [i2c4] registered
+   66.692   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+   66.692   �link_mux: console and /dev/link share uart1
+   66.692   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+   66.692   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+   66.692   os  : system memory alloc 320 bytes
+   66.692   flsh: UFFS consume spare data size 9
+   66.692   os  : system memory alloc 84480 bytes
+   66.692   os  : system memory alloc 53200 bytes
+   66.692   os  : system memory alloc 2048 bytes
+   66.692   tree: DIR 0, FILE 5, DATA 4
+   66.692   os  : system memory alloc 320 bytes
+   66.692   flsh: UFFS consume spare data size 9
+   66.692   os  : system memory alloc 84480 bytes
+   66.692   os  : system memory alloc 53200 bytes
+   66.692   os  : system memory alloc 8192 bytes
+   66.692   tree: DIR 2, FILE 13, DATA 123
+   66.692   /dev/shm file system initialization done!
+   66.692   Can't find sensor on csi0
+   66.692   Can't find sensor on csi2
+   66.692   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+   66.692   <gnne> gnne_device_init done.
+   66.692   #############SDK VERSION######################################
+   66.692   SDK   : unknown-20261031-063929--e23148a66d58-4162ec7
+   66.692   nncase: 2.11.0
+   66.692   ##############################################################
+   66.692   msh />
+   68.876 > 'i2cdetect i2c0' (0.16 s)
+   68.876   i2cdetect i2c0
+   68.876        0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+   68.876   00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   68.876   10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   68.876   20: -- -- -- -- -- -- -- -- -- -- -- -- -- $1,R-- EADY-- *FC
+   68.876   -- 
+   68.876   30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   68.876   40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   68.876   50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   68.876   60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   68.876   70: -- -- -- -- -- -- -- --                         
+   68.876   msh />
+   68.876   msh />
+   69.047 > 'i2cdetect i2c4' (0.17 s)
+   69.047   i2cdetect i2c4
+   69.047        0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+   69.047   00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   69.047   10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   69.047   20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   69.047   30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   69.047   40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   69.047   50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   69.047   60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   69.047   70: -- -- -- -- -- -- -- --                         
+   69.047   msh />
+   69.047   msh />
+   69.103 > 'pad_read' (0.06 s)
+   69.103   pad_read
+   69.103   msh />
+   69.103   msh />
+   72.826 > 'chip_temp' (0.06 s)
+   72.826   chip_temp
+   72.826   chip temperature: 40.969 C
+   72.826   msh />
+   72.826   msh />
+   72.882 > 'free' (0.06 s)
+   72.882   free
+   72.882   memheap               pool size  max used size available size
+   72.882   -------------------- ---------- ------------- --------------
+   72.882   heap                 8388608    1390848       7025152
+   72.882   msh />
+   72.882   msh />
+   72.938 > 'adc probe adc' (0.06 s)
+   72.938   adc probe adc
+   72.938   probe adc success 
+   72.938   msh />
+   72.938   msh />
+   72.993 > 'adc read 1' (0.05 s)
+   72.993   adc read 1
+   72.993   adc channel 1  read value is 0x00000C6F 
+   72.993   msh />
+   72.993   msh />
+   73.049 > 'adc read 1' (0.06 s)
+   73.049   adc read 1
+   73.049   adc channel 1  read value is 0x00000C59 
+   73.049   msh />
+   73.049   msh />
+   73.104 > 'adc read 1' (0.05 s)
+   73.104   adc read 1
+   73.104   adc channel 1  read value is 0x00000CA3 
+   73.104   msh />
+   73.104   msh />
+   73.161 > 'adc read 1' (0.06 s)
+   73.161   adc read 1
+   73.161   adc channel 1  read value is 0x00000C28 
+   73.161   msh />
+   73.161   msh />
+   73.216 > 'adc read 1' (0.06 s)
+   73.216   adc read 1
+   73.216   adc channel 1  read value is 0x00000C69 
+   73.216   msh />
+   73.216   msh />
+   73.271 > 'adc read 1' (0.05 s)
+   73.271   adc read 1
+   73.271   adc channel 1  read value is 0x00000C83 
+   73.271   msh />
+   73.271   msh />
+   73.326 > 'adc read 1' (0.05 s)
+   73.326   adc read 1
+   73.326   adc channel 1  read value is 0x00000C80 
+   73.326   msh />
+   73.326   msh />
+   73.381 > 'adc read 1' (0.06 s)
+   73.381   adc read 1
+   73.381   adc channel 1  read value is 0x00000C69 
+   73.381   msh />
+   73.381   msh />
+   85.044 boot
+   85.044   U-Boot SPL 2022.10-gc096dae6-dirty (Oct 31 2026 - 06:39:49 +0000)
+   85.044   00000000: PMU Major Msg: End of CA training                                            
+   85.044   00000000: PMU Major Msg: End of initialization                                         
+   85.044   00000000: PMU Major Msg: End of read enable training                                   
+   85.044   00000000: PMU Major Msg: End of fine write leveling                                    
+   85.044   00000000: PMU Major Msg: End of read dq deskew training                                
+   85.044   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+   85.044   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+   85.044   00000000: PMU Major Msg: End of write delay center optimization                        
+   85.044   00000000: PMU Major Msg: End of read delay center optimization                         
+   85.044   00000000: PMU Major Msg: End of max read latency training                              
+   85.044   00000000: PMU Major Msg: Firmware run has completed                                    
+   85.044   dbyte0 add =9a040100 value =12
+   85.044   dbyte0 add =9a040500 value =13
+   85.044   dbyte0 add =9a040900 value =13
+   85.044   dbyte0 add =9a040d00 value =13
+   85.044   dbyte0 add =9a041100 value =13
+   85.044   dbyte0 add =9a041500 value =13
+   85.044   dbyte0 add =9a041900 value =13
+   85.044   dbyte0 add =9a041d00 value =14
+   85.044   dbyte1 add =9a044100 value =14
+   85.044   dbyte1 add =9a044500 value =13
+   85.044   dbyte1 add =9a044900 value =14
+   85.044   dbyte1 add =9a044d00 value =13
+   85.044   dbyte1 add =9a045100 value =13
+   85.044   dbyte1 add =9a045500 value =13
+   85.044   dbyte1 add =9a045900 value =13
+   85.044   dbyte1 add =9a045d00 value =13
+   85.044   dbyte2 add =9a048100 value =37
+   85.044   dbyte2 add =9a048500 value =37
+   85.044   dbyte2 add =9a048900 value =37
+   85.044   dbyte2 add =9a048d00 value =37
+   85.044   dbyte2 add =9a049100 value =37
+   85.044   dbyte2 add =9a049500 value =37
+   85.044   dbyte2 add =9a049900 value =37
+   85.044   dbyte2 add =9a049d00 value =37
+   85.044   dbyte3 add =9a04c100 value =37
+   85.044   dbyte3 add =9a04c500 value =37
+   85.044   dbyte3 add =9a04c900 value =37
+   85.044   dbyte3 add =9a04cd00 value =37
+   85.044   dbyte3 add =9a04d100 value =37
+   85.044   dbyte3 add =9a04d500 value =37
+   85.044   dbyte3 add =9a04d900 value =37
+   85.044   dbyte3 add =9a04dd00 value =37
+   85.044   spi_nand spi-flash@0: Winbond SPI NAND was found.
+   85.044   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+   85.044   OpenSBI v0.9
+   85.044   heap: [0x004f24c0 - 0x00cf24c0], size 8192 KB
+   85.044   page: [0x00cf24c8 - 0x039fec00], size 46129 KB
+   85.044    \ | /
+   85.044   - RT -     Thread Smart Operating System
+   85.044    / | \     5.0.0 build Oct 30 2026
+   85.044    2006 - 2020 Copyright by rt-thread team
+   85.044   rtc driver register OK
+   85.044   lwIP-2.1.2 initialized!
+   85.044   [I/I2C] I2C bus [i2c0] registered
+   85.044   [I/I2C] I2C bus [i2c4] registered
+   85.044   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+   85.044   �link_mux: console and /dev/link share uart1
+   85.044   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+   85.044   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+   85.044   os  : system memory alloc 320 bytes
+   85.044   flsh: UFFS consume spare data size 9
+   85.044   os  : system memory alloc 84480 bytes
+   85.044   os  : system memory alloc 53200 bytes
+   85.044   os  : system memory alloc 2048 bytes
+   85.044   tree: DIR 0, FILE 5, DATA 4
+   85.044   os  : system memory alloc 320 bytes
+   85.044   flsh: UFFS consume spare data size 9
+   85.044   os  : system memory alloc 84480 bytes
+   85.044   os  : system memory alloc 53200 bytes
+   85.044   os  : system memory alloc 8192 bytes
+   85.044   tree: DIR 2, FILE 13, DATA 123
+   85.044   /dev/shm file system initialization done!
+   85.044   Can't find sensor on csi0
+   85.044   Can't find sensor on csi2
+   85.044   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+   85.044   <gnne> gnne_device_init done.
+   85.044   #############SDK VERSION######################################
+   85.044   SDK   : unknown-20261031-063929--e23148a66d58-4162ec7
+   85.044   nncase: 2.11.0
+   85.044   ##############################################################
+   85.044   msh />
+   87.228 > 'i2cdetect i2c0' (0.17 s)
+   87.228   i2cdetect i2c0
+   87.228        0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+   87.228   00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   87.228   10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   87.228   20: -- -- -- -- -- -- -- -- -- -- -- -- -- $1,R-- EADY-- *FC
+   87.228   -- 
+   87.228   30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   87.228   40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   87.228   50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   87.228   60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   87.228   70: -- -- -- -- -- -- -- --                         
+   87.228   msh />
+   87.228   msh />
+   87.398 > 'i2cdetect i2c4' (0.17 s)
+   87.398   i2cdetect i2c4
+   87.398        0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+   87.398   00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   87.398   10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   87.398   20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   87.398   30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   87.398   40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   87.398   50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   87.398   60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+   87.398   70: -- -- -- -- -- -- -- --                         
+   87.398   msh />
+   87.398   msh />
+   87.454 > 'pad_read' (0.06 s)
+   87.454   pad_read
+   87.454   msh />
+   87.454   msh />
+   91.179 > 'chip_temp' (0.07 s)
+   91.179   chip_temp
+   91.179   chip temperature: 41.573 C
+   91.179   msh />
+   91.179   msh />
+   91.234 > 'free' (0.05 s)
+   91.234   free
+   91.234   memheap               pool size  max used size available size
+   91.234   -------------------- ---------- ------------- --------------
+   91.234   heap                 8388608    1390848       7025152
+   91.234   msh />
+   91.234   msh />
+   91.289 > 'adc probe adc' (0.05 s)
+   91.289   adc probe adc
+   91.289   probe adc success 
+   91.289   msh />
+   91.289   msh />
+   91.345 > 'adc read 1' (0.06 s)
+   91.345   adc read 1
+   91.345   adc channel 1  read value is 0x00000C4A 
+   91.345   msh />
+   91.345   msh />
+   91.400 > 'adc read 1' (0.05 s)
+   91.400   adc read 1
+   91.400   adc channel 1  read value is 0x00000C6C 
+   91.400   msh />
+   91.400   msh />
+   91.455 > 'adc read 1' (0.05 s)
+   91.455   adc read 1
+   91.455   adc channel 1  read value is 0x00000CA5 
+   91.455   msh />
+   91.455   msh />
+   91.511 > 'adc read 1' (0.06 s)
+   91.511   adc read 1
+   91.511   adc channel 1  read value is 0x00000C75 
+   91.511   msh />
+   91.511   msh />
+   91.566 > 'adc read 1' (0.05 s)
+   91.566   adc read 1
+   91.566   adc channel 1  read value is 0x00000CA0 
+   91.566   msh />
+   91.566   msh />
+   91.623 > 'adc read 1' (0.06 s)
+   91.623   adc read 1
+   91.623   adc channel 1  read value is 0x00000C68 
+   91.623   msh />
+   91.623   msh />
+   91.679 > 'adc read 1' (0.06 s)
+   91.679   adc read 1
+   91.679   adc channel 1  read value is 0x00000C33 
+   91.679   msh />
+   91.679   msh />
+   91.735 > 'adc read 1' (0.06 s)
+   91.735   adc read 1
+   91.735   adc channel 1  read value is 0x00000C87 
+   91.735   msh />
+   91.735   msh />
+  103.409 boot
+  103.409   U-Boot SPL 2022.10-gc096dae6-dirty (Oct 31 2026 - 06:39:49 +0000)
+  103.409   00000000: PMU Major Msg: End of CA training                                            
+  103.409   00000000: PMU Major Msg: End of initialization                                         
+  103.409   00000000: PMU Major Msg: End of read enable training                                   
+  103.409   00000000: PMU Major Msg: End of fine write leveling                                    
+  103.409   00000000: PMU Major Msg: End of read dq deskew training                                
+  103.409   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+  103.409   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+  103.409   00000000: PMU Major Msg: End of write delay center optimization                        
+  103.409   00000000: PMU Major Msg: End of read delay center optimization                         
+  103.409   00000000: PMU Major Msg: End of max read latency training                              
+  103.409   00000000: PMU Major Msg: Firmware run has completed                                    
+  103.409   dbyte0 add =9a040100 value =12
+  103.409   dbyte0 add =9a040500 value =13
+  103.409   dbyte0 add =9a040900 value =13
+  103.409   dbyte0 add =9a040d00 value =13
+  103.409   dbyte0 add =9a041100 value =13
+  103.409   dbyte0 add =9a041500 value =13
+  103.409   dbyte0 add =9a041900 value =13
+  103.409   dbyte0 add =9a041d00 value =14
+  103.409   dbyte1 add =9a044100 value =14
+  103.409   dbyte1 add =9a044500 value =13
+  103.409   dbyte1 add =9a044900 value =14
+  103.409   dbyte1 add =9a044d00 value =13
+  103.409   dbyte1 add =9a045100 value =12
+  103.409   dbyte1 add =9a045500 value =13
+  103.409   dbyte1 add =9a045900 value =13
+  103.409   dbyte1 add =9a045d00 value =13
+  103.409   dbyte2 add =9a048100 value =37
+  103.409   dbyte2 add =9a048500 value =37
+  103.409   dbyte2 add =9a048900 value =37
+  103.409   dbyte2 add =9a048d00 value =37
+  103.409   dbyte2 add =9a049100 value =37
+  103.409   dbyte2 add =9a049500 value =37
+  103.409   dbyte2 add =9a049900 value =37
+  103.409   dbyte2 add =9a049d00 value =37
+  103.409   dbyte3 add =9a04c100 value =37
+  103.409   dbyte3 add =9a04c500 value =37
+  103.409   dbyte3 add =9a04c900 value =37
+  103.409   dbyte3 add =9a04cd00 value =37
+  103.409   dbyte3 add =9a04d100 value =37
+  103.409   dbyte3 add =9a04d500 value =37
+  103.409   dbyte3 add =9a04d900 value =37
+  103.409   dbyte3 add =9a04dd00 value =37
+  103.409   spi_nand spi-flash@0: Winbond SPI NAND was found.
+  103.409   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+  103.409   OpenSBI v0.9
+  103.409   heap: [0x004f24c0 - 0x00cf24c0], size 8192 KB
+  103.409   page: [0x00cf24c8 - 0x039fec00], size 46129 KB
+  103.409    \ | /
+  103.409   - RT -     Thread Smart Operating System
+  103.409    / | \     5.0.0 build Oct 30 2026
+  103.409    2006 - 2020 Copyright by rt-thread team
+  103.409   rtc driver register OK
+  103.409   lwIP-2.1.2 initialized!
+  103.409   [I/I2C] I2C bus [i2c0] registered
+  103.409   [I/I2C] I2C bus [i2c4] registered
+  103.409   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+  103.409   �link_mux: console and /dev/link share uart1
+  103.409   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+  103.409   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+  103.409   os  : system memory alloc 320 bytes
+  103.409   flsh: UFFS consume spare data size 9
+  103.409   os  : system memory alloc 84480 bytes
+  103.409   os  : system memory alloc 53200 bytes
+  103.409   os  : system memory alloc 2048 bytes
+  103.409   tree: DIR 0, FILE 5, DATA 4
+  103.409   os  : system memory alloc 320 bytes
+  103.409   flsh: UFFS consume spare data size 9
+  103.409   os  : system memory alloc 84480 bytes
+  103.409   os  : system memory alloc 53200 bytes
+  103.409   os  : system memory alloc 8192 bytes
+  103.409   tree: DIR 2, FILE 13, DATA 123
+  103.409   /dev/shm file system initialization done!
+  103.409   Can't find sensor on csi0
+  103.409   Can't find sensor on csi2
+  103.409   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+  103.409   <gnne> gnne_device_init done.
+  103.409   #############SDK VERSION######################################
+  103.409   SDK   : unknown-20261031-063929--e23148a66d58-4162ec7
+  103.409   nncase: 2.11.0
+  103.409   ##############################################################
+  103.409   msh />
+  105.593 > 'i2cdetect i2c0' (0.17 s)
+  105.593   i2cdetect i2c0
+  105.593        0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+  105.593   00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  105.593   10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  105.593   20: -- -- -- -- -- -- -- -- -- -- -- -- $1,R-- EADY-- *FC
+  105.593   -- -- 
+  105.593   30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  105.593   40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  105.593   50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  105.593   60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  105.593   70: -- -- -- -- -- -- -- --                         
+  105.593   msh />
+  105.593   msh />
+  105.763 > 'i2cdetect i2c4' (0.17 s)
+  105.763   i2cdetect i2c4
+  105.763        0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+  105.763   00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  105.763   10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  105.763   20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  105.763   30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  105.763   40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  105.763   50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  105.763   60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  105.763   70: -- -- -- -- -- -- -- --                         
+  105.763   msh />
+  105.763   msh />
+  105.819 > 'pad_read' (0.06 s)
+  105.819   pad_read
+  105.819   msh />
+  105.819   msh />
+  109.543 > 'chip_temp' (0.06 s)
+  109.543   chip_temp
+  109.543   chip temperature: 39.760 C
+  109.543   msh />
+  109.543   msh />
+  109.599 > 'free' (0.06 s)
+  109.599   free
+  109.599   memheap               pool size  max used size available size
+  109.599   -------------------- ---------- ------------- --------------
+  109.599   heap                 8388608    1390848       7025152
+  109.599   msh />
+  109.599   msh />
+  109.654 > 'adc probe adc' (0.05 s)
+  109.654   adc probe adc
+  109.654   probe adc success 
+  109.654   msh />
+  109.654   msh />
+  109.709 > 'adc read 1' (0.05 s)
+  109.709   adc read 1
+  109.709   adc channel 1  read value is 0x00000C81 
+  109.709   msh />
+  109.709   msh />
+  109.764 > 'adc read 1' (0.05 s)
+  109.764   adc read 1
+  109.764   adc channel 1  read value is 0x00000C30 
+  109.764   msh />
+  109.764   msh />
+  109.819 > 'adc read 1' (0.05 s)
+  109.819   adc read 1
+  109.819   adc channel 1  read value is 0x00000CA2 
+  109.819   msh />
+  109.819   msh />
+  109.874 > 'adc read 1' (0.05 s)
+  109.874   adc read 1
+  109.874   adc channel 1  read value is 0x00000C55 
+  109.874   msh />
+  109.874   msh />
+  109.930 > 'adc read 1' (0.06 s)
+  109.930   adc read 1
+  109.930   adc channel 1  read value is 0x00000C61 
+  109.930   msh />
+  109.930   msh />
+  109.986 > 'adc read 1' (0.06 s)
+  109.986   adc read 1
+  109.986   adc channel 1  read value is 0x00000C51 
+  109.986   msh />
+  109.986   msh />
+  110.042 > 'adc read 1' (0.06 s)
+  110.042   adc read 1
+  110.042   adc channel 1  read value is 0x00000C71 
+  110.042   msh />
+  110.042   msh />
+  110.098 > 'adc read 1' (0.06 s)
+  110.098   adc read 1
+  110.098   adc channel 1  read value is 0x00000C88 
+  110.098   msh />
+  110.098   msh />
+  121.760 boot
+  121.760   U-Boot SPL 2022.10-gc096dae6-dirty (Oct 31 2026 - 06:39:49 +0000)
+  121.760   00000000: PMU Major Msg: End of CA training                                            
+  121.760   00000000: PMU Major Msg: End of initialization                                         
+  121.760   00000000: PMU Major Msg: End of read enable training                                   
+  121.760   00000000: PMU Major Msg: End of fine write leveling                                    
+  121.760   00000000: PMU Major Msg: End of read dq deskew training                                
+  121.760   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+  121.760   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+  121.760   00000000: PMU Major Msg: End of write delay center optimization                        
+  121.760   00000000: PMU Major Msg: End of read delay center optimization                         
+  121.760   00000000: PMU Major Msg: End of max read latency training                              
+  121.760   00000000: PMU Major Msg: Firmware run has completed                                    
+  121.760   dbyte0 add =9a040100 value =12
+  121.760   dbyte0 add =9a040500 value =13
+  121.760   dbyte0 add =9a040900 value =13
+  121.760   dbyte0 add =9a040d00 value =13
+  121.760   dbyte0 add =9a041100 value =13
+  121.760   dbyte0 add =9a041500 value =13
+  121.760   dbyte0 add =9a041900 value =13
+  121.760   dbyte0 add =9a041d00 value =14
+  121.760   dbyte1 add =9a044100 value =13
+  121.760   dbyte1 add =9a044500 value =13
+  121.760   dbyte1 add =9a044900 value =13
+  121.760   dbyte1 add =9a044d00 value =12
+  121.760   dbyte1 add =9a045100 value =13
+  121.760   dbyte1 add =9a045500 value =13
+  121.760   dbyte1 add =9a045900 value =13
+  121.760   dbyte1 add =9a045d00 value =13
+  121.760   dbyte2 add =9a048100 value =37
+  121.760   dbyte2 add =9a048500 value =37
+  121.760   dbyte2 add =9a048900 value =37
+  121.760   dbyte2 add =9a048d00 value =37
+  121.760   dbyte2 add =9a049100 value =37
+  121.760   dbyte2 add =9a049500 value =37
+  121.760   dbyte2 add =9a049900 value =37
+  121.760   dbyte2 add =9a049d00 value =37
+  121.760   dbyte3 add =9a04c100 value =37
+  121.760   dbyte3 add =9a04c500 value =37
+  121.760   dbyte3 add =9a04c900 value =37
+  121.760   dbyte3 add =9a04cd00 value =37
+  121.760   dbyte3 add =9a04d100 value =37
+  121.760   dbyte3 add =9a04d500 value =37
+  121.760   dbyte3 add =9a04d900 value =37
+  121.760   dbyte3 add =9a04dd00 value =37
+  121.760   spi_nand spi-flash@0: Winbond SPI NAND was found.
+  121.760   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+  121.760   OpenSBI v0.9
+  121.760   heap: [0x004f24c0 - 0x00cf24c0], size 8192 KB
+  121.760   page: [0x00cf24c8 - 0x039fec00], size 46129 KB
+  121.760    \ | /
+  121.760   - RT -     Thread Smart Operating System
+  121.760    / | \     5.0.0 build Oct 30 2026
+  121.760    2006 - 2020 Copyright by rt-thread team
+  121.760   rtc driver register OK
+  121.760   lwIP-2.1.2 initialized!
+  121.760   [I/I2C] I2C bus [i2c0] registered
+  121.760   [I/I2C] I2C bus [i2c4] registered
+  121.760   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+  121.760   �link_mux: console and /dev/link share uart1
+  121.760   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+  121.760   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+  121.760   os  : system memory alloc 320 bytes
+  121.760   flsh: UFFS consume spare data size 9
+  121.760   os  : system memory alloc 84480 bytes
+  121.760   os  : system memory alloc 53200 bytes
+  121.760   os  : system memory alloc 2048 bytes
+  121.760   tree: DIR 0, FILE 5, DATA 4
+  121.760   os  : system memory alloc 320 bytes
+  121.760   flsh: UFFS consume spare data size 9
+  121.760   os  : system memory alloc 84480 bytes
+  121.760   os  : system memory alloc 53200 bytes
+  121.760   os  : system memory alloc 8192 bytes
+  121.760   tree: DIR 2, FILE 13, DATA 123
+  121.760   /dev/shm file system initialization done!
+  121.760   Can't find sensor on csi0
+  121.760   Can't find sensor on csi2
+  121.760   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+  121.760   <gnne> gnne_device_init done.
+  121.760   #############SDK VERSION######################################
+  121.760   SDK   : unknown-20261031-063929--e23148a66d58-4162ec7
+  121.760   nncase: 2.11.0
+  121.760   ##############################################################
+  121.760   msh />
+  123.944 > 'i2cdetect i2c0' (0.17 s)
+  123.944   i2cdetect i2c0
+  123.944        0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+  123.944   00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  123.944   10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  123.944   20: -- -- -- -- -- -- -- -- -- -- -- -- -- $1,R-- EADY-- *FC
+  123.944   -- 
+  123.944   30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  123.944   40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  123.944   50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  123.944   60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  123.944   70: -- -- -- -- -- -- -- --                         
+  123.944   msh />
+  123.944   msh />
+  124.114 > 'i2cdetect i2c4' (0.17 s)
+  124.114   i2cdetect i2c4
+  124.114        0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+  124.114   00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  124.114   10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  124.114   20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  124.114   30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  124.114   40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  124.114   50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  124.114   60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  124.114   70: -- -- -- -- -- -- -- --                         
+  124.114   msh />
+  124.114   msh />
+  124.169 > 'pad_read' (0.05 s)
+  124.169   pad_read
+  124.169   msh />
+  124.169   msh />
+  127.944 > 'chip_temp' (0.07 s)
+  127.944   chip_temp
+  127.944   chip temperature: 41.573 C
+  127.944   msh />
+  127.944   msh />
+  127.999 > 'free' (0.05 s)
+  127.999   free
+  127.999   memheap               pool size  max used size available size
+  127.999   -------------------- ---------- ------------- --------------
+  127.999   heap                 8388608    1390848       7025152
+  127.999   msh />
+  127.999   msh />
+  128.055 > 'adc probe adc' (0.06 s)
+  128.055   adc probe adc
+  128.055   probe adc success 
+  128.055   msh />
+  128.055   msh />
+  128.111 > 'adc read 1' (0.06 s)
+  128.111   adc read 1
+  128.111   adc channel 1  read value is 0x00000C6A 
+  128.111   msh />
+  128.111   msh />
+  128.166 > 'adc read 1' (0.06 s)
+  128.166   adc read 1
+  128.166   adc channel 1  read value is 0x00000C5F 
+  128.166   msh />
+  128.166   msh />
+  128.221 > 'adc read 1' (0.05 s)
+  128.221   adc read 1
+  128.221   adc channel 1  read value is 0x00000C48 
+  128.221   msh />
+  128.221   msh />
+  128.276 > 'adc read 1' (0.05 s)
+  128.276   adc read 1
+  128.276   adc channel 1  read value is 0x00000C79 
+  128.276   msh />
+  128.276   msh />
+  128.331 > 'adc read 1' (0.06 s)
+  128.331   adc read 1
+  128.331   adc channel 1  read value is 0x00000C9D 
+  128.331   msh />
+  128.331   msh />
+  128.386 > 'adc read 1' (0.05 s)
+  128.386   adc read 1
+  128.386   adc channel 1  read value is 0x00000CA2 
+  128.386   msh />
+  128.386   msh />
+  128.441 > 'adc read 1' (0.05 s)
+  128.441   adc read 1
+  128.441   adc channel 1  read value is 0x00000C4F 
+  128.441   msh />
+  128.441   msh />
+  128.497 > 'adc read 1' (0.06 s)
+  128.497   adc read 1
+  128.497   adc channel 1  read value is 0x00000C97 
+  128.497   msh />
+  128.497   msh />
+  140.150 boot
+  140.150   U-Boot SPL 2022.10-gc096dae6-dirty (Oct 31 2026 - 06:39:49 +0000)
+  140.150   00000000: PMU Major Msg: End of CA training                                            
+  140.150   00000000: PMU Major Msg: End of initialization                                         
+  140.150   00000000: PMU Major Msg: End of read enable training                                   
+  140.150   00000000: PMU Major Msg: End of fine write leveling                                    
+  140.150   00000000: PMU Major Msg: End of read dq deskew training                                
+  140.150   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+  140.150   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+  140.150   00000000: PMU Major Msg: End of write delay center optimization                        
+  140.150   00000000: PMU Major Msg: End of read delay center optimization                         
+  140.150   00000000: PMU Major Msg: End of max read latency training                              
+  140.150   00000000: PMU Major Msg: Firmware run has completed                                    
+  140.150   dbyte0 add =9a040100 value =11
+  140.150   dbyte0 add =9a040500 value =13
+  140.150   dbyte0 add =9a040900 value =13
+  140.150   dbyte0 add =9a040d00 value =13
+  140.150   dbyte0 add =9a041100 value =13
+  140.150   dbyte0 add =9a041500 value =13
+  140.150   dbyte0 add =9a041900 value =13
+  140.150   dbyte0 add =9a041d00 value =14
+  140.150   dbyte1 add =9a044100 value =13
+  140.150   dbyte1 add =9a044500 value =12
+  140.150   dbyte1 add =9a044900 value =13
+  140.150   dbyte1 add =9a044d00 value =12
+  140.150   dbyte1 add =9a045100 value =12
+  140.150   dbyte1 add =9a045500 value =13
+  140.150   dbyte1 add =9a045900 value =13
+  140.150   dbyte1 add =9a045d00 value =13
+  140.150   dbyte2 add =9a048100 value =37
+  140.150   dbyte2 add =9a048500 value =37
+  140.150   dbyte2 add =9a048900 value =37
+  140.150   dbyte2 add =9a048d00 value =37
+  140.150   dbyte2 add =9a049100 value =37
+  140.150   dbyte2 add =9a049500 value =37
+  140.150   dbyte2 add =9a049900 value =37
+  140.150   dbyte2 add =9a049d00 value =37
+  140.150   dbyte3 add =9a04c100 value =37
+  140.150   dbyte3 add =9a04c500 value =37
+  140.150   dbyte3 add =9a04c900 value =37
+  140.150   dbyte3 add =9a04cd00 value =37
+  140.150   dbyte3 add =9a04d100 value =37
+  140.150   dbyte3 add =9a04d500 value =37
+  140.150   dbyte3 add =9a04d900 value =37
+  140.150   dbyte3 add =9a04dd00 value =37
+  140.150   spi_nand spi-flash@0: Winbond SPI NAND was found.
+  140.150   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+  140.150   OpenSBI v0.9
+  140.150   heap: [0x004f24c0 - 0x00cf24c0], size 8192 KB
+  140.150   page: [0x00cf24c8 - 0x039fec00], size 46129 KB
+  140.150    \ | /
+  140.150   - RT -     Thread Smart Operating System
+  140.150    / | \     5.0.0 build Oct 30 2026
+  140.150    2006 - 2020 Copyright by rt-thread team
+  140.150   rtc driver register OK
+  140.150   lwIP-2.1.2 initialized!
+  140.150   [I/I2C] I2C bus [i2c0] registered
+  140.150   [I/I2C] I2C bus [i2c4] registered
+  140.150   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+  140.150   �link_mux: console and /dev/link share uart1
+  140.150   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+  140.150   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+  140.150   os  : system memory alloc 320 bytes
+  140.150   flsh: UFFS consume spare data size 9
+  140.150   os  : system memory alloc 84480 bytes
+  140.150   os  : system memory alloc 53200 bytes
+  140.150   os  : system memory alloc 2048 bytes
+  140.150   tree: DIR 0, FILE 5, DATA 4
+  140.150   os  : system memory alloc 320 bytes
+  140.150   flsh: UFFS consume spare data size 9
+  140.150   os  : system memory alloc 84480 bytes
+  140.150   os  : system memory alloc 53200 bytes
+  140.150   os  : system memory alloc 8192 bytes
+  140.150   tree: DIR 2, FILE 13, DATA 123
+  140.150   /dev/shm file system initialization done!
+  140.150   Can't find sensor on csi0
+  140.150   Can't find sensor on csi2
+  140.150   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+  140.150   <gnne> gnne_device_init done.
+  140.150   #############SDK VERSION######################################
+  140.150   SDK   : unknown-20261031-063929--e23148a66d58-4162ec7
+  140.150   nncase: 2.11.0
+  140.150   ##############################################################
+  140.150   msh />
+  142.333 > 'i2cdetect i2c0' (0.16 s)
+  142.333   i2cdetect i2c0
+  142.333        0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+  142.333   00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  142.333   10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  142.333   20: -- -- -- -- -- -- -- -- -- -- -- -- -- $1,R-- EADY-- *FC
+  142.333   -- 
+  142.333   30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  142.333   40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  142.333   50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  142.333   60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  142.333   70: -- -- -- -- -- -- -- --                         
+  142.333   msh />
+  142.333   msh />
+  142.503 > 'i2cdetect i2c4' (0.17 s)
+  142.503   i2cdetect i2c4
+  142.503        0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+  142.503   00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  142.503   10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  142.503   20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  142.503   30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  142.503   40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  142.503   50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  142.503   60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+  142.503   70: -- -- -- -- -- -- -- --                         
+  142.503   msh />
+  142.503   msh />
+  142.558 > 'pad_read' (0.05 s)
+  142.558   pad_read
+  142.558   msh />
+  142.558   msh />
+  146.283 > 'chip_temp' (0.07 s)
+  146.283   chip_temp
+  146.283   chip temperature: 39.760 C
+  146.283   msh />
+  146.283   msh />
+  146.339 > 'free' (0.06 s)
+  146.339   free
+  146.339   memheap               pool size  max used size available size
+  146.339   -------------------- ---------- ------------- --------------
+  146.339   heap                 8388608    1390848       7025152
+  146.339   msh />
+  146.339   msh />
+  146.394 > 'adc probe adc' (0.05 s)
+  146.394   adc probe adc
+  146.394   probe adc success 
+  146.394   msh />
+  146.394   msh />
+  146.449 > 'adc read 1' (0.05 s)
+  146.449   adc read 1
+  146.449   adc channel 1  read value is 0x00000C33 
+  146.449   msh />
+  146.449   msh />
+  146.504 > 'adc read 1' (0.06 s)
+  146.504   adc read 1
+  146.504   adc channel 1  read value is 0x00000C50 
+  146.504   msh />
+  146.504   msh />
+  146.559 > 'adc read 1' (0.05 s)
+  146.559   adc read 1
+  146.559   adc channel 1  read value is 0x00000C8E 
+  146.559   msh />
+  146.559   msh />
+  146.615 > 'adc read 1' (0.06 s)
+  146.615   adc read 1
+  146.615   adc channel 1  read value is 0x00000CA4 
+  146.615   msh />
+  146.615   msh />
+  146.671 > 'adc read 1' (0.06 s)
+  146.671   adc read 1
+  146.671   adc channel 1  read value is 0x00000C5F 
+  146.671   msh />
+  146.671   msh />
+  146.727 > 'adc read 1' (0.06 s)
+  146.727   adc read 1
+  146.727   adc channel 1  read value is 0x00000C47 
+  146.727   msh />
+  146.727   msh />
+  146.782 > 'adc read 1' (0.05 s)
+  146.782   adc read 1
+  146.782   adc channel 1  read value is 0x00000C73 
+  146.782   msh />
+  146.782   msh />
+  146.837 > 'adc read 1' (0.05 s)
+  146.837   adc read 1
+  146.837   adc channel 1  read value is 0x00000C53 
+  146.837   msh />
+  146.837   msh />

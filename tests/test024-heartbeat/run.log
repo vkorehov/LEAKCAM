@@ -1,18 +1,18 @@
-15:53:10 test024-heartbeat: 5 metric rows MISSING: Voltage under load (min), Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Features over the minimal image, Optimised build (-O3, LTO, -march)
-15:53:17 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.45 msh 0.46
-15:53:34 sample boot 1 {'board': 32.3, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 42.177, 'k_free': (7025152, 1390848), 'vbat': 4366}
-15:53:45 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.45 msh 0.46
-15:54:02 sample boot 2 {'board': 32.5, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 40.667, 'k_free': (7025152, 1390848), 'vbat': 4375}
-15:54:14 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.45 msh 0.46
-15:54:30 sample boot 3 {'board': 32.7, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 41.875, 'k_free': (7025152, 1390848), 'vbat': 4357}
-15:54:42 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.45 msh 0.46
-15:54:58 sample boot 4 {'board': 32.8, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 40.063, 'k_free': (7025152, 1390848), 'vbat': 4359}
-15:55:10 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.45 msh 0.46
-15:55:28 sample boot 5 {'board': 32.8, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 42.479, 'k_free': (7025152, 1390848), 'vbat': 4385}
-15:55:40 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.45 msh 0.46
-15:55:57 sample boot 6 {'board': 32.9, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 42.177, 'k_free': (7025152, 1390848), 'vbat': 4343}
-15:56:08 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.45 msh 0.46
-15:56:25 sample boot 7 {'board': 33.0, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 41.573, 'k_free': (7025152, 1390848), 'vbat': 4370}
-15:56:36 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.45 msh 0.46
-15:56:53 sample boot 8 {'board': 33.0, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 42.78, 'k_free': (7025152, 1390848), 'vbat': 4382}
-15:56:57 test024-heartbeat: PASS; filled 3: Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Voltage under load (min); still MISSING 2: Features over the minimal image, Optimised build (-O3, LTO, -march)
+08:52:56 test024-heartbeat: 0 metric rows MISSING: none
+08:53:04 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.53 msh 0.55
+08:53:20 sample boot 1 {'board': 34.1, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.384, 'k_free': (7025152, 1390848), 'vbat': 4132}
+08:53:32 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.53 msh 0.55
+08:53:48 sample boot 2 {'board': 34.0, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.082, 'k_free': (7025152, 1390848), 'vbat': 4126}
+08:54:00 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.53 msh 0.54
+08:54:17 sample boot 3 {'board': 34.0, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.987, 'k_free': (7025152, 1390848), 'vbat': 4106}
+08:54:28 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.53 msh 0.54
+08:54:45 sample boot 4 {'board': 33.9, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.685, 'k_free': (7025152, 1390848), 'vbat': 4158}
+08:54:56 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.53 msh 0.54
+08:55:13 sample boot 5 {'board': 34.0, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.384, 'k_free': (7025152, 1390848), 'vbat': 4143}
+08:55:25 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.53 msh 0.54
+08:55:41 sample boot 6 {'board': 33.8, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.987, 'k_free': (7025152, 1390848), 'vbat': 4136}
+08:55:53 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.53 msh 0.54
+08:56:09 sample boot 7 {'board': 33.8, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.384, 'k_free': (7025152, 1390848), 'vbat': 4111}
+08:56:21 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.53 msh 0.54
+08:56:38 sample boot 8 {'board': 33.8, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.685, 'k_free': (7025152, 1390848), 'vbat': 4148}
+08:56:42 test024-heartbeat: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

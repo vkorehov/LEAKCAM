@@ -4,15 +4,46 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
-### BL616 off USB, 2026-10-30 20:55 (open)
+### Automated run 2026-10-31 (run.py, 240 s): pass
 
-After an echo test that ended with the Wi-Fi bridge up and the K230 switched off, the BL616 left USB (kernel: `usb
-2-4.1: USB disconnect` 20:55:01) and did not come back, not even as the ROM; no VM hub errors, so not the VM. Its
-watchdog did not bring it back. The rerun batch started at 20:57 found no port (test010 crashed in boot()) and was
-stopped. Next: replug PR1, read `pt_trace` breadcrumbs and the reset reason; make the harness end the bridge after
-every test. The morning's disappearance also followed bridge activity.
+8 boots: 112 READY frames with valid checksums on the BL616, echo runs clean.
 
-### Why the 2026-10-30 runs at 2 Mbaud failed (BL616 state, not the rate)
+
+### BL616 off USB, 2026-10-30 20:55 (open, not reproduced)
+
+After echo runs with the Wi-Fi bridge (K230 power-cycled under it) the BL616's USB left the bus (`usb 2-4.1: USB
+disconnect` 20:55:01, no VM freeze then: the last ended 20:45) and came back only with the cable replugged (07:58:40
+next day). The BL616 itself never reset: uptime 40240 s since the 20:49:47 flash, its counters kept. Its Wi-Fi had
+gone deaf: `pt_trace counts` 2 connects, then 5052 disconnect/retry pairs every ~8 s from ~160 s after boot, all
+night; a scan found 0 APs (also after `pt_wifi leave`) while the router was up; after `reboot` 27 APs. Not reproduced
+(2026-10-31): the K230 switched off under a joined bridge (joined, 25-28 APs for 90 s), and the exact replay of the
+evening's two scripts (joined, 23-25 APs). Note: `pt_off` only stops the bridge's SDIO (`wifi_link_stop`, the
+product's k230_off() too): the radio stays associated with autoconnect on. Since 2026-10-31 run_tests.py logs the
+BL616's heap, Wi-Fi state and trace counts after each test and reboots it, so a test never inherits such a state.
+
+### Bench stream corrupted by other UART1 writers, not the link: 2026-10-31
+
+Correction of the 2026-10-30 note below ("BL616 state"): a fresh BL616 has the same heap after its first bridge
+start (118 KB free, 122 blocks), so the heap was not the cause; and the "with the bridge up" echoes of 2026-10-30 never
+ran (`pt_uart echo` answered "3V3 is off": its 3V3 check reads the SDIO pull-ups, which the bridge drives).
+
+Not the VM either: VMware's guest log records every VM freeze (30 s granularity), none overlapped a failing run
+(test010 20:07-20:12, test018 20:12-20:18, test039 15:14), and the echo runs K230 -> BL616 -> K230 on the board.
+
+Found with the bridge bound (2026-10-31, test firmware fixed to start the echo then): 1 run of 5 and 1 of 10 stalled
+(944195 / 978501 of 1048576 back, 78-81 bad, 15 s timeout), always the run ~25 s after Wi-Fi came up. Byte counts
+agree on both chips (BL616 echoed = K230 got back; K230 uart1: 0 framing/parity/overrun, 0 dropped; BL616 RX FIFO: 0
+overflows, at most 24 of 32 full): no byte was lost on the line. The K230 printed `[I/ntp] Get local time ...` (66
+bytes) into UART1 in the middle of the bench: the console shares UART1, the BL616 echoed the line, the bench took it
+as data and its window never closed. Any console or link output during a bench does the same (yesterday's runs had
+no bridge; the likely writers are the agent's READY frames / hook messages - not provable now, their console logs
+were overwritten).
+
+Fix (link_mux.c): while `uart_bench` holds uart1 (`link_mux_pause`), console output is held (1 KB) and written after
+the bench, link frames are dropped (the sender repeats them); `link_stat` counts both. With it: 10 x 1 MB with the
+bridge bound, 0 lost, the NTP line held (66 B) and printed after run 2.
+
+### 2026-10-30 note (superseded above): why the runs at 2 Mbaud failed
 
 The K230 -> BL616 direction lost 1-16 bytes per 64 KB / 1 MB echo (the BL616 echoed fewer than were sent; the
 K230 received every echoed byte, 0 UART errors). The BL616 test firmware had then run all day with ~50 `pt_wifi

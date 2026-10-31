@@ -4,6 +4,17 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-31 (run.py, 106 s): pass
+
+pt_pins + pin_check.py:
+
+- off: [pins_off.txt](pins_off.txt): 0 pin(s) off the table
+- on_reset: [pins_on_reset.txt](pins_on_reset.txt): 0 pin(s) off the table
+- running: [pins_running.txt](pins_running.txt): 0 pin(s) off the table
+- boot1_high: [pins_boot1_high.txt](pins_boot1_high.txt): 0 pin(s) off the table
+- uart_on: [pins_uart_on.txt](pins_uart_on.txt): 0 pin(s) off the table
+
+
 ### Automated run 2026-10-25 (run.py, 106 s): pass
 
 pt_pins + pin_check.py:

@@ -4,6 +4,15 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-31 (run.py, 236 s): pass
+
+3 boots: rtc_ppm 60 = +27.0, +27.0, +27.0 ppm. rtc_raw:
+
+    rtc_raw
+    rtc_raw: date 14190101 time 03000002 alarm_date 00010101 alarm_time 00000000 count 7fff2bea int_ctrl 00000002
+    rtc_raw: 2025-01-01 00:00:02 week 3 leap 0, curr_count 11242 sum_count 32767
+
+
 ### Automated run 2026-10-25 (run.py, 236 s): pass
 
 3 boots: rtc_ppm 60 = +27.0, +27.0, +27.0 ppm. rtc_raw:

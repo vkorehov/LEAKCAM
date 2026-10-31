@@ -538,6 +538,11 @@ void ble_credentials_stored(void)
         xTaskCreate(rebridge_task, "rebr", 1024, NULL, 3, NULL);
 }
 
+bool pt_wifi_bridged(void)
+{
+    return bridged;
+}
+
 void pt_wifi_rails_off(void)
 {
     if (!bridged)

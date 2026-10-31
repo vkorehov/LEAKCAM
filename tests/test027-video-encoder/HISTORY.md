@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-31 (run.py, 61 s): pass
+
+2 x 15 fps: ch0 15.0 fps 511 kbit/s, ch1 14.9 fps 509 kbit/s; 1 channel max: ch0 75.3 fps 2516 kbit/s.
+
+
 ### Encoder stall from a full /sdcard, 2026-10-30 (test105)
 
 During test105 the encoder stopped at t~100 s (`ch0: in 16 out 0`, ch1 `in 0`, enqueue failures). Alone, idle board:

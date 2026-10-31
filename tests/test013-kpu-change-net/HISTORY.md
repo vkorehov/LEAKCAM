@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-31 (run.py, 55 s): pass
+
+8 x leakcam_kputest 50: PASS, PASS, PASS, PASS, PASS, PASS, PASS, PASS; distance same 0.0000, light 0.0231, change 0.0694 (threshold 0.43).
+
+
 ### Automated run 2026-10-25 (run.py, 54 s): pass
 
 8 x leakcam_kputest 50: PASS, PASS, PASS, PASS, PASS, PASS, PASS, PASS; distance same 0.0000, light 0.0231, change 0.0694 (threshold 0.43).

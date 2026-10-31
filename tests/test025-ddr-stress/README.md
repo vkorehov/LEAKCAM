@@ -1,7 +1,7 @@
 # test025: DDR stress (128 MB, 3200 MT/s all-ODT)
 
-Status: **pass at 3200 MT/s all-ODT** (2026-10-25: 10 passes, 0 errors; 8 h soak 2026-10-23/24: 5230 passes, 0
-errors, 0 resets). Open: the run with the KPU and the encoder busy.
+Status: **pass at 3200 MT/s all-ODT** (2026-10-31: 10 passes, 5 cold starts and the run under KPU + encoder, 0
+errors; 8 h soak 2026-10-23/24: 5230 passes, 0 errors, 0 resets). Open: memtest-alone current (meter).
 
 SPL trains the DDR on every boot (3200 MT/s all-ODT, u-boot k230d_leakcam_defconfig). A marginal setting shows only
 as rare random crashes. This test runs a pattern memory test over most of the free RAM for a long time.
@@ -45,15 +45,15 @@ MMZ memory, memtest app (temporary), cache control.
 - Soak temperatures, open board, room ~29 C: K230 die 60.5 C peak (after ~2 h), 56.6-58.4 C later; board (AHT20)
   43.8 C peak (2026-10-23/24).
 - memtest covers 109 of 128 MB (40 MB system RAM, 4 MB left free, + 69 MB MMZ) (2026-10-21).
-- 10 passes, 0 errors in 61 s (run.py, 2026-10-25).
-- 5 cold starts (DDR retrained each), 0 errors, at 2667 MT/s (2026-10-21).
+- 10 passes, 0 errors in 61 s (run.py, 2026-10-25; again 2026-10-31).
+- 5 cold starts at 3200 MT/s (rails off 5 s, DDR retrained each), memtest 3 passes x 89 MB x 5 patterns after each:
+  0 errors, 171-173 MB/s write+verify (2026-10-31).
+- memtest with the KPU change net (`leakcam_kputest 2000000`) and the encoder (`venctest 2 x 15 fps`) busy, memtest
+  started last: it got 46 MB (10 MB system RAM + 36 MB MMZ; the loads hold the other 33 MB of MMZ), 3 passes, 0
+  errors, 165 MB/s (2026-10-31).
 
 Open:
-- Step 3: memtest with the KPU and the encoder busy. test105's 10 min full load (2026-10-30) ran memtest that way
-  (memtest started last, 0 K230 resets), but its console log was overwritten by a later ad-hoc run: no error count.
-- The >= 5 cold-start set (step 4) at 3200 MT/s: dozens of cold boots trained DDR fine on 2026-10-30 (test017,
-  test022, test105), but without memtest after each.
-- Current and energy at 3200 MT/s (memtest alone).
+- Current and energy at 3200 MT/s (memtest alone): needs the meter.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
@@ -62,7 +62,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
 | Boot, reset release -> app init (median of 5) | 0.345 s at 3200 all-ODT (2026-10-23) | test022 | longest step: |
-| This part's boot share | **MISSING**: SPL's DDR training at 3200 MT/s not split out (the 2667 figure superseded) | - | |
+| This part's boot share | within reset -> SPL banner 0.158-0.160 s (5 cold boots, 2026-10-31): the SPL prints its banner after DDR training (the PMU "Firmware run has completed" line arrives with it), so ROM load + training at 3200 MT/s take at most 0.16 s of the 0.56 s to msh; a finer split needs a timer read in the SPL | - | |
 | Test run time | 77 s automated (run.py, 2026-10-25); 8 h soak 22:40:56 - 06:41:04 (2026-10-23/24) | - | setup separately |
 | memtest MB/s, errors | 198 MB/s write+verify (5 patterns, MMZ uncached), 0 errors (3200 all-ODT, 8 h, 2026-10-23/24) | DDR top 5.33 GB/s (test016) | a checker, not a bandwidth test |
 | Current idle / during | idle 220 mA (test006); memtest alone at 3200 MT/s **MISSING** (2667 figures superseded; test105 has memtest only on top of other loads) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT ~4.15 V (full cell) |

@@ -42,7 +42,7 @@ for i in range(8):
         fails.append(f"boot {i + 1}: echo run not clean")
     bl("pt_uart on", 1)
     r.sample(f"boot {i + 1}")
-r.set("speed", f"link at 4 Mbaud (test018); {frames} READY frames, every checksum valid ({r.date})")
+r.set("speed", f"link at 2 Mbaud (test018); {frames} READY frames, every checksum valid ({r.date})")
 r.set("share", f"n/a: the agent sends READY right after app init; the link adds no boot step ({r.date})")
 r.set("energy", f"n/a: below the meter's step next to the K230 ({r.date})")
 r.set("perday", f"n/a: a few frames per session ({r.date})")

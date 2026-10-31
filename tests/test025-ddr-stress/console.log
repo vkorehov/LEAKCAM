@@ -1,0 +1,298 @@
+    7.578 boot
+    7.578   U-Boot SPL 2022.10-gc096dae6-dirty (Oct 31 2026 - 06:39:49 +0000)
+    7.578   00000000: PMU Major Msg: End of CA training                                            
+    7.578   00000000: PMU Major Msg: End of initialization                                         
+    7.578   00000000: PMU Major Msg: End of read enable training                                   
+    7.578   00000000: PMU Major Msg: End of fine write leveling                                    
+    7.578   00000000: PMU Major Msg: End of read dq deskew training                                
+    7.578   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+    7.578   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+    7.578   00000000: PMU Major Msg: End of write delay center optimization                        
+    7.578   00000000: PMU Major Msg: End of read delay center optimization                         
+    7.578   00000000: PMU Major Msg: End of max read latency training                              
+    7.578   00000000: PMU Major Msg: Firmware run has completed                                    
+    7.578   dbyte0 add =9a040100 value =12
+    7.578   dbyte0 add =9a040500 value =13
+    7.578   dbyte0 add =9a040900 value =13
+    7.578   dbyte0 add =9a040d00 value =13
+    7.578   dbyte0 add =9a041100 value =13
+    7.578   dbyte0 add =9a041500 value =13
+    7.578   dbyte0 add =9a041900 value =13
+    7.578   dbyte0 add =9a041d00 value =14
+    7.578   dbyte1 add =9a044100 value =13
+    7.578   dbyte1 add =9a044500 value =13
+    7.578   dbyte1 add =9a044900 value =14
+    7.578   dbyte1 add =9a044d00 value =12
+    7.578   dbyte1 add =9a045100 value =13
+    7.578   dbyte1 add =9a045500 value =13
+    7.578   dbyte1 add =9a045900 value =13
+    7.578   dbyte1 add =9a045d00 value =13
+    7.578   dbyte2 add =9a048100 value =37
+    7.578   dbyte2 add =9a048500 value =37
+    7.578   dbyte2 add =9a048900 value =37
+    7.578   dbyte2 add =9a048d00 value =37
+    7.578   dbyte2 add =9a049100 value =37
+    7.578   dbyte2 add =9a049500 value =37
+    7.578   dbyte2 add =9a049900 value =37
+    7.578   dbyte2 add =9a049d00 value =37
+    7.578   dbyte3 add =9a04c100 value =37
+    7.578   dbyte3 add =9a04c500 value =37
+    7.578   dbyte3 add =9a04c900 value =37
+    7.578   dbyte3 add =9a04cd00 value =37
+    7.578   dbyte3 add =9a04d100 value =37
+    7.578   dbyte3 add =9a04d500 value =37
+    7.578   dbyte3 add =9a04d900 value =37
+    7.578   dbyte3 add =9a04dd00 value =37
+    7.578   spi_nand spi-flash@0: Winbond SPI NAND was found.
+    7.578   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+    7.578   OpenSBI v0.9
+    7.578   heap: [0x004f24c0 - 0x00cf24c0], size 8192 KB
+    7.578   page: [0x00cf24c8 - 0x039fec00], size 46129 KB
+    7.578    \ | /
+    7.578   - RT -     Thread Smart Operating System
+    7.578    / | \     5.0.0 build Oct 30 2026
+    7.578    2006 - 2020 Copyright by rt-thread team
+    7.578   rtc driver register OK
+    7.578   lwIP-2.1.2 initialized!
+    7.578   [I/I2C] I2C bus [i2c0] registered
+    7.578   [I/I2C] I2C bus [i2c4] registered
+    7.578   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+    7.578   �link_mux: console and /dev/link share uart1
+    7.578   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+    7.578   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+    7.578   os  : system memory alloc 320 bytes
+    7.578   flsh: UFFS consume spare data size 9
+    7.578   os  : system memory alloc 84480 bytes
+    7.578   os  : system memory alloc 53200 bytes
+    7.578   os  : system memory alloc 2048 bytes
+    7.578   tree: DIR 0, FILE 5, DATA 4
+    7.578   os  : system memory alloc 320 bytes
+    7.578   flsh: UFFS consume spare data size 9
+    7.578   os  : system memory alloc 84480 bytes
+    7.578   os  : system memory alloc 53200 bytes
+    7.578   os  : system memory alloc 8192 bytes
+    7.578   tree: DIR 2, FILE 13, DATA 123
+    7.578   /dev/shm file system initialization done!
+    7.578   Can't find sensor on csi0
+    7.578   Can't find sensor on csi2
+    7.578   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+    7.578   <gnne> gnne_device_init done.
+    7.578   #############SDK VERSION######################################
+    7.578   SDK   : unknown-20261031-063929--e23148a66d58-4162ec7
+    7.578   nncase: 2.11.0
+    7.578   ##############################################################
+    7.578   msh />
+   13.361 > 'chip_temp' (0.07 s)
+   13.361   chip_temp
+   13.361   chip temperature: 42.479 C
+   13.361   msh />
+   13.361   msh />
+   13.416 > 'free' (0.06 s)
+   13.416   free
+   13.416   memheap               pool size  max used size available size
+   13.416   -------------------- ---------- ------------- --------------
+   13.416   heap                 8388608    1390848       7025152
+   13.416   msh />
+   13.416   msh />
+   13.471 > 'adc probe adc' (0.05 s)
+   13.471   adc probe adc
+   13.471   probe adc success 
+   13.471   msh />
+   13.471   msh />
+   13.526 > 'adc read 1' (0.05 s)
+   13.526   adc read 1
+   13.526   adc channel 1  read value is 0x00000C96 
+   13.526   msh />
+   13.526   msh />
+   13.582 > 'adc read 1' (0.06 s)
+   13.582   adc read 1
+   13.582   adc channel 1  read value is 0x00000C64 
+   13.582   msh />
+   13.582   msh />
+   13.649 > 'adc read 1' (0.07 s)
+   13.649   adc read 1
+   13.649   adc channel 1  read value is 0x00000CB3 
+   13.649   msh />
+   13.649   msh />
+   13.704 > 'adc read 1' (0.05 s)
+   13.704   adc read 1
+   13.704   adc channel 1  read value is 0x00000C77 
+   13.704   msh />
+   13.704   msh />
+   13.760 > 'adc read 1' (0.06 s)
+   13.760   adc read 1
+   13.760   adc channel 1  read value is 0x00000C97 
+   13.760   msh />
+   13.760   msh />
+   13.815 > 'adc read 1' (0.05 s)
+   13.815   adc read 1
+   13.815   adc channel 1  read value is 0x00000C90 
+   13.815   msh />
+   13.815   msh />
+   13.870 > 'adc read 1' (0.05 s)
+   13.870   adc read 1
+   13.870   adc channel 1  read value is 0x00000C58 
+   13.870   msh />
+   13.870   msh />
+   13.927 > 'adc read 1' (0.06 s)
+   13.927   adc read 1
+   13.927   adc channel 1  read value is 0x00000CB0 
+   13.927   msh />
+   13.927   msh />
+   13.991 > '/sdcard/app/memtest 10 24 &' (0.06 s)
+   13.991   /sdcard/app/memtest 10 24 &
+   13.991   msh />
+   13.991   msh />
+   39.998 > None (1.01 s)
+   39.998   Memory exhaustion!
+   39.998   <3>[3] [Func]:ioctl_mmb_alloc [Line]:163 [Info]:hil_mmb_alloc(memtest, 1048576, 0x00000000, 0, anonymous) failed!
+   39.998   memtest: 20 MB system RAM (cached, 24 MB left free) + 69 MB MMZ (uncached), 10 passes
+   39.998   leakcam_agent: READY not answered
+   39.998   leakcam_agent: READY not answered
+   39.998   leakcam_agent: READY not answered
+   39.998   pass 0: 89 MB x 5 patterns in 5.2 s (171 MB/s write+verify), errors 0 (total 0), 5 s
+   39.998   leakcam_agent: READY not answered
+   39.998   leakcam_agent: READY not answered
+   39.998   leakcam_agent: READY not answered
+   39.998   leakcam_agent: READY not answered
+   39.998   pass 1: 89 MB x 5 patterns in 5.2 s (171 MB/s write+verify), errors 0 (total 0), 10 s
+   39.998   leakcam_agent: READY not answered
+   39.998   leakcam_agent: READY not answered
+   39.998   leakcam_agent: READY not answered
+   39.998   pass 2: 89 MB x 5 patterns in 5.2 s (172 MB/s write+verify), errors 0 (total 0), 16 s
+   39.998   leakcam_agent: READY not answered
+   39.998   leakcam_agent: no WAKE from BL616, assuming cold start
+   39.998   leakcam_agent: sensors: -0.1 %RH, 0.0 C, probe -1 mV, battery 4165 mV
+   39.998   leakcam_agent: wake reason: cold
+   39.998   [W/LWP] not use fast load, out of memory 8388608 < 15543000
+   39.998   pass 3: 89 MB x 5 patterns in 5.2 s (171 MB/s write+verify), errors 0 (total 0), 21 s
+   39.998   vicap: dev 0 init failed (sensor not answering on its I2C bus?)
+   39.998   capture failed
+   39.998   leakcam_agent: hook exited 0, next wake in 3600 s
+   39.998   leakcam_agent: SLEEP not answered
+   39.998   leakcam_agent: done, heartbeat stopped
+   43.689 > 'chip_temp' (0.07 s)
+   43.689   chip_temp
+   43.689   chip temperature: 48.201 C
+   43.689   msh />
+   43.689   msh />
+   43.745 > 'free' (0.06 s)
+   43.745   free
+   43.745   memheap               pool size  max used size available size
+   43.745   -------------------- ---------- ------------- --------------
+   43.745   heap                 8388608    1721152       7111872
+   43.745   msh />
+   43.745   msh />
+   43.800 > 'adc probe adc' (0.05 s)
+   43.800   adc probe adc
+   43.800   probe adc success 
+   43.800   msh />
+   43.800   msh />
+   43.856 > 'adc read 1' (0.06 s)
+   43.856   adc read 1
+   43.856   adc channel 1  read value is 0x00000C7F 
+   43.856   msh />
+   43.856   msh />
+   43.911 > 'adc read 1' (0.05 s)
+   43.911   adc read 1
+   43.911   adc channel 1  read value is 0x00000C74 
+   43.911   msh />
+   43.911   msh />
+   43.967 > 'adc read 1' (0.06 s)
+   43.967   adc read 1
+   43.967   adc channel 1  read value is 0x00000C5E 
+   43.967   msh />
+   43.967   msh />
+   44.022 > 'adc read 1' (0.05 s)
+   44.022   adc read 1
+   44.022   adc channel 1  read value is 0x00000C3E 
+   44.022   msh />
+   44.022   msh />
+   44.078 > 'adc read 1' (0.06 s)
+   44.078   adc read 1
+   44.078   adc channel 1  read value is 0x00000C88 
+   44.078   msh />
+   44.078   msh />
+   44.134 > 'adc read 1' (0.06 s)
+   44.134   adc read 1
+   44.134   adc channel 1  read value is 0x00000C5D 
+   44.134   msh />
+   44.134   msh />
+   44.189 > 'adc read 1' (0.05 s)
+   44.189   adc read 1
+   44.189   adc channel 1  read value is 0x00000C71 
+   44.189   msh />
+   44.189   msh />
+   44.245 > 'adc read 1' (0.06 s)
+   44.245   adc read 1
+   44.245   adc channel 1  read value is 0x00000C42 
+   44.245   msh />
+   44.245   msh />
+   70.253 > None (1.01 s)
+   70.253   pass 5: 89 MB x 5 patterns in 5.2 s (171 MB/s write+verify), errors 0 (total 0), 31 s
+   70.253   pass 6: 89 MB x 5 patterns in 5.2 s (172 MB/s write+verify), errors 0 (total 0), 36 s
+   70.253   pass 7: 89 MB x 5 patterns in 5.2 s (171 MB/s write+verify), errors 0 (total 0), 42 s
+   70.253   pass 8: 89 MB x 5 patterns in 5.2 s (172 MB/s write+verify), errors 0 (total 0), 47 s
+   70.253   pass 9: 89 MB x 5 patterns in 5.2 s (172 MB/s write+verify), errors 0 (total 0), 52 s
+   70.253   memtest: done, 0 errors
+   73.939 > 'chip_temp' (0.06 s)
+   73.939   chip_temp
+   73.939   chip temperature: 47.299 C
+   73.939   msh />
+   73.939   msh />
+   73.994 > 'free' (0.06 s)
+   73.994   free
+   73.994   memheap               pool size  max used size available size
+   73.994   -------------------- ---------- ------------- --------------
+   73.994   heap                 8388608    1721152       7312064
+   73.994   msh />
+   73.994   msh />
+   74.050 > 'adc probe adc' (0.06 s)
+   74.050   adc probe adc
+   74.050   probe adc success 
+   74.050   msh />
+   74.050   msh />
+   74.106 > 'adc read 1' (0.06 s)
+   74.106   adc read 1
+   74.106   adc channel 1  read value is 0x00000C80 
+   74.106   msh />
+   74.106   msh />
+   74.161 > 'adc read 1' (0.05 s)
+   74.161   adc read 1
+   74.161   adc channel 1  read value is 0x00000C85 
+   74.161   msh />
+   74.161   msh />
+   74.216 > 'adc read 1' (0.05 s)
+   74.216   adc read 1
+   74.216   adc channel 1  read value is 0x00000C82 
+   74.216   msh />
+   74.216   msh />
+   74.271 > 'adc read 1' (0.05 s)
+   74.271   adc read 1
+   74.271   adc channel 1  read value is 0x00000C5A 
+   74.271   msh />
+   74.271   msh />
+   74.327 > 'adc read 1' (0.06 s)
+   74.327   adc read 1
+   74.327   adc channel 1  read value is 0x00000C47 
+   74.327   msh />
+   74.327   msh />
+   74.382 > 'adc read 1' (0.05 s)
+   74.382   adc read 1
+   74.382   adc channel 1  read value is 0x00000CB6 
+   74.382   msh />
+   74.382   msh />
+   74.437 > 'adc read 1' (0.05 s)
+   74.437   adc read 1
+   74.437   adc channel 1  read value is 0x00000C8C 
+   74.437   msh />
+   74.437   msh />
+   74.492 > 'adc read 1' (0.05 s)
+   74.492   adc read 1
+   74.492   adc channel 1  read value is 0x00000CA9 
+   74.492   msh />
+   74.492   msh />
+   74.548 > 'killall memtest' (0.06 s)
+   74.548   killall memtest
+   74.548   msh />
+   74.548   msh />

@@ -7,7 +7,9 @@
 
 Each run.py runs alone (a fresh process: a hang or crash in one cannot take the others with it), its output goes to
 the terminal and to tests/<test>/run.log (overwritten each run). A run that exceeds its TIMEOUT_S is killed and
-the board switched off. At the end: check_tests.py for each test run, and a summary.
+the board switched off. Between tests the BL616 is rebooted after its state is logged (reset_bl616): a state left by
+one test (a Wi-Fi bridge that stayed associated after pt_off and went deaf overnight, 2026-10-30) must not reach the
+next. At the end: check_tests.py for each test run, and a summary.
 """
 import glob
 import os
@@ -20,6 +22,27 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 TESTS = os.path.abspath(os.path.join(HERE, "..", "..", "tests"))
 sys.path.insert(0, os.path.join(HERE, "..", "power-bringup"))
 TIMEOUT_S = 3600
+
+
+def reset_bl616():
+    """Log the BL616's heap, Wi-Fi state and Wi-Fi event counts (the evidence of a state a test left), then reboot it
+    and wait for its shell: every test starts on a fresh BL616."""
+    from board import bl, BL_PORT
+    clean = lambda t: re.sub(r"\x1b\[[0-9;]*m", "", t)
+    try:
+        bl("pt_off", 2)
+        state = [l.strip() for c in ("mem", "pt_wifi status", "pt_trace counts") for l in clean(bl(c, 2)).splitlines()
+                 if re.match(r"(mem: |pt_wifi status: |trace counts: )", l.strip())]
+        print("BL616 before reset: " + " | ".join(state), flush=True)
+        bl("reboot", 0.5)
+    except Exception as e:                  # the port vanished: say so, the next test's boot() waits for it
+        print(f"BL616 reset: {e!r}", flush=True)
+    for _ in range(60):
+        time.sleep(1)
+        if os.path.exists(BL_PORT):
+            time.sleep(2)
+            return
+    print("BL616 reset: the port did not come back in 60 s", flush=True)
 
 
 def main():
@@ -36,9 +59,11 @@ def main():
         # in the order given: a flash (test019) must run before the tests that need its image
         runs = [r for a in args for r in runs if os.path.basename(os.path.dirname(r)).startswith(a)]
     summary = []
-    for r in runs:
+    for i, r in enumerate(runs):
         d = os.path.dirname(r)
         name = os.path.basename(d)
+        if i:
+            reset_bl616()
         print(f"\n===== {name} =====", flush=True)
         t0 = time.time()
         with open(os.path.join(d, "run.log"), "w") as logf:

@@ -1,91 +1,649 @@
-   11.563 boot
-   11.563   U-Boot SPL 2022.10-gc096dae6-dirty (Oct 30 2026 - 17:39:48 +0000)
-   11.563   00000000: PMU Major Msg: End of CA training                                            
-   11.563   00000000: PMU Major Msg: End of initialization                                         
-   11.563   00000000: PMU Major Msg: End of read enable training                                   
-   11.563   00000000: PMU Major Msg: End of fine write leveling                                    
-   11.563   00000000: PMU Major Msg: End of read dq deskew training                                
-   11.563   00000000: PMU Major Msg: End of MPR read delay center optimization                     
-   11.563   00000000: PMU Major Msg: End of Write leveling coarse delay                            
-   11.563   00000000: PMU Major Msg: End of write delay center optimization                        
-   11.563   00000000: PMU Major Msg: End of read delay center optimization                         
-   11.563   00000000: PMU Major Msg: End of max read latency training                              
-   11.563   00000000: PMU Major Msg: Firmware run has completed                                    
-   11.563   dbyte0 add =9a040100 value =12
-   11.563   dbyte0 add =9a040500 value =13
-   11.563   dbyte0 add =9a040900 value =13
-   11.563   dbyte0 add =9a040d00 value =13
-   11.563   dbyte0 add =9a041100 value =13
-   11.563   dbyte0 add =9a041500 value =13
-   11.563   dbyte0 add =9a041900 value =13
-   11.563   dbyte0 add =9a041d00 value =14
-   11.563   dbyte1 add =9a044100 value =14
-   11.563   dbyte1 add =9a044500 value =13
-   11.563   dbyte1 add =9a044900 value =14
-   11.563   dbyte1 add =9a044d00 value =12
-   11.563   dbyte1 add =9a045100 value =13
-   11.563   dbyte1 add =9a045500 value =14
-   11.563   dbyte1 add =9a045900 value =13
-   11.563   dbyte1 add =9a045d00 value =13
-   11.563   dbyte2 add =9a048100 value =37
-   11.563   dbyte2 add =9a048500 value =37
-   11.563   dbyte2 add =9a048900 value =37
-   11.563   dbyte2 add =9a048d00 value =37
-   11.563   dbyte2 add =9a049100 value =37
-   11.563   dbyte2 add =9a049500 value =37
-   11.563   dbyte2 add =9a049900 value =37
-   11.563   dbyte2 add =9a049d00 value =37
-   11.563   dbyte3 add =9a04c100 value =37
-   11.563   dbyte3 add =9a04c500 value =37
-   11.563   dbyte3 add =9a04c900 value =37
-   11.563   dbyte3 add =9a04cd00 value =37
-   11.563   dbyte3 add =9a04d100 value =37
-   11.563   dbyte3 add =9a04d500 value =37
-   11.563   dbyte3 add =9a04d900 value =37
-   11.563   dbyte3 add =9a04dd00 value =37
-   11.563   spi_nand spi-flash@0: Winbond SPI NAND was found.
-   11.563   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
-   11.563   OpenSBI v0.9
-   11.563   heap: [0x004f24c0 - 0x00cf24c0], size 8192 KB
-   11.563   page: [0x00cf24c8 - 0x039fec00], size 46129 KB
-   11.563    \ | /
-   11.563   - RT -     Thread Smart Operating System
-   11.563    / | \     5.0.0 build Oct 30 2026
-   11.563    2006 - 2020 Copyright by rt-thread team
-   11.563   rtc driver register OK
-   11.563   lwIP-2.1.2 initialized!
-   11.563   [I/I2C] I2C bus [i2c0] registered
-   11.563   [I/I2C] I2C bus [i2c4] registered
-   11.563   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
-   11.563   �link_mux: console and /dev/link share uart1
-   11.563   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
-   11.563   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
-   11.563   os  : system memory alloc 320 bytes
-   11.563   flsh: UFFS consume spare data size 9
-   11.563   os  : system memory alloc 84480 bytes
-   11.563   os  : system memory alloc 53200 bytes
-   11.563   os  : system memory alloc 2048 bytes
-   11.563   tree: DIR 0, FILE 5, DATA 4
-   11.563   os  : system memory alloc 320 bytes
-   11.563   flsh: UFFS consume spare data size 9
-   11.563   os  : system memory alloc 84480 bytes
-   11.563   os  : system memory alloc 53200 bytes
-   11.563   os  : system memory alloc 8192 bytes
-   11.563   tree: DIR 1, FILE 10, DATA 80
-   11.563   /dev/shm file system initialization done!
-   11.563   Can't find sensor on csi0
-   11.563   Can't find sensor on csi2
-   11.563   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
-   11.563   <gnne> gnne_device_init done.
-   11.563   #############SDK VERSION######################################
-   11.563   SDK   : unknown-20261030-173930--46065743fa78-4162ec7
-   11.563   nncase: 2.11.0
-   11.563   ##############################################################
-   11.563   msh />
-   13.640 > 'killall leakcam_agent' (0.06 s)
-   13.640   killall leakcam_agent
-   13.640   msh />
-   13.640   msh />
-   39.092 > None (25.05 s)
-   69.623 > None (25.05 s)
-  100.187 > None (25.05 s)
+    7.542 boot
+    7.542   U-Boot SPL 2022.10-gc096dae6-dirty (Oct 31 2026 - 06:39:49 +0000)
+    7.542   00000000: PMU Major Msg: End of CA training                                            
+    7.542   00000000: PMU Major Msg: End of initialization                                         
+    7.542   00000000: PMU Major Msg: End of read enable training                                   
+    7.542   00000000: PMU Major Msg: End of fine write leveling                                    
+    7.542   00000000: PMU Major Msg: End of read dq deskew training                                
+    7.542   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+    7.542   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+    7.542   00000000: PMU Major Msg: End of write delay center optimization                        
+    7.542   00000000: PMU Major Msg: End of read delay center optimization                         
+    7.542   00000000: PMU Major Msg: End of max read latency training                              
+    7.542   00000000: PMU Major Msg: Firmware run has completed                                    
+    7.542   dbyte0 add =9a040100 value =12
+    7.542   dbyte0 add =9a040500 value =13
+    7.542   dbyte0 add =9a040900 value =13
+    7.542   dbyte0 add =9a040d00 value =13
+    7.542   dbyte0 add =9a041100 value =13
+    7.542   dbyte0 add =9a041500 value =13
+    7.542   dbyte0 add =9a041900 value =13
+    7.542   dbyte0 add =9a041d00 value =15
+    7.542   dbyte1 add =9a044100 value =13
+    7.542   dbyte1 add =9a044500 value =13
+    7.542   dbyte1 add =9a044900 value =13
+    7.542   dbyte1 add =9a044d00 value =12
+    7.542   dbyte1 add =9a045100 value =13
+    7.542   dbyte1 add =9a045500 value =14
+    7.542   dbyte1 add =9a045900 value =13
+    7.542   dbyte1 add =9a045d00 value =13
+    7.542   dbyte2 add =9a048100 value =37
+    7.542   dbyte2 add =9a048500 value =37
+    7.542   dbyte2 add =9a048900 value =37
+    7.542   dbyte2 add =9a048d00 value =37
+    7.542   dbyte2 add =9a049100 value =37
+    7.542   dbyte2 add =9a049500 value =37
+    7.542   dbyte2 add =9a049900 value =37
+    7.542   dbyte2 add =9a049d00 value =37
+    7.542   dbyte3 add =9a04c100 value =37
+    7.542   dbyte3 add =9a04c500 value =37
+    7.542   dbyte3 add =9a04c900 value =37
+    7.542   dbyte3 add =9a04cd00 value =37
+    7.542   dbyte3 add =9a04d100 value =37
+    7.542   dbyte3 add =9a04d500 value =37
+    7.542   dbyte3 add =9a04d900 value =37
+    7.542   dbyte3 add =9a04dd00 value =37
+    7.542   spi_nand spi-flash@0: Winbond SPI NAND was found.
+    7.542   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+    7.542   OpenSBI v0.9
+    7.542   heap: [0x004f24c0 - 0x00cf24c0], size 8192 KB
+    7.542   page: [0x00cf24c8 - 0x039fec00], size 46129 KB
+    7.542    \ | /
+    7.542   - RT -     Thread Smart Operating System
+    7.542    / | \     5.0.0 build Oct 30 2026
+    7.542    2006 - 2020 Copyright by rt-thread team
+    7.542   rtc driver register OK
+    7.542   lwIP-2.1.2 initialized!
+    7.542   [I/I2C] I2C bus [i2c0] registered
+    7.542   [I/I2C] I2C bus [i2c4] registered
+    7.542   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+    7.542   �link_mux: console and /dev/link share uart1
+    7.542   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+    7.542   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+    7.542   os  : system memory alloc 320 bytes
+    7.542   flsh: UFFS consume spare data size 9
+    7.542   os  : system memory alloc 84480 bytes
+    7.542   os  : system memory alloc 53200 bytes
+    7.542   os  : system memory alloc 2048 bytes
+    7.542   tree: DIR 0, FILE 5, DATA 4
+    7.542   os  : system memory alloc 320 bytes
+    7.542   flsh: UFFS consume spare data size 9
+    7.542   os  : system memory alloc 84480 bytes
+    7.542   os  : system memory alloc 53200 bytes
+    7.542   os  : system memory alloc 8192 bytes
+    7.542   tree: DIR 1, FILE 10, DATA 80
+    7.542   /dev/shm file system initialization done!
+    7.542   Can't find sensor on csi0
+    7.542   Can't find sensor on csi2
+    7.542   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+    7.542   <gnne> gnne_device_init done.
+    7.542   #############SDK VERSION######################################
+    7.542   SDK   : unknown-20261031-063929--e23148a66d58-4162ec7
+    7.542   nncase: 2.11.0
+    7.542   ##############################################################
+    7.542   msh />
+    9.619 > 'killall leakcam_agent' (0.06 s)
+    9.619   killall leakcam_agent
+    9.619   msh />
+    9.619   msh />
+   13.323 > 'chip_temp' (0.07 s)
+   13.323   chip_temp
+   13.323   chip temperature: 40.063 C
+   13.323   msh />
+   13.323   msh />
+   13.379 > 'free' (0.06 s)
+   13.379   free
+   13.379   memheap               pool size  max used size available size
+   13.379   -------------------- ---------- ------------- --------------
+   13.379   heap                 8388608    1390848       7313600
+   13.379   msh />
+   13.379   msh />
+   13.434 > 'adc probe adc' (0.05 s)
+   13.434   adc probe adc
+   13.434   probe adc success 
+   13.434   msh />
+   13.434   msh />
+   13.489 > 'adc read 1' (0.05 s)
+   13.489   adc read 1
+   13.489   adc channel 1  read value is 0x00000C56 
+   13.489   msh />
+   13.489   msh />
+   13.545 > 'adc read 1' (0.06 s)
+   13.545   adc read 1
+   13.545   adc channel 1  read value is 0x00000C80 
+   13.545   msh />
+   13.545   msh />
+   13.600 > 'adc read 1' (0.05 s)
+   13.600   adc read 1
+   13.600   adc channel 1  read value is 0x00000C2B 
+   13.600   msh />
+   13.600   msh />
+   13.655 > 'adc read 1' (0.05 s)
+   13.655   adc read 1
+   13.655   adc channel 1  read value is 0x00000C34 
+   13.655   msh />
+   13.655   msh />
+   13.710 > 'adc read 1' (0.05 s)
+   13.710   adc read 1
+   13.710   adc channel 1  read value is 0x00000C64 
+   13.710   msh />
+   13.710   msh />
+   13.766 > 'adc read 1' (0.06 s)
+   13.766   adc read 1
+   13.766   adc channel 1  read value is 0x00000C5A 
+   13.766   msh />
+   13.766   msh />
+   13.821 > 'adc read 1' (0.05 s)
+   13.821   adc read 1
+   13.821   adc channel 1  read value is 0x00000C27 
+   13.821   msh />
+   13.821   msh />
+   13.876 > 'adc read 1' (0.05 s)
+   13.876   adc read 1
+   13.876   adc channel 1  read value is 0x00000C3E 
+   13.876   msh />
+   13.876   msh />
+   21.291 > None (7.06 s)
+   21.291   uart_bench: uart1 at 2000000 baud (bufsz 16384)
+   21.291   uart_bench 2000000: latency 16 B round trip: median 131 us, max 136 us, 200 of 200 ok, 0 bad
+   21.291   uart_bench 2000000: 1048576 of 1048576 bytes back in 5801566 us = 180740 B/s (line max 200000 B/s), 0 bad bytes
+   21.291   msh />
+   21.291   msh />
+   24.984 > 'chip_temp' (0.06 s)
+   24.984   chip_temp
+   24.984   chip temperature: 39.760 C
+   24.984   msh />
+   24.984   msh />
+   25.039 > 'free' (0.05 s)
+   25.039   free
+   25.039   memheap               pool size  max used size available size
+   25.039   -------------------- ---------- ------------- --------------
+   25.039   heap                 8388608    1390848       7313600
+   25.039   msh />
+   25.039   msh />
+   25.094 > 'adc probe adc' (0.05 s)
+   25.094   adc probe adc
+   25.094   probe adc success 
+   25.094   msh />
+   25.094   msh />
+   25.149 > 'adc read 1' (0.05 s)
+   25.149   adc read 1
+   25.149   adc channel 1  read value is 0x00000C2C 
+   25.149   msh />
+   25.149   msh />
+   25.204 > 'adc read 1' (0.05 s)
+   25.204   adc read 1
+   25.204   adc channel 1  read value is 0x00000C59 
+   25.204   msh />
+   25.204   msh />
+   25.259 > 'adc read 1' (0.05 s)
+   25.259   adc read 1
+   25.259   adc channel 1  read value is 0x00000C78 
+   25.259   msh />
+   25.259   msh />
+   25.315 > 'adc read 1' (0.06 s)
+   25.315   adc read 1
+   25.315   adc channel 1  read value is 0x00000C48 
+   25.315   msh />
+   25.315   msh />
+   25.370 > 'adc read 1' (0.05 s)
+   25.370   adc read 1
+   25.370   adc channel 1  read value is 0x00000C9D 
+   25.370   msh />
+   25.370   msh />
+   25.425 > 'adc read 1' (0.05 s)
+   25.425   adc read 1
+   25.425   adc channel 1  read value is 0x00000C42 
+   25.425   msh />
+   25.425   msh />
+   25.480 > 'adc read 1' (0.05 s)
+   25.480   adc read 1
+   25.480   adc channel 1  read value is 0x00000C5D 
+   25.480   msh />
+   25.480   msh />
+   25.535 > 'adc read 1' (0.05 s)
+   25.535   adc read 1
+   25.535   adc channel 1  read value is 0x00000C65 
+   25.535   msh />
+   25.535   msh />
+   34.014 > None (7.06 s)
+   34.014   uart_bench: uart1 at 2000000 baud (bufsz 16384)
+   34.014   uart_bench 2000000: latency 16 B round trip: median 131 us, max 135 us, 200 of 200 ok, 0 bad
+   34.014   uart_bench 2000000: 1048576 of 1048576 bytes back in 5801566 us = 180740 B/s (line max 200000 B/s), 0 bad bytes
+   34.014   msh />
+   34.014   msh />
+   37.703 > 'chip_temp' (0.06 s)
+   37.703   chip_temp
+   37.703   chip temperature: 41.573 C
+   37.703   msh />
+   37.703   msh />
+   37.759 > 'free' (0.06 s)
+   37.759   free
+   37.759   memheap               pool size  max used size available size
+   37.759   -------------------- ---------- ------------- --------------
+   37.759   heap                 8388608    1390848       7313600
+   37.759   msh />
+   37.759   msh />
+   37.814 > 'adc probe adc' (0.05 s)
+   37.814   adc probe adc
+   37.814   probe adc success 
+   37.814   msh />
+   37.814   msh />
+   37.869 > 'adc read 1' (0.05 s)
+   37.869   adc read 1
+   37.869   adc channel 1  read value is 0x00000C89 
+   37.869   msh />
+   37.869   msh />
+   37.924 > 'adc read 1' (0.05 s)
+   37.924   adc read 1
+   37.924   adc channel 1  read value is 0x00000C8A 
+   37.924   msh />
+   37.924   msh />
+   37.980 > 'adc read 1' (0.06 s)
+   37.980   adc read 1
+   37.980   adc channel 1  read value is 0x00000C3F 
+   37.980   msh />
+   37.980   msh />
+   38.035 > 'adc read 1' (0.05 s)
+   38.035   adc read 1
+   38.035   adc channel 1  read value is 0x00000C8E 
+   38.035   msh />
+   38.035   msh />
+   38.091 > 'adc read 1' (0.06 s)
+   38.091   adc read 1
+   38.091   adc channel 1  read value is 0x00000C7B 
+   38.091   msh />
+   38.091   msh />
+   38.146 > 'adc read 1' (0.05 s)
+   38.146   adc read 1
+   38.146   adc channel 1  read value is 0x00000C58 
+   38.146   msh />
+   38.146   msh />
+   38.201 > 'adc read 1' (0.05 s)
+   38.201   adc read 1
+   38.201   adc channel 1  read value is 0x00000C97 
+   38.201   msh />
+   38.201   msh />
+   38.257 > 'adc read 1' (0.06 s)
+   38.257   adc read 1
+   38.257   adc channel 1  read value is 0x00000C6E 
+   38.257   msh />
+   38.257   msh />
+   46.736 > None (7.06 s)
+   46.736   uart_bench: uart1 at 2000000 baud (bufsz 16384)
+   46.736   uart_bench 2000000: latency 16 B round trip: median 131 us, max 136 us, 200 of 200 ok, 0 bad
+   46.736   uart_bench 2000000: 1048576 of 1048576 bytes back in 5801566 us = 180740 B/s (line max 200000 B/s), 0 bad bytes
+   46.736   msh />
+   46.736   msh />
+   50.426 > 'chip_temp' (0.07 s)
+   50.426   chip_temp
+   50.426   chip temperature: 43.082 C
+   50.426   msh />
+   50.426   msh />
+   50.482 > 'free' (0.06 s)
+   50.482   free
+   50.482   memheap               pool size  max used size available size
+   50.482   -------------------- ---------- ------------- --------------
+   50.482   heap                 8388608    1390848       7313600
+   50.482   msh />
+   50.482   msh />
+   50.538 > 'adc probe adc' (0.06 s)
+   50.538   adc probe adc
+   50.538   probe adc success 
+   50.538   msh />
+   50.538   msh />
+   50.595 > 'adc read 1' (0.06 s)
+   50.595   adc read 1
+   50.595   adc channel 1  read value is 0x00000C70 
+   50.595   msh />
+   50.595   msh />
+   50.650 > 'adc read 1' (0.05 s)
+   50.650   adc read 1
+   50.650   adc channel 1  read value is 0x00000C4E 
+   50.650   msh />
+   50.650   msh />
+   50.706 > 'adc read 1' (0.06 s)
+   50.706   adc read 1
+   50.706   adc channel 1  read value is 0x00000C62 
+   50.706   msh />
+   50.706   msh />
+   50.762 > 'adc read 1' (0.06 s)
+   50.762   adc read 1
+   50.762   adc channel 1  read value is 0x00000C23 
+   50.762   msh />
+   50.762   msh />
+   50.817 > 'adc read 1' (0.05 s)
+   50.817   adc read 1
+   50.817   adc channel 1  read value is 0x00000C73 
+   50.817   msh />
+   50.817   msh />
+   50.873 > 'adc read 1' (0.06 s)
+   50.873   adc read 1
+   50.873   adc channel 1  read value is 0x00000C3B 
+   50.873   msh />
+   50.873   msh />
+   50.929 > 'adc read 1' (0.06 s)
+   50.929   adc read 1
+   50.929   adc channel 1  read value is 0x00000C86 
+   50.929   msh />
+   50.929   msh />
+   50.984 > 'adc read 1' (0.05 s)
+   50.984   adc read 1
+   50.984   adc channel 1  read value is 0x00000C7C 
+   50.984   msh />
+   50.984   msh />
+   59.461 > None (7.06 s)
+   59.461   uart_bench: uart1 at 2000000 baud (bufsz 16384)
+   59.461   uart_bench 2000000: latency 16 B round trip: median 131 us, max 135 us, 200 of 200 ok, 0 bad
+   59.461   uart_bench 2000000: 1048576 of 1048576 bytes back in 5801568 us = 180740 B/s (line max 200000 B/s), 0 bad bytes
+   59.461   msh />
+   59.461   msh />
+   63.157 > 'chip_temp' (0.07 s)
+   63.157   chip_temp
+   63.157   chip temperature: 43.384 C
+   63.157   msh />
+   63.157   msh />
+   63.213 > 'free' (0.06 s)
+   63.213   free
+   63.213   memheap               pool size  max used size available size
+   63.213   -------------------- ---------- ------------- --------------
+   63.213   heap                 8388608    1390848       7313600
+   63.213   msh />
+   63.213   msh />
+   63.269 > 'adc probe adc' (0.06 s)
+   63.269   adc probe adc
+   63.269   probe adc success 
+   63.269   msh />
+   63.269   msh />
+   63.324 > 'adc read 1' (0.05 s)
+   63.324   adc read 1
+   63.324   adc channel 1  read value is 0x00000C60 
+   63.324   msh />
+   63.324   msh />
+   63.380 > 'adc read 1' (0.06 s)
+   63.380   adc read 1
+   63.380   adc channel 1  read value is 0x00000C4A 
+   63.380   msh />
+   63.380   msh />
+   63.436 > 'adc read 1' (0.06 s)
+   63.436   adc read 1
+   63.436   adc channel 1  read value is 0x00000C90 
+   63.436   msh />
+   63.436   msh />
+   63.491 > 'adc read 1' (0.05 s)
+   63.491   adc read 1
+   63.491   adc channel 1  read value is 0x00000C46 
+   63.491   msh />
+   63.491   msh />
+   63.546 > 'adc read 1' (0.05 s)
+   63.546   adc read 1
+   63.546   adc channel 1  read value is 0x00000C38 
+   63.546   msh />
+   63.546   msh />
+   63.602 > 'adc read 1' (0.06 s)
+   63.602   adc read 1
+   63.602   adc channel 1  read value is 0x00000C41 
+   63.602   msh />
+   63.602   msh />
+   63.658 > 'adc read 1' (0.06 s)
+   63.658   adc read 1
+   63.658   adc channel 1  read value is 0x00000C85 
+   63.658   msh />
+   63.658   msh />
+   63.714 > 'adc read 1' (0.06 s)
+   63.714   adc read 1
+   63.714   adc channel 1  read value is 0x00000C90 
+   63.714   msh />
+   63.714   msh />
+   72.194 > None (7.05 s)
+   72.194   uart_bench: uart1 at 2000000 baud (bufsz 16384)
+   72.194   uart_bench 2000000: latency 16 B round trip: median 131 us, max 137 us, 200 of 200 ok, 0 bad
+   72.194   uart_bench 2000000: 1048576 of 1048576 bytes back in 5801566 us = 180740 B/s (line max 200000 B/s), 0 bad bytes
+   72.194   msh />
+   72.194   msh />
+   75.891 > 'chip_temp' (0.06 s)
+   75.891   chip_temp
+   75.891   chip temperature: 43.987 C
+   75.891   msh />
+   75.891   msh />
+   75.946 > 'free' (0.05 s)
+   75.946   free
+   75.946   memheap               pool size  max used size available size
+   75.946   -------------------- ---------- ------------- --------------
+   75.946   heap                 8388608    1390848       7313600
+   75.946   msh />
+   75.946   msh />
+   76.001 > 'adc probe adc' (0.05 s)
+   76.001   adc probe adc
+   76.001   probe adc success 
+   76.001   msh />
+   76.001   msh />
+   76.057 > 'adc read 1' (0.06 s)
+   76.057   adc read 1
+   76.057   adc channel 1  read value is 0x00000C41 
+   76.057   msh />
+   76.057   msh />
+   76.113 > 'adc read 1' (0.06 s)
+   76.113   adc read 1
+   76.113   adc channel 1  read value is 0x00000C75 
+   76.113   msh />
+   76.113   msh />
+   76.169 > 'adc read 1' (0.06 s)
+   76.169   adc read 1
+   76.169   adc channel 1  read value is 0x00000C80 
+   76.169   msh />
+   76.169   msh />
+   76.224 > 'adc read 1' (0.05 s)
+   76.224   adc read 1
+   76.224   adc channel 1  read value is 0x00000C5E 
+   76.224   msh />
+   76.224   msh />
+   76.280 > 'adc read 1' (0.06 s)
+   76.280   adc read 1
+   76.280   adc channel 1  read value is 0x00000C60 
+   76.280   msh />
+   76.280   msh />
+   76.336 > 'adc read 1' (0.06 s)
+   76.336   adc read 1
+   76.336   adc channel 1  read value is 0x00000C97 
+   76.336   msh />
+   76.336   msh />
+   76.392 > 'adc read 1' (0.06 s)
+   76.392   adc read 1
+   76.392   adc channel 1  read value is 0x00000C24 
+   76.392   msh />
+   76.392   msh />
+   76.448 > 'adc read 1' (0.06 s)
+   76.448   adc read 1
+   76.448   adc channel 1  read value is 0x00000C66 
+   76.448   msh />
+   76.448   msh />
+   84.929 > None (7.06 s)
+   84.929   uart_bench: uart1 at 2000000 baud (bufsz 16384)
+   84.929   uart_bench 2000000: latency 16 B round trip: median 131 us, max 136 us, 200 of 200 ok, 0 bad
+   84.929   uart_bench 2000000: 1048576 of 1048576 bytes back in 5801566 us = 180740 B/s (line max 200000 B/s), 0 bad bytes
+   84.929   msh />
+   84.929   msh />
+   88.626 > 'chip_temp' (0.06 s)
+   88.626   chip_temp
+   88.626   chip temperature: 44.589 C
+   88.626   msh />
+   88.626   msh />
+   88.681 > 'free' (0.05 s)
+   88.681   free
+   88.681   memheap               pool size  max used size available size
+   88.681   -------------------- ---------- ------------- --------------
+   88.681   heap                 8388608    1390848       7313600
+   88.681   msh />
+   88.681   msh />
+   88.736 > 'adc probe adc' (0.05 s)
+   88.736   adc probe adc
+   88.736   probe adc success 
+   88.736   msh />
+   88.736   msh />
+   88.791 > 'adc read 1' (0.05 s)
+   88.791   adc read 1
+   88.791   adc channel 1  read value is 0x00000C88 
+   88.791   msh />
+   88.791   msh />
+   88.846 > 'adc read 1' (0.06 s)
+   88.846   adc read 1
+   88.846   adc channel 1  read value is 0x00000C40 
+   88.846   msh />
+   88.846   msh />
+   88.902 > 'adc read 1' (0.06 s)
+   88.902   adc read 1
+   88.902   adc channel 1  read value is 0x00000C47 
+   88.902   msh />
+   88.902   msh />
+   88.957 > 'adc read 1' (0.05 s)
+   88.957   adc read 1
+   88.957   adc channel 1  read value is 0x00000C5D 
+   88.957   msh />
+   88.957   msh />
+   89.013 > 'adc read 1' (0.06 s)
+   89.013   adc read 1
+   89.013   adc channel 1  read value is 0x00000C4A 
+   89.013   msh />
+   89.013   msh />
+   89.068 > 'adc read 1' (0.05 s)
+   89.068   adc read 1
+   89.068   adc channel 1  read value is 0x00000C69 
+   89.068   msh />
+   89.068   msh />
+   89.123 > 'adc read 1' (0.06 s)
+   89.123   adc read 1
+   89.123   adc channel 1  read value is 0x00000C3D 
+   89.123   msh />
+   89.123   msh />
+   89.178 > 'adc read 1' (0.05 s)
+   89.178   adc read 1
+   89.178   adc channel 1  read value is 0x00000C6B 
+   89.178   msh />
+   89.178   msh />
+   97.659 > None (7.05 s)
+   97.659   uart_bench: uart1 at 2000000 baud (bufsz 16384)
+   97.659   uart_bench 2000000: latency 16 B round trip: median 131 us, max 136 us, 200 of 200 ok, 0 bad
+   97.659   uart_bench 2000000: 1048576 of 1048576 bytes back in 5801565 us = 180740 B/s (line max 200000 B/s), 0 bad bytes
+   97.659   msh />
+   97.659   msh />
+  101.357 > 'chip_temp' (0.07 s)
+  101.357   chip_temp
+  101.357   chip temperature: 45.192 C
+  101.357   msh />
+  101.357   msh />
+  101.412 > 'free' (0.05 s)
+  101.412   free
+  101.412   memheap               pool size  max used size available size
+  101.412   -------------------- ---------- ------------- --------------
+  101.412   heap                 8388608    1390848       7313600
+  101.412   msh />
+  101.412   msh />
+  101.468 > 'adc probe adc' (0.06 s)
+  101.468   adc probe adc
+  101.468   probe adc success 
+  101.468   msh />
+  101.468   msh />
+  101.524 > 'adc read 1' (0.06 s)
+  101.524   adc read 1
+  101.524   adc channel 1  read value is 0x00000C4F 
+  101.524   msh />
+  101.524   msh />
+  101.579 > 'adc read 1' (0.05 s)
+  101.579   adc read 1
+  101.579   adc channel 1  read value is 0x00000C52 
+  101.579   msh />
+  101.579   msh />
+  101.635 > 'adc read 1' (0.06 s)
+  101.635   adc read 1
+  101.635   adc channel 1  read value is 0x00000C99 
+  101.635   msh />
+  101.635   msh />
+  101.691 > 'adc read 1' (0.06 s)
+  101.691   adc read 1
+  101.691   adc channel 1  read value is 0x00000C6A 
+  101.691   msh />
+  101.691   msh />
+  101.746 > 'adc read 1' (0.05 s)
+  101.746   adc read 1
+  101.746   adc channel 1  read value is 0x00000C2A 
+  101.746   msh />
+  101.746   msh />
+  101.801 > 'adc read 1' (0.05 s)
+  101.801   adc read 1
+  101.801   adc channel 1  read value is 0x00000C44 
+  101.801   msh />
+  101.801   msh />
+  101.856 > 'adc read 1' (0.06 s)
+  101.856   adc read 1
+  101.856   adc channel 1  read value is 0x00000C4C 
+  101.856   msh />
+  101.856   msh />
+  101.912 > 'adc read 1' (0.06 s)
+  101.912   adc read 1
+  101.912   adc channel 1  read value is 0x00000C6F 
+  101.912   msh />
+  101.912   msh />
+  110.393 > None (7.05 s)
+  110.393   uart_bench: uart1 at 2000000 baud (bufsz 16384)
+  110.393   uart_bench 2000000: latency 16 B round trip: median 131 us, max 137 us, 200 of 200 ok, 0 bad
+  110.393   uart_bench 2000000: 1048576 of 1048576 bytes back in 5801564 us = 180740 B/s (line max 200000 B/s), 0 bad bytes
+  110.393   msh />
+  110.393   msh />
+  114.087 > 'chip_temp' (0.07 s)
+  114.087   chip_temp
+  114.087   chip temperature: 45.794 C
+  114.087   msh />
+  114.087   msh />
+  114.144 > 'free' (0.06 s)
+  114.144   free
+  114.144   memheap               pool size  max used size available size
+  114.144   -------------------- ---------- ------------- --------------
+  114.144   heap                 8388608    1390848       7313600
+  114.144   msh />
+  114.144   msh />
+  114.200 > 'adc probe adc' (0.06 s)
+  114.200   adc probe adc
+  114.200   probe adc success 
+  114.200   msh />
+  114.200   msh />
+  114.255 > 'adc read 1' (0.05 s)
+  114.255   adc read 1
+  114.255   adc channel 1  read value is 0x00000C44 
+  114.255   msh />
+  114.255   msh />
+  114.310 > 'adc read 1' (0.06 s)
+  114.310   adc read 1
+  114.310   adc channel 1  read value is 0x00000C3B 
+  114.310   msh />
+  114.310   msh />
+  114.366 > 'adc read 1' (0.06 s)
+  114.366   adc read 1
+  114.366   adc channel 1  read value is 0x00000C77 
+  114.366   msh />
+  114.366   msh />
+  114.421 > 'adc read 1' (0.05 s)
+  114.421   adc read 1
+  114.421   adc channel 1  read value is 0x00000C99 
+  114.421   msh />
+  114.421   msh />
+  114.476 > 'adc read 1' (0.05 s)
+  114.476   adc read 1
+  114.476   adc channel 1  read value is 0x00000C76 
+  114.476   msh />
+  114.476   msh />
+  114.532 > 'adc read 1' (0.06 s)
+  114.532   adc read 1
+  114.532   adc channel 1  read value is 0x00000C37 
+  114.532   msh />
+  114.532   msh />
+  114.587 > 'adc read 1' (0.05 s)
+  114.587   adc read 1
+  114.587   adc channel 1  read value is 0x00000C83 
+  114.587   msh />
+  114.587   msh />
+  114.642 > 'adc read 1' (0.06 s)
+  114.642   adc read 1
+  114.642   adc channel 1  read value is 0x00000C4E 
+  114.642   msh />
+  114.642   msh />

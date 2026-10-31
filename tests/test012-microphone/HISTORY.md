@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-31 (run.py, 84 s): pass
+
+3 x 10 s: rms -10.6..-4.1 dBFS
+
+
 ### Automated run 2026-10-25 (run.py, 219 s): pass
 
 3 x 10 s: rms -25.3..-2.8 dBFS

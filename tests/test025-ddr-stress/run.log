@@ -1,6 +1,6 @@
-17:48:27 test025-ddr-stress: 3 metric rows MISSING: Voltage under load (min), Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak
-17:48:34 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.45 msh 0.46
-17:48:41 sample idle {'board': 26.9, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 34.609, 'k_free': (7025152, 1390848), 'vbat': 4377}
-17:49:11 sample memtest 26 s {'board': 28.2, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 39.458, 'k_free': (7111872, 1721152), 'vbat': 4334}
-17:49:41 sample memtest 56 s {'board': 29.4, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 39.76, 'k_free': (7312064, 1721152), 'vbat': 4352}
-17:49:43 test025-ddr-stress: PASS; filled 3: Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Voltage under load (min); still MISSING 0: -
+09:16:07 test025-ddr-stress: 3 metric rows MISSING: This part's boot share, Current idle / during, Power, energy per operation
+09:16:15 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
+09:16:21 sample idle {'board': 33.8, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 42.479, 'k_free': (7025152, 1390848), 'vbat': 4178}
+09:16:51 sample memtest 26 s {'board': 34.5, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 48.201, 'k_free': (7111872, 1721152), 'vbat': 4129}
+09:17:22 sample memtest 56 s {'board': 35.5, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 47.299, 'k_free': (7312064, 1721152), 'vbat': 4167}
+09:17:24 test025-ddr-stress: PASS; filled 0: -; still MISSING 3: This part's boot share, Current idle / during, Power, energy per operation; run in HISTORY.md - README Status/Result by hand

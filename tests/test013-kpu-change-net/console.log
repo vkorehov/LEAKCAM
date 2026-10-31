@@ -1,0 +1,654 @@
+    7.562 boot
+    7.562   U-Boot SPL 2022.10-gc096dae6-dirty (Oct 31 2026 - 06:39:49 +0000)
+    7.562   00000000: PMU Major Msg: End of CA training                                            
+    7.562   00000000: PMU Major Msg: End of initialization                                         
+    7.562   00000000: PMU Major Msg: End of read enable training                                   
+    7.562   00000000: PMU Major Msg: End of fine write leveling                                    
+    7.562   00000000: PMU Major Msg: End of read dq deskew training                                
+    7.562   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+    7.562   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+    7.562   00000000: PMU Major Msg: End of write delay center optimization                        
+    7.562   00000000: PMU Major Msg: End of read delay center optimization                         
+    7.562   00000000: PMU Major Msg: End of max read latency training                              
+    7.562   00000000: PMU Major Msg: Firmware run has completed                                    
+    7.562   dbyte0 add =9a040100 value =12
+    7.562   dbyte0 add =9a040500 value =13
+    7.562   dbyte0 add =9a040900 value =14
+    7.562   dbyte0 add =9a040d00 value =13
+    7.562   dbyte0 add =9a041100 value =14
+    7.562   dbyte0 add =9a041500 value =13
+    7.562   dbyte0 add =9a041900 value =13
+    7.562   dbyte0 add =9a041d00 value =15
+    7.562   dbyte1 add =9a044100 value =14
+    7.562   dbyte1 add =9a044500 value =13
+    7.562   dbyte1 add =9a044900 value =14
+    7.562   dbyte1 add =9a044d00 value =12
+    7.562   dbyte1 add =9a045100 value =13
+    7.562   dbyte1 add =9a045500 value =14
+    7.562   dbyte1 add =9a045900 value =14
+    7.562   dbyte1 add =9a045d00 value =14
+    7.562   dbyte2 add =9a048100 value =37
+    7.562   dbyte2 add =9a048500 value =37
+    7.562   dbyte2 add =9a048900 value =37
+    7.562   dbyte2 add =9a048d00 value =37
+    7.562   dbyte2 add =9a049100 value =37
+    7.562   dbyte2 add =9a049500 value =37
+    7.562   dbyte2 add =9a049900 value =37
+    7.562   dbyte2 add =9a049d00 value =37
+    7.562   dbyte3 add =9a04c100 value =37
+    7.562   dbyte3 add =9a04c500 value =37
+    7.562   dbyte3 add =9a04c900 value =37
+    7.562   dbyte3 add =9a04cd00 value =37
+    7.562   dbyte3 add =9a04d100 value =37
+    7.562   dbyte3 add =9a04d500 value =37
+    7.562   dbyte3 add =9a04d900 value =37
+    7.562   dbyte3 add =9a04dd00 value =37
+    7.562   spi_nand spi-flash@0: Winbond SPI NAND was found.
+    7.562   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+    7.562   OpenSBI v0.9
+    7.562   heap: [0x004f24c0 - 0x00cf24c0], size 8192 KB
+    7.562   page: [0x00cf24c8 - 0x039fec00], size 46129 KB
+    7.562    \ | /
+    7.562   - RT -     Thread Smart Operating System
+    7.562    / | \     5.0.0 build Oct 30 2026
+    7.562    2006 - 2020 Copyright by rt-thread team
+    7.562   rtc driver register OK
+    7.562   lwIP-2.1.2 initialized!
+    7.562   [I/I2C] I2C bus [i2c0] registered
+    7.562   [I/I2C] I2C bus [i2c4] registered
+    7.562   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+    7.562   �link_mux: console and /dev/link share uart1
+    7.562   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+    7.562   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+    7.562   os  : system memory alloc 320 bytes
+    7.562   flsh: UFFS consume spare data size 9
+    7.562   os  : system memory alloc 84480 bytes
+    7.562   os  : system memory alloc 53200 bytes
+    7.562   os  : system memory alloc 2048 bytes
+    7.562   tree: DIR 0, FILE 5, DATA 4
+    7.562   os  : system memory alloc 320 bytes
+    7.562   flsh: UFFS consume spare data size 9
+    7.562   os  : system memory alloc 84480 bytes
+    7.562   os  : system memory alloc 53200 bytes
+    7.562   os  : system memory alloc 8192 bytes
+    7.562   tree: DIR 2, FILE 11, DATA 82
+    7.562   /dev/shm file system initialization done!
+    7.562   Can't find sensor on csi0
+    7.562   Can't find sensor on csi2
+    7.562   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+    7.562   <gnne> gnne_device_init done.
+    7.562   #############SDK VERSION######################################
+    7.562   SDK   : unknown-20261031-063929--e23148a66d58-4162ec7
+    7.562   nncase: 2.11.0
+    7.562   ##############################################################
+    7.562   msh />
+   13.346 > 'chip_temp' (0.07 s)
+   13.346   chip_temp
+   13.346   chip temperature: 42.780 C
+   13.346   msh />
+   13.346   msh />
+   13.401 > 'free' (0.05 s)
+   13.401   free
+   13.401   memheap               pool size  max used size available size
+   13.401   -------------------- ---------- ------------- --------------
+   13.401   heap                 8388608    1390848       7025152
+   13.401   msh />
+   13.401   msh />
+   13.458 > 'adc probe adc' (0.06 s)
+   13.458   adc probe adc
+   13.458   probe adc success 
+   13.458   msh />
+   13.458   msh />
+   13.513 > 'adc read 1' (0.06 s)
+   13.513   adc read 1
+   13.513   adc channel 1  read value is 0x00000C73 
+   13.513   msh />
+   13.513   msh />
+   13.568 > 'adc read 1' (0.05 s)
+   13.568   adc read 1
+   13.568   adc channel 1  read value is 0x00000C8F 
+   13.568   msh />
+   13.568   msh />
+   13.634 > 'adc read 1' (0.07 s)
+   13.634   adc read 1
+   13.634   adc channel 1  read value is 0x00000C75 
+   13.634   msh />
+   13.634   msh />
+   13.690 > 'adc read 1' (0.06 s)
+   13.690   adc read 1
+   13.690   adc channel 1  read value is 0x00000C8E 
+   13.690   msh />
+   13.690   msh />
+   13.745 > 'adc read 1' (0.06 s)
+   13.745   adc read 1
+   13.745   adc channel 1  read value is 0x00000C8B 
+   13.745   msh />
+   13.745   msh />
+   13.801 > 'adc read 1' (0.06 s)
+   13.801   adc read 1
+   13.801   adc channel 1  read value is 0x00000C66 
+   13.801   msh />
+   13.801   msh />
+   13.856 > 'adc read 1' (0.05 s)
+   13.856   adc read 1
+   13.856   adc channel 1  read value is 0x00000C9D 
+   13.856   msh />
+   13.856   msh />
+   13.911 > 'adc read 1' (0.05 s)
+   13.911   adc read 1
+   13.911   adc channel 1  read value is 0x00000C9C 
+   13.911   msh />
+   13.911   msh />
+   14.589 > '/sdcard/app/leakcam_kputest 50' (0.68 s)
+   14.589   /sdcard/app/leakcam_kputest 50
+   14.589   [W/LWP] not use fast load, out of memory 8388608 < 13193040
+   14.589   kputest: model 211488 B loaded in 440 us
+   14.589   kputest: pair 50 runs: min 2872 / median 2902 / max 2954 us
+   14.589   kputest: distance same 0.0000, light 0.0231, change 0.0694 (threshold 0.43)
+   14.589   kputest: PASS
+   18.347 > 'chip_temp' (0.06 s)
+   18.347   chip_temp
+   18.347   chip temperature: 43.987 C
+   18.347   msh />
+   18.347   msh />
+   18.402 > 'free' (0.06 s)
+   18.402   free
+   18.402   memheap               pool size  max used size available size
+   18.402   -------------------- ---------- ------------- --------------
+   18.402   heap                 8388608    1723200       7025152
+   18.402   msh />
+   18.402   msh />
+   18.457 > 'adc probe adc' (0.05 s)
+   18.457   adc probe adc
+   18.457   probe adc success 
+   18.457   msh />
+   18.457   msh />
+   18.512 > 'adc read 1' (0.05 s)
+   18.512   adc read 1
+   18.512   adc channel 1  read value is 0x00000C29 
+   18.512   msh />
+   18.512   msh />
+   18.568 > 'adc read 1' (0.06 s)
+   18.568   adc read 1
+   18.568   adc channel 1  read value is 0x00000C4D 
+   18.568   msh />
+   18.568   msh />
+   18.624 > 'adc read 1' (0.06 s)
+   18.624   adc read 1
+   18.624   adc channel 1  read value is 0x00000C48 
+   18.624   msh />
+   18.624   msh />
+   18.680 > 'adc read 1' (0.06 s)
+   18.680   adc read 1
+   18.680   adc channel 1  read value is 0x00000C7B 
+   18.680   msh />
+   18.680   msh />
+   18.736 > 'adc read 1' (0.06 s)
+   18.736   adc read 1
+   18.736   adc channel 1  read value is 0x00000C71 
+   18.736   msh />
+   18.736   msh />
+   18.792 > 'adc read 1' (0.06 s)
+   18.792   adc read 1
+   18.792   adc channel 1  read value is 0x00000C50 
+   18.792   msh />
+   18.792   msh />
+   18.848 > 'adc read 1' (0.06 s)
+   18.848   adc read 1
+   18.848   adc channel 1  read value is 0x00000C79 
+   18.848   msh />
+   18.848   msh />
+   18.903 > 'adc read 1' (0.05 s)
+   18.903   adc read 1
+   18.903   adc channel 1  read value is 0x00000C45 
+   18.903   msh />
+   18.903   msh />
+   19.463 > '/sdcard/app/leakcam_kputest 50' (0.56 s)
+   19.463   /sdcard/app/leakcam_kputest 50
+   19.463   [W/LWP] not use fast load, out of memory 8388608 < 13193040
+   19.463   kputest: model 211488 B loaded in 441 us
+   19.463   kputest: pair 50 runs: min 2868 / median 2902 / max 2930 us
+   19.463   kputest: distance same 0.0000, light 0.0231, change 0.0694 (threshold 0.43)
+   19.463   kputest: PASS
+   23.199 > 'chip_temp' (0.06 s)
+   23.199   chip_temp
+   23.199   chip temperature: 44.589 C
+   23.199   msh />
+   23.199   msh />
+   23.254 > 'free' (0.05 s)
+   23.254   free
+   23.254   memheap               pool size  max used size available size
+   23.254   -------------------- ---------- ------------- --------------
+   23.254   heap                 8388608    1723200       7025152
+   23.254   msh />
+   23.254   msh />
+   23.310 > 'adc probe adc' (0.06 s)
+   23.310   adc probe adc
+   23.310   probe adc success 
+   23.310   msh />
+   23.310   msh />
+   23.365 > 'adc read 1' (0.05 s)
+   23.365   adc read 1
+   23.365   adc channel 1  read value is 0x00000C2F 
+   23.365   msh />
+   23.365   msh />
+   23.420 > 'adc read 1' (0.05 s)
+   23.420   adc read 1
+   23.420   adc channel 1  read value is 0x00000C39 
+   23.420   msh />
+   23.420   msh />
+   23.481 > 'adc read 1' (0.06 s)
+   23.481   adc read 1
+   23.481   adc channel 1  read value is 0x00000C93 
+   23.481   msh />
+   23.481   msh />
+   23.536 > 'adc read 1' (0.05 s)
+   23.536   adc read 1
+   23.536   adc channel 1  read value is 0x00000C6E 
+   23.536   msh />
+   23.536   msh />
+   23.591 > 'adc read 1' (0.05 s)
+   23.591   adc read 1
+   23.591   adc channel 1  read value is 0x00000C44 
+   23.591   msh />
+   23.591   msh />
+   23.646 > 'adc read 1' (0.05 s)
+   23.646   adc read 1
+   23.646   adc channel 1  read value is 0x00000C89 
+   23.646   msh />
+   23.646   msh />
+   23.703 > 'adc read 1' (0.06 s)
+   23.703   adc read 1
+   23.703   adc channel 1  read value is 0x00000C4E 
+   23.703   msh />
+   23.703   msh />
+   23.759 > 'adc read 1' (0.06 s)
+   23.759   adc read 1
+   23.759   adc channel 1  read value is 0x00000C27 
+   23.759   msh />
+   23.759   msh />
+   24.318 > '/sdcard/app/leakcam_kputest 50' (0.56 s)
+   24.318   /sdcard/app/leakcam_kputest 50
+   24.318   [W/LWP] not use fast load, out of memory 8388608 < 13193040
+   24.318   leakcam_agent: READY not answered
+   24.318   kputest: model 211488 B loaded in 441 us
+   24.318   kputest: pair 50 runs: min 2870 / median 2901 / max 2935 us
+   24.318   kputest: distance same 0.0000, light 0.0231, change 0.0694 (threshold 0.43)
+   24.318   kputest: PASS
+   28.049 > 'chip_temp' (0.06 s)
+   28.049   chip_temp
+   28.049   chip temperature: 45.192 C
+   28.049   msh />
+   28.049   msh />
+   28.105 > 'free' (0.06 s)
+   28.105   free
+   28.105   memheap               pool size  max used size available size
+   28.105   -------------------- ---------- ------------- --------------
+   28.105   heap                 8388608    1723200       7025152
+   28.105   msh />
+   28.105   msh />
+   28.161 > 'adc probe adc' (0.06 s)
+   28.161   adc probe adc
+   28.161   probe adc success 
+   28.161   msh />
+   28.161   msh />
+   28.216 > 'adc read 1' (0.05 s)
+   28.216   adc read 1
+   28.216   adc channel 1  read value is 0x00000C7C 
+   28.216   msh />
+   28.216   msh />
+   28.271 > 'adc read 1' (0.05 s)
+   28.271   adc read 1
+   28.271   adc channel 1  read value is 0x00000C36 
+   28.271   msh />
+   28.271   msh />
+   28.326 > 'adc read 1' (0.05 s)
+   28.326   adc read 1
+   28.326   adc channel 1  read value is 0x00000C87 
+   28.326   msh />
+   28.326   msh />
+   28.381 > 'adc read 1' (0.06 s)
+   28.381   adc read 1
+   28.381   adc channel 1  read value is 0x00000C4B 
+   28.381   msh />
+   28.381   msh />
+   28.436 > 'adc read 1' (0.05 s)
+   28.436   adc read 1
+   28.436   adc channel 1  read value is 0x00000C40 
+   28.436   msh />
+   28.436   msh />
+   28.491 > 'adc read 1' (0.05 s)
+   28.491   adc read 1
+   28.491   adc channel 1  read value is 0x00000C72 
+   28.491   msh />
+   28.491   msh />
+   28.546 > 'adc read 1' (0.05 s)
+   28.546   adc read 1
+   28.546   adc channel 1  read value is 0x00000C8F 
+   28.546   msh />
+   28.546   msh />
+   28.639 > 'adc read 1' (0.09 s)
+   28.639   adc read 1
+   28.639   adc channel 1  read value is 0x00000C8C 
+   28.639   msh />
+   28.639   msh />
+   29.199 > '/sdcard/app/leakcam_kputest 50' (0.56 s)
+   29.199   /sdcard/app/leakcam_kputest 50
+   29.199   [W/LWP] not use fast load, out of memory 8388608 < 13193040
+   29.199   kputest: model 211488 B loaded in 445 us
+   29.199   kputest: pair 50 runs: min 2862 / median 2903 / max 2915 us
+   29.199   kputest: distance same 0.0000, light 0.0231, change 0.0694 (threshold 0.43)
+   29.199   kputest: PASS
+   32.911 > 'chip_temp' (0.06 s)
+   32.911   chip_temp
+   32.911   chip temperature: 45.192 C
+   32.911   msh />
+   32.911   msh />
+   32.966 > 'free' (0.05 s)
+   32.966   free
+   32.966   memheap               pool size  max used size available size
+   32.966   -------------------- ---------- ------------- --------------
+   32.966   heap                 8388608    1723200       7312064
+   32.966   msh />
+   32.966   msh />
+   33.022 > 'adc probe adc' (0.06 s)
+   33.022   adc probe adc
+   33.022   probe adc success 
+   33.022   msh />
+   33.022   msh />
+   33.078 > 'adc read 1' (0.06 s)
+   33.078   adc read 1
+   33.078   adc channel 1  read value is 0x00000C3E 
+   33.078   msh />
+   33.078   msh />
+   33.133 > 'adc read 1' (0.05 s)
+   33.133   adc read 1
+   33.133   adc channel 1  read value is 0x00000C4B 
+   33.133   msh />
+   33.133   msh />
+   33.188 > 'adc read 1' (0.06 s)
+   33.188   adc read 1
+   33.188   adc channel 1  read value is 0x00000C99 
+   33.188   msh />
+   33.188   msh />
+   33.244 > 'adc read 1' (0.06 s)
+   33.244   adc read 1
+   33.244   adc channel 1  read value is 0x00000C61 
+   33.244   msh />
+   33.244   msh />
+   33.300 > 'adc read 1' (0.06 s)
+   33.300   adc read 1
+   33.300   adc channel 1  read value is 0x00000C7E 
+   33.300   msh />
+   33.300   msh />
+   33.356 > 'adc read 1' (0.06 s)
+   33.356   adc read 1
+   33.356   adc channel 1  read value is 0x00000C63 
+   33.356   msh />
+   33.356   msh />
+   33.411 > 'adc read 1' (0.05 s)
+   33.411   adc read 1
+   33.411   adc channel 1  read value is 0x00000C2E 
+   33.411   msh />
+   33.411   msh />
+   33.466 > 'adc read 1' (0.05 s)
+   33.466   adc read 1
+   33.466   adc channel 1  read value is 0x00000C88 
+   33.466   msh />
+   33.466   msh />
+   34.140 > '/sdcard/app/leakcam_kputest 50' (0.67 s)
+   34.140   /sdcard/app/leakcam_kputest 50
+   34.140   [W/LWP] not use fast load, out of memory 8388608 < 13193040
+   34.140   kputest: model 211488 B loaded in 443 us
+   34.140   kputest: pair 50 runs: min 2865 / median 2902 / max 2931 us
+   34.140   kputest: distance same 0.0000, light 0.0231, change 0.0694 (threshold 0.43)
+   34.140   kputest: PASS
+   37.835 > 'chip_temp' (0.07 s)
+   37.835   chip_temp
+   37.835   chip temperature: 45.192 C
+   37.835   msh />
+   37.835   msh />
+   37.891 > 'free' (0.06 s)
+   37.891   free
+   37.891   memheap               pool size  max used size available size
+   37.891   -------------------- ---------- ------------- --------------
+   37.891   heap                 8388608    1723200       7312064
+   37.891   msh />
+   37.891   msh />
+   37.946 > 'adc probe adc' (0.05 s)
+   37.946   adc probe adc
+   37.946   probe adc success 
+   37.946   msh />
+   37.946   msh />
+   38.002 > 'adc read 1' (0.06 s)
+   38.002   adc read 1
+   38.002   adc channel 1  read value is 0x00000C84 
+   38.002   msh />
+   38.002   msh />
+   38.058 > 'adc read 1' (0.06 s)
+   38.058   adc read 1
+   38.058   adc channel 1  read value is 0x00000C99 
+   38.058   msh />
+   38.058   msh />
+   38.114 > 'adc read 1' (0.06 s)
+   38.114   adc read 1
+   38.114   adc channel 1  read value is 0x00000C99 
+   38.114   msh />
+   38.114   msh />
+   38.169 > 'adc read 1' (0.05 s)
+   38.169   adc read 1
+   38.169   adc channel 1  read value is 0x00000C6D 
+   38.169   msh />
+   38.169   msh />
+   38.225 > 'adc read 1' (0.06 s)
+   38.225   adc read 1
+   38.225   adc channel 1  read value is 0x00000C6F 
+   38.225   msh />
+   38.225   msh />
+   38.281 > 'adc read 1' (0.06 s)
+   38.281   adc read 1
+   38.281   adc channel 1  read value is 0x00000C54 
+   38.281   msh />
+   38.281   msh />
+   38.336 > 'adc read 1' (0.05 s)
+   38.336   adc read 1
+   38.336   adc channel 1  read value is 0x00000C55 
+   38.336   msh />
+   38.336   msh />
+   38.392 > 'adc read 1' (0.06 s)
+   38.392   adc read 1
+   38.392   adc channel 1  read value is 0x00000C45 
+   38.392   msh />
+   38.392   msh />
+   38.951 > '/sdcard/app/leakcam_kputest 50' (0.56 s)
+   38.951   /sdcard/app/leakcam_kputest 50
+   38.951   [W/LWP] not use fast load, out of memory 8388608 < 13193040
+   38.951   kputest: model 211488 B loaded in 443 us
+   38.951   kputest: pair 50 runs: min 2867 / median 2901 / max 2926 us
+   38.951   kputest: distance same 0.0000, light 0.0231, change 0.0694 (threshold 0.43)
+   38.951   kputest: PASS
+   42.643 > 'chip_temp' (0.07 s)
+   42.643   chip_temp
+   42.643   chip temperature: 45.493 C
+   42.643   msh />
+   42.643   msh />
+   42.699 > 'free' (0.06 s)
+   42.699   free
+   42.699   memheap               pool size  max used size available size
+   42.699   -------------------- ---------- ------------- --------------
+   42.699   heap                 8388608    1723200       7312064
+   42.699   msh />
+   42.699   msh />
+   42.754 > 'adc probe adc' (0.05 s)
+   42.754   adc probe adc
+   42.754   probe adc success 
+   42.754   msh />
+   42.754   msh />
+   42.809 > 'adc read 1' (0.06 s)
+   42.809   adc read 1
+   42.809   adc channel 1  read value is 0x00000C85 
+   42.809   msh />
+   42.809   msh />
+   42.865 > 'adc read 1' (0.06 s)
+   42.865   adc read 1
+   42.865   adc channel 1  read value is 0x00000C4D 
+   42.865   msh />
+   42.865   msh />
+   42.920 > 'adc read 1' (0.05 s)
+   42.920   adc read 1
+   42.920   adc channel 1  read value is 0x00000C8A 
+   42.920   msh />
+   42.920   msh />
+   42.975 > 'adc read 1' (0.06 s)
+   42.975   adc read 1
+   42.975   adc channel 1  read value is 0x00000C55 
+   42.975   msh />
+   42.975   msh />
+   43.031 > 'adc read 1' (0.06 s)
+   43.031   adc read 1
+   43.031   adc channel 1  read value is 0x00000C33 
+   43.031   msh />
+   43.031   msh />
+   43.086 > 'adc read 1' (0.05 s)
+   43.086   adc read 1
+   43.086   adc channel 1  read value is 0x00000C8A 
+   43.086   msh />
+   43.086   msh />
+   43.143 > 'adc read 1' (0.06 s)
+   43.143   adc read 1
+   43.143   adc channel 1  read value is 0x00000C69 
+   43.143   msh />
+   43.143   msh />
+   43.199 > 'adc read 1' (0.06 s)
+   43.199   adc read 1
+   43.199   adc channel 1  read value is 0x00000C61 
+   43.199   msh />
+   43.199   msh />
+   43.758 > '/sdcard/app/leakcam_kputest 50' (0.56 s)
+   43.758   /sdcard/app/leakcam_kputest 50
+   43.758   [W/LWP] not use fast load, out of memory 8388608 < 13193040
+   43.758   kputest: model 211488 B loaded in 446 us
+   43.758   kputest: pair 50 runs: min 2868 / median 2901 / max 2929 us
+   43.758   kputest: distance same 0.0000, light 0.0231, change 0.0694 (threshold 0.43)
+   43.758   kputest: PASS
+   47.444 > 'chip_temp' (0.06 s)
+   47.444   chip_temp
+   47.444   chip temperature: 45.192 C
+   47.444   msh />
+   47.444   msh />
+   47.500 > 'free' (0.06 s)
+   47.500   free
+   47.500   memheap               pool size  max used size available size
+   47.500   -------------------- ---------- ------------- --------------
+   47.500   heap                 8388608    1723200       7312064
+   47.500   msh />
+   47.500   msh />
+   47.556 > 'adc probe adc' (0.06 s)
+   47.556   adc probe adc
+   47.556   probe adc success 
+   47.556   msh />
+   47.556   msh />
+   47.611 > 'adc read 1' (0.05 s)
+   47.611   adc read 1
+   47.611   adc channel 1  read value is 0x00000C6B 
+   47.611   msh />
+   47.611   msh />
+   47.666 > 'adc read 1' (0.05 s)
+   47.666   adc read 1
+   47.666   adc channel 1  read value is 0x00000C5A 
+   47.666   msh />
+   47.666   msh />
+   47.721 > 'adc read 1' (0.05 s)
+   47.721   adc read 1
+   47.721   adc channel 1  read value is 0x00000C35 
+   47.721   msh />
+   47.721   msh />
+   47.776 > 'adc read 1' (0.05 s)
+   47.776   adc read 1
+   47.776   adc channel 1  read value is 0x00000C30 
+   47.776   msh />
+   47.776   msh />
+   47.832 > 'adc read 1' (0.06 s)
+   47.832   adc read 1
+   47.832   adc channel 1  read value is 0x00000C47 
+   47.832   msh />
+   47.832   msh />
+   47.888 > 'adc read 1' (0.06 s)
+   47.888   adc read 1
+   47.888   adc channel 1  read value is 0x00000C97 
+   47.888   msh />
+   47.888   msh />
+   47.945 > 'adc read 1' (0.06 s)
+   47.945   adc read 1
+   47.945   adc channel 1  read value is 0x00000C47 
+   47.945   msh />
+   47.945   msh />
+   48.000 > 'adc read 1' (0.05 s)
+   48.000   adc read 1
+   48.000   adc channel 1  read value is 0x00000C6B 
+   48.000   msh />
+   48.000   msh />
+   48.560 > '/sdcard/app/leakcam_kputest 50' (0.56 s)
+   48.560   /sdcard/app/leakcam_kputest 50
+   48.560   [W/LWP] not use fast load, out of memory 8388608 < 13193040
+   48.560   kputest: model 211488 B loaded in 441 us
+   48.560   kputest: pair 50 runs: min 2872 / median 2902 / max 2918 us
+   48.560   kputest: distance same 0.0000, light 0.0231, change 0.0694 (threshold 0.43)
+   48.560   kputest: PASS
+   52.253 > 'chip_temp' (0.06 s)
+   52.253   chip_temp
+   52.253   chip temperature: 46.095 C
+   52.253   msh />
+   52.253   msh />
+   52.308 > 'free' (0.05 s)
+   52.308   free
+   52.308   memheap               pool size  max used size available size
+   52.308   -------------------- ---------- ------------- --------------
+   52.308   heap                 8388608    1723200       7312064
+   52.308   msh />
+   52.308   msh />
+   52.364 > 'adc probe adc' (0.06 s)
+   52.364   adc probe adc
+   52.364   probe adc success 
+   52.364   msh />
+   52.364   msh />
+   52.419 > 'adc read 1' (0.05 s)
+   52.419   adc read 1
+   52.419   adc channel 1  read value is 0x00000C6E 
+   52.419   msh />
+   52.419   msh />
+   52.474 > 'adc read 1' (0.05 s)
+   52.474   adc read 1
+   52.474   adc channel 1  read value is 0x00000C3D 
+   52.474   msh />
+   52.474   msh />
+   52.529 > 'adc read 1' (0.05 s)
+   52.529   adc read 1
+   52.529   adc channel 1  read value is 0x00000C91 
+   52.529   msh />
+   52.529   msh />
+   52.585 > 'adc read 1' (0.06 s)
+   52.585   adc read 1
+   52.585   adc channel 1  read value is 0x00000C4A 
+   52.585   msh />
+   52.585   msh />
+   52.641 > 'adc read 1' (0.06 s)
+   52.641   adc read 1
+   52.641   adc channel 1  read value is 0x00000C5D 
+   52.641   msh />
+   52.641   msh />
+   52.696 > 'adc read 1' (0.05 s)
+   52.696   adc read 1
+   52.696   adc channel 1  read value is 0x00000C61 
+   52.696   msh />
+   52.696   msh />
+   52.751 > 'adc read 1' (0.05 s)
+   52.751   adc read 1
+   52.751   adc channel 1  read value is 0x00000C48 
+   52.751   msh />
+   52.751   msh />
+   52.806 > 'adc read 1' (0.05 s)
+   52.806   adc read 1
+   52.806   adc channel 1  read value is 0x00000C8C 
+   52.806   msh />
+   52.806   msh />

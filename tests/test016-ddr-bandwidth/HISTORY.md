@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-31 (run.py, 52 s): pass
+
+8 x `ddr_bench 3072`; last run:
+
+    copy (memcpy, bytes moved)      64512 KB in  23821 us: 2773.1 MB/s
+    write (memset)                  64512 KB in  10868 us: 6078.4 MB/s
+    read (64-bit sum)               64512 KB in  13669 us: 4832.8 MB/s
+    copy (memcpy, bytes moved)      64512 KB in  23812 us: 2774.2 MB/s
+
+
 ### Status line before the 2026-10-29 cleanup
 
 Status: **pass at 3200** (2026-10-23, all-ODT: write 6.08 / read 4.84 / copy 2.77 GB/s; 2667 before: 4.05 / 4.08 / 1.86). Image: SDK copy + [leakcam_bench.c](../test017-nand-raw-speed/leakcam_bench.c).

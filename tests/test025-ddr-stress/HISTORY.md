@@ -4,6 +4,19 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### 3200 MT/s leftovers, 2026-10-31 (scratch runner, 4 min): pass
+
+5 cold starts (rails off 5 s) with memtest 3 passes after each: 89 MB x 5 patterns, 0 errors, 171-173 MB/s. Then the
+KPU change net and the encoder (2 x 15 fps) started, memtest last: 46 MB (36 MB MMZ left), 3 passes, 0 errors. The
+`hil_mmb_alloc(memtest, 1048576) failed` line is memtest reaching the end of the free MMZ (it takes 1 MB blocks until
+none is left), not an error. Boot share: the SPL banner arrives together with the DDR "Firmware run has completed"
+line at 0.158-0.160 s (5 boots): the SPL prints after training, the console cannot split it.
+
+### Automated run 2026-10-31 (run.py, 77 s): pass
+
+memtest: 9 pass lines seen, done with 0 errors in 61 s.
+
+
 ### Automated run 2026-10-25 (run.py, 77 s): pass
 
 memtest: 10 pass lines seen, done with 0 errors in 61 s.

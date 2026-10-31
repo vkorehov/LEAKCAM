@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-31 (run.py, 97 s): pass
+
+5 of 5 cold boots: SPL banner, DDR trained, OpenSBI, kernel, msh.
+
+
 ### Automated run 2026-10-25 (run.py, 97 s): pass
 
 5 of 5 cold boots: SPL banner, DDR trained, OpenSBI, kernel, msh.

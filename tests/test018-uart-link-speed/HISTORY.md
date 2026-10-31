@@ -4,7 +4,34 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
-### Why the 2026-10-30 runs at 2 Mbaud failed (BL616 state, not the rate)
+### Automated run 2026-10-31 (run.py, 118 s): pass
+
+8 of 8 runs of uart_bench 1024 at 2 Mbaud: 0 errors, 180740-180740 B/s.
+
+
+### Bench stream corrupted by other UART1 writers, not the link: 2026-10-31
+
+Correction of the 2026-10-30 note below ("BL616 state"): a fresh BL616 has the same heap after its first bridge
+start (118 KB free, 122 blocks), so the heap was not the cause; and the "with the bridge up" echoes of 2026-10-30 never
+ran (`pt_uart echo` answered "3V3 is off": its 3V3 check reads the SDIO pull-ups, which the bridge drives).
+
+Not the VM either: VMware's guest log records every VM freeze (30 s granularity), none overlapped a failing run
+(test010 20:07-20:12, test018 20:12-20:18, test039 15:14), and the echo runs K230 -> BL616 -> K230 on the board.
+
+Found with the bridge bound (2026-10-31, test firmware fixed to start the echo then): 1 run of 5 and 1 of 10 stalled
+(944195 / 978501 of 1048576 back, 78-81 bad, 15 s timeout), always the run ~25 s after Wi-Fi came up. Byte counts
+agree on both chips (BL616 echoed = K230 got back; K230 uart1: 0 framing/parity/overrun, 0 dropped; BL616 RX FIFO: 0
+overflows, at most 24 of 32 full): no byte was lost on the line. The K230 printed `[I/ntp] Get local time ...` (66
+bytes) into UART1 in the middle of the bench: the console shares UART1, the BL616 echoed the line, the bench took it
+as data and its window never closed. Any console or link output during a bench does the same (yesterday's runs had
+no bridge; the likely writers are the agent's READY frames / hook messages - not provable now, their console logs
+were overwritten).
+
+Fix (link_mux.c): while `uart_bench` holds uart1 (`link_mux_pause`), console output is held (1 KB) and written after
+the bench, link frames are dropped (the sender repeats them); `link_stat` counts both. With it: 10 x 1 MB with the
+bridge bound, 0 lost, the NTP line held (66 B) and printed after run 2.
+
+### 2026-10-30 note (superseded above): why the runs at 2 Mbaud failed
 
 The K230 -> BL616 direction lost 1-16 bytes per 64 KB / 1 MB echo (the BL616 echoed fewer than were sent; the
 K230 received every echoed byte, 0 UART errors). The BL616 test firmware had then run all day with ~50 `pt_wifi
