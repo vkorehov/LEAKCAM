@@ -78,3 +78,13 @@ part can be re-sourced from any vendor.
 - Mechanical: a 222-degree lens must see past the board edge and the enclosure; nothing
   may protrude into its hemisphere, and the two cameras on opposite sides give near-full
   spherical coverage only if both lenses stand proud of the enclosure surface.
+
+## 5. Leak probe (v1, in development)
+
+The probe plugs into S1, S2 or S3 (JST PH, 2 pins): two electrodes that water bridges; the board sees the node fall
+below 1.10 V (tests/test034). Design rules found so far:
+
+- **At least 4-5 mm between the probe's traces everywhere** (user, 2026-10-31). A dried salt film bridged the narrow
+  gap at the wire joints of the v1 probe board and held the probe wet for hours with dry tips (318 mV; 1647 mV, dry,
+  once rewired to wider-gap pads).
+- Only the sensing tips exposed; conformal coat or potting over the wire joints and the rest of the traces.

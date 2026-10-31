@@ -58,6 +58,3 @@ From the rev 1 bugs
    regulator (TPS63900 buck-boost or TPS7A02 LDO class) instead of U5 TPS63802 (11 uA quiescent + 5.5 uA in its
    R22/R24 feedback divider, whose low side TI caps at 100 k): about -16 uA, nearly half the sleep. BQ24072T on battery
    4.3 uA typ stays unless the charger changes too.
-12. Leak probe PCB (tests/test034, 2026-10-31): at least 4-5 mm between the probe's traces everywhere (user); a dried
-   salt film bridged the narrow gap at the wire joints and held the probe wet for good (318 mV with dry tips;
-   1647 mV once rewired to wider-gap pads). Only the sensing tips exposed; conformal coat / potting over the joints.
