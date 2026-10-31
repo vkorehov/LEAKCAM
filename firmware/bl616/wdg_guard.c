@@ -7,6 +7,7 @@
 #include "bl616_hbn.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "crash_rec.h"
 
 static struct bflb_device_s *wdg;
 
@@ -15,6 +16,7 @@ static void wdg_feed_task(void *arg)
     (void)arg;
     while (1) {
         bflb_wdg_reset_countervalue(wdg);
+        crash_rec_fed();
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }

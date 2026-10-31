@@ -66,6 +66,7 @@
 #include "bflb_l1c.h"
 #include "bl616_glb.h"
 #include "wdg_guard.h"
+#include "crash_rec.h"
 static void sdu_stop(void);
 #endif
 
@@ -1353,6 +1354,8 @@ static void background_task(void *arg)
             vTaskDelay(pdMS_TO_TICKS(300));
             if (wdg_reset_seen)
                 printf("\r\nthis boot: reset by the watchdog (the BL616 hung)");
+            printf("\r\n");
+            crash_rec_report();
             printf("\r\nLEAKCAM BL616 board test, " __DATE__ " " __TIME__ "\r\n"
                    "commands: pt_status pt_mon pt_boot1"
 #if PT_TEST_POWER

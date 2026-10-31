@@ -24,6 +24,8 @@
 #include "ble_pairing.h"
 #include "evlog.h"
 
+void wl_trace(uint8_t code);   /* pt_wifi.c: breadcrumbs kept across a reset (pt_trace) */
+
 bool usb_present(void);                    /* main.c */
 
 static bool started;
@@ -91,8 +93,10 @@ static void cmd_ble(int argc, char **argv)
             printf("pt_ble: already on\r\n");
             return;
         }
+        wl_trace(0x7e);
         if (!pt_radio_init())
             return;
+        wl_trace(0x7f);
         started = true;
         xTaskCreate(ble_task, "ble", 1024, NULL, 3, NULL);
         xTaskCreate(usb_watch_task, "bleusb", 512, NULL, 2, NULL);

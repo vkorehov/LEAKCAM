@@ -41,6 +41,7 @@
 #include "leak_wake.h"
 #include "usb_power.h"
 #include "wdg_guard.h"
+#include "crash_rec.h"
 #ifndef LEAKCAM_RELEASE
 #include "shell.h"
 #endif
@@ -580,6 +581,7 @@ int main(void)
     if (wdg_guard_start())
         LOG_E("boot: reset by the watchdog (the BL616 hung)\r\n");
 #endif
+    crash_rec_report();                         /* the last crash's record and backtrace, kept across the reset */
     /* first thing after clocks: rails off, reset held, K230-side pins parked. R19/R76 already
      * hold this state in hardware while the BL616 is in reset or booting. */
     k230_power_init();

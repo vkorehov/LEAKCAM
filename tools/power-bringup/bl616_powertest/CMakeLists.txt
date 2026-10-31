@@ -19,6 +19,9 @@ target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/a
 
 # the product's watchdog (the BL616 never stays hung)
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/wdg_guard.c)
+# crash_rec.c: faults and hangs with a backtrace, kept across the reset (user 2026-10-31: every firmware has it)
+target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/crash_rec.c)
+sdk_add_link_options(-Wl,--wrap=exception_entry -Wl,--wrap=vApplicationStackOverflowHook)
 # the product's memory metrics (`mem`: every test logs it, leak detection)
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/mem_stat.c)
 sdk_add_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616)

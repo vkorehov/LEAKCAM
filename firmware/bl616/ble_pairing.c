@@ -290,8 +290,12 @@ static struct bt_conn_cb conn_cb = {
     .disconnected = on_disconnected,
 };
 
+/* breadcrumbs (wifi_link.c, kept across a reset in the test firmware): where a BLE start hung, 0x70-0x75 */
+void wl_trace(uint8_t code);
+
 static void on_bt_ready(int err)
 {
+    wl_trace(0x74);
     if (err) {
         LOG_E("ble: bt_enable failed (%d)\r\n", err);
         return;
@@ -306,14 +310,19 @@ static void on_bt_ready(int err)
     bt_conn_auth_cb_register(&auth_cb);
     bt_gatt_service_register(&prov_svc);
     adv_start();
+    wl_trace(0x75);
     LOG_I("ble: advertising as %s\r\n", name);
 }
 
 void ble_pairing_start(void)
 {
+    wl_trace(0x70);
     btble_controller_init(configMAX_PRIORITIES - 1);
+    wl_trace(0x71);
     hci_driver_init();
+    wl_trace(0x72);
     bt_enable(on_bt_ready);
+    wl_trace(0x73);
 }
 
 void ble_pairing_stop(void)

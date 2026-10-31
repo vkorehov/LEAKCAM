@@ -45,6 +45,26 @@ def reset_bl616():
     print("BL616 reset: the port did not come back in 60 s", flush=True)
 
 
+def crash_check(when):
+    """The BL616's crash record (firmware/bl616/crash_rec.c) before the batch and after every test (user 2026-10-31:
+    always check it): a record is decoded, logged and cleared, and stops the batch (stop on any issue). A firmware
+    without the recorder stops it too: no test runs where a hang would leave no backtrace."""
+    from board import bl
+    out = re.sub(r"\x1b\[[0-9;]*m", "", bl("crash", 2))
+    if "crash: no record" in out:
+        print(f"crash record {when}: none", flush=True)
+        return True
+    if "crash #" not in out:
+        print(f"CRASH RECORDER MISSING in the BL616 firmware ({when}): flash the test firmware with crash_rec.c",
+              flush=True)
+        return False
+    dec = subprocess.run([sys.executable, os.path.join(HERE, "..", "power-bringup", "crash_decode.py")], input=out,
+                         capture_output=True, text=True).stdout
+    print(f"CRASH RECORD {when}:\n{dec}", flush=True)
+    bl("crash clear", 1)
+    return False
+
+
 def main():
     args = sys.argv[1:]
     runs = sorted(glob.glob(os.path.join(TESTS, "test*", "run.py")))
@@ -59,6 +79,9 @@ def main():
         # in the order given: a flash (test019) must run before the tests that need its image
         runs = [r for a in args for r in runs if os.path.basename(os.path.dirname(r)).startswith(a)]
     summary = []
+    if not crash_check("before the batch"):
+        print("batch not started: see the crash record above")
+        return
     for i, r in enumerate(runs):
         d = os.path.dirname(r)
         name = os.path.basename(d)
@@ -86,6 +109,9 @@ def main():
         chk = subprocess.run([sys.executable, os.path.join(HERE, "check_tests.py"), name[:7]],
                              capture_output=True, text=True).stdout.strip()
         summary.append(f"{name:40s} rc={rc} {time.time() - t0:5.0f} s  {chk.splitlines()[0] if chk else ''}")
+        if not crash_check(f"after {name}"):
+            summary.append(f"{name:40s} BL616 CRASH RECORD: batch stopped (see above)")
+            break
     print("\n===== summary =====")
     print("\n".join(summary))
 

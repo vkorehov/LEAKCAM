@@ -39,12 +39,16 @@ target_sources(app PRIVATE
                    leak_wake.c
                    usb_power.c
                    wdg_guard.c
+                   crash_rec.c
                    mem_stat.c
                    ble_pairing.c
                    aht20.c
                    wifi_link.c
                    wifi_check.c
                    )
+
+# crash_rec.c: faults and hangs with a backtrace, kept across the reset (user 2026-10-31: product and tests)
+sdk_add_link_options(-Wl,--wrap=exception_entry -Wl,--wrap=vApplicationStackOverflowHook)
 
 # HBN-retained variables (.hbn_noinit) need the LEAKCAM linker script
 sdk_set_linker_script_macro(${CMAKE_CURRENT_SOURCE_DIR}/bl616_leakcam.ld.in)
