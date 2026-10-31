@@ -67,13 +67,17 @@ Wet detected at every water type the product must see, dry never woken falsely i
   | Wet towel (tap water), wrapped, no pressure | 838 -> 892 mV over 1.5 min, rising | WET (hysteresis) |
   | Wet towel, light pressure | 949-952 mV | **dry: missed** |
   | After salt water, rinsed and towel-dried | 1171-1202 mV, rising | dry |
-  | Salted probe out of the water, drying in air | 395 -> 501 mV in 4 min, then flat ~500 mV to 12 min, 470-481 mV at 12-14 min | WET |
+  | Salted probe out of the water, drying in air | 395 -> 500 mV in 4 min, 438 mV low at 28 min, 608-629 mV at 65-67 min ([curve](salt_drying_2026-10-31.svg)) | WET after 67 min |
 
   - DC through the water polarises the tips: the node rises over minutes in still water (tap: 393 -> 517 mV). Salt
     goes the other way.
   - A wet towel is the marginal case: the comparator stayed WET up to 892 mV (above 0.85 V: the dry edge is higher than
     0.88 V, the hysteresis is wider than 30 mV or the reference is off) and was dry at 949 mV.
   - Distilled water: not required (user, 2026-10-31).
+  - A salted probe left in air stays WET for over an hour (the salt film keeps conducting while it holds moisture):
+    after a real leak the alarm does not clear by itself soon.
+
+  ![salted probe drying](salt_drying_2026-10-31.svg)
   - The host readings have a gap 17:45-17:53: the VM froze 505 s (the Mac slept); since then `pt_leak log` samples on
     the board itself.
 
@@ -84,7 +88,9 @@ Open:
   firmware (after the drying-curve dump), re-check the towel and the salt film, the dry trip point (`pt_leak sweep`),
   step 5 (8 h dry) at 1.10 V.
 - The dry trip point of the comparator (between 892 and 949 mV seen): `pt_leak sweep` on a towel.
-- Salted probe drying curve: `pt_leak log 20` on the board since 17:56:40, dump after ~20:15.
+- Salted probe drying curve: still WET after 67 min (608-629 mV, rising ~25 mV per 3 min since ~50 min); the board
+  keeps logging (`pt_leak log 20`), next dump for the time to dry (1.10 V, then 1650 mV). Raw:
+  [board](salt_drying_board_2026-10-31.log), [host](salt_drying_host_2026-10-31.log).
 - Resistor sweep 10 k .. 10 M: not run (the user records voltages, not resistances).
 - 8 h dry without a false wake (step 5; the test firmware's evlog counts the wakes).
 - Wake latency not measured directly (no edge timestamp on the board).
