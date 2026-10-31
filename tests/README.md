@@ -78,6 +78,7 @@ Leak tests, one per operation the product repeats:
 | [test039 K230 console over the BL616 link (no CH340)](test039-k230-console-over-link/README.md) | 2026-10-31 | **pass**: 1000 of 1000 commands answered in each of 4 boots at 2 Mbaud, every drop counter 0; 226 mA answering back to back |
 | [test040 BLE provisioning on the BL616: Wi-Fi credentials into flash](test040-ble-wifi-credentials/README.md) | 2026-10-29 | **pass**: run.py 46/46 (run 13, test firmware -O3 + LTO with the sdk_patch.py console fix) and |
 | [test041 humidity alarm (AHT20 threshold wakes the K230)](test041-humidity-alarm/README.md) | 2026-10-30 | **planned**: the BL616 test firmware needs the humidity slice and alarm decision of |
+| [test042 RF performance against the bench phone (RSSI side by side)](test042-rf-rssi-vs-phone/README.md) | 2026-10-31 | **planned**: Wi-Fi RSSI per access point / channel, board - phone; BLE advertising RSSI at the phone; orientations, distance |
 | **High level (100+): the product's whole flow** | | |
 | [test100 Wi-Fi throughput, K230 -> SDIO -> BL616 -> AP](test100-wifi-throughput/README.md) | 2026-10-25 | **steps 1-4 pass**: K230 address 0.33-0.59 s after the card binds; TCP up 27.5 / down 22.1 Mbit/s, UDP up 35.4. |
 | [test101 session length (wake to power-off)](test101-boot-and-session-time/README.md) | 2026-10-21 | **planned**: not run yet. |
@@ -108,7 +109,7 @@ Leak tests, one per operation the product repeats:
 | The closed enclosure: temperature, Wi-Fi at the install distance | test026, test100 |
 | The real server (TLS, device identity, pinned certificate, signed change net, RTMPS) | test109 (planned; the server is not built, it runs on the Windows PC) |
 
-**Tests not run or partial:** not run - test020, test030 (cameras), test101, test102, test104 (test-firmware features to add),
+**Tests not run or partial:** not run - test020, test030 (cameras), test042 (RF, planned), test101, test102, test104 (test-firmware features to add),
 test103 (later); partial - test008 (steps 3-7), test026 (KPU / encoder / camera load, enclosure, die limit), test032
 (crystal ppm, 100 cycles, 24 h), test034 (threshold decision, 8 h dry), test035 (100 transitions), test037 (steps 1-6),
 test038 (on the second board), test105 (runs 1-4), test106 (step 2); **fail** - none.
