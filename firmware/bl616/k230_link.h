@@ -28,7 +28,7 @@
  *                                     BL616 wall clock, 0 when it is not valid (after a power
  *                                     loss, until the K230 has sent TIME once); the AHT20 sample
  *                                     (rh -1 = the read failed, t then 0); the leak probe node voltage
- *                                     (1650 dry, below 850 wet; -1 = no reading); the battery as
+ *                                     (1650 dry, below 1100 wet; -1 = no reading); the battery as
  *                                     the K230 measured it at the previous session (-1 = none
  *                                     since the power loss). The BL616 has no battery ADC input:
  *                                     the VBAT/3 divider (R59/R61, switched by the K230's 3V3)

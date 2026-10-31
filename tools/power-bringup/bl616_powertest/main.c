@@ -583,7 +583,7 @@ static void print_status(bool line)
     if (k < 0)
         printf("Leak probes : %d mV, dry (expected ~1650 mV with nothing across S1..S3)\r\n", mv);
     else
-        printf("Leak probes : %d mV, %ld kohm across a probe%s\r\n", mv, k, mv < 825 ? " (WET by the product threshold)" : "");
+        printf("Leak probes : %d mV, %ld kohm across a probe%s\r\n", mv, k, mv < 1100 ? " (WET by the product threshold)" : "");
 #endif
 #if PT_TEST_I2C
     int rh, t;
@@ -1005,15 +1005,15 @@ SHELL_CMD_EXPORT_ALIAS(cmd_usb, pt_usb, USB cable detection (PGOOD));
 
 #if PT_TEST_LEAK
 /* test034: the leak comparator exactly as the product's leak_init() (leak_wake.c): ACOMP1 on ADC0 = IO20 against
- * vio_sel 17 x 50 mV = 0.85 V (the scaling factor has no effect: `pt_leak sweep`), 30 mV hysteresis each way, slowest
- * bias. Wet = node below the reference = below ~430 kohm across a probe. */
+ * vio_sel 22 x 50 mV = 1.10 V (the scaling factor has no effect: `pt_leak sweep`), 30 mV hysteresis each way, slowest
+ * bias. Wet = node below the reference (a pressed wet towel 0.95 V, a dried salt film 1.17 V: test034). */
 static void leak_acomp_init(void)
 {
     struct bflb_acomp_config_s cfg = {
         .mux_en = ENABLE,
         .pos_chan_sel = AON_ACOMP_CHAN_ADC0,
         .neg_chan_sel = AON_ACOMP_CHAN_VIO_X_SCALING_FACTOR_1,
-        .vio_sel = 17,                                          /* 0.85 V: vio_sel x 50 mV */
+        .vio_sel = 22,                                          /* 1.10 V: vio_sel x 50 mV */
         .scaling_factor = AON_ACOMP_SCALING_FACTOR_1,           /* no effect on this input */
         .bias_prog = AON_ACOMP_BIAS_POWER_MODE1,
         .hysteresis_pos_volt = AON_ACOMP_HYSTERESIS_VOLT_30MV,
@@ -1147,7 +1147,7 @@ static int cmd_leak(int argc, char **argv)
     int mv;
     LOCKED(mv = leak_mv());
     long k = leak_kohm(mv);
-    printf("leak node %d mV (dry ~1650, wet below 850 mV = below ~430 kohm across a probe); comparator %s; "
+    printf("leak node %d mV (dry ~1650, wet below 1100 mV); comparator %s; "
            "this boot woke by %s\r\n", mv, leak_acomp_wet() ? "WET" : "dry", wake_names(last_wake));
     if (k < 0)
         printf("  dry: nothing across S1..S3\r\n");

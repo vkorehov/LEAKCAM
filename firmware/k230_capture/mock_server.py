@@ -12,7 +12,7 @@ POST /v1/check?reason=<r>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>&nn=<CRC>&thr=
                             check-<n>.json: the pairs a teacher labels for the next change net
                             (firmware/NN.txt). Answers {"leak":true|false}: with --leak probe
                             (default) a leak is what the BL616's probes say: the reason "leak",
-                            or the probe node below 825 mV (wet); a leak answer asks for --video-s seconds of video
+                            or the probe node below 1100 mV (wet); a leak answer asks for --video-s seconds of video
                             ("video":<s>). With --nn, the answer adds
                             "nn":"<CRC>","thr":[t0,t1] when the board's net or thresholds differ.
 POST /v1/video?s=<seconds>  asks for a clip: the next check answer adds "video":<seconds>, and
@@ -116,7 +116,7 @@ class Handler(BaseHTTPRequestHandler):
                 cams.append(f"{state}/{dist}")
             with open(os.path.join(args.dir, f"check-{n}.json"), "w") as f:
                 json.dump({key: v[0] for key, v in q.items()}, f)
-            wet = "leak" in reason.split("+") or 0 <= mv < 825
+            wet = "leak" in reason.split("+") or 0 <= mv < 1100
             leak = args.leak == "always" or (args.leak == "probe" and wet)
             print(f"check {n}: reason={reason} probe={mv} mV bat={q['bat_mv'][0]} mV "
                   f"rh={q['rh'][0]} t={q['t'][0]} cameras={' '.join(cams)} nn={q['nn'][0]} "

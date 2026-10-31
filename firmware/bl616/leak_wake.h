@@ -16,7 +16,7 @@ enum wake_reason {
 
 void leak_init(void);
 bool leak_is_wet(void);
-/* probe node voltage in mV (1650 dry, below 825 the comparator calls it wet); -1 = no reading */
+/* probe node voltage in mV (1650 dry, below 1100 the comparator calls it wet); -1 = no reading */
 int leak_probe_mv(void);
 /* the hardware sources pending since the hibernate, WAKE_COLD when none */
 unsigned wake_reason_get(void);

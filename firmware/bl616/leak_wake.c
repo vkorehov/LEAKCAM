@@ -7,8 +7,8 @@
  * current. So the pad is kept in analog mode and watched by the always-on comparator ACOMP1,
  * whose positive input is ADC channel 0 = GPIO20 (same setup as the SDK's bl616dk board).
  *
- * Threshold 0.85 V = vio_sel 17 x 50 mV (ACOMP_VIO_LEAK below). Water resistance at the trip point:
- *   3.31 * (1M || Rw) / (1M + 1M || Rw) = 0.85  ->  Rw = 528 k  (434 k with 2 x 47 k in series)
+ * Threshold 1.10 V = vio_sel 22 x 50 mV (ACOMP_VIO_LEAK below), between a pressed wet towel (0.95 V) and a dried
+ * salt film (1.17 V and rising) (tests/test034, 2026-10-31).
  */
 #include "leak_wake.h"
 
@@ -32,9 +32,9 @@
 #define LEAK_ACOMP          AON_ACOMP1_ID
 /* The reference is vio_sel x 50 mV; the scaling factor does nothing on this input (measured, tests/test034: every
  * scaling flipped between vio_sel 32 and 33 against the 1.648 V dry node). The first code had vio_sel 33 x 0.5
- * meant as 0.825 V: really 1.65 V, the dry level itself, so a dry probe read wet. 17 = 0.85 V: wet below ~430 kohm
- * across a probe (1 M / 1 M divider from 3V3_SLEEP, 94 k series), 0.8 V clear of dry. */
-#define ACOMP_VIO_LEAK      17
+ * meant as 0.825 V: really 1.65 V, the dry level itself, so a dry probe read wet. 0.85 V (17) missed a pressed wet
+ * towel (0.95 V); 1.20 V would hold a dried salt film (1.17 V) wet: 22 = 1.10 V (tests/test034, 2026-10-31). */
+#define ACOMP_VIO_LEAK      22
 
 void leak_init(void)
 {
@@ -45,7 +45,7 @@ void leak_init(void)
         .mux_en = ENABLE,
         .pos_chan_sel = AON_ACOMP_CHAN_ADC0,                    /* GPIO20 */
         .neg_chan_sel = AON_ACOMP_CHAN_VIO_X_SCALING_FACTOR_1,
-        .vio_sel = ACOMP_VIO_LEAK,                              /* 0.85 V */
+        .vio_sel = ACOMP_VIO_LEAK,                              /* 1.10 V */
         .scaling_factor = AON_ACOMP_SCALING_FACTOR_1,           /* no effect here (see ACOMP_VIO_LEAK) */
         .bias_prog = AON_ACOMP_BIAS_POWER_MODE1,                /* slowest, lowest current */
         .hysteresis_pos_volt = AON_ACOMP_HYSTERESIS_VOLT_30MV,  /* probes in a film of water chatter */

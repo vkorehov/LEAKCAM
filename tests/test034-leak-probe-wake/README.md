@@ -1,8 +1,9 @@
 # test034: leak probe wake (ACOMP1) and wet/dry thresholds
 
-Status: **open: threshold decision** (2026-10-31): water in a cup, a puddle, hot and salted water read WET (243-756 mV
-against 0.85 V), but a wet towel sits at the threshold and with light pressure reads **dry** (949-952 mV); raising the
-threshold to ~1.30 V is proposed, not decided. Shorts S1/S2/S3 and the HBN wake on both edges pass (2026-10-22).
+Status: **threshold changed to 1.10 V, re-check pending** (2026-10-31): water in a cup, a puddle, hot and salted water
+read WET (243-756 mV), but at 0.85 V a pressed wet towel read **dry** (949-952 mV); the user chose 1.10 V (vio_sel 22),
+between the towel and a dried salt film (1.17 V): in the code, the board still runs 0.85 V until the drying curve is
+dumped. Shorts S1/S2/S3 and the HBN wake on both edges pass (2026-10-22).
 Open: the threshold, the salted probe's drying curve (logging on the board), 8 h no-false-wake.
 
 The leak probes S1-S3 pull LEAK_SENS (1 M / 1 M divider from 3V3_SLEEP, 1.65 V dry) down when water bridges them;
@@ -77,9 +78,11 @@ Wet detected at every water type the product must see, dry never woken falsely i
     the board itself.
 
 Open:
-- **Threshold:** 0.85 V misses a pressed wet towel. Proposed ~1.30 V (vio_sel 26): ~350 mV margin to the towel and to
-  dry (1650 mV); a salt film after a real leak (~1.2 V) then stays WET until it dries. User decision; then the test
-  firmware, leak_wake.c, PROBE_WET_MV, DESIGN.md, and the towel re-checked, and step 5 at the new value.
+- **Threshold 1.10 V** (user, 2026-10-31: above a pressed wet towel, below a dried salt film so it gives no false
+  alarm; 1.20 V would have held the film wet): leak_wake.c ACOMP_VIO_LEAK 22, the test firmware, PROBE_WET_MV 1100,
+  mock_server.py, DESIGN.md, firmware/README.md; test_wake.py checks 1000 mV wet, 1200 mV dry. Open: flash the test
+  firmware (after the drying-curve dump), re-check the towel and the salt film, the dry trip point (`pt_leak sweep`),
+  step 5 (8 h dry) at 1.10 V.
 - The dry trip point of the comparator (between 892 and 949 mV seen): `pt_leak sweep` on a towel.
 - Salted probe drying curve: `pt_leak log 20` on the board since 17:56:40, dump after ~20:15.
 - Resistor sweep 10 k .. 10 M: not run (the user records voltages, not resistances).

@@ -71,7 +71,7 @@
 #define SAMPLE_MARGIN  0.1f               /* a light-only distance this close to the threshold... */
 #define SAMPLE_EVERY_S 86400              /* ...is reported at most once a day */
 
-#define PROBE_WET_MV   850                /* the BL616 comparator's trip point (bl616/leak_wake.c ACOMP_VIO_LEAK) */
+#define PROBE_WET_MV   1100               /* the BL616 comparator's trip point (bl616/leak_wake.c ACOMP_VIO_LEAK) */
 
 #define SLEEP_NORMAL   21600u             /* nothing new, or reported without a leak: 6 h */
 #define SLEEP_RETRY    3600u              /* new, but not reported (no Wi-Fi or server): 1 h */

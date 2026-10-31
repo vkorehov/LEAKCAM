@@ -16,6 +16,8 @@ import urllib.request
 import zlib
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+# the factory model's threshold, as the wake reports it (change.h CHANGE_THRESHOLD)
+THR = "%.2f" % float(re.search(r"#define CHANGE_THRESHOLD +([0-9.]+)f", open(os.path.join(HERE, "..", "change.h")).read()).group(1))
 wake = os.path.abspath(sys.argv[1])
 state = sys.argv[2]                                                 # the binary's STATE_DIR
 out = tempfile.mkdtemp(prefix="leakcam_mock_")
@@ -107,7 +109,7 @@ check(os.path.exists(os.path.join(state, "cam0.hist.0")) or os.path.exists(os.pa
       "history view not stored")
 check(len(glob.glob(os.path.join(state, "hist0", "*.K"))) == 1, "keyframe not stored")
 q = last_query()
-check(q["nn"] == f"{zlib.crc32(FACTORY):08x}" and q["thr"] == "0.44,0.44" and q["cam0"] == "first,-1.000",
+check(q["nn"] == f"{zlib.crc32(FACTORY):08x}" and q["thr"] == f"{THR},{THR}" and q["cam0"] == "first,-1.000",
       f"factory net reported: {q}")
 
 # the server offered its net: downloaded once, checked, stored; used from the next wake on
@@ -125,11 +127,15 @@ lines, asked, sleep = run("humid", "dry", rh="87.0")
 check(asked and sleep == 21600 and "cam 0: same" in lines, f"humidity alarm, same scene: {lines}")
 lines, asked, sleep = run("rtc", "dry", probe_mv="700")
 check(asked and sleep == 600 and "leak reported" in lines, f"probe wet, same scene: {lines}")
+lines, asked, sleep = run("rtc", "dry", probe_mv="1000")      # a pressed wet towel (test034): wet below 1100 mV
+check(asked and sleep == 600 and "leak reported" in lines, f"probe at a wet towel's 1000 mV: {lines}")
+lines, asked, sleep = run("rtc", "dry", probe_mv="1200")      # a dried salt film (test034): dry
+check(not asked and "leak reported" not in lines, f"probe at a dried salt film's 1200 mV: {lines}")
 lines, asked, sleep = run("rtc+leak+humid", "dry", rh="88.0")
 check(asked and sleep == 600 and "leak reported" in lines, f"combined reasons, same scene: {lines}")
 lines, asked, sleep = run("leak", "dry")
 check(asked and sleep == 600 and "leak reported" in lines, f"probe wake, same scene: {lines}")
-check(reports() == nchecks + 4, "every sensor alarm must reach the server")
+check(reports() == nchecks + 5, "every sensor alarm must reach the server")
 check(len(files("nn-get-*")) == 1 and last_query()["nn"] == f"{zlib.crc32(NEW):08x}"
       and last_query()["thr"] == "0.30,0.50", "the stored net must be used and not downloaded again")
 stream_log = state + ".stream"                                      # test/fake_stream's calls
@@ -140,7 +146,7 @@ if os.path.exists(stream_log):
 lines, asked, sleep = run("rtc", "wet", change="0.1")
 check(not asked and sleep == 21600 and "cam 0: change net 0.100" in lines and "cam 0: same" in lines,
       f"light only: {lines}")
-check(reports() == nchecks + 4, "nothing may be sent for a change of light")
+check(reports() == nchecks + 5, "nothing may be sent for a change of light")
 lines, asked, sleep = run("rtc", "wet", "wifi=fail,2", change="-1")
 check(asked and sleep == 3600 and "cam 0: changed" in lines, f"change net failed, must report: {lines}")
 
@@ -186,7 +192,7 @@ nchecks += 2
 # still wet, Wi-Fi refused (no credentials): retry in an hour, nothing sent
 lines, asked, sleep = run("rtc", "wet", "wifi=fail,2")
 check(asked and sleep == 3600, f"no Wi-Fi: {lines}")
-check(reports() == nchecks + 5, "nothing may be sent without Wi-Fi")
+check(reports() == nchecks + 6, "nothing may be sent without Wi-Fi")
 
 # wet, server says no leak (routine wake): the change is stored as a delta, then it is "same"
 lines, asked, sleep = run("rtc", "wet")
