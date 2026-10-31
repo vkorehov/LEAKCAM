@@ -96,7 +96,7 @@ Open:
   firmware (after the drying-curve dump), re-check the towel and the salt film, the dry trip point (`pt_leak sweep`),
   step 5 (8 h dry) at 1.10 V.
 - The dry trip point of the comparator (between 892 and 949 mV seen): `pt_leak sweep` on a towel.
-- Probe design: only the sensing tips exposed; wide trace spacing and a conformal coat / potting at the wire joints
+- Probe design: at least 4-5 mm between the probe traces everywhere (user, 2026-10-31: no salt bridges); only the sensing tips exposed; a conformal coat / potting at the wire joints
   (a salt film bridged the narrow gap there). Then re-run the salt water + drying with the new probe.
 - Product: after a salt-water leak the probe can stay WET until cleaned; the alarm must not just repeat (e.g. "probe
   still wet after N h: clean the probe"). Re-check the cleaned probe: back to ~1650 mV.
