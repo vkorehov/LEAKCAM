@@ -506,15 +506,5 @@ PY
 grep -q 'LEAKCAM: ov5647 1280x960 only' "$ISPMK" || { echo "ISP files patch not applied"; exit 1; }
 rm -f "$SDK"/output/*/images/bin/ov5647-*                  # earlier builds' sets: the rule only adds files
 
-# 5. the tests' bench programs (memtest test025, venctest test027), built into the image with the apps. The SDK's
-#    defconfig sources a Kconfig from every app folder: without one it failed and every build since kept the old
-#    .config (2026-10-30, found when the link rate changed)
-for t in test025-ddr-stress/memtest test027-video-encoder/venctest; do
-    n=$(basename "$t"); A=$SDK/src/applications/$n
-    rm -rf "$A"; cp -r "$HERE/../../tests/$t" "$A"
-    [ -f "$A/Kconfig" ] || : > "$A/Kconfig"
-    grep -q "subdirs-y += $n" "$SDK/src/applications/apps.mk" || echo "subdirs-y += $n" >> "$SDK/src/applications/apps.mk"
-done
-
 echo "LEAKCAM board installed into $SDK"
 echo "next: cd $SDK && make k230d_rtos_leakcam_defconfig && make"

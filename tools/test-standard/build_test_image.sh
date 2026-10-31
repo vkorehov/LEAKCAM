@@ -31,6 +31,7 @@ for t in "test027-video-encoder/venctest" "test025-ddr-stress/memtest"; do
     n=$(basename "$t")
     rm -rf "${A}_off/$n"
     mkdir -p "$A/$n" && cp "$L/tests/$t/"* "$A/$n/"
+    [ -f "$A/$n/Kconfig" ] || : > "$A/$n/Kconfig"      # the SDK's defconfig sources a Kconfig from every app folder
     grep -q "subdirs-y += $n" "$A/apps.mk" || echo "subdirs-y += $n" >> "$A/apps.mk"
 done
 cd "$SDK"
