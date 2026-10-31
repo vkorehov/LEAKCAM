@@ -1,10 +1,12 @@
-# test042 history
+# test042: history
 
-## Created: 2026-10-31
+Earlier runs, superseded findings and obstacles, newest first. Current state: README.md.
 
-The user asked for an RF estimate with the phone beside the board, per channel. run.py written; the phone's
-`list-scan-results` line format is parsed as on Android 11+ and checked on the first run.
+## Runs
+
+No run yet. Created 2026-10-31 at the user's request (an RF estimate with the phone beside the board, per channel);
+the phone's `list-scan-results` line format is parsed as on Android 11+ and checked on the first run.
 
 ## Obstacles
 
-None yet.
+No obstacle recorded yet.
