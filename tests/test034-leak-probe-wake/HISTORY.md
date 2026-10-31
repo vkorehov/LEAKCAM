@@ -57,3 +57,10 @@ Obstacles:
   (the BL616 samples into RAM, 1024 points; dump with `pt_leak log dump`); host sleep no longer loses points.
 - My first readings converted the node to kohm; near a short the formula went negative (-8 kohm below the measured
   short level): dropped, voltages only.
+
+## Salt residue: 2026-10-31 evening
+
+Spot reads after the drying log: 657 mV (~19:00), 958, 1057-1075, 1516 mV (~19:43, nearly dry), then 376 mV (~19:46)
+and 318-331 mV at 20:26 with brief jumps (409, 638 mV) while the user said the probe was dry. The probe unplugged
+from the socket: 1651 mV, dry: the board is clean, the salt left in the probe conducts (user: "salt residue is
+conducting").

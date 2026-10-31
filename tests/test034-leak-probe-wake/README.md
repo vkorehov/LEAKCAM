@@ -74,6 +74,10 @@ Wet detected at every water type the product must see, dry never woken falsely i
   - A wet towel is the marginal case: the comparator stayed WET up to 892 mV (above 0.85 V: the dry edge is higher than
     0.88 V, the hysteresis is wider than 30 mV or the reference is off) and was dry at 949 mV.
   - Distilled water: not required (user, 2026-10-31).
+  - **Salt residue conducts** (2026-10-31): the salted probe nearly dried (1516 mV at ~19:43, 2 h after the salt
+    water), then read WET again (376 mV, 318-331 mV at 20:26) with the tips dry. Probe unplugged: the board 1651 mV,
+    dry, so the path is the probe (salt left between the electrodes / in the cable or plug), not the board. A probe
+    that met salt water can read wet indefinitely until it is cleaned (rinsed in clean water and dried).
   - A salted probe left in air stays WET for over an hour (the salt film keeps conducting while it holds moisture):
     after a real leak the alarm does not clear by itself soon.
 
@@ -88,6 +92,8 @@ Open:
   firmware (after the drying-curve dump), re-check the towel and the salt film, the dry trip point (`pt_leak sweep`),
   step 5 (8 h dry) at 1.10 V.
 - The dry trip point of the comparator (between 892 and 949 mV seen): `pt_leak sweep` on a towel.
+- Product: after a salt-water leak the probe can stay WET until cleaned; the alarm must not just repeat (e.g. "probe
+  still wet after N h: clean the probe"). Re-check the cleaned probe: back to ~1650 mV.
 - Salted probe drying curve: still WET after 67 min (608-629 mV, rising ~25 mV per 3 min since ~50 min); the board
   keeps logging (`pt_leak log 20`), next dump for the time to dry (1.10 V, then 1650 mV). Raw:
   [board](salt_drying_board_2026-10-31.log), [host](salt_drying_host_2026-10-31.log).
