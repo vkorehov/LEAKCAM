@@ -4,6 +4,18 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-31 (run.py, 144 s): pass
+
+8 x `ddr_bench 3072`; last run:
+
+    copy (memcpy, bytes moved)      64512 KB in  23836 us: 2771.4 MB/s
+    write (memset)                  64512 KB in  10847 us: 6090.1 MB/s
+    read (64-bit sum)               64512 KB in  13659 us: 4836.3 MB/s
+    copy (memcpy, bytes moved)      64512 KB in  23834 us: 2771.6 MB/s
+
+- meter K230 running ddr_bench 3072 over and over: 0.250 A
+
+
 ### Automated run 2026-10-31 (run.py, 52 s): pass
 
 8 x `ddr_bench 3072`; last run:

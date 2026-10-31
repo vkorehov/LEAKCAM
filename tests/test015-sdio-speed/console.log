@@ -1,0 +1,1826 @@
+    9.587 boot
+    9.587   U-Boot SPL 2022.10-gc096dae6-dirty (Oct 31 2026 - 15:01:54 +0000)
+    9.587   00000000: PMU Major Msg: End of CA training                                            
+    9.587   00000000: PMU Major Msg: End of initialization                                         
+    9.587   00000000: PMU Major Msg: End of read enable training                                   
+    9.587   00000000: PMU Major Msg: End of fine write leveling                                    
+    9.587   00000000: PMU Major Msg: End of read dq deskew training                                
+    9.587   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+    9.587   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+    9.587   00000000: PMU Major Msg: End of write delay center optimization                        
+    9.587   00000000: PMU Major Msg: End of read delay center optimization                         
+    9.587   00000000: PMU Major Msg: End of max read latency training                              
+    9.587   00000000: PMU Major Msg: Firmware run has completed                                    
+    9.587   dbyte0 add =9a040100 value =12
+    9.587   dbyte0 add =9a040500 value =13
+    9.587   dbyte0 add =9a040900 value =13
+    9.587   dbyte0 add =9a040d00 value =13
+    9.587   dbyte0 add =9a041100 value =13
+    9.587   dbyte0 add =9a041500 value =13
+    9.587   dbyte0 add =9a041900 value =13
+    9.587   dbyte0 add =9a041d00 value =14
+    9.587   dbyte1 add =9a044100 value =14
+    9.587   dbyte1 add =9a044500 value =13
+    9.587   dbyte1 add =9a044900 value =14
+    9.587   dbyte1 add =9a044d00 value =13
+    9.587   dbyte1 add =9a045100 value =13
+    9.587   dbyte1 add =9a045500 value =13
+    9.587   dbyte1 add =9a045900 value =13
+    9.587   dbyte1 add =9a045d00 value =13
+    9.587   dbyte2 add =9a048100 value =37
+    9.587   dbyte2 add =9a048500 value =37
+    9.587   dbyte2 add =9a048900 value =37
+    9.587   dbyte2 add =9a048d00 value =37
+    9.587   dbyte2 add =9a049100 value =37
+    9.587   dbyte2 add =9a049500 value =37
+    9.587   dbyte2 add =9a049900 value =37
+    9.587   dbyte2 add =9a049d00 value =37
+    9.587   dbyte3 add =9a04c100 value =37
+    9.587   dbyte3 add =9a04c500 value =37
+    9.587   dbyte3 add =9a04c900 value =37
+    9.587   dbyte3 add =9a04cd00 value =37
+    9.587   dbyte3 add =9a04d100 value =37
+    9.587   dbyte3 add =9a04d500 value =37
+    9.587   dbyte3 add =9a04d900 value =37
+    9.587   dbyte3 add =9a04dd00 value =37
+    9.587   spi_nand spi-flash@0: Winbond SPI NAND was found.
+    9.587   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+    9.587   OpenSBI v0.9
+    9.587   heap: [0x004f34c0 - 0x00cf34c0], size 8192 KB
+    9.587   page: [0x00cf34c8 - 0x039fec00], size 46125 KB
+    9.587    \ | /
+    9.587   - RT -     Thread Smart Operating System
+    9.587    / | \     5.0.0 build Oct 30 2026
+    9.587    2006 - 2020 Copyright by rt-thread team
+    9.587   rtc driver register OK
+    9.587   lwIP-2.1.2 initialized!
+    9.587   [I/I2C] I2C bus [i2c0] registered
+    9.587   [I/I2C] I2C bus [i2c4] registered
+    9.587   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+    9.587   �link_mux: console and /dev/link share uart1
+    9.587   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+    9.587   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+    9.587   os  : system memory alloc 320 bytes
+    9.587   flsh: UFFS consume spare data size 9
+    9.587   os  : system memory alloc 84480 bytes
+    9.587   os  : system memory alloc 53200 bytes
+    9.587   os  : system memory alloc 2048 bytes
+    9.587   tree: DIR 0, FILE 5, DATA 4
+    9.587   os  : system memory alloc 320 bytes
+    9.587   flsh: UFFS consume spare data size 9
+    9.587   os  : system memory alloc 84480 bytes
+    9.587   os  : system memory alloc 53200 bytes
+    9.587   os  : system memory alloc 8192 bytes
+    9.587   tree: DIR 1, FILE 10, DATA 80
+    9.587   /dev/shm file system initialization done!
+    9.587   Can't find sensor on csi0
+    9.587   Can't find sensor on csi2
+    9.587   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+    9.587   <gnne> gnne_device_init done.
+    9.587   #############SDK VERSION######################################
+    9.587   SDK   : unknown-20261031-150133--bd7145d1ce73-4162ec7
+    9.587   nncase: 2.11.0
+    9.587   ##############################################################
+    9.587   msh />
+   15.370 > 'chip_temp' (0.07 s)
+   15.370   chip_temp
+   15.370   chip temperature: 37.339 C
+   15.370   msh />
+   15.370   msh />
+   15.426 > 'free' (0.06 s)
+   15.426   free
+   15.426   memheap               pool size  max used size available size
+   15.426   -------------------- ---------- ------------- --------------
+   15.426   heap                 8388608    1390848       7025152
+   15.426   msh />
+   15.426   msh />
+   15.483 > 'adc probe adc' (0.06 s)
+   15.483   adc probe adc
+   15.483   probe adc success 
+   15.483   msh />
+   15.483   msh />
+   15.538 > 'adc read 1' (0.06 s)
+   15.538   adc read 1
+   15.538   adc channel 1  read value is 0x00000CF7 
+   15.538   msh />
+   15.538   msh />
+   15.593 > 'adc read 1' (0.05 s)
+   15.593   adc read 1
+   15.593   adc channel 1  read value is 0x00000CE6 
+   15.593   msh />
+   15.593   msh />
+   15.659 > 'adc read 1' (0.07 s)
+   15.659   adc read 1
+   15.659   adc channel 1  read value is 0x00000CDD 
+   15.659   msh />
+   15.659   msh />
+   15.714 > 'adc read 1' (0.05 s)
+   15.714   adc read 1
+   15.714   adc channel 1  read value is 0x00000D32 
+   15.714   msh />
+   15.714   msh />
+   15.769 > 'adc read 1' (0.05 s)
+   15.769   adc read 1
+   15.769   adc channel 1  read value is 0x00000D29 
+   15.769   msh />
+   15.769   msh />
+   15.825 > 'adc read 1' (0.06 s)
+   15.825   adc read 1
+   15.825   adc channel 1  read value is 0x00000CE2 
+   15.825   msh />
+   15.825   msh />
+   15.880 > 'adc read 1' (0.05 s)
+   15.880   adc read 1
+   15.880   adc channel 1  read value is 0x00000D46 
+   15.880   msh />
+   15.880   msh />
+   15.935 > 'adc read 1' (0.05 s)
+   15.935   adc read 1
+   15.935   adc channel 1  read value is 0x00000D03 
+   15.935   msh />
+   15.935   msh />
+   16.033 > 'bl616_rescan' (0.10 s)
+   16.033   bl616_rescan
+   16.033   [I/bl616.sdio] BL616 SDU ready: io port 0x10000, download 2048 B, ports 0/0
+   16.033   [I/bl616.sdio] bound SDIO 424c:0606
+   16.033   bl616_rescan: card bound in 44 ms
+   16.033   msh />
+   16.033   msh />
+   17.161 > 'bl616_clk' (0.06 s)
+   17.161   bl616_clk
+   17.161   bl616_clk: 50000000 Hz, 4-bit, high speed 1
+   17.161   msh />
+   17.161   msh />
+   17.543 > 'bl616_bench 2000 1514' (0.38 s)
+   17.543   bl616_bench 2000 1514
+   17.543   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9208 KB/s round trip; reads 21555 KB/s on the bus
+   17.543   bl616_bench: 2000 frames x 1514 B in 325 ms: 9076 KB/s end to end; bus 3000 KB in 141 ms: 21226 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   17.543   msh />
+   17.543   msh />
+   17.632 > 'bl616_bench 200 1514' (0.09 s)
+   17.632   bl616_bench 200 1514
+   17.632   bl616_bench: echoes back 300 KB of 300 KB, 33 ms after the start: 9010 KB/s round trip; reads 21557 KB/s on the bus
+   17.632   bl616_bench: 200 frames x 1514 B in 32 ms: 9156 KB/s end to end; bus 300 KB in 14 ms: 21211 KB/s; BL616 busy 49, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   17.632   msh />
+   17.632   msh />
+   17.694 > 'bl616_bench 50 512' (0.06 s)
+   17.694   bl616_bench 50 512
+   17.694   bl616_bench: echoes back 50 KB of 50 KB, 6 ms after the start: 7632 KB/s round trip; reads 20627 KB/s on the bus
+   17.694   bl616_bench: 50 frames x 512 B in 6 ms: 3816 KB/s end to end; bus 50 KB in 2 ms: 20333 KB/s; BL616 busy 12, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   17.694   msh />
+   17.694   msh />
+   18.076 > 'bl616_bench 2000 1514' (0.38 s)
+   18.076   bl616_bench 2000 1514
+   18.076   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9199 KB/s round trip; reads 21554 KB/s on the bus
+   18.076   bl616_bench: 2000 frames x 1514 B in 325 ms: 9095 KB/s end to end; bus 3000 KB in 140 ms: 21346 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   18.076   msh />
+   18.076   msh />
+   18.457 > 'bl616_bench 2000 1514' (0.38 s)
+   18.457   bl616_bench 2000 1514
+   18.457   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9210 KB/s round trip; reads 21555 KB/s on the bus
+   18.457   bl616_bench: 2000 frames x 1514 B in 325 ms: 9078 KB/s end to end; bus 3000 KB in 140 ms: 21358 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   18.457   msh />
+   18.457   msh />
+   18.838 > 'bl616_bench 2000 1514' (0.38 s)
+   18.838   bl616_bench 2000 1514
+   18.838   leakcam_agent: READY not answered
+   18.838   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9207 KB/s round trip; reads 21556 KB/s on the bus
+   18.838   bl616_bench: 2000 frames x 1514 B in 324 ms: 9103 KB/s end to end; bus 3000 KB in 140 ms: 21348 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   18.838   msh />
+   18.838   msh />
+   19.220 > 'bl616_bench 2000 1514' (0.38 s)
+   19.220   bl616_bench 2000 1514
+   19.220   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9200 KB/s round trip; reads 21553 KB/s on the bus
+   19.220   bl616_bench: 2000 frames x 1514 B in 326 ms: 9069 KB/s end to end; bus 3000 KB in 140 ms: 21349 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   19.220   msh />
+   19.220   msh />
+   19.602 > 'bl616_bench 2000 1514' (0.38 s)
+   19.602   bl616_bench 2000 1514
+   19.602   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9195 KB/s round trip; reads 21554 KB/s on the bus
+   19.602   bl616_bench: 2000 frames x 1514 B in 325 ms: 9092 KB/s end to end; bus 3000 KB in 141 ms: 21235 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   19.602   msh />
+   19.602   msh />
+   19.984 > 'bl616_bench 2000 1514' (0.38 s)
+   19.984   bl616_bench 2000 1514
+   19.984   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9196 KB/s round trip; reads 21553 KB/s on the bus
+   19.984   bl616_bench: 2000 frames x 1514 B in 325 ms: 9092 KB/s end to end; bus 3000 KB in 141 ms: 21215 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   19.984   msh />
+   19.984   msh />
+   20.365 > 'bl616_bench 2000 1514' (0.38 s)
+   20.365   bl616_bench 2000 1514
+   20.365   leakcam_agent: READY not answered
+   20.365   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9220 KB/s round trip; reads 21552 KB/s on the bus
+   20.365   bl616_bench: 2000 frames x 1514 B in 325 ms: 9088 KB/s end to end; bus 3000 KB in 141 ms: 21229 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   20.365   msh />
+   20.365   msh />
+   20.746 > 'bl616_bench 2000 1514' (0.38 s)
+   20.746   bl616_bench 2000 1514
+   20.746   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9214 KB/s round trip; reads 21554 KB/s on the bus
+   20.746   bl616_bench: 2000 frames x 1514 B in 325 ms: 9082 KB/s end to end; bus 3000 KB in 140 ms: 21341 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   20.746   msh />
+   20.746   msh />
+   21.127 > 'bl616_bench 2000 1514' (0.38 s)
+   21.127   bl616_bench 2000 1514
+   21.127   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9210 KB/s round trip; reads 21554 KB/s on the bus
+   21.127   bl616_bench: 2000 frames x 1514 B in 325 ms: 9078 KB/s end to end; bus 3000 KB in 140 ms: 21358 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   21.127   msh />
+   21.127   msh />
+   21.508 > 'bl616_bench 2000 1514' (0.38 s)
+   21.508   bl616_bench 2000 1514
+   21.508   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9209 KB/s round trip; reads 21554 KB/s on the bus
+   21.508   bl616_bench: 2000 frames x 1514 B in 325 ms: 9077 KB/s end to end; bus 3000 KB in 140 ms: 21360 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   21.508   msh />
+   21.508   msh />
+   21.890 > 'bl616_bench 2000 1514' (0.38 s)
+   21.890   bl616_bench 2000 1514
+   21.890   leakcam_agent: READY not answered
+   21.890   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9204 KB/s round trip; reads 21553 KB/s on the bus
+   21.890   bl616_bench: 2000 frames x 1514 B in 324 ms: 9100 KB/s end to end; bus 3000 KB in 140 ms: 21365 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   21.890   msh />
+   21.890   msh />
+   22.272 > 'bl616_bench 2000 1514' (0.38 s)
+   22.272   bl616_bench 2000 1514
+   22.272   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9199 KB/s round trip; reads 21555 KB/s on the bus
+   22.272   bl616_bench: 2000 frames x 1514 B in 325 ms: 9095 KB/s end to end; bus 3000 KB in 140 ms: 21362 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   22.272   msh />
+   22.272   msh />
+   22.653 > 'bl616_bench 2000 1514' (0.38 s)
+   22.653   bl616_bench 2000 1514
+   22.653   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9226 KB/s round trip; reads 21555 KB/s on the bus
+   22.653   bl616_bench: 2000 frames x 1514 B in 325 ms: 9094 KB/s end to end; bus 3000 KB in 140 ms: 21361 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   22.653   msh />
+   22.653   msh />
+   23.034 > 'bl616_bench 2000 1514' (0.38 s)
+   23.034   bl616_bench 2000 1514
+   23.034   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9216 KB/s round trip; reads 21555 KB/s on the bus
+   23.034   bl616_bench: 2000 frames x 1514 B in 325 ms: 9084 KB/s end to end; bus 3000 KB in 140 ms: 21365 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   23.034   msh />
+   23.034   msh />
+   23.415 > 'bl616_bench 2000 1514' (0.38 s)
+   23.415   bl616_bench 2000 1514
+   23.415   leakcam_agent: READY not answered
+   23.415   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9220 KB/s round trip; reads 21552 KB/s on the bus
+   23.415   bl616_bench: 2000 frames x 1514 B in 325 ms: 9088 KB/s end to end; bus 3000 KB in 140 ms: 21359 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   23.415   msh />
+   23.415   msh />
+   23.796 > 'bl616_bench 2000 1514' (0.38 s)
+   23.796   bl616_bench 2000 1514
+   23.796   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9210 KB/s round trip; reads 21555 KB/s on the bus
+   23.796   bl616_bench: 2000 frames x 1514 B in 325 ms: 9078 KB/s end to end; bus 3000 KB in 141 ms: 21227 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   23.796   msh />
+   23.796   msh />
+   24.177 > 'bl616_bench 2000 1514' (0.38 s)
+   24.177   bl616_bench 2000 1514
+   24.177   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9206 KB/s round trip; reads 21554 KB/s on the bus
+   24.177   bl616_bench: 2000 frames x 1514 B in 325 ms: 9074 KB/s end to end; bus 3000 KB in 141 ms: 21234 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   24.177   msh />
+   24.177   msh />
+   24.559 > 'bl616_bench 2000 1514' (0.38 s)
+   24.559   bl616_bench 2000 1514
+   24.559   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9201 KB/s round trip; reads 21556 KB/s on the bus
+   24.559   bl616_bench: 2000 frames x 1514 B in 325 ms: 9097 KB/s end to end; bus 3000 KB in 140 ms: 21327 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   24.559   msh />
+   24.559   msh />
+   24.988 > 'bl616_bench 2000 1514' (0.43 s)
+   24.988   bl616_bench 2000 1514
+   24.988   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9225 KB/s round trip; reads 21556 KB/s on the bus
+   24.988   bl616_bench: 2000 frames x 1514 B in 325 ms: 9093 KB/s end to end; bus 3000 KB in 140 ms: 21357 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   24.988   msh />
+   24.988   msh />
+   25.369 > 'bl616_bench 2000 1514' (0.38 s)
+   25.369   bl616_bench 2000 1514
+   25.369   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9221 KB/s round trip; reads 21555 KB/s on the bus
+   25.369   bl616_bench: 2000 frames x 1514 B in 325 ms: 9089 KB/s end to end; bus 3000 KB in 140 ms: 21354 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   25.369   msh />
+   25.369   msh />
+   25.750 > 'bl616_bench 2000 1514' (0.38 s)
+   25.750   bl616_bench 2000 1514
+   25.750   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9221 KB/s round trip; reads 21556 KB/s on the bus
+   25.750   bl616_bench: 2000 frames x 1514 B in 325 ms: 9089 KB/s end to end; bus 3000 KB in 140 ms: 21343 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   25.750   msh />
+   25.750   msh />
+   26.131 > 'bl616_bench 2000 1514' (0.38 s)
+   26.131   bl616_bench 2000 1514
+   26.131   leakcam_agent: READY not answered
+   26.131   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9220 KB/s round trip; reads 21552 KB/s on the bus
+   26.131   bl616_bench: 2000 frames x 1514 B in 325 ms: 9088 KB/s end to end; bus 3000 KB in 140 ms: 21345 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   26.131   msh />
+   26.131   msh />
+   26.512 > 'bl616_bench 2000 1514' (0.38 s)
+   26.512   bl616_bench 2000 1514
+   26.512   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9207 KB/s round trip; reads 21554 KB/s on the bus
+   26.512   bl616_bench: 2000 frames x 1514 B in 324 ms: 9103 KB/s end to end; bus 3000 KB in 140 ms: 21360 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   26.512   msh />
+   26.512   msh />
+   26.893 > 'bl616_bench 2000 1514' (0.38 s)
+   26.893   bl616_bench 2000 1514
+   26.893   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9207 KB/s round trip; reads 21554 KB/s on the bus
+   26.893   bl616_bench: 2000 frames x 1514 B in 325 ms: 9075 KB/s end to end; bus 3000 KB in 140 ms: 21334 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   26.893   msh />
+   26.893   msh />
+   27.275 > 'bl616_bench 2000 1514' (0.38 s)
+   27.275   bl616_bench 2000 1514
+   27.275   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9215 KB/s round trip; reads 21552 KB/s on the bus
+   27.275   bl616_bench: 2000 frames x 1514 B in 325 ms: 9083 KB/s end to end; bus 3000 KB in 140 ms: 21357 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   27.275   msh />
+   27.275   msh />
+   27.657 > 'bl616_bench 2000 1514' (0.38 s)
+   27.657   bl616_bench 2000 1514
+   27.657   leakcam_agent: READY not answered
+   27.657   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9199 KB/s round trip; reads 21554 KB/s on the bus
+   27.657   bl616_bench: 2000 frames x 1514 B in 325 ms: 9096 KB/s end to end; bus 3000 KB in 141 ms: 21240 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   27.657   msh />
+   27.657   msh />
+   28.038 > 'bl616_bench 2000 1514' (0.38 s)
+   28.038   bl616_bench 2000 1514
+   28.038   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9222 KB/s round trip; reads 21554 KB/s on the bus
+   28.038   bl616_bench: 2000 frames x 1514 B in 325 ms: 9090 KB/s end to end; bus 3000 KB in 141 ms: 21237 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   28.038   msh />
+   28.038   msh />
+   28.419 > 'bl616_bench 2000 1514' (0.38 s)
+   28.419   bl616_bench 2000 1514
+   28.419   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9219 KB/s round trip; reads 21554 KB/s on the bus
+   28.419   bl616_bench: 2000 frames x 1514 B in 325 ms: 9087 KB/s end to end; bus 3000 KB in 141 ms: 21233 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   28.419   msh />
+   28.419   msh />
+   28.800 > 'bl616_bench 2000 1514' (0.38 s)
+   28.800   bl616_bench 2000 1514
+   28.800   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9213 KB/s round trip; reads 21554 KB/s on the bus
+   28.800   bl616_bench: 2000 frames x 1514 B in 325 ms: 9081 KB/s end to end; bus 3000 KB in 140 ms: 21353 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   28.800   msh />
+   28.800   msh />
+   29.181 > 'bl616_bench 2000 1514' (0.38 s)
+   29.181   bl616_bench 2000 1514
+   29.181   leakcam_agent: READY not answered
+   29.181   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9223 KB/s round trip; reads 21553 KB/s on the bus
+   29.181   bl616_bench: 2000 frames x 1514 B in 325 ms: 9091 KB/s end to end; bus 3000 KB in 140 ms: 21331 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   29.181   msh />
+   29.181   msh />
+   29.562 > 'bl616_bench 2000 1514' (0.38 s)
+   29.562   bl616_bench 2000 1514
+   29.562   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9208 KB/s round trip; reads 21553 KB/s on the bus
+   29.562   bl616_bench: 2000 frames x 1514 B in 325 ms: 9076 KB/s end to end; bus 3000 KB in 140 ms: 21338 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   29.562   msh />
+   29.562   msh />
+   29.944 > 'bl616_bench 2000 1514' (0.38 s)
+   29.944   bl616_bench 2000 1514
+   29.944   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9215 KB/s round trip; reads 21554 KB/s on the bus
+   29.944   bl616_bench: 2000 frames x 1514 B in 325 ms: 9083 KB/s end to end; bus 3000 KB in 140 ms: 21349 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   29.944   msh />
+   29.944   msh />
+   30.326 > 'bl616_bench 2000 1514' (0.38 s)
+   30.326   bl616_bench 2000 1514
+   30.326   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9197 KB/s round trip; reads 21551 KB/s on the bus
+   30.326   bl616_bench: 2000 frames x 1514 B in 325 ms: 9093 KB/s end to end; bus 3000 KB in 140 ms: 21349 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   30.326   msh />
+   30.326   msh />
+   30.708 > 'bl616_bench 2000 1514' (0.38 s)
+   30.708   bl616_bench 2000 1514
+   30.708   leakcam_agent: READY not answered
+   30.708   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9198 KB/s round trip; reads 21552 KB/s on the bus
+   30.708   bl616_bench: 2000 frames x 1514 B in 325 ms: 9094 KB/s end to end; bus 3000 KB in 140 ms: 21342 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   30.708   msh />
+   30.708   msh />
+   31.090 > 'bl616_bench 2000 1514' (0.38 s)
+   31.090   bl616_bench 2000 1514
+   31.090   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9200 KB/s round trip; reads 21551 KB/s on the bus
+   31.090   bl616_bench: 2000 frames x 1514 B in 325 ms: 9096 KB/s end to end; bus 3000 KB in 140 ms: 21357 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   31.090   msh />
+   31.090   msh />
+   31.471 > 'bl616_bench 2000 1514' (0.38 s)
+   31.471   bl616_bench 2000 1514
+   31.471   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9217 KB/s round trip; reads 21550 KB/s on the bus
+   31.471   bl616_bench: 2000 frames x 1514 B in 325 ms: 9085 KB/s end to end; bus 3000 KB in 140 ms: 21357 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   31.471   msh />
+   31.471   msh />
+   31.852 > 'bl616_bench 2000 1514' (0.38 s)
+   31.852   bl616_bench 2000 1514
+   31.852   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9215 KB/s round trip; reads 21552 KB/s on the bus
+   31.852   bl616_bench: 2000 frames x 1514 B in 325 ms: 9083 KB/s end to end; bus 3000 KB in 141 ms: 21232 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   31.852   msh />
+   31.852   msh />
+   32.243 > 'bl616_bench 2000 1514' (0.39 s)
+   32.243   bl616_bench 2000 1514
+   32.243   leakcam_agent: READY not answered
+   32.243   leakcam_agent: no WAKE from BL616, assuming cold start
+   32.243   leakcam_agent: sensors: -0.1 %RH, 0.0 C, probe -1 mV, battery 4354 mV
+   32.243   leakcam_agent: wake reason: cold
+   32.243   [W/LWP] not use fast load, out of memory 8388608 < 15543000
+   32.243   bl616_bench: echoes back 3000 KB of 3000 KB, 335 ms after the start: 8932 KB/s round trip; reads 21194 KB/s on the bus
+   32.243   bl616_bench: 2000 frames x 1514 B in 335 ms: 8804 KB/s end to end; bus 3000 KB in 143 ms: 20909 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   32.243   msh />
+   32.243   msh />
+   32.650 > 'bl616_bench 2000 1514' (0.41 s)
+   32.650   bl616_bench 2000 1514
+   32.650   bl616_bench: echoes back 3000 KB of 3000 KB, 351 ms after the start: 8540 KB/s round trip; reads 20790 KB/s on the bus
+   32.650   bl616_bench: 2000 frames x 1514 B in 351 ms: 8418 KB/s end to end; bus 3000 KB in 147 ms: 20358 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   32.650   msh />
+   32.650   msh />
+   33.038 > 'bl616_bench 2000 1514' (0.39 s)
+   33.038   bl616_bench 2000 1514
+   33.038   vicap: dev 0 init failed (sensor not answering on its I2C bus?)
+   33.038   capture failed
+   33.038   leakcam_agent: hook exited 0, next wake in 3600 s
+   33.038   bl616_bench: echoes back 3000 KB of 3000 KB, 332 ms after the start: 9029 KB/s round trip; reads 21348 KB/s on the bus
+   33.038   bl616_bench: 2000 frames x 1514 B in 332 ms: 8899 KB/s end to end; bus 3000 KB in 142 ms: 21091 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   33.038   msh />
+   33.038   msh />
+   33.419 > 'bl616_bench 2000 1514' (0.38 s)
+   33.419   bl616_bench 2000 1514
+   33.419   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9208 KB/s round trip; reads 21552 KB/s on the bus
+   33.419   bl616_bench: 2000 frames x 1514 B in 325 ms: 9076 KB/s end to end; bus 3000 KB in 140 ms: 21350 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   33.419   msh />
+   33.419   msh />
+   33.800 > 'bl616_bench 2000 1514' (0.38 s)
+   33.800   bl616_bench 2000 1514
+   33.800   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9212 KB/s round trip; reads 21554 KB/s on the bus
+   33.800   bl616_bench: 2000 frames x 1514 B in 325 ms: 9080 KB/s end to end; bus 3000 KB in 140 ms: 21358 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   33.800   msh />
+   33.800   msh />
+   34.182 > 'bl616_bench 2000 1514' (0.38 s)
+   34.182   bl616_bench 2000 1514
+   34.182   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9210 KB/s round trip; reads 21551 KB/s on the bus
+   34.182   bl616_bench: 2000 frames x 1514 B in 325 ms: 9078 KB/s end to end; bus 3000 KB in 140 ms: 21363 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   34.182   msh />
+   34.182   msh />
+   34.563 > 'bl616_bench 2000 1514' (0.38 s)
+   34.563   bl616_bench 2000 1514
+   34.563   leakcam_agent: SLEEP not answered
+   34.563   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9227 KB/s round trip; reads 21555 KB/s on the bus
+   34.563   bl616_bench: 2000 frames x 1514 B in 325 ms: 9095 KB/s end to end; bus 3000 KB in 140 ms: 21359 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   34.563   msh />
+   34.563   msh />
+   34.992 > 'bl616_bench 2000 1514' (0.43 s)
+   34.992   bl616_bench 2000 1514
+   34.992   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9221 KB/s round trip; reads 21553 KB/s on the bus
+   34.992   bl616_bench: 2000 frames x 1514 B in 325 ms: 9089 KB/s end to end; bus 3000 KB in 140 ms: 21345 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   34.992   msh />
+   34.992   msh />
+   35.373 > 'bl616_bench 2000 1514' (0.38 s)
+   35.373   bl616_bench 2000 1514
+   35.373   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9223 KB/s round trip; reads 21553 KB/s on the bus
+   35.373   bl616_bench: 2000 frames x 1514 B in 325 ms: 9091 KB/s end to end; bus 3000 KB in 140 ms: 21357 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   35.373   msh />
+   35.373   msh />
+   35.754 > 'bl616_bench 2000 1514' (0.38 s)
+   35.754   bl616_bench 2000 1514
+   35.754   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9213 KB/s round trip; reads 21554 KB/s on the bus
+   35.754   bl616_bench: 2000 frames x 1514 B in 325 ms: 9081 KB/s end to end; bus 3000 KB in 141 ms: 21206 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   35.754   msh />
+   35.754   msh />
+   36.135 > 'bl616_bench 2000 1514' (0.38 s)
+   36.135   bl616_bench 2000 1514
+   36.135   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9208 KB/s round trip; reads 21554 KB/s on the bus
+   36.135   bl616_bench: 2000 frames x 1514 B in 325 ms: 9076 KB/s end to end; bus 3000 KB in 141 ms: 21243 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   36.135   msh />
+   36.135   msh />
+   36.516 > 'bl616_bench 2000 1514' (0.38 s)
+   36.516   bl616_bench 2000 1514
+   36.516   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9210 KB/s round trip; reads 21553 KB/s on the bus
+   36.516   bl616_bench: 2000 frames x 1514 B in 325 ms: 9078 KB/s end to end; bus 3000 KB in 141 ms: 21209 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   36.516   msh />
+   36.516   msh />
+   36.897 > 'bl616_bench 2000 1514' (0.38 s)
+   36.897   bl616_bench 2000 1514
+   36.897   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9229 KB/s round trip; reads 21555 KB/s on the bus
+   36.897   bl616_bench: 2000 frames x 1514 B in 325 ms: 9097 KB/s end to end; bus 3000 KB in 140 ms: 21353 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   36.897   msh />
+   36.897   msh />
+   37.279 > 'bl616_bench 2000 1514' (0.38 s)
+   37.279   bl616_bench 2000 1514
+   37.279   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9198 KB/s round trip; reads 21554 KB/s on the bus
+   37.279   bl616_bench: 2000 frames x 1514 B in 325 ms: 9094 KB/s end to end; bus 3000 KB in 140 ms: 21313 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   37.279   msh />
+   37.279   msh />
+   37.660 > 'bl616_bench 2000 1514' (0.38 s)
+   37.660   bl616_bench 2000 1514
+   37.660   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9225 KB/s round trip; reads 21555 KB/s on the bus
+   37.660   bl616_bench: 2000 frames x 1514 B in 325 ms: 9093 KB/s end to end; bus 3000 KB in 140 ms: 21365 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   37.660   msh />
+   37.660   msh />
+   38.041 > 'bl616_bench 2000 1514' (0.38 s)
+   38.041   bl616_bench 2000 1514
+   38.041   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9220 KB/s round trip; reads 21554 KB/s on the bus
+   38.041   bl616_bench: 2000 frames x 1514 B in 325 ms: 9088 KB/s end to end; bus 3000 KB in 140 ms: 21324 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   38.041   msh />
+   38.041   msh />
+   38.422 > 'bl616_bench 2000 1514' (0.38 s)
+   38.422   bl616_bench 2000 1514
+   38.422   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9221 KB/s round trip; reads 21553 KB/s on the bus
+   38.422   bl616_bench: 2000 frames x 1514 B in 325 ms: 9089 KB/s end to end; bus 3000 KB in 140 ms: 21351 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   38.422   msh />
+   38.422   msh />
+   38.803 > 'bl616_bench 2000 1514' (0.38 s)
+   38.803   bl616_bench 2000 1514
+   38.803   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9208 KB/s round trip; reads 21554 KB/s on the bus
+   38.803   bl616_bench: 2000 frames x 1514 B in 325 ms: 9077 KB/s end to end; bus 3000 KB in 140 ms: 21328 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   38.803   msh />
+   38.803   msh />
+   39.184 > 'bl616_bench 2000 1514' (0.38 s)
+   39.184   bl616_bench 2000 1514
+   39.184   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9218 KB/s round trip; reads 21553 KB/s on the bus
+   39.184   bl616_bench: 2000 frames x 1514 B in 325 ms: 9086 KB/s end to end; bus 3000 KB in 140 ms: 21353 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   39.184   msh />
+   39.184   msh />
+   39.566 > 'bl616_bench 2000 1514' (0.38 s)
+   39.566   bl616_bench 2000 1514
+   39.566   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9207 KB/s round trip; reads 21552 KB/s on the bus
+   39.566   bl616_bench: 2000 frames x 1514 B in 325 ms: 9075 KB/s end to end; bus 3000 KB in 140 ms: 21351 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   39.566   msh />
+   39.566   msh />
+   39.948 > 'bl616_bench 2000 1514' (0.38 s)
+   39.948   bl616_bench 2000 1514
+   39.948   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9203 KB/s round trip; reads 21555 KB/s on the bus
+   39.948   bl616_bench: 2000 frames x 1514 B in 324 ms: 9099 KB/s end to end; bus 3000 KB in 141 ms: 21241 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   39.948   msh />
+   39.948   msh />
+   40.329 > 'bl616_bench 2000 1514' (0.38 s)
+   40.329   bl616_bench 2000 1514
+   40.329   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9223 KB/s round trip; reads 21554 KB/s on the bus
+   40.329   bl616_bench: 2000 frames x 1514 B in 325 ms: 9091 KB/s end to end; bus 3000 KB in 141 ms: 21211 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   40.329   msh />
+   40.329   msh />
+   40.711 > 'bl616_bench 2000 1514' (0.38 s)
+   40.711   bl616_bench 2000 1514
+   40.711   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9203 KB/s round trip; reads 21554 KB/s on the bus
+   40.711   bl616_bench: 2000 frames x 1514 B in 324 ms: 9099 KB/s end to end; bus 3000 KB in 140 ms: 21329 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   40.711   msh />
+   40.711   msh />
+   41.092 > 'bl616_bench 2000 1514' (0.38 s)
+   41.092   bl616_bench 2000 1514
+   41.092   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9216 KB/s round trip; reads 21554 KB/s on the bus
+   41.092   bl616_bench: 2000 frames x 1514 B in 325 ms: 9084 KB/s end to end; bus 3000 KB in 140 ms: 21325 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   41.092   msh />
+   41.092   msh />
+   41.473 > 'bl616_bench 2000 1514' (0.38 s)
+   41.473   bl616_bench 2000 1514
+   41.473   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9218 KB/s round trip; reads 21554 KB/s on the bus
+   41.473   bl616_bench: 2000 frames x 1514 B in 325 ms: 9086 KB/s end to end; bus 3000 KB in 140 ms: 21345 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   41.473   msh />
+   41.473   msh />
+   41.854 > 'bl616_bench 2000 1514' (0.38 s)
+   41.854   bl616_bench 2000 1514
+   41.854   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9209 KB/s round trip; reads 21554 KB/s on the bus
+   41.854   bl616_bench: 2000 frames x 1514 B in 325 ms: 9077 KB/s end to end; bus 3000 KB in 140 ms: 21342 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   41.854   msh />
+   41.854   msh />
+   42.235 > 'bl616_bench 2000 1514' (0.38 s)
+   42.235   bl616_bench 2000 1514
+   42.235   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9204 KB/s round trip; reads 21552 KB/s on the bus
+   42.235   bl616_bench: 2000 frames x 1514 B in 324 ms: 9100 KB/s end to end; bus 3000 KB in 140 ms: 21329 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   42.235   msh />
+   42.235   msh />
+   42.617 > 'bl616_bench 2000 1514' (0.38 s)
+   42.617   bl616_bench 2000 1514
+   42.617   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9199 KB/s round trip; reads 21552 KB/s on the bus
+   42.617   bl616_bench: 2000 frames x 1514 B in 325 ms: 9095 KB/s end to end; bus 3000 KB in 140 ms: 21360 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   42.617   msh />
+   42.617   msh />
+   42.998 > 'bl616_bench 2000 1514' (0.38 s)
+   42.998   bl616_bench 2000 1514
+   42.998   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9227 KB/s round trip; reads 21553 KB/s on the bus
+   42.998   bl616_bench: 2000 frames x 1514 B in 325 ms: 9095 KB/s end to end; bus 3000 KB in 140 ms: 21364 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   42.998   msh />
+   42.998   msh />
+   43.379 > 'bl616_bench 2000 1514' (0.38 s)
+   43.379   bl616_bench 2000 1514
+   43.379   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9219 KB/s round trip; reads 21553 KB/s on the bus
+   43.379   bl616_bench: 2000 frames x 1514 B in 325 ms: 9087 KB/s end to end; bus 3000 KB in 140 ms: 21353 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   43.379   msh />
+   43.379   msh />
+   43.760 > 'bl616_bench 2000 1514' (0.38 s)
+   43.760   bl616_bench 2000 1514
+   43.760   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9218 KB/s round trip; reads 21554 KB/s on the bus
+   43.760   bl616_bench: 2000 frames x 1514 B in 325 ms: 9086 KB/s end to end; bus 3000 KB in 141 ms: 21220 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   43.760   msh />
+   43.760   msh />
+   44.141 > 'bl616_bench 2000 1514' (0.38 s)
+   44.141   bl616_bench 2000 1514
+   44.141   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9213 KB/s round trip; reads 21555 KB/s on the bus
+   44.141   bl616_bench: 2000 frames x 1514 B in 325 ms: 9081 KB/s end to end; bus 3000 KB in 141 ms: 21223 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   44.141   msh />
+   44.141   msh />
+   44.522 > 'bl616_bench 2000 1514' (0.38 s)
+   44.522   bl616_bench 2000 1514
+   44.522   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9210 KB/s round trip; reads 21553 KB/s on the bus
+   44.522   bl616_bench: 2000 frames x 1514 B in 325 ms: 9078 KB/s end to end; bus 3000 KB in 141 ms: 21219 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   44.522   msh />
+   44.522   msh />
+   44.903 > 'bl616_bench 2000 1514' (0.38 s)
+   44.903   bl616_bench 2000 1514
+   44.903   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9207 KB/s round trip; reads 21554 KB/s on the bus
+   44.903   bl616_bench: 2000 frames x 1514 B in 325 ms: 9075 KB/s end to end; bus 3000 KB in 141 ms: 21270 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   44.903   msh />
+   44.903   msh />
+   45.285 > 'bl616_bench 2000 1514' (0.38 s)
+   45.285   bl616_bench 2000 1514
+   45.285   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9201 KB/s round trip; reads 21552 KB/s on the bus
+   45.285   bl616_bench: 2000 frames x 1514 B in 325 ms: 9097 KB/s end to end; bus 3000 KB in 140 ms: 21346 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   45.285   msh />
+   45.285   msh />
+   45.667 > 'bl616_bench 2000 1514' (0.38 s)
+   45.667   bl616_bench 2000 1514
+   45.667   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9198 KB/s round trip; reads 21553 KB/s on the bus
+   45.667   bl616_bench: 2000 frames x 1514 B in 326 ms: 9067 KB/s end to end; bus 3000 KB in 140 ms: 21288 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   45.667   msh />
+   45.667   msh />
+   46.048 > 'bl616_bench 2000 1514' (0.38 s)
+   46.048   bl616_bench 2000 1514
+   46.048   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9221 KB/s round trip; reads 21553 KB/s on the bus
+   46.048   bl616_bench: 2000 frames x 1514 B in 325 ms: 9089 KB/s end to end; bus 3000 KB in 140 ms: 21325 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   46.048   msh />
+   46.048   msh />
+   46.429 > 'bl616_bench 2000 1514' (0.38 s)
+   46.429   bl616_bench 2000 1514
+   46.429   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9220 KB/s round trip; reads 21552 KB/s on the bus
+   46.429   bl616_bench: 2000 frames x 1514 B in 325 ms: 9088 KB/s end to end; bus 3000 KB in 140 ms: 21311 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   46.429   msh />
+   46.429   msh />
+   46.810 > 'bl616_bench 2000 1514' (0.38 s)
+   46.810   bl616_bench 2000 1514
+   46.810   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9209 KB/s round trip; reads 21554 KB/s on the bus
+   46.810   bl616_bench: 2000 frames x 1514 B in 325 ms: 9077 KB/s end to end; bus 3000 KB in 140 ms: 21322 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   46.810   msh />
+   46.810   msh />
+   47.194 > 'bl616_bench 2000 1514' (0.38 s)
+   47.194   bl616_bench 2000 1514
+   47.194   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9199 KB/s round trip; reads 21553 KB/s on the bus
+   47.194   bl616_bench: 2000 frames x 1514 B in 325 ms: 9096 KB/s end to end; bus 3000 KB in 140 ms: 21292 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   47.194   msh />
+   47.194   msh />
+   47.575 > 'bl616_bench 2000 1514' (0.38 s)
+   47.575   bl616_bench 2000 1514
+   47.575   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9211 KB/s round trip; reads 21552 KB/s on the bus
+   47.575   bl616_bench: 2000 frames x 1514 B in 325 ms: 9079 KB/s end to end; bus 3000 KB in 140 ms: 21309 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   47.575   msh />
+   47.575   msh />
+   47.957 > 'bl616_bench 2000 1514' (0.38 s)
+   47.957   bl616_bench 2000 1514
+   47.957   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9199 KB/s round trip; reads 21554 KB/s on the bus
+   47.957   bl616_bench: 2000 frames x 1514 B in 325 ms: 9095 KB/s end to end; bus 3000 KB in 141 ms: 21215 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   47.957   msh />
+   47.957   msh />
+   48.338 > 'bl616_bench 2000 1514' (0.38 s)
+   48.338   bl616_bench 2000 1514
+   48.338   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9224 KB/s round trip; reads 21553 KB/s on the bus
+   48.338   bl616_bench: 2000 frames x 1514 B in 325 ms: 9092 KB/s end to end; bus 3000 KB in 141 ms: 21208 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   48.338   msh />
+   48.338   msh />
+   48.720 > 'bl616_bench 2000 1514' (0.38 s)
+   48.720   bl616_bench 2000 1514
+   48.720   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9195 KB/s round trip; reads 21553 KB/s on the bus
+   48.720   bl616_bench: 2000 frames x 1514 B in 325 ms: 9091 KB/s end to end; bus 3000 KB in 141 ms: 21206 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   48.720   msh />
+   48.720   msh />
+   49.101 > 'bl616_bench 2000 1514' (0.38 s)
+   49.101   bl616_bench 2000 1514
+   49.101   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9217 KB/s round trip; reads 21554 KB/s on the bus
+   49.101   bl616_bench: 2000 frames x 1514 B in 325 ms: 9085 KB/s end to end; bus 3000 KB in 140 ms: 21305 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   49.101   msh />
+   49.101   msh />
+   49.482 > 'bl616_bench 2000 1514' (0.38 s)
+   49.482   bl616_bench 2000 1514
+   49.482   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9217 KB/s round trip; reads 21553 KB/s on the bus
+   49.482   bl616_bench: 2000 frames x 1514 B in 325 ms: 9085 KB/s end to end; bus 3000 KB in 140 ms: 21289 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   49.482   msh />
+   49.482   msh />
+   49.863 > 'bl616_bench 2000 1514' (0.38 s)
+   49.863   bl616_bench 2000 1514
+   49.863   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9207 KB/s round trip; reads 21554 KB/s on the bus
+   49.863   bl616_bench: 2000 frames x 1514 B in 325 ms: 9075 KB/s end to end; bus 3000 KB in 140 ms: 21335 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   49.863   msh />
+   49.863   msh />
+   50.246 > 'bl616_bench 2000 1514' (0.38 s)
+   50.246   bl616_bench 2000 1514
+   50.246   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9206 KB/s round trip; reads 21554 KB/s on the bus
+   50.246   bl616_bench: 2000 frames x 1514 B in 324 ms: 9102 KB/s end to end; bus 3000 KB in 140 ms: 21317 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   50.246   msh />
+   50.246   msh />
+   50.628 > 'bl616_bench 2000 1514' (0.38 s)
+   50.628   bl616_bench 2000 1514
+   50.628   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9201 KB/s round trip; reads 21553 KB/s on the bus
+   50.628   bl616_bench: 2000 frames x 1514 B in 326 ms: 9069 KB/s end to end; bus 3000 KB in 140 ms: 21326 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   50.628   msh />
+   50.628   msh />
+   51.010 > 'bl616_bench 2000 1514' (0.38 s)
+   51.010   bl616_bench 2000 1514
+   51.010   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9200 KB/s round trip; reads 21554 KB/s on the bus
+   51.010   bl616_bench: 2000 frames x 1514 B in 325 ms: 9096 KB/s end to end; bus 3000 KB in 140 ms: 21324 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   51.010   msh />
+   51.010   msh />
+   51.391 > 'bl616_bench 2000 1514' (0.38 s)
+   51.391   bl616_bench 2000 1514
+   51.391   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9218 KB/s round trip; reads 21554 KB/s on the bus
+   51.391   bl616_bench: 2000 frames x 1514 B in 325 ms: 9086 KB/s end to end; bus 3000 KB in 140 ms: 21326 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   51.391   msh />
+   51.391   msh />
+   51.772 > 'bl616_bench 2000 1514' (0.38 s)
+   51.772   bl616_bench 2000 1514
+   51.772   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9216 KB/s round trip; reads 21554 KB/s on the bus
+   51.772   bl616_bench: 2000 frames x 1514 B in 325 ms: 9084 KB/s end to end; bus 3000 KB in 140 ms: 21322 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   51.772   msh />
+   51.772   msh />
+   52.154 > 'bl616_bench 2000 1514' (0.38 s)
+   52.154   bl616_bench 2000 1514
+   52.154   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9200 KB/s round trip; reads 21553 KB/s on the bus
+   52.154   bl616_bench: 2000 frames x 1514 B in 325 ms: 9096 KB/s end to end; bus 3000 KB in 141 ms: 21196 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   52.154   msh />
+   52.154   msh />
+   52.450 > 'bl616_bench 2000 512' (0.30 s)
+   52.450   bl616_bench 2000 512
+   52.450   bl616_bench: echoes back 2000 KB of 2000 KB, 240 ms after the start: 8308 KB/s round trip; reads 20621 KB/s on the bus
+   52.450   bl616_bench: 2000 frames x 512 B in 240 ms: 4154 KB/s end to end; bus 2000 KB in 98 ms: 20308 KB/s; BL616 busy 500, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   52.450   msh />
+   52.450   msh />
+   56.137 > 'chip_temp' (0.07 s)
+   56.137   chip_temp
+   56.137   chip temperature: 42.780 C
+   56.137   msh />
+   56.137   msh />
+   56.192 > 'free' (0.05 s)
+   56.192   free
+   56.192   memheap               pool size  max used size available size
+   56.192   -------------------- ---------- ------------- --------------
+   56.192   heap                 8388608    1562304       7270656
+   56.192   msh />
+   56.192   msh />
+   56.247 > 'adc probe adc' (0.05 s)
+   56.247   adc probe adc
+   56.247   probe adc success 
+   56.247   msh />
+   56.247   msh />
+   56.302 > 'adc read 1' (0.05 s)
+   56.302   adc read 1
+   56.302   adc channel 1  read value is 0x00000D11 
+   56.302   msh />
+   56.302   msh />
+   56.357 > 'adc read 1' (0.06 s)
+   56.357   adc read 1
+   56.357   adc channel 1  read value is 0x00000D0E 
+   56.357   msh />
+   56.357   msh />
+   56.413 > 'adc read 1' (0.06 s)
+   56.413   adc read 1
+   56.413   adc channel 1  read value is 0x00000D4C 
+   56.413   msh />
+   56.413   msh />
+   56.472 > 'adc read 1' (0.06 s)
+   56.472   adc read 1
+   56.472   adc channel 1  read value is 0x00000D09 
+   56.472   msh />
+   56.472   msh />
+   56.528 > 'adc read 1' (0.06 s)
+   56.528   adc read 1
+   56.528   adc channel 1  read value is 0x00000D14 
+   56.528   msh />
+   56.528   msh />
+   56.583 > 'adc read 1' (0.05 s)
+   56.583   adc read 1
+   56.583   adc channel 1  read value is 0x00000D42 
+   56.583   msh />
+   56.583   msh />
+   56.638 > 'adc read 1' (0.05 s)
+   56.638   adc read 1
+   56.638   adc channel 1  read value is 0x00000D3F 
+   56.638   msh />
+   56.638   msh />
+   56.693 > 'adc read 1' (0.05 s)
+   56.693   adc read 1
+   56.693   adc channel 1  read value is 0x00000D1C 
+   56.693   msh />
+   56.693   msh />
+   57.075 > 'bl616_bench 2000 1514' (0.38 s)
+   57.075   bl616_bench 2000 1514
+   57.075   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9206 KB/s round trip; reads 21553 KB/s on the bus
+   57.075   bl616_bench: 2000 frames x 1514 B in 324 ms: 9102 KB/s end to end; bus 3000 KB in 140 ms: 21345 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   57.075   msh />
+   57.075   msh />
+   57.371 > 'bl616_bench 2000 512' (0.30 s)
+   57.371   bl616_bench 2000 512
+   57.371   bl616_bench: echoes back 2000 KB of 2000 KB, 240 ms after the start: 8331 KB/s round trip; reads 20622 KB/s on the bus
+   57.371   bl616_bench: 2000 frames x 512 B in 240 ms: 4165 KB/s end to end; bus 2000 KB in 97 ms: 20433 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   57.371   msh />
+   57.371   msh />
+   61.058 > 'chip_temp' (0.07 s)
+   61.058   chip_temp
+   61.058   chip temperature: 42.780 C
+   61.058   msh />
+   61.058   msh />
+   61.113 > 'free' (0.05 s)
+   61.113   free
+   61.113   memheap               pool size  max used size available size
+   61.113   -------------------- ---------- ------------- --------------
+   61.113   heap                 8388608    1562304       7270656
+   61.113   msh />
+   61.113   msh />
+   61.168 > 'adc probe adc' (0.05 s)
+   61.168   adc probe adc
+   61.168   probe adc success 
+   61.168   msh />
+   61.168   msh />
+   61.224 > 'adc read 1' (0.06 s)
+   61.224   adc read 1
+   61.224   adc channel 1  read value is 0x00000D34 
+   61.224   msh />
+   61.224   msh />
+   61.280 > 'adc read 1' (0.06 s)
+   61.280   adc read 1
+   61.280   adc channel 1  read value is 0x00000CD4 
+   61.280   msh />
+   61.280   msh />
+   61.335 > 'adc read 1' (0.05 s)
+   61.335   adc read 1
+   61.335   adc channel 1  read value is 0x00000CFE 
+   61.335   msh />
+   61.335   msh />
+   61.390 > 'adc read 1' (0.05 s)
+   61.390   adc read 1
+   61.390   adc channel 1  read value is 0x00000D04 
+   61.390   msh />
+   61.390   msh />
+   61.445 > 'adc read 1' (0.05 s)
+   61.445   adc read 1
+   61.445   adc channel 1  read value is 0x00000CE1 
+   61.445   msh />
+   61.445   msh />
+   61.500 > 'adc read 1' (0.05 s)
+   61.500   adc read 1
+   61.500   adc channel 1  read value is 0x00000CF1 
+   61.500   msh />
+   61.500   msh />
+   61.555 > 'adc read 1' (0.05 s)
+   61.555   adc read 1
+   61.555   adc channel 1  read value is 0x00000D1D 
+   61.555   msh />
+   61.555   msh />
+   61.610 > 'adc read 1' (0.05 s)
+   61.610   adc read 1
+   61.610   adc channel 1  read value is 0x00000D3A 
+   61.610   msh />
+   61.610   msh />
+   61.992 > 'bl616_bench 2000 1514' (0.38 s)
+   61.992   bl616_bench 2000 1514
+   61.992   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9216 KB/s round trip; reads 21555 KB/s on the bus
+   61.992   bl616_bench: 2000 frames x 1514 B in 325 ms: 9084 KB/s end to end; bus 3000 KB in 140 ms: 21312 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   61.992   msh />
+   61.992   msh />
+   62.288 > 'bl616_bench 2000 512' (0.30 s)
+   62.288   bl616_bench 2000 512
+   62.288   bl616_bench: echoes back 2000 KB of 2000 KB, 240 ms after the start: 8317 KB/s round trip; reads 20627 KB/s on the bus
+   62.288   bl616_bench: 2000 frames x 512 B in 240 ms: 4158 KB/s end to end; bus 2000 KB in 97 ms: 20447 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   62.288   msh />
+   62.288   msh />
+   65.972 > 'chip_temp' (0.07 s)
+   65.972   chip_temp
+   65.972   chip temperature: 43.082 C
+   65.972   msh />
+   65.972   msh />
+   66.027 > 'free' (0.05 s)
+   66.027   free
+   66.027   memheap               pool size  max used size available size
+   66.027   -------------------- ---------- ------------- --------------
+   66.027   heap                 8388608    1562304       7270656
+   66.027   msh />
+   66.027   msh />
+   66.082 > 'adc probe adc' (0.05 s)
+   66.082   adc probe adc
+   66.082   probe adc success 
+   66.082   msh />
+   66.082   msh />
+   66.137 > 'adc read 1' (0.06 s)
+   66.137   adc read 1
+   66.137   adc channel 1  read value is 0x00000CE8 
+   66.137   msh />
+   66.137   msh />
+   66.193 > 'adc read 1' (0.06 s)
+   66.193   adc read 1
+   66.193   adc channel 1  read value is 0x00000D21 
+   66.193   msh />
+   66.193   msh />
+   66.248 > 'adc read 1' (0.05 s)
+   66.248   adc read 1
+   66.248   adc channel 1  read value is 0x00000D0B 
+   66.248   msh />
+   66.248   msh />
+   66.303 > 'adc read 1' (0.05 s)
+   66.303   adc read 1
+   66.303   adc channel 1  read value is 0x00000D32 
+   66.303   msh />
+   66.303   msh />
+   66.358 > 'adc read 1' (0.05 s)
+   66.358   adc read 1
+   66.358   adc channel 1  read value is 0x00000D2E 
+   66.358   msh />
+   66.358   msh />
+   66.413 > 'adc read 1' (0.05 s)
+   66.413   adc read 1
+   66.413   adc channel 1  read value is 0x00000CE9 
+   66.413   msh />
+   66.413   msh />
+   66.469 > 'adc read 1' (0.06 s)
+   66.469   adc read 1
+   66.469   adc channel 1  read value is 0x00000CE7 
+   66.469   msh />
+   66.469   msh />
+   66.524 > 'adc read 1' (0.05 s)
+   66.524   adc read 1
+   66.524   adc channel 1  read value is 0x00000D3A 
+   66.524   msh />
+   66.524   msh />
+   66.905 > 'bl616_bench 2000 1514' (0.38 s)
+   66.905   bl616_bench 2000 1514
+   66.905   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9205 KB/s round trip; reads 21555 KB/s on the bus
+   66.905   bl616_bench: 2000 frames x 1514 B in 324 ms: 9101 KB/s end to end; bus 3000 KB in 140 ms: 21316 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   66.905   msh />
+   66.905   msh />
+   67.201 > 'bl616_bench 2000 512' (0.30 s)
+   67.201   bl616_bench 2000 512
+   67.201   bl616_bench: echoes back 2000 KB of 2000 KB, 240 ms after the start: 8333 KB/s round trip; reads 20625 KB/s on the bus
+   67.201   bl616_bench: 2000 frames x 512 B in 240 ms: 4166 KB/s end to end; bus 2000 KB in 97 ms: 20459 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   67.201   msh />
+   67.201   msh />
+   70.885 > 'chip_temp' (0.06 s)
+   70.885   chip_temp
+   70.885   chip temperature: 43.082 C
+   70.885   msh />
+   70.885   msh />
+   70.940 > 'free' (0.06 s)
+   70.940   free
+   70.940   memheap               pool size  max used size available size
+   70.940   -------------------- ---------- ------------- --------------
+   70.940   heap                 8388608    1562304       7270656
+   70.940   msh />
+   70.940   msh />
+   70.996 > 'adc probe adc' (0.06 s)
+   70.996   adc probe adc
+   70.996   probe adc success 
+   70.996   msh />
+   70.996   msh />
+   71.051 > 'adc read 1' (0.05 s)
+   71.051   adc read 1
+   71.051   adc channel 1  read value is 0x00000D3D 
+   71.051   msh />
+   71.051   msh />
+   71.106 > 'adc read 1' (0.05 s)
+   71.106   adc read 1
+   71.106   adc channel 1  read value is 0x00000CF4 
+   71.106   msh />
+   71.106   msh />
+   71.162 > 'adc read 1' (0.06 s)
+   71.162   adc read 1
+   71.162   adc channel 1  read value is 0x00000D27 
+   71.162   msh />
+   71.162   msh />
+   71.217 > 'adc read 1' (0.05 s)
+   71.217   adc read 1
+   71.217   adc channel 1  read value is 0x00000D2F 
+   71.217   msh />
+   71.217   msh />
+   71.272 > 'adc read 1' (0.05 s)
+   71.272   adc read 1
+   71.272   adc channel 1  read value is 0x00000CE6 
+   71.272   msh />
+   71.272   msh />
+   71.328 > 'adc read 1' (0.06 s)
+   71.328   adc read 1
+   71.328   adc channel 1  read value is 0x00000D2C 
+   71.328   msh />
+   71.328   msh />
+   71.384 > 'adc read 1' (0.06 s)
+   71.384   adc read 1
+   71.384   adc channel 1  read value is 0x00000CED 
+   71.384   msh />
+   71.384   msh />
+   71.439 > 'adc read 1' (0.05 s)
+   71.439   adc read 1
+   71.439   adc channel 1  read value is 0x00000D3E 
+   71.439   msh />
+   71.439   msh />
+   71.820 > 'bl616_bench 2000 1514' (0.38 s)
+   71.820   bl616_bench 2000 1514
+   71.820   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9227 KB/s round trip; reads 21554 KB/s on the bus
+   71.820   bl616_bench: 2000 frames x 1514 B in 325 ms: 9095 KB/s end to end; bus 3000 KB in 140 ms: 21349 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   71.820   msh />
+   71.820   msh />
+   72.116 > 'bl616_bench 2000 512' (0.30 s)
+   72.116   bl616_bench 2000 512
+   72.116   bl616_bench: echoes back 2000 KB of 2000 KB, 240 ms after the start: 8322 KB/s round trip; reads 20623 KB/s on the bus
+   72.116   bl616_bench: 2000 frames x 512 B in 240 ms: 4161 KB/s end to end; bus 2000 KB in 97 ms: 20431 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   72.116   msh />
+   72.116   msh />
+   75.800 > 'chip_temp' (0.07 s)
+   75.800   chip_temp
+   75.800   chip temperature: 43.082 C
+   75.800   msh />
+   75.800   msh />
+   75.859 > 'free' (0.06 s)
+   75.859   free
+   75.859   memheap               pool size  max used size available size
+   75.859   -------------------- ---------- ------------- --------------
+   75.859   heap                 8388608    1562304       7270656
+   75.859   msh />
+   75.859   msh />
+   75.914 > 'adc probe adc' (0.06 s)
+   75.914   adc probe adc
+   75.914   probe adc success 
+   75.914   msh />
+   75.914   msh />
+   75.969 > 'adc read 1' (0.05 s)
+   75.969   adc read 1
+   75.969   adc channel 1  read value is 0x00000CD7 
+   75.969   msh />
+   75.969   msh />
+   76.024 > 'adc read 1' (0.05 s)
+   76.024   adc read 1
+   76.024   adc channel 1  read value is 0x00000D0A 
+   76.024   msh />
+   76.024   msh />
+   76.079 > 'adc read 1' (0.05 s)
+   76.079   adc read 1
+   76.079   adc channel 1  read value is 0x00000D42 
+   76.079   msh />
+   76.079   msh />
+   76.134 > 'adc read 1' (0.05 s)
+   76.134   adc read 1
+   76.134   adc channel 1  read value is 0x00000D4E 
+   76.134   msh />
+   76.134   msh />
+   76.190 > 'adc read 1' (0.06 s)
+   76.190   adc read 1
+   76.190   adc channel 1  read value is 0x00000CD8 
+   76.190   msh />
+   76.190   msh />
+   76.245 > 'adc read 1' (0.05 s)
+   76.245   adc read 1
+   76.245   adc channel 1  read value is 0x00000D49 
+   76.245   msh />
+   76.245   msh />
+   76.300 > 'adc read 1' (0.05 s)
+   76.300   adc read 1
+   76.300   adc channel 1  read value is 0x00000CD8 
+   76.300   msh />
+   76.300   msh />
+   76.356 > 'adc read 1' (0.06 s)
+   76.356   adc read 1
+   76.356   adc channel 1  read value is 0x00000D51 
+   76.356   msh />
+   76.356   msh />
+   76.737 > 'bl616_bench 2000 1514' (0.38 s)
+   76.737   bl616_bench 2000 1514
+   76.737   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9218 KB/s round trip; reads 21558 KB/s on the bus
+   76.737   bl616_bench: 2000 frames x 1514 B in 325 ms: 9086 KB/s end to end; bus 3000 KB in 140 ms: 21291 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   76.737   msh />
+   76.737   msh />
+   77.033 > 'bl616_bench 2000 512' (0.30 s)
+   77.033   bl616_bench 2000 512
+   77.033   bl616_bench: echoes back 2000 KB of 2000 KB, 240 ms after the start: 8313 KB/s round trip; reads 20628 KB/s on the bus
+   77.033   bl616_bench: 2000 frames x 512 B in 239 ms: 4174 KB/s end to end; bus 2000 KB in 98 ms: 20358 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   77.033   msh />
+   77.033   msh />
+   80.718 > 'chip_temp' (0.06 s)
+   80.718   chip_temp
+   80.718   chip temperature: 43.384 C
+   80.718   msh />
+   80.718   msh />
+   80.773 > 'free' (0.05 s)
+   80.773   free
+   80.773   memheap               pool size  max used size available size
+   80.773   -------------------- ---------- ------------- --------------
+   80.773   heap                 8388608    1562304       7270656
+   80.773   msh />
+   80.773   msh />
+   80.829 > 'adc probe adc' (0.06 s)
+   80.829   adc probe adc
+   80.829   probe adc success 
+   80.829   msh />
+   80.829   msh />
+   80.884 > 'adc read 1' (0.05 s)
+   80.884   adc read 1
+   80.884   adc channel 1  read value is 0x00000D50 
+   80.884   msh />
+   80.884   msh />
+   80.939 > 'adc read 1' (0.05 s)
+   80.939   adc read 1
+   80.939   adc channel 1  read value is 0x00000D0C 
+   80.939   msh />
+   80.939   msh />
+   80.994 > 'adc read 1' (0.05 s)
+   80.994   adc read 1
+   80.994   adc channel 1  read value is 0x00000D46 
+   80.994   msh />
+   80.994   msh />
+   81.050 > 'adc read 1' (0.06 s)
+   81.050   adc read 1
+   81.050   adc channel 1  read value is 0x00000D16 
+   81.050   msh />
+   81.050   msh />
+   81.105 > 'adc read 1' (0.05 s)
+   81.105   adc read 1
+   81.105   adc channel 1  read value is 0x00000D1A 
+   81.105   msh />
+   81.105   msh />
+   81.161 > 'adc read 1' (0.06 s)
+   81.161   adc read 1
+   81.161   adc channel 1  read value is 0x00000CD1 
+   81.161   msh />
+   81.161   msh />
+   81.216 > 'adc read 1' (0.05 s)
+   81.216   adc read 1
+   81.216   adc channel 1  read value is 0x00000CF9 
+   81.216   msh />
+   81.216   msh />
+   81.271 > 'adc read 1' (0.05 s)
+   81.271   adc read 1
+   81.271   adc channel 1  read value is 0x00000CDC 
+   81.271   msh />
+   81.271   msh />
+   81.654 > 'bl616_bench 2000 1514' (0.38 s)
+   81.654   bl616_bench 2000 1514
+   81.654   bl616_bench: echoes back 3000 KB of 3000 KB, 326 ms after the start: 9200 KB/s round trip; reads 21553 KB/s on the bus
+   81.654   bl616_bench: 2000 frames x 1514 B in 325 ms: 9097 KB/s end to end; bus 3000 KB in 140 ms: 21293 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   81.654   msh />
+   81.654   msh />
+   81.949 > 'bl616_bench 2000 512' (0.30 s)
+   81.949   bl616_bench 2000 512
+   81.949   bl616_bench: echoes back 2000 KB of 2000 KB, 239 ms after the start: 8335 KB/s round trip; reads 20624 KB/s on the bus
+   81.949   bl616_bench: 2000 frames x 512 B in 239 ms: 4167 KB/s end to end; bus 2000 KB in 97 ms: 20479 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   81.949   msh />
+   81.949   msh />
+   85.632 > 'chip_temp' (0.06 s)
+   85.632   chip_temp
+   85.632   chip temperature: 43.384 C
+   85.632   msh />
+   85.632   msh />
+   85.687 > 'free' (0.05 s)
+   85.687   free
+   85.687   memheap               pool size  max used size available size
+   85.687   -------------------- ---------- ------------- --------------
+   85.687   heap                 8388608    1562304       7270656
+   85.687   msh />
+   85.687   msh />
+   85.742 > 'adc probe adc' (0.05 s)
+   85.742   adc probe adc
+   85.742   probe adc success 
+   85.742   msh />
+   85.742   msh />
+   85.797 > 'adc read 1' (0.05 s)
+   85.797   adc read 1
+   85.797   adc channel 1  read value is 0x00000CEC 
+   85.797   msh />
+   85.797   msh />
+   85.852 > 'adc read 1' (0.05 s)
+   85.852   adc read 1
+   85.852   adc channel 1  read value is 0x00000D21 
+   85.852   msh />
+   85.852   msh />
+   85.907 > 'adc read 1' (0.06 s)
+   85.907   adc read 1
+   85.907   adc channel 1  read value is 0x00000D1B 
+   85.907   msh />
+   85.907   msh />
+   85.962 > 'adc read 1' (0.05 s)
+   85.962   adc read 1
+   85.962   adc channel 1  read value is 0x00000D30 
+   85.962   msh />
+   85.962   msh />
+   86.017 > 'adc read 1' (0.05 s)
+   86.017   adc read 1
+   86.017   adc channel 1  read value is 0x00000D3C 
+   86.017   msh />
+   86.017   msh />
+   86.072 > 'adc read 1' (0.06 s)
+   86.072   adc read 1
+   86.072   adc channel 1  read value is 0x00000D3D 
+   86.072   msh />
+   86.072   msh />
+   86.127 > 'adc read 1' (0.05 s)
+   86.127   adc read 1
+   86.127   adc channel 1  read value is 0x00000D10 
+   86.127   msh />
+   86.127   msh />
+   86.182 > 'adc read 1' (0.05 s)
+   86.182   adc read 1
+   86.182   adc channel 1  read value is 0x00000CF3 
+   86.182   msh />
+   86.182   msh />
+   86.563 > 'bl616_bench 2000 1514' (0.38 s)
+   86.563   bl616_bench 2000 1514
+   86.563   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9219 KB/s round trip; reads 21555 KB/s on the bus
+   86.563   bl616_bench: 2000 frames x 1514 B in 325 ms: 9087 KB/s end to end; bus 3000 KB in 141 ms: 21272 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   86.563   msh />
+   86.563   msh />
+   86.859 > 'bl616_bench 2000 512' (0.30 s)
+   86.859   bl616_bench 2000 512
+   86.859   bl616_bench: echoes back 2000 KB of 2000 KB, 240 ms after the start: 8319 KB/s round trip; reads 20627 KB/s on the bus
+   86.859   bl616_bench: 2000 frames x 512 B in 240 ms: 4159 KB/s end to end; bus 2000 KB in 98 ms: 20398 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   86.859   msh />
+   86.859   msh />
+   90.545 > 'chip_temp' (0.06 s)
+   90.545   chip_temp
+   90.545   chip temperature: 44.288 C
+   90.545   msh />
+   90.545   msh />
+   90.601 > 'free' (0.06 s)
+   90.601   free
+   90.601   memheap               pool size  max used size available size
+   90.601   -------------------- ---------- ------------- --------------
+   90.601   heap                 8388608    1562304       7270656
+   90.601   msh />
+   90.601   msh />
+   90.656 > 'adc probe adc' (0.05 s)
+   90.656   adc probe adc
+   90.656   probe adc success 
+   90.656   msh />
+   90.656   msh />
+   90.711 > 'adc read 1' (0.05 s)
+   90.711   adc read 1
+   90.711   adc channel 1  read value is 0x00000CE1 
+   90.711   msh />
+   90.711   msh />
+   90.766 > 'adc read 1' (0.05 s)
+   90.766   adc read 1
+   90.766   adc channel 1  read value is 0x00000CEC 
+   90.766   msh />
+   90.766   msh />
+   90.821 > 'adc read 1' (0.05 s)
+   90.821   adc read 1
+   90.821   adc channel 1  read value is 0x00000D3A 
+   90.821   msh />
+   90.821   msh />
+   90.876 > 'adc read 1' (0.05 s)
+   90.876   adc read 1
+   90.876   adc channel 1  read value is 0x00000D48 
+   90.876   msh />
+   90.876   msh />
+   90.931 > 'adc read 1' (0.05 s)
+   90.931   adc read 1
+   90.931   adc channel 1  read value is 0x00000D3D 
+   90.931   msh />
+   90.931   msh />
+   90.986 > 'adc read 1' (0.05 s)
+   90.986   adc read 1
+   90.986   adc channel 1  read value is 0x00000D1D 
+   90.986   msh />
+   90.986   msh />
+   91.041 > 'adc read 1' (0.05 s)
+   91.041   adc read 1
+   91.041   adc channel 1  read value is 0x00000CF0 
+   91.041   msh />
+   91.041   msh />
+   91.096 > 'adc read 1' (0.05 s)
+   91.096   adc read 1
+   91.096   adc channel 1  read value is 0x00000D13 
+   91.096   msh />
+   91.096   msh />
+   91.477 > 'bl616_bench 2000 1514' (0.38 s)
+   91.477   bl616_bench 2000 1514
+   91.477   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9213 KB/s round trip; reads 21554 KB/s on the bus
+   91.477   bl616_bench: 2000 frames x 1514 B in 325 ms: 9081 KB/s end to end; bus 3000 KB in 140 ms: 21352 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   91.477   msh />
+   91.477   msh />
+   91.772 > 'bl616_bench 2000 512' (0.29 s)
+   91.772   bl616_bench 2000 512
+   91.772   bl616_bench: echoes back 2000 KB of 2000 KB, 239 ms after the start: 8337 KB/s round trip; reads 20625 KB/s on the bus
+   91.772   bl616_bench: 2000 frames x 512 B in 239 ms: 4168 KB/s end to end; bus 2000 KB in 97 ms: 20477 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   91.772   msh />
+   91.772   msh />
+   95.460 > 'chip_temp' (0.06 s)
+   95.460   chip_temp
+   95.460   chip temperature: 44.891 C
+   95.460   msh />
+   95.460   msh />
+   95.515 > 'free' (0.05 s)
+   95.515   free
+   95.515   memheap               pool size  max used size available size
+   95.515   -------------------- ---------- ------------- --------------
+   95.515   heap                 8388608    1562304       7270656
+   95.515   msh />
+   95.515   msh />
+   95.570 > 'adc probe adc' (0.06 s)
+   95.570   adc probe adc
+   95.570   probe adc success 
+   95.570   msh />
+   95.570   msh />
+   95.626 > 'adc read 1' (0.06 s)
+   95.626   adc read 1
+   95.626   adc channel 1  read value is 0x00000CE7 
+   95.626   msh />
+   95.626   msh />
+   95.682 > 'adc read 1' (0.06 s)
+   95.682   adc read 1
+   95.682   adc channel 1  read value is 0x00000D04 
+   95.682   msh />
+   95.682   msh />
+   95.737 > 'adc read 1' (0.05 s)
+   95.737   adc read 1
+   95.737   adc channel 1  read value is 0x00000D04 
+   95.737   msh />
+   95.737   msh />
+   95.792 > 'adc read 1' (0.05 s)
+   95.792   adc read 1
+   95.792   adc channel 1  read value is 0x00000CED 
+   95.792   msh />
+   95.792   msh />
+   95.847 > 'adc read 1' (0.05 s)
+   95.847   adc read 1
+   95.847   adc channel 1  read value is 0x00000CFF 
+   95.847   msh />
+   95.847   msh />
+   95.902 > 'adc read 1' (0.05 s)
+   95.902   adc read 1
+   95.902   adc channel 1  read value is 0x00000D21 
+   95.902   msh />
+   95.902   msh />
+   95.957 > 'adc read 1' (0.05 s)
+   95.957   adc read 1
+   95.957   adc channel 1  read value is 0x00000CD2 
+   95.957   msh />
+   95.957   msh />
+   96.013 > 'adc read 1' (0.06 s)
+   96.013   adc read 1
+   96.013   adc channel 1  read value is 0x00000D18 
+   96.013   msh />
+   96.013   msh />
+   96.395 > 'bl616_bench 2000 1514' (0.38 s)
+   96.395   bl616_bench 2000 1514
+   96.395   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9204 KB/s round trip; reads 21554 KB/s on the bus
+   96.395   bl616_bench: 2000 frames x 1514 B in 324 ms: 9100 KB/s end to end; bus 3000 KB in 140 ms: 21320 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   96.395   msh />
+   96.395   msh />
+   96.691 > 'bl616_bench 2000 512' (0.30 s)
+   96.691   bl616_bench 2000 512
+   96.691   bl616_bench: echoes back 2000 KB of 2000 KB, 240 ms after the start: 8321 KB/s round trip; reads 20625 KB/s on the bus
+   96.691   bl616_bench: 2000 frames x 512 B in 240 ms: 4160 KB/s end to end; bus 2000 KB in 97 ms: 20476 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+   96.691   msh />
+   96.691   msh />
+  100.381 > 'chip_temp' (0.06 s)
+  100.381   chip_temp
+  100.381   chip temperature: 45.192 C
+  100.381   msh />
+  100.381   msh />
+  100.436 > 'free' (0.06 s)
+  100.436   free
+  100.436   memheap               pool size  max used size available size
+  100.436   -------------------- ---------- ------------- --------------
+  100.436   heap                 8388608    1562304       7270656
+  100.436   msh />
+  100.436   msh />
+  100.491 > 'adc probe adc' (0.05 s)
+  100.491   adc probe adc
+  100.491   probe adc success 
+  100.491   msh />
+  100.491   msh />
+  100.546 > 'adc read 1' (0.06 s)
+  100.546   adc read 1
+  100.546   adc channel 1  read value is 0x00000D4F 
+  100.546   msh />
+  100.546   msh />
+  100.602 > 'adc read 1' (0.06 s)
+  100.602   adc read 1
+  100.602   adc channel 1  read value is 0x00000CF5 
+  100.602   msh />
+  100.602   msh />
+  100.657 > 'adc read 1' (0.05 s)
+  100.657   adc read 1
+  100.657   adc channel 1  read value is 0x00000D2F 
+  100.657   msh />
+  100.657   msh />
+  100.712 > 'adc read 1' (0.05 s)
+  100.712   adc read 1
+  100.712   adc channel 1  read value is 0x00000CE8 
+  100.712   msh />
+  100.712   msh />
+  100.768 > 'adc read 1' (0.06 s)
+  100.768   adc read 1
+  100.768   adc channel 1  read value is 0x00000D38 
+  100.768   msh />
+  100.768   msh />
+  100.824 > 'adc read 1' (0.06 s)
+  100.824   adc read 1
+  100.824   adc channel 1  read value is 0x00000CF0 
+  100.824   msh />
+  100.824   msh />
+  100.879 > 'adc read 1' (0.05 s)
+  100.879   adc read 1
+  100.879   adc channel 1  read value is 0x00000CF9 
+  100.879   msh />
+  100.879   msh />
+  100.935 > 'adc read 1' (0.06 s)
+  100.935   adc read 1
+  100.935   adc channel 1  read value is 0x00000D27 
+  100.935   msh />
+  100.935   msh />
+  101.316 > 'bl616_bench 2000 1514' (0.38 s)
+  101.316   bl616_bench 2000 1514
+  101.316   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9213 KB/s round trip; reads 21554 KB/s on the bus
+  101.316   bl616_bench: 2000 frames x 1514 B in 325 ms: 9081 KB/s end to end; bus 3000 KB in 140 ms: 21336 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+  101.316   msh />
+  101.316   msh />
+  101.612 > 'bl616_bench 2000 512' (0.30 s)
+  101.612   bl616_bench 2000 512
+  101.612   bl616_bench: echoes back 2000 KB of 2000 KB, 240 ms after the start: 8313 KB/s round trip; reads 20622 KB/s on the bus
+  101.612   bl616_bench: 2000 frames x 512 B in 239 ms: 4173 KB/s end to end; bus 2000 KB in 97 ms: 20434 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+  101.612   msh />
+  101.612   msh />
+  105.299 > 'chip_temp' (0.06 s)
+  105.299   chip_temp
+  105.299   chip temperature: 44.891 C
+  105.299   msh />
+  105.299   msh />
+  105.354 > 'free' (0.05 s)
+  105.354   free
+  105.354   memheap               pool size  max used size available size
+  105.354   -------------------- ---------- ------------- --------------
+  105.354   heap                 8388608    1562304       7270656
+  105.354   msh />
+  105.354   msh />
+  105.409 > 'adc probe adc' (0.05 s)
+  105.409   adc probe adc
+  105.409   probe adc success 
+  105.409   msh />
+  105.409   msh />
+  105.464 > 'adc read 1' (0.05 s)
+  105.464   adc read 1
+  105.464   adc channel 1  read value is 0x00000D46 
+  105.464   msh />
+  105.464   msh />
+  105.519 > 'adc read 1' (0.05 s)
+  105.519   adc read 1
+  105.519   adc channel 1  read value is 0x00000D41 
+  105.519   msh />
+  105.519   msh />
+  105.574 > 'adc read 1' (0.05 s)
+  105.574   adc read 1
+  105.574   adc channel 1  read value is 0x00000D49 
+  105.574   msh />
+  105.574   msh />
+  105.630 > 'adc read 1' (0.06 s)
+  105.630   adc read 1
+  105.630   adc channel 1  read value is 0x00000D33 
+  105.630   msh />
+  105.630   msh />
+  105.685 > 'adc read 1' (0.05 s)
+  105.685   adc read 1
+  105.685   adc channel 1  read value is 0x00000D39 
+  105.685   msh />
+  105.685   msh />
+  105.740 > 'adc read 1' (0.05 s)
+  105.740   adc read 1
+  105.740   adc channel 1  read value is 0x00000D19 
+  105.740   msh />
+  105.740   msh />
+  105.796 > 'adc read 1' (0.06 s)
+  105.796   adc read 1
+  105.796   adc channel 1  read value is 0x00000D0B 
+  105.796   msh />
+  105.796   msh />
+  105.852 > 'adc read 1' (0.06 s)
+  105.852   adc read 1
+  105.852   adc channel 1  read value is 0x00000CDB 
+  105.852   msh />
+  105.852   msh />
+  106.233 > 'bl616_bench 2000 1514' (0.38 s)
+  106.233   bl616_bench 2000 1514
+  106.233   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9227 KB/s round trip; reads 21557 KB/s on the bus
+  106.233   bl616_bench: 2000 frames x 1514 B in 325 ms: 9095 KB/s end to end; bus 3000 KB in 140 ms: 21360 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+  106.233   msh />
+  106.233   msh />
+  106.529 > 'bl616_bench 2000 512' (0.30 s)
+  106.529   bl616_bench 2000 512
+  106.529   bl616_bench: echoes back 2000 KB of 2000 KB, 240 ms after the start: 8330 KB/s round trip; reads 20629 KB/s on the bus
+  106.529   bl616_bench: 2000 frames x 512 B in 240 ms: 4165 KB/s end to end; bus 2000 KB in 97 ms: 20441 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+  106.529   msh />
+  106.529   msh />
+  110.214 > 'chip_temp' (0.07 s)
+  110.214   chip_temp
+  110.214   chip temperature: 45.192 C
+  110.214   msh />
+  110.214   msh />
+  110.269 > 'free' (0.06 s)
+  110.269   free
+  110.269   memheap               pool size  max used size available size
+  110.269   -------------------- ---------- ------------- --------------
+  110.269   heap                 8388608    1562304       7270656
+  110.269   msh />
+  110.269   msh />
+  110.325 > 'adc probe adc' (0.06 s)
+  110.325   adc probe adc
+  110.325   probe adc success 
+  110.325   msh />
+  110.325   msh />
+  110.381 > 'adc read 1' (0.06 s)
+  110.381   adc read 1
+  110.381   adc channel 1  read value is 0x00000CD6 
+  110.381   msh />
+  110.381   msh />
+  110.436 > 'adc read 1' (0.05 s)
+  110.436   adc read 1
+  110.436   adc channel 1  read value is 0x00000D05 
+  110.436   msh />
+  110.436   msh />
+  110.491 > 'adc read 1' (0.05 s)
+  110.491   adc read 1
+  110.491   adc channel 1  read value is 0x00000CFD 
+  110.491   msh />
+  110.491   msh />
+  110.547 > 'adc read 1' (0.06 s)
+  110.547   adc read 1
+  110.547   adc channel 1  read value is 0x00000D2A 
+  110.547   msh />
+  110.547   msh />
+  110.603 > 'adc read 1' (0.06 s)
+  110.603   adc read 1
+  110.603   adc channel 1  read value is 0x00000D4B 
+  110.603   msh />
+  110.603   msh />
+  110.658 > 'adc read 1' (0.06 s)
+  110.658   adc read 1
+  110.658   adc channel 1  read value is 0x00000D4B 
+  110.658   msh />
+  110.658   msh />
+  110.714 > 'adc read 1' (0.06 s)
+  110.714   adc read 1
+  110.714   adc channel 1  read value is 0x00000CE1 
+  110.714   msh />
+  110.714   msh />
+  110.770 > 'adc read 1' (0.06 s)
+  110.770   adc read 1
+  110.770   adc channel 1  read value is 0x00000D05 
+  110.770   msh />
+  110.770   msh />
+  111.151 > 'bl616_bench 2000 1514' (0.38 s)
+  111.151   bl616_bench 2000 1514
+  111.151   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9220 KB/s round trip; reads 21556 KB/s on the bus
+  111.151   bl616_bench: 2000 frames x 1514 B in 325 ms: 9088 KB/s end to end; bus 3000 KB in 140 ms: 21346 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+  111.151   msh />
+  111.151   msh />
+  111.447 > 'bl616_bench 2000 512' (0.30 s)
+  111.447   bl616_bench 2000 512
+  111.447   bl616_bench: echoes back 2000 KB of 2000 KB, 240 ms after the start: 8315 KB/s round trip; reads 20626 KB/s on the bus
+  111.447   bl616_bench: 2000 frames x 512 B in 239 ms: 4175 KB/s end to end; bus 2000 KB in 97 ms: 20486 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+  111.447   msh />
+  111.447   msh />
+  115.134 > 'chip_temp' (0.07 s)
+  115.134   chip_temp
+  115.134   chip temperature: 44.891 C
+  115.134   msh />
+  115.134   msh />
+  115.189 > 'free' (0.06 s)
+  115.189   free
+  115.189   memheap               pool size  max used size available size
+  115.189   -------------------- ---------- ------------- --------------
+  115.189   heap                 8388608    1562304       7270656
+  115.189   msh />
+  115.189   msh />
+  115.244 > 'adc probe adc' (0.05 s)
+  115.244   adc probe adc
+  115.244   probe adc success 
+  115.244   msh />
+  115.244   msh />
+  115.299 > 'adc read 1' (0.05 s)
+  115.299   adc read 1
+  115.299   adc channel 1  read value is 0x00000CD9 
+  115.299   msh />
+  115.299   msh />
+  115.354 > 'adc read 1' (0.05 s)
+  115.354   adc read 1
+  115.354   adc channel 1  read value is 0x00000D35 
+  115.354   msh />
+  115.354   msh />
+  115.409 > 'adc read 1' (0.05 s)
+  115.409   adc read 1
+  115.409   adc channel 1  read value is 0x00000D4F 
+  115.409   msh />
+  115.409   msh />
+  115.464 > 'adc read 1' (0.05 s)
+  115.464   adc read 1
+  115.464   adc channel 1  read value is 0x00000D06 
+  115.464   msh />
+  115.464   msh />
+  115.519 > 'adc read 1' (0.05 s)
+  115.519   adc read 1
+  115.519   adc channel 1  read value is 0x00000D40 
+  115.519   msh />
+  115.519   msh />
+  115.574 > 'adc read 1' (0.05 s)
+  115.574   adc read 1
+  115.574   adc channel 1  read value is 0x00000CEC 
+  115.574   msh />
+  115.574   msh />
+  115.629 > 'adc read 1' (0.05 s)
+  115.629   adc read 1
+  115.629   adc channel 1  read value is 0x00000D10 
+  115.629   msh />
+  115.629   msh />
+  115.684 > 'adc read 1' (0.06 s)
+  115.684   adc read 1
+  115.684   adc channel 1  read value is 0x00000CD7 
+  115.684   msh />
+  115.684   msh />
+  116.065 > 'bl616_bench 2000 1514' (0.38 s)
+  116.065   bl616_bench 2000 1514
+  116.065   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9205 KB/s round trip; reads 21555 KB/s on the bus
+  116.065   bl616_bench: 2000 frames x 1514 B in 324 ms: 9101 KB/s end to end; bus 3000 KB in 140 ms: 21336 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+  116.065   msh />
+  116.065   msh />
+  116.361 > 'bl616_bench 2000 512' (0.30 s)
+  116.361   bl616_bench 2000 512
+  116.361   bl616_bench: echoes back 2000 KB of 2000 KB, 239 ms after the start: 8338 KB/s round trip; reads 20625 KB/s on the bus
+  116.361   bl616_bench: 2000 frames x 512 B in 239 ms: 4169 KB/s end to end; bus 2000 KB in 97 ms: 20411 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+  116.361   msh />
+  116.361   msh />
+  120.051 > 'chip_temp' (0.06 s)
+  120.051   chip_temp
+  120.051   chip temperature: 45.192 C
+  120.051   msh />
+  120.051   msh />
+  120.106 > 'free' (0.05 s)
+  120.106   free
+  120.106   memheap               pool size  max used size available size
+  120.106   -------------------- ---------- ------------- --------------
+  120.106   heap                 8388608    1562304       7270656
+  120.106   msh />
+  120.106   msh />
+  120.162 > 'adc probe adc' (0.06 s)
+  120.162   adc probe adc
+  120.162   probe adc success 
+  120.162   msh />
+  120.162   msh />
+  120.217 > 'adc read 1' (0.05 s)
+  120.217   adc read 1
+  120.217   adc channel 1  read value is 0x00000D45 
+  120.217   msh />
+  120.217   msh />
+  120.272 > 'adc read 1' (0.05 s)
+  120.272   adc read 1
+  120.272   adc channel 1  read value is 0x00000D02 
+  120.272   msh />
+  120.272   msh />
+  120.327 > 'adc read 1' (0.05 s)
+  120.327   adc read 1
+  120.327   adc channel 1  read value is 0x00000D50 
+  120.327   msh />
+  120.327   msh />
+  120.382 > 'adc read 1' (0.05 s)
+  120.382   adc read 1
+  120.382   adc channel 1  read value is 0x00000D02 
+  120.382   msh />
+  120.382   msh />
+  120.437 > 'adc read 1' (0.05 s)
+  120.437   adc read 1
+  120.437   adc channel 1  read value is 0x00000D18 
+  120.437   msh />
+  120.437   msh />
+  120.492 > 'adc read 1' (0.05 s)
+  120.492   adc read 1
+  120.492   adc channel 1  read value is 0x00000D09 
+  120.492   msh />
+  120.492   msh />
+  120.548 > 'adc read 1' (0.06 s)
+  120.548   adc read 1
+  120.548   adc channel 1  read value is 0x00000CE9 
+  120.548   msh />
+  120.548   msh />
+  120.603 > 'adc read 1' (0.05 s)
+  120.603   adc read 1
+  120.603   adc channel 1  read value is 0x00000CF9 
+  120.603   msh />
+  120.603   msh />
+  120.984 > 'bl616_bench 2000 1514' (0.38 s)
+  120.984   bl616_bench 2000 1514
+  120.984   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9225 KB/s round trip; reads 21555 KB/s on the bus
+  120.984   bl616_bench: 2000 frames x 1514 B in 325 ms: 9093 KB/s end to end; bus 3000 KB in 140 ms: 21317 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+  120.984   msh />
+  120.984   msh />
+  121.280 > 'bl616_bench 2000 512' (0.30 s)
+  121.280   bl616_bench 2000 512
+  121.280   bl616_bench: echoes back 2000 KB of 2000 KB, 240 ms after the start: 8325 KB/s round trip; reads 20625 KB/s on the bus
+  121.280   bl616_bench: 2000 frames x 512 B in 240 ms: 4162 KB/s end to end; bus 2000 KB in 98 ms: 20379 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+  121.280   msh />
+  121.280   msh />
+  124.966 > 'chip_temp' (0.07 s)
+  124.966   chip_temp
+  124.966   chip temperature: 45.493 C
+  124.966   msh />
+  124.966   msh />
+  125.021 > 'free' (0.05 s)
+  125.021   free
+  125.021   memheap               pool size  max used size available size
+  125.021   -------------------- ---------- ------------- --------------
+  125.021   heap                 8388608    1562304       7270656
+  125.021   msh />
+  125.021   msh />
+  125.076 > 'adc probe adc' (0.05 s)
+  125.076   adc probe adc
+  125.076   probe adc success 
+  125.076   msh />
+  125.076   msh />
+  125.131 > 'adc read 1' (0.05 s)
+  125.131   adc read 1
+  125.131   adc channel 1  read value is 0x00000D36 
+  125.131   msh />
+  125.131   msh />
+  125.187 > 'adc read 1' (0.06 s)
+  125.187   adc read 1
+  125.187   adc channel 1  read value is 0x00000D1E 
+  125.187   msh />
+  125.187   msh />
+  125.242 > 'adc read 1' (0.05 s)
+  125.242   adc read 1
+  125.242   adc channel 1  read value is 0x00000CF4 
+  125.242   msh />
+  125.242   msh />
+  125.298 > 'adc read 1' (0.06 s)
+  125.298   adc read 1
+  125.298   adc channel 1  read value is 0x00000D3E 
+  125.298   msh />
+  125.298   msh />
+  125.353 > 'adc read 1' (0.05 s)
+  125.353   adc read 1
+  125.353   adc channel 1  read value is 0x00000CDB 
+  125.353   msh />
+  125.353   msh />
+  125.408 > 'adc read 1' (0.05 s)
+  125.408   adc read 1
+  125.408   adc channel 1  read value is 0x00000D4A 
+  125.408   msh />
+  125.408   msh />
+  125.464 > 'adc read 1' (0.06 s)
+  125.464   adc read 1
+  125.464   adc channel 1  read value is 0x00000CE5 
+  125.464   msh />
+  125.464   msh />
+  125.519 > 'adc read 1' (0.05 s)
+  125.519   adc read 1
+  125.519   adc channel 1  read value is 0x00000D11 
+  125.519   msh />
+  125.519   msh />
+  125.900 > 'bl616_bench 2000 1514' (0.38 s)
+  125.900   bl616_bench 2000 1514
+  125.900   bl616_bench: echoes back 3000 KB of 3000 KB, 325 ms after the start: 9216 KB/s round trip; reads 21556 KB/s on the bus
+  125.900   bl616_bench: 2000 frames x 1514 B in 325 ms: 9084 KB/s end to end; bus 3000 KB in 140 ms: 21302 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+  125.900   msh />
+  125.900   msh />
+  126.196 > 'bl616_bench 2000 512' (0.30 s)
+  126.196   bl616_bench 2000 512
+  126.196   bl616_bench: echoes back 2000 KB of 2000 KB, 240 ms after the start: 8323 KB/s round trip; reads 20629 KB/s on the bus
+  126.196   bl616_bench: 2000 frames x 512 B in 240 ms: 4161 KB/s end to end; bus 2000 KB in 97 ms: 20434 KB/s; BL616 busy 499, ring full 0; clock 50000000 Hz, 4-bit, high speed 1
+  126.196   msh />
+  126.196   msh />
+  129.881 > 'chip_temp' (0.06 s)
+  129.881   chip_temp
+  129.881   chip temperature: 45.493 C
+  129.881   msh />
+  129.881   msh />
+  129.937 > 'free' (0.06 s)
+  129.937   free
+  129.937   memheap               pool size  max used size available size
+  129.937   -------------------- ---------- ------------- --------------
+  129.937   heap                 8388608    1562304       7270656
+  129.937   msh />
+  129.937   msh />
+  129.992 > 'adc probe adc' (0.05 s)
+  129.992   adc probe adc
+  129.992   probe adc success 
+  129.992   msh />
+  129.992   msh />
+  130.047 > 'adc read 1' (0.05 s)
+  130.047   adc read 1
+  130.047   adc channel 1  read value is 0x00000D25 
+  130.047   msh />
+  130.047   msh />
+  130.102 > 'adc read 1' (0.05 s)
+  130.102   adc read 1
+  130.102   adc channel 1  read value is 0x00000D25 
+  130.102   msh />
+  130.102   msh />
+  130.157 > 'adc read 1' (0.05 s)
+  130.157   adc read 1
+  130.157   adc channel 1  read value is 0x00000CD8 
+  130.157   msh />
+  130.157   msh />
+  130.212 > 'adc read 1' (0.05 s)
+  130.212   adc read 1
+  130.212   adc channel 1  read value is 0x00000D2E 
+  130.212   msh />
+  130.212   msh />
+  130.268 > 'adc read 1' (0.06 s)
+  130.268   adc read 1
+  130.268   adc channel 1  read value is 0x00000CF0 
+  130.268   msh />
+  130.268   msh />
+  130.323 > 'adc read 1' (0.05 s)
+  130.323   adc read 1
+  130.323   adc channel 1  read value is 0x00000CFD 
+  130.323   msh />
+  130.323   msh />
+  130.378 > 'adc read 1' (0.05 s)
+  130.378   adc read 1
+  130.378   adc channel 1  read value is 0x00000CF7 
+  130.378   msh />
+  130.378   msh />
+  130.433 > 'adc read 1' (0.05 s)
+  130.433   adc read 1
+  130.433   adc channel 1  read value is 0x00000D2E 
+  130.433   msh />
+  130.433   msh />

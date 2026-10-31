@@ -1,5 +1,5 @@
-08:42:29 test019-usb-flash-speed: 0 metric rows MISSING: none
-08:42:39 boot NO CONSOLE
-08:43:17 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.51 msh 0.52
-08:43:23 sample after flash {'board': 31.8, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 39.76, 'k_free': (7025152, 1390848), 'vbat': 4118}
-08:43:25 test019-usb-flash-speed: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+17:03:01 test019-usb-flash-speed: 0 metric rows MISSING: none
+17:03:11 boot NO CONSOLE
+17:03:49 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.51 msh 0.52
+17:03:55 sample after flash {'board': 31.1, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 37.642, 'k_free': (7025152, 1390848), 'vbat': 4342}
+17:03:57 test019-usb-flash-speed: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

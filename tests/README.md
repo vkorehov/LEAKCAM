@@ -51,7 +51,7 @@ Leak tests, one per operation the product repeats:
 | [test012 microphone U13 (MSM381ACB026) on the K230 inner codec](test012-microphone/README.md) | 2026-10-25 | **pass**: 3 x 10 s recordings, a level every second, rms -25.3..-2.8 dBFS; no dropouts, no |
 | [test013 KPU, change net (leakcam_change.kmodel)](test013-kpu-change-net/README.md) | 2026-10-25 | **pass**: int8 net whole on the KPU, 0.5 ms per inference, one distance 2.9 ms median, output |
 | [test014 SDIO wiring, K230 MMC0 <-> BL616 SDIO](test014-sdio-wiring/README.md) | 2026-10-25 | **pass**: CLK, CMD, D0-D3 connected both directions, none stuck, no shorts; CLK and CMD toggle |
-| [test015 SDIO speed, K230 MMC0 <-> BL616 SDIO device](test015-sdio-speed/README.md) | 2026-10-21 | **pass**: 50 MHz 4-bit (the top), bus 21 MB/s, end to end 9.4 MB/s with the echo device, no CRC |
+| [test015 SDIO speed, K230 MMC0 <-> BL616 SDIO device](test015-sdio-speed/README.md) | 2026-10-31 | **pass**: 50 MHz 4-bit (the top), bus 21.2 MB/s, end to end 9.1 MB/s with the echo device, 32 soak runs / 324 MB with 0 CRC errors; 230-233 mA busy |
 | [test016 K230 DDR bandwidth](test016-ddr-bandwidth/README.md) | 2026-10-31 | **pass at 3200 MT/s all-ODT**: write 6.08 / read 4.84 / copy 2.77 GB/s, 8 x `ddr_bench 3072` |
 | [test017 SPI NAND raw speed and SPI clock](test017-nand-raw-speed/README.md) | 2026-10-30 | **pass**: NAND at 50 MHz for stability, sample delay 5 (kernel + U-Boot/SPL); raw read 15.7 MB/s, 20/20 cold boots clean, ID read retried by the kernel. |
 | [test018 K230 <-> BL616 UART link: speed, latency, errors](test018-uart-link-speed/README.md) | 2026-10-31 | **pass**: 2 Mbaud from boot; 8 x 1 MB, 0 errors, 180740 B/s (90 %), 16 B round trip 131 us; clean with the Wi-Fi bridge bound. |
@@ -75,7 +75,7 @@ Leak tests, one per operation the product repeats:
 | [test036 K230 hang recovery (heartbeat stop, READY timeout)](test036-k230-hang-recovery/README.md) | 2026-10-25 | **pass**: 12 supervised sessions (normal, hang, reboot, no-boot) all end with the rails off; a |
 | [test037 K230 PMU RTC: start, set from the BL616, timekeeping](test037-k230-rtc/README.md) | 2026-10-25 | **partial: step 0 pass**: the PMU RTC runs from Y1, +27 ppm against the 27 MHz timer (3 boots), |
 | [test038 battery brown-out below 3.10 V (cutoff, lockout, recovery)](test038-battery-brownout/README.md) | 2026-10-23 | **partial**: with a raised threshold on the cell the chain works - K230 `bat_watch` cut, |
-| [test039 K230 console over the BL616 link (no CH340)](test039-k230-console-over-link/README.md) | 2026-10-25 | **fail**: ~0.7 % of commands typed on `/dev/ttyACM1` are lost (993 of 1000 answered); otherwise the |
+| [test039 K230 console over the BL616 link (no CH340)](test039-k230-console-over-link/README.md) | 2026-10-31 | **pass**: 1000 of 1000 commands answered in each of 4 boots at 2 Mbaud, every drop counter 0; 226 mA answering back to back |
 | [test040 BLE provisioning on the BL616: Wi-Fi credentials into flash](test040-ble-wifi-credentials/README.md) | 2026-10-29 | **pass**: run.py 46/46 (run 13, test firmware -O3 + LTO with the sdk_patch.py console fix) and |
 | [test041 humidity alarm (AHT20 threshold wakes the K230)](test041-humidity-alarm/README.md) | 2026-10-30 | **planned**: the BL616 test firmware needs the humidity slice and alarm decision of |
 | **High level (100+): the product's whole flow** | | |
@@ -111,7 +111,7 @@ Leak tests, one per operation the product repeats:
 **Tests not run or partial:** not run - test020, test030 (cameras), test101, test102, test104 (test-firmware features to add),
 test103 (later); partial - test008 (steps 3-7), test026 (KPU / encoder / camera load, enclosure, die limit), test032
 (crystal ppm, 100 cycles, 24 h), test034 (real water, 8 h dry), test035 (100 transitions), test037 (steps 1-6),
-test038 (lab supply), test105 (runs 1-4), test106 (steps 2, 7); **fail** - test039 (0.7 % of console commands lost).
+test038 (lab supply), test105 (runs 1-4), test106 (steps 2, 7); **fail** - none.
 
 **Always:**
 - Build host = VMware VM on a Mac. Since 2026-10-24 VMware's USB popups are off: every re-enumerated device (K230

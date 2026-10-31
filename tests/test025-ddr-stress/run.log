@@ -1,6 +1,8 @@
-09:16:07 test025-ddr-stress: 3 metric rows MISSING: This part's boot share, Current idle / during, Power, energy per operation
-09:16:15 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
-09:16:21 sample idle {'board': 33.8, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 42.479, 'k_free': (7025152, 1390848), 'vbat': 4178}
-09:16:51 sample memtest 26 s {'board': 34.5, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 48.201, 'k_free': (7111872, 1721152), 'vbat': 4129}
-09:17:22 sample memtest 56 s {'board': 35.5, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 47.299, 'k_free': (7312064, 1721152), 'vbat': 4167}
-09:17:24 test025-ddr-stress: PASS; filled 0: -; still MISSING 3: This part's boot share, Current idle / during, Power, energy per operation; run in HISTORY.md - README Status/Result by hand
+16:53:59 test025-ddr-stress: 2 metric rows MISSING: Current idle / during, Power, energy per operation
+16:54:07 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
+16:54:13 sample idle {'board': 32.9, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 41.573, 'k_free': (7025152, 1390848), 'vbat': 4358}
+16:54:43 sample memtest 26 s {'board': 33.8, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 46.697, 'k_free': (7111872, 1721152), 'vbat': 4357}
+16:54:43 >>> METER test025-ddr-stress: K230 running memtest alone (24 MB kept free) - reading in amps to /home/vkorehovs/.leakcam_meter
+16:55:03 meter K230 running memtest alone (24 MB kept free): 0.265 A
+16:55:33 sample memtest 76 s {'board': 35.2, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 46.095, 'k_free': (7312064, 1721152), 'vbat': 4340}
+16:55:35 test025-ddr-stress: PASS; filled 2: Current idle / during, Power, energy per operation; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

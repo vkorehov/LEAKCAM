@@ -4,6 +4,13 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-31 (run.py, 96 s): pass
+
+memtest: 9 pass lines seen, done with 0 errors in 80 s.
+
+- meter K230 running memtest alone (24 MB kept free): 0.265 A
+
+
 ### 3200 MT/s leftovers, 2026-10-31 (scratch runner, 4 min): pass
 
 5 cold starts (rails off 5 s) with memtest 3 passes after each: 89 MB x 5 patterns, 0 errors, 171-173 MB/s. Then the

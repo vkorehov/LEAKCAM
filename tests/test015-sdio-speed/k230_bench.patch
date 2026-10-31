@@ -1,8 +1,8 @@
---- firmware/k230_board/rtsmart/drivers/bl616_nethub/bl616_sdio.c	2026-09-29 08:41:13.721423307 +0300
-+++ sdk/bl616_nethub/bl616_sdio.c	2026-10-21 09:09:47.928781417 +0300
-@@ -42,6 +42,42 @@
- 
+--- a/bl616_sdio.c	2026-10-31 16:51:52.941183887 +0200
++++ b/bl616_sdio.c	2026-10-31 16:51:52.944184123 +0200
+@@ -43,6 +43,42 @@
  static struct bl616_sdio sd;
+ rt_uint32_t bl616_card_irqs;   /* card interrupts taken (bl616_stat) */
  
 +/* TEMPORARY (test015, SDK copy only; install.sh restores this file): bus time for bl616_bench */
 +volatile rt_uint64_t bl616_bench_bus_cycles, bl616_bench_bus_bytes, bl616_bench_busy, bl616_bench_rx_bytes, bl616_bench_rx_cycles;
@@ -43,7 +43,7 @@
  static rt_err_t reg_read(rt_uint32_t reg, rt_uint8_t *val)
  {
      rt_int32_t err = RT_EOK;
-@@ -125,7 +161,11 @@
+@@ -126,7 +162,11 @@
          goto out;
      }
  
@@ -55,7 +55,7 @@
      if (err == RT_EOK)
      {
          sd.rd_bitmap &= ~(1u << port);
-@@ -160,13 +200,17 @@
+@@ -161,13 +201,17 @@
          if (!(sd.wr_bitmap & (1u << port)))
          {
              err = -RT_EBUSY;    /* the BL616 has not re-armed that buffer yet */
@@ -73,33 +73,36 @@
      if (err == RT_EOK)
      {
          sd.wr_bitmap &= ~(1u << port);
-@@ -340,6 +384,15 @@
- 
- static const struct rt_device_ops rescan_ops = { .control = rescan_control };
- 
-+/* TEMPORARY (test015, SDK copy only): the agent's rescan from the shell, for the bare SDIO echo device */
-+static int bl616_scan(int argc, char **argv)
-+{
-+    rt_err_t e = rescan_control(RT_NULL, BL616_IOCTL_RESCAN, RT_NULL);
-+    rt_kprintf("bl616_scan: %s\n", e == RT_EOK ? "card bound" : "no card within 3 s");
-+    return 0;
-+}
-+MSH_CMD_EXPORT(bl616_scan, test015: probe MMC0 for the BL616);
-+
- static int bl616_sdio_init(void)
- {
-     rt_int32_t err = sdio_register_driver(&bl616_sdio_driver);
---- firmware/k230_board/rtsmart/drivers/bl616_nethub/bl616_msg.c	2026-09-25 11:46:43.467977264 +0300
-+++ sdk/bl616_nethub/bl616_msg.c	2026-10-21 09:09:17.421347754 +0300
+--- a/bl616_msg.c	2026-10-31 16:51:52.941183887 +0200
++++ b/bl616_msg.c	2026-10-31 17:01:27.590885262 +0200
 @@ -1,3 +1,4 @@
 +#include <stdlib.h>
  /*
   * LEAKCAM BL616 Wi-Fi: NetHub message router on top of the SDIO ports.
   *
-@@ -385,3 +386,114 @@
-     rt_completion_wait(&worker_done, RT_WAITING_FOREVER);
-     worker = RT_NULL;
+@@ -223,6 +224,9 @@
+         bl616_wifi_ctrl_rx(p + sizeof(*vh), vh->len);
  }
+ 
++/* TEMPORARY (test015): set by bl616_bench on the bare echo device, whose uploads mirror our own headers */
++static volatile int bench_raw;
++
+ static void dispatch(rt_uint8_t *msg, rt_size_t len)
+ {
+     struct bl616_ch_hdr *h = (struct bl616_ch_hdr *)msg;
+@@ -230,6 +234,8 @@
+     rt_uint8_t *p = msg + sizeof(*h);
+     rt_size_t n;
+ 
++    if (bench_raw)
++        return;
+     /* the upload is padded to whole blocks; the router header has the true length */
+     if (len < sizeof(*h) || h->mr.len < sizeof(*h) - sizeof(h->mr) ||
+         h->mr.len > len - sizeof(h->mr))
+@@ -425,3 +431,115 @@
+ }
+ MSH_CMD_EXPORT(bl616_stat, test100: card interrupts and safety polls of the BL616 link);
+ #endif
 +
 +
 +/* TEMPORARY (test015, SDK copy only; install.sh restores this file): SDIO download speed.
@@ -121,9 +124,10 @@
 +
 +    if (size < 60 || size > 1514)
 +        size = 1514;
-+    int raw = netdev.state != CH_RUN;     /* no DEVICE_START: the bare echo device (pt_sdu); open it ourselves */
++    int raw = bench_raw || netdev.state != CH_RUN;     /* no DEVICE_START: the bare echo device (pt_sdu); open it ourselves */
 +    if (raw)
 +    {
++        bench_raw = 1;
 +        netdev.state = CH_RUN;
 +        netdev.sent = 0;
 +        netdev.credit = 100;
@@ -211,451 +215,3 @@
 +
 +static int bl616_dump(int argc, char **argv) { (void)argc; (void)argv; bl616_sdio_dump("shell"); return 0; }
 +MSH_CMD_EXPORT(bl616_dump, test015: SDIO port state);
---- firmware/k230_capture/leakcam_wake.c	2026-09-30 15:51:42.604253735 +0300
-+++ sdk/leakcam/leakcam_wake.c	2026-10-21 08:25:03.848734638 +0300
-@@ -1,434 +1,19 @@
--/*
-- * leakcam_wake: what the K230 does at every wake. leakcam_agent runs it as its hook:
-- *
-- *   leakcam_wake <cold|leak|rtc|humid>
-- *
-- *   1. capture: both cameras, LEDs on for the shot, one frame each after AE/AWB settled;
-- *   2. compare each frame, reduced to 320x240, with what the history shows (cam<N>.hist):
-- *      imgdiff, and where it sees a change, the change net on the KPU (change.h) to drop
-- *      changes of light only; nothing changed on any camera and no sensor alarm -> sleep,
-- *      except once a day when a camera's light-only distance came within SAMPLE_MARGIN of its
-- *      threshold: that pair is reported as a sample (sample=1), for the server to check the
-- *      net. A sensor alarm (the wake came from the probes or the humidity alarm, or the probe
-- *      node reads wet) is reported whatever the cameras see;
-- *   3. something is new -> ask the agent for Wi-Fi ("wifi" on stdout, the answer "wifi=ok" or
-- *      "wifi=fail,<code>" on stdin); no Wi-Fi, no server config or no connection -> sleep;
-- *   4. POST /v1/check?reason=<reason>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>&nn=<kmodel CRC>
-- *      &thr=<cam0>,<cam1>&cam0=<state>,<distance>&cam1=...[&sample=1] (state first, same,
-- *      changed or light; distance -1 where the net did not run). Body: per camera its reduced
-- *      frame, then, where imgdiff saw a change, the history view it was compared with (PGMs one
-- *      after the other), so the server also gets the pairs the net called light only: the
-- *      training data for the next net (firmware/NN.txt). The server decides from the images and
-- *      the sensors together and answers {"leak":true} or {"leak":false}, plus
-- *      "nn":"<CRC>","thr":[<cam0>,<cam1>] when it has another net or other thresholds for this
-- *      board (the new kmodel comes from GET /v1/nn/<CRC> and is kept by nnstore.h), and
-- *      "video":<seconds> when the server wants a clip (for a leak, or asked for by someone);
-- *   5. "video":<s> -> leakcam_stream streams s seconds (at most VIDEO_MAX_S) of video with
-- *      audio from both cameras live over RTMP (rtmp://<server>:1935/leakcam/cam<N>). The
-- *      server decides whether and how long; the board has no clip length of its own;
-- *   6. leak -> sleep; the frames are not stored, so every wake reports again until the server
-- *      says no leak. No leak -> the new frames go to the history (a delta of the changed
-- *      blocks, or a keyframe) and sleep. Wi-Fi ends with the session: the BL616 stops it before power-off.
-- *
-- * The sensor values come from the BL616 (in WAKE) through the agent, always all four:
-- * LEAKCAM_RH, LEAKCAM_T, LEAKCAM_PROBE_MV and LEAKCAM_BAT_MV (the K230's own ADC_1 reading). "sleep=<seconds>" on stdout picks the
-- * next scheduled wake. The server address is one line
-- * "<host> <port>" in /sdcard/leakcam/server. Nothing is kept in RAM between wakes.
-- */
--#define _GNU_SOURCE
--#include <errno.h>
--#include <stdbool.h>
-+/* TEMPORARY (test015, SDK copy only; install.sh restores the real hook): ask the agent for Wi-Fi, so the
-+ * BL616 starts its SDIO bridge, then hold the session for bl616_bench / bl616_clk on the K230 console. */
- #include <stdio.h>
--#include <stdlib.h>
- #include <string.h>
--#include <sys/stat.h>
--#include <sys/wait.h>
--#include <time.h>
- #include <unistd.h>
- 
--#include "cap.h"
--#include "change.h"
--#include "history.h"
--#include "imgdiff.h"
--#include "led.h"
--#include "netclient.h"
--#include "nnstore.h"
--#include "refstore.h"
--
--#ifndef STATE_DIR                         /* the host test points both elsewhere */
--#define STATE_DIR      "/sdcard/leakcam"
--#define STREAM_PROG    "/sdcard/app/leakcam_stream"
--#endif
--#define RTMP_PORT      "1935"             /* the server's RTMP ingest, on the host of /v1/check */
--#define WIDTH          1280               /* OV5647 2x2 binned, full field of view */
--#define HEIGHT         960
--#define SETTLE_FRAMES  12                 /* ~0.3 s at 45 fps for AE/AWB */
--#ifndef NET_TIMEOUT_S
--#define NET_TIMEOUT_S  30                 /* association + DHCP after "wifi=ok" */
--#endif
--#define VIDEO_MAX_S    300                /* a clip ends well before the agent's 600 s hook kill */
--
--#define SAMPLE_MARGIN  0.1f               /* a light-only distance this close to the threshold... */
--#define SAMPLE_EVERY_S 86400              /* ...is reported at most once a day */
--
--#define PROBE_WET_MV   825                /* the BL616 comparator's trip point (bl616/leak_wake.c) */
--
--#define SLEEP_NORMAL   21600u             /* nothing new, or reported without a leak: 6 h */
--#define SLEEP_RETRY    3600u              /* new, but not reported (no Wi-Fi or server): 1 h */
--#define SLEEP_LEAK     600u               /* leak reported: look again in 10 min */
--
--static unsigned led_percent[2] = { 100, 100 };
--
--static int finish(unsigned sleep_s)
--{
--    printf("sleep=%u\n", sleep_s);
--    return 0;
--}
--
--/* copy the changed blocks of the reduced frame into the reduced history view */
--static void apply_blocks(uint8_t *view, const uint8_t *cur,
--                         const uint8_t changed[IMGDIFF_BLOCKS_Y][IMGDIFF_BLOCKS_X])
--{
--    enum { BW = IMGDIFF_W / IMGDIFF_BLOCKS_X, BH = IMGDIFF_H / IMGDIFF_BLOCKS_Y };
--    for (int by = 0; by < IMGDIFF_BLOCKS_Y; by++)
--        for (int bx = 0; bx < IMGDIFF_BLOCKS_X; bx++)
--            if (changed[by][bx])
--                for (int y = by * BH; y < (by + 1) * BH; y++)
--                    memcpy(view + y * IMGDIFF_W + bx * BW, cur + y * IMGDIFF_W + bx * BW, BW);
--}
--
--struct cam_frame {
--    unsigned slot;
--    uint8_t *luma;                        /* WIDTH x HEIGHT, kept for the history */
--    uint8_t cur[IMGDIFF_W * IMGDIFF_H];   /* reduced */
--    uint8_t view[IMGDIFF_W * IMGDIFF_H];  /* what the history shows */
--    bool have_view, changed, light;       /* light: imgdiff changed, the net said light only */
--    float dist;                           /* the net's distance, -1 where it did not run */
--    struct imgdiff_result diff;
--};
--
--/* one frame per camera; the cameras are released again, leakcam_stream may need them */
--static int capture(struct cam_frame *f, int n)
--{
--    struct cap_cam cams[CAP_MAX_CAMS];
--    unsigned nodes[CAP_MAX_CAMS] = CAP_DEFAULT_NODES;
--    memset(cams, 0, sizeof(cams));
--    for (int i = 0; i < n; i++)
--        cams[i].node = nodes[i];
--    int rc = -1;
--    if (cap_open_all(cams, n, WIDTH, HEIGHT) == 0) {
--        if (led_set(true, led_percent, 0) < 0)
--            fprintf(stderr, "led: continuing without full illumination\n");
--        rc = cap_grab_all(cams, n, SETTLE_FRAMES, 5000);
--        led_set(false, led_percent, 0);
--    }
--    for (int i = 0; rc == 0 && i < n; i++) {
--        f[i].slot = cams[i].slot;
--        f[i].luma = cams[i].luma;
--        cams[i].luma = NULL;              /* ours now, cap_close_all() must not free it */
--        if (imgdiff_reduce(f[i].luma, WIDTH, HEIGHT, WIDTH, f[i].cur) < 0)
--            rc = -1;
--    }
--    cap_close_all(cams, n);
--    return rc;
--}
--
--/* ask the agent for Wi-Fi and wait for its answer */
--static bool wifi_up(void)
-+int main(int argc, char **argv)
- {
--    char line[64];
-+    char line[64] = "";
-+    (void)argc;
-+    (void)argv;
-     printf("wifi\n");
-     fflush(stdout);
--    if (!fgets(line, sizeof(line), stdin))
--        return false;
--    if (strncmp(line, "wifi=ok", 7) != 0) {
--        fprintf(stderr, "no Wi-Fi: %s", line);
--        return false;
--    }
--    return true;
--}
--
--/* the BL616's values, as the agent passes them */
--struct sensors {
--    const char *rh, *t;                   /* %RH, C as the agent formats them */
--    int probe_mv, bat_mv;
--};
--
--/* the change net in use, loaded when first needed (a changed frame, or a report) */
--static struct nn_model nn;
--static int nn_state;                      /* 0 not tried, 1 loaded, -1 none */
--
--static struct nn_model *nn_get(void)
--{
--    if (nn_state == 0) {
--        nn_state = nnstore_load(STATE_DIR, CHANGE_KMODEL, &nn) == 0 &&
--                   change_load(nn.data, nn.len) == 0 ? 1 : -1;
--        if (nn_state > 0)
--            printf("change net %08x, thresholds %.2f %.2f\n", (unsigned)nn.crc, nn.thr[0], nn.thr[1]);
--    }
--    return nn_state > 0 ? &nn : NULL;
--}
--
--static const char *state_name(const struct cam_frame *f)
--{
--    return !f->have_view ? "first" : f->changed ? "changed" : f->light ? "light" : "same";
--}
--
--/* the history view goes with the frame where imgdiff saw a change */
--static bool send_view(const struct cam_frame *f)
--{
--    return f->have_view && f->diff.changed;
--}
--
--/* POST /v1/check: 1 leak, 0 no leak, -1 not reported; the server's answer in reply */
--static int server_check(const char *host, const char *port, const char *reason, bool sample,
--                        const struct sensors *s, const struct cam_frame *f, int n, char *reply, size_t cap)
--{
--    char head[32], path[320];
--    int hlen = snprintf(head, sizeof(head), "P5\n%d %d\n255\n", IMGDIFF_W, IMGDIFF_H);
--    char why[48];                         /* "rtc+leak": '+' is a space in a query, send %2B */
--    size_t w = 0;
--    for (const char *c = reason; *c && w + 4 < sizeof(why); c++)
--        w += (size_t)snprintf(why + w, sizeof(why) - w, *c == '+' ? "%%2B" : "%c", *c);
--    why[w] = 0;
--    const struct nn_model *m = nn_get();
--    int len = snprintf(path, sizeof(path), "/v1/check?reason=%s&probe_mv=%d&bat_mv=%d&rh=%s&t=%s&nn=%08x&thr=%.2f,%.2f",
--                       why, s->probe_mv, s->bat_mv, s->rh, s->t, m ? (unsigned)m->crc : 0u,
--                       m ? m->thr[0] : 0.0f, m ? m->thr[1] : 0.0f);
--    long body = 0;
--    for (int i = 0; i < n; i++) {
--        len += snprintf(path + len, sizeof(path) - (size_t)len, "&cam%u=%s,%.3f", f[i].slot, state_name(&f[i]),
--                        f[i].dist);
--        body += (hlen + IMGDIFF_W * IMGDIFF_H) * (send_view(&f[i]) ? 2 : 1);
--    }
--    if (sample)
--        snprintf(path + len, sizeof(path) - (size_t)len, "&sample=1");
--    int fd = net_connect(host, port, NET_TIMEOUT_S);
--    if (fd < 0)
--        return -1;
--    int rc = -1;
--    if (http_post(fd, host, path, "image/x-portable-graymap", body) == 0) {
--        bool sent = true;
--        for (int i = 0; i < n && sent; i++) {
--            sent = net_send_all(fd, head, (size_t)hlen) == 0 && net_send_all(fd, f[i].cur, sizeof(f[i].cur)) == 0;
--            if (sent && send_view(&f[i]))
--                sent = net_send_all(fd, head, (size_t)hlen) == 0 && net_send_all(fd, f[i].view, sizeof(f[i].view)) == 0;
--        }
--        int status = sent ? http_reply(fd, reply, cap) : -1;
--        if (status == 200)
--            rc = strstr(reply, "\"leak\":true") != NULL;
--        else
--            fprintf(stderr, "check: server status %d\n", status);
--    }
--    close(fd);
--    return rc;
--}
--
--/* GET /v1/nn/<crc>: the kmodel, checked against crc; malloc'd, or NULL */
--static uint8_t *nn_download(const char *host, const char *port, uint32_t crc, size_t *len_out)
--{
--    char path[32];
--    snprintf(path, sizeof(path), "/v1/nn/%08x", (unsigned)crc);
--    int fd = net_connect(host, port, NET_TIMEOUT_S);
--    if (fd < 0)
--        return NULL;
--    long len = -1;
--    uint8_t *p = NULL;
--    int status = http_get(fd, host, path) == 0 ? http_reply_head(fd, &len) : -1;
--    if (status == 200 && len > 0 && len <= (long)NN_MAX_LEN && (p = malloc((size_t)len)) != NULL &&
--        refstore_read_all(fd, p, (size_t)len) == 0 && refstore_crc32(p, (size_t)len) == crc) {
--        *len_out = (size_t)len;
--    } else {
--        fprintf(stderr, "nn: download %s failed (status %d, %ld bytes)\n", path, status, len);
--        free(p);
--        p = NULL;
--    }
--    close(fd);
--    return p;
--}
--
--/* the server's "nn" and "thr" in reply: a new kmodel and/or thresholds, saved for the next wake */
--static void nn_update(const char *host, const char *port, const char *reply)
--{
--    const char *a = strstr(reply, "\"nn\":\""), *b = strstr(reply, "\"thr\":[");
--    unsigned crc;
--    float thr[2];
--    if (!a || !b || sscanf(a, "\"nn\":\"%8x\"", &crc) != 1 || sscanf(b, "\"thr\":[%f,%f]", &thr[0], &thr[1]) != 2)
--        return;
--    const struct nn_model *cur = nn_get();
--    struct nn_model m = { NULL, 0, crc, { thr[0], thr[1] } };
--    uint8_t *got = NULL;
--    if (cur && cur->crc == crc) {         /* thresholds only: the same kmodel again */
--        m.data = cur->data;
--        m.len = cur->len;
--    } else if ((got = nn_download(host, port, crc, &m.len)) != NULL) {
--        m.data = got;
--    } else {
--        return;
--    }
--    if (nnstore_save(STATE_DIR, &m) == 0)
--        printf("change net %08x, thresholds %.2f %.2f saved for the next wake\n", crc, thr[0], thr[1]);
--    else
--        fprintf(stderr, "nn: saving the update failed\n");
--    free(got);
--}
--
--/* a light-only pair close to its threshold, and no sample sent for a day */
--static bool sample_due(const struct cam_frame *f, int n)
--{
--    const struct nn_model *m = nn_get();
--    bool near = false;
--    for (int i = 0; m && i < n; i++)
--        near |= f[i].light && f[i].dist >= m->thr[f[i].slot] - SAMPLE_MARGIN;
--    if (!near)
--        return false;
--    long last = 0;
--    FILE *fp = fopen(STATE_DIR "/sample", "r");
--    if (fp) {
--        if (fscanf(fp, "%ld", &last) != 1)
--            last = 0;
--        fclose(fp);
--    }
--    return time(NULL) - (time_t)last >= SAMPLE_EVERY_S;
--}
--
--static void sample_sent(void)
--{
--    FILE *fp = fopen(STATE_DIR "/sample", "w");
--    if (fp) {
--        fprintf(fp, "%ld\n", (long)time(NULL));
--        fclose(fp);
--    }
--}
--
--/* the clip the server asks for: "video":<seconds> in reply, 0 = none */
--static int video_seconds(const char *reply)
--{
--    const char *v = strstr(reply, "\"video\":");
--    int s = v ? atoi(v + 8) : 0;
--    return s < 0 ? 0 : s > VIDEO_MAX_S ? VIDEO_MAX_S : s;
--}
--
--/* s seconds of both cameras live to the server's RTMP ingest, by leakcam_stream's push mode */
--static void push_video(const char *host, int s)
--{
--    char target[80], secs[12];
--    snprintf(target, sizeof(target), "%s:%s", host, RTMP_PORT);
--    snprintf(secs, sizeof(secs), "%d", s);
--    printf("video %d s\n", s);
--    pid_t pid = fork();
--    if (pid == 0) {
--        execl(STREAM_PROG, STREAM_PROG, "-p", target, "-t", secs, (char *)NULL);
--        _exit(127);
--    }
--    int status = 0;
--    if (pid < 0 || waitpid(pid, &status, 0) < 0 || !WIFEXITED(status) || WEXITSTATUS(status) != 0)
--        fprintf(stderr, "video push failed\n");
--}
--
--static void store(struct cam_frame *f, int n)
--{
--    struct hist_cfg hcfg;
--    hist_default_cfg(&hcfg, STATE_DIR);
--    time_t now = time(NULL);
--    for (int i = 0; i < n; i++) {
--        if (!f[i].changed)
--            continue;
--        struct hist_info hi;
--        const uint8_t (*blocks)[IMGDIFF_BLOCKS_X] = f[i].have_view
--            ? (const uint8_t (*)[IMGDIFF_BLOCKS_X])f[i].diff.block_changed : NULL;
--        if (hist_store(&hcfg, (int)f[i].slot, now, f[i].luma, WIDTH, HEIGHT, blocks,
--                       f[i].have_view ? f[i].diff.usable_blocks : 0, !f[i].have_view, &hi) < 0) {
--            fprintf(stderr, "cam %u: storing history failed: %s\n", f[i].slot, strerror(errno));
--            continue;
--        }
--        /* the view follows what was stored; written after the record, so a power cut in
--         * between only makes the next wake store those blocks again */
--        if (hi.kind == HIST_KEY)
--            memcpy(f[i].view, f[i].cur, sizeof(f[i].view));
--        else if (hi.kind == HIST_DELTA)
--            apply_blocks(f[i].view, f[i].cur, (const uint8_t (*)[IMGDIFF_BLOCKS_X])f[i].diff.block_changed);
--        if (hi.kind != HIST_NONE && refstore_save(STATE_DIR, (int)f[i].slot, f[i].view, now) < 0)
--            fprintf(stderr, "cam %u: saving the history view failed: %s\n", f[i].slot, strerror(errno));
--    }
--}
--
--int main(int argc, char **argv)
--{
--    const char *reason = argc > 1 ? argv[1] : "cold";
--    static struct cam_frame f[2];
--    const int n = 2;
--    /* all four always set by the agent */
--    struct sensors sens = { getenv("LEAKCAM_RH"), getenv("LEAKCAM_T"), atoi(getenv("LEAKCAM_PROBE_MV")),
--                            atoi(getenv("LEAKCAM_BAT_MV")) };
--    /* the reasons come as "rtc+leak+humid" (bl616 WAKE): any leak or humid part is an alarm */
--    bool sensor_alarm = strstr(reason, "leak") || strstr(reason, "humid") ||
--                        (sens.probe_mv >= 0 && sens.probe_mv < PROBE_WET_MV);
--    printf("sensors: rh %s, t %s, probe %d mV, battery %d mV%s\n", sens.rh, sens.t, sens.probe_mv,
--           sens.bat_mv, sensor_alarm ? ", alarm" : "");
--
--    if (mkdir(STATE_DIR, 0755) < 0 && errno != EEXIST)
--        return 1;
--    if (capture(f, n) < 0) {
--        fprintf(stderr, "capture failed\n");
--        return finish(SLEEP_RETRY);
--    }
--
--    bool any = false;
--    struct imgdiff_cfg cfg;
--    imgdiff_default_cfg(&cfg);
--    for (int i = 0; i < n; i++) {
--        f[i].have_view = refstore_load(STATE_DIR, (int)f[i].slot, f[i].view, NULL) == 0;
--        if (f[i].have_view)
--            imgdiff_compare(f[i].view, f[i].cur, &cfg, &f[i].diff);
--        f[i].changed = !f[i].have_view || f[i].diff.changed;   /* no history yet: new */
--        f[i].dist = -1;
--        if (f[i].have_view && f[i].changed) {
--            /* imgdiff also trips on light; the change net tells a changed scene. Light only:
--             * the view stays as it is, so a leak that grows is still measured against dry.
--             * The net failed or missing: reported */
--            const struct nn_model *m = nn_get();
--            if (m)
--                f[i].dist = change_distance(f[i].view, f[i].cur);
--            printf("cam %u: change net %.3f\n", f[i].slot, f[i].dist);
--            f[i].light = m && f[i].dist >= 0 && f[i].dist < m->thr[f[i].slot];
--            f[i].changed = !f[i].light;
--        }
--        any |= f[i].changed;
--        printf("cam %u: %s\n", f[i].slot, !f[i].have_view ? "first frame" : f[i].changed ? "changed" : "same");
--    }
--    bool sample = !any && !sensor_alarm && sample_due(f, n);
--    if (!any && !sensor_alarm && !sample)
--        return finish(SLEEP_NORMAL);
--    const unsigned retry = sample ? SLEEP_NORMAL : SLEEP_RETRY;   /* a sample is not retried */
--    if (sample)
--        printf("sample: a light-only pair near its threshold\n");
--
--    char host[64], port[8];
--    if (net_server(STATE_DIR "/server", host, port) < 0) {
--        fprintf(stderr, "no server configured in " STATE_DIR "/server\n");
--        return finish(retry);
--    }
--    if (!wifi_up())
--        return finish(retry);
--    char reply[256];
--    int leak = server_check(host, port, reason, sample, &sens, f, n, reply, sizeof(reply));
--    if (leak < 0) {
--        fprintf(stderr, "server not reached\n");
--        return finish(retry);
--    }
--    if (sample)
--        sample_sent();
--    if (leak)
--        printf("leak reported\n");
--    int video = video_seconds(reply);
--    if (video > 0)
--        push_video(host, video);
--    if (leak) {
--        nn_update(host, port, reply);
--        return finish(SLEEP_LEAK);
--    }
--    store(f, n);
--    nn_update(host, port, reply);
--    return finish(SLEEP_NORMAL);
-+    if (fgets(line, sizeof(line), stdin))
-+        fprintf(stderr, "test015 hook: %s", line);
-+    fprintf(stderr, "test015 hook: holding the session 580 s (bl616_bench on the console)\n");
-+    sleep(580);
-+    return 0;
- }

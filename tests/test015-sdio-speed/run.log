@@ -1,0 +1,22 @@
+17:04:12 test015-sdio-speed: 13 metric rows MISSING: Boot, power-on -> app init (median / max of runs), This part's boot share, Test run time, Speed / rate against the top, Current floor / typical / peak, Voltage under load (min), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Image (sizes), Compile flags, Features over the minimal image
+17:04:22 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.51 msh 0.52
+17:04:28 sample idle {'board': 31.0, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 37.339, 'k_free': (7025152, 1390848), 'vbat': 4341}
+17:04:30 >>> METER test015-sdio-speed: K230 pushing SDIO frames to the BL616 echo device (bl616_bench 2000 back to back) - reading in amps to /home/vkorehovs/.leakcam_meter
+17:05:04 meter K230 pushing SDIO frames to the BL616 echo device (bl616_bench 2000 back to back): 0.230 A
+17:05:09 sample soak 1 {'board': 32.6, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 42.78, 'k_free': (7270656, 1562304), 'vbat': 4379}
+17:05:14 sample soak 2 {'board': 32.8, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 42.78, 'k_free': (7270656, 1562304), 'vbat': 4339}
+17:05:19 sample soak 3 {'board': 33.0, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.082, 'k_free': (7270656, 1562304), 'vbat': 4351}
+17:05:24 sample soak 4 {'board': 33.2, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.082, 'k_free': (7270656, 1562304), 'vbat': 4363}
+17:05:29 sample soak 5 {'board': 33.3, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.082, 'k_free': (7270656, 1562304), 'vbat': 4361}
+17:05:34 sample soak 6 {'board': 33.4, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.384, 'k_free': (7270656, 1562304), 'vbat': 4350}
+17:05:39 sample soak 7 {'board': 33.6, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.384, 'k_free': (7270656, 1562304), 'vbat': 4365}
+17:05:43 sample soak 8 {'board': 33.7, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 44.288, 'k_free': (7270656, 1562304), 'vbat': 4359}
+17:05:48 sample soak 9 {'board': 33.9, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 44.891, 'k_free': (7270656, 1562304), 'vbat': 4327}
+17:05:53 sample soak 10 {'board': 34.0, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 45.192, 'k_free': (7270656, 1562304), 'vbat': 4357}
+17:05:58 sample soak 11 {'board': 34.1, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 44.891, 'k_free': (7270656, 1562304), 'vbat': 4382}
+17:06:03 sample soak 12 {'board': 34.2, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 45.192, 'k_free': (7270656, 1562304), 'vbat': 4351}
+17:06:08 sample soak 13 {'board': 34.3, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 44.891, 'k_free': (7270656, 1562304), 'vbat': 4350}
+17:06:13 sample soak 14 {'board': 34.5, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 45.192, 'k_free': (7270656, 1562304), 'vbat': 4356}
+17:06:18 sample soak 15 {'board': 34.6, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 45.493, 'k_free': (7270656, 1562304), 'vbat': 4357}
+17:06:23 sample soak 16 {'board': 34.7, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 45.493, 'k_free': (7270656, 1562304), 'vbat': 4347}
+17:06:26 test015-sdio-speed: PASS; filled 13: Boot, power-on -> app init (median / max of runs), Test run time, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Voltage under load (min), Current floor / typical / peak, Compile flags, Image (sizes), Speed / rate against the top, Power, energy per operation, This part's boot share, Per day, Features over the minimal image; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

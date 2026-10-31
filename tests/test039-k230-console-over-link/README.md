@@ -25,15 +25,20 @@ Design, files and every SDK patch with its location: [firmware/CONSOLE.md](../..
 
 ## Needs
 
-**MISSING**: the kernel options / drivers, SDK components, libraries and programs this test uses.
+K230: link_mux driver in the kernel (UART1 shared by the console and the link, 2 Mbaud), msh. BL616: test firmware with
+the 2-port USB CDC (`/dev/ttyACM0` BL616, `/dev/ttyACM1` K230 console) and the UART0 bridge task with k230_linesplit.
+Host: udev rule 99-leakcam.rules, tools/test-standard/harness.py.
 
 ## Steps
 
-**MISSING**: the steps of the test.
+`run.py`: 4 cold boots (`pt_off`, `pt_run`) to msh on `/dev/ttyACM1`; per boot 250 `version` commands, 5 s per answer,
+host-timed; `pt_status` (BL616 console counters) and `link_stat` (K230 rx, drops, overruns) before and after; memory
+sampled per boot.
 
 ## Pass
 
-**MISSING**: the pass criterion.
+Every `version` answered (0 lost), none later than 2 s; byte counters equal on every hop (host -> BL616 -> K230), 0
+overruns and 0 dropped bytes.
 
 ## Result
 
@@ -68,12 +73,12 @@ Open:
 | Console path | UART1 2 Mbaud -> BL616 -> USB CDC | same wire as the link |
 | Clicks per K230 power cycle | 0 | the BL616 port stays |
 | Image | kdimg 45.4 MB; BL616 test firmware ~153 KB | |
-| Current | 568 mA (charging the cell, BL616 + K230 off, 08:33) | user reading |
+| Current | idle 0.220 A (test006); `version` back to back over the link 0.226 A at 5 V (USB-C 1 VBUS meter, cell full, 2026-10-31) | user reading |
 | Memory BL616 / K230 (start / min / end), leak | BL616 free 206440 / min 204396 / 206440 B, blocks 16 -> 16, deleted 0; K230 heap available 7025152 B steady; BL616 no leak (mem_leak.py, 8 snapshots); K230 no leak (mem_leak.py, 8 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | This part's boot share | link_mux registers at 0.27 s with the other drivers; the console is up from the SPL banner (2026-10-25) | - | driver / mount / probe |
 | Test run time | 172 s automated (run.py, 2026-10-25), no setup | - | setup separately |
 | Voltage under load (min) | VBAT 4.33 V min (K230 ADC ch 1, test023 calibration, 8 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | probe points named |
-| Power, energy per operation | n/a: the console bridge's own current is below the meter's step next to the K230 (2026-10-25) | - |  |
+| Power, energy per operation | 226 mA x 4.34 V = 981 mW; per command (55 ms) 0.054 J; over idle (+6 mA) 1.4 mJ (2026-10-31) | - |  |
 | Per day | n/a: the console is a bring-up path, not used in a product session (2026-10-25) | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | die 39.5 / 42.2 / 40.7 C; board 32.6 / 32.7 / 32.4 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os -march=rv64imafdcv, sections + --gc-sections, strip, no LTO; BL616 test firmware -O2 (SDK default), no LTO (2026-10-25) | smallest code (rule) |  |
@@ -82,8 +87,9 @@ Open:
 
 ## Boot time
 
-**MISSING**: the boot time of this test's image and its share.
+pt_run -> app init 0.296-0.301 s (3 cold boots); the console is up from the SPL banner, link_mux registers at 0.27 s with the other drivers (2026-10-25).
 
 ## Battery energy
 
-**MISSING**: current -> power -> energy per operation and per day.
+226 mA while answering commands back to back, +6 mA over msh idle: 1.4 mJ per command above idle (2026-10-31). Per day:
+n/a, the console is a bring-up path, not used in a product session.

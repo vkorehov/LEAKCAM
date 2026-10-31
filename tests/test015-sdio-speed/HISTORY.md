@@ -4,6 +4,19 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-10-31 (run.py, 134 s): pass
+
+SDIO bus, K230 -> BL616 echo device: msh />; 2000 x 1514 B: bus 21226 KB/s, end to end 9076 KB/s; 200 x 1514 B: bus 21211 KB/s, end to end 9156 KB/s; 50 x 512 B: bus 20333 KB/s, end to end 3816 KB/s; soak: 32 of 32 runs clean
+
+- meter K230 pushing SDIO frames to the BL616 echo device (bl616_bench 2000 back to back): 0.230 A
+- BL616 echo device over the run: 244351 blocks in, 244351 out, 331675 KB; CRC errors 0, aborts 0, other 0, resets 0
+- msh />
+- 2000 x 1514 B: bus 21226 KB/s, end to end 9076 KB/s
+- 200 x 1514 B: bus 21211 KB/s, end to end 9156 KB/s
+- 50 x 512 B: bus 20333 KB/s, end to end 3816 KB/s
+- soak: 32 of 32 runs clean
+
+
 ### 2026-10-21 (the run's full Results)
 
 | Step | Result | |
@@ -62,3 +75,13 @@ Status: **pass: 50 MHz 4-bit, bus 21 MB/s, end to end 9.4 MB/s, no CRC errors; s
   99-leakcam.rules, and since test039 the K230 console is /dev/ttyACM1.)
 - **NAND now holds the test image** (bench, test hook in `/sdcard/app/leakcam_wake`) -> `install.sh` and the product
   image flash restore it.
+
+## Re-run for the metrics: 2026-10-31
+
+- The bench moved into the shared test image (`build_test_image.sh` applies [k230_bench.patch](k230_bench.patch) to the
+  SDK copy of the driver); rebased onto today's driver: `bl616_scan` dropped (the driver's `bl616_rescan` does the
+  same), `leakcam_wake.c` hook dropped (the test image boots to msh).
+- **First run stalled at frame 113, credit = sent = 49:** today's `dispatch()` takes `credit_update` / `credit_limit`
+  from every upload, and the echo device mirrors the K230's own download headers back, so the echoes overwrote the
+  bench's credit. The 2026-10-21 bench dropped echoes; the rebase lost it. Fixed: `bench_raw` makes `dispatch()` drop
+  every upload while the bench drives the bare echo device. The meter reading of that run was not taken (no load).

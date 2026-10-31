@@ -72,7 +72,9 @@ def main():
             try:
                 for line in p.stdout:
                     sys.stdout.write(line)
+                    sys.stdout.flush()      # the meter prompt must show at once in a redirected batch log
                     logf.write(line)
+                    logf.flush()
                     if time.time() - t0 > TIMEOUT_S:
                         raise subprocess.TimeoutExpired(r, TIMEOUT_S)
                 rc = p.wait()

@@ -42,6 +42,9 @@ for i in range(4):
         else:
             lost += 1
             lost_raw.append(f"boot {i + 1} command {j + 1} ({time.time() - r.t0:.0f} s into the run): {out[-200:]!r}")
+    if i == 0:
+        r.meter("K230 answering console commands over the link (version, back to back)",
+                busy=lambda: r.k("version", 5, r"build[^\n]*\n"))
     b1, k1 = bl_console(), k_link()
     if b0 and b1 and k0 and k1:
         # host bytes typed (the harness sends "version\r\n", 9 bytes, plus the two link_stat lines) against what
@@ -54,7 +57,6 @@ for i in range(4):
     r.sample(f"boot {i + 1}")
 lat.sort()
 r.set("share", f"link_mux registers at 0.27 s with the other drivers; the console is up from the SPL banner ({r.date})")
-r.set("energy", f"n/a: the console bridge's own current is below the meter's step next to the K230 ({r.date})")
 r.set("perday", f"n/a: the console is a bring-up path, not used in a product session ({r.date})")
 for c in counts:
     print("counters", c)

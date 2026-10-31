@@ -120,3 +120,9 @@ SPL and OpenSBI still print on UART0 (CH340).
 - **Design correction during the work:** "output only" was not possible - with the console on UART1, msh reads the
   same device and would swallow the agent's frames -> the split is symmetric (K230 link_mux + BL616 splitter).
 - **A wrong test expectation** (my mistake): "$$" + a frame that itself starts with '$' is three '$', not two.
+
+## Current reading: 2026-10-31
+
+The 2026-10-25 Current row (568 mA) was the cell charging with the K230 off, not this test. Read again with the cell
+full (62 mA BL616-only before the session): `version` back to back over the link 226 mA at 5 V, +6 mA over msh idle.
+A meter-only run (boot, the command loop, the reading), no re-test; Needs / Steps / Pass written from run.py.

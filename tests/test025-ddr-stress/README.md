@@ -65,9 +65,9 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | This part's boot share | within reset -> SPL banner 0.158-0.160 s (5 cold boots, 2026-10-31): the SPL prints its banner after DDR training (the PMU "Firmware run has completed" line arrives with it), so ROM load + training at 3200 MT/s take at most 0.16 s of the 0.56 s to msh; a finer split needs a timer read in the SPL | - | |
 | Test run time | 77 s automated (run.py, 2026-10-25); 8 h soak 22:40:56 - 06:41:04 (2026-10-23/24) | - | setup separately |
 | memtest MB/s, errors | 198 MB/s write+verify (5 patterns, MMZ uncached), 0 errors (3200 all-ODT, 8 h, 2026-10-23/24) | DDR top 5.33 GB/s (test016) | a checker, not a bandwidth test |
-| Current idle / during | idle 220 mA (test006); memtest alone at 3200 MT/s **MISSING** (2667 figures superseded; test105 has memtest only on top of other loads) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT ~4.15 V (full cell) |
+| Current idle / during | idle 0.220 (test006) / memtest alone (24 MB kept free) 0.265 average / 0.270-0.275 peak A at 5 V (USB-C 1 VBUS meter, the user, 2026-10-31) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT ~4.15 V (full cell) |
 | Voltage under load (min) | VBAT 4.33 V min (K230 ADC ch 1, test023 calibration, 3 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING**: re-measure at 3200 MT/s | - | by hand: scripts/energy.py does not exist |
+| Power, energy per operation | 265 mA x 4.34 V = 1150 mW; per memtest pass (8.87 s) 10.20 J, 653 uAh; over idle (220 mA) 1.73 J (2026-10-31) | - | by hand: scripts/energy.py does not exist |
 | Per day | n/a: a bench test, not in the product | - | |
 | Temperature die / board (start / peak / end) | die 34.6 / 39.8 / 39.8 C; board 26.9 / 29.4 / 29.4 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
 | Memory BL616 / K230 (start / min / end), leak | BL616 free 206440 / min 204396 / 206440 B, blocks 16 -> 16, deleted 0; K230 heap available 7025152 / 7025152 / 7312064 B; leak: n/a, 3 snapshots (mem_leak.py needs >= 8 cycles) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |

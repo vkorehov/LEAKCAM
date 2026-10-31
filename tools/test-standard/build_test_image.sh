@@ -4,7 +4,8 @@
 #   tools/test-standard/build_test_image.sh [SDK_DIR]     then firmware/k230_board/flash_nand.sh (USB boot)
 # Adds to the SDK tree (none of it is in the product image):
 #   kernel  tests/test017-nand-raw-speed/leakcam_bench.c -> board/ (ddr_bench, nand_bench, uart_bench, boot_times,
-#           plt_write/plt_check, rtc_ppm/rtc_raw, pad_read, bat_watch)
+#           plt_write/plt_check, rtc_ppm/rtc_raw, pad_read, bat_watch); tests/test015 k230_bench.patch on the
+#           bl616_nethub driver (bl616_bench, bl616_clk, bl616_dump)
 #   /sdcard tests/test008 leakcam_cpubench, tests/test013 leakcam_kputest (LEAKCAM_BENCH=1), tests/test027 venctest,
 #           tests/test025 memtest
 set -e
@@ -12,6 +13,8 @@ SDK=${1:-$HOME/k230_rtos_sdk}
 L=$(cd "$(dirname "$0")/../.." && pwd)
 A=$SDK/src/applications
 cp "$L/tests/test017-nand-raw-speed/leakcam_bench.c" "$SDK/src/rtsmart/rtsmart/kernel/bsp/maix3/board/"
+patch -d "$SDK/src/rtsmart/rtsmart/kernel/bsp/maix3/drivers/extdrv/bl616_nethub" -p1 --forward \
+    < "$L/tests/test015-sdio-speed/k230_bench.patch"
 mkdir -p "$A/leakcam/src"
 cp "$L/tests/test008-minimal-image/leakcam_cpubench.c" "$L/tests/test013-kpu-change-net/leakcam_kputest.c" "$A/leakcam/src/"
 cp "$L/firmware/k230_capture/rtsmart/Makefile" "$A/leakcam/Makefile"

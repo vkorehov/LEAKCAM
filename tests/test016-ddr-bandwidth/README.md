@@ -52,9 +52,9 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | This part's boot share | DDR training inside 0.23 s (ROM..OpenSBI) | - | not split further yet |
 | Test run time | 82 s automated (run.py, 8 x ddr_bench 3072) (2026-10-25) | - | setup: reflash (USB boot) |
 | DDR write / read / copy | 6.08 / 4.84 / 2.77 GB/s at 3200 MT/s all-ODT (2026-10-25) | - | |
-| Current idle / during (min / avg / peak) | **MISSING**: re-measure at 3200 MT/s (2667 figures superseded) | floor 204 (msh idle) | USB-C 1 VBUS |
+| Current idle / during (min / avg / peak) | idle 0.220 (test006) / ddr_bench 3072 over and over 0.250 average / 0.303 peak A at 5 V (USB-C 1 VBUS meter, the user, 2026-10-31) | floor 204 (msh idle) | USB-C 1 VBUS |
 | Voltage under load (min) | VBAT 4.31 V min (K230 ADC ch 1, test023 calibration, 9 samples; on USB: the charger rail, not the cell) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING**: re-measure at 3200 MT/s | - | 3.8 V nominal |
+| Power, energy per operation | 250 mA x 4.33 V = 1083 mW; per ddr_bench 3072 (host-timed) (0.21 s) 0.23 J, 15 uAh; over idle (220 mA) 0.03 J (2026-10-31) | - | 3.8 V nominal |
 | Per day | n/a (no DDR-only work in a session) | - | |
 | Temperature die / board (start / peak / end) | die 46.4 / 48.5 / 48.5 C; board 37.3 / 37.4 / 37.4 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
 | Memory BL616 / K230 (start / min / end), leak | BL616 free 206440 / min 204396 / 206440 B, blocks 16 -> 16, deleted 0; K230 heap available 7025152 / 7023232 / 7312064 B; BL616 no leak (mem_leak.py, 9 snapshots); K230 no leak (mem_leak.py, 9 snapshots) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
