@@ -1,6 +1,9 @@
 # test042: RF performance against the bench phone (RSSI side by side)
 
-Status: **planned** (2026-10-31): runner written (run.py); waits for the board on USB and the phone on adb.
+Status: **position 1 done** (2026-10-31, 10 runs, board flat, phone flat beside it): Wi-Fi receive board - phone
+**-3 .. +1 dB** (median over 9-13 APs per run; per channel ch 1 +1..+8, ch 4 -2..-8, ch 11 -6..+8 dB, one AP each mostly),
+BLE advertising heard by the phone at **-32 .. -43 dBm**; orientations, distance and the later steps open. One BL616
+watchdog reset in the first run (HISTORY), not reproduced in 9 runs since.
 
 No RF instruments on the bench (no VNA, no spectrum analyser): the board's antenna and radio are judged against a
 known-good receiver and transmitter, the bench phone, at the same spot. The board's 2.4 GHz antenna (simulated, not
@@ -43,7 +46,16 @@ is a few dB better than a small PCB antenna; worse than -10 dB points at the ant
 
 ## Result
 
-Not run yet.
+Position 1, board flat, phone flat a few cm beside it, no metal near (2026-10-31, 10 runs of 10 scans; [rssi.log](rssi.log)):
+
+- **Wi-Fi receive:** board - phone median over the APs both saw in at least half the scans: -2, -2, -3, -3, +1, -0,
+  +0, -1, -1, -2 dB. The board's receive path is level with the phone's. Per channel the spread is wider (-13 to
+  +8 dB) because most channels have one AP: multipath at one spot, not a channel effect (ch 11, 3-4 APs: -6 to +8).
+  The home router "VK" (ch 11): board -48, phone -51 dBm.
+- The board lists more APs than the phone (about 38 against ~20; down to -94 dBm, the phone's list stops near -85):
+  the phone's scan list leaves weak APs out, so no sensitivity verdict from that.
+- **BLE transmit:** the phone heard the board in 8-9 of 10 scans at -32 to -43 dBm median (a few cm apart). The 1-2
+  misses are in every run: probably the first scans start before advertising after `pt_ble on`; to check.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
