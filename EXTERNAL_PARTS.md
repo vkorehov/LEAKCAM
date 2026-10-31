@@ -88,3 +88,5 @@ below 1.10 V (tests/test034). Design rules found so far:
   gap at the wire joints of the v1 probe board and held the probe wet for hours with dry tips (318 mV; 1647 mV, dry,
   once rewired to wider-gap pads).
 - Only the sensing tips exposed; conformal coat or potting over the wire joints and the rest of the traces.
+- Sensing tips gold plated (ENIG or hard gold) ideally (user, 2026-10-31): bare copper or HASL tin corrodes in water
+  and salt, and the DC across the tips speeds it up.
