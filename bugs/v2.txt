@@ -58,3 +58,7 @@ From the rev 1 bugs
    regulator (TPS63900 buck-boost or TPS7A02 LDO class) instead of U5 TPS63802 (11 uA quiescent + 5.5 uA in its
    R22/R24 feedback divider, whose low side TI caps at 100 k): about -16 uA, nearly half the sleep. BQ24072T on battery
    4.3 uA typ stays unless the charger changes too.
+12. Illumination (user, 2026-10-31): two more LED drivers (4 x TPS61161 instead of 2) and twice the LEDs (16 white +
+   16 IR instead of 8 + 8). Split the LED boards for easy mechanical fitting: each small board carries 1 IR LED and
+   1 white LED (16 small boards instead of 4 strips of 2 + 2), joined by the flex of item 1. Check the drivers' chain
+   voltage against the 38 V OVP when splitting the chains, and the current against the cell (tests/test105).
