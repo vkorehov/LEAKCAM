@@ -51,3 +51,9 @@ No run yet. Status before the step 6 rewrite: **planned** (2026-10-27).
   the phone during runs, as for the board.
 - The setup app never got the bond broadcast with a NOT_EXPORTED receiver (Samsung, Android 13): it sat on "pairing"
   until its 60 s timeout although the bond was made. Fixed: registered exported (2026-10-30).
+
+## Step 7 by hand: 2026-10-31
+
+hand_step7.py (test040 hand_steps.py helpers; their dispatch now under `__main__` so they import): 5/5 checks pass.
+Obstacle: the bench phone was not on USB at the start (not in lsusb, nothing in dmesg); the user plugged it in, adb
+saw it as a power sink, unlocked.

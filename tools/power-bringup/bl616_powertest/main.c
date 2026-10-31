@@ -1030,8 +1030,69 @@ static bool leak_acomp_wet(void)
 }
 
 
+/* pt_leak log: the node sampled by the BL616 itself into RAM (test034 drying curves; the host VM sleeps with the Mac,
+ * 2026-10-31), read back later with pt_leak log dump */
+#define LEAK_LOG_N 1024
+static struct { uint32_t t_s; uint16_t mv; uint8_t wet; } leak_log[LEAK_LOG_N];
+static volatile uint32_t leak_log_n, leak_log_every_s;
+static uint32_t leak_log_t0;
+static TaskHandle_t leak_log_task;
+
+static void leak_log_run(void *arg)
+{
+    (void)arg;
+    while (leak_log_every_s) {
+        int mv;
+        LOCKED(mv = leak_mv());
+        uint32_t i = leak_log_n % LEAK_LOG_N;
+        leak_log[i].t_s = (uint32_t)(bflb_mtimer_get_time_ms() / 1000) - leak_log_t0;
+        leak_log[i].mv = (uint16_t)mv;
+        leak_log[i].wet = leak_acomp_wet();
+        leak_log_n++;
+        vTaskDelay(pdMS_TO_TICKS(leak_log_every_s * 1000u));
+    }
+    leak_log_task = NULL;
+    vTaskDelete(NULL);
+}
+
+static void leak_log_cmd(int argc, char **argv)
+{
+    if (argc > 2 && !strcmp(argv[2], "dump")) {
+        uint32_t n = leak_log_n, first = n > LEAK_LOG_N ? n - LEAK_LOG_N : 0;
+        printf("pt_leak log: %lu samples every %lu s%s\r\n", (unsigned long)n, (unsigned long)leak_log_every_s,
+               n > LEAK_LOG_N ? " (oldest overwritten)" : "");
+        for (uint32_t k = first; k < n; k++) {
+            uint32_t i = k % LEAK_LOG_N;
+            printf("%6lu s %4u mV %s\r\n", (unsigned long)leak_log[i].t_s, leak_log[i].mv, leak_log[i].wet ? "WET" : "dry");
+        }
+        printf("pt_leak log: end\r\n");
+        return;
+    }
+    if (argc > 2 && !strcmp(argv[2], "stop")) {
+        leak_log_every_s = 0;
+        printf("pt_leak log: stopped after %lu samples\r\n", (unsigned long)leak_log_n);
+        return;
+    }
+    uint32_t s = argc > 2 ? (uint32_t)atoi(argv[2]) : 20;
+    if (!s)
+        s = 20;
+    leak_log_n = 0;
+    leak_log_t0 = (uint32_t)(bflb_mtimer_get_time_ms() / 1000);
+    leak_log_every_s = s;
+    if (!leak_log_task && xTaskCreate(leak_log_run, "leaklog", 512, NULL, tskIDLE_PRIORITY + 1, &leak_log_task) != pdPASS) {
+        leak_log_every_s = 0;
+        printf("pt_leak log: no task\r\n");
+        return;
+    }
+    printf("pt_leak log: every %lu s, %u samples kept; pt_leak log dump | stop\r\n", (unsigned long)s, LEAK_LOG_N);
+}
+
 static int cmd_leak(int argc, char **argv)
 {
+    if (argc > 1 && !strcmp(argv[1], "log")) {
+        leak_log_cmd(argc, argv);
+        return 0;
+    }
     if (argc > 1 && !strcmp(argv[1], "sweep")) {   /* where does the comparator flip against the probe node? */
         static const struct { uint8_t sf; const char *name; } sfs[] = {
             { AON_ACOMP_SCALING_FACTOR_0P25, "0.25" }, { AON_ACOMP_SCALING_FACTOR_0P5, "0.5" },
@@ -1094,7 +1155,7 @@ static int cmd_leak(int argc, char **argv)
         printf("  %ld kohm across a probe (put a known resistor across S1 to check: 100k reads ~100)\r\n", k);
     return 0;
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_leak, pt_leak, leak probe node + comparator; pt_leak watch [s]);
+SHELL_CMD_EXPORT_ALIAS(cmd_leak, pt_leak, leak probe node + comparator; pt_leak watch [s] | log [s] | log dump | log stop);
 #endif
 
 #if PT_TEST_SDIO

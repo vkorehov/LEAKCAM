@@ -1,8 +1,8 @@
 # test106: Wi-Fi setup from the phone, end to end
 
-Status: **pass, steps 1 3 4 5 6 8** (2026-10-30, run.py 18/18): setup 7.3-8.0 s from opening the app to Done; steps 2
-and 7 open (step 2: the test firmware's battery wake to the stored network and a K230 session;
-step 7 by hand).
+Status: **pass, steps 1 3 4 5 6 7 8** (2026-10-30, run.py 18/18; step 7 2026-10-31, hand_step7.py 5/5): setup 7.3-8.0 s
+from opening the app to Done; on battery the app lists no board and a stored bond cannot connect; step 2 open (the test
+firmware's battery wake to the stored network and a K230 session).
 
 The installation flow as a user meets it: a new LEAKCAM on USB power, the LEAKCAM Setup app (android/, APP.txt) finds
 it, pairs, sends the Wi-Fi network, the board checks and stores it in the BL616's flash; then, on battery, the
@@ -76,9 +76,14 @@ a person adds their own time to those two.
 | -> Done | 0.11-0.15 | 1.0 | BLE at CONNECTION_PRIORITY_HIGH (the phone's 45 ms interval); internet check 0.07 s |
 | **Total, open -> Done** | **6.3-7.7** | **28.5** | |
 
+Step 7, on battery (2026-10-31, [hand_step7.py](hand_step7.py), the user on the cable; log hand_step7.log): bonded on USB
+power, USB-C 1 out: the app's Find lists 0 boards in 15 s and says "No LEAKCAM found. Check that it is plugged into USB
+power ..."; the stored bond gets no connection; USB-C 1 back: found again 15.9 s after the plug (the test firmware's BLE
+restarted by command, as in test040 usb-gate): pass, 5 of 5 checks.
+
 Open:
 - Step 2 (the stored network used on battery by the BL616's wake and a K230 session) needs the battery wake that joins the
-  stored network and starts a session in the test firmware; step 7 (on battery: not listed, no connection) by hand (test040 usb-gate covers the board side).
+  stored network and starts a session in the test firmware.
 - 5 GHz-only and no-data hotspot networks (Setup) not run: no such networks on the bench.
 - The hand run on a second phone (another Android version: the bond removal, the single prompt) not done.
 - Remaining waits: Send -> prompt (connect) and the fast scan could go too if the app connected and paired while the

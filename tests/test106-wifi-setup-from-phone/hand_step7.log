@@ -1,0 +1,8 @@
+17:13:15 CHECK pass advertises on USB power LEAKCAM-B14A rssi -45
+17:14:04 CHECK pass bond stored on the phone before the unplug (BOND_BONDED 12) {'error': None, 'pair': "bonded after 'Устан. сопряж.'+'Устан. сопряж.'", 'bond': 12}
+17:14:04 ACTION: unplug USB-C 1 now (the cell stays in)
+17:14:34 CHECK pass on battery the app lists no board (Find, 15 s) found 0; help: No LEAKCAM found. Check that it is plugged into USB power and within a few metre | Tap Find LEAKCAM and pick your board first.
+17:14:41 CHECK pass on battery the stored bond cannot connect no connection
+17:14:41 ACTION: plug USB-C 1 back in
+17:15:02 CHECK pass found again after the plug 15.9 s after the plug
+17:15:04 step 7 done, 48 s from the unplug

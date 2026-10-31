@@ -119,4 +119,5 @@ def usb_gate():
     op("unpair", address=addr)
 
 
-{"meter": meter, "usb-gate": usb_gate}[sys.argv[1]]()
+if __name__ == "__main__":
+    {"meter": meter, "usb-gate": usb_gate}[sys.argv[1]]()
