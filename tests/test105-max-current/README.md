@@ -50,8 +50,9 @@ Runs:
    `evlog`), die / board temperature.
 2. **All loads for 10 min** on USB: the current and heat over time (does the K230 throttle? does the
    board reach a limit?).
-3. Cold start into full load and the low-cell runs on the cell: n/a, no battery measurements (user, 2026-10-30); the cut-off under load is test038's
-   (lab supply).
+3. **On the cell** (unblocked by the user 2026-10-31; [run_cell.py](run_cell.py)): USB-C 1 out, PR1 in; a cold start into
+   every camera-free load, held until VBAT under load reaches 3.30 V (or a reset), then the rest voltage; measured on
+   the board only (K230 ADC, resets, temperature), no meter in the cell lead. The cut-off itself stays test038's.
 
 ## Pass
 
@@ -88,7 +89,7 @@ Per load, USB-C 1 at 5 V, each on top of the ones before (2026-10-30, the user a
   while the K230 runs: no charging until `pt_off` (bug-002).
 
 Open:
-- Cell-only runs (cold start into full load, low cell): n/a, no battery measurements (user, 2026-10-30).
+- Run 3 on the cell: planned (run_cell.py, after the test034 drying-curve dump on 2026-10-31).
 - One VBAT sample of 3.47 V at 380 s of the full load (neighbours 3.99 / 4.02 V, no reset): ADC glitch or a real
   dip; no scope on this bench (user, 2026-10-30).
 - Why the BL616's USB console left the bus at the 2026-10-25 unplug (HISTORY.md).
