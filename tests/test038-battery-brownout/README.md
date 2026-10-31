@@ -2,7 +2,8 @@
 
 Status: **partial** (2026-10-23): with a raised threshold on the cell the chain works - K230 `bat_watch` cut,
 heartbeat stop, rails off, lockout HBN, USB plug wakes it with no EN; the real 3.10 V cut, the 3.50 V unlock and the
-below-3 V steps need a lab supply (none).
+below-3 V steps need a lab supply (none); deferred to the second board (user, 2026-10-31: tested when it is
+assembled).
 
 Rev 1 has no hardware discharge cutoff (bug-004): the BQ24072 keeps its BAT-FET on, so the firmware is the only
 guard. The K230 reads VBAT (test023) and reports it in the WAKE ACK; the BL616 keeps it in HBN RAM; below 3.10 V

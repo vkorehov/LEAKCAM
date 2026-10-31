@@ -111,7 +111,7 @@ Leak tests, one per operation the product repeats:
 **Tests not run or partial:** not run - test020, test030 (cameras), test101, test102, test104 (test-firmware features to add),
 test103 (later); partial - test008 (steps 3-7), test026 (KPU / encoder / camera load, enclosure, die limit), test032
 (crystal ppm, 100 cycles, 24 h), test034 (threshold decision, 8 h dry), test035 (100 transitions), test037 (steps 1-6),
-test038 (lab supply), test105 (runs 1-4), test106 (step 2); **fail** - none.
+test038 (on the second board), test105 (runs 1-4), test106 (step 2); **fail** - none.
 
 **Always:**
 - Build host = VMware VM on a Mac. Since 2026-10-24 VMware's USB popups are off: every re-enumerated device (K230
