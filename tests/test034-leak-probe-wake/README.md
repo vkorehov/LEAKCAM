@@ -1,8 +1,9 @@
 # test034: leak probe wake (ACOMP1) and wet/dry thresholds
 
-Status: **pass with opens** (2026-10-22): leak threshold vio_sel 17 = 0.85 V (wet below ~430 kohm); S1/S2/S3 shorts
-detected (settled 247-256 mV); HBN wake on going wet and on going dry works. Open: real water types, resistor sweep,
-8 h no-false-wake.
+Status: **open: threshold decision** (2026-10-31): water in a cup, a puddle, hot and salted water read WET (243-756 mV
+against 0.85 V), but a wet towel sits at the threshold and with light pressure reads **dry** (949-952 mV); raising the
+threshold to ~1.30 V is proposed, not decided. Shorts S1/S2/S3 and the HBN wake on both edges pass (2026-10-22).
+Open: the threshold, the salted probe's drying curve (logging on the board), 8 h no-false-wake.
 
 The leak probes S1-S3 pull LEAK_SENS (1 M / 1 M divider from 3V3_SLEEP, 1.65 V dry) down when water bridges them;
 ACOMP1 wakes the BL616 from hibernate on that edge. The product's first job.
@@ -53,8 +54,35 @@ Wet detected at every water type the product must see, dry never woken falsely i
 - Wake latency (estimated, not measured): C109 1.65 V -> 0.85 V trip **7.4 ms** for a hard short (slower for water),
   then the HBN wake path **~15 ms** (test021: 12-16 ms) = ~22 ms to main() (2026-10-22).
 
+- Real water, probe on S1..S3 (2026-10-31, node voltage against the 0.85 V threshold; raw: [water_2026-10-31.log](water_2026-10-31.log)):
+
+  | Case | Node | Comparator |
+  |---|---|---|
+  | Dry, in air; after each rinse and towel-drying | 1649-1652 mV | dry |
+  | Tap water, puddle on the tips | 659 -> 756 mV over 2.5 min, rising (tips polarise, water drying) | WET |
+  | Tap water, tips in a cup | 393 mV, settled at 517 mV after 3.5 min | WET |
+  | Boiled tap water, hot, in a cup | 243 mV (like a hard short), 408 mV after 4 min | WET |
+  | Tap water with salt, in a cup | 390 -> 308 mV over 3.5 min, falling (salt dissolving) | WET |
+  | Wet towel (tap water), wrapped, no pressure | 838 -> 892 mV over 1.5 min, rising | WET (hysteresis) |
+  | Wet towel, light pressure | 949-952 mV | **dry: missed** |
+  | After salt water, rinsed and towel-dried | 1171-1202 mV, rising | dry |
+  | Salted probe out of the water, drying in air | 395 -> 501 mV in 4 min, then flat ~500 mV to 12 min, 470-481 mV at 12-14 min | WET |
+
+  - DC through the water polarises the tips: the node rises over minutes in still water (tap: 393 -> 517 mV). Salt
+    goes the other way.
+  - A wet towel is the marginal case: the comparator stayed WET up to 892 mV (above 0.85 V: the dry edge is higher than
+    0.88 V, the hysteresis is wider than 30 mV or the reference is off) and was dry at 949 mV.
+  - Distilled water: not required (user, 2026-10-31).
+  - The host readings have a gap 17:45-17:53: the VM froze 505 s (the Mac slept); since then `pt_leak log` samples on
+    the board itself.
+
 Open:
-- Real water (tap, distilled, salt, wet towel) and a resistor sweep 10 k .. 10 M for the threshold in ohms.
+- **Threshold:** 0.85 V misses a pressed wet towel. Proposed ~1.30 V (vio_sel 26): ~350 mV margin to the towel and to
+  dry (1650 mV); a salt film after a real leak (~1.2 V) then stays WET until it dries. User decision; then the test
+  firmware, leak_wake.c, PROBE_WET_MV, DESIGN.md, and the towel re-checked, and step 5 at the new value.
+- The dry trip point of the comparator (between 892 and 949 mV seen): `pt_leak sweep` on a towel.
+- Salted probe drying curve: `pt_leak log 20` on the board since 17:56:40, dump after ~20:15.
+- Resistor sweep 10 k .. 10 M: not run (the user records voltages, not resistances).
 - 8 h dry without a false wake (step 5; the test firmware's evlog counts the wakes).
 - Wake latency not measured directly (no edge timestamp on the board).
 

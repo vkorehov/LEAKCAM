@@ -70,7 +70,7 @@ Leak tests, one per operation the product repeats:
 | [test031 sleep and minimal currents (every power state's floor)](test031-sleep-current/README.md) | 2026-10-25 | **pass, done**: on the battery the product sleep (HBN level 0, comparators armed) draws 35 uA, |
 | [test032 RTC wake (BL616 HBN timer, 32.768 kHz crystal)](test032-rtc-wake/README.md) | 2026-10-25 | **partial**: HBN RTC wake on Y3 works (10 s and 600 s, every wake arrived); Y3 +17 ppm with a |
 | [test033 every BL616 pin: function, levels, back-feed](test033-bl616-pins/README.md) | 2026-10-25 | **pass**: every pin as in the table in all 5 states (pt_pins + pin_check.py, 0 off); BOOT1 (IO27) |
-| [test034 leak probe wake (ACOMP1) and wet/dry thresholds](test034-leak-probe-wake/README.md) | 2026-10-22 | **pass with opens**: leak threshold vio_sel 17 = 0.85 V (wet below ~430 kohm); S1/S2/S3 shorts |
+| [test034 leak probe wake (ACOMP1) and wet/dry thresholds](test034-leak-probe-wake/README.md) | 2026-10-31 | **open: threshold decision**: tap, hot, salted water and puddles WET (243-756 mV vs 0.85 V); a pressed wet towel reads dry (949-952 mV); ~1.30 V proposed; shorts and HBN wake pass |
 | [test035 USB plug wake (PGOOD on ACOMP0)](test035-usb-plug-wake/README.md) | 2026-10-22 | **pass**: plug / unplug seen awake, HBN wake on both edges, 19 charger plug transitions all reported. |
 | [test036 K230 hang recovery (heartbeat stop, READY timeout)](test036-k230-hang-recovery/README.md) | 2026-10-25 | **pass**: 12 supervised sessions (normal, hang, reboot, no-boot) all end with the rails off; a |
 | [test037 K230 PMU RTC: start, set from the BL616, timekeeping](test037-k230-rtc/README.md) | 2026-10-25 | **partial: step 0 pass**: the PMU RTC runs from Y1, +27 ppm against the 27 MHz timer (3 boots), |
@@ -85,7 +85,7 @@ Leak tests, one per operation the product repeats:
 | [test103 Whole leak pipeline, end to end](test103-leak-pipeline-timing/README.md) | 2026-10-21 | **later**: not run yet; excluded for now (user): needs the cameras, Wi-Fi and the product BL616 |
 | [test104 battery energy audit](test104-battery-energy-audit/README.md) | 2026-10-30 | **planned**: when the BL616 test firmware runs the whole wake cycle for days (hibernate, sessions, Wi-Fi). |
 | [test105 maximum current - can the battery carry everything at once?](test105-max-current/README.md) | 2026-10-25 | **partial**: handover runs 1-2 done - USB -> cell under every camera-free load (1.06 A at 5 V), |
-| [test106 Wi-Fi setup from the phone, end to end](test106-wifi-setup-from-phone/README.md) | 2026-10-30, run.py 18/18 | **pass, steps 1 3 4 5 6 8**: setup 7.3-8.0 s from opening the app to Done; steps 2 |
+| [test106 Wi-Fi setup from the phone, end to end](test106-wifi-setup-from-phone/README.md) | 2026-10-31, run.py 18/18 + hand_step7.py 5/5 | **pass, steps 1 3 4 5 6 7 8**: setup 7.3-8.0 s from opening the app to Done; on battery no board listed, no connection; step 2 open |
 | [test107 change-net update from the server (GET /v1/nn)](test107-change-net-update/README.md) | 2026-10-30 | **planned**: K230 test image with `leakcam_wake`, sessions and the Wi-Fi bridge from the BL616 test |
 | [test108 production server check by the BL616 (schedule, lease reuse, server address, back-off)](test108-server-check-schedule/README.md) | 2026-10-30 | **planned**: the scheduler, lease reuse and server address are not written yet (DESIGN 5.1 |
 | [test109 secure server (TLS, device identity, pinned certificate, signed change net)](test109-secure-server/README.md) | 2026-10-30 | **planned**: the real server is not built (DESIGN 7, SECURITY.txt 4); it will run on the Windows PC for the test. |
@@ -110,8 +110,8 @@ Leak tests, one per operation the product repeats:
 
 **Tests not run or partial:** not run - test020, test030 (cameras), test101, test102, test104 (test-firmware features to add),
 test103 (later); partial - test008 (steps 3-7), test026 (KPU / encoder / camera load, enclosure, die limit), test032
-(crystal ppm, 100 cycles, 24 h), test034 (real water, 8 h dry), test035 (100 transitions), test037 (steps 1-6),
-test038 (lab supply), test105 (runs 1-4), test106 (steps 2, 7); **fail** - none.
+(crystal ppm, 100 cycles, 24 h), test034 (threshold decision, 8 h dry), test035 (100 transitions), test037 (steps 1-6),
+test038 (lab supply), test105 (runs 1-4), test106 (step 2); **fail** - none.
 
 **Always:**
 - Build host = VMware VM on a Mac. Since 2026-10-24 VMware's USB popups are off: every re-enumerated device (K230

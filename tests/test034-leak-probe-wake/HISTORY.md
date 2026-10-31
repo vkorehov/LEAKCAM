@@ -44,3 +44,16 @@ Open: real water (tap, distilled, salt, wet towel) and a resistor sweep 10 k .. 
   flipped, while C109 was still discharging (tau 8.6 ms) -> waits 50 ms (wet) / 250 ms (dry) before the reading.
   The user pointed at the series resistors in the schematic; they were already in the formula (94 k).
 - **Holding a short while clicking "connect to Linux"** broke the contact for a moment: the dry-again test woke on that.
+
+## Real water by hand: 2026-10-31
+
+The user dipped the probe on cue; the host read `pt_leak` 5 times per point (scratch reader, voltages only at the
+user's request: "record voltages not resistance"). Results in README Result; raw lines in water_2026-10-31.log.
+
+Obstacles:
+- Two host logs started with the wrong label (the probe was out of the water when "salted water" was logged): the
+  user said so, the label in the log reads "salted water then drying", the probe was in air from 17:41.
+- VM frozen 505 s (17:45-17:53, vmtoolsd "interval longer ... actual=505 sec"): the Mac slept. Fix: `pt_leak log`
+  (the BL616 samples into RAM, 1024 points; dump with `pt_leak log dump`); host sleep no longer loses points.
+- My first readings converted the node to kohm; near a short the formula went negative (-8 kohm below the measured
+  short level): dropped, voltages only.
