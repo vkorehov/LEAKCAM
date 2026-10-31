@@ -12,9 +12,9 @@ This file records what was decided and why. Details live in the documents it lin
 | Build and flash, from an empty machine | [firmware/BUILD.md](firmware/BUILD.md) |
 | Power management, BL616 firmware, findings | [firmware/README.md](firmware/README.md) |
 | K230 board port (boot, NAND, pins, kernel) | [firmware/k230_board/README.md](firmware/k230_board/README.md) |
-| Capture, history, streaming (video with audio) on RT-Smart | [firmware/k230_capture/rtsmart/README.md](firmware/k230_capture/rtsmart/README.md) |
-| Wi-Fi (BL616 NetHub + K230 SDIO driver) | [firmware/bl616/WIFI.md](firmware/bl616/WIFI.md) |
-| Change net | [firmware/k230_nn/README.md](firmware/k230_nn/README.md) |
+| Capture, history, streaming (video with audio) on RT-Smart | [attic/firmware/k230_capture/rtsmart/README.md](attic/firmware/k230_capture/rtsmart/README.md) |
+| Wi-Fi (BL616 NetHub + K230 SDIO driver) | [attic/firmware/bl616/WIFI.md](attic/firmware/bl616/WIFI.md) |
+| Change net | [attic/firmware/k230_nn/README.md](attic/firmware/k230_nn/README.md) |
 | LED strips | [LED_STRIPS.txt](LED_STRIPS.txt) |
 | PCB stack and gerbers | [LAYERS.txt](LAYERS.txt), [FAB_NOTES.txt](FAB_NOTES.txt) |
 | Off-board parts (battery, NTC, cameras, cables) | [EXTERNAL_PARTS.md](EXTERNAL_PARTS.md) |
@@ -221,7 +221,7 @@ time (`SESSION_MAX_RESTARTS`), is cut and retried / backed off as a failure. A K
 `READY` within 10 s (`BOOT_TIMEOUT_MS`; the agent is up 0.9-1.4 s after power-on) is retried and
 backed off as a failed boot.
 
-**`leakcam_wake` (`firmware/k230_capture/leakcam_wake.c`):**
+**`leakcam_wake` (`attic/firmware/k230_capture/leakcam_wake.c`):**
 
 ```
 capture both cameras (LEDs on for the shot, AE settled), reduce to 320x240
@@ -262,7 +262,7 @@ POST /v1/check?reason=&probe_mv=&bat_mv=&rh=&t=&nn=&thr=&cam<i>=, both reduced f
   `leakcam_stream` opens it again for the push. Both run the same MPP pipeline once.
 
 **Server protocol (HTTP/1.1, one request per connection).** The mock is
-`firmware/k230_capture/mock_server.py`; it answers "leak" when the probes say wet (the reason
+`attic/firmware/k230_capture/mock_server.py`; it answers "leak" when the probes say wet (the reason
 is `leak`, or the probe node is below 1100 mV), or always / never with `--leak`.
 
 | Request | Body | Reply |
@@ -429,7 +429,7 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
   - The clock is lost only with the battery. `WAKE` then carries 0 until NTP time arrives
     again.
 
-### 5.5 Wi-Fi ([firmware/bl616/WIFI.md](firmware/bl616/WIFI.md))
+### 5.5 Wi-Fi ([attic/firmware/bl616/WIFI.md](attic/firmware/bl616/WIFI.md))
 
 - **Split.** The BL616 is only the radio and the WPA supplicant. The K230's lwIP owns the IP
   address: DHCP, DNS, NTP and every socket, with the BL616's station MAC.

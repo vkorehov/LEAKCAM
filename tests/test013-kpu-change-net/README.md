@@ -3,7 +3,7 @@
 Status: **pass** (2026-10-25): int8 net whole on the KPU, 0.5 ms per inference, one distance 2.9 ms median, output
 identical on every run; threshold 0.43 from the 219 real pairs (2026-10-19).
 
-The change net ([firmware/k230_nn](../../firmware/k230_nn/README.md)) on the KPU against the 15 check pairs of
+The change net ([attic/firmware/k230_nn](../../firmware/k230_nn/README.md)) on the KPU against the 15 check pairs of
 `make_embed.py` (`data/embed_pairs.npy` with TensorFlow's distances). Temporary test programs, in the SDK copy only
 (not in the repo): `leakcam_kputest` (the pairs through `change_distance()`), `leakcam_kpurun` (any kmodel, fixed
 input), `leakcam_kmin` (a one-layer model with known output), Canaan's `yolov8_image.elf`.

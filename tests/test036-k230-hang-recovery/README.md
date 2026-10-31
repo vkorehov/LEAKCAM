@@ -44,11 +44,11 @@ Every hang ends in rails off within its timeout, no session runs on; retries and
   (15 s test timeout): rails off 15.31 s; reboot pulse at 5 s: rails off 32.47 s.
 - A K230 restart (back within ~1 s, gap 1.015 s, under the 2 s limit) and a hung agent whose heartbeat thread still
   runs are invisible to the heartbeat; the product sees a restart as a second READY (2026-10-22). Fixed in
-  firmware/bl616/main.c: `SESSION_MAX_MS` 15 min (above the agent's own 10 min hook limit) and
+  attic/firmware/bl616/main.c: `SESSION_MAX_MS` 15 min (above the agent's own 10 min hook limit) and
   `SESSION_MAX_RESTARTS` 2 end a session as a failure (rails off, then retries and back-off), logged as
   `session-end ... cut`.
 - BOOT_TIMEOUT_MS 90 s -> 10 s (the heartbeat starts 0.9-1.5 s after power-on): a K230 that never boots costs 10 s per
-  attempt, 3 attempts, then the 5 min / 1 h back-off (2026-10-22, firmware/bl616/main.c).
+  attempt, 3 attempts, then the 5 min / 1 h back-off (2026-10-22, attic/firmware/bl616/main.c).
 - K230_ALIVE toggles 239-249 ms after power-on before any agent (the K230's JTAG_TCK at reset); the product watches the
   heartbeat only after READY (2026-10-22).
 - No BL616 leak over 12 sessions (2026-10-25).

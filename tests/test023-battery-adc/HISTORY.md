@@ -34,7 +34,7 @@ VBAT 4355-4395 mV over 8 samples (idle, then memtest), spread 40 mV.
   averaged over 64 reads: within +-10 mV of the meter: **pass** at a full cell.
 - **Calibration (2026-10-21), 7 pairs 4.07-4.37 V:** gain fits as well as offset (residuals within +-10 mV both
   ways); gain chosen (a divider/reference error scales): meter = ADC x 0.9868, i.e. full scale 5329 mV instead of
-  5400. In firmware/k230_agent/leakcam_agent.c (BAT_FULL_SCALE_MV), with the mean of 64 conversions (sd 45 -> ~6
+  5400. In attic/firmware/k230_agent/leakcam_agent.c (BAT_FULL_SCALE_MV), with the mean of 64 conversions (sd 45 -> ~6
   mV). The low-cell point will tell gain from offset; re-fit then.
 - **C11 at 3.30 V with D1 off** (should charge, D1 on): the JB1 cell joint was open - see Obstacles.
 

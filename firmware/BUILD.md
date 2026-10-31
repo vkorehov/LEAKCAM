@@ -217,7 +217,7 @@ link frames), the BL616 forwards it. Only the BootROM's own lines (errors, USB b
 4. The RT-Smart `msh />` prompt.
 5. `ls /sdcard/app` should list `leakcam_agent`, `leakcam_wake`, `leakcam_hist`,
    `leakcam_stream` and `leakcam_change.kmodel`. For a first real wake, write the server address to `/sdcard/leakcam/server`
-   (`<host> <port>`) and run `python3 firmware/k230_capture/mock_server.py` on that host.
+   (`<host> <port>`) and run `python3 attic/firmware/k230_capture/mock_server.py` on that host.
 
 **Not yet verified on hardware:**
 - that the ROM reads the NAND on the 3.3 V bank;
@@ -278,17 +278,17 @@ Consoles, the retained event log (`evlog` on the BL616 console) and the JTAG deb
 ## 5. Host tests (no hardware)
 
 ```
-make -C firmware/k230_capture test          # change detector, image history (miniz),
+make -C attic/firmware/k230_capture test          # change detector, image history (miniz),
                                             # H.265 + Opus RTMP publish to ffmpeg -listen (FFmpeg 7.1+:
                                             # FFMPEG_BIN=<its bin dir>, else from PATH),
                                             # the wake algorithm against mock_server.py (change net stubbed)
-make -C firmware/bl616/test                 # link protocol (seq/ACK/NAK codes/resends, trace), AHT20 maths,
+make -C attic/firmware/bl616/test                 # link protocol (seq/ACK/NAK codes/resends, trace), AHT20 maths,
                                             # always-on clock/state, retained event log, wifi_link.c (receive
                                             # filter, control channel, layout, radio owner, credential
                                             # check's local mode), the check's result reading
-make -C firmware/k230_agent test            # agent link code against the BL616's over a lossy socket pair
+make -C attic/firmware/k230_agent test            # agent link code against the BL616's over a lossy socket pair
 make -C firmware/k230_board/rtsmart/drivers/bl616_nethub/test   # K230 Wi-Fi driver on a simulated BL616 SDU
-make -C firmware/k230_capture clean; make -C firmware/bl616/test clean; make -C firmware/k230_agent clean
+make -C attic/firmware/k230_capture clean; make -C attic/firmware/bl616/test clean; make -C attic/firmware/k230_agent clean
 make -C firmware/k230_board/rtsmart/drivers/bl616_nethub/test clean
 ```
 

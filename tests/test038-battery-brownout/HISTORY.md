@@ -79,7 +79,7 @@ comparator wake disabled), as the product's bug-004 lockout. Board on the cell (
   then look): the lockout now arms the edge and then checks PGOOD; USB already in = no HBN ("LOCKOUT skipped"), an
   edge after the arming stays pending and wakes HBN at once. `pt_sleep` likewise. The product had the same window
   (`sleep_for()` checked USB, then armed): `usb_arm_hbn_wake()` now arms and returns whether USB is in, and both sleep
-  paths go to USB mode instead (firmware/bl616/usb_power.c, main.c). Retest 10:13: USB-C 1 in, `pt_session 10000
+  paths go to USB mode instead (attic/firmware/bl616/usb_power.c, main.c). Retest 10:13: USB-C 1 in, `pt_session 10000
   lockout 3000` -> "LOCKOUT skipped: USB present", BL616 stayed on USB. **Open:** no charge (0.03 mA) while the K230
   ran with USB-C 1 replugged mid-session, charging only once the rails went off: the CH340 is off the board now, so
   not bug-002's D3 path; recheck by plugging during a session (pt_usb).

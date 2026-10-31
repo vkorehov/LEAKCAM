@@ -79,7 +79,7 @@ them.
 4. Network and server
 ---------------------
 
-  Today (mock server, firmware/k230_capture/mock_server.py): plain HTTP and RTMP, no authentication.
+  Today (mock server, attic/firmware/k230_capture/mock_server.py): plain HTTP and RTMP, no authentication.
     - Anyone on the path can read the pictures, clips and sound, and fake the server's answers (e.g. "no leak",
       a different change net via "nn", a long "video" request).
     - Anyone can post fake reports as a device.

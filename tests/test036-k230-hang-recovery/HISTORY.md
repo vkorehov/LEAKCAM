@@ -27,7 +27,7 @@ Status: **pass** (2026-10-22): 39 supervised sessions (10 normal, 10 hang, 10 no
 (One no-boot run's lines landed in the next run's capture; counted as no-boot. The tenth reboot run was cut by the
 script being stopped.) No session stayed on; the K230 console (CH340) came and went with the rails, not used.
 
-**Found (product, fixed in firmware/bl616/main.c):**
+**Found (product, fixed in attic/firmware/bl616/main.c):**
 - **A K230 restart is invisible to the heartbeat** (back within ~1 s, under the 2 s limit) and so is **a hung agent
   whose heartbeat thread still runs** (the heartbeat is a thread of its own, leakcam_agent.c), and sessions had **no
   length limit**: a crash loop or such a hang keeps the K230 on until the battery is flat. The product does see a

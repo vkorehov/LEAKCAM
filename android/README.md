@@ -60,7 +60,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 The APK is signed with the debug key: fine for installing on your own phones, not for a store.
 
 **On an aarch64 Linux host** Google publishes `aapt2` for x86-64 only. It runs under
-qemu-user 11.1 (the one in `firmware/k230_nn/qemu11`) with an x86-64 libc taken from the
+qemu-user 11.1 (the one in `attic/firmware/k230_nn/qemu11`) with an x86-64 libc taken from the
 `python:3.11-slim` image:
 
 ```bash

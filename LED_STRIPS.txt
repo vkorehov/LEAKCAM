@@ -186,7 +186,7 @@ can be switched and dimmed independently.
 9. Firmware
 -----------
 
-  firmware/k230_capture/leakcam_capture.c: -b white%,ir% (white = PWM1, IR = PWM0), 25 kHz PWM,
+  attic/firmware/k230_capture/leakcam_capture.c: -b white%,ir% (white = PWM1, IR = PWM0), 25 kHz PWM,
   100 = maximum the driver delivers, 0 leaves a chain off (e.g. -b 0,100 for IR only, no
   visible flash).
   The IR LEDs are only useful with the cameras' IR-cut filter removed.

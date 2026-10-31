@@ -1,10 +1,10 @@
 # test041: humidity alarm (AHT20 threshold wakes the K230)
 
 Status: **planned** (2026-10-30): the BL616 test firmware needs the humidity slice and alarm decision of
-firmware/bl616/main.c (HBN slices, AHT20, alarm -> K230 session); steps 1-2 run on it today.
+attic/firmware/bl616/main.c (HBN slices, AHT20, alarm -> K230 session); steps 1-2 run on it today.
 
 The BL616 reads the AHT20 on every RTC slice (every 10 min, ~85 ms awake, K230 off). At **85.0 %RH or more**
-(`HUM_ALARM_X10`, firmware/bl616/main.c) it powers the K230 with wake reason `humid`; `leakcam_wake` takes it as a
+(`HUM_ALARM_X10`, attic/firmware/bl616/main.c) it powers the K230 with wake reason `humid`; `leakcam_wake` takes it as a
 sensor alarm and reports to the server with the reading. There is no memory of an earlier alarm: every slice above the
 threshold wakes the K230 again (DESIGN 5.1).
 
@@ -14,7 +14,7 @@ threshold wakes the K230 again (DESIGN 5.1).
   threshold), **NaCl ~75 %RH** (below), K2SO4 ~97 %RH (well above); the board on a stand above the dish, room
   temperature steady. A reference hygrometer in the box.
 - Battery (cell full) for steps 3-6, USB-C 1 out (USB mode never takes the humidity path); the BL616 console on PR1.
-- The mock server on the PC (`firmware/k230_capture/mock_server.py`) for step 5.
+- The mock server on the PC (`attic/firmware/k230_capture/mock_server.py`) for step 5.
 
 ## Needs (build features and dependencies)
 

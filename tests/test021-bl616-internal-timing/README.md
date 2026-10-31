@@ -21,7 +21,7 @@ BL616 product parts: HBN, RTC, ACOMP, I2C (AHT20), K230 power path.
 ## Steps
 
 1. Wake to K230_PWR high: from an RTC wake, a leak (ACOMP) edge and a USB plug (test firmware with the wake decision of
-   firmware/bl616/main.c built in; each step timestamped by the BL616 mtimer and the K230's rdtime).
+   attic/firmware/bl616/main.c built in; each step timestamped by the BL616 mtimer and the K230's rdtime).
 2. AHT20 measurement: trigger to data (datasheet 80 ms; the firmware reads at 50 ms then every 5 ms).
 3. Easyflash/littlefs: write and read of a key (Wi-Fi credentials, BLE bonds) on the BL616's flash.
 4. Leak probe ADC conversion time.

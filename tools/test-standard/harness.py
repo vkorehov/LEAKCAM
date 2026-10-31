@@ -44,9 +44,9 @@ BL616_BIN = glob.glob(os.path.join(REPO, "tools/power-bringup/bl616_powertest/bu
 METER_FIFO = os.path.expanduser("~/.leakcam_meter")
 METER_WAIT_S = 600
 METER_CACHE = os.path.expanduser("~/.leakcam_meter_cache.json")
-BAT_FULL_SCALE_MV = 5329          # test023 calibration (firmware/k230_agent/leakcam_agent.c)
+BAT_FULL_SCALE_MV = 5329          # test023 calibration (attic/firmware/k230_agent/leakcam_agent.c)
 # the flags of the builds on the board (2026-10-25): ~/k230_rtos_sdk rtconfig.py (LEAKCAM: kernel opt),
-# firmware/k230_capture/rtsmart/Makefile (LEAKCAM_OPT), bouffalo_sdk cmake/compiler_flags.cmake (no
+# attic/firmware/k230_capture/rtsmart/Makefile (LEAKCAM_OPT), bouffalo_sdk cmake/compiler_flags.cmake (no
 # CONFIG_GCC_OPTIMISE_LEVEL in the test firmware's defconfig)
 FLAGS = ("K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os -march=rv64imafdcv, sections + "
          "--gc-sections, strip, no LTO; BL616 test firmware -Os -g (SDK Kconfig default), no LTO")

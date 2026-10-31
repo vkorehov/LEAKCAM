@@ -5,11 +5,11 @@ The one neural net on the device. It runs on the K230D KPU inside leakcam_wake a
 one question: is the change imgdiff found a change of the scene, or only of the light? The
 leak / no-leak decision stays with the server (/v1/check).
 
-  code        firmware/k230_capture/change.[ch]     (nncase 2.11 runtime, no OpenCV)
-  model       firmware/k230_capture/leakcam_change.kmodel -> /sdcard/app on the board
-  tools       firmware/k230_nn/make_embed.py        (host, TensorFlow: net, pairs, threshold)
-              firmware/k230_nn/compile_embed.py     (x86 container: int8 kmodel, sim vs TF)
-              firmware/k230_nn/README.md            (toolchain setup and commands)
+  code        attic/firmware/k230_capture/change.[ch]     (nncase 2.11 runtime, no OpenCV)
+  model       attic/firmware/k230_capture/leakcam_change.kmodel -> /sdcard/app on the board
+  tools       attic/firmware/k230_nn/make_embed.py        (host, TensorFlow: net, pairs, threshold)
+              attic/firmware/k230_nn/compile_embed.py     (x86 container: int8 kmodel, sim vs TF)
+              attic/firmware/k230_nn/README.md            (toolchain setup and commands)
 
 
 1. Design (what runs now)

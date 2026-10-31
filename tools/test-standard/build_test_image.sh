@@ -17,7 +17,7 @@ patch -d "$SDK/src/rtsmart/rtsmart/kernel/bsp/maix3/drivers/extdrv/bl616_nethub"
     < "$L/tests/test015-sdio-speed/k230_bench.patch"
 mkdir -p "$A/leakcam/src"
 cp "$L/tests/test008-minimal-image/leakcam_cpubench.c" "$L/tests/test013-kpu-change-net/leakcam_kputest.c" "$A/leakcam/src/"
-cp "$L/firmware/k230_capture/rtsmart/Makefile" "$A/leakcam/Makefile"
+cp "$L/attic/firmware/k230_capture/rtsmart/Makefile" "$A/leakcam/Makefile"
 for t in "test027-video-encoder/venctest" "test025-ddr-stress/memtest"; do
     n=$(basename "$t")
     rm -rf "${A}_off/$n"
