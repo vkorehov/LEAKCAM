@@ -64,3 +64,7 @@ Spot reads after the drying log: 657 mV (~19:00), 958, 1057-1075, 1516 mV (~19:4
 and 318-331 mV at 20:26 with brief jumps (409, 638 mV) while the user said the probe was dry. The probe unplugged
 from the socket: 1651 mV, dry: the board is clean, the salt left in the probe conducts (user: "salt residue is
 conducting").
+
+Located 20:31-20:36: RF ruled out (BL616 rebooted, radio off: still 311 mV steady); wires desoldered: board 1648 mV;
+wires resoldered by the user to probe-PCB pads with a wider trace gap: 1647 mV, dry. The salt film bridged the narrow
+trace gap on the probe PCB at the wire joints.

@@ -78,6 +78,10 @@ Wet detected at every water type the product must see, dry never woken falsely i
     water), then read WET again (376 mV, 318-331 mV at 20:26) with the tips dry. Probe unplugged: the board 1651 mV,
     dry, so the path is the probe (salt left between the electrodes / in the cable or plug), not the board. A probe
     that met salt water can read wet indefinitely until it is cleaned (rinsed in clean water and dried).
+    Found where: the wires desoldered, the board read 1648 mV (clean); the user resoldered them to probe-PCB pads
+    with a wider gap between the traces: 1647 mV, dry. The salt film bridged the narrow gap between the probe PCB's
+    traces near the wire joints, not the tips: the probe design needs wide spacing (and coating) everywhere except
+    the sensing tips.
   - A salted probe left in air stays WET for over an hour (the salt film keeps conducting while it holds moisture):
     after a real leak the alarm does not clear by itself soon.
 
@@ -92,6 +96,8 @@ Open:
   firmware (after the drying-curve dump), re-check the towel and the salt film, the dry trip point (`pt_leak sweep`),
   step 5 (8 h dry) at 1.10 V.
 - The dry trip point of the comparator (between 892 and 949 mV seen): `pt_leak sweep` on a towel.
+- Probe design: only the sensing tips exposed; wide trace spacing and a conformal coat / potting at the wire joints
+  (a salt film bridged the narrow gap there). Then re-run the salt water + drying with the new probe.
 - Product: after a salt-water leak the probe can stay WET until cleaned; the alarm must not just repeat (e.g. "probe
   still wet after N h: clean the probe"). Re-check the cleaned probe: back to ~1650 mV.
 - Salted probe drying curve: still WET after 67 min (608-629 mV, rising ~25 mV per 3 min since ~50 min); the board
