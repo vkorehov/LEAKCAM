@@ -9,8 +9,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-void usb_sense_init(void);
-bool usb_present(void);
-bool usb_arm_hbn_wake(void);          /* ACOMP0 falling edge on PGOOD = plug-in; true: USB already in, don't sleep */
+void usb_sense_init(void);           /* IO03 analog, PGOOD on ACOMP0 (tests/test001, test035) */
+bool usb_present(void);              /* PGOOD low: USB input valid */
 
 #endif

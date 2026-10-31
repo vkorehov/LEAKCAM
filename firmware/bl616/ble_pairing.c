@@ -20,7 +20,6 @@
 #include "easyflash.h"
 #include "log.h"
 
-#include "evlog.h"
 #include "usb_power.h"
 #include "wifi_check.h"
 #include "wifi_link.h"
@@ -82,7 +81,6 @@ static void store(const char *s, const char *k)
         return;
     }
     LOG_I("ble: Wi-Fi credentials stored for \"%s\"\r\n", s);
-    evlog_add(EV_BLE_CREDS, 0, 0);
     set_status(WCHK_SAVED, 0);
     ble_credentials_stored();
 }

@@ -37,7 +37,7 @@ void ble_pairing_start(void);
 /* Stop advertising and drop any connection (called when USB is unplugged). */
 void ble_pairing_stop(void);
 /* Called after new credentials are stored, from the BLE host or the check's task (must not block). The product
- * (main.c) restarts a running K230 session on them; the test firmware (pt_wifi.c) restarts its bridge. */
+ * (provision.c) drops the remembered AP; the test firmware (pt_wifi.c) also restarts its bridge. */
 void ble_credentials_stored(void);
 
 #endif

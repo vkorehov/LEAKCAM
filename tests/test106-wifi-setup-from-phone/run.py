@@ -13,7 +13,7 @@ import time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import creds, op, ready, want   # noqa: E402
+from phone import creds, op, product, ready, want   # noqa: E402
 
 REPEATS = 10
 
@@ -44,7 +44,10 @@ def setup(ssid, psk, anyway=False):
 
 
 def ble_on():
-    """pt_ble on; True once BLE advertises (`pt_ble` says "on" when it already was)"""
+    """pt_ble on; True once BLE advertises (`pt_ble` says "on" when it already was). The product starts BLE by
+    itself on USB power: the phone's Find proves it"""
+    if PRODUCT:
+        return "USB power yes" in bl("prov", 2)
     return "advertising as" in bl("pt_ble on", 5, r"advertising as|already on") or "pt_ble: on" in bl("pt_ble", 2)
 
 
@@ -54,7 +57,9 @@ if not os.path.exists(BL_PORT):
     r.obstacle("no BL616 console on USB (board or the VM's USB hub gone): reconnect, then run again")
     r.finish("not run: no BL616 console on USB.", False, switch_off=False)
     sys.exit(1)
-if "pt_ble" not in bl("help", 2):
+PRODUCT = product()
+log("BL616 firmware:", "product (firmware/bl616)" if PRODUCT else "test (bl616_powertest)")
+if not PRODUCT and "pt_ble" not in bl("help", 2):
     r.obstacle("the BL616 test firmware on the board has no pt_ble: flash tools/power-bringup/bl616_powertest")
     r.finish("not run: no pt_ble in the BL616 firmware.", False)
     sys.exit(1)
@@ -66,7 +71,7 @@ if why:
 check("BLE advertising on USB power", ble_on())
 
 # 1. first setup: nothing stored, the app from opening to Done
-bl("pt_ble erase", 2)
+bl("prov erase" if PRODUCT else "pt_ble erase", 2)
 check("nothing stored before the first setup", creds() == (None, None))
 last, secs, res = setup(ssid, psk)
 times["first"] = secs
@@ -104,14 +109,15 @@ check(f"{REPEATS} setups in a row: every one Done", done == REPEATS, f"{done}/{R
 
 # 6. the board reset (a watchdog reset), after the repeats: a reset just before them made their first memory
 #    sample a fresh heap, a false leak (2026-10-30): no bond on the board, the app pairs anew by itself
-bl("pt_hang", 1)
-time.sleep(16)                                  # watchdog recovery 12.9 s (test038)
+bl("reboot" if PRODUCT else "pt_hang", 1)
+time.sleep(4 if PRODUCT else 16)                # watchdog recovery 12.9 s (test038)
 t0 = time.time()
 while time.time() - t0 < 40 and not os.path.exists(BL_PORT):
     time.sleep(0.5)
 time.sleep(2)
-bl("pt_off", 2)
-check("BLE started again after a watchdog reset", ble_on())
+if not PRODUCT:
+    bl("pt_off", 2)
+check("BLE started again after a reset", ble_on())
 last, secs, res = setup(ssid, psk)
 check("after the reset: Done with no Forget by hand", last.startswith("Done."),
       f"{secs:.1f} s, pairing {res.get('pairing')}")

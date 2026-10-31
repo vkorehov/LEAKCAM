@@ -22,19 +22,12 @@
 #include "shell.h"
 
 #include "ble_pairing.h"
-#include "evlog.h"
 
 void wl_trace(uint8_t code);   /* pt_wifi.c: breadcrumbs kept across a reset (pt_trace) */
 
 bool usb_present(void);                    /* main.c */
 
 static bool started;
-
-/* the product's event log is not in the test firmware: its BLE entry goes to the console */
-void evlog_add(enum ev ev, int arg, unsigned val)
-{
-    printf("evlog: event %d arg %d val %u\r\n", (int)ev, arg, val);
-}
 
 static uint32_t crc32(const uint8_t *p, size_t n)  /* zlib's CRC-32: the runner compares with ~/.leakcam_wifi */
 {
