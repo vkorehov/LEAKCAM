@@ -14,7 +14,7 @@ threshold wakes the K230 again (DESIGN 5.1).
   threshold), **NaCl ~75 %RH** (below), K2SO4 ~97 %RH (well above); the board on a stand above the dish, room
   temperature steady. A reference hygrometer in the box.
 - Battery (cell full) for steps 3-6, USB-C 1 out (USB mode never takes the humidity path); the BL616 console on PR1.
-- The mock server on the PC (`attic/firmware/k230_capture/mock_server.py`) for step 5.
+- A mock server on the PC for step 5 (written with the product rewrite; the first one, attic/firmware/k230_capture/mock_server.py, is reference only).
 
 ## Needs (build features and dependencies)
 

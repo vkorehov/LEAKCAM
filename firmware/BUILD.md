@@ -73,21 +73,28 @@ cd ~/k230_rtos_sdk
 $LEAKCAM/firmware/k230_board/install.sh ~/k230_rtos_sdk
 ```
 
-**Rerun it after every change in `k230_board/` or `k230_capture/`.** It is idempotent. It does
+**Rerun it after every change in `k230_board/`.** It is idempotent. It does
 the following:
 
 1. **Pin files.** Runs `pins.py`, which regenerates the RT-Smart pin mux and the U-Boot pin
    `.dtsi` from the one pin table.
-2. **Board files.** Copies the board folder, the defconfigs, the U-Boot device tree and the app
-   (`k230_capture/rtsmart` -> `src/applications/leakcam`).
-3. **Board registration.** Adds the board to `boards/Kconfig`, the dtb to U-Boot's dts Makefile
-   and the app to `apps.mk`.
+2. **Board files.** Copies the board folder, the defconfigs and the U-Boot device tree.
+3. **Board registration.** Adds the board to `boards/Kconfig` and the dtb to U-Boot's dts Makefile.
 4. **UFFS patch.** Patches the RT-Smart NAND glue so UFFS gets 64 spare bytes; see
    `k230_board/README.md`.
 5. **Stale object.** Deletes the stale `pinmux.o`, which scons does not rebuild when the pin table
    changes.
 
 ### 2.4 Build
+
+The programs on /sdcard/app come from the test image script, run after install.sh (the first product's apps are in
+attic/firmware and are not built; the test image carries its own copy in tools/test-standard/k230_apps):
+
+```
+$LEAKCAM/tools/test-standard/build_test_image.sh ~/k230_rtos_sdk    # apps + test tools, then the full build
+```
+
+Or by hand:
 
 ```
 cd ~/k230_rtos_sdk
@@ -207,7 +214,7 @@ $LEAKCAM/firmware/k230_board/flash_nand.sh ~/k230_rtos_sdk     # K230 in USB boo
 
 The K230 console is the BL616's second USB port ([CONSOLE.md](CONSOLE.md)): PR1 gives `/dev/ttyACM0` (BL616 shell) and `/dev/ttyACM1` (K230
 console, `/dev/serial/by-id/...-if02`), one VMware click for both; it stays while the K230 is power-cycled. The K230's
-console runs on UART1 at 4 Mbaud from the first SPL line (SPL, OpenSBI and the kernel's link_mux, shared with the
+console runs on UART1 at 2 Mbaud from the first SPL line (SPL, OpenSBI and the kernel's link_mux, shared with the
 link frames), the BL616 forwards it. Only the BootROM's own lines (errors, USB boot) stay on UART0 (USB-C 2, CH340X
 `/dev/ttyUSB0`, 115200). Expect this order:
 
@@ -215,9 +222,8 @@ link frames), the BL616 forwards it. Only the BootROM's own lines (errors, USB b
 2. `k230_read_toc`, then slot A loading.
 3. The OpenSBI banner.
 4. The RT-Smart `msh />` prompt.
-5. `ls /sdcard/app` should list `leakcam_agent`, `leakcam_wake`, `leakcam_hist`,
-   `leakcam_stream` and `leakcam_change.kmodel`. For a first real wake, write the server address to `/sdcard/leakcam/server`
-   (`<host> <port>`) and run `python3 attic/firmware/k230_capture/mock_server.py` on that host.
+5. `ls /sdcard/app` (test image, tools/test-standard/build_test_image.sh) lists `leakcam_agent`, `leakcam_wake`,
+   `leakcam_hist`, `leakcam_stream`, `leakcam_change.kmodel` and the test tools.
 
 **Not yet verified on hardware:**
 - that the ROM reads the NAND on the 3.3 V bank;
@@ -240,7 +246,7 @@ The T-Head toolchain is x86-64 only. On the arm64 host it runs through qemu, but
 amd64 runtime libraries, so build inside the K230 build container (section 2.2):
 
 ```
-cd ~/k230d-hw/LEAKCAM/firmware/bl616
+cd ~/k230d-hw/LEAKCAM/tools/power-bringup/bl616_powertest
 docker run --rm --user $(id -u):$(id -g) -e HOME=/tmp \
     -e PATH=$HOME/k230d-hw/toolchain_gcc_t-head_linux/bin:/usr/bin:/bin \
     -v $HOME/k230d-hw:$HOME/k230d-hw -w $PWD k230-rtos-sdk-build:arm64-x86tc make -j5
@@ -248,8 +254,10 @@ docker run --rm --user $(id -u):$(id -g) -e HOME=/tmp \
 
 ### 4.2 Build
 
-`make` inside the container as above; CHIP=bl616 BOARD=bl616dk are the defaults. The firmware
-lands in `build/build_out/leakcam_bl616.bin`. `defconfig` moves the SDK
+The firmware built today is the BL616 **test firmware** (tools/power-bringup/bl616_powertest; the first product
+application is in attic/firmware and is not built). `make` runs the build in the container by itself on an arm64 host
+([bl616/host.mk](bl616/host.mk)); CHIP=bl616 BOARD=bl616dk are the defaults. The firmware lands in
+`build/build_out/bl616_powertest_bl616.bin`. `defconfig` moves the SDK
 console to USB CDC, because GPIO21/22 are the K230 link. That option needs the SDK shell,
 FreeRTOS and CherryUSB's CDC-ACM class; if any is missing Kconfig drops it without a word and
 the console falls back to UART0 on the link pins. Check `build/generated/autoconfig.h` for
@@ -277,18 +285,11 @@ Consoles, the retained event log (`evlog` on the BL616 console) and the JTAG deb
 
 ## 5. Host tests (no hardware)
 
+The first product's host tests (wake algorithm, link protocol, agent) are in attic/firmware and are not built; the
+rewrite brings its own (skill leakcam-product-firmware).
+
 ```
-make -C attic/firmware/k230_capture test          # change detector, image history (miniz),
-                                            # H.265 + Opus RTMP publish to ffmpeg -listen (FFmpeg 7.1+:
-                                            # FFMPEG_BIN=<its bin dir>, else from PATH),
-                                            # the wake algorithm against mock_server.py (change net stubbed)
-make -C attic/firmware/bl616/test                 # link protocol (seq/ACK/NAK codes/resends, trace), AHT20 maths,
-                                            # always-on clock/state, retained event log, wifi_link.c (receive
-                                            # filter, control channel, layout, radio owner, credential
-                                            # check's local mode), the check's result reading
-make -C attic/firmware/k230_agent test            # agent link code against the BL616's over a lossy socket pair
 make -C firmware/k230_board/rtsmart/drivers/bl616_nethub/test   # K230 Wi-Fi driver on a simulated BL616 SDU
-make -C attic/firmware/k230_capture clean; make -C attic/firmware/bl616/test clean; make -C attic/firmware/k230_agent clean
 make -C firmware/k230_board/rtsmart/drivers/bl616_nethub/test clean
 ```
 

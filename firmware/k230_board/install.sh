@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 # Install the LEAKCAM board (K230D + W25N02KV SPI NAND), the BL616 Wi-Fi driver and the
 # leakcam programs into a k230_rtos_sdk checkout. Idempotent: rerun after editing anything in
-# firmware/k230_board, attic/firmware/k230_capture, attic/firmware/k230_agent or firmware/bl616/wifi_ctrl_proto.h.
+# firmware/k230_board or firmware/bl616/wifi_ctrl_proto.h (the test image programs: tools/test-standard/build_test_image.sh).
 #
 #   firmware/k230_board/install.sh <k230_rtos_sdk>
 #   cd <k230_rtos_sdk> && make k230d_rtos_leakcam_defconfig && make
 set -euo pipefail
 SDK=$(realpath "${1:?usage: install.sh <k230_rtos_sdk>}")
 HERE=$(cd "$(dirname "$0")" && pwd)
-CAP=$(realpath "$HERE/../../attic/firmware/k230_capture")
 RTT=$SDK/src/rtsmart/rtsmart/kernel/bsp/maix3
 UB=$SDK/src/uboot/uboot
 for d in "$SDK/boards" "$RTT/board/configs" "$UB/arch/riscv/dts" "$SDK/src/applications"; do
@@ -506,21 +505,6 @@ open(p, 'w').write(s.replace(a, b))
 PY
 grep -q 'LEAKCAM: ov5647 1280x960 only' "$ISPMK" || { echo "ISP files patch not applied"; exit 1; }
 rm -f "$SDK"/output/*/images/bin/ov5647-*                  # earlier builds' sets: the rule only adds files
-
-# 4. the LEAKCAM apps (capture, history, stream): Makefile + Kconfig, sources copied into ./src
-APP=$SDK/src/applications/leakcam
-rm -rf "$APP"; mkdir -p "$APP/src"
-cp "$CAP/rtsmart/Makefile" "$APP/Makefile"
-cp "$CAP/rtsmart/Kconfig.app" "$APP/Kconfig"
-( cd "$CAP" && cp -r --parents *.c *.cc *.h leakcam_change.kmodel third_party/miniz/miniz.c third_party/miniz/miniz.h \
-      third_party/miniz/LICENSE third_party/opus "$APP/src/" )
-# the BL616 link agent, with the protocol header it shares with the BL616 firmware
-cp "$HERE/../../attic/firmware/k230_agent/leakcam_agent.c" "$HERE/../bl616/k230_link.h" "$APP/src/"
-# the bench programs' sources, built only with LEAKCAM_BENCH=1 (copied by hand before: test105 found kputest
-# missing from the image, 2026-10-30)
-cp "$HERE/../../tests/test008-minimal-image/leakcam_cpubench.c" "$HERE/../../tests/test013-kpu-change-net/leakcam_kputest.c" "$APP/src/"
-grep -q 'CONFIG_APP_ENABLE_LEAKCAM' "$SDK/src/applications/apps.mk" ||
-    echo 'subdirs-$(CONFIG_APP_ENABLE_LEAKCAM) += leakcam' >> "$SDK/src/applications/apps.mk"
 
 # 5. the tests' bench programs (memtest test025, venctest test027), built into the image with the apps. The SDK's
 #    defconfig sources a Kconfig from every app folder: without one it failed and every build since kept the old

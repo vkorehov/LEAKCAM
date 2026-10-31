@@ -10,9 +10,9 @@ from what the tests proved (skill leakcam-product-firmware); this code is refere
 | firmware/k230_capture/ | leakcam_wake: the wake algorithm (imgdiff, history views, change net, /v1/check, RTMP clips), mock_server.py, its host tests |
 | firmware/k230_nn/ | the change-net training and kmodel compile (nncase) |
 
-Still in use from here by the test tooling (do not delete): `firmware/k230_board/install.sh` installs
-`k230_agent/leakcam_agent.c` and the `k230_capture` programs into the K230 test image, and
-`tools/test-standard/build_test_image.sh` copies `k230_capture/rtsmart/Makefile`.
+**Nothing builds from here** (user, 2026-10-31: the attic is fully decoupled). The K230 test image carries its own
+copy of the programs the tests ran (tools/test-standard/k230_apps, installed by build_test_image.sh); docs that name
+files here only say where the old code was.
 
 What stayed in firmware/: everything the tests build from - the BL616 modules the test firmware compiles (wifi_link,
 wifi_check, ble_pairing, aht20, crash_rec, wdg_guard, mem_stat, usb_console2), the shared headers (board_pins.h,

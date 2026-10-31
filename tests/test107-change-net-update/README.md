@@ -6,7 +6,7 @@ firmware (`pt_session`, `pt_wifi`); the server runs on the Windows PC.
 The server may answer a check with `"nn":"<CRC>","thr":[<cam0>,<cam1>]`: a new change net and/or new thresholds.
 `leakcam_wake` downloads `GET /v1/nn/<CRC>`, refuses a body whose CRC-32 differs or that is over 4 MB, and saves it with
 `nnstore` into the older of two slot files (`change.0` / `change.1`); the next wake loads the newest slot that checks,
-else the factory kmodel with `CHANGE_THRESHOLD` (attic/firmware/k230_capture/nnstore.h, leakcam_wake.c `nn_update`).
+else the factory kmodel with `CHANGE_THRESHOLD` (tools/test-standard/k230_apps/nnstore.h, leakcam_wake.c `nn_update`).
 
 ## Setup
 

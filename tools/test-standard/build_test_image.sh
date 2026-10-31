@@ -1,6 +1,8 @@
 #!/bin/bash
-# The K230 test image for the automated runs (run_tests.py): the product programs plus every test tool, one image so
-# no test needs a reflash of its own (2026-10-25).
+# The K230 test image for the automated runs (run_tests.py): the programs the tests ran (tools/test-standard/k230_apps:
+# leakcam_agent, leakcam_wake, leakcam_stream, leakcam_hist, the change kmodel; a copy of the first product code, the
+# attic is never read) plus every test tool, one image so no test needs a reflash of its own (2026-10-25).
+# Run firmware/k230_board/install.sh first (board support and SDK patches).
 #   tools/test-standard/build_test_image.sh [SDK_DIR]     then firmware/k230_board/flash_nand.sh (USB boot)
 # Adds to the SDK tree (none of it is in the product image):
 #   kernel  tests/test017-nand-raw-speed/leakcam_bench.c -> board/ (ddr_bench, nand_bench, uart_bench, boot_times,
@@ -15,9 +17,16 @@ A=$SDK/src/applications
 cp "$L/tests/test017-nand-raw-speed/leakcam_bench.c" "$SDK/src/rtsmart/rtsmart/kernel/bsp/maix3/board/"
 patch -d "$SDK/src/rtsmart/rtsmart/kernel/bsp/maix3/drivers/extdrv/bl616_nethub" -p1 --forward \
     < "$L/tests/test015-sdio-speed/k230_bench.patch"
-mkdir -p "$A/leakcam/src"
+# the test image programs: Makefile + Kconfig, sources copied into ./src (the Docker build only sees the SDK tree)
+K=$L/tools/test-standard/k230_apps
+rm -rf "$A/leakcam"; mkdir -p "$A/leakcam/src"
+cp "$K/rtsmart/Makefile" "$A/leakcam/Makefile"
+cp "$K/rtsmart/Kconfig.app" "$A/leakcam/Kconfig"
+( cd "$K" && cp -r --parents *.c *.cc *.h leakcam_change.kmodel third_party/miniz/miniz.c third_party/miniz/miniz.h \
+      third_party/miniz/LICENSE third_party/opus "$A/leakcam/src/" )
+cp "$L/firmware/bl616/k230_link.h" "$A/leakcam/src/"      # the link protocol shared with the BL616
 cp "$L/tests/test008-minimal-image/leakcam_cpubench.c" "$L/tests/test013-kpu-change-net/leakcam_kputest.c" "$A/leakcam/src/"
-cp "$L/attic/firmware/k230_capture/rtsmart/Makefile" "$A/leakcam/Makefile"
+grep -q 'CONFIG_APP_ENABLE_LEAKCAM' "$A/apps.mk" || echo 'subdirs-$(CONFIG_APP_ENABLE_LEAKCAM) += leakcam' >> "$A/apps.mk"
 for t in "test027-video-encoder/venctest" "test025-ddr-stress/memtest"; do
     n=$(basename "$t")
     rm -rf "${A}_off/$n"

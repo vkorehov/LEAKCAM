@@ -4,7 +4,7 @@
  * computes the same thing): imgdiff_reduce (both cameras), imgdiff_compare, the history keyframe compression
  * (compress2 at history.c's level) and the CRC. Not the change net: it runs on the KPU (the flags do not touch it)
  * and nncase would make each variant ~5 MB, too much for six of them in /sdcard. Built with the programs
- * (LEAKCAM_BENCH=1 in attic/firmware/k230_capture/rtsmart/Makefile), never part of the product image.
+ * (LEAKCAM_BENCH=1 in tools/test-standard/k230_apps/rtsmart/Makefile), never part of the product image.
  *
  *   leakcam_cpubench [runs]    (default 20) -> min and median microseconds per step
  */
