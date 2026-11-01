@@ -262,8 +262,73 @@ static void awake(void)
     }
 }
 
+/* USB-C 1 plugged in during the sleep (test121): BQ24072 PGOOD (IO3) goes low and wakes the chip from PDS. The setup
+ * firmware's answer is the full firmware (DESIGN.md 5.3.1: slot switch and reset); this test ends the sleep window and
+ * says so. The wake callback runs in the low-power layer's software interrupt: it only notifies usb_plug_task. */
+static TaskHandle_t usb_plug_handle;
+static volatile uint32_t usb_wakes;
+
+static void usb_wake_cb(uint64_t io_bits)
+{
+    BaseType_t woken = pdFALSE;
+
+    if (!(io_bits & ((uint64_t)1 << PIN_USB_PGOOD)))
+        return;
+    usb_wakes++;
+    vTaskNotifyGiveFromISR(usb_plug_handle, &woken);
+    portYIELD_FROM_ISR(woken);
+}
+
+static void lp_window_end_usb(void);
+
+static void usb_plug_task(void *arg)
+{
+    (void)arg;
+    while (1) {
+        (void)ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        lp_window_end_usb();
+    }
+}
+
+/* only IO3 wakes, on its falling edge (PGOOD low = USB power); no pulls added in sleep: PGOOD has its own 100 k to
+ * 3V3_SLEEP (board_pins.h), and the other pins keep what the firmware set */
+static void usb_wake_init(void)
+{
+    static bl_lp_io_cfg_t cfg = {
+        .io_0_15_ie = BL_LP_IO_INPUT_ENABLE,
+        .io_16_ie = BL_LP_IO_INPUT_DISABLE,
+        .io_17_ie = BL_LP_IO_INPUT_DISABLE,
+        .io_18_ie = BL_LP_IO_INPUT_DISABLE,
+        .io_19_ie = BL_LP_IO_INPUT_DISABLE,
+        .io_20_34_ie = BL_LP_IO_INPUT_DISABLE,
+        .io_0_7_pds_trig_mode = BL_LP_PDS_IO_TRIG_SYNC_FALLING_EDGE,
+        .io_8_15_pds_trig_mode = BL_LP_PDS_IO_TRIG_NONE,
+        .io_16_19_aon_trig_mode = BL_LP_AON_IO_TRIG_NONE,
+        .io_20_27_pds_trig_mode = BL_LP_PDS_IO_TRIG_NONE,
+        .io_28_34_pds_trig_mode = BL_LP_PDS_IO_TRIG_NONE,
+        .io_0_15_res = BL_LP_IO_RES_NONE,
+        .io_16_res = BL_LP_IO_RES_NONE,
+        .io_17_res = BL_LP_IO_RES_NONE,
+        .io_18_res = BL_LP_IO_RES_NONE,
+        .io_19_res = BL_LP_IO_RES_NONE,
+        .io_20_34_res = BL_LP_IO_RES_NONE,
+        .io_wakeup_unmask = (uint64_t)1 << PIN_USB_PGOOD,
+    };
+
+    if (xTaskCreate(usb_plug_task, "usb_plug", 512, NULL, 20, &usb_plug_handle) != pdPASS ||
+        bl_lp_io_wakeup_cfg(&cfg) != 0)
+        vAssertCalled();
+    bl_lp_wakeup_io_int_register(usb_wake_cb);
+}
+
+bool usb_present(void);
+
 void lp_window_begin(void)
 {
+    if (usb_present()) {
+        printf("lp: USB power present: no sleep window, the full firmware runs (test121)\r\n");
+        return;
+    }
     window_on = true;
     wdg_guard_feed_hold(true);
     pm_enable_tickless();
@@ -283,6 +348,14 @@ void lp_window_end(void)
 {
     window_on = false;
     awake();
+}
+
+static void lp_window_end_usb(void)
+{
+    window_on = false;
+    awake();
+    printf("lp: USB plugged (PGOOD low, wake %lu): the full firmware takes over here (test121)\r\n",
+           (unsigned long)usb_wakes);
 }
 
 static int lp_enter(void *arg)
@@ -756,6 +829,7 @@ static void lp_boot_task(void *arg)
     lp_crumb(8);
     bl_lp_init(); //wifi lowpower
     bl_lp_sys_callback_register(lp_enter, NULL, lp_exit, NULL);
+    usb_wake_init();
 #endif
 
     /* set ble controller EM Size */
@@ -806,6 +880,7 @@ static void cmd_lp_sleepstat(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
+    printf("USB plug wakes %lu, USB power %s\r\n", (unsigned long)usb_wakes, usb_present() ? "yes" : "no");
     printf("sleep hook calls %lu, idle <= %lu ms %lu, max idle %lu ms, sleeps entered %lu, BLE idle vetoes %lu, pm event %d, sleep checks %d\r\n",
            (unsigned long)sl_calls, (unsigned long)configEXPECTED_IDLE_TIME_BEFORE_SLEEP, (unsigned long)sl_short,
            (unsigned long)sl_max, (unsigned long)sl_entered, (unsigned long)sl_vetoed, (int)bl_pm_event_get(),

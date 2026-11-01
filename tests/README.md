@@ -99,7 +99,8 @@ Leak tests, one per operation the product repeats:
 | [test117 presence lost brings BLE back](test117-presence-loss-ble/README.md) | 2026-11-01 | **pass** 13/13: server down -> advertising in 5 s, found in 0.3 s; network gone -> advertising in 4 s, Wi-Fi set again in 8.7 s |
 | [test118 the app's icons follow the board](test118-app-presence-icons/README.md) | 2026-11-01, 7/7 | **pass**: BLE icon goes 51 s after advertising stops (45 s unseen + scan), Wi-Fi icon and red 29 s after presence stops, both back in 11-20 s |
 | [test119 the phone wakes a board through the server](test119-wake-through-server/README.md) | 2026-11-01 | **pass** 12/12: Wake tap -> woken at the next check-in (6 s) -> Wi-Fi changed 8.4 s; second wake 429 |
-| [test120 the BLE low-power setup mode alone](test120-ble-low-power-setup-mode/README.md) | 2026-11-01 | **planned** (priority): PDS + lpfw advertising, phone discovery and wake by connection, USB plug wake |
+| [test120 the BLE low-power setup mode alone](test120-ble-low-power-setup-mode/README.md) | 2026-11-01 | **in progress**: product BLE asleep in PDS at 2 s advertising, phone finds it 10/10 (median 1.1 s); the BLE core wedge found and fixed; connection wake next |
+| [test121 USB plug wakes the board from BLE sleep](test121-usb-plug-wake-ble-sleep/README.md) | 2026-11-01 | **pass** 2/2: PGOOD (IO3) wakes PDS, no sleep while USB is in, sleeps again after unplug |
 
 ## Not tested yet (audit 2026-10-30)
 
