@@ -37,8 +37,9 @@
     <string name="mine_unknown">%1$s: status unknown (server not reached)</string>
     <string name="mine_ssid">%1$s, Wi-Fi \"%2$s\"</string>
     <string name="mine_ssid_unknown">not reported yet</string>
+    <string name="icon_wifi">online over Wi-Fi</string>
+    <string name="icon_bluetooth">in Bluetooth range</string>
     <string name="mine_new_nearby">%1$s: new, nearby, not set up yet</string>
-    <string name="nearby_away">%1$s is not nearby: bring it within a few metres (or plug it into USB power) to change its Wi-Fi.</string>
 
     <!-- what to do now, in the box under the steps -->
     <string name="help_plug">Bring the LEAKCAM within a few metres of the phone. A new one looks for the app for a minute every 5 minutes on its battery; plugged into a USB charger it can be found at once. Then tap Find LEAKCAM.</string>

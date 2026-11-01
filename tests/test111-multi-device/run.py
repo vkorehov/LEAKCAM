@@ -114,6 +114,10 @@ try:
     last = helps[-1]["help"] if helps else res.get("error", "no help text")
     check("setup Done", last.startswith("Done."), f"{res.get('ms_end', 0) / 1000:.1f} s")
     logcat = adb("logcat", "-d", "-s", "LeakcamSetup:I")
+    system = adb("logcat", "-d")
+    check("pairing: the app entered the PIN, no PIN prompt on the phone", "pairing PIN entered by the app" in logcat
+          and "bluetooth.BluetoothPairingDialog" not in system,
+          f"dialog started {system.count('cmp=com.android.settings/.bluetooth.BluetoothPairingDialog')}x")
     found = re.findall(r"found \S+ id ([0-9A-F]{12}|none)", logcat)
     check("BLE advertisement = the device ID", dev in found, str(found))
     if res.get("status_screen"):         # the app knew the board already: its short flow, the network shown hidden

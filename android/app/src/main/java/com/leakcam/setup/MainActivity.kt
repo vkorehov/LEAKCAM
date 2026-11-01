@@ -149,6 +149,7 @@ class MainActivity : Activity() {
     private val asking = HashSet<String>()          // device IDs being looked up for a rediscovery
     private var selected = ""                        // the LEAKCAM picked on the status screen (radio)
     private var rows = listOf<Triple<String, String, String>>()   // the remembered ones: ID, name, presence line
+    private val online = HashMap<String, Boolean>()   // device ID -> the server sees it online (a Wi-Fi icon)
     private var scanning = false
     private var step = STEP_PLUG
 
@@ -397,25 +398,35 @@ class MainActivity : Activity() {
     /** the address of a LEAKCAM found nearby now, by its device ID; null when it is not */
     private fun addressOf(id: String) = ids.entries.firstOrNull { it.value == id && found.containsKey(it.key) }?.key
 
-    /** the status list: the remembered LEAKCAMs (presence, network, Delete) and new ones found nearby, one radio
-     *  each; the setup button acts on the picked one, when it is nearby */
+    /** the status list: the remembered LEAKCAMs (presence, network, Delete) and new ones found nearby, one radio each,
+     *  enabled only in BLE range (the only ones whose Wi-Fi can be set); the setup button acts on the picked one */
     private fun render() {
         val k = known()
         val all = rows.filter { k.has(it.first) }.toMutableList()
         for ((address, d) in found)
             ids[address]?.takeIf { !k.has(it) }?.let { all.add(Triple(it, d.second, getString(R.string.mine_new_nearby, d.second))) }
-        if (all.none { it.first == selected })
-            selected = (all.firstOrNull { addressOf(it.first) != null } ?: all.firstOrNull())?.first.orEmpty()
+        if (addressOf(selected) == null)
+            selected = all.firstOrNull { addressOf(it.first) != null }?.first.orEmpty()
         mineList.removeAllViews()
         for ((id, name, line) in all)
             mineList.addView(LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
+                val reachable = addressOf(id) != null
                 addView(RadioButton(context).apply {
                     text = line
-                    isChecked = id == selected
+                    isEnabled = reachable                // out of BLE range: shown, not selectable (nothing to set)
+                    isChecked = reachable && id == selected
                     contentDescription = "pick $id"
                     setOnClickListener { selected = id; render() }
                 }, LinearLayout.LayoutParams(0, -2, 1f))
+                // online at the server (its Wi-Fi works): a Wi-Fi icon; in BLE range (can be set): a Bluetooth icon
+                for ((on, icon, what) in listOf(Triple(online[id] == true, R.drawable.ic_wifi, R.string.icon_wifi),
+                                                Triple(reachable, R.drawable.ic_bluetooth, R.string.icon_bluetooth)))
+                    if (on)
+                        addView(android.widget.ImageView(context).apply {
+                            setImageResource(icon)
+                            contentDescription = getString(what)
+                        })
                 if (k.has(id))
                     addView(Button(context).apply {
                         setText(R.string.delete)
@@ -424,10 +435,9 @@ class MainActivity : Activity() {
                     })
             })
         val name = all.firstOrNull { it.first == selected }?.second.orEmpty()
-        val here = addressOf(selected) != null
+        val here = name.isNotEmpty()            // selected is only ever one in range
         nearby.text = when {
-            name.isEmpty() -> getString(R.string.nearby_none)
-            !here -> getString(R.string.nearby_away, name)
+            !here -> getString(R.string.nearby_none)
             k.has(selected) -> getString(R.string.nearby_known, name)
             else -> getString(R.string.nearby_new, name)
         }
@@ -443,7 +453,8 @@ class MainActivity : Activity() {
     private fun openSetup(address: String?) {
         onStatus = false
         ticker.removeCallbacksAndMessages(null)
-        stopScan()
+        if (address != null)
+            stopScan()                  // the board is found; Send stops it anyway
         statusPanel.visibility = View.GONE
         setupPanel.visibility = View.VISIBLE
         toStatus.visibility = if (known().length() > 0) View.VISIBLE else View.GONE
@@ -458,8 +469,11 @@ class MainActivity : Activity() {
         passwordField.hint = getString(if (hidden) R.string.hidden_password else R.string.password)
         if (address == null) {
             show(STEP_PLUG, R.string.help_plug)
-            // no tap for Find when nothing has to be asked first: the full Find took 10 s of the setup (test106)
-            if (permissionsGranted() && adapter?.isEnabled == true)
+            // no tap for Find when nothing has to be asked first: the full Find took 10 s of the setup (test106). A
+            // running scan goes on: Android ignores an app that starts more than 5 scans in 30 s (test111)
+            if (scanning)
+                show(STEP_FIND, R.string.help_scanning)
+            else if (permissionsGranted() && adapter?.isEnabled == true)
                 startScan()
         } else {
             // the board the status screen found, picked: Send needs no second Find
@@ -540,7 +554,8 @@ class MainActivity : Activity() {
         }.start()
     }
 
-    /** Android asks for the passkey (LE passkey entry comes as PAIRING_VARIANT_PIN): the app enters it itself */
+    /** Android asks for the passkey (LE passkey entry comes as PAIRING_VARIANT_PIN): the app enters it itself, and the
+     *  user sees no PIN prompt */
     private fun watchPairingRequest() {
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(ctx: Context, intent: Intent) {
@@ -549,8 +564,15 @@ class MainActivity : Activity() {
                 if (d.address != device?.address || pin.isEmpty() ||
                     intent.getIntExtra(BluetoothDevice.EXTRA_PAIRING_VARIANT, -1) != BluetoothDevice.PAIRING_VARIANT_PIN)
                     return
-                if (!d.setPin(pin.toByteArray()))
-                    Log.w(TAG, "pairing PIN not accepted by the phone")
+                if (!d.setPin(pin.toByteArray())) {
+                    Log.w(TAG, "pairing PIN not accepted by the phone")   // the system dialog stays: the user types it
+                    return
+                }
+                // answered: the system's PIN dialog is not needed. The request is an ordered broadcast and this
+                // receiver runs before Settings (priority): stopping it keeps the dialog away (it flashed for ~2 s)
+                if (isOrderedBroadcast)
+                    abortBroadcast()
+                Log.i(TAG, "pairing PIN entered by the app")
             }
         }
         pinReceiver = receiver
@@ -1007,6 +1029,8 @@ class MainActivity : Activity() {
                     c.disconnect()
                     val seen = j.getLong("last_seen_s")
                     val ssid = j.optString("ssid")
+                    val up = j.getBoolean("online")
+                    runOnUiThread { online[id] = up }
                     if (ssid.isNotEmpty())
                         runOnUiThread { ssids[id] = ssid }
                     val state = when {
