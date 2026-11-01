@@ -429,6 +429,19 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
   and checks it before switching (no A/B fallback); the ROM's USB ISP stays the recovery. To prove: the boot2 slot
   switch after a software reset, then a slot-switch test (operational -> lose presence -> setup -> presence ->
   operational, USB working in both).
+- **Rules for the setup firmware's sleep (tests/test120, 2026-11-01; skill bl616-ble-low-power).**
+  - **Never enter the low-power sleep path while BLE is up but idle** (no advertising, no connection). The SDK asks the
+    BLE controller for its next deadline before any veto; with none the BLE core went to sleep for good, and after any
+    software reset (reboot, ISP, watchdog, POR/system reset) its init hung forever. Only the EN pin cleared it, which
+    a board in a pipe cannot get. The idle hook checks `ble_pairing_sleep_ok()` first. Setup mode always advertises.
+  - The controller's PDS reset stays off (it drops USB); BLE sleep works without it.
+  - The low-power board init gates the USB and watchdog clocks: the firmware enables them, and again after each wake.
+  - USB is detached once for the whole sleep and attached again when the chip stays awake (a phone connected, USB
+    power, the window's end), not around each advertising wake. The watchdog's feeding holds while asleep; each wake
+    restarts its counter, so an app hung while awake is still reset.
+  - Measured on rev 1 at 2 s advertising: 99.4 % of the time in PDS, ~12 ms awake per advertisement; the phone finds
+    the sleeping board 10/10, median 1.1 s, max 3.7 s. The battery current is measured on the next assembled board
+    (the vendor's 428 uA until then).
 - **Replaces** the 60 s every 5 minutes advertising windows (2026-11-01, provision.c) once test120 has proven the low
   power mode on rev 1; until then the windows stay.
 - Tests: test120 the low-power mode alone (test firmware: PDS floor, advertising intervals against discovery and

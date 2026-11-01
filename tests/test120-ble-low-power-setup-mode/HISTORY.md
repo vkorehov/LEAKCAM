@@ -75,3 +75,31 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 - my own slip: one `make flash` ran on the old image after a failed build (`make; make flash`); build and flash
   chained since (memory check-build-before-use).
 - help texts of SHELL_CMD_EXPORT_ALIAS must not contain an apostrophe (the macro breaks: "unterminated argument list").
+- 2026-11-01 19:04-19:28 UTC, **cause of the hung BLE start found: a wedged BLE core, not the code.** The 17:51
+  baseline (the SDK example's BLE start, no product modules) hung the same way until an EN reset (PR1 pad 5 to 3);
+  after it BLE started. Reproduced on purpose: a PDS sleep window with advertising stopped (`ble_stop_adv`: the
+  controller sleeps with no wake deadline), then any software reset -> the controller's init spins in rwip_time_get
+  forever (its registers read 0, writes ignored). A sleep window WITH advertising followed by a reboot does not wedge
+  it. Not cleared by: `reboot`, the ROM/ISP path, the watchdog, GLB_SW_POR_Reset, GLB_SW_System_Reset, the BTDM or
+  BLE2 software resets, DEEPSLCNTL SOFT_WAKEUP_REQ, writing back a healthy chip's PDS_CTL/CTL4/CTL5 (wedged
+  3459fbb0/03303003/00000300, healthy 14006b00/0ff0f00f/00000000; CTL2/CTL3 equal). Only the EN pin clears it.
+  Rule: never PDS-sleep while BLE is started but neither advertising nor connected (a pm_sleep_check veto in the
+  setup firmware; setup mode always advertises anyway).
+- USB-C 1 readings (user, 19:2x UTC): pure PDS window with advertising stopped 1300 uA (= the 2 s advertising window,
+  1290-1300: the charger floor dominates this path), awake 50 mA.
+- 2026-11-01 19:31-20:01 UTC, back to working code, then one feature per build (user: "add one feature at a time"):
+  1. the 17:51 baseline (the example's BLE start) after an EN reset: BLE up (19:31).
+  2. + the product modules linked, not called: does not link without `CONFIG_BT_FIXED_PASSKEY=y` (ble_pairing.c needs
+     bt_passkey_set), so steps 2 and 3 went together: BLE up, PIN seen (19:45).
+  3. + `ble_pairing_start()` instead of the example's start: "ble: ready as 7C3E8262B149", the phone found it 3/3
+     awake (355 / 2126 / 175 ms).
+  4. a pm_sleep_check veto (no PDS while BLE idle): no sleeps in an idle window (9 -> 9), but the reboot after it
+     still wedged the core. Cases A-C (no sleep / advertising window / advertising off, each + reboot) all fine; D
+     (advertising off + sleep window + reboot) wedged: the cause is not the PDS sleep itself but the accurate
+     tickless calling btble_controller_sleep(0) on every idle pass before any veto (tickless_accurate.c,
+     vApplicationSleep) with no deadline to come back for; the BL616 path never restores the controller. The veto
+     moved into `__wrap_vApplicationSleep` (__WFI while `ble_pairing_sleep_ok()` is false): D passes (20:01).
+  5. discovery in a sleep window: 10/10 (README Result).
+- Board handling: after an EN reset the chip came up in the ROM's USB ISP (349b:6160) twice: `bl616_isp.py --boot
+  <port>` starts the firmware. The phone and the board swapped USB ports after a reconnect (user): pick the ROM port
+  by vendor ID 349b, not by the last ttyACM.

@@ -1,7 +1,8 @@
 # test120: the BLE low-power setup mode alone (PDS + lpfw advertising, USB wake)
 
-Status: **in progress**: BLE sleep with 2 s advertising works on rev 1 (2026-11-01); phone/USB wake, other intervals
-and the battery-side current still open (TODO below). Started 2026-11-01 (user: "if we have no working presence always use that low power mode ... USB should
+Status: **in progress**: BLE sleep with 2 s advertising works on rev 1, the product's BLE runs in it, the phone finds
+the sleeping board 10/10 (2026-11-01); the connection wake, the USB wake, other intervals and the battery-side current
+still open (TODO below). Rules learned: skill bl616-ble-low-power. Started 2026-11-01 (user: "if we have no working presence always use that low power mode ... USB should
 also be supported in this mode, so we can use it as a fallback to ble"; priority). Design: DESIGN.md 5.3.1.
 
 The low-level proof of setup mode on rev 1, on the test firmware: the BL616 sleeps in PDS (RAM kept) while the SDK's
@@ -57,6 +58,16 @@ from low power, and the measured current per day fits a months-long wait on one 
   - **working figure until the battery measurement: the vendor spec, 428 uA at 2 s advertising (~10.3 mAh/day)**
     (user, 2026-11-01: "i would trust spec for now"); the calculation above agrees.
 
+- 2026-11-01 20:01 UTC, the product's BLE (ble_pairing.c: advertising as the device ID with the provisioning
+  service, PIN pairing) on the setup firmware, every 2 s: the phone (BleOp `scan`) found it 3/3 awake and **10/10 in a
+  120 s sleep window, median 1.14 s, max 3.66 s** (RSSI -33 to -53); the board in PDS 119.3 of 120 s, 62 sleeps,
+  SDK prediction 434 uA; the USB console gone in the window (really asleep).
+- **BLE core wedge** (the hard rule of this test): with BLE up but idle (advertising off, no connection) the sleep
+  path's controller-deadline call left the BLE core asleep for good; after any software reset the BLE init hung.
+  Cases: A no sleep -> fine, B advertising window -> fine, C advertising off without sleep -> fine, D advertising off +
+  sleep window -> wedged, only EN cleared it. Fixed in the idle hook (`ble_pairing_sleep_ok()`): D passes. Details:
+  HISTORY.md.
+
 ## TODO
 
 - **Battery-side current of BLE sleep: measure on the next board to be assembled** (user, 2026-11-01: not on this unit,
@@ -64,8 +75,12 @@ from low power, and the measured current per day fits a months-long wait on one 
   same window (2 s advertising) and pure PDS (`ble_stop_adv` first); then 1 s and 500 ms, TX 13 vs 0 dBm. Until then
   the per-day figure is the calculation above.
 - USB-C 1 reading of the pure-PDS window (no advertising) against the 1300 uA: the advertising cost on the same path.
-- Steps 3 (phone scans at 2 s / 1 s / 500 ms), 4 (phone connection wakes), 5 (full setup from low power), 6 (leak
+- Step 3 at 1 s and 500 ms (2 s done); steps 4 (phone connection wakes), 5 (full setup from low power), 6 (leak
   cycles), 7 (USB plug wake) and run.py.
+- A start deadline for the crash recorder (a single stuck task while the rest runs is not caught: the hung BLE start
+  went unrecorded for an hour), with the stuck task's saved PC and stack.
+- The experiment commands in tests/firmware/bl616_lp (`lp_blecore`, `lp_pds`, `lp_reset`) out once the wedge rule has
+  held through the higher-level tests.
 - Setup and operational as two firmwares in the two flash slots, switched at runtime (user agreed 2026-11-01:
   presence lost -> setup slot, presence established -> operational slot): a slot-switch test, shared settings and a
   fixed crash-record address in both.

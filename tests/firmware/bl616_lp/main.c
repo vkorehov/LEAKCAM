@@ -46,7 +46,6 @@
 
 #include "usb_console2.h"
 #include "board_pins.h"
-#include "wifi_link.h"
 #include "ble_pairing.h"
 #include "wdg_guard.h"
 #include "crash_rec.h"
@@ -100,6 +99,7 @@ static void lp_crumb(uint32_t step)
  * Private Data
  ****************************************************************************/
 
+static TaskHandle_t bluetooth_start_handle;
 struct bt_conn *bleapp_default_conn;
 
 void lp_window_pause(bool pause);
@@ -145,8 +145,52 @@ static struct bt_conn_cb ble_conn_callbacks = {
 };
 
 #endif
+/* the controller's PDS reset hook: firmware/bl616/ble_pairing.c's empty one (the SDK's drops USB) */
+
+/* the product's BLE (firmware/bl616/ble_pairing.c): advertising as the device ID with the provisioning service, PIN
+ * pairing; every 2 s as setup mode (DESIGN.md 5.3.1). Started as the example started its own (test120 step 4) */
+static void bluetooth_start_task(void *pvParameters)
+{
+    app_clock_init();
+#if defined(CFG_BLE_ENABLE)
+    ble_pairing_start();
+    bt_conn_cb_register(&ble_conn_callbacks);   /* beside ble_pairing.c's: a connection pauses the sleep window */
+    ble_pairing_adv_interval(2000);
+    ble_pairing_advertise(true);
+#endif
+    vTaskDelete(NULL);
+}
 
 extern void shell_init_with_task(struct bflb_device_s *shell);
+
+static void wifi_event_handler(async_input_event_t ev, void *priv)
+{
+    uint32_t code = ev->code;
+
+    switch (code) {
+        case CODE_WIFI_ON_INIT_DONE:
+            LOG_I("[APP] [EVT] %s, CODE_WIFI_ON_INIT_DONE\r\n", __func__);
+            wifi_mgmr_task_start();
+            break;
+        case CODE_WIFI_ON_MGMR_DONE:
+            LOG_I("[APP] [EVT] %s, CODE_WIFI_ON_MGMR_DONE\r\n", __func__);
+            break;
+        default:
+            break;
+    }
+}
+
+static void wifi_start_firmware_task(void *pvParameters)
+{
+    (void)pvParameters;
+    LOG_I("Starting wifi ...\r\n");
+    async_register_event_filter(EV_WIFI, wifi_event_handler, NULL);
+    wifi_task_create();
+    vTaskDelay(500);
+    LOG_I("Starting fhost ...\r\n");
+    fhost_init();
+    vTaskDelete(NULL);
+}
 
 /****************************************************************************
  * Private Function Prototypes
@@ -183,10 +227,18 @@ void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackTyp
 /* test120: why the tickless sleep never starts (61 mA, USB console never detached, 2026-11-01): the SDK's idle hook
  * wrapped (-Wl,--wrap=vApplicationSleep) to count its calls and the idle time FreeRTOS offers, lp_enter() counts the
  * sleeps that reached the low-power firmware; `lp_sleepstat` prints both */
-static volatile uint32_t sl_calls, sl_short, sl_max, sl_entered;
+static volatile uint32_t sl_calls, sl_short, sl_max, sl_entered, sl_vetoed;
 void __real_vApplicationSleep(TickType_t idle);
 void __wrap_vApplicationSleep(TickType_t idle)
 {
+    /* BLE up but idle: the SDK's sleep path asks the controller for its next deadline (btble_controller_sleep(0))
+     * before any veto, and with no deadline that put the BLE core to sleep for good: after a software reset its init
+     * spun forever, only the EN pin cleared it (test120, 2026-11-01, case D). Idle as with tickless off instead. */
+    if (!ble_pairing_sleep_ok()) {
+        sl_vetoed++;
+        __WFI();
+        return;
+    }
     sl_calls++;
     if (idle <= configEXPECTED_IDLE_TIME_BEFORE_SLEEP)
         sl_short++;
@@ -634,22 +686,14 @@ SHELL_CMD_EXPORT_ALIAS(cmd_lpfw_uart_cfg, lpfw_uart, cmd lpfw_uart);
 SHELL_CMD_EXPORT_ALIAS(cmd_lpfw_clock_cfg, lpfw_clock, cmd lpfw_clock);
 #endif
 #endif
-/* pt_ble.c's helpers (tests.h): RF and easyflash come from `lp_boot`; BLE starts with `pt_ble on` after it */
+/* pt_ble.c's helpers (tests.h): RF and easyflash come from `lp_boot` */
 static volatile bool lp_booted;
 
 bool pt_radio_init(void)
 {
-    if (!lp_booted) {
+    if (!lp_booted)
         printf("pt_ble: run lp_boot first\r\n");
-        return false;
-    }
-    /* the BLE core's clocks: the low-power board init (peripheral_clock_init_lp()) leaves them gated, and the
-     * controller's init then spun forever in rwip_init() -> rwip_rand_init() -> rwip_time_get() (test120, 2026-11-01) */
-    printf("pt_ble: CGEN_CFG0/1/2 %08lx %08lx %08lx before\r\n", (unsigned long)BL_RD_REG(GLB_BASE, GLB_CGEN_CFG0),
-           (unsigned long)BL_RD_REG(GLB_BASE, GLB_CGEN_CFG1), (unsigned long)BL_RD_REG(GLB_BASE, GLB_CGEN_CFG2));
-    printf("pt_ble: CGEN_CFG0/1/2 %08lx %08lx %08lx after\r\n", (unsigned long)BL_RD_REG(GLB_BASE, GLB_CGEN_CFG0),
-           (unsigned long)BL_RD_REG(GLB_BASE, GLB_CGEN_CFG1), (unsigned long)BL_RD_REG(GLB_BASE, GLB_CGEN_CFG2));
-    return true;
+    return lp_booted;
 }
 
 int pt_ef_once(void)
@@ -657,8 +701,8 @@ int pt_ef_once(void)
     return lp_booted ? 0 : -1;
 }
 
-/* ble_pairing.h: new credentials stored; the setup firmware will switch to the operational slot here once presence
- * works (DESIGN.md 5.3.1), this test only says so */
+/* ble_pairing.h: new credentials stored; the setup firmware switches to the operational slot here once presence works
+ * (DESIGN.md 5.3.1), this test only says so */
 void ble_credentials_stored(void)
 {
     printf("lp: credentials stored\r\n");
@@ -670,25 +714,6 @@ bool usb_present(void)
     struct bflb_device_s *gpio = bflb_device_get_by_name("gpio");
     bflb_gpio_init(gpio, PIN_USB_PGOOD, GPIO_INPUT | GPIO_FLOAT | GPIO_SMT_EN | GPIO_DRV_0);
     return !bflb_gpio_read(gpio, PIN_USB_PGOOD);
-}
-
-static bool lp_ble_at_boot;
-
-static void wifi_boot_task(void *arg)
-{
-    (void)arg;
-    wifi_link_warm();               /* wifi_local.c: the Wi-Fi task, 500 ms, fhost_init() */
-    printf("lp: wifi started\r\n");
-    vTaskDelete(NULL);
-}
-
-static void ble_boot_task(void *arg)
-{
-    (void)arg;
-    ble_pairing_start();
-    ble_pairing_advertise(true);
-    printf("lp: ble started\r\n");
-    vTaskDelete(NULL);
 }
 
 static void lp_boot_task(void *arg)
@@ -745,15 +770,10 @@ extern int bl_sys_em_config(void);
     printf("lp: rf up\r\n");
 
     lp_crumb(10);
-    app_clock_init();               /* the stored RC32K calibration (the example did it before BLE) */
-    wifi_local_start();             /* lwIP; Wi-Fi at its first use, after BLE (firmware/bl616/wifi_local.c) */
-    /* experiment (test120): the Wi-Fi start and the BLE start as two concurrent tasks, exactly as the example */
-    if (lp_ble_at_boot && (xTaskCreate(wifi_boot_task, "wifi init", 1024, NULL, 27, NULL) != pdPASS ||
-                           xTaskCreate(ble_boot_task, "ble", 1024, NULL, 15, NULL) != pdPASS))
-        vAssertCalled();
-#if defined(CFG_BLE_ENABLE)
-    bt_conn_cb_register(&ble_conn_callbacks);   /* beside ble_pairing.c's: a connection pauses the sleep window */
-#endif
+    tcpip_init(NULL, NULL);
+
+    xTaskCreate(wifi_start_firmware_task, "wifi init", 1024, NULL, 27, NULL);
+    xTaskCreate(bluetooth_start_task, (char *)"bluetooth_start", 1024, NULL, 15, &bluetooth_start_handle);
     lp_booted = true;
     lp_crumb(11);
     printf("lp: boot done\r\n");
@@ -762,7 +782,6 @@ extern int bl_sys_em_config(void);
 
 static void cmd_lp_boot(int argc, char **argv)
 {
-    lp_ble_at_boot = argc > 1 && !strcmp(argv[1], "ble");
     static bool started;
     if (started) {
         printf("lp_boot: already run\r\n");
@@ -783,64 +802,76 @@ static void cmd_lp_crumb(int argc, char **argv)
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_lp_crumb, lp_crumb, the last low-power bring-up step (kept across a watchdog reset));
 
-/* the product modules' breadcrumbs (wifi_link.c codes; ble_pairing_start 0x70-0x73): the last one, for `lp_sleepstat` */
-static volatile uint8_t wl_last = 0xff;
-void wl_trace(uint8_t code)
-{
-    wl_last = code;
-}
-
 static void cmd_lp_sleepstat(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    printf("last trace 0x%02x\r\n", wl_last);
-    printf("sleep hook calls %lu, idle <= %lu ms %lu, max idle %lu ms, sleeps entered %lu, pm event %d, sleep checks %d\r\n",
+    printf("sleep hook calls %lu, idle <= %lu ms %lu, max idle %lu ms, sleeps entered %lu, BLE idle vetoes %lu, pm event %d, sleep checks %d\r\n",
            (unsigned long)sl_calls, (unsigned long)configEXPECTED_IDLE_TIME_BEFORE_SLEEP, (unsigned long)sl_short,
-           (unsigned long)sl_max, (unsigned long)sl_entered, (int)bl_pm_event_get(), pm_sleep_check_dispatch());
+           (unsigned long)sl_max, (unsigned long)sl_entered, (unsigned long)sl_vetoed, (int)bl_pm_event_get(),
+           pm_sleep_check_dispatch());
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_lp_sleepstat, lp_sleepstat, test120: tickless sleep attempts and entries);
 
-/* a task's saved context while it is not running: the words from its saved stack pointer (the first member of the
- * FreeRTOS TCB) up; the PC and return addresses among them resolve with addr2line (test120: the `ble` task stuck in
- * btble_controller_init, invisible to the crash recorder because everything else ran) */
-static void cmd_lp_task(int argc, char **argv)
+/* the BLE core's deep-sleep control (DEEPSLCNTL, 0x28000030): after PDS sleep with BLE idle (no advertising, so no
+ * wake deadline) and a software reset, the controller's init spun forever in rwip_time_get (test120, 2026-11-01): the
+ * core stays in deep sleep across the reset. `lp_blecore` prints it, `lp_blecore wake` sets SOFT_WAKEUP_REQ (bit 15) */
+#define BLE_DEEPSLCNTL ((volatile uint32_t *)0x28000030)
+static void cmd_lp_blecore(int argc, char **argv)
 {
-    TaskHandle_t t = argc > 1 ? xTaskGetHandle(argv[1]) : NULL;
-    if (t == NULL) {
-        printf("lp_task: no such task\r\n");
-        return;
+    printf("lp_blecore: DEEPSLCNTL %08lx\r\n", (unsigned long)*BLE_DEEPSLCNTL);
+    if (argc > 1 && !strcmp(argv[1], "wake")) {
+        *BLE_DEEPSLCNTL |= 1u << 15;
+        for (int i = 0; i < 100 && (*BLE_DEEPSLCNTL & (1u << 15)); i++)
+            bflb_mtimer_delay_ms(1);
+        printf("lp_blecore: DEEPSLCNTL %08lx after the wake request\r\n", (unsigned long)*BLE_DEEPSLCNTL);
+    } else if (argc > 1 && (!strcmp(argv[1], "btdm") || !strcmp(argv[1], "ble2"))) {
+        /* a reset of the BLE core alone, not the whole PDS block (that one drops USB) */
+        GLB_AHB_MCU_Software_Reset(argv[1][1] == 't' ? GLB_AHB_MCU_SW_BTDM : GLB_AHB_MCU_SW_BLE2);
+        printf("lp_blecore: %s reset, DEEPSLCNTL %08lx, 0x28000100 %08lx\r\n", argv[1],
+               (unsigned long)*BLE_DEEPSLCNTL, (unsigned long)*(volatile uint32_t *)0x28000100);
     }
-    uint32_t *sp = *(uint32_t **)t;
-    printf("lp_task %s sp %08lx:", argv[1], (unsigned long)(uintptr_t)sp);
-    for (int i = 0; i < 40; i++)
-        printf("%s%08lx", i % 8 ? " " : "\r\n", (unsigned long)sp[i]);
-    printf("\r\n");
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_lp_task, lp_task, test120: saved context of a task <name>);
+SHELL_CMD_EXPORT_ALIAS(cmd_lp_blecore, lp_blecore, test120: BLE core deep-sleep control [wake | btdm | ble2]);
 
-/* A/B for the stuck BLE start (test120): the same start as the SDK example ran it, app_clock_init() then the
- * controller in one task at priority 15 (pt_ble on: priority 3, the clock from lp_boot) */
-static void ble_example_task(void *arg)
+/* the PDS block's power control (persists across a software reset): PDS_CTL, CTL2 (per-domain force bits: WB = Wi-Fi
+ * and BLE, USB), CTL3, CTL4, CTL5 */
+static void cmd_lp_pds(int argc, char **argv)
 {
-    (void)arg;
-    app_clock_init();
-    ble_pairing_start();
-    ble_pairing_advertise(true);
-    printf("lp_ble15: started\r\n");
-    vTaskDelete(NULL);
+    if (argc > 1 && !strcmp(argv[1], "restore")) {
+        /* experiment: the values a freshly reset chip has (2026-11-01), over what a PDS sleep with BLE idle left */
+        BL_WR_REG(PDS_BASE, PDS_CTL, 0x14006b00u);
+        BL_WR_REG(PDS_BASE, PDS_CTL4, 0x0ff0f00fu);
+        BL_WR_REG(PDS_BASE, PDS_CTL5, 0x00000000u);
+    }
+    printf("lp_pds: CTL %08lx CTL2 %08lx CTL3 %08lx CTL4 %08lx CTL5 %08lx\r\n",
+           (unsigned long)BL_RD_REG(PDS_BASE, PDS_CTL), (unsigned long)BL_RD_REG(PDS_BASE, PDS_CTL2),
+           (unsigned long)BL_RD_REG(PDS_BASE, PDS_CTL3), (unsigned long)BL_RD_REG(PDS_BASE, PDS_CTL4),
+           (unsigned long)BL_RD_REG(PDS_BASE, PDS_CTL5));
 }
+SHELL_CMD_EXPORT_ALIAS(cmd_lp_pds, lp_pds, test120: PDS power control registers [restore]);
 
-static void cmd_lp_ble15(int argc, char **argv)
+/* which reset the firmware can trigger clears the wedged BLE core (test120): wdg = hang with interrupts off until the
+ * watchdog resets the chip (WDG_GUARD_MS), por / sys / cpu = GLB_SW_POR_Reset / _System_Reset / _CPU_Reset */
+static void cmd_lp_reset(int argc, char **argv)
 {
-    (void)argc;
-    (void)argv;
-    if (!pt_radio_init())
-        return;
-    if (xTaskCreate(ble_example_task, "ble15", 1024, NULL, 15, NULL) != pdPASS)
-        vAssertCalled();
+    const char *k = argc > 1 ? argv[1] : "";
+    printf("lp_reset: %s\r\n", k);
+    bflb_mtimer_delay_ms(50);
+    if (!strcmp(k, "wdg")) {
+        __disable_irq();
+        while (1) {
+        }
+    } else if (!strcmp(k, "por")) {
+        GLB_SW_POR_Reset();
+    } else if (!strcmp(k, "sys")) {
+        GLB_SW_System_Reset();
+    } else if (!strcmp(k, "cpu")) {
+        GLB_SW_CPU_Reset();
+    }
+    printf("lp_reset: wdg | por | sys | cpu\r\n");
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_lp_ble15, lp_ble15, test120: BLE start as the SDK example (priority 15));
+SHELL_CMD_EXPORT_ALIAS(cmd_lp_reset, lp_reset, test120: reset kinds wdg por sys cpu);
 
 int main(void)
 {

@@ -50,6 +50,8 @@ void ble_pairing_adv_interval(unsigned int ms);
 int ble_pairing_pin(void);
 /* a phone is connected (presence.c waits: setup first) */
 bool ble_pairing_connected(void);
+/* the low-power sleep path is safe for BLE now: not started, advertising or connected (the setup firmware's idle hook) */
+bool ble_pairing_sleep_ok(void);
 /* Called after new credentials are stored, from the BLE host or the check's task (must not block). The product
  * (provision.c) drops the remembered AP; the test firmware (pt_wifi.c) also restarts its bridge. */
 void ble_credentials_stored(void);
