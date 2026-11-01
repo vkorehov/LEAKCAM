@@ -173,9 +173,10 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
   after a wake 31.2 -> 2.6 ms.
 
 ### Architecture consequence
-The BL616 is also the K230's Wi-Fi: Bouffalo's NetHub bridge over SDIO (`bl616/wifi_link.c`) with
+The BL616 is also the K230's Wi-Fi: Bouffalo's NetHub bridge over SDIO (`bl616_full/wifi_link.c`) with
 our own RT-Smart driver on the K230 (`k230_board/rtsmart/drivers/bl616_nethub/`), described in
-`bl616/WIFI.md`. One BL616 firmware (`bl616/`): Wi-Fi starts when the K230 sends `WIFI` (NAK code 2
+`bl616/WIFI.md`. Two BL616 firmwares (DESIGN.md 5.3.1): the full one (`bl616_full/`) and the setup one in low power
+(`bl616_setup/`), their shared modules in `bl616/`. In the full firmware Wi-Fi starts when the K230 sends `WIFI` (NAK code 2
 without stored credentials), and stops before the K230's rail goes down. NetHub's own low-power
 mode stays off: between sessions the BL616 hibernates, which ends the association anyway.
 

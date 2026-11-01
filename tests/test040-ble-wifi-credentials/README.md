@@ -69,7 +69,8 @@ littlefs (PSM partition, `CONFIG_LITTLEFS_KV_EASYFLASH`), Wi-Fi fhost + lwIP + D
 
 ## Pass
 
-Advertising and pairing only on USB power; every write limit enforced; credentials stored exactly, only after a
+Advertising and pairing as the design says (USB power only when this test ran; on battery too since 2026-11-01,
+test116); every write limit enforced; credentials stored exactly, only after a
 passed check (0x01) or on request (0x02), never on a failed check or a dropped link; a check during a K230
 session runs and gives the radio back; new credentials restart the session on them; they survive resets, HBN and a
 power cut; no leak over the repeats; the passphrase never appears on a console or in a log.
@@ -131,10 +132,10 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 
 ## Boot time
 
-BLE starts only on USB power, after the BL616's boot: its init to the first advertisement is measured here; the
+BLE started only on USB power when this ran (since 2026-11-01 from boot, also on battery), after the BL616's boot: its init to the first advertisement is measured here; the
 battery wake path does not include it (to confirm: no BLE code runs on a battery wake).
 
 ## Battery energy
 
-Provisioning runs on USB power only, so it costs the cell nothing; recorded: the VBUS current while advertising and
+Provisioning ran on USB power only then, so it cost the cell nothing (on battery since 2026-11-01: test116, test120); recorded: the VBUS current while advertising and
 connected, and that BLE is fully off on battery (the sleep floor of test031 unchanged).

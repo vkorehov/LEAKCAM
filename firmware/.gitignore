@@ -1,4 +1,4 @@
-/bl616/build/
+/bl616_full/build/
 *.o
 # the repo root ignores *.txt (Altium outputs); these two are sources
 !CMakeLists.txt

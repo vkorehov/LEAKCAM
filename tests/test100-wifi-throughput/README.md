@@ -3,7 +3,7 @@
 Status: **steps 1-4 pass** (2026-10-25): K230 address 0.33-0.59 s after the card binds; TCP up 27.5 / down 22.1 Mbit/s, UDP up 35.4.
 
 The product path for clips and checks: the K230's lwIP over the NetHub SDIO bridge (test015: bus 21 MB/s, not the
-limit) to the BL616's 2.4 GHz radio. Runs on the BL616 test firmware's bridge (`pt_wifi`, the NetHub code of firmware/bl616) with stored credentials
+limit) to the BL616's 2.4 GHz radio. Runs on the BL616 test firmware's bridge (`pt_wifi`, the NetHub code of firmware/bl616_full/wifi_link.c) with stored credentials
 (`wifi_set` on the debug console, or BLE).
 
 ## Setup
@@ -70,10 +70,11 @@ TCP up >= 2 x the two streams' rate with margin at the install distance; no RTMP
   ~16 Mbit/s in their second half on channel 11 (the air). Two H.265 streams (~1 Mbit/s with audio) use a few % of it
   (2026-10-25).
 - BL616 RAM free 177.5 -> 155.3 KB with the bigger pool (2026-10-25); the 26 buffers broke the product image's link
-  with BLE, fixed by the BL616's lwIP heap 18 -> 6 KB (firmware/bl616/lwipopts_user.h) (2026-10-27, test040).
+  with BLE, fixed by the BL616's lwIP heap 18 -> 6 KB (firmware/bl616_full/lwipopts_user.h) (2026-10-27, test040).
 - BL616-only server check (`pt_poll`, HBN wake -> radio, remembered-AP join, DHCP, DNS + TCP + HTTP 204 -> HBN):
   3 of 3, awake **1709 ms** (radio up 642, association 240, DHCP 747, HTTP 49 ms); ~0.036 mAh per check, ~3.4 mAh/day
-  every 15 min; radio up and DHCP are 81 % of the awake time (2026-10-25).
+  every 15 min (the battery interval is 24 h since 2026-11-01: ~0.036 mAh/day, DESIGN.md 5.3.1); radio up and DHCP
+  are 81 % of the awake time (2026-10-25).
 
 Open:
 - Step 5: two RTMP streams to MediaMTX (needs the cameras); UDP loss and the install distance.
@@ -98,7 +99,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Current idle / during (min / avg / peak) | K230 + bridge during the join runs: 220 avg, 243 peak mA (user, VBUS, before the fix); BL616 alone joined 80 mA | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | n/a: on USB power (charger rail), not probed this run | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | BL616-only server check ~0.036 mAh (1.71 s awake x step 1 currents) | - | scripts/energy.py |
-| Per day | checks every 15 min: ~3.4 mAh/day (ENERGY.txt) | ENERGY.txt line | n per day |
+| Per day | one check a day on battery (24 h interval, DESIGN.md 5.3.1): ~0.036 mAh/day; every 15 min would be ~3.4 mAh/day | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | board 31.2 C (AHT20, pt_status, before the runs); die n/a: chip_temp not read on these runs | K230 limit (datasheet) | chip_temp, AHT20 |
 | Memory BL616 / K230 (start / min / end), leak | BL616 free 177544 -> 177252 B, blocks 128 -> 141, deleted 0 (one throughput run, before the pool raise); 155.3 KB free with the raised NetHub pool; K230 n/a this run (the runner's `free` parse found nothing); leak loops of 2026-10-24: no leak on either chip | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | K230 kdimg 45436928 B (iperf in); BL616 test firmware 1114848 B | minimal image (rule) | the image this run used |

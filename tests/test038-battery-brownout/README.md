@@ -5,10 +5,12 @@ heartbeat stop, rails off, lockout HBN, USB plug wakes it with no EN; the real 3
 below-3 V steps need a lab supply (none); deferred to the second board (user, 2026-10-31: tested when it is
 assembled).
 
-Rev 1 has no hardware discharge cutoff (bug-004): the BQ24072 keeps its BAT-FET on, so the firmware is the only
-guard. The K230 reads VBAT (test023) and reports it in the WAKE ACK; the BL616 keeps it in HBN RAM; below 3.10 V
-under load it cuts the K230 at once and hibernates with only the USB wake (no RTC, no leak wake); the lockout ends
-with USB plugged and the next reading >= 3.50 V. Below that the cell, U5 (3V3_SLEEP) and the BL616 brown out.
+The BQ24072 has no discharge cutoff (bug-004, accepted): the cell's protection board (~2.4 V) is the lowest guard,
+the firmware's 3.10 V the gentler one (DESIGN.md 5.3.1). The K230 reads VBAT (test023) and reports it in the WAKE
+ACK; below 3.10 V under load the K230 stops its session at once, the BL616 powers it off, keeps the battery-low state
+in HBN RAM, tells the user (test122) and hibernates with only the USB wake (no RTC, no leak wake); the lockout ends
+with USB plugged and the next reading >= 3.50 V. Below that the cell's protection cuts and the BL616 browns out
+(test124).
 
 ## Setup
 
@@ -40,6 +42,10 @@ BL616 power path, bug-004 cutoff (product), K230 ADC + agent (WAKE ACK).
 5. Slow ramp back up from 1.6 V to 3.7 V without USB: the BL616 boots once, HBN RAM lost -> cold start with no
    lockout: does it start a session on a nearly empty cell? (expect: the first reading decides).
 6. Load dip: a session start (Wi-Fi + LEDs) at 3.15 V rest: the sag under load that trips the cut.
+7. Where does the battery's drain really stop (bug-004: the cell's protection board, ~2.4 V, is the accepted guard;
+   the BQ24072 has no discharge cutoff, its datasheet specifies BAT -> OUT only above 3 V)? Setup firmware asleep (BLE
+   advertising, no K230), no USB: supply down in 100 mV steps from 3.0 V to 1.0 V; at each step the supply current,
+   OUT, 3V3_SLEEP and BAT - OUT; then the real cell from full to its protection's cut, the voltage just before it.
 
 ## Pass
 

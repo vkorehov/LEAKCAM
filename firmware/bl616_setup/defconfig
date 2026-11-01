@@ -1,4 +1,7 @@
-# LEAKCAM tests/test120: the SDK's wl_ble_lp example (examples/pmu/wl_ble_lp) on rev 1 with the board's USB console
+# LEAKCAM BL616 setup firmware (DESIGN.md 5.3.1): BLE advertising while the chip sleeps in PDS, the Wi-Fi credential
+# check, the USB plug wake. Only what setup mode needs (user, 2026-11-01). From the SDK's examples/pmu/wl_ble_lp.
+
+# the board's USB console (PR1): the shell for `isp` (hands-free flashing) and the test commands
 CONFIG_SHELL                    =y
 CONFIG_CHERRYUSB                =y
 CONFIG_CHERRYUSB_OSAL           ="freertos"
@@ -9,32 +12,21 @@ CONFIG_BSP_CONSOLE_USB_CDC      =y
 # with CONFIG_LPAPP, board_init() gates every peripheral clock and turns the USB one on only with BSP_USB: without it
 # usb_console_init() stalled the CPU on the first USB register (the first build: 45-51 mA, never on USB, test120)
 CONFIG_BSP_USB                  =y
+# mem_stat.c (`mem`): the lowest free heap since boot, a memory metric of every test
 CONFIG_MM_ENABLE_MIN_FREE_TRACKING=y
 
-
-# Components
 CONFIG_BFLB_LOG =n
 CONFIG_FREERTOS =y
 CONFIG_POSIX =n
 CONFIG_TLSF =y
-CONFIG_SHELL =y
+# the credential check (wifi_check.c): the BL616's own station, DHCP client, DNS and HTTP; mbedtls for WPA3 (SAE)
 CONFIG_LWIP =y
 CONFIG_FHOST =y
 CONFIG_WIFI6 =y
 CONFIG_RF =y
 CONFIG_MBEDTLS =y
-# CONFIG_PSRAM =y
+# not used (no access point), but the SDK's Wi-Fi lwIP adapter (net_al_ext.c) includes dhcp_server.h
 CONFIG_DHCPD =y
-CONFIG_PING =y
-# CONFIG_MQTT =y
-
-CONFIG_VSNPRINTF_NANO       =n
-CONFIG_VSNPRINTF_FLOAT      =y
-CONFIG_VSNPRINTF_FLOAT_EX   =y
-CONFIG_VSNPRINTF_LONG_LONG  =y
-
-# Config
-## mbedtls
 CONFIG_MBEDTLS_AES_USE_HW =y
 CONFIG_MBEDTLS_BIGNUM_USE_HW =y
 CONFIG_MBEDTLS_ECC_USE_HW =y
@@ -42,12 +34,10 @@ CONFIG_MBEDTLS_SHA1_USE_HW =y
 CONFIG_MBEDTLS_SHA256_USE_HW =y
 CONFIG_MBEDTLS_SHA512_USE_HW =y
 
-#CONFIG_LOG_DISABLE          =n
-#CONFIG_ASSERT_DISABLE       =n
-#CONFIG_LOG_LEVEL            =3
-#CONFIG_LOG_POOL_SIZE        =1024
+CONFIG_VSNPRINTF_NANO       =n
+CONFIG_VSNPRINTF_LONG_LONG  =y
 
-# lpfw
+# the low-power firmware (lpfw) appended to the image; PDS between advertisements
 CONFIG_LPAPP =y
 CONFIG_POST_BUILDS_CONCAT_WITH_LP_FW=y
 CONFIG_PM =y
@@ -55,24 +45,21 @@ CONFIG_LWIP_LP =y
 # accurate tickless depends on TICKLESS_EXT (components/os/Kconfig): the SDK example set only ACCURATE for the BL616
 CONFIG_TICKLESS_EXT =y
 CONFIG_TICKLESS_ACCURATE =y
-
-# DCDC ENABLE
 CONFIG_DCDC_ENABLE =n
 CONFIG_MACSW_SELECT = default
-
 CONFIG_PWRMGMT               =y
-# easyflash
+
+# easyflash: the credentials, the pairing PIN, the clock source
 CONFIG_LITTLEFS              =y
 CONFIG_LITTLEFS_KV_EASYFLASH =y
 CONFIG_BFLB_MTD              =y
 CONFIG_PARTITION             =y
 CONFIG_CLOCK_SOURCE_EF_PARAM =y
 
-
+# the product's BLE provisioning (firmware/bl616/ble_pairing.c): peripheral, no BLE shell commands, the stored
+# pairing PIN as the passkey (bt_passkey_set)
 CONFIG_BLUETOOTH =y
 CONFIG_BTBLECONTROLLER_LIB =ble1m0s1bredr0
 CONFIG_BLE_USE_MAC2 =n
-CONFIG_BT_STACK_CLI =y
-# the stored pairing PIN as the passkey (firmware/bl616/ble_pairing.c, bt_passkey_set)
+CONFIG_BT_STACK_CLI =n
 CONFIG_BT_FIXED_PASSKEY =y
-

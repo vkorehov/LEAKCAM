@@ -86,7 +86,7 @@ Wake reasons are every cause that applied, joined by '+': cold, leak, rtc, usb, 
 A plain `make` (BUILD.md 4.1) builds it while boards are being brought up. The release build
 leaves it out:
 
-  rm -rf firmware/bl616/build
+  rm -rf firmware/bl616_full/build
   docker run ... -e LEAKCAM_RELEASE=1 ... make -j5
 
 Needs PR1 only (both consoles; USBC2 only for the BootROM's own lines). On the first boot
@@ -112,7 +112,7 @@ The BL616's reset-default JTAG pins IO0-IO3 are K230_RSTN, K230_ALIVE, PGOOD and
 on this board, and the firmware takes them over at boot. The debug build moves JTAG to four of
 the SDIO pads instead, so everything except Wi-Fi keeps working (WIFI is refused with NAK 3):
 
-  rm -rf firmware/bl616/build
+  rm -rf firmware/bl616_full/build
   docker run ... -e LEAKCAM_JTAG=1 ... make -j5      (the container command of BUILD.md 4.1)
 
   It prints "debug build: JTAG on IO12-IO15, Wi-Fi refused" at boot. Remove the build directory
@@ -157,7 +157,7 @@ The older HW-USBN-2A (Cypress) does not work with OpenOCD. Other adapters that d
 Session (the SDK's bundled openocd is x86-64 only; on the aarch64 host use Ubuntu's 0.12, which
 also installs udev rules for FTDI adapters):
   sudo apt install openocd gdb-multiarch                                          (once)
-  cd ~/k230d-hw/LEAKCAM/firmware/bl616
+  cd ~/k230d-hw/LEAKCAM/firmware/bl616_full
   openocd -f hw-usbn-2b.cfg -f bl616.cfg
       expect: "tap/device found: 0x10000b6f". The debug image must be running: JTAG reaches
       IO12-IO15 only when main() has started, so there is nothing to scan while EN is held low,

@@ -13,10 +13,11 @@ PR1) drops while the chip sleeps: the runner reads the counters after each wake.
 
 ## Setup
 
-- BL616 test firmware with `pt_lp` (tests/firmware/bl616_powertest, lpfw concatenated by the build), the PIN stored.
+- The setup firmware's test bed tests/firmware/bl616_setup_test (firmware/bl616_setup's sources, lpfw concatenated by
+  the build; `lp_boot`, `wakeup_timer <ms> [usb]`, `lp_sleepstat`, `lp_pwr`), the PIN stored.
 - The phone on adb, unlocked. USB-C 1 in, the cell in and charged; the meter on USB-C 1 on cue (LEAKCAM_METER=ask).
-- `pt_lp` treats USB-C 1 as unplugged unless told (as the product's `prov battery on`), so the mode runs on the
-  bench; the USB wake itself needs one real unplug and plug (hand step, at the end).
+- `wakeup_timer <ms> usb` sleeps with USB power present (the product does not: the full firmware's case), so the
+  mode runs and is metered on the bench; the USB wake is test121.
 
 ## Needs (build features and dependencies)
 
@@ -45,7 +46,7 @@ from low power, and the measured current per day fits a months-long wait on one 
 
 ## Result
 
-- 2026-11-01, test firmware tests/firmware/bl616_lp (`lp_boot`, `ble_start_adv 0 0 0x0c80 0x0c80`, `wakeup_timer
+- 2026-11-01, test firmware tests/firmware/bl616_setup_test (then named bl616_lp; `lp_boot`, `ble_start_adv 0 0 0x0c80 0x0c80`, `wakeup_timer
   120000 0`, `lp_sleepstat`, `lp_pwr`), TX 13 dBm, USB console off for the window, watchdog feeding held:
   - the BL616 sleeps between advertisements: 61 PDS sleeps in 120 s (one per 2 s advertisement), 119.3 s in PDS,
     0.7 s awake in all (~12 ms per wake); the SDK's prediction from that split 419 uA (its fixed PDS 80 uA / app
@@ -79,7 +80,7 @@ from low power, and the measured current per day fits a months-long wait on one 
   cycles), 7 (USB plug wake) and run.py.
 - A start deadline for the crash recorder (a single stuck task while the rest runs is not caught: the hung BLE start
   went unrecorded for an hour), with the stuck task's saved PC and stack.
-- The experiment commands in tests/firmware/bl616_lp (`lp_blecore`, `lp_pds`, `lp_reset`) out once the wedge rule has
+- The experiment commands in tests/firmware/bl616_setup_test (`lp_blecore`, `lp_pds`, `lp_reset`) out once the wedge rule has
   held through the higher-level tests.
 - Setup and operational as two firmwares in the two flash slots, switched at runtime (user agreed 2026-11-01:
   presence lost -> setup slot, presence established -> operational slot): a slot-switch test, shared settings and a

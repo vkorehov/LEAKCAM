@@ -2,7 +2,7 @@
 
 Status: **pass, steps 1 3 4 5 6 7 8** (2026-10-30, run.py 18/18; step 7 2026-10-31, hand_step7.py 5/5): setup 7.3-8.0 s
 from opening the app to Done; on battery the app lists no board and a stored bond cannot connect; step 2 open (the test
-firmware's battery wake to the stored network and a K230 session). **Product v1** (firmware/bl616, 2026-11-01 09:33):
+firmware's battery wake to the stored network and a K230 session). **Product v1** (firmware/bl616, now firmware/bl616_full; 2026-11-01 09:33):
 run.py 17/17 in 215 s, first setup 7.5 s, repeats 6.9-7.6 s, no leak, crash record none; with STATUS reconciliation
 (attempt id, the app reads STATUS and reconnects after a lost link: test110), fail fast and checked return values.
 With use case 2 (presence, the app's LEAKCAM list; 10:14): 17/17, repeats 9.4-10.5 s - the product's part (Send ->
@@ -56,7 +56,8 @@ Android 8.0+, the app's BLE permissions.
 ## Pass
 
 A new board goes from unboxed to a working Wi-Fi wake with only the app; every failure is named in the app and
-stores nothing; a stored network is used on battery by the BL616 and the K230; setup is impossible without USB power.
+stores nothing; a stored network is used on battery by the BL616 and the K230; setup works on battery over BLE too
+(no USB power gate since 2026-11-01, test116).
 
 ## Result
 
@@ -110,7 +111,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Test run time | 249 s automated (run.py, 2026-10-30), no setup | - | setup (flashing, plugging, waiting) separately |
 | setup time: app open -> Done; first wake: join + server check | app opened -> Done: first 8.0 s, repeats 7.3-9.4 s (10 in a row) | - | % of the top |
 | Current idle / during (min / avg / peak) | not metered in this run; the same BLE + check path in test040 on USB, cell full: advertising 63.4, connected 63.1, check peak 86 mA (2026-10-29) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
-| Voltage under load (min) | n/a: setup only on USB power (the board refuses it on battery); the cell is not loaded | cutoff 3.10 V (bug-004) | at the probes above |
+| Voltage under load (min) | n/a: this run was on USB power (then the only setup path; on battery since 2026-11-01, test116); the cell is not loaded | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | n/a for the cell: setup draws from USB (~7 s at 63-86 mA, test040 readings) | - | scripts/energy.py |
 | Per day | n/a: once per installation, on USB; the battery wakes of step 2 are open | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | die n/a: K230 off; board 28.0 / 28.2 / 28.1 C (AHT20) (2026-10-30) | K230 limit (datasheet) | chip_temp, AHT20 |

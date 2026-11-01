@@ -125,7 +125,7 @@ Probes: current - battery lead, USB out (wake from sleep); voltage - LEAK_SENS (
 | Memory BL616 / K230 (start / min / end), leak | n/a: every HBN wake restarts the BL616 heap (nothing carries over to leak); repeated HBN wakes: test021 | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | BL616 test firmware ~150 KB (2026-10-22, before the Wi-Fi set) | minimal image (rule) | the image this run used |
 | Compile flags | BL616 test firmware -Os -g (SDK Kconfig default), sections, --gc-sections, no LTO | smallest code (rule) | |
-| Features over the minimal image | `pt_leak`, `pt_sleep` (test firmware commands); the comparator setup is firmware/bl616 leak_wake.c's | test008 floor | bytes, boot ms, RAM, current |
+| Features over the minimal image | `pt_leak`, `pt_sleep` (test firmware commands); the comparator setup is attic/firmware/bl616 leak_wake.c's (not yet in the full firmware) | test008 floor | bytes, boot ms, RAM, current |
 | Optimised build (-O3, LTO, -march) | n/a: not an optimisation test (test builds use the default flags: user, 2026-10-29) | the faster one stays | |
 
 ## Boot time

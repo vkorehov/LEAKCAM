@@ -13,7 +13,7 @@ its falling edge (group IO0-7), no pulls added in sleep.
 
 ## Setup
 
-- Setup firmware tests/firmware/bl616_lp (`lp_boot`, then the product BLE advertising every 2 s by itself).
+- The setup firmware's test bed tests/firmware/bl616_setup_test (`lp_boot`, then the product BLE advertising every 2 s by itself).
 - The bench console on PR1 (the BL616's own USB, /dev/leakcam-bl616), which drops while the chip sleeps.
 - The cell in and charged; **USB-C 1 unplugged** at the start (the meter/charger cable): one unplug and one plug by
   hand per run.
@@ -41,7 +41,7 @@ sleep; after unplugging it sleeps again.
 
 ## Result
 
-- 2026-11-01, setup test firmware (tests/firmware/bl616_lp, product BLE advertising every 2 s), USB-C 1 plugged and
+- 2026-11-01, setup test firmware (tests/firmware/bl616_setup_test, then named bl616_lp; product BLE advertising every 2 s), USB-C 1 plugged and
   unplugged by the user:
   - plug 1: unplug seen 20:17:37 UTC, window started 20:17:38, console back 20:18:13 (85 s before the window's end),
     `lp_sleepstat` USB plug wakes 1, USB power yes; 18 sleeps while waiting.

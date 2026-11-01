@@ -27,11 +27,13 @@ sdk_add_link_options(-Wl,--wrap=exception_entry -Wl,--wrap=vApplicationStackOver
 # the product's memory metrics (`mem`: every test logs it, leak detection)
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/mem_stat.c)
 sdk_add_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616)
+# the full firmware's lwipopts_user.h (the NetHub bridge's lwIP options): this test firmware runs its wifi_link.c
+sdk_add_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616_full)
 
 # pt_wifi (test100): the Wi-Fi library build options (from the SDK's NetHub example)
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/pt_wifi.c)
 # the product's Wi-Fi link (NetHub bridge + the BL616-only path): pt_wifi runs the code the product ships
-target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/wifi_link.c)
+target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616_full/wifi_link.c)
 # pt_ble (test040): the product's BLE provisioning and its credential check
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/pt_ble.c
                            ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/ble_pairing.c

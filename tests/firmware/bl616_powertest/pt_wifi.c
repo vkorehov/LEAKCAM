@@ -18,7 +18,7 @@
  *   pt_trace [clear | counts]     wifi_link.c's breadcrumbs, kept across a reset; counts: every code since boot (the
  *                                 loop runners judge the bridge by them, not by the interleaving K230 console)
  *
- * The radio is the product's: RF parameters as main.c radio_init(), then firmware/bl616/wifi_link.c owns lwIP and the
+ * The radio is the product's: RF parameters as main.c radio_init(), then firmware/bl616_full/wifi_link.c owns lwIP and the
  * Wi-Fi task (wifi_link_local_begin(): the BL616 alone, as the product's credential check; wifi_link_start(): the
  * bridge), so step 1 and step 2 run the code the product ships; the manager answers once CODE_WIFI_ON_MGMR_DONE came. The join and the
  * DHCP follow wifi_check.c (the product's credential check), which this step proves on hardware first. Later steps

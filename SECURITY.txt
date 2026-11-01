@@ -126,3 +126,7 @@ them.
   5. BLE pairing: the PIN endpoint needs app authentication (test109); a pairing window after plug-in and an owner
      lock (with an on-device factory reset, e.g. 3 plug-ins in 10 s) still open; a lockout after failed pairings.
   6. BLE bonds: keep them on the board (CONFIG_BT_SETTINGS) or pair without bonding (section 2).
+  7. Remote Wi-Fi change (DESIGN.md 5.3.2, test123): the new passphrase goes app -> server -> board's check-in, which is
+     plain HTTP today: encrypt it with a per-device key derived like the pairing PIN, drop it at the server once
+     delivered; the change request needs the app authorized for that device (the device ID alone must not be enough,
+     or anyone knowing an ID could move a board onto their own network).

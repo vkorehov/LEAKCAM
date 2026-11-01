@@ -27,8 +27,6 @@ void wifi_link_credentials_changed(void);
 
 int wifi_link_start(void);
 void wifi_link_stop(void);
-/* the setup firmware (wifi_local.c, no bridge): lwIP at boot, Wi-Fi at its first use; instead of wifi_link_start() */
-void wifi_local_start(void);
 /* an SSID from BLE provisioning is stored (easyflash must be up) */
 bool wifi_link_has_credentials(void);
 
