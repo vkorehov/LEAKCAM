@@ -34,6 +34,10 @@ target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/w
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/pt_ble.c
                            ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/ble_pairing.c
                            ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/wifi_check.c)
+# pt_fault (test110): loss injected into the provisioning through wraps; the product sources stay as they are
+target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/pt_fault.c)
+sdk_add_link_options(-Wl,--wrap=bt_gatt_notify_cb -Wl,--wrap=bt_conn_set_security -Wl,--wrap=lwip_getaddrinfo
+                     -Wl,--wrap=lwip_recv)
 sdk_add_compile_definitions(-DCONFIG_RWNX_LWIP)
 sdk_add_compile_definitions(-DBL_RA_EN=1)
 sdk_add_compile_definitions(-DWPA_SUPPLICANT_CLEANUP_INTERVAL=1800)
