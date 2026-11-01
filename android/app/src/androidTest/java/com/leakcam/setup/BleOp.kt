@@ -41,7 +41,8 @@ import java.util.regex.Pattern
  *
  *   op scan     name prefix (default LEAKCAM-), secs: first advertisement with the service UUID: name, address, rssi, ms
  *   op unpair   address: the phone's bond removed
- *   op session  address, pair (accept | cancel | skip), mtu (247; 23 = no exchange: long values go as offset writes),
+ *   op session  address, pair (accept | cancel | skip), pin (the board's 6 digits, from the server; without it a PIN
+ *               dialog is cancelled: a phone without the app), mtu (247; 23 = no exchange: long values go as offset writes),
  *               writes: "char:hex,char:hex,..." (char ssid | psk | commit), each write's GATT status; then the STATUS
  *               notifications until a final state or secs; drop_at: disconnect on that state (hex, e.g. 01)
  *   op app      the setup app itself, as a user meets it (test106): opens it, Find, the network (ssid, psk: hex; empty =
@@ -316,8 +317,9 @@ class BleOp {
                         android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT))
                     lastSeen = SystemClock.elapsedRealtime()
                 }
-                safe(Unit) {   /* the dialog can go between finding and pressing */
-                    ui.findObject(By.res("android", "button1"))?.let { pressed.add("'${it.text}'@${ms()}"); it.click(); SystemClock.sleep(500) }
+                safe(Unit) {   /* the dialog can go between finding and pressing; a PIN dialog is the app's to fill */
+                    if (ui.findObject(By.clazz("android.widget.EditText").pkg("com.android.settings")) == null)
+                        ui.findObject(By.res("android", "button1"))?.let { pressed.add("'${it.text}'@${ms()}"); it.click(); SystemClock.sleep(500) }
                 }
                 if (!busy()) break   /* finishSend: the send is over */
                 SystemClock.sleep(200)
@@ -353,6 +355,22 @@ class BleOp {
                 return "not bonded after ${pressed.joinToString("+")}"
             }
             val b = ui.wait(Until.findObject(By.res("android", button)), 1000)
+            /* passkey entry (since 2026-11-01): the PIN typed, as the app enters it; no PIN: cancelled */
+            val field = ui.findObject(By.clazz("android.widget.EditText").pkg("com.android.settings"))
+            if (b != null && field != null && button == "button1") {
+                val pin = arg("pin", "")
+                if (pin.isEmpty()) {
+                    ui.findObject(By.res("android", "button2"))?.click()
+                    pressed.add("'no PIN: cancel'")
+                } else {
+                    field.text = pin
+                    SystemClock.sleep(300)
+                    b.click()
+                    pressed.add("'PIN'")
+                }
+                SystemClock.sleep(500)
+                continue
+            }
             if (b != null) {
                 pressed.add("'${b.text}'")
                 b.click()

@@ -46,8 +46,10 @@ def server(path):
 
 
 def poll_interval(s):
-    subprocess.run(["ssh", "-o", "BatchMode=yes", PI, f"echo LEAKCAM_POLL_S={s} > ~/leakcam-server/env && "
-                    "sudo systemctl restart leakcam-server"], check=True, timeout=30)
+    # only the poll line: the env file also holds the pairing PIN key (server/deploy.sh); overwriting it whole left the
+    # server without the key (2026-11-01)
+    subprocess.run(["ssh", "-o", "BatchMode=yes", PI, f"sed -i 's/^LEAKCAM_POLL_S=.*/LEAKCAM_POLL_S={s}/' "
+                    "~/leakcam-server/env && sudo systemctl restart leakcam-server"], check=True, timeout=30)
     time.sleep(1)
 
 
@@ -137,26 +139,44 @@ try:
 
     # 3. the app remembers it and shows it online
     lines = app_mine()
-    check("app: the board listed and online", lines.get(dev, "").endswith("online"), lines.get(dev))
+    check("app: the board listed and online", "online" in lines.get(dev, ""), lines.get(dev))
+    check("app: the board's network shown (the SSID from its check-in)", f'Wi-Fi "{ssid}"' in lines.get(dev, ""),
+          lines.get(dev))
 
     # 4. a second LEAKCAM: listed, online while it checks in, offline when it stops
     add_to_app(SECOND, "LEAKCAM-SECOND")
     lines = app_mine()
     check("app: second LEAKCAM listed, not seen yet", "not seen yet" in lines.get(SECOND, ""), lines.get(SECOND))
-    server(f"/v1/poll?id={SECOND}")
+    server(f"/v1/poll?id={SECOND}&ssid=t111-second")   # as a board reports its network
     lines = app_mine()
-    check("app: second LEAKCAM online after its check-in", lines.get(SECOND, "").endswith("online"), lines.get(SECOND))
-    check("app: the board still online next to it", lines.get(dev, "").endswith("online"), lines.get(dev))
+    check("app: second LEAKCAM online after its check-in", ": online" in lines.get(SECOND, ""), lines.get(SECOND))
+    check("app: second LEAKCAM's network shown", 'Wi-Fi "t111-second"' in lines.get(SECOND, ""), lines.get(SECOND))
+    check("app: the board still online next to it", ": online" in lines.get(dev, ""), lines.get(dev))
     time.sleep(3 * POLL_S + 2)                               # three check-ins missed
     lines = app_mine()
     check("app: second LEAKCAM offline when it stopped", "offline" in lines.get(SECOND, ""), lines.get(SECOND))
-    check("app: the board online throughout", lines.get(dev, "").endswith("online"), lines.get(dev))
+    check("app: the board online throughout", ": online" in lines.get(dev, ""), lines.get(dev))
 
     # 5. deleted from the phone: gone from the list, the board untouched
     res = op("delete", id=SECOND, secs=30)
     lines = app_mine()
     check("app: second LEAKCAM deleted", res.get("confirmed") and SECOND not in lines, str(sorted(lines)))
-    check("app: the board still listed after the delete", lines.get(dev, "").endswith("online"), lines.get(dev))
+    check("app: the board still listed after the delete", ": online" in lines.get(dev, ""), lines.get(dev))
+
+    # 6. the board itself deleted, then found on USB power with its network stored: back in the list by itself (the
+    #    server sees it online), no setup
+    adb("logcat", "-c")                  # before the delete: the app may find the board again within it
+    res = op("delete", id=dev, secs=30)
+    t0, back, line, log_ = time.time(), False, "", ""
+    while time.time() - t0 < 40 and not (back and ": online" in line):
+        time.sleep(1)
+        log_ = adb("logcat", "-d", "-s", "LeakcamSetup:I")
+        d, b_ = log_.find(f"deleted {dev}"), log_.find(f"rediscovered {dev}")
+        back = 0 <= d < b_
+        line = (re.findall(rf"mine {dev}: (.*)", log_[max(b_, 0):]) or [""])[-1] if back else ""
+    check("app: the board deleted", bool(res.get("confirmed")) and f"deleted {dev}" in log_, str(res))
+    check("app: the deleted board back in the list by itself (USB, server online)", back and ": online" in line,
+          f"{time.time() - t0:.0f} s, {line}")
     r.sample("after the checks")
 finally:
     poll_interval(60)

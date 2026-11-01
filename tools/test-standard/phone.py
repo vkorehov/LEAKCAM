@@ -7,6 +7,7 @@ import re
 import subprocess
 import tempfile
 import threading
+import urllib.request
 import zlib
 
 from harness import REPO, bl   # harness first: it puts tools/power-bringup (board) on the path
@@ -15,6 +16,19 @@ APK = os.path.join(REPO, "android/app/build/outputs/apk/debug/app-debug.apk")
 TEST_APK = os.path.join(REPO, "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk")
 ARGS_FILE = "/data/local/tmp/leakcam_bleop.json"
 RUNNER = "com.leakcam.setup.test/androidx.test.runner.AndroidJUnitRunner"
+SERVER = "http://192.168.1.159:8090"   # the presence server (server/, the Pi): the board's pairing PIN comes from it
+
+
+def board_pin():
+    """the board's pairing PIN as the app gets it (GET /v1/devices/<id>/pin), for BleOp's raw sessions; the ID from the
+    board's USB serial number. Never logged"""
+    from board import BL_PORT
+    usb = subprocess.run(["udevadm", "info", "-q", "property", BL_PORT], capture_output=True, text=True).stdout
+    m = re.search(r"ID_SERIAL_SHORT=([0-9A-F]{12})\b", usb)
+    if not m:
+        return ""
+    with urllib.request.urlopen(f"{SERVER}/v1/devices/{m.group(1)}/pin", timeout=5) as f:
+        return json.loads(f.read())["pin"]
 
 
 def adb(*a, secs=180):
@@ -25,6 +39,8 @@ def op(name, **kw):
     """one BleOp call; its JSON result (never printed whole: no values in it, but keep the log short). The arguments go
     in a file pushed to the phone and removed after the call: on the command line adbd logged them, the Wi-Fi
     passphrase in hex included, into the phone's logcat (2026-10-30)"""
+    if name == "session" and "pin" not in kw:               # pin="": a phone without the app (no PIN)
+        kw["pin"] = board_pin()
     fd, local = tempfile.mkstemp(suffix=".json")          # mode 600
     try:
         with os.fdopen(fd, "w") as f:

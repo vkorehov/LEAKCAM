@@ -1,23 +1,17 @@
-11:24:36 test111-multi-device: 0 metric rows MISSING: none
+12:35:15 test111-multi-device: 0 metric rows MISSING: none
 Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
-11:24:46 CHECK pass the board has a device ID 7C3E8262B149
-11:24:46 CHECK pass USB serial number = the device ID USB 7C3E8262B149
-11:24:56 CHECK pass setup Done 7.9 s
-11:24:56 CHECK pass BLE advertisement = the device ID ['7C3E8262B149']
-11:24:56 CHECK pass known board: the status screen opened its setup 1.2 s
-11:24:56 CHECK pass known board: the short 'change its Wi-Fi' flow Enter the new Wi-Fi network for LEAKCAM-B14A. It r
-11:24:56 CHECK pass advertisement: a stored network flagged 1
-11:24:56 CHECK pass the app stores no Wi-Fi network devices.xml: ids and names only
-11:25:39 CHECK pass server: the board online after the setup 42 s
-11:25:41 CHECK pass board: last check-in reached the server (0x03) [0m[36mbouffalolab />[0m
-11:25:42 CHECK pass app: the board listed and online LEAKCAM-B14A: online
-11:25:44 CHECK pass app: second LEAKCAM listed, not seen yet LEAKCAM-SECOND: not seen yet
-11:25:46 CHECK pass app: second LEAKCAM online after its check-in LEAKCAM-SECOND: online
-11:25:46 CHECK pass app: the board still online next to it LEAKCAM-B14A: online
-11:26:19 CHECK pass app: second LEAKCAM offline when it stopped LEAKCAM-SECOND: offline, last seen 34 s ago
-11:26:19 CHECK pass app: the board online throughout LEAKCAM-B14A: online
-11:26:26 CHECK pass app: second LEAKCAM deleted ['7C3E8262B149']
-11:26:26 CHECK pass app: the board still listed after the delete LEAKCAM-B14A: online
-11:26:30 sample after the checks {'board': None, 'bl_mem': (146048, 133960, 120116, 105, 79456, 16, 0)}
-Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
-11:26:32 test111-multi-device: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+12:35:35 CHECK pass the board has a device ID 7C3E8262B149
+12:35:35 CHECK pass USB serial number = the device ID USB 7C3E8262B149
+12:35:43 CHECK FAIL setup Done 5.0 s
+12:35:43 CHECK pass BLE advertisement = the device ID ['7C3E8262B149']
+12:35:43 CHECK pass known board: the status screen opened its setup 1.6 s
+12:35:43 CHECK pass known board: the short 'change its Wi-Fi' flow Enter the new Wi-Fi network for LEAKCAM-B14A. It r
+12:35:43 CHECK pass advertisement: a stored network flagged 1
+12:35:43 CHECK pass the app stores no Wi-Fi network devices.xml: ids and names only
+12:36:08 CHECK pass server: the board online after the setup 24 s
+12:36:10 CHECK pass board: last check-in reached the server (0x03) [0m[36mbouffalolab />[0m
+12:36:11 CHECK pass app: the board listed and online LEAKCAM-B14A: online, Wi-Fi VK
+12:36:11 CHECK FAIL app: the board's network shown (the SSID from its check-in) LEAKCAM-B14A: online, Wi-Fi VK
+12:36:13 CHECK pass app: second LEAKCAM listed, not seen yet LEAKCAM-SECOND: not seen yet
+12:36:15 CHECK pass app: second LEAKCAM online after its check-in LEAKCAM-SECOND: online
+12:36:15 CHECK pass app: the board still online next to it LEAKCAM-B14A: online, Wi-Fi VK

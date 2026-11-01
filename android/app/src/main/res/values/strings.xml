@@ -4,7 +4,7 @@
     <string name="intro">Connect your LEAKCAM to Wi-Fi in four steps. The phone talks to it over Bluetooth, so stay within a few metres of it.</string>
 
     <!-- the four steps, shown as a list; the current one is highlighted -->
-    <string name="step1">1. Plug the LEAKCAM into USB power</string>
+    <string name="step1">1. Bring the LEAKCAM near the phone</string>
     <string name="step2">2. Find it</string>
     <string name="step3">3. Enter your Wi-Fi network</string>
     <string name="step4">4. Pair, check and save</string>
@@ -18,35 +18,39 @@
     <string name="device_entry">%1$s   (%2$d dBm)</string>
     <string name="device_entry_known">%1$s   (%2$d dBm, set up before)</string>
     <string name="mine_title">Your LEAKCAMs</string>
-    <string name="nearby_none">To set up a LEAKCAM or change its Wi-Fi, plug it into USB power near the phone: it can be found only then.</string>
-    <string name="nearby_new">%1$s is on USB power and not set up from this phone.</string>
-    <string name="nearby_known">%1$s is on USB power: you can change its Wi-Fi.</string>
+    <string name="nearby_none">To set up a LEAKCAM or change its Wi-Fi, bring it near the phone. A new one shows up within 5 minutes (at once on USB power); one already set up shows up while it is on USB power.</string>
+    <string name="nearby_new">%1$s is nearby and not set up from this phone.</string>
+    <string name="nearby_known">%1$s is nearby: you can change its Wi-Fi.</string>
     <string name="setup_new">Set up a LEAKCAM</string>
     <string name="setup_new_named">Set up %1$s</string>
     <string name="setup_change">Change the Wi-Fi of %1$s</string>
     <string name="to_status">Back to your LEAKCAMs</string>
     <string name="delete">Delete</string>
-    <string name="delete_ask">Remove %1$s from this phone? The LEAKCAM keeps its Wi-Fi network and goes on working; you can add it again by plugging it into USB power.</string>
+    <string name="delete_ask">Remove %1$s from this phone? The LEAKCAM keeps its Wi-Fi network and goes on working; it comes back into the list when it is found nearby on USB power again.</string>
     <string name="help_change">Enter the new Wi-Fi network for %1$s. It replaces the stored one only after the LEAKCAM has joined it and reached the internet.</string>
-    <string name="hidden_ssid">Stored on the LEAKCAM (hidden): type a new name</string>
+    <string name="hidden_ssid">The LEAKCAM has a network stored: type its name to change it</string>
     <string name="hidden_password">Stored on the LEAKCAM (hidden): type a new password</string>
     <string name="mine_online">%1$s: online</string>
     <string name="mine_offline">%1$s: offline, last seen %2$d min ago</string>
     <string name="mine_offline_s">%1$s: offline, last seen %2$d s ago</string>
     <string name="mine_never">%1$s: not seen yet</string>
     <string name="mine_unknown">%1$s: status unknown (server not reached)</string>
+    <string name="mine_ssid">%1$s, Wi-Fi \"%2$s\"</string>
+    <string name="mine_ssid_unknown">not reported yet</string>
+    <string name="mine_new_nearby">%1$s: new, nearby, not set up yet</string>
+    <string name="nearby_away">%1$s is not nearby: bring it within a few metres (or plug it into USB power) to change its Wi-Fi.</string>
 
     <!-- what to do now, in the box under the steps -->
-    <string name="help_plug">Plug the LEAKCAM into a USB charger or a computer with its USB-C cable. It can be set up only while it is on USB power: someone has to plug it in first, so it cannot be paired while it runs on its battery. Then tap Find LEAKCAM.</string>
+    <string name="help_plug">Bring the LEAKCAM within a few metres of the phone. A new one looks for the app for a minute every 5 minutes on its battery; plugged into a USB charger it can be found at once. Then tap Find LEAKCAM.</string>
     <string name="help_scanning">Looking for LEAKCAM boards nearby…</string>
-    <string name="help_none_found">No LEAKCAM found. Check that it is plugged into USB power and within a few metres, then tap Find LEAKCAM again.</string>
-    <string name="help_none_found_location">No LEAKCAM found. Check that it is plugged into USB power and within a few metres, and that Location is on (this Android version needs it for Bluetooth scanning), then tap Find LEAKCAM again.</string>
+    <string name="help_none_found">No LEAKCAM found. Keep it within a few metres; a new one on its battery shows up within 5 minutes (at once on USB power). Then tap Find LEAKCAM again.</string>
+    <string name="help_none_found_location">No LEAKCAM found. Keep it within a few metres (a new one on its battery shows up within 5 minutes, at once on USB power), and turn Location on (this Android version needs it for Bluetooth scanning), then tap Find LEAKCAM again.</string>
     <string name="help_pick">Pick your LEAKCAM (the one with the strongest signal is usually the nearest), then enter the Wi-Fi network it should use.</string>
     <string name="help_wifi">Enter the name and password of the Wi-Fi network the LEAKCAM should use. It must be a 2.4 GHz network: the LEAKCAM does not see 5 GHz. If your router shows separate names for the two bands, pick the 2.4 GHz one. Leave the password empty for an open network. Then tap Pair, check and save: the LEAKCAM tries the network before it keeps it.</string>
     <string name="help_connecting">Connecting to %1$s…</string>
     <string name="help_pairing">Your phone now asks to pair with %1$s.\n\n• Tap Pair (on some phones: Allow or OK).\n• There is no PIN to type: the LEAKCAM has no screen or buttons.\n• If no request appears, pull down the notification shade and tap the Bluetooth pairing notification.\n\nPairing keeps the Wi-Fi password encrypted on its way to the LEAKCAM. The LEAKCAM keeps no pairing, so the phone asks every time.</string>
     <string name="help_sending">Paired. Sending the Wi-Fi settings…</string>
-    <string name="help_check_join">The LEAKCAM is now joining "%1$s" to check the name and password. This takes up to a minute; keep the phone near it.</string>
+    <string name="help_check_join">The LEAKCAM is now joining \"%1$s\" to check the name and password. This takes up to a minute; keep the phone near it.</string>
     <string name="help_check_address">Password accepted. Getting an address from the router…</string>
     <string name="help_check_internet">Connected to the router. Checking that the internet can be reached…</string>
     <string name="help_done">Done. %1$s joined \"%2$s\", reached the internet and stored the network.\n\nYou can unplug it now. It connects at its next scheduled check.</string>
@@ -61,9 +65,9 @@
     <string name="err_pick">Tap Find LEAKCAM and pick your board first.</string>
     <string name="err_ssid">The Wi-Fi name must be 1 to 32 characters long.</string>
     <string name="err_password">The Wi-Fi password must be 8 to 63 characters long, or empty for an open network.</string>
-    <string name="err_timeout">The LEAKCAM did not answer. Check it is still plugged into USB power and nearby, then try again. If a pairing request is still open on the phone, accept it first.</string>
-    <string name="err_disconnected">The LEAKCAM disconnected (status %1$d). Keep it on USB power and nearby, then try again.</string>
-    <string name="err_pairing_refused">Pairing did not go through.\n\n• Was the request declined, or did it time out? Try again and tap Pair.\n• Is the LEAKCAM on USB power? It refuses pairing on battery.</string>
+    <string name="err_timeout">The LEAKCAM did not answer. Keep it nearby, then try again. If a pairing request is still open on the phone, accept it first.</string>
+    <string name="err_disconnected">The LEAKCAM disconnected (status %1$d). Keep it nearby, then try again.</string>
+    <string name="err_pairing_refused">Pairing did not go through.\n\n• Was the request declined, or did it time out? Try again.\n• The pairing code comes from the LEAKCAM server: the phone needs the home network or internet.</string>
     <string name="err_unpair">This phone keeps an old pairing with %1$s and would not remove it.\n\nOpen the phone\'s Bluetooth settings, tap %1$s, choose Forget (or Unpair), then tap Pair, check and save again.</string>
     <!-- the LEAKCAM's own check of the network (firmware/bl616/wifi_check_calc.h) -->
     <string name="chk_not_found">The LEAKCAM cannot see \"%1$s\".\n\n• Check the name: upper and lower case count.\n• It must be a 2.4 GHz network.\n• The router may be out of reach from where the LEAKCAM is now. If you are setting it up elsewhere, use Save without checking.</string>
@@ -79,8 +83,9 @@
     <string name="help_reconnecting">The connection to %1$s dropped. Reconnecting to see what it did with the network…</string>
     <string name="help_bluetooth_off_reconnect">Bluetooth was turned off. Turn it back on: the app reconnects to %1$s to see what it did with the network.</string>
     <string name="err_not_sent">The connection to %1$s dropped before it got the network. Nothing was changed. Keep the phone close to it and try again.</string>
-    <string name="err_unconfirmed">The connection to %1$s dropped and the app could not reach it again, so it cannot tell whether the network was stored. Keep it on USB power and nearby, then send again.</string>
-    <string name="err_no_service">This device is not a LEAKCAM in setup mode. Keep it on USB power and scan again.</string>
+    <string name="err_no_pin">The pairing code for %1$s comes from the LEAKCAM server, and the server could not be reached. The phone needs the home network or internet to set up a LEAKCAM: check it, then try again.</string>
+    <string name="err_unconfirmed">The connection to %1$s dropped and the app could not reach it again, so it cannot tell whether the network was stored. Keep it nearby, then send again.</string>
+    <string name="err_no_service">This device is not a LEAKCAM ready for setup. Keep it nearby and scan again.</string>
     <string name="err_refused">The LEAKCAM refused the %1$s (error %2$d). Check it and try again.</string>
     <string name="err_write">Could not send the %1$s. Try again.</string>
     <string name="what_ssid">Wi-Fi name</string>

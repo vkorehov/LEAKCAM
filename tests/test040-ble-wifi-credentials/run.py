@@ -123,6 +123,13 @@ w = res.get("writes", [])
 check("no write succeeds after a cancelled pairing", w and all(x["status"] != 0 for x in w),
       str([x["status"] for x in w]))           # the link drops with the cancel: -1, never delivered
 check("nothing stored without pairing", creds() == (None, None))
+# a phone without the app: no PIN (passkey entry since 2026-11-01), the pairing fails, nothing is written
+res = op("session", address=addr, pair="accept", pin="", writes=f"ssid:{hexs('t040-nopin')},commit:02", secs=5)
+w = res.get("writes", [])
+refused = bool(w) and all(x["status"] != 0 for x in w)
+check("no PIN (a phone without the app): every write refused", refused, f"{res.get('pair')}: {[x['status'] for x in w]}")
+check("nothing stored without the PIN", creds() == (None, None))
+op("unpair", address=addr)
 
 # 3. pairing and the characteristic limits (MTU 247 as the app)
 t1 = time.time()
