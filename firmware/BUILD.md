@@ -87,11 +87,12 @@ the following:
 
 ### 2.4 Build
 
-The programs on /sdcard/app come from the test image script, run after install.sh (the first product's apps are in
-attic/firmware and are not built; the test image carries its own copy in tools/test-standard/k230_apps):
+The programs on /sdcard/app come from test_install.sh, which runs install.sh first and also builds the BL616 test
+firmware (the first product's apps are in attic/firmware and are not built; the test image carries its own copy in
+tools/test-standard/k230_apps):
 
 ```
-$LEAKCAM/tools/test-standard/build_test_image.sh ~/k230_rtos_sdk    # apps + test tools, then the full build
+$LEAKCAM/tools/test-standard/test_install.sh ~/k230_rtos_sdk    # install.sh, apps + test tools, the full build, BL616 test firmware
 ```
 
 Or by hand:
@@ -222,7 +223,7 @@ link frames), the BL616 forwards it. Only the BootROM's own lines (errors, USB b
 2. `k230_read_toc`, then slot A loading.
 3. The OpenSBI banner.
 4. The RT-Smart `msh />` prompt.
-5. `ls /sdcard/app` (test image, tools/test-standard/build_test_image.sh) lists `leakcam_agent`, `leakcam_wake`,
+5. `ls /sdcard/app` (test image, tools/test-standard/test_install.sh) lists `leakcam_agent`, `leakcam_wake`,
    `leakcam_hist`, `leakcam_stream`, `leakcam_change.kmodel` and the test tools.
 
 **Not yet verified on hardware:**

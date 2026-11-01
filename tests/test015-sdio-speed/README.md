@@ -14,7 +14,7 @@ Order: BL616 `pt_off`, `pt_boot1 low`, `pt_on`, `pt_sdu on`, `pt_run`; K230 `bl6
 ## Setup
 
 USB-C 1 meter (5 V VBUS), cell full (62 mA BL616-only before the session); BL616 test firmware (`pt_sdu`); the K230
-test image (`build_test_image.sh` applies k230_bench.patch to the SDK copy of the driver, flashed by test019).
+test image (`test_install.sh` applies k230_bench.patch to the SDK copy of the driver, flashed by test019).
 
 ## Needs (build features and dependencies)
 

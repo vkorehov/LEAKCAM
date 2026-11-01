@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Install the LEAKCAM board (K230D + W25N02KV SPI NAND), the BL616 Wi-Fi driver and the
-# leakcam programs into a k230_rtos_sdk checkout. Idempotent: rerun after editing anything in
-# firmware/k230_board or firmware/bl616/wifi_ctrl_proto.h (the test image programs: tools/test-standard/build_test_image.sh).
+# Install the LEAKCAM board (K230D + W25N02KV SPI NAND) and the BL616 Wi-Fi driver into a
+# k230_rtos_sdk checkout. Idempotent: rerun after editing anything in firmware/k230_board or
+# firmware/bl616/wifi_ctrl_proto.h. All test firmware: tools/test-standard/test_install.sh (runs this first).
 #
 #   firmware/k230_board/install.sh <k230_rtos_sdk>
 #   cd <k230_rtos_sdk> && make k230d_rtos_leakcam_defconfig && make
