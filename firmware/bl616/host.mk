@@ -38,5 +38,6 @@ flash:
 	    make flash COMX=$$port BL_FLASH_PROGRAM=$(BL_SDK_BASE)/tools/bflb_tools/bouffalo_flash_cube/BLFlashCommand-ubuntu
 	$(ISP) --boot $$($(ISP))
 	@$(ISP) --wait-app
+	@python3 $(HW_ROOT)/LEAKCAM/tools/power-bringup/provision_pin.py   # the BLE pairing PIN, pre-stored once
 clean:
 	rm -rf build

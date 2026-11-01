@@ -21,22 +21,29 @@ them.
   What it does (DESIGN.md 5.3): on USB power the BL616 advertises as LEAKCAM-xxyy, a phone pairs, writes the SSID and
   the passphrase, the BL616 checks them (join, DHCP, internet) and stores them. BLE does nothing else.
 
-  No pre-shared secret. There is no key, password or passkey built into the firmware or the app.
+  Pairing PIN (user, 2026-11-01: only a phone with the app may pair and configure Wi-Fi; against device hijack):
+  LE Secure Connections passkey entry with a 6-digit PIN per device.
+    - Each board holds its own PIN, pre-stored when its firmware is flashed (easyflash "pair_pin"; make flash runs
+      tools/power-bringup/provision_pin.py: the device ID from the USB serial number, the PIN derived on the flashing
+      host, written through the console). No key or derivation is built into the firmware image: dumping one image
+      tells nothing about another board's PIN. A board without a stored PIN does not advertise.
+    - How a PIN is derived (HMAC-SHA256 of the device ID under a 256-bit key, first 4 bytes mod 10^6) is known only to
+      the flashing host and the presence server (server/: LEAKCAM_PIN_KEY in its env file, mode 600; the key's master
+      copy .secrets/pairing_secret, outside git). The app holds no secret: it asks the server for the board's PIN
+      (GET /v1/devices/<id>/pin) right before it pairs and enters it itself.
+    - The provisioning service's characteristics need an authenticated link (passkey), so Just Works is refused: a
+      phone without the app has no PIN and cannot pair or write (tests/test040).
+    - Passkey entry also protects the pairing against an active man-in-the-middle (unlike Just Works), as long as the
+      PIN stays secret.
+    Remaining gaps: the PIN endpoint is open on the LAN until the server authenticates the app (section 4, test109);
+    anyone holding the server key or the flashing host derives every PIN; a 6-digit PIN only resists online guessing
+    (the board allows one pairing attempt per connection; no lockout yet).
+  The link: P-256 ECDH, AES-CCM. Protects against passive sniffing (the passphrase never seen). Legacy pairing is not
+  acceptable (crackle); LE Secure Connections must stay on.
 
-  Pairing: LE Secure Connections, Just Works. The phone and the board agree a fresh key with P-256 ECDH; the link is
-  AES-CCM encrypted before any characteristic can be written (the characteristics need an encrypted link).
-    Protects against: anyone listening to the radio (passive sniffing) - they see the exchange but cannot derive the
-    key, so they never see the passphrase.
-    Does not protect against: an active man-in-the-middle during the pairing itself (Just Works has no number to
-    compare: the board has no display or button). Mitigated by the gate below: pairing is possible only on USB power,
-    i.e. while the owner has the device on a cable in front of them, a short window.
-    Legacy pairing is not acceptable: its key can be cracked from a sniffed exchange (crackle), so the passphrase would
-    leak. LE Secure Connections must stay on.
-
-  Pairing only on USB power. Plugging in is the proof of physical access:
-    - The product starts BLE only in its USB mode and stops it (dropping any connection) on unplug (main.c).
-    - A connection while not on USB power is refused at once, before any security request (ble_pairing.c
-      on_connected). The consent callback (auth_pairing_confirm) also refuses, for pairings the phone starts.
+  No USB power gate since 2026-11-01 (user: the pre-stored PIN is enough to prove the phone). BLE runs from boot;
+  the board advertises always on USB power, and on battery only while no network is stored (60 s every 5 minutes,
+  provision.c), so a new board is found without a cable and a configured one on battery is silent.
     - Written into the stored credentials only after a passed check (commit 0x01) or on request (0x02); never on a
       failed check or a dropped link.
 
@@ -50,13 +57,10 @@ them.
       decrypt a recorded session. Removed in sdk_patch.py. Rule: never print keys, passphrases or tokens; the test
       tools print only lengths and CRCs (pt_ble creds).
 
-  Accepted risk (user, 2026-10-28: no further protection now): whenever the device is on USB power - setup, but
-  also every time it charges - anyone in radio range (10-30 m) can pair and overwrite the stored credentials: with
-  junk (the device goes silent) or with their own network (all traffic through their router; with plain HTTP today
-  they see pictures, clips and sound). Reading the stored passphrase is not possible (write-only characteristics).
-  Options kept for later (section 6): a pairing window of a few minutes after plug-in; an owner lock (only the
-  bonded phone may change the credentials, a new phone after a factory reset done on the device); an LED-blinked
-  passkey against MITM.
+  Before 2026-11-01 (Just Works): anyone in radio range of a device on USB power could pair and overwrite the stored
+  credentials. Now this needs the device's PIN (above). Reading the stored passphrase is not possible (write-only
+  characteristics). Options kept for later (section 6): a pairing window of a few minutes after plug-in; an owner
+  lock (only the first phone may change the credentials, a new one after a factory reset on the device).
 
   Bonds: the board does NOT keep bond keys (CONFIG_BT_SETTINGS off): they live in RAM until its next reset. The phone
   keeps its half, so after a board reset the phone must forget the device before it pairs again (test040 checks
@@ -74,6 +78,10 @@ them.
     Accepted for now: whoever has the device in hand had the physical access anyway. Open: BL616 flash encryption
     and locking the ISP/JTAG with eFuses for production (section 6).
   - The passphrase is never printed: wifi_set (debug builds only) prints the SSID and the passphrase length.
+  - pair_pin (the BLE pairing PIN): in easyflash, not encrypted, never printed (`prov` says only "stored"/"none").
+    Anyone with the board in hand reads it like the credentials; it opens pairing to that one board only.
+  - The phone app stores no Wi-Fi credentials (only each LEAKCAM's ID and name); the SSID is shown from the server
+    (each check-in reports it: not secret), the passphrase never.
 
 
 4. Network and server
@@ -89,6 +97,9 @@ them.
       device posts, and the device knows it talks to the real server (pinned server certificate).
     - The change net ("nn") and thresholds from the server: check the CRC against a signed value, not only the
       transport.
+  The presence server (server/, the Pi, plain HTTP on the LAN, use case 2): check-ins carry the device ID and the
+  SSID (not secret); /v1/devices/<id> answers presence and SSID to anyone on the LAN; /v1/devices/<id>/pin gives
+  the pairing PIN to anyone on the LAN (section 2). Both need app authentication before the server leaves the LAN.
   The Wi-Fi check at provisioning (wifi_check.c) fetches http://connectivitycheck.gstatic.com/generate_204 over plain
   HTTP and sends nothing of the owner's.
 
@@ -112,6 +123,6 @@ them.
   2. Signed OTA images and signed change nets (sections 4, 5).
   3. BL616 flash encryption for the credentials; eFuse locks for ISP/JTAG on both chips.
   4. Which shell commands stay in LEAKCAM_RELEASE builds.
-  5. BLE on USB power is open to anyone in range (accepted for now, section 2): pairing window after plug-in, owner
-     lock with an on-device factory reset (e.g. 3 plug-ins in 10 s), LED-blinked passkey against MITM.
+  5. BLE pairing: the PIN endpoint needs app authentication (test109); a pairing window after plug-in and an owner
+     lock (with an on-device factory reset, e.g. 3 plug-ins in 10 s) still open; a lockout after failed pairings.
   6. BLE bonds: keep them on the board (CONFIG_BT_SETTINGS) or pair without bonding (section 2).

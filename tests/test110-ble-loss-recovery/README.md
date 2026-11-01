@@ -71,7 +71,7 @@ Probes: none (on USB; the setup's current is test040's).
 | Test run time | 605 s automated (run.py, 2026-11-01), no setup | - | setup (flashing, plugging, waiting) separately |
 | recovery: per case app message, time, board state | 2026-11-01 run 3: notifications lost -> Done 7.1-7.4 s; link lost after the save (4 points) -> Done 9.5-10.3 s; Bluetooth off during the check -> Done 14.6 s; link lost on every connect 5.7 s, Bluetooth off before the save 11.1 s, DNS 7.2 s, HTTP 7.3 s -> named, decoy kept; app and board agree in all 12 | - | % of the top |
 | Current idle / during (min / avg / peak) | n/a: not metered; the same BLE + check path in test040 on USB: advertising 63.4, connected 63.1, check peak 86 mA (2026-10-29) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
-| Voltage under load (min) | n/a: setup only on USB power | cutoff 3.10 V (bug-004) | at the probes above |
+| Voltage under load (min) | n/a: the bench runs on USB power | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | n/a for the cell: setup draws from USB | - | scripts/energy.py |
 | Per day | n/a: once per installation, on USB | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | die n/a: K230 off; board 29.0 / 29.0 / 29.0 C (AHT20) (2026-11-01) | K230 limit (datasheet) | chip_temp, AHT20 |

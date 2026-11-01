@@ -24,15 +24,19 @@ With LEAKCAMs remembered the app opens here; with none it goes straight to setup
                                                            [mine_unknown]; Delete asks first ([delete_ask]) and
                                                            removes it from the phone only
   +----------------------------------------------------+
-  | To set up a LEAKCAM or change its Wi-Fi, plug it   |   [nearby_none]; a board found on USB power (it
-  | into USB power near the phone ...                  |   advertises only then, every 30 s a scan):
+  | To set up a LEAKCAM or change its Wi-Fi, bring it  |   [nearby_none]; a board found nearby (a new one
+  | near the phone ...                                 |   advertises 60 s every 5 min on battery, one set
+                                                           up only on USB power; every 30 s a scan):
   +----------------------------------------------------+   [nearby_known] / [nearby_new]
   [ Set up a LEAKCAM ]                                     off until one is found; then [setup_change] or
                                                            [setup_new_named], opening section 1
 
-The phone stores only each LEAKCAM's ID and name, never a Wi-Fi network. A known LEAKCAM gets the short flow: the
-intro and steps 1-3 hidden, [help_change]; when the board says it has a network (advertised flag), the fields show
-[hidden_ssid] / [hidden_password], and what is typed replaces it after the board's check. [to_status] goes back.
+The phone stores only each LEAKCAM's ID and name, never a Wi-Fi network. Each row also shows the network the LEAKCAM
+checked in from ([mine_ssid]; the SSID is not secret, the server passes on what the board reports). A known LEAKCAM
+gets the short flow: the intro and steps 1-3 hidden, [help_change], the SSID field filled with its current network;
+the passphrase is never shown: when the board has one (advertised flag) its field shows [hidden_password], and what is
+typed replaces it after the board's check ([hidden_ssid] when the network's name is not known yet). [to_status] goes
+back.
 
 
 1. The setup screen
@@ -42,7 +46,7 @@ One scrolling screen, top to bottom:
 
   LEAKCAM Setup                                            title
   Connect your LEAKCAM to Wi-Fi in four steps. ...         [intro]
-  1. Plug the LEAKCAM into USB power                       the steps: done ones green with a
+  1. Bring the LEAKCAM near the phone                      the steps: done ones green with a
   2. Find it                                               check mark, the current one blue and
   3. Enter your Wi-Fi network                              bold, later ones grey
   4. Pair, check and save
@@ -181,9 +185,9 @@ has already said nothing was stored, and the board keeps to that.
   need Location permission on every Android version.
 - The LEAKCAM server address: set on the board, not here.
 - Anything after setup (alarms, clips): other apps and the server.
-- A PIN on the pairing: the board uses Just Works pairing, accepted on USB power only
-  (firmware/bl616/ble_pairing.h). A per-board PIN would change step 4b to "enter the code on
-  the label".
+- Typing a PIN: the pairing PIN (passkey entry, since 2026-11-01) comes from the server and the app
+  enters it itself (firmware/bl616/ble_pairing.h); the user never sees it. No server, no setup
+  ([err_no_pin]).
 
 Not yet run on a phone with a real board: the texts and flow are built and lint-clean, the
 timings and the board's result codes are from the design, not measured.

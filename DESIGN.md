@@ -357,14 +357,17 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
 
 - **One GATT service:** SSID, passphrase and commit (write only), and STATUS (read and notify: the
   check's progress and result).
-- **Encrypted link, LE Secure Connections Just Works.** No pre-shared secret. Pairing is accepted
-  only while on USB power; plugging in is the proof of physical access. The gate is at connection
-  time (the host skips the consent callback after the board's own Security Request), and the SDK's
-  profile for our controller library needs `sdk_patch.py` for Secure Connections at all. Threats,
-  findings and open items: [SECURITY.txt](SECURITY.txt).
+- **Authenticated link: LE Secure Connections passkey entry (user, 2026-11-01).** Each board holds its
+  own 6-digit PIN, pre-stored when its firmware is flashed (`make flash` runs provision_pin.py); only
+  the flashing host and the presence server know how it is derived, and the app asks the server for it
+  right before pairing and enters it itself. Just Works is refused, so a phone without the app cannot
+  pair. No USB power gate: BLE runs from boot; the board advertises always on USB power and, on battery,
+  60 s every 5 minutes while no network is stored (provision.c). The SDK's profile for our controller
+  library needs `sdk_patch.py` for Secure Connections at all; `CONFIG_BT_FIXED_PASSKEY=y` for the PIN.
+  Threats, findings and open items: [SECURITY.txt](SECURITY.txt).
 - **Stored in easyflash** (`wifi_ssid`, `wifi_psk`), and nothing else.
 - **No pairings kept (user, 2026-10-29).** No bond keys in flash (`CONFIG_BT_SETTINGS` off): every
-  setup pairs anew on USB power; after a reset or sleep the board has forgotten the phone. Nothing to
+  setup pairs anew; after a reset or sleep the board has forgotten the phone. Nothing to
   steal or wipe; the credentials are written once per installation. The app removes the phone's old
   bond itself before every send and pairs anew (2026-10-30); only a phone that refuses the removal
   gets the request to Forget the board by hand (`err_unpair`).

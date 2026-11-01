@@ -44,7 +44,9 @@ Android 8.0+, the app's BLE permissions.
 5. **Change network:** a second setup replaces the first; the next wake joins the new one.
 6. **Board reset (bond lost):** the board keeps no pairings (user, 2026-10-29), so any reset or sleep loses the bond:
    the app removes its stale bond by itself before every send and pairs again, no Forget by hand.
-7. **On battery, no setup:** USB out: the board is not listed by the app, a stored bond cannot connect.
+7. **On battery** (hand_step7.py, product firmware; no USB power gate since 2026-11-01): no network stored: found
+   within 5 minutes (advertising 60 s every 5 minutes) and set up from the app on battery with the PIN; configured:
+   silent on battery for a whole period; plugged in: advertising again.
 8. **Repeats:** 8 setups in a row (the leak verdict's minimum) (alternating two networks): every one Done, BL616 memory steady (mem_leak.py).
 
 ## Pass

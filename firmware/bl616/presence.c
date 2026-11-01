@@ -27,6 +27,25 @@ static enum wifi_check_state last = WCHK_IDLE;
 static uint16_t last_detail;
 static uint32_t last_ms;
 
+/* the query value: unreserved characters as they are, every other byte %XX (an SSID is any 0-32 bytes) */
+static void url_encode(char *out, size_t cap, const char *in, size_t n)
+{
+    static const char hex[] = "0123456789ABCDEF";
+    size_t o = 0;
+    for (size_t i = 0; i < n && o + 4 <= cap; i++) {
+        unsigned char c = (unsigned char)in[i];
+        if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' || c == '_' ||
+            c == '.' || c == '~') {
+            out[o++] = (char)c;
+        } else {
+            out[o++] = '%';
+            out[o++] = hex[c >> 4];
+            out[o++] = hex[c & 15];
+        }
+    }
+    out[o] = 0;
+}
+
 static void no_progress(enum wifi_check_state st, uint16_t detail)
 {
     (void)st;
@@ -35,13 +54,15 @@ static void no_progress(enum wifi_check_state st, uint16_t detail)
 
 static void check_in(void)
 {
-    char ssid[33], psk[64], path[32], body[64];
+    char ssid[33], psk[64], enc[3 * 32 + 1], path[32 + sizeof(enc)], body[64];
     size_t ss = 0, ps = 0;
     size_t sl = ef_get_env_blob("wifi_ssid", ssid, sizeof(ssid) - 1, &ss);
     size_t pl = ef_get_env_blob("wifi_psk", psk, sizeof(psk) - 1, &ps);
     if (ss == 0)
         return;                              /* not set up yet */
-    snprintf(path, sizeof(path), "/v1/poll?id=%s", device_id());
+    /* the network it is on, for the app (an SSID is not secret; the passphrase never leaves the board) */
+    url_encode(enc, sizeof(enc), ssid, sl);
+    snprintf(path, sizeof(path), "/v1/poll?id=%s&ssid=%s", device_id(), enc);
     struct wifi_check_target t = { SERVER_HOST, SERVER_PORT, path, 200, body, sizeof(body) };
     last = wifi_check_run(ssid, sl, psk, ps ? pl : 0, &t, no_progress, &last_detail);
     last_ms = (uint32_t)bflb_mtimer_get_time_ms();

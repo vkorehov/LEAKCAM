@@ -146,7 +146,7 @@ static int probe_connect(const struct addrinfo *ai)
 static enum wifi_check_state internet(const struct wifi_check_target *t, uint16_t *detail)
 {
     struct addrinfo hints, *ai = NULL;
-    char req[160], buf[320];
+    char req[256], buf[320];             /* req: a path with a URL-encoded SSID (presence.c) fits */
     int n = 0, want = t->body ? (int)sizeof(buf) - 1 : 12;   /* the status line, or the whole short answer */
 
     int rl = snprintf(req, sizeof(req), "GET %s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", t->path,

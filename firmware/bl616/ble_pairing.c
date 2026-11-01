@@ -6,6 +6,7 @@
 #include "ble_pairing.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <FreeRTOS.h>
@@ -21,7 +22,6 @@
 #include "log.h"
 
 #include "device_id.h"
-#include "usb_power.h"
 #include "wifi_check.h"
 #include "wifi_link.h"
 
@@ -30,6 +30,8 @@
 #define LEAKCAM_UUID(n)       BT_UUID_DECLARE_128(LEAKCAM_UUID_BYTES(n))
 
 static struct bt_conn *active_conn;
+static volatile bool adv_wanted;         /* ble_pairing_advertise(): provision.c decides when */
+static bool adv_on, ready;               /* advertising now; the stack up with a stored PIN */
 static char ssid[33];
 static char psk[64];
 static uint8_t status[7];                /* state, detail LE16, attempt LE32: the STATUS characteristic */
@@ -161,15 +163,15 @@ static void status_ccc_changed(const struct bt_gatt_attr *attr, u16_t value)
 static struct bt_gatt_attr prov_attrs[] = {
     BT_GATT_PRIMARY_SERVICE(LEAKCAM_UUID(0x000000000001)),
     BT_GATT_CHARACTERISTIC(LEAKCAM_UUID(0x000000000002), BT_GATT_CHRC_WRITE,
-                           BT_GATT_PERM_WRITE_ENCRYPT, NULL, ssid_write, NULL),
+                           BT_GATT_PERM_WRITE_AUTHEN, NULL, ssid_write, NULL),
     BT_GATT_CHARACTERISTIC(LEAKCAM_UUID(0x000000000003), BT_GATT_CHRC_WRITE,
-                           BT_GATT_PERM_WRITE_ENCRYPT, NULL, psk_write, NULL),
+                           BT_GATT_PERM_WRITE_AUTHEN, NULL, psk_write, NULL),
     BT_GATT_CHARACTERISTIC(LEAKCAM_UUID(0x000000000004), BT_GATT_CHRC_WRITE,
-                           BT_GATT_PERM_WRITE_ENCRYPT, NULL, commit_write, NULL),
+                           BT_GATT_PERM_WRITE_AUTHEN, NULL, commit_write, NULL),
     /* index 8 is its value: set_status() notifies through it */
     BT_GATT_CHARACTERISTIC(LEAKCAM_UUID(0x000000000005), BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
-                           BT_GATT_PERM_READ_ENCRYPT, status_read, NULL, NULL),
-    BT_GATT_CCC(status_ccc_changed, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE_ENCRYPT),
+                           BT_GATT_PERM_READ_AUTHEN, status_read, NULL, NULL),
+    BT_GATT_CCC(status_ccc_changed, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE_AUTHEN),
 };
 static struct bt_gatt_service prov_svc = BT_GATT_SERVICE(prov_attrs);
 
@@ -188,16 +190,36 @@ static void set_status(enum wifi_check_state st, uint16_t detail)
 
 /* ---------------- pairing policy ---------------- */
 
+/* the pairing PIN (LE Secure Connections passkey entry, user 2026-11-01: only the app pairs): 6 digits stored in
+ * easyflash ("pair_pin") once at manufacture (`prov pin`, the console inside the enclosure). How it is derived is
+ * known only to the server, which gives it to the app right before it pairs (GET /v1/devices/<id>/pin): neither the
+ * firmware nor the app holds the derivation. 0..999999, or -1 when none is stored (the board cannot be set up then). */
+int ble_pairing_pin(void)
+{
+    char v[7];
+    size_t saved = 0;
+    size_t n = ef_get_env_blob("pair_pin", v, sizeof(v) - 1, &saved);
+    if (saved != 6 || n != 6)
+        return -1;
+    v[6] = 0;
+    for (int i = 0; i < 6; i++)
+        if (v[i] < '0' || v[i] > '9')
+            return -1;
+    return atoi(v);
+}
+
+/* Just Works (a phone that enters no PIN): refused, the provisioning service needs an authenticated link */
 static void auth_pairing_confirm(struct bt_conn *conn)
 {
-    /* no display, no buttons: USB power is the proof of physical access */
-    if (usb_present()) {
-        if (bt_conn_auth_pairing_confirm(conn))
-            LOG_W("ble: pairing confirm failed\r\n");
-    } else {
-        LOG_W("ble: pairing refused, not on USB power\r\n");
-        (void)bt_conn_auth_cancel(conn);    /* not confirmed, the pairing times out anyway */
-    }
+    LOG_W("ble: pairing without the PIN refused\r\n");
+    (void)bt_conn_auth_cancel(conn);        /* refused either way: the link stays unauthenticated */
+}
+
+/* its presence makes the board's IO capability "display only": the phone enters the passkey. Never printed */
+static void auth_passkey_display(struct bt_conn *conn, unsigned int passkey)
+{
+    (void)conn;
+    (void)passkey;
 }
 
 static void auth_cancel(struct bt_conn *conn)
@@ -221,6 +243,7 @@ static void auth_pairing_failed(struct bt_conn *conn, enum bt_security_err reaso
 }
 
 static const struct bt_conn_auth_cb auth_cb = {
+    .passkey_display = auth_passkey_display,
     .cancel = auth_cancel,
     .pairing_confirm = auth_pairing_confirm,
     .pairing_complete = auth_pairing_complete,
@@ -255,6 +278,7 @@ static void adv_start(void)
     param.options = BT_LE_ADV_OPT_CONNECTABLE | BT_LE_ADV_OPT_USE_NAME;
     if (bt_le_adv_start(&param, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd)))
         vAssertCalled();                 /* not advertising: the board could never be set up */
+    adv_on = true;
 }
 
 static void on_connected(struct bt_conn *conn, u8_t err)
@@ -262,21 +286,15 @@ static void on_connected(struct bt_conn *conn, u8_t err)
     struct bt_conn_info info;
     if (err || bt_conn_get_info(conn, &info) || info.type != BT_CONN_TYPE_LE)
         return;
-    /* the USB power gate is here, not only in auth_pairing_confirm: the host skips that consent callback when
-     * pairing follows our own Security Request below (smp.c), and the board paired on battery (tests/test040) */
-    if (!usb_present()) {
-        LOG_W("ble: connection refused, not on USB power\r\n");
-        if (bt_conn_disconnect(conn, BT_HCI_ERR_REMOTE_USER_TERM_CONN))
-            vAssertCalled();             /* a phone left connected on battery could pair: never limp on */
-        return;
-    }
+    /* no USB power gate since 2026-11-01 (user): the pairing PIN proves the phone; on battery too */
+    adv_on = false;                      /* connectable advertising stops on connect */
     active_conn = conn;
     /* each connection starts empty: an open network is "no passphrase written" - the SDK's ATT layer refuses
      * zero-length writes (BFLB_HOST_PARAMETER_CHECK, 0x13) - and an earlier session's values are never reused */
     memset(ssid, 0, sizeof(ssid));
     memset(psk, 0, sizeof(psk));
     /* ask for encryption right away so the phone's pairing dialog appears on connect */
-    if (bt_conn_set_security(conn, BT_SECURITY_L2))
+    if (bt_conn_set_security(conn, BT_SECURITY_L3))   /* L3: authenticated (passkey), not Just Works */
         LOG_W("ble: security request failed\r\n");   /* the phone pairs at its first encrypted write instead */
     /* Wi-Fi up while the phone pairs and writes: the check then starts at once (tests/test106) */
     if (!warming) {
@@ -294,8 +312,8 @@ static void on_disconnected(struct bt_conn *conn, u8_t reason)
     active_conn = NULL;
     if (!checking && !warming)
         wifi_link_cool();
-    if (usb_present())
-        adv_start();                  /* connectable advertising stops on connect; resume it */
+    if (adv_wanted)
+        adv_start();                  /* connectable advertising stopped on connect; resume it */
 }
 
 static struct bt_conn_cb conn_cb = {
@@ -316,14 +334,21 @@ static void on_bt_ready(int err)
     bt_id_get(&addr, &count);
     char name[16];
     snprintf(name, sizeof(name), "LEAKCAM-%02X%02X", addr.a.val[1], addr.a.val[0]);
-    if (bt_set_name(name))
+    int pin = ble_pairing_pin();
+    if (pin < 0) {
+        LOG_E("ble: no pairing PIN stored (prov pin): not advertising, the board cannot be set up\r\n");
+        return;
+    }
+    if (bt_set_name(name) || bt_passkey_set((unsigned int)pin))
         vAssertCalled();
     bt_conn_cb_register(&conn_cb);
     if (bt_conn_auth_cb_register(&auth_cb) || bt_gatt_service_register(&prov_svc))
         vAssertCalled();
-    adv_start();
+    ready = true;
+    if (adv_wanted)
+        adv_start();
     wl_trace(0x75);
-    LOG_I("ble: advertising as %s\r\n", name);
+    LOG_I("ble: ready as %s\r\n", name);
 }
 
 void ble_pairing_start(void)
@@ -344,9 +369,17 @@ bool ble_pairing_connected(void)
     return active_conn != NULL;
 }
 
-void ble_pairing_stop(void)
+/* only advertising starts and stops: the stack stays up (a BLE restart after a stop was never proven, test106) */
+void ble_pairing_advertise(bool on)
 {
-    (void)bt_le_adv_stop();             /* not advertising (a phone connected) is fine */
-    if (active_conn)
-        (void)bt_conn_disconnect(active_conn, BT_HCI_ERR_REMOTE_USER_TERM_CONN);   /* -ENOTCONN: already gone */
+    adv_wanted = on;
+    if (!ready || active_conn)
+        return;                          /* on_bt_ready / on_disconnected follow adv_wanted */
+    if (on && !adv_on)
+        adv_start();
+    else if (!on && adv_on) {
+        if (bt_le_adv_stop())
+            vAssertCalled();
+        adv_on = false;
+    }
 }

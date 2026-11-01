@@ -2,12 +2,13 @@
  * test040: the product's BLE provisioning (firmware/bl616/ble_pairing.c + wifi_check.c) on the test firmware. The
  * phone side is the instrumented test of android/ (BleOp), driven over adb by tests/test040's run.py.
  *
- *   pt_ble on         RF parameters, then BLE as the product starts it: advertising as LEAKCAM-xxyy, pairing only on
- *                     USB power; an unplug stops it (ble_pairing_stop), as the product's supervisor does. Unlike the
- *                     product (BLE only in its USB mode) it also advertises when started on battery.
+ *   pt_ble on         RF parameters, then BLE as the product starts it: advertising as LEAKCAM-xxyy, pairing with
+ *                     the stored PIN (passkey entry); unlike the product (advertising windows on battery while no
+ *                     network is stored, provision.c) it advertises all the time once started.
  *   pt_ble            started?, USB power, the stored credentials (as pt_ble creds)
  *   pt_ble creds      wifi_ssid / wifi_psk in easyflash: length and CRC-32 each, never the passphrase itself
  *   pt_ble erase      wifi_ssid, wifi_psk and the remembered AP (wifi_ap) deleted
+ *   pt_ble pin <6>    the BLE pairing PIN stored (as the product's `prov pin`; provision_pin.py from make flash)
  *   pt_ble decoy      a fixed made-up network (t110-decoy / password1) stored directly: test110 then tells "stored"
  *                     from "not stored" without a 16 s save through the app
  */
@@ -53,26 +54,11 @@ static void print_key(const char *key)
         printf("pt_ble: %s len %u crc %08lx\r\n", key, (unsigned)saved, (unsigned long)crc32(v, n));
 }
 
-/* the product's supervisor: an unplug stops BLE (the product then reboots into the battery path) */
-static void usb_watch_task(void *arg)
-{
-    (void)arg;
-    bool was = usb_present();
-    while (1) {
-        bool now = usb_present();
-        if (was && !now) {
-            printf("pt_ble: USB unplugged, BLE stopped\r\n");
-            ble_pairing_stop();
-        }
-        was = now;
-        vTaskDelay(pdMS_TO_TICKS(200));
-    }
-}
-
 static void ble_task(void *arg)
 {
     (void)arg;
     ble_pairing_start();
+    ble_pairing_advertise(true);            /* the test firmware advertises whenever BLE is on */
     vTaskDelete(NULL);
 }
 
@@ -93,8 +79,7 @@ static void cmd_ble(int argc, char **argv)
             return;
         wl_trace(0x7f);
         started = true;
-        if (xTaskCreate(ble_task, "ble", 1024, NULL, 3, NULL) != pdPASS ||
-            xTaskCreate(usb_watch_task, "bleusb", 512, NULL, 2, NULL) != pdPASS)
+        if (xTaskCreate(ble_task, "ble", 1024, NULL, 3, NULL) != pdPASS)
             vAssertCalled();
         printf("pt_ble: starting (USB power %s)\r\n", usb_present() ? "yes" : "no");
     } else if (!strcmp(op, "erase")) {
@@ -103,6 +88,13 @@ static void cmd_ble(int argc, char **argv)
             printf("pt_ble: erase failed\r\n");
         else
             printf("pt_ble: credentials and remembered AP erased\r\n");
+    } else if (!strcmp(op, "pin") && argc > 2) {
+        if (strlen(argv[2]) != 6 || strspn(argv[2], "0123456789") != 6)
+            printf("pt_ble: pin: 6 digits\r\n");
+        else if (ef_set_env_blob("pair_pin", argv[2], 6) != EF_NO_ERR)
+            printf("pt_ble: pin store failed\r\n");
+        else
+            printf("pt_ble: pairing PIN stored (it takes effect at the next boot)\r\n");
     } else if (!strcmp(op, "decoy")) {
         if (ef_set_env_blob("wifi_ssid", "t110-decoy", 10) != EF_NO_ERR ||
             ef_set_env_blob("wifi_psk", "password1", 9) != EF_NO_ERR)
@@ -114,8 +106,9 @@ static void cmd_ble(int argc, char **argv)
             printf("pt_ble: %s, USB power %s\r\n", started ? "on" : "off", usb_present() ? "yes" : "no");
         print_key("wifi_ssid");
         print_key("wifi_psk");
+        printf("pt_ble: pairing PIN %s\r\n", ble_pairing_pin() < 0 ? "none (pt_ble pin)" : "stored");
     } else
-        printf("usage: pt_ble [on | creds | erase | decoy]\r\n");
+        printf("usage: pt_ble [on | creds | erase | decoy | pin <6 digits>]\r\n");
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_ble, pt_ble, test040 BLE provisioning: on | creds | erase | decoy);
+SHELL_CMD_EXPORT_ALIAS(cmd_ble, pt_ble, test040 BLE provisioning: on | creds | erase | decoy | pin <6 digits>);
 #endif
