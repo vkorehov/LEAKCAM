@@ -40,6 +40,11 @@ app's INTERNET permission, ssh to the Pi for the poll interval.
    network; the app's storage holds IDs and names only, no network. **Delete:** the second LEAKCAM removed from the
    list, the board still listed.
 
+## Setup mode (DESIGN.md 5.3.1, planned)
+
+- In setup mode (once test120 passed): a board without presence shows red in the app and is reachable over BLE from
+  low power (Configure enabled), one with presence is woken through the server (test119).
+
 ## Pass
 
 Every channel shows the same ID; the app shows each of its LEAKCAMs online or offline as the server sees it.

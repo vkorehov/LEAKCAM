@@ -21,6 +21,11 @@ make                              # arm64 host: builds in the K230 build contain
 make flash                        # running firmware -> ROM, flashes, boots it, waits for the console
 ```
 
+A `make` with nothing changed grows the .bin by one DWARF backtrace table each time (2026-11-01: 1317904 ->
+1338384 -> 1358864 B): the SDK's post_build step (cmake/bflb_flash.cmake, CONFIG_BACKTRACE) appends dwarfcfi.bin to
+the .bin in place, and the .bin is only made fresh from the ELF on a relink. The code is the same; before a flash after
+such builds, `touch main.c && make` (the size goes back).
+
 On an arm64 host the RISC-V toolchain (x86-64 only) runs in the `k230-rtos-sdk-build:arm64-x86tc`
 container from [firmware/BUILD.md](../../firmware/BUILD.md) section 2.2, which `make` starts; the
 SDK sits next to LEAKCAM (`~/k230d-hw/bouffalo_sdk`). `make flash` runs in the same container with the

@@ -1,0 +1,23 @@
+14:44:26 test117-presence-loss-ble: 3 metric rows MISSING: Current idle / during (min / avg / peak), Power, energy per operation, Temperature die / board (start / peak / end)
+Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
+14:44:58 setup <network> 8.8 s Done. 7C3E8262B149 joined "VK", reached the internet and stored the ne
+14:44:58 CHECK pass start: set up from the app 8.8 s
+14:45:01 CHECK pass present: no advertising on battery 2 s: off (configured, present)
+14:45:01 CHECK pass the board checks in every 10 s poll 10 s after 0 s
+14:45:18 CHECK pass present: the phone does not find the board None
+Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
+14:45:25 CHECK pass server down: advertising on battery (presence lost) 5 s: on (presence lost)
+14:45:27 CHECK pass server down: the phone finds the board at once 7C3E8262B149 after 0.3 s
+Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
+14:45:37 CHECK pass server back: advertising off again 9 s: off (configured, present)
+14:45:54 setup t117-gone 14.9 s Saved without checking. 7C3E8262B149 stored the Wi-Fi network "t117-go
+14:45:54 CHECK pass network gone: saved without checking Saved without checking. 7C3E8262B149 stored the Wi-Fi network "t117-go
+14:45:58 CHECK pass network gone: advertising on battery (presence lost) 4 s: on (presence lost)
+14:46:09 setup <network> 8.7 s Done. 7C3E8262B149 joined "VK", reached the internet and stored the ne
+14:46:09 CHECK pass network gone: the phone sets the real network at once 8.7 s
+14:46:12 CHECK pass network back: advertising off again 2 s: off (configured, present)
+14:46:12 CHECK pass network back: present at the server 14 s after the setup started
+14:46:31 CHECK pass network back: silent again on battery None
+14:46:34 sample after the checks {'board': None, 'bl_mem': (146028, 133928, 120076, 105, 79444, 16, 0)}
+Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
+14:46:39 test117-presence-loss-ble: PASS; filled 0: -; still MISSING 3: Current idle / during (min / avg / peak), Power, energy per operation, Temperature die / board (start / peak / end); run in HISTORY.md - README Status/Result by hand

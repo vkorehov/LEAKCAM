@@ -1,11 +1,12 @@
 # test114: the lowest BLE energy at which the phone still finds the board
 
-Status: **planned** (2026-11-01, user: how little energy can BLE use while the board waits to be discovered; and a
-wake from the app for a board that is not advertising).
+Status: **part A run** (2026-11-01: discovery time per advertising interval; currents not read yet), parts B and C
+planned (user 2026-11-01: how little energy can BLE use while the board waits to be discovered; and a wake from the
+app for a board that is not advertising: built through the server instead, test119).
 
 A board on battery spends its BLE energy waiting: either advertising (the phone hears it) or listening (it hears the
 phone). This test finds, for each, the current against the time the phone needs to find the board, so the product can
-pick its operating point (provision.c: today 60 s of advertising every 5 minutes while no network is stored; silent
+pick its operating point (provision.c: today 60 s of advertising every 5 minutes while no network is stored or presence is lost; silent
 once configured).
 
 ## Mechanisms measured
@@ -48,7 +49,21 @@ DESIGN.md with its energy per day.
 
 ## Result
 
-Not run (planned).
+Part A (2026-11-01, test firmware, Samsung SM-G715FN at ~0.5 m, 10 scans per interval, 7 s apart):
+
+| Advertising every | Found | Median | Max |
+|---|---|---|---|
+| 100 ms | 10/10 | 0.22 s | 0.55 s |
+| 500 ms | 10/10 | 0.55 s | 1.8 s |
+| 1 s | 10/10 | 0.76 s | 2.5 s |
+| 2 s | 10/10 | 2.2 s | 4.1 s |
+| 5 s | 9/10 (15 s scans) | 3.2 s | 9.5 s |
+| 10.24 s | 8/10 (25 s scans) | 8.4 s | 22.4 s |
+
+Up to 2 s the phone finds the board every time within about two intervals; from 5 s it misses whole scans (the
+phone's own scan duty, low-latency mode). The current per interval: the USB-C 1 meter on cue (LEAKCAM_METER=ask), not
+read in this run; it only matters with BLE in a sleep mode between events (part C), awake the BL616 draws ~62 mA
+whatever the interval (ENERGY.txt).
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
@@ -56,15 +71,15 @@ Not run (planned).
 |---|---|---|---|
 | Boot, power-on -> READY (median of 5) | n/a: the BL616 alone, K230 off | target (test022) | |
 | This part's boot share | n/a: no K230 boot | - | |
-| Test run time | **MISSING** | - | |
-| discovery time against current (A, B, C) | **MISSING** | - | % of the top |
+| Test run time | 0 s automated (run.py, 2026-11-01), no setup | - | |
+| discovery time against current (A, B, C) | 100 ms: 10/10 found, median 224.5 ms, max 549 ms; 500 ms: 10/10 found, median 553.5 ms, max 1814 ms; 1000 ms: 10/10 found, median 756.5 ms, max 2541 ms; 2000 ms: 10/10 found, median 2182.5 ms, max 4085 ms; 5000 ms: 9/10 found, median 3156 ms, max 9539 ms; 10240 ms: 8/10 found, median 8423.0 ms, max 22419 ms | - | % of the top |
 | Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 meter, cell full |
 | Voltage under load (min) | n/a: on USB power | cutoff 3.10 V (bug-004) | |
 | Power, energy per operation | **MISSING** | - | per discovery / per hour waiting |
 | Per day | **MISSING** | ENERGY.txt line | waiting 24 h at the chosen point |
 | Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | |
 | Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak | |
-| Image (sizes) | **MISSING** | minimal image (rule) | |
+| Image (sizes) | BL616 test firmware 1317904 B (2026-11-01, on the board at the run) | minimal image (rule) | |
 | Compile flags | BL616 test firmware -Os -g, sections, --gc-sections | smallest code (rule) | |
 | Features over the minimal image | BLE observer, the wake-beacon scan | test008 floor | |
 | Optimised build (-O3, LTO, -march) | n/a: not an optimisation test | the faster one stays | |

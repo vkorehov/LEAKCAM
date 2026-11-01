@@ -28,6 +28,9 @@ CONFIG_ENABLE_CHERRY_USB_DEVICE_CLASS_DRV=y
 CONFIG_CHERRY_USB_DEVICE_ENABLE_CLASS_CDC_ACM=y
 CONFIG_CHERRY_USB_DEVICE_FUNC_CDC=y
 CFG
+# the SDK's CherryUSB glue calls rt_ioremap without its header: undeclared, the 64-bit address came back as an int
+G=$SDK/src/rtsmart/rtsmart/kernel/bsp/maix3/components/CherryUSB/port/dwc2/usb_glue_kendryte.c
+grep -q '<ioremap.h>' "$G" || sed -i 's|#include <rthw.h>|#include <rthw.h>\n#include <ioremap.h>|' "$G"
 cp "$L/tests/test017-nand-raw-speed/leakcam_bench.c" "$SDK/src/rtsmart/rtsmart/kernel/bsp/maix3/board/"
 patch -d "$SDK/src/rtsmart/rtsmart/kernel/bsp/maix3/drivers/extdrv/bl616_nethub" -p1 --forward \
     < "$L/tests/test015-sdio-speed/k230_bench.patch"

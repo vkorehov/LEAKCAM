@@ -93,9 +93,13 @@ Leak tests, one per operation the product repeats:
 | [test110 setup app recovery from loss at every step](test110-ble-loss-recovery/README.md) | 2026-11-01, run.py 37/37 | **pass**: lost notifications, a link lost after the save, Bluetooth off during the check: the app reconnects and shows the board's result; failures named in 5.7-11.1 s; app and board agree in every case |
 | [test111 more than one LEAKCAM: one device ID, presence, status screen](test111-multi-device/README.md) | 2026-11-01, run.py 18/18 | **pass**: one ID on board, USB and BLE; the app's status screen (online / offline / delete), the short change-Wi-Fi flow, no stored network |
 | [test113 the whole setup over USB alone (no BLE)](test113-usb-setup-from-phone/README.md) | 2026-11-01 | **planned**: USB-C 1 is the K230's USB0: K230 CDC ACM + relay to the BL616, or rev 2 routes the BL616's USB there |
-| [test114 the lowest BLE energy at which the phone finds the board](test114-ble-discovery-energy/README.md) | 2026-11-01 | **planned**: part A runnable (advertising interval sweep, pt_ble adv); B (wake beacon) and C (BLE sleep) to build |
+| [test114 the lowest BLE energy at which the phone finds the board](test114-ble-discovery-energy/README.md) | 2026-11-01 | **part A run**: found every time up to 2 s advertising (median 0.2-2.2 s), misses from 5 s; currents and parts B, C open |
 | [test115 the K230's USB device on USB-C 1](test115-k230-usb-device/README.md) | 2026-11-01 | **planned, built**: CherryUSB CDC ACM in the test image, usb_echo, run.py; to run after the image rebuild |
 | [test116 the whole setup over BLE alone (no USB)](test116-ble-only-setup/README.md) | 2026-11-01 | **planned**: on battery, USB-C 1 out (hand): found in an advertising window, set up from the app |
+| [test117 presence lost brings BLE back](test117-presence-loss-ble/README.md) | 2026-11-01 | **pass** 13/13: server down -> advertising in 5 s, found in 0.3 s; network gone -> advertising in 4 s, Wi-Fi set again in 8.7 s |
+| [test118 the app's icons follow the board](test118-app-presence-icons/README.md) | 2026-11-01, 7/7 | **pass**: BLE icon goes 51 s after advertising stops (45 s unseen + scan), Wi-Fi icon and red 29 s after presence stops, both back in 11-20 s |
+| [test119 the phone wakes a board through the server](test119-wake-through-server/README.md) | 2026-11-01 | **pass** 12/12: Wake tap -> woken at the next check-in (6 s) -> Wi-Fi changed 8.4 s; second wake 429 |
+| [test120 the BLE low-power setup mode alone](test120-ble-low-power-setup-mode/README.md) | 2026-11-01 | **planned** (priority): PDS + lpfw advertising, phone discovery and wake by connection, USB plug wake |
 
 ## Not tested yet (audit 2026-10-30)
 

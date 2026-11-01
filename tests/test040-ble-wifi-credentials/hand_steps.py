@@ -44,7 +44,7 @@ def meter():
     console_back()
     log("METER 1: BLE off, idle (60 s)")
     time.sleep(60)
-    bl("pt_ble on", 5, r"advertising as|already on")
+    bl("pt_ble on", 5, r"ble: ready as|already on")
     log("METER 2: BLE advertising (60 s)")
     time.sleep(60)
     r = scan(20)

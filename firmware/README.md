@@ -100,7 +100,7 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
 
 ### USB / BLE mode
 - On boot, if PGOOD is low: FreeRTOS + BLE (bring-up as the SDK's `examples/btble/peripheral`),
-  advertising as `LEAKCAM-xxyy` with one service, `4c43a000-4c45-4b43-414d-000000000001`:
+  advertising as its serial (device ID, `7C3E8262B149`) with one service, `4c43a000-4c45-4b43-414d-000000000001`:
   SSID (...0002), passphrase (...0003), commit (...0004), status (...0005, read/notify). All need
   an encrypted link. Commit 0x01 checks before it stores: the BL616 joins the network, gets an
   address by DHCP and fetches `http://connectivitycheck.gstatic.com/generate_204` itself

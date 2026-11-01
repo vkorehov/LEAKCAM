@@ -4,6 +4,20 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-01 (run.py, 187 s): pass
+
+25/25 checks pass.
+
+- phone USB port was the power source: swapped to sink
+
+
+### Automated run 2026-11-01 (run.py, 135 s): pass
+
+24/24 checks pass.
+
+- phone USB port was the power source: swapped to sink
+
+
 ### Run with the status screen 2026-11-01 11:24 (run.py): pass 18/18
 
 After four runs that failed on the test driver and one app bug (below), all checks pass.

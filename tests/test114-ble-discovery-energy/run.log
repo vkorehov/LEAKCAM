@@ -1,0 +1,14 @@
+14:18:46 test114-ble-discovery-energy: 6 metric rows MISSING: discovery time against current (A, B, C), Current idle / during (min / avg / peak), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak
+14:18:53 meter advertising every 100 ms, BLE idle otherwise: not asked (LEAKCAM_METER=ask to be prompted)
+14:19:58 adv 100 ms: found 10/10, median 224.5 ms, max 549 ms, current not read
+14:19:58 meter advertising every 500 ms, BLE idle otherwise: not asked (LEAKCAM_METER=ask to be prompted)
+14:21:08 adv 500 ms: found 10/10, median 553.5 ms, max 1814 ms, current not read
+14:21:08 meter advertising every 1000 ms, BLE idle otherwise: not asked (LEAKCAM_METER=ask to be prompted)
+14:22:19 adv 1000 ms: found 10/10, median 756.5 ms, max 2541 ms, current not read
+14:22:19 meter advertising every 2000 ms, BLE idle otherwise: not asked (LEAKCAM_METER=ask to be prompted)
+14:23:29 adv 2000 ms: found 10/10, median 2182.5 ms, max 4085 ms, current not read
+14:23:29 meter advertising every 5000 ms, BLE idle otherwise: not asked (LEAKCAM_METER=ask to be prompted)
+14:25:00 adv 5000 ms: found 9/10, median 3156 ms, max 9539 ms, current not read
+14:25:00 meter advertising every 10240 ms, BLE idle otherwise: not asked (LEAKCAM_METER=ask to be prompted)
+14:27:44 adv 10240 ms: found 8/10, median 8423.0 ms, max 22419 ms, current not read
+14:27:46 test114-ble-discovery-energy: FAIL; filled 1: discovery time against current (A, B, C); still MISSING 5: Current idle / during (min / avg / peak), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak; run in HISTORY.md - README Status/Result by hand

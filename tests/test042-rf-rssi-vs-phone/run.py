@@ -82,7 +82,7 @@ if diffs:
         ", ".join(f"ch {c} {statistics.median(v):+.0f} dB ({len(v)} AP)" for c, v in sorted(by.items())) +
         f"; all {statistics.median([d for _, d in diffs]):+.0f} dB")
 ble = []
-bl("pt_ble on", 5, r"advertising as|already on")
+bl("pt_ble on", 5, r"ble: ready as|already on")
 for i in range(N):
     r = op("scan", secs=10)
     if r.get("found"):

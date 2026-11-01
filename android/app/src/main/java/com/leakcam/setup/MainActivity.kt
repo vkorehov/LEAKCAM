@@ -140,6 +140,7 @@ class MainActivity : Activity() {
         (getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
     }
     private val found = LinkedHashMap<String, Pair<BluetoothDevice, String>>()   // address -> device, name
+    private val seen = HashMap<String, Long>()       // address -> last advertisement (elapsedRealtime ms)
     private val ids = HashMap<String, String>()   // address -> device ID from the advertisement
     private val stored = HashMap<String, Boolean>()   // address -> the board has a Wi-Fi network (flags bit 0)
     private val ticker = Handler(Looper.getMainLooper())   // the status screen's refresh; main's callbacks get cleared
@@ -150,7 +151,9 @@ class MainActivity : Activity() {
     private val deleted = HashSet<String>()         // deleted while the app runs: not rediscovered until it reopens
     private var selected = ""                        // the LEAKCAM picked on the status screen (radio)
     private var rows = listOf<Triple<String, String, String>>()   // the remembered ones: ID, name, presence line
-    private val online = HashMap<String, Boolean>()   // device ID -> the server sees it online (a Wi-Fi icon)
+    private val online = HashMap<String, Boolean>()
+    private var scannedOnStatus = false   // a status scan finished since the list opened: "not nearby" is known
+    private val waking = HashMap<String, Pair<Long, Int>>()   // ID -> the wake asked (elapsedRealtime ms), within s   // device ID -> the server sees it online (a Wi-Fi icon)
     private var shown = ""                           // what the list shows now: rebuilt only when it changes
     private var scanning = false
     private var step = STEP_PLUG
@@ -215,7 +218,7 @@ class MainActivity : Activity() {
         scanButton.setOnClickListener { if (ready()) startScan() }
         sendButton.setOnClickListener { if (ready()) send(true) }
         saveAnywayButton.setOnClickListener { if (ready()) send(false) }
-        setupOpen.setOnClickListener { addressOf(selected)?.let { openSetup(it) } }
+        setupOpen.setOnClickListener { addressOf(selected)?.let { openSetup(it) } ?: wake(selected) }
         toStatus.setOnClickListener { if (!sending) showStatus() }
         if (known().length() == 0) openSetup(null) else showStatus()
     }
@@ -307,8 +310,18 @@ class MainActivity : Activity() {
     private fun startScan() {
         val scanner = adapter?.bluetoothLeScanner ?: return problem(STEP_FIND, R.string.err_bluetooth_off)
         stopScan()
-        found.clear()
-        devices.removeAllViews()
+        if (onStatus) {
+            // the status list keeps a board while it was seen in the last 45 s (scans every 30 s): its Bluetooth icon
+            // goes when it is out of range, not at every rescan (test118)
+            val now = SystemClock.elapsedRealtime()
+            for (a in found.keys.filter { now - (seen[it] ?: 0L) > 45_000L }) {
+                found.remove(a)
+                devices.findViewWithTag<View>(a)?.let { devices.removeView(it) }
+            }
+        } else {
+            found.clear()
+            devices.removeAllViews()
+        }
         val filter = ScanFilter.Builder().setServiceUuid(ParcelUuid(SERVICE)).build()
         val settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
         scanner.startScan(listOf(filter), settings, scanCallback)
@@ -321,8 +334,10 @@ class MainActivity : Activity() {
 
     private fun scanDone() {
         stopScan()
-        if (onStatus)
+        if (onStatus) {
+            scannedOnStatus = true
             return render()
+        }
         if (found.isEmpty()) {
             problem(STEP_PLUG,
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) R.string.help_none_found_location
@@ -344,17 +359,20 @@ class MainActivity : Activity() {
 
     private fun addDevice(r: ScanResult) {
         val d = r.device
+        seen[d.address] = SystemClock.elapsedRealtime()
         if (found.containsKey(d.address))
             return
-        val name = r.scanRecord?.deviceName ?: d.name ?: "LEAKCAM"
         val mfg = r.scanRecord?.getManufacturerSpecificData(0xFFFF)
         val devId = mfg?.takeIf { it.size >= 6 }?.copyOfRange(0, 6)?.joinToString("") { "%02X".format(it) }
+        // a LEAKCAM is named by its serial everywhere (the device ID: USB serial number, BLE name, server; user
+        // 2026-11-01: no "LEAKCAM-" prefix)
+        val name = devId ?: r.scanRecord?.deviceName ?: d.name ?: d.address
         if (devId != null)
             ids[d.address] = devId
         stored[d.address] = mfg != null && mfg.size >= 7 && (mfg[6].toInt() and 1) != 0
         Log.i(TAG, "found $name id ${devId ?: "none"} creds ${if (stored[d.address] == true) 1 else 0}")   // test111
         if (devId != null && stored[d.address] == true)
-            rediscover(devId, name)
+            rediscover(devId)
         found[d.address] = d to name
         devices.addView(RadioButton(this).apply {
             id = View.generateViewId()
@@ -378,13 +396,14 @@ class MainActivity : Activity() {
 
     private fun wifiHelp() = if (changeOnly) show(STEP_WIFI, R.string.help_change, boardLabel()) else show(STEP_WIFI, R.string.help_wifi)
 
-    private fun boardLabel() = found.values.firstOrNull()?.second ?: "LEAKCAM"
+    private fun boardLabel() = found.values.firstOrNull()?.second.orEmpty()
 
     // ---------------- the status screen ----------------
 
     /** the LEAKCAMs set up from this phone and their presence, refreshed every 10 s; a scan for one on USB power */
     private fun showStatus() {
         onStatus = true
+        scannedOnStatus = false
         setupPanel.visibility = View.GONE
         statusPanel.visibility = View.VISIBLE
         shown = ""                      // back on the list: drawn again
@@ -397,8 +416,10 @@ class MainActivity : Activity() {
         if (!onStatus)
             return
         refreshPresence()
-        if (n % 3 == 0 && !scanning && permissionsGranted() && adapter?.isEnabled == true)
-            startScan()                 // every 30 s: a LEAKCAM plugged in shows up, one unplugged goes
+        // every 30 s: a LEAKCAM plugged in shows up, one unplugged goes; every 10 s while a woken one is awaited
+        if ((n % 3 == 0 || waking.keys.any { wakeWaiting(it) }) && !scanning && permissionsGranted() &&
+            adapter?.isEnabled == true)
+            startScan()
         ticker.postDelayed({ tick(n + 1) }, 10_000L)
     }
 
@@ -417,30 +438,35 @@ class MainActivity : Activity() {
         // every scan result and presence refresh lands here: the views are rebuilt only for a change, a rebuild under
         // a finger lost the tap (test111's Delete, 2026-11-01)
         val now = all.joinToString("|") { "${it.first},${it.third},${addressOf(it.first) != null},${online[it.first]}" } +
-            "|$selected|${k.length()}"
+            "|$selected|${k.length()}|${wakeWaiting(selected)}|$scannedOnStatus"
         if (now == shown)
             return
         shown = now
         mineList.removeAllViews()
-        for ((id, name, line) in all)
+        for ((id, _, line) in all)
             mineList.addView(LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
                 val reachable = addressOf(id) != null
+                val up = online[id] == true
+                val red = k.has(id) && !up      // one of mine with no presence (offline, never seen, no server)
                 addView(RadioButton(context).apply {
                     // its serial (the device ID, as on the USB serial number and the server) and its network (user:
-                    // minimum text, no shared "LEAKCAM-" prefix); the state is in the icons
+                    // minimum text, no shared "LEAKCAM-" prefix); the state is in the icons, no presence in red
                     text = if (k.has(id)) listOfNotNull(id, ssids[id]).joinToString(" · ") else "$id · $line"
+                    if (red)
+                        setTextColor(0xFFC62828.toInt())
                     isChecked = id == selected
                     contentDescription = "pick $id"
                     setOnClickListener { selected = id; render() }
                 }, LinearLayout.LayoutParams(0, -2, 1f))
-                // Wi-Fi: online at the server, crossed out when not (its full state as the description); Bluetooth: in
-                // range (can be set)
+                // Wi-Fi: present at the server (its full state as the description), gone when not; Bluetooth: in range
+                // (its Wi-Fi can be set)
                 val icons = mutableListOf<Pair<Int, String>>()
-                if (k.has(id))
-                    icons.add(Pair(if (online[id] == true) R.drawable.ic_wifi else R.drawable.ic_wifi_off, line))
+                if (k.has(id) && up)
+                    icons.add(Pair(R.drawable.ic_wifi, line))
                 if (reachable)
                     icons.add(Pair(R.drawable.ic_bluetooth, getString(R.string.icon_bluetooth)))
+                Log.i(TAG, "row $id wifi ${if (k.has(id) && up) 1 else 0} ble ${if (reachable) 1 else 0} red ${if (red) 1 else 0}")   // test118
                 for ((icon, what) in icons)
                     addView(android.widget.ImageView(context).apply {
                         setImageResource(icon)
@@ -450,23 +476,71 @@ class MainActivity : Activity() {
                     addView(Button(context).apply {
                         setText(R.string.delete)
                         contentDescription = "delete $id"
-                        setOnClickListener { forget(id, name) }
+                        setOnClickListener { forget(id) }
                     })
             })
         val name = all.firstOrNull { it.first == selected }?.second.orEmpty()
         val here = addressOf(selected) != null  // its Wi-Fi can be set only in BLE range
+        // one of mine present at the server but out of range: woken through the server (its next check-in opens BLE
+        // for a minute, tests/test119); without presence it advertises by itself when its Wi-Fi is gone (test117)
+        // only once a scan missed it: right after opening, a board in range was offered Wake for a moment (test117)
+        val wakeable = !here && scannedOnStatus && k.has(selected) && online[selected] == true
+        val waiting = wakeWaiting(selected)
         nearby.text = when {
             name.isEmpty() -> getString(R.string.nearby_none)
-            !here -> getString(R.string.nearby_away, name)
-            k.has(selected) -> getString(R.string.nearby_known, name)
-            else -> getString(R.string.nearby_new, name)
+            here && k.has(selected) -> getString(R.string.nearby_known, name)
+            here -> getString(R.string.nearby_new, name)
+            waiting -> getString(R.string.nearby_waking, name, waking[selected]?.second ?: 60)
+            wakeable -> getString(R.string.nearby_wake, name)
+            k.has(selected) -> getString(R.string.nearby_lost, name)
+            else -> getString(R.string.nearby_away, name)
         }
         setupOpen.text = when {
             name.isEmpty() -> getString(R.string.setup_new)
+            wakeable -> getString(R.string.setup_wake, name)
             k.has(selected) -> getString(R.string.setup_change, name)
             else -> getString(R.string.setup_new_named, name)
         }
-        setupOpen.isEnabled = here
+        setupOpen.isEnabled = here || (wakeable && !waiting)
+        Log.i(TAG, "button ${setupOpen.text} enabled ${if (setupOpen.isEnabled) 1 else 0}")   // test119
+    }
+
+    /** a wake asked for this board and not yet answered: its check-in interval plus the 2 minutes it advertises */
+    private fun wakeWaiting(id: String) = waking[id]?.let { (t, within) ->
+        SystemClock.elapsedRealtime() - t < (within + 120) * 1000L && addressOf(id) == null } ?: false
+
+    /** ask the server to wake a board out of range (POST /v1/devices/{id}/wake): it advertises after its next check-in;
+     *  the status screen scans every 10 s meanwhile and the setup button turns into "Change the Wi-Fi" when it shows */
+    private fun wake(id: String) {
+        if (id.isEmpty())
+            return
+        setupOpen.isEnabled = false
+        Thread {
+            val (code, within) = try {
+                val c = URL("${BuildConfig.SERVER}/v1/devices/$id/wake").openConnection() as HttpURLConnection
+                c.requestMethod = "POST"
+                c.connectTimeout = 3000
+                c.readTimeout = 3000
+                val code = c.responseCode
+                val within = if (code == 200) JSONObject(c.inputStream.bufferedReader().use { it.readText() })
+                    .optInt("within_s", 60) else 60
+                c.disconnect()
+                code to within
+            } catch (e: Exception) {
+                -1 to 0
+            }
+            runOnUiThread {
+                Log.i(TAG, "wake $id answer $code")
+                if (code == 200 || code == 429)  // 429: woken less than 2 minutes ago, it may still advertise
+                    waking[id] = SystemClock.elapsedRealtime() to within
+                else
+                    nearby.text = getString(R.string.err_wake, id)
+                shown = ""
+                render()
+                if ((code == 200 || code == 429) && !scanning && permissionsGranted() && adapter?.isEnabled == true)
+                    startScan()              // at once; the ticker scans every 10 s meanwhile
+            }
+        }.start()
     }
 
     /** setup: the full four steps (address null: Find first), or a known LEAKCAM's Wi-Fi only */
@@ -964,9 +1038,11 @@ class MainActivity : Activity() {
 
     private fun known(): JSONObject {
         val k = JSONObject(getSharedPreferences("devices", MODE_PRIVATE).getString("devices", null) ?: "{}")
-        var old = false                  // an entry from before 2026-11-01 kept the SSID: dropped, the app stores none
-        for (id in k.keys())
-            old = k.getJSONObject(id).remove("ssid") != null || old
+        var old = false                  // entries from before 2026-11-01 kept the SSID and a name: dropped, the app
+        for (id in k.keys()) {           // stores neither (the ID is the name)
+            val e = k.getJSONObject(id)
+            old = (e.remove("ssid") != null) or (e.remove("name") != null) or old
+        }
         if (old)
             save(k)
         return k
@@ -974,7 +1050,7 @@ class MainActivity : Activity() {
 
     /** a LEAKCAM on USB power with a network stored, not in the list: back in it, no action, when the server sees it
      *  online (tests/test111) */
-    private fun rediscover(id: String, name: String) {
+    private fun rediscover(id: String) {
         if (known().has(id) || id in deleted || !asking.add(id))
             return
         Thread {
@@ -992,7 +1068,7 @@ class MainActivity : Activity() {
                 asking.remove(id)
                 if (!online || known().has(id))
                     return@runOnUiThread
-                save(known().put(id, JSONObject().put("name", name)))
+                save(known().put(id, JSONObject()))
                 Log.i(TAG, "rediscovered $id")
                 when {
                     onStatus -> refreshPresence()
@@ -1005,9 +1081,9 @@ class MainActivity : Activity() {
     private fun save(k: JSONObject) =
         getSharedPreferences("devices", MODE_PRIVATE).edit().putString("devices", k.toString()).apply()
 
-    private fun forget(id: String, name: String) {
+    private fun forget(id: String) {
         AlertDialog.Builder(this)
-            .setMessage(getString(R.string.delete_ask, name))
+            .setMessage(getString(R.string.delete_ask, id))
             .setPositiveButton(R.string.delete) { _, _ ->
                 save(known().apply { remove(id) })
                 deleted.add(id)                 // stays out while the app runs, even in range: the user deleted it
@@ -1018,11 +1094,11 @@ class MainActivity : Activity() {
             .show()
     }
 
-    /** the board just stored the network: kept with its name and network, then its presence asked */
+    /** the board just stored the network: kept by its ID, then its presence asked */
     private fun remember() {
         if (boardId.isEmpty())
             return
-        val k = known().put(boardId, JSONObject().put("name", boardName))   // never the network: the board has it
+        val k = known().put(boardId, JSONObject())   // never the network: the board has it
         save(k)
         toStatus.visibility = View.VISIBLE
     }
@@ -1033,7 +1109,7 @@ class MainActivity : Activity() {
         val k = known()
         val list = k.keys().asSequence().toList()
         if (rows.map { it.first } != list) {    // a LEAKCAM added or deleted: its row at once, presence follows
-            rows = list.map { Triple(it, k.getJSONObject(it).optString("name", it), k.getJSONObject(it).optString("name", it)) }
+            rows = list.map { Triple(it, it, it) }
             if (onStatus)
                 render()
         }
@@ -1041,7 +1117,7 @@ class MainActivity : Activity() {
             return
         Thread {
             val rows = list.map { id ->
-                val name = k.getJSONObject(id).optString("name", id)
+                val name = id
                 val line = try {
                     val c = URL("${BuildConfig.SERVER}/v1/devices/$id").openConnection() as HttpURLConnection
                     c.connectTimeout = 3000

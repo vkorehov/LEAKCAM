@@ -27,6 +27,12 @@ As test106: BLE provisioning, the Wi-Fi check, presence; the advertising windows
 4. Configured, on battery: silent for a whole period (no advertising).
 5. USB-C 1 back in (hand): advertising again.
 
+## Setup mode (DESIGN.md 5.3.1, planned)
+
+- In setup mode (once test120 passed): the board on battery advertises in low power all the time (no 5-minute
+  windows): found within seconds of the unplug, set up from the app, then operational (BLE off) once its first
+  check-in reached the server.
+
 ## Pass
 
 A new board is set up from the app over BLE alone, on its battery, within one advertising period plus the setup.

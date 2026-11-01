@@ -4,7 +4,7 @@ Status: **pass** (2026-11-01): run.py 46/46 in 338 s on the test firmware with S
 across connections, a passed check stored also with the phone gone, notified only on change), fail fast and checked
 return values; hand steps 1 and 2 (2026-10-29); step 5's full power cut not done (user: the cell stays in).
 
-The BL616's one BLE job (firmware/bl616/ble_pairing.c): it advertises as `LEAKCAM-xxyy`, accepts pairing with the
+The BL616's one BLE job (firmware/bl616/ble_pairing.c): it advertises as its serial (the device ID, no prefix), accepts pairing with the
 board's pre-stored PIN (LE Secure Connections passkey entry, since 2026-11-01; Just Works refused), takes the SSID and passphrase over its provisioning service and stores them in easyflash
 (`wifi_ssid`, `wifi_psk`), after its own check (commit 0x01: join, DHCP, generate_204) or without one (0x02). This
 test checks the BL616 side from a BLE central on the host, characteristic by characteristic; the phone app and the
@@ -39,7 +39,7 @@ littlefs (PSM partition, `CONFIG_LITTLEFS_KV_EASYFLASH`), Wi-Fi fhost + lwIP + D
 
 ## Steps
 
-1. **Advertising:** `LEAKCAM-xxyy` advertised with the service UUID, time from boot to the first advertisement. (The
+1. **Advertising:** the serial (= the USB serial number) advertised with the service UUID, time from boot to the first advertisement. (The
    USB power gate is gone since 2026-11-01; the battery windows of the product are test106 step 7.)
 2. **Authentication gate:** connect without pairing, write SSID: refused; pair without the PIN (a phone without the
    app): no bond, every write refused, nothing stored; pair with the PIN (as the app): accepted.

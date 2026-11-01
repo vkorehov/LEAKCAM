@@ -55,7 +55,7 @@ def main():
     n = int(sys.argv[sys.argv.index("--repeat") + 1]) if "--repeat" in sys.argv else 1
     print("phone:", ready([]) or "ready")
     if "pt_ble: on" not in bl("pt_ble", 2):
-        bl("pt_ble on", 5, r"advertising as")
+        bl("pt_ble on", 5, r"ble: ready as")
     rows = [run(case, n == 1) for _ in range(n)]
     if n > 1:
         print("open->:  " + "  ".join(f"{name:>7}" for name, _ in MARKS))

@@ -48,7 +48,7 @@ def ble_on():
     itself on USB power: the phone's Find proves it"""
     if PRODUCT:   # waits for its own answer, once more if the Wi-Fi logs (presence, test111) drowned the first
         return any("USB power yes" in bl("prov", 3, r"USB power (yes|no)") for _ in range(2))
-    return "advertising as" in bl("pt_ble on", 5, r"advertising as|already on") or "pt_ble: on" in bl("pt_ble", 2)
+    return "ble: ready as" in bl("pt_ble on", 5, r"ble: ready as|already on") or "pt_ble: on" in bl("pt_ble", 2)
 
 
 ssid, psk = wifi_credentials()

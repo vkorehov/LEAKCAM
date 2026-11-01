@@ -49,6 +49,11 @@ is in use). Hands: the cable change between the Mac and the phone.
 
 (What this test uses; the union over all tests is the feature set the minimal image keeps.)
 
+## Setup mode (DESIGN.md 5.3.1, planned)
+
+- In setup mode (once test120 passed): the board sleeps in low power; plugging USB-C 1 wakes it and the whole setup
+  runs over USB with BLE off; unplugged without a network it goes back to low-power advertising.
+
 ## Pass
 
 A LEAKCAM is set up from the app over the cable as reliably as over BLE, and only by the app.

@@ -5,7 +5,6 @@
  */
 #include "ble_pairing.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -330,11 +329,7 @@ static void on_bt_ready(int err)
     wl_trace(0x74);
     if (err)
         vAssertCalled();                 /* the BLE host did not come up */
-    bt_addr_le_t addr;
-    size_t count = 1;
-    bt_id_get(&addr, &count);
-    char name[16];
-    snprintf(name, sizeof(name), "LEAKCAM-%02X%02X", addr.a.val[1], addr.a.val[0]);
+    const char *name = device_id();      /* the serial everywhere (USB, BLE, server), no prefix (user 2026-11-01) */
     int pin = ble_pairing_pin();
     if (pin < 0) {
         LOG_E("ble: no pairing PIN stored (prov pin): not advertising, the board cannot be set up\r\n");

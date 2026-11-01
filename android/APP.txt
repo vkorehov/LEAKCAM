@@ -18,8 +18,8 @@ firmware/bl616/ble_pairing.h (BLE service) and firmware/bl616/wifi_check.c (the 
 With LEAKCAMs remembered the app opens here; with none it goes straight to setup (section 1).
 
   Your LEAKCAMs                                            [mine_title]
-  LEAKCAM-B14A: online                    [ Delete ]       one row per LEAKCAM set up from this phone, from the
-  LEAKCAM-C3D4: offline, last seen 5 min ago [ Delete ]    presence server every 10 s: [mine_online] /
+  7C3E8262B149: online                    [ Delete ]       one row per LEAKCAM set up from this phone, from the
+  02AB12CD34EF: offline, last seen 5 min ago [ Delete ]    presence server every 10 s: [mine_online] /
                                                            [mine_offline] / [mine_offline_s] / [mine_never] /
                                                            [mine_unknown]; Delete asks first ([delete_ask]) and
                                                            removes it from the phone only
@@ -54,7 +54,7 @@ One scrolling screen, top to bottom:
   | what to do now                                     |   help box: light blue; light red when
   +----------------------------------------------------+   something went wrong
   [ Find LEAKCAM ]
-  ( ) LEAKCAM-1A2B   (-48 dBm)                             boards found, one radio button each
+  ( ) 7C3E8262B149   (-48 dBm)                             boards found, one radio button each
   Wi-Fi name (SSID)
   Wi-Fi password                  [ ] Show password
   [ Pair, check and save ]
@@ -80,7 +80,7 @@ Step 2  Find it (starts by itself when the app opens with access and Bluetooth o
   - Bluetooth off: Android's "turn on Bluetooth" dialog, and [err_bluetooth_off].
   - Scanning, [help_scanning]. The first board found goes straight on to step 3 [help_wifi],
     preselected (0.3-0.8 s after opening); the scan goes on behind for up to 10 s or until
-    Send, and every further board joins the list as "LEAKCAM-xxyy (RSSI dBm)": with a second one
+    Send, and every further board joins the list as "<serial> (RSSI dBm)": with a second one
     [help_pick] (the strongest signal is usually the nearest). Picking another board shows
     [help_wifi].
   - None found in 10 s: back to step 1, [help_none_found] (or [help_none_found_location] on
@@ -93,7 +93,7 @@ Step 3  Enter your Wi-Fi network                                        [help_wi
     empty or 8-63 characters [err_password]. No board picked: [err_pick].
 
 Step 4  Pair, check and save
-  a. Connecting to LEAKCAM-xxyy                                         [help_connecting]
+  a. Connecting to <serial>                                             [help_connecting]
   b. Pairing, every time (the board keeps no pairings; the app removes the
      phone's old bond first and starts the pairing itself, so the phone
      asks once)                                                         [help_pairing]
@@ -146,7 +146,7 @@ HTTP answer. The codes are for support, the text does not depend on them.
   what happened                                        message
   pairing declined, timed out, or board on battery    [err_pairing_refused]
   the phone would not remove its old bond (the board    [err_unpair]: Bluetooth settings,
-    keeps none, so every send removes it, then pairs)    Forget LEAKCAM-xxyy, try again
+    keeps none, so every send removes it, then pairs)    Forget <serial>, try again
   connection failed or dropped before the save         retried by itself (3 connects), then
                                                          [err_disconnected] (with the status)
   connection dropped after the save was sent, or       [help_reconnecting] / [help_bluetooth_off_
