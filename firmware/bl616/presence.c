@@ -12,7 +12,6 @@
 
 #include "ble_pairing.h"
 #include "device_id.h"
-#include "usb_power.h"
 #include "wifi_check.h"
 
 /* the bench server: server/ on the Pi (vhome, systemd unit leakcam-server, server/deploy.sh); the product takes the
@@ -59,7 +58,7 @@ static void presence_task(void *arg)
     (void)arg;
     vTaskDelay(pdMS_TO_TICKS(5000));         /* BLE up first; then online within seconds of the plug */
     for (;;) {
-        if (usb_present() && !ble_pairing_connected())
+        if (!ble_pairing_connected())      /* on USB and on battery; check_in() needs a stored network */
             check_in();
         vTaskDelay(pdMS_TO_TICKS(poll_s * 1000));
     }

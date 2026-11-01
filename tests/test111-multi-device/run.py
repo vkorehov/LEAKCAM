@@ -52,13 +52,20 @@ def poll_interval(s):
 
 
 def app_mine():
-    """the app reopened: its presence lines from logcat ("mine <id>: <line>"), per ID"""
+    """the app reopened: its presence lines from logcat ("mine <id>: <line>"), per ID, polled until every LEAKCAM in
+    its list has one (a fixed 6 s missed a slow first refresh, 2026-11-01)"""
+    xml = adb("shell", "run-as", PKG, "cat", "shared_prefs/devices.xml")
+    listed = set(re.findall(r"&quot;([0-9A-F]{12})&quot;", xml))
     adb("logcat", "-c")
     adb("shell", "am", "force-stop", PKG)
     adb("shell", "am", "start", "-n", f"{PKG}/.MainActivity")
-    time.sleep(6)
-    out = adb("logcat", "-d", "-s", "LeakcamSetup:I")
-    return dict(re.findall(r"mine ([0-9A-F]{12}): (.*)", out))
+    t0, lines = time.time(), {}
+    while time.time() - t0 < 15:
+        time.sleep(1)
+        lines = dict(re.findall(r"mine ([0-9A-F]{12}): (.*)", adb("logcat", "-d", "-s", "LeakcamSetup:I")))
+        if listed <= set(lines):
+            break
+    return lines
 
 
 def add_to_app(dev_id, name):
@@ -67,7 +74,7 @@ def add_to_app(dev_id, name):
     xml = adb("shell", "run-as", PKG, "cat", "shared_prefs/devices.xml")
     m = re.search(r'<string name="devices">(.*)</string>', xml, re.S)
     devices = json.loads(m.group(1).replace("&quot;", '"')) if m else {}
-    devices[dev_id] = {"name": name, "ssid": "t111"}
+    devices[dev_id] = {"name": name}
     body = json.dumps(devices).replace('"', "&quot;")
     new = f"<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n    <string name=\"devices\">{body}</string>\n</map>\n"
     subprocess.run(["adb", "shell", f"run-as {PKG} sh -c 'cat > shared_prefs/devices.xml'"], input=new, text=True,
@@ -104,8 +111,17 @@ try:
     helps = res.get("help", [])
     last = helps[-1]["help"] if helps else res.get("error", "no help text")
     check("setup Done", last.startswith("Done."), f"{res.get('ms_end', 0) / 1000:.1f} s")
-    found = re.findall(r"found \S+ id ([0-9A-F]{12}|none)", adb("logcat", "-d", "-s", "LeakcamSetup:I"))
+    logcat = adb("logcat", "-d", "-s", "LeakcamSetup:I")
+    found = re.findall(r"found \S+ id ([0-9A-F]{12}|none)", logcat)
     check("BLE advertisement = the device ID", dev in found, str(found))
+    if res.get("status_screen"):         # the app knew the board already: its short flow, the network shown hidden
+        check("known board: the status screen opened its setup", True, f"{res.get('ms_status', 0) / 1000:.1f} s")
+        check("known board: the short 'change its Wi-Fi' flow", any("Enter the new Wi-Fi network for" in h["help"]
+                                                                      for h in helps), helps[0]["help"][:50] if helps else "")
+    check("advertisement: a stored network flagged", re.search(rf"found \S+ id {dev} creds 1", logcat) is not None,
+          (re.findall(rf"found \S+ id {dev} creds (\d)", logcat) or ["?"])[-1])
+    prefs = adb("shell", "run-as", PKG, "cat", "shared_prefs/devices.xml")
+    check("the app stores no Wi-Fi network", "ssid" not in prefs and ssid not in prefs, "devices.xml: ids and names only")
 
     # 2. the board checks in at the server: online within two intervals after the setup (the phone left)
     t0, online = time.time(), False
@@ -135,6 +151,12 @@ try:
     lines = app_mine()
     check("app: second LEAKCAM offline when it stopped", "offline" in lines.get(SECOND, ""), lines.get(SECOND))
     check("app: the board online throughout", lines.get(dev, "").endswith("online"), lines.get(dev))
+
+    # 5. deleted from the phone: gone from the list, the board untouched
+    res = op("delete", id=SECOND, secs=30)
+    lines = app_mine()
+    check("app: second LEAKCAM deleted", res.get("confirmed") and SECOND not in lines, str(sorted(lines)))
+    check("app: the board still listed after the delete", lines.get(dev, "").endswith("online"), lines.get(dev))
     r.sample("after the checks")
 finally:
     poll_interval(60)

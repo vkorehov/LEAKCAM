@@ -4,6 +4,34 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-01 (run.py, 211 s): pass
+
+17/17 checks pass. First setup (app opened -> Done) 7.9 s; repeats 7.8-8.4 s.
+
+- phone USB port was the power source: swapped to sink
+
+
+### Automated run 2026-11-01 (run.py, 227 s): **FAIL**
+
+16/17 checks pass. First setup (app opened -> Done) 8.9 s; repeats 8.9-15.6 s. Failed: 8 setups in a row: every one Done (7/8).
+
+- phone USB port was the power source: swapped to sink
+
+
+### Automated run 2026-11-01 (run.py, 374 s): **FAIL**
+
+16/17 checks pass. First setup (app opened -> Done) 8.9 s; repeats 8.7-160.9 s. Failed: 8 setups in a row: every one Done (7/8).
+
+- phone USB port was the power source: swapped to sink
+
+
+### Automated run 2026-11-01 (run.py, 306 s): **FAIL**
+
+14/17 checks pass. First setup (app opened -> Done) 10.0 s; repeats 8.6-15.6 s. Failed: network not seen named (0.0 s); network not seen: Save without checking offered; 8 setups in a row: every one Done (7/8).
+
+- phone USB port was the power source: swapped to sink
+
+
 ### Automated run 2026-11-01 (run.py, 231 s): pass
 
 17/17 checks pass. First setup (app opened -> Done) 9.8 s; repeats 9.4-11.1 s.

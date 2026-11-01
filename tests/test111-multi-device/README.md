@@ -1,8 +1,8 @@
 # test111: more than one LEAKCAM: one device ID everywhere, presence through the server
 
-Status: **pass, 12/12** (2026-11-01 09:52, run.py 137 s): one device ID (7C3E8262B149) on the board, USB and BLE; the
-board online at the server 39 s after a setup; the app shows it and a second LEAKCAM online and offline as the server
-sees them.
+Status: **pass, 18/18** (2026-11-01 11:24, run.py): one device ID (7C3E8262B149) on the board, USB and BLE; the app
+opens on its status screen, sets up a known board through it with the short "change Wi-Fi" flow, shows a stored network
+as hidden and stores none; the board online at the server after a setup; a second LEAKCAM online, offline, deleted.
 
 Each LEAKCAM is known by its device ID, the BL616's factory MAC (device_id.c): its USB serial number, its BLE
 advertisement (manufacturer data, company 0xFFFF) and its server check-ins (`GET /v1/poll?id=`) carry the same 12 hex
@@ -34,6 +34,10 @@ app's INTERNET permission, ssh to the Pi for the poll interval.
 3. **App:** reopened, it lists the board as online.
 4. **Second LEAKCAM:** listed as "not seen yet"; online after one check-in from the bench; offline after three intervals
    without; the board online throughout.
+5. **Status screen and short flow:** with LEAKCAMs remembered the app opens on its status screen and sets up the board
+   on USB power through it; a known board gets "Enter the new Wi-Fi network for ..."; the advertisement flags a stored
+   network; the app's storage holds IDs and names only, no network. **Delete:** the second LEAKCAM removed from the
+   list, the board still listed.
 
 ## Pass
 
@@ -41,16 +45,18 @@ Every channel shows the same ID; the app shows each of its LEAKCAMs online or of
 
 ## Result
 
-run.py, 2026-11-01 09:52, product firmware with presence + the setup app + server/ on the Pi (poll 10 s for the run,
-back to 60 s after): 12/12, 137 s; crash record none before and after.
+run.py, 2026-11-01 11:24, product firmware (presence from boot, flags byte in the scan response) + the setup app with
+the status screen + server/ on the Pi (poll 10 s for the run, 60 s after): 18/18; crash record none before and after.
 
-- Step 1: `presence` id 7C3E8262B149 = USB serial number (udev ID_SERIAL_SHORT) = the ID the app read from the BLE
-  advertisement; it is the MAC the router lists for the board (byte order as eFuse gives it).
-- Step 2: online at the server 39 s after the setup's Done (the board still on its 60 s default until the server's first
-  answer gave it 10 s); its `presence`: last check-in state 0x03 (reached the server).
-- Step 3: the app reopened: "LEAKCAM-B14A: online".
-- Step 4: the second LEAKCAM "not seen yet", "online" after one check-in from the bench, "offline" 32 s after it stopped
-  (three intervals); the board online throughout. ("last seen 0 min ago" under a minute: now seconds below a minute.)
+- Step 1: `presence` id 7C3E8262B149 = USB serial number = the ID the app read from the scan response; the MAC the router
+  lists for the board.
+- Step 5: the app opened on its status screen; it found the board on USB power and opened its setup in 1.2 s; the short
+  flow ("Enter the new Wi-Fi network for LEAKCAM-B14A"); setup Done 7.9 s; the scan response flagged a stored network
+  (creds 1); the app's storage held IDs and names only.
+- Step 2: online at the server 42 s after the setup (the board on its 60 s default until the first answer gave 10 s);
+  last check-in state 0x03.
+- Steps 3-4: the board online in the app; the second LEAKCAM "not seen yet", "online" after one check-in, "offline, last
+  seen 34 s ago" after three intervals; deleted from the list with the board still listed and online.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 

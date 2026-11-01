@@ -12,8 +12,31 @@ firmware/bl616/ble_pairing.h (BLE service) and firmware/bl616/wifi_check.c (the 
   duration    about a minute, most of it the board's own check
 
 
-1. The screen
--------------
+0. The status screen (use case 2, tests/test111)
+------------------------------------------------
+
+With LEAKCAMs remembered the app opens here; with none it goes straight to setup (section 1).
+
+  Your LEAKCAMs                                            [mine_title]
+  LEAKCAM-B14A: online                    [ Delete ]       one row per LEAKCAM set up from this phone, from the
+  LEAKCAM-C3D4: offline, last seen 5 min ago [ Delete ]    presence server every 10 s: [mine_online] /
+                                                           [mine_offline] / [mine_offline_s] / [mine_never] /
+                                                           [mine_unknown]; Delete asks first ([delete_ask]) and
+                                                           removes it from the phone only
+  +----------------------------------------------------+
+  | To set up a LEAKCAM or change its Wi-Fi, plug it   |   [nearby_none]; a board found on USB power (it
+  | into USB power near the phone ...                  |   advertises only then, every 30 s a scan):
+  +----------------------------------------------------+   [nearby_known] / [nearby_new]
+  [ Set up a LEAKCAM ]                                     off until one is found; then [setup_change] or
+                                                           [setup_new_named], opening section 1
+
+The phone stores only each LEAKCAM's ID and name, never a Wi-Fi network. A known LEAKCAM gets the short flow: the
+intro and steps 1-3 hidden, [help_change]; when the board says it has a network (advertised flag), the fields show
+[hidden_ssid] / [hidden_password], and what is typed replaces it after the board's check. [to_status] goes back.
+
+
+1. The setup screen
+-------------------
 
 One scrolling screen, top to bottom:
 

@@ -233,13 +233,19 @@ static void adv_start(void)
 {
     /* local, as in the SDK example: BT_DATA_BYTES builds compound literals, and bt_le_adv_start()
      * copies the payload into the controller before returning */
-    /* the device ID (device_id.c) as manufacturer data, company 0xFFFF (none): the app tells a LEAKCAM it set up
-     * before from a new one without connecting. 3 + 18 + 10 = 31 bytes, the whole advertising payload */
-    uint8_t mfg[8] = { 0xFF, 0xFF };
+    /* manufacturer data, company 0xFFFF (none): the device ID (device_id.c) and a flags byte (bit 0: a Wi-Fi network
+     * is stored). The app tells a LEAKCAM it set up before from a new one and shows a stored network as hidden,
+     * without connecting. In the scan response with the name (11 + 14 bytes): the advertisement is full (21 + 10) */
+    uint8_t mfg[9] = { 0xFF, 0xFF };
+    size_t saved = 0;
     device_id_bytes(&mfg[2]);
+    (void)ef_get_env_blob("wifi_ssid", NULL, 0, &saved);   /* only the length: 0 when none is stored */
+    mfg[8] = saved ? 0x01 : 0x00;
     struct bt_data ad[] = {
         BT_DATA_BYTES(BT_DATA_FLAGS, BT_LE_AD_NO_BREDR | BT_LE_AD_GENERAL),
         BT_DATA_BYTES(BT_DATA_UUID128_ALL, LEAKCAM_UUID_BYTES(0x000000000001)),
+    };
+    struct bt_data sd[] = {
         BT_DATA(BT_DATA_MANUFACTURER_DATA, mfg, sizeof(mfg)),
     };
     struct bt_le_adv_param param;
@@ -247,7 +253,7 @@ static void adv_start(void)
     param.interval_min = BT_GAP_ADV_FAST_INT_MIN_2;     /* 100-150 ms: USB powered, no need to save */
     param.interval_max = BT_GAP_ADV_FAST_INT_MAX_2;
     param.options = BT_LE_ADV_OPT_CONNECTABLE | BT_LE_ADV_OPT_USE_NAME;
-    if (bt_le_adv_start(&param, ad, ARRAY_SIZE(ad), NULL, 0))
+    if (bt_le_adv_start(&param, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd)))
         vAssertCalled();                 /* not advertising: the board could never be set up */
 }
 
