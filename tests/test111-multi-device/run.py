@@ -70,12 +70,13 @@ def app_mine():
     return lines
 
 
-def add_to_app(dev_id, name):
-    """an entry in the app's list as a second phone setup would leave it (debug build: run-as writes its prefs)"""
+def add_to_app(dev_id, name, only=False):
+    """an entry in the app's list as a setup would leave it (debug build: run-as writes its prefs); only: the list
+    holds just this one (the run's starting state, whatever a stopped run left)"""
     adb("shell", "am", "force-stop", PKG)
     xml = adb("shell", "run-as", PKG, "cat", "shared_prefs/devices.xml")
     m = re.search(r'<string name="devices">(.*)</string>', xml, re.S)
-    devices = json.loads(m.group(1).replace("&quot;", '"')) if m else {}
+    devices = {} if only or not m else json.loads(m.group(1).replace("&quot;", '"'))
     devices[dev_id] = {"name": name}
     body = json.dumps(devices).replace('"', "&quot;")
     new = f"<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n    <string name=\"devices\">{body}</string>\n</map>\n"
@@ -108,6 +109,7 @@ try:
     usb_id = (re.search(r"ID_SERIAL_SHORT=(\S+)", usb) or [None, None])[1]
     check("the board has a device ID", dev is not None, str(dev))
     check("USB serial number = the device ID", usb_id == dev, f"USB {usb_id}")
+    add_to_app(dev, "LEAKCAM-" + dev[-4:], only=True)   # starting state: the app knows this board, nothing else
     adb("logcat", "-c")
     res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=150)
     helps = res.get("help", [])
@@ -169,10 +171,15 @@ try:
 
     # 6. the board itself deleted, then found on USB power with its network stored: back in the list by itself (the
     #    server sees it online), no setup
-    adb("logcat", "-c")                  # before the delete: the app may find the board again within it
+    adb("logcat", "-c")
     res = op("delete", id=dev, secs=30)
-    t0, back, line, log_ = time.time(), False, "", ""
-    while time.time() - t0 < 40 and not (back and ": online" in line):
+    time.sleep(5)
+    log_ = adb("logcat", "-d", "-s", "LeakcamSetup:I")
+    check("app: a deleted board stays out while the app runs", f"rediscovered {dev}" not in log_, "5 s in range")
+    adb("shell", "am", "force-stop", PKG)    # reopened: found again, server online -> back by itself
+    adb("shell", "am", "start", "-n", f"{PKG}/.MainActivity")
+    t0, back, line = time.time(), False, ""
+    while time.time() - t0 < 75 and not (back and ": online" in line):   # one rescan (30 s) if Android throttled
         time.sleep(1)
         log_ = adb("logcat", "-d", "-s", "LeakcamSetup:I")
         d, b_ = log_.find(f"deleted {dev}"), log_.find(f"rediscovered {dev}")

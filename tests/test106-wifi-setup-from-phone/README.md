@@ -44,9 +44,8 @@ Android 8.0+, the app's BLE permissions.
 5. **Change network:** a second setup replaces the first; the next wake joins the new one.
 6. **Board reset (bond lost):** the board keeps no pairings (user, 2026-10-29), so any reset or sleep loses the bond:
    the app removes its stale bond by itself before every send and pairs again, no Forget by hand.
-7. **On battery** (hand_step7.py, product firmware; no USB power gate since 2026-11-01): no network stored: found
-   within 5 minutes (advertising 60 s every 5 minutes) and set up from the app on battery with the PIN; configured:
-   silent on battery for a whole period; plugged in: advertising again.
+7. **On battery:** the whole setup over BLE alone, no USB: tests/test116-ble-only-setup (its own test since
+   2026-11-01).
 8. **Repeats:** 8 setups in a row (the leak verdict's minimum) (alternating two networks): every one Done, BL616 memory steady (mem_leak.py).
 
 ## Pass
@@ -82,7 +81,7 @@ a person adds their own time to those two.
 | -> Done | 0.11-0.15 | 1.0 | BLE at CONNECTION_PRIORITY_HIGH (the phone's 45 ms interval); internet check 0.07 s |
 | **Total, open -> Done** | **6.3-7.7** | **28.5** | |
 
-Step 7, on battery (2026-10-31, [hand_step7.py](hand_step7.py), the user on the cable; log hand_step7.log): bonded on USB
+Step 7, on battery (2026-10-31, hand_step7.py, since 2026-11-01 [test116](../test116-ble-only-setup/run.py); the user on the cable; log hand_step7.log; the USB gate design of then): bonded on USB
 power, USB-C 1 out: the app's Find lists 0 boards in 15 s and says "No LEAKCAM found. Check that it is plugged into USB
 power ..."; the stored bond gets no connection; USB-C 1 back: found again 15.9 s after the plug (the test firmware's BLE
 restarted by command, as in test040 usb-gate): pass, 5 of 5 checks.

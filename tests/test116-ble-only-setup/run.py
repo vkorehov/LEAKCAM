@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""test106 step 7 by hand, on the product firmware (USB-C 1 unplugged and plugged back by the user, the cell stays in;
+"""test116: the whole setup over BLE alone, no USB, on the product firmware (USB-C 1 unplugged and plugged back by the user, the cell stays in;
 the console stays up on PR1): no USB power gate since 2026-11-01, the PIN proves the phone. A board with no network
 advertises on battery 60 s every 5 minutes: the phone finds it within 5 minutes and the app sets it up on battery;
 configured, it is silent on battery; plugged in, it advertises again.
-    tests/test106-wifi-setup-from-phone/hand_step7.py
+    tests/test116-ble-only-setup/run.py
 """
 import os
 import re
@@ -59,4 +59,4 @@ t_plug = usb(True)
 r = scan(30)
 log("CHECK", "pass" if r else "FAIL", "advertises again on USB power",
     r and "%.1f s after the plug" % (time.time() - t_plug))
-log(f"step 7 done, {time.time() - t_unplug:.0f} s from the unplug")
+log(f"test116 done, {time.time() - t_unplug:.0f} s from the unplug")

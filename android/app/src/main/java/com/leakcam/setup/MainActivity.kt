@@ -147,9 +147,11 @@ class MainActivity : Activity() {
     private var changeOnly = false       // setup of a known LEAKCAM: only its Wi-Fi
     private val ssids = HashMap<String, String>()   // device ID -> the network it checked in from (server; not kept)
     private val asking = HashSet<String>()          // device IDs being looked up for a rediscovery
+    private val deleted = HashSet<String>()         // deleted while the app runs: not rediscovered until it reopens
     private var selected = ""                        // the LEAKCAM picked on the status screen (radio)
     private var rows = listOf<Triple<String, String, String>>()   // the remembered ones: ID, name, presence line
     private val online = HashMap<String, Boolean>()   // device ID -> the server sees it online (a Wi-Fi icon)
+    private var shown = ""                           // what the list shows now: rebuilt only when it changes
     private var scanning = false
     private var step = STEP_PLUG
 
@@ -321,10 +323,14 @@ class MainActivity : Activity() {
         stopScan()
         if (onStatus)
             return render()
-        if (found.isEmpty())
+        if (found.isEmpty()) {
             problem(STEP_PLUG,
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) R.string.help_none_found_location
                 else R.string.help_none_found)
+            // again in 30 s until one shows up: a board on battery advertises only in windows, and Android silently
+            // drops a scan when the app started more than 5 in 30 s (test111, "scanning too frequently")
+            main.postDelayed({ if (!onStatus && !sending && !scanning && found.isEmpty()) startScan() }, 30_000L)
+        }
     }
 
     private fun stopScan() {
@@ -381,6 +387,7 @@ class MainActivity : Activity() {
         onStatus = true
         setupPanel.visibility = View.GONE
         statusPanel.visibility = View.VISIBLE
+        shown = ""                      // back on the list: drawn again
         render()
         ticker.removeCallbacksAndMessages(null)
         tick(0)
@@ -398,35 +405,47 @@ class MainActivity : Activity() {
     /** the address of a LEAKCAM found nearby now, by its device ID; null when it is not */
     private fun addressOf(id: String) = ids.entries.firstOrNull { it.value == id && found.containsKey(it.key) }?.key
 
-    /** the status list: the remembered LEAKCAMs (presence, network, Delete) and new ones found nearby, one radio each,
-     *  enabled only in BLE range (the only ones whose Wi-Fi can be set); the setup button acts on the picked one */
+    /** the status list: the remembered LEAKCAMs (presence, network, Delete: in range or not) and new ones found
+     *  nearby, one radio each; the setup button acts on the picked one and is off while it is out of BLE range */
     private fun render() {
         val k = known()
         val all = rows.filter { k.has(it.first) }.toMutableList()
         for ((address, d) in found)
-            ids[address]?.takeIf { !k.has(it) }?.let { all.add(Triple(it, d.second, getString(R.string.mine_new_nearby, d.second))) }
-        if (addressOf(selected) == null)
-            selected = all.firstOrNull { addressOf(it.first) != null }?.first.orEmpty()
+            ids[address]?.takeIf { !k.has(it) }?.let { all.add(Triple(it, d.second, getString(R.string.mine_new))) }
+        if (all.none { it.first == selected })
+            selected = (all.firstOrNull { addressOf(it.first) != null } ?: all.firstOrNull())?.first.orEmpty()
+        // every scan result and presence refresh lands here: the views are rebuilt only for a change, a rebuild under
+        // a finger lost the tap (test111's Delete, 2026-11-01)
+        val now = all.joinToString("|") { "${it.first},${it.third},${addressOf(it.first) != null},${online[it.first]}" } +
+            "|$selected|${k.length()}"
+        if (now == shown)
+            return
+        shown = now
         mineList.removeAllViews()
         for ((id, name, line) in all)
             mineList.addView(LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
                 val reachable = addressOf(id) != null
                 addView(RadioButton(context).apply {
-                    text = line
-                    isEnabled = reachable                // out of BLE range: shown, not selectable (nothing to set)
-                    isChecked = reachable && id == selected
+                    // its serial (the device ID, as on the USB serial number and the server) and its network (user:
+                    // minimum text, no shared "LEAKCAM-" prefix); the state is in the icons
+                    text = if (k.has(id)) listOfNotNull(id, ssids[id]).joinToString(" · ") else "$id · $line"
+                    isChecked = id == selected
                     contentDescription = "pick $id"
                     setOnClickListener { selected = id; render() }
                 }, LinearLayout.LayoutParams(0, -2, 1f))
-                // online at the server (its Wi-Fi works): a Wi-Fi icon; in BLE range (can be set): a Bluetooth icon
-                for ((on, icon, what) in listOf(Triple(online[id] == true, R.drawable.ic_wifi, R.string.icon_wifi),
-                                                Triple(reachable, R.drawable.ic_bluetooth, R.string.icon_bluetooth)))
-                    if (on)
-                        addView(android.widget.ImageView(context).apply {
-                            setImageResource(icon)
-                            contentDescription = getString(what)
-                        })
+                // Wi-Fi: online at the server, crossed out when not (its full state as the description); Bluetooth: in
+                // range (can be set)
+                val icons = mutableListOf<Pair<Int, String>>()
+                if (k.has(id))
+                    icons.add(Pair(if (online[id] == true) R.drawable.ic_wifi else R.drawable.ic_wifi_off, line))
+                if (reachable)
+                    icons.add(Pair(R.drawable.ic_bluetooth, getString(R.string.icon_bluetooth)))
+                for ((icon, what) in icons)
+                    addView(android.widget.ImageView(context).apply {
+                        setImageResource(icon)
+                        contentDescription = what
+                    })
                 if (k.has(id))
                     addView(Button(context).apply {
                         setText(R.string.delete)
@@ -435,9 +454,10 @@ class MainActivity : Activity() {
                     })
             })
         val name = all.firstOrNull { it.first == selected }?.second.orEmpty()
-        val here = name.isNotEmpty()            // selected is only ever one in range
+        val here = addressOf(selected) != null  // its Wi-Fi can be set only in BLE range
         nearby.text = when {
-            !here -> getString(R.string.nearby_none)
+            name.isEmpty() -> getString(R.string.nearby_none)
+            !here -> getString(R.string.nearby_away, name)
             k.has(selected) -> getString(R.string.nearby_known, name)
             else -> getString(R.string.nearby_new, name)
         }
@@ -955,7 +975,7 @@ class MainActivity : Activity() {
     /** a LEAKCAM on USB power with a network stored, not in the list: back in it, no action, when the server sees it
      *  online (tests/test111) */
     private fun rediscover(id: String, name: String) {
-        if (known().has(id) || !asking.add(id))
+        if (known().has(id) || id in deleted || !asking.add(id))
             return
         Thread {
             val online = try {
@@ -990,6 +1010,7 @@ class MainActivity : Activity() {
             .setMessage(getString(R.string.delete_ask, name))
             .setPositiveButton(R.string.delete) { _, _ ->
                 save(known().apply { remove(id) })
+                deleted.add(id)                 // stays out while the app runs, even in range: the user deleted it
                 Log.i(TAG, "deleted $id")
                 if (known().length() == 0) openSetup(null) else refreshPresence()
             }
