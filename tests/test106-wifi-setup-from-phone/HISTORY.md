@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Product v1 with STATUS reconciliation 2026-11-01 07:33 (run.py, 250 s): pass
+
+17/17 checks pass on the product image (firmware/bl616) with the reconciliation change: the board sets STATUS idle on
+connect and JOINING inside the commit write, the app reads STATUS every second besides the notifications (one
+idempotent handler, the timeout counts from a state change). First setup (app opened -> Done) 7.9 s; repeats 7.1-7.6 s
+(no slower than notifications alone); BLE again after a reset, 7.3 s; crash record none before and after.
+
+- phone USB port was the power source: swapped to sink (it came back as source after the USB drop below)
+
+
 ### Product v1 2026-11-01 (firmware/bl616, Gitea PR #1): pass with one unexplained stall
 
 - run.py on the product image (07:09-07:13 UTC+2, stopped by hand at the stall): crash record none before; steps 1 3 4 5
@@ -48,10 +58,13 @@ No run yet. Status before the step 6 rewrite: **planned** (2026-10-27).
 ## Obstacles
 
 - 2026-11-01, product v1: one setup of 24 got no answer after the ADDRESS progress step (the app's 60 s step timeout);
-  not reproduced in 20 captured repeats. The board's worst case after that step is DHCP 20 s + DNS + connect 10 s +
-  answer 10 s, under 60 s, so a lost BLE notification (the INTERNET step or the result) is the likelier cause, not
-  proven. run.py opened the console only per command, so the board's lines of that setup were lost: repeat_capture.py
-  keeps them for the next occurrence.
+  not reproduced in 20 captured repeats. The board sent each STATUS change once as a notification (bt_gatt_notify's
+  result unchecked, no resend) and the app learned the result only from notifications: one lost notification left it
+  waiting with the board done. Fixed by design, not by a detector (user: reconciliation and eventual consistency):
+  STATUS is the state, idle on connect, JOINING set in the commit write, and the app reads it every second as well;
+  a lost notification now only delays the answer by up to a second. Rule in skill leakcam-product-firmware section 3.
+- 2026-11-01 07:19:55: the board and the phone dropped off USB together, a minute after repeat_capture.py ended (no VM
+  pause in the vmware log); the user reconnected both. The phone came back as the USB power source (run.py swapped it).
 - The 08:24 run's runner (2026-10-30), each fixed in run.py / BleOp:
   - "BLE advertising" failed: the check looked for "already on", `pt_ble` says "pt_ble: on".
   - "memory leak" was false: a watchdog reset just before the repeats made the first memory sample a fresh heap

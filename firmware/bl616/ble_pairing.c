@@ -141,6 +141,7 @@ static ssize_t commit_write(struct bt_conn *conn, const struct bt_gatt_attr *att
      * first): a K230 session using it hears a link loss and gets it back after the check */
     wifi_link_claim(WIFI_OWNER_CHECK);
     checking = true;
+    set_status(WCHK_JOINING, 0);         /* a STATUS read after this write's answer is this check's */
     if (xTaskCreate(check_task, "wchk", 1536, NULL, 3, NULL) != pdPASS) {
         checking = false;
         wifi_link_release(WIFI_OWNER_CHECK);
@@ -261,6 +262,7 @@ static void on_connected(struct bt_conn *conn, u8_t err)
      * zero-length writes (BFLB_HOST_PARAMETER_CHECK, 0x13) - and an earlier session's values are never reused */
     memset(ssid, 0, sizeof(ssid));
     memset(psk, 0, sizeof(psk));
+    memset(status, 0, sizeof(status));   /* IDLE: a read never returns an earlier connection's result */
     /* ask for encryption right away so the phone's pairing dialog appears on connect */
     bt_conn_set_security(conn, BT_SECURITY_L2);
     /* Wi-Fi up while the phone pairs and writes: the check then starts at once (tests/test106) */

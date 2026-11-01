@@ -2,9 +2,9 @@
 
 Status: **pass, steps 1 3 4 5 6 7 8** (2026-10-30, run.py 18/18; step 7 2026-10-31, hand_step7.py 5/5): setup 7.3-8.0 s
 from opening the app to Done; on battery the app lists no board and a stored bond cannot connect; step 2 open (the test
-firmware's battery wake to the stored network and a K230 session). **Product v1** (firmware/bl616, 2026-11-01): steps
-1 3 4 5 6 pass, 20/20 captured repeats 7.0-8.5 s, no leak; one stall in 24 setups (no answer after the address step,
-board alive, cause open: HISTORY.md Obstacles).
+firmware's battery wake to the stored network and a K230 session). **Product v1** (firmware/bl616, 2026-11-01): run.py
+17/17 pass (07:33), first setup 7.9 s, repeats 7.1-7.6 s, no leak; STATUS reconciled (the app reads it every second
+besides the notifications) since one lost notification stalled a setup (HISTORY.md Obstacles).
 
 The installation flow as a user meets it: a new LEAKCAM on USB power, the LEAKCAM Setup app (android/, APP.txt) finds
 it, pairs, sends the Wi-Fi network, the board checks and stores it in the BL616's flash; then, on battery, the

@@ -13,8 +13,9 @@
  *   COMMIT   ...0004  write, encrypted     1 byte: 0x01 check, then store if the check passed;
  *                                          0x02 store without checking (set up away from the router)
  *   STATUS   ...0005  read, notify,        3 bytes: state, detail (little-endian 16 bit), states in
- *                     encrypted            wifi_check_calc.h: progress (joining, address, internet),
- *                                          then saved or the failure
+ *                     encrypted            wifi_check_calc.h: idle on connect, progress (joining, address,
+ *                                          internet), then saved or the failure. STATUS is the state:
+ *                                          a notification can be lost, so the phone also reads it
  *
  * The check (wifi_check.h) joins the network, gets an address by DHCP and fetches a well-known
  * URL from the BL616 itself, so a wrong password, a network out of reach and a network without

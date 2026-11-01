@@ -47,7 +47,8 @@ import java.util.UUID
  * service, connects, pairs (LE Secure Connections, Just Works: the board accepts pairing only on USB
  * power), subscribes to STATUS, then writes SSID, passphrase and commit. Commit 0x01 makes the
  * board join the network, get an address and reach the internet before it stores anything; STATUS
- * reports each step and the result (firmware/bl616/wifi_check_calc.h). Commit 0x02 stores without
+ * reports each step and the result (firmware/bl616/wifi_check_calc.h); STATUS is the board's state, read
+ * once a second as well, so a lost notification only delays the answer. Commit 0x02 stores without
  * checking, for a board set up out of reach of its network.
  *
  * The screen walks through four steps (plug in, find, Wi-Fi, pair and save); the box under them
@@ -66,6 +67,7 @@ class MainActivity : Activity() {
         const val COMMIT_CHECK: Byte = 1
         const val COMMIT_UNCHECKED: Byte = 2
         // STATUS states, as in firmware/bl616/wifi_check_calc.h
+        const val WCHK_IDLE = 0x00
         const val WCHK_JOINING = 0x01
         const val WCHK_ADDRESS = 0x02
         const val WCHK_INTERNET = 0x03
@@ -83,6 +85,7 @@ class MainActivity : Activity() {
         const val MTU = 247              // the longest value, a 63-byte passphrase, in one write
         const val SCAN_MS = 10_000L           // the longest Find: no board by then
         const val SEND_TIMEOUT_MS = 60_000L   // per step: pairing (the user reads and accepts), each check step
+        const val POLL_MS = 1_000L            // STATUS read while the check runs: a notification can be lost (test106)
         const val REQUEST_PERMISSIONS = 1
         const val REQUEST_ENABLE_BT = 2
         const val STEP_PLUG = 1
@@ -116,6 +119,7 @@ class MainActivity : Activity() {
     private var boardName = ""
     private var checked = true           // this send asks the board to check the network first
     private var committed = false        // commit written: STATUS reports from here on
+    private var lastState = -1           // the last STATUS state shown: a read repeating it changes nothing
     private var ssidText = ""
     private var writes = ArrayDeque<Pair<UUID, ByteArray>>()
     private var bondReceiver: BroadcastReceiver? = null
@@ -351,9 +355,24 @@ class MainActivity : Activity() {
         }
     }
 
+    private val timeout = Runnable { fail(R.string.err_timeout) }
+
     private fun armTimeout() {
-        main.removeCallbacksAndMessages(null)
-        main.postDelayed({ fail(R.string.err_timeout) }, SEND_TIMEOUT_MS)
+        main.removeCallbacks(timeout)
+        main.postDelayed(timeout, SEND_TIMEOUT_MS)
+    }
+
+    /** the next STATUS read; each answer schedules the one after it (one GATT request at a time) */
+    private val poll = Runnable {
+        val g = gatt ?: return@Runnable
+        val c = g.getService(SERVICE)?.getCharacteristic(STATUS) ?: return@Runnable
+        if (!g.readCharacteristic(c))
+            schedulePoll()               // the stack was busy: try again
+    }
+
+    private fun schedulePoll() {
+        main.removeCallbacks(poll)
+        main.postDelayed(poll, POLL_MS)
     }
 
     /** closes the connection and turns the buttons back on; then [done], if a send was running */
@@ -434,6 +453,17 @@ class MainActivity : Activity() {
             main.post { if (g == gatt && c.uuid == STATUS) onStatus(value) }
         }
 
+        override fun onCharacteristicRead(g: BluetoothGatt, c: BluetoothGattCharacteristic, value: ByteArray, st: Int) {
+            main.post { if (g == gatt && c.uuid == STATUS) onRead(value, st) }
+        }
+
+        @Deprecated("Android 12 and older")
+        override fun onCharacteristicRead(g: BluetoothGatt, c: BluetoothGattCharacteristic, st: Int) {
+            @Suppress("DEPRECATION")
+            val value = c.value ?: ByteArray(0)
+            main.post { if (g == gatt && c.uuid == STATUS) onRead(value, st) }
+        }
+
         override fun onCharacteristicWrite(g: BluetoothGatt, c: BluetoothGattCharacteristic, st: Int) {
             main.post {
                 if (g != gatt) return@post
@@ -511,11 +541,20 @@ class MainActivity : Activity() {
             fail(R.string.err_no_service)
     }
 
-    /** the board's check: progress, then SAVED or a failure (nothing stored) */
+    private fun onRead(v: ByteArray, st: Int) {
+        if (st == BluetoothGatt.GATT_SUCCESS)
+            onStatus(v)
+        if (gatt != null)
+            schedulePoll()
+    }
+
+    /** the board's check, from a notification or a read alike: progress, then SAVED or a failure (nothing stored) */
     private fun onStatus(v: ByteArray) {
         if (!committed || v.isEmpty()) return
         val state = v[0].toInt() and 0xff
         val detail = if (v.size >= 3) (v[1].toInt() and 0xff) or ((v[2].toInt() and 0xff) shl 8) else 0
+        if (state == WCHK_IDLE || state == lastState) return
+        lastState = state
         armTimeout()
         when (state) {
             WCHK_JOINING -> show(STEP_SAVE, R.string.help_check_join, ssidText)
@@ -548,12 +587,17 @@ class MainActivity : Activity() {
 
     private fun writeNext(g: BluetoothGatt) {
         val next = writes.removeFirstOrNull()
-        if (next == null)
-            return                       // committed: the board reports on STATUS
+        if (next == null) {
+            if (committed)
+                schedulePoll()           // the board reports on STATUS: notified, and read as well
+            return
+        }
 
         val (uuid, value) = next
-        if (uuid == COMMIT)
+        if (uuid == COMMIT) {
             committed = true             // STATUS may answer before the write does (save, busy)
+            lastState = -1
+        }
         val c = g.getService(SERVICE)?.getCharacteristic(uuid) ?: return fail(R.string.err_no_service)
         val started = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             g.writeCharacteristic(c, value, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) == BluetoothStatusCodes.SUCCESS

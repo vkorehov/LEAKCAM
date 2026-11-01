@@ -1,46 +1,47 @@
-09:35:14 test106-wifi-setup-from-phone: 13 metric rows MISSING: Boot, power-on -> READY (median of 5), This part's boot share, Test run time, setup time: app open -> Done; first wake: join + server check, Current idle / during (min / avg / peak), Voltage under load (min), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Image (sizes), Compile flags, Features over the minimal image
-09:35:25 CHECK pass BLE advertising on USB power 
-09:35:27 CHECK pass nothing stored before the first setup 
-09:35:37 setup <network> 8.0 s {'pairing': "'Устан. сопряж.'@4836", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-09:35:37 CHECK pass first setup: Done 8.0 s, pairing 'Устан. сопряж.'@4836
-09:35:37 CHECK pass first setup: the network stored 
-09:35:41 sample after the first setup {'board': 28.0, 'bl_mem': (131104, 111824, 105224, 107, 79564, 17, 0)}
-09:35:54 setup <network> 10.9 s {'pairing': "'Устан. сопряж.'@4163", 'save_anyway': False} Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining VK to check the name and password. This tak | The router refused the password for "VK" (code 33). Check the password
-09:35:54 CHECK pass wrong password named 10.9 s
-09:35:54 CHECK pass wrong password: no Save without checking 
-09:35:54 CHECK pass wrong password: the old network kept 
-09:36:07 setup t106-not-here 11.3 s {'pairing': "'Устан. сопряж.'@4763", 'save_anyway': True} Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining t106-not-here to check the name and passwor | The LEAKCAM cannot see "t106-not-here".  • Check the name: upper and l
-09:36:07 CHECK pass network not seen named 11.3 s
-09:36:07 CHECK pass network not seen: Save without checking offered 
-09:36:07 CHECK pass network not seen: the old network kept 
-09:36:26 setup t106-not-here 17.0 s {'pairing': "'Устан. сопряж.'@4335+'Устан. сопряж.'@15174", 'save_anyway': True, 'ms_anyway': 10977} The LEAKCAM cannot see "t106-not-here".  • Check the name: upper and l | Connecting to LEAKCAM-B14A… | Saved without checking. LEAKCAM-B14A stored the Wi-Fi network "t106-no
-09:36:26 CHECK pass save without checking: said so 17.0 s
-09:36:27 CHECK pass save without checking: the new network stored 
-09:36:36 setup <network> 7.5 s {'pairing': "'Устан. сопряж.'@4452", 'save_anyway': False} Looking for LEAKCAM boards nearby… | Enter the name and password of the Wi-Fi network the LEAKCAM should us | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-09:36:36 CHECK pass change back: Done 7.5 s
-09:36:36 CHECK pass change back: the first network stored again 
-09:36:46 setup <network> 7.7 s {'pairing': "'Устан. сопряж.'@4672", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-09:36:50 sample repeat 1 {'board': 28.2, 'bl_mem': (131104, 111824, 105132, 107, 79564, 17, 0)}
-09:37:00 setup <network> 7.8 s {'pairing': "'Устан. сопряж.'@4605", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-09:37:03 sample repeat 2 {'board': 28.2, 'bl_mem': (131104, 111824, 105132, 107, 79564, 17, 0)}
-09:37:13 setup <network> 7.3 s {'pairing': "'Устан. сопряж.'@4385", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-09:37:17 sample repeat 3 {'board': 28.2, 'bl_mem': (131104, 111824, 105132, 107, 79564, 17, 0)}
-09:37:27 setup <network> 7.6 s {'pairing': "'Устан. сопряж.'@4357", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-09:37:30 sample repeat 4 {'board': 28.2, 'bl_mem': (131104, 111824, 105132, 107, 79564, 17, 0)}
-09:37:42 setup <network> 9.4 s {'pairing': "'Устан. сопряж.'@6266", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-09:37:45 sample repeat 5 {'board': 28.2, 'bl_mem': (131104, 111824, 105132, 107, 79564, 17, 0)}
-09:37:55 setup <network> 7.3 s {'pairing': "'Устан. сопряж.'@4076", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-09:37:59 sample repeat 6 {'board': 28.2, 'bl_mem': (131104, 111824, 105132, 107, 79564, 17, 0)}
-09:38:08 setup <network> 7.3 s {'pairing': "'Устан. сопряж.'@4176", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-09:38:12 sample repeat 7 {'board': 28.2, 'bl_mem': (131104, 111824, 105132, 107, 79564, 17, 0)}
-09:38:22 setup <network> 7.7 s {'pairing': "'Устан. сопряж.'@4465", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-09:38:25 sample repeat 8 {'board': 28.2, 'bl_mem': (131104, 111824, 105132, 107, 79564, 17, 0)}
-09:38:35 setup <network> 7.6 s {'pairing': "'Устан. сопряж.'@4450", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-09:38:39 sample repeat 9 {'board': 28.1, 'bl_mem': (131104, 111824, 105132, 107, 79564, 17, 0)}
-09:38:48 setup <network> 7.4 s {'pairing': "'Устан. сопряж.'@4338", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-09:38:52 sample repeat 10 {'board': 28.1, 'bl_mem': (131104, 111824, 105132, 107, 79564, 17, 0)}
-09:38:52 CHECK pass 10 setups in a row: every one Done 10/10
-09:39:13 CHECK pass BLE started again after a watchdog reset 
-09:39:23 setup <network> 7.8 s {'pairing': "'Устан. сопряж.'@4739", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-09:39:23 CHECK pass after the reset: Done with no Forget by hand 7.8 s, pairing 'Устан. сопряж.'@4739
-09:39:23 test106-wifi-setup-from-phone: PASS; filled 6: Test run time, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Compile flags, Image (sizes), setup time: app open -> Done; first wake: join + server check; still MISSING 7: Boot, power-on -> READY (median of 5), This part's boot share, Current idle / during (min / avg / peak), Voltage under load (min), Power, energy per operation, Per day, Features over the minimal image; run in HISTORY.md - README Status/Result by hand
+07:32:48 test106-wifi-setup-from-phone: 0 metric rows MISSING: none
+07:32:50 BL616 firmware: product (firmware/bl616)
+07:33:02 CHECK pass BLE advertising on USB power 
+07:33:06 CHECK pass nothing stored before the first setup 
+07:33:17 setup <network> 7.9 s {'pairing': "'Устан. сопряж.'@4650", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
+07:33:17 CHECK pass first setup: Done 7.9 s, pairing 'Устан. сопряж.'@4650
+07:33:19 CHECK pass first setup: the network stored 
+07:33:22 sample after the first setup {'board': None, 'bl_mem': (154572, 135396, 128680, 102, 71084, 15, 0)}
+07:33:36 setup <network> 11.6 s {'pairing': "'Устан. сопряж.'@4727", 'save_anyway': False} Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining VK to check the name and password. This tak | The router refused the password for "VK" (code 27). Check the password
+07:33:36 CHECK pass wrong password named 11.6 s
+07:33:36 CHECK pass wrong password: no Save without checking 
+07:33:38 CHECK pass wrong password: the old network kept 
+07:33:52 setup t106-not-here 10.9 s {'pairing': "'Устан. сопряж.'@4256", 'save_anyway': True} Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining t106-not-here to check the name and passwor | The LEAKCAM cannot see "t106-not-here".  • Check the name: upper and l
+07:33:52 CHECK pass network not seen named 10.9 s
+07:33:52 CHECK pass network not seen: Save without checking offered 
+07:33:54 CHECK pass network not seen: the old network kept 
+07:34:14 setup t106-not-here 17.5 s {'pairing': "'Устан. сопряж.'@4549+'Устан. сопряж.'@15494", 'save_anyway': True, 'ms_anyway': 11270} The LEAKCAM cannot see "t106-not-here".  • Check the name: upper and l | Connecting to LEAKCAM-B14A… | Saved without checking. LEAKCAM-B14A stored the Wi-Fi network "t106-no
+07:34:14 CHECK pass save without checking: said so 17.5 s
+07:34:16 CHECK pass save without checking: the new network stored 
+07:34:25 setup <network> 7.1 s {'pairing': "'Устан. сопряж.'@4088", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
+07:34:25 CHECK pass change back: Done 7.1 s
+07:34:27 CHECK pass change back: the first network stored again 
+07:34:37 setup <network> 7.2 s {'pairing': "'Устан. сопряж.'@4246", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
+07:34:40 sample repeat 1 {'board': None, 'bl_mem': (154568, 135396, 128596, 102, 71084, 15, 0)}
+07:34:50 setup <network> 7.1 s {'pairing': "'Устан. сопряж.'@4030", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
+07:34:53 sample repeat 2 {'board': None, 'bl_mem': (154568, 135396, 128596, 102, 71084, 15, 0)}
+07:35:03 setup <network> 7.2 s {'pairing': "'Устан. сопряж.'@4234", 'save_anyway': False} Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining VK to check the name and password. This tak | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
+07:35:06 sample repeat 3 {'board': None, 'bl_mem': (154572, 135396, 128596, 102, 71084, 15, 0)}
+07:35:16 setup <network> 7.5 s {'pairing': "'Устан. сопряж.'@4628", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
+07:35:20 sample repeat 4 {'board': None, 'bl_mem': (154568, 135396, 128596, 102, 71084, 15, 0)}
+07:35:29 setup <network> 7.3 s {'pairing': "'Устан. сопряж.'@4193", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
+07:35:33 sample repeat 5 {'board': None, 'bl_mem': (154568, 135396, 128596, 102, 71084, 15, 0)}
+07:35:43 setup <network> 7.5 s {'pairing': "'Устан. сопряж.'@4364", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
+07:35:46 sample repeat 6 {'board': None, 'bl_mem': (154572, 135396, 128596, 102, 71084, 15, 0)}
+07:35:56 setup <network> 7.4 s {'pairing': "'Устан. сопряж.'@4392", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
+07:36:00 sample repeat 7 {'board': None, 'bl_mem': (154572, 135396, 128596, 102, 71084, 15, 0)}
+07:36:09 setup <network> 7.5 s {'pairing': "'Устан. сопряж.'@4431", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
+07:36:13 sample repeat 8 {'board': None, 'bl_mem': (154572, 135396, 128596, 102, 71084, 15, 0)}
+07:36:23 setup <network> 7.6 s {'pairing': "'Устан. сопряж.'@4628", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
+07:36:26 sample repeat 9 {'board': None, 'bl_mem': (154572, 135396, 128596, 102, 71084, 15, 0)}
+07:36:36 setup <network> 7.2 s {'pairing': "'Устан. сопряж.'@4076", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
+07:36:39 sample repeat 10 {'board': None, 'bl_mem': (154572, 135396, 128596, 102, 71084, 15, 0)}
+07:36:39 CHECK pass 10 setups in a row: every one Done 10/10
+07:36:49 CHECK pass BLE started again after a reset 
+07:36:58 setup <network> 7.3 s {'pairing': "'Устан. сопряж.'@4279", 'save_anyway': False} Enter the name and password of the Wi-Fi network the LEAKCAM should us | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
+07:36:58 CHECK pass after the reset: Done with no Forget by hand 7.3 s, pairing 'Устан. сопряж.'@4279
+07:36:58 test106-wifi-setup-from-phone: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
