@@ -17,6 +17,8 @@ target_sources(app PRIVATE
                k230_power.c
                usb_power.c
                provision.c
+               device_id.c
+               presence.c
                ble_pairing.c
                wifi_check.c
                wifi_link.c)

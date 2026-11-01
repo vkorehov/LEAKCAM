@@ -5,6 +5,8 @@ from opening the app to Done; on battery the app lists no board and a stored bon
 firmware's battery wake to the stored network and a K230 session). **Product v1** (firmware/bl616, 2026-11-01 09:33):
 run.py 17/17 in 215 s, first setup 7.5 s, repeats 6.9-7.6 s, no leak, crash record none; with STATUS reconciliation
 (attempt id, the app reads STATUS and reconnects after a lost link: test110), fail fast and checked return values.
+With use case 2 (presence, the app's LEAKCAM list; 10:14): 17/17, repeats 9.4-10.5 s - the product's part (Send ->
+Done) unchanged at 3.5 s, the rest the driver re-finding fields the presence refresh redrew (HISTORY.md).
 
 The installation flow as a user meets it: a new LEAKCAM on USB power, the LEAKCAM Setup app (android/, APP.txt) finds
 it, pairs, sends the Wi-Fi network, the board checks and stores it in the BL616's flash; then, on battery, the

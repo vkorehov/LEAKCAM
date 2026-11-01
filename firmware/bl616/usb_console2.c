@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "device_id.h"
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "task.h"
@@ -94,12 +95,13 @@ static const uint8_t usb_console_device_qualifier_descriptor[] = { USB_DEVICE_QU
     USB_2_0, 0xEF, 0x02, 0x01, 0x01) };
 #endif
 
-/* string 2 = the product, 4 = port 0's interface name, 5 = port 1's (shown by Linux in /dev/serial/by-id) */
+/* string 2 = the product, 3 = the serial number (the device ID, device_id.c), 4 = port 0's interface name, 5 = port
+ * 1's (shown by Linux in /dev/serial/by-id) */
 static const char *usb_console_string_descriptors[] = {
     (const char[]){ 0x09, 0x04 },
     "Bouffalo Lab",
     "Bouffalo Lab USB Console",
-    "00000001",
+    NULL,                                    /* the serial number: device_id() */
     "LEAKCAM BL616 console",
     "LEAKCAM K230 console",
 };
@@ -141,7 +143,7 @@ static const char *usb_console_string_descriptor_cb(uint8_t speed, uint8_t index
     if (index >= (sizeof(usb_console_string_descriptors) / sizeof(usb_console_string_descriptors[0]))) {
         return NULL;
     }
-    return usb_console_string_descriptors[index];
+    return index == 3 ? device_id() : usb_console_string_descriptors[index];
 }
 
 static const struct usb_descriptor usb_console_descriptor = {

@@ -15,6 +15,7 @@
 
 #include <FreeRTOS.h>
 #include <event_groups.h>
+#include <semphr.h>
 #include <task.h>
 
 #include <lwip/netdb.h>
@@ -45,6 +46,9 @@
 #define TCP_MS     10000     /* connect, then again for the answer */
 
 static EventGroupHandle_t evg;
+static SemaphoreHandle_t one_run;        /* the BLE check and a presence check-in share the station */
+
+const struct wifi_check_target wifi_check_probe = { WCHK_PROBE_HOST, "80", WCHK_PROBE_PATH, 204, NULL, 0 };
 
 static void on_event(int code)
 {
@@ -139,34 +143,42 @@ static int probe_connect(const struct addrinfo *ai)
     return fd;
 }
 
-static enum wifi_check_state internet(uint16_t *detail)
+static enum wifi_check_state internet(const struct wifi_check_target *t, uint16_t *detail)
 {
-    static const char req[] = "GET " WCHK_PROBE_PATH " HTTP/1.1\r\nHost: " WCHK_PROBE_HOST
-                              "\r\nConnection: close\r\n\r\n";
     struct addrinfo hints, *ai = NULL;
-    char buf[64];
-    int n = 0;
+    char req[160], buf[320];
+    int n = 0, want = t->body ? (int)sizeof(buf) - 1 : 12;   /* the status line, or the whole short answer */
 
+    int rl = snprintf(req, sizeof(req), "GET %s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", t->path,
+                      t->host);
+    if (rl < 0 || rl >= (int)sizeof(req))
+        vAssertCalled();                 /* a target too long for the request: a build-time mistake */
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
-    if (lwip_getaddrinfo(WCHK_PROBE_HOST, "80", &hints, &ai) != 0 || ai == NULL)
+    if (lwip_getaddrinfo(t->host, t->port, &hints, &ai) != 0 || ai == NULL)
         return WCHK_NO_DNS;
     int fd = probe_connect(ai);
     lwip_freeaddrinfo(ai);
     if (fd < 0)
         return WCHK_NO_INTERNET;
-    if (lwip_send(fd, req, sizeof(req) - 1, 0) == (int)sizeof(req) - 1) {
+    if (lwip_send(fd, req, (size_t)rl, 0) == rl) {
         int k;
-        while (n < 12 && (k = lwip_recv(fd, buf + n, sizeof(buf) - (size_t)n, 0)) > 0)
+        while (n < want && (k = lwip_recv(fd, buf + n, (size_t)want - (size_t)n, 0)) > 0)
             n += k;
     }
     (void)lwip_close(fd);               /* the answer is read: a close error changes nothing */
     if (n == 0)
         return WCHK_NO_INTERNET;
     int status = wchk_http_status(buf, (size_t)n);
-    if (status == 204)
+    if (status == t->expect) {
+        if (t->body) {
+            buf[n] = 0;
+            const char *b = strstr(buf, "\r\n\r\n");
+            snprintf(t->body, t->body_cap, "%s", b ? b + 4 : "");
+        }
         return WCHK_INTERNET;
+    }
     *detail = status < 0 ? 0 : (uint16_t)status;
     return WCHK_CAPTIVE;
 }
@@ -196,14 +208,27 @@ static bool got_address(void)
 }
 
 enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const char *psk, size_t psk_len,
-                                     wifi_check_progress_cb progress, uint16_t *detail)
+                                     const struct wifi_check_target *t, wifi_check_progress_cb progress,
+                                     uint16_t *detail)
 {
+    static StaticEventGroup_t evg_mem;
+    static StaticSemaphore_t one_run_mem;
     wifi_mgmr_sta_connect_params_t p;
     enum wifi_check_state st;
 
-    *detail = 0;
-    if (evg == NULL && (evg = xEventGroupCreate()) == NULL)
+    taskENTER_CRITICAL();                  /* static: no allocation, so safe here; two first callers race */
+    if (evg == NULL) {
+        evg = xEventGroupCreateStatic(&evg_mem);
+        one_run = xSemaphoreCreateMutexStatic(&one_run_mem);
+    }
+    taskEXIT_CRITICAL();
+    if (evg == NULL || one_run == NULL || xSemaphoreTake(one_run, portMAX_DELAY) != pdTRUE)
         vAssertCalled();
+    /* the radio is always granted to a check (BLE first): a K230 session using it hears a link loss and gets it back
+     * at the release */
+    if (!wifi_link_claim(WIFI_OWNER_CHECK))
+        vAssertCalled();
+    *detail = 0;
     (void)xEventGroupClearBits(evg, 0xFF);   /* the old bits, not an error */
     progress(WCHK_JOINING, 0);
     wifi_link_local_begin(on_event);
@@ -257,12 +282,15 @@ enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const ch
         goto out;
     }
     progress(WCHK_INTERNET, 0);
-    st = internet(detail);
+    st = internet(t, detail);
 
 out:
     LOG_I("check of \"%.*s\": state 0x%02x detail %u\r\n", (int)ssid_len, ssid, st, *detail);
     if (!leave())                          /* the next check answers WCHK_BUSY, a K230 join reports FAILED */
         LOG_W("station stayed busy after the check\r\n");
     wifi_link_local_end();
+    wifi_link_release(WIFI_OWNER_CHECK);
+    if (xSemaphoreGive(one_run) != pdTRUE)
+        vAssertCalled();
     return st;
 }

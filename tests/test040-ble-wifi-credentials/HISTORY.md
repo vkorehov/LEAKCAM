@@ -4,6 +4,13 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-01 (run.py, 380 s): pass
+
+46 of 46 checks passed. Not automated: advertising stops on unplug, pairing refused on battery, power cut (README Steps 1, 2, 5).
+
+- phone USB port was the power source: swapped to sink
+
+
 ### Automated run 2026-11-01 09:21 (run.py, 338 s): pass
 
 46 of 46 checks passed, shortened (store cycles 20 -> 8, the dropped-link wait polled). Two runs before it failed on

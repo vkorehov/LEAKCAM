@@ -368,7 +368,10 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
   steal or wipe; the credentials are written once per installation. The app removes the phone's old
   bond itself before every send and pairs anew (2026-10-30); only a phone that refuses the removal
   gets the request to Forget the board by hand (`err_unpair`).
-- **No other BLE features:** no shell, OAD or device status. Everything else goes over Wi-Fi.
+- **No other BLE features:** no shell, OAD or device status. Everything else goes over Wi-Fi. The one addition
+  (use case 2, user 2026-11-01): the advertisement carries the device ID (manufacturer data, company 0xFFFF: the
+  BL616's factory MAC, device_id.c), so the app tells a LEAKCAM it set up before from a new one; the same ID is the USB
+  serial number and goes with every server check-in (tests/test111).
 - **BLE first (user, 2026-10-28).** The check (commit 0x01) takes the radio even from a running K230
   session (on USB power: a leak alarm): the K230 hears a link loss (JOINING), its requests wait, and
   the bridge rejoins the stored network when the check ends. The alarm's upload pauses for the

@@ -46,8 +46,8 @@ def setup(ssid, psk, anyway=False):
 def ble_on():
     """pt_ble on; True once BLE advertises (`pt_ble` says "on" when it already was). The product starts BLE by
     itself on USB power: the phone's Find proves it"""
-    if PRODUCT:
-        return "USB power yes" in bl("prov", 2)
+    if PRODUCT:   # waits for its own answer, once more if the Wi-Fi logs (presence, test111) drowned the first
+        return any("USB power yes" in bl("prov", 3, r"USB power (yes|no)") for _ in range(2))
     return "advertising as" in bl("pt_ble on", 5, r"advertising as|already on") or "pt_ble: on" in bl("pt_ble", 2)
 
 

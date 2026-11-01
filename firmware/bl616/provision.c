@@ -11,6 +11,7 @@
 #include "shell.h"
 
 #include "ble_pairing.h"
+#include "presence.h"
 #include "usb_power.h"
 #include "wifi_link.h"
 
@@ -36,6 +37,7 @@ static void provision_task(void *arg)
         if (usb && state == IDLE) {
             radio_init();
             ble_pairing_start();
+            presence_start();
             state = ADVERTISING;
         } else if (!usb && state == ADVERTISING) {
             ble_pairing_stop();             /* a held connection drops at once (test106 step 7) */

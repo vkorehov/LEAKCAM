@@ -18,9 +18,10 @@ import termios
 import time
 
 # the BL616's two CDC ports by USB interface, not ttyACM0/1: a phone on adb adds its own ACM port, and a port held
-# open across a BL616 reset shifts the numbers (tests/test040, 2026-10-28: the board came back as ttyACM1/ttyACM3)
-BL_PORT = "/dev/serial/by-id/usb-Bouffalo_Lab_Bouffalo_Lab_USB_Console_00000001-if00"
-K230_PORT = "/dev/serial/by-id/usb-Bouffalo_Lab_Bouffalo_Lab_USB_Console_00000001-if02"
+# open across a BL616 reset shifts the numbers (tests/test040, 2026-10-28: the board came back as ttyACM1/ttyACM3).
+# udev links (99-leakcam.rules): the serial number is the board's device ID since use case 2 (tests/test111)
+BL_PORT = "/dev/leakcam-bl616"
+K230_PORT = "/dev/leakcam-k230"
 
 
 def log(*parts):

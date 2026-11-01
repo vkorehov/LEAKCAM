@@ -42,7 +42,8 @@ def op(name, **kw):
 def product():
     """True on the BL616 product firmware (firmware/bl616: `prov`, BLE on by itself with USB power), False on the test
     firmware (bl616_powertest: `pt_ble`)"""
-    return re.search(r"^\s*prov\b", re.sub(r"\x1b\[[0-9;]*m", "", bl("help", 2)), re.M) is not None
+    # its own answer, not the help listing: since presence (test111) the Wi-Fi logs interleave and cut `help` short
+    return "prov: USB power" in bl("prov", 2, r"prov: USB power") or "prov: USB power" in bl("prov", 2, r"prov: USB power")
 
 
 def creds():

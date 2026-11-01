@@ -1,0 +1,17 @@
+10:11:35 test111-multi-device: 0 metric rows MISSING: none
+Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
+10:11:45 CHECK pass the board has a device ID 7C3E8262B149
+10:11:45 CHECK pass USB serial number = the device ID USB 7C3E8262B149
+10:11:57 CHECK pass setup Done 10.0 s
+10:11:58 CHECK pass BLE advertisement = the device ID ['7C3E8262B149']
+10:12:37 CHECK pass server: the board online after the setup 39 s
+10:12:39 CHECK pass board: last check-in reached the server (0x03) [0m[36mbouffalolab />[0m
+10:12:45 CHECK pass app: the board listed and online LEAKCAM-B14A: online
+10:12:52 CHECK pass app: second LEAKCAM listed, not seen yet LEAKCAM-SECOND: not seen yet
+10:12:59 CHECK pass app: second LEAKCAM online after its check-in LEAKCAM-SECOND: online
+10:12:59 CHECK pass app: the board still online next to it LEAKCAM-B14A: online
+10:13:38 CHECK pass app: second LEAKCAM offline when it stopped LEAKCAM-SECOND: offline, last seen 40 s ago
+10:13:38 CHECK pass app: the board online throughout LEAKCAM-B14A: online
+10:13:41 sample after the checks {'board': None, 'bl_mem': (146068, 133924, 120084, 105, 79432, 16, 0)}
+Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
+10:13:44 test111-multi-device: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

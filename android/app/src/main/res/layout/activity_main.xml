@@ -106,5 +106,14 @@
             android:layout_height="wrap_content"
             android:text="@string/save_anyway"
             android:visibility="gone" />
+
+        <!-- the LEAKCAMs set up from this phone, online or not (the presence server): below the setup, which keeps its
+             layout (above it, it pushed the fields and buttons down, tests/test106 2026-11-01) -->
+        <TextView
+            android:id="@+id/mine"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:visibility="gone" />
     </LinearLayout>
 </ScrollView>

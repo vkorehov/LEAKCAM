@@ -19,8 +19,8 @@ def cmd(fd, c, secs, until=None):
         if until and re.search(until.encode(), out): break
     return out.decode(errors="replace")
 def bl(c): 
-    fd = openp("/dev/serial/by-id/usb-Bouffalo_Lab_Bouffalo_Lab_USB_Console_00000001-if00", False); r = cmd(fd, c, 1.5); os.close(fd); return r
-K230_CONSOLE = "/dev/serial/by-id/usb-Bouffalo_Lab_Bouffalo_Lab_USB_Console_00000001-if02"   # the BL616's second USB port (link_mux, 2026-10-22); was the CH340 /dev/ttyUSB0
+    fd = openp("/dev/leakcam-bl616", False); r = cmd(fd, c, 1.5); os.close(fd); return r
+K230_CONSOLE = "/dev/leakcam-k230"   # the BL616's second USB port (link_mux, 2026-10-22); was the CH340 /dev/ttyUSB0
 def k230_port(timeout=60):
     # the port stays while the K230 is power-cycled (it is the BL616's): no waiting for a re-enumeration
     t0 = time.time()

@@ -38,6 +38,9 @@ import android.widget.EditText
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.UUID
 
 /**
@@ -55,6 +58,10 @@ import java.util.UUID
  *
  * The screen walks through four steps (plug in, find, Wi-Fi, pair and save); the box under them
  * says what to do now, and for pairing what the phone will show.
+ *
+ * More than one LEAKCAM (use case 2, tests/test111): each advertises its device ID (manufacturer data, company
+ * 0xFFFF: the BL616's factory MAC); the phone remembers the ones it set up and shows below the setup whether each is
+ * online, from the presence server (BuildConfig.SERVER, GET /v1/devices/<id>). A found board set up before is marked.
  */
 @SuppressLint("MissingPermission") // every Bluetooth call runs after permissionsGranted()
 class MainActivity : Activity() {
@@ -110,18 +117,21 @@ class MainActivity : Activity() {
     private lateinit var devices: RadioGroup
     private lateinit var ssidField: EditText
     private lateinit var passwordField: EditText
+    private lateinit var mine: TextView
 
     private val main = Handler(Looper.getMainLooper())
     private val adapter: BluetoothAdapter? by lazy {
         (getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
     }
     private val found = LinkedHashMap<String, Pair<BluetoothDevice, String>>()   // address -> device, name
+    private val ids = HashMap<String, String>()   // address -> device ID from the advertisement
     private var scanning = false
     private var step = STEP_PLUG
 
     // one send at a time
     private var gatt: BluetoothGatt? = null
     private var boardName = ""
+    private var boardId = ""             // "" for a board that advertises no ID: not remembered
     private var checked = true           // this send asks the board to check the network first
     private var committed = false        // commit written: STATUS reports from here on
     private var lastState = -1           // the last STATUS state shown: a read repeating it changes nothing
@@ -145,6 +155,7 @@ class MainActivity : Activity() {
         steps = listOf(R.id.step1, R.id.step2, R.id.step3, R.id.step4).map { findViewById(it) }
         stepTexts = steps.map { it.text.toString() }
         help = findViewById(R.id.help)
+        mine = findViewById(R.id.mine)
         scanButton = findViewById(R.id.scan)
         sendButton = findViewById(R.id.send)
         saveAnywayButton = findViewById(R.id.save_anyway)
@@ -174,6 +185,11 @@ class MainActivity : Activity() {
         // no tap for Find when nothing has to be asked first: the full Find took 10 s of the setup (test106)
         if (permissionsGranted() && adapter?.isEnabled == true)
             startScan()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        refreshPresence()
     }
 
     override fun onDestroy() {
@@ -296,11 +312,17 @@ class MainActivity : Activity() {
         if (found.containsKey(d.address))
             return
         val name = r.scanRecord?.deviceName ?: d.name ?: "LEAKCAM"
+        val devId = r.scanRecord?.getManufacturerSpecificData(0xFFFF)?.takeIf { it.size == 6 }
+            ?.joinToString("") { "%02X".format(it) }
+        if (devId != null)
+            ids[d.address] = devId
+        Log.i(TAG, "found $name id ${devId ?: "none"}")   // tests/test111 compares it with the board's
         found[d.address] = d to name
         devices.addView(RadioButton(this).apply {
             id = View.generateViewId()
             tag = d.address
-            text = getString(R.string.device_entry, name, r.rssi)
+            text = getString(if (devId != null && known().has(devId)) R.string.device_entry_known else R.string.device_entry,
+                name, r.rssi)
         })
         // the first board leads on at once, Find goes on behind (another board nearby joins the list) until Send:
         // waiting for the whole Find took 10 s of the setup, then 1.7 s (test106)
@@ -330,6 +352,7 @@ class MainActivity : Activity() {
         if (device.bondState != BluetoothDevice.BOND_NONE && !removeBond(device))
             return problem(STEP_SAVE, R.string.err_unpair, name)
         boardName = name
+        boardId = ids[address] ?: ""
         ssidText = ssidField.text.toString()
         checked = check
         committed = false
@@ -655,6 +678,7 @@ class MainActivity : Activity() {
             WCHK_ADDRESS -> show(STEP_SAVE, R.string.help_check_address)
             WCHK_INTERNET -> show(STEP_SAVE, R.string.help_check_internet)
             WCHK_SAVED -> finishSend {
+                remember()
                 show(STEP_DONE, if (checked) R.string.help_done else R.string.help_done_unchecked, boardName, ssidText)
             }
             else -> {
@@ -705,6 +729,57 @@ class MainActivity : Activity() {
         }
         if (!started)
             fail(R.string.err_write, what(uuid))
+    }
+
+    // ---------------- the LEAKCAMs set up from this phone ----------------
+
+    private fun known() = JSONObject(getSharedPreferences("devices", MODE_PRIVATE).getString("devices", null) ?: "{}")
+
+    /** the board just stored the network: kept with its name and network, then its presence asked */
+    private fun remember() {
+        if (boardId.isEmpty())
+            return
+        val k = known().put(boardId, JSONObject().put("name", boardName).put("ssid", ssidText))
+        getSharedPreferences("devices", MODE_PRIVATE).edit().putString("devices", k.toString()).apply()
+        refreshPresence()
+    }
+
+    private fun showMine(lines: List<String>) {
+        mine.visibility = if (lines.isEmpty()) View.GONE else View.VISIBLE
+        mine.text = (listOf(getString(R.string.mine_title)) + lines).joinToString("\n")
+    }
+
+    /** each remembered LEAKCAM's presence from the server, off the main thread; logged for tests/test111 */
+    private fun refreshPresence() {
+        val k = known()
+        val list = k.keys().asSequence().toList()
+        showMine(list.map { k.getJSONObject(it).optString("name", it) })
+        if (list.isEmpty())
+            return
+        Thread {
+            val lines = list.map { id ->
+                val name = k.getJSONObject(id).optString("name", id)
+                val line = try {
+                    val c = URL("${BuildConfig.SERVER}/v1/devices/$id").openConnection() as HttpURLConnection
+                    c.connectTimeout = 3000
+                    c.readTimeout = 3000
+                    val j = JSONObject(c.inputStream.bufferedReader().use { it.readText() })
+                    c.disconnect()
+                    val seen = j.getLong("last_seen_s")
+                    when {
+                        j.getBoolean("online") -> getString(R.string.mine_online, name)
+                        seen < 0 -> getString(R.string.mine_never, name)
+                        seen < 60 -> getString(R.string.mine_offline_s, name, seen.toInt())
+                        else -> getString(R.string.mine_offline, name, (seen / 60).toInt())
+                    }
+                } catch (e: Exception) {          // no server, no network, a broken answer: said so, never a guess
+                    getString(R.string.mine_unknown, name)
+                }
+                Log.i(TAG, "mine $id: $line")
+                line
+            }
+            runOnUiThread { showMine(lines) }
+        }.start()
     }
 
     private fun what(uuid: UUID) = getString(when (uuid) {

@@ -4,6 +4,13 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-01 (run.py, 428 s): pass
+
+29/29 checks pass.
+
+- phone USB port was the power source: swapped to sink
+
+
 ### Automated run 2026-11-01 (run.py, 336 s): pass
 
 29/29 checks pass.

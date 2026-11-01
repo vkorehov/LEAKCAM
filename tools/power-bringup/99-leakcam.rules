@@ -2,5 +2,8 @@
 # CH340 K230 console (USB-C 2), BL616 firmware console, BL616 ROM, K230 USB boot device.
 SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", MODE="0666"
 SUBSYSTEM=="tty", ATTRS{idVendor}=="ffff", ATTRS{idProduct}=="ffff", MODE="0666"
+# its two ports by interface, whatever the serial number (since use case 2 the board's device ID, tests/test111)
+SUBSYSTEM=="tty", ATTRS{idVendor}=="ffff", ATTRS{idProduct}=="ffff", ENV{ID_USB_INTERFACE_NUM}=="00", SYMLINK+="leakcam-bl616"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="ffff", ATTRS{idProduct}=="ffff", ENV{ID_USB_INTERFACE_NUM}=="02", SYMLINK+="leakcam-k230"
 SUBSYSTEM=="tty", ATTRS{idVendor}=="349b", ATTRS{idProduct}=="6160", MODE="0666"
 SUBSYSTEM=="usb", ATTRS{idVendor}=="29f1", ATTRS{idProduct}=="0230", MODE="0666"

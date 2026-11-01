@@ -16,6 +16,13 @@
     <string name="send">Pair, check and save</string>
     <string name="save_anyway">Save without checking</string>
     <string name="device_entry">%1$s   (%2$d dBm)</string>
+    <string name="device_entry_known">%1$s   (%2$d dBm, set up before)</string>
+    <string name="mine_title">Your LEAKCAMs</string>
+    <string name="mine_online">%1$s: online</string>
+    <string name="mine_offline">%1$s: offline, last seen %2$d min ago</string>
+    <string name="mine_offline_s">%1$s: offline, last seen %2$d s ago</string>
+    <string name="mine_never">%1$s: not seen yet</string>
+    <string name="mine_unknown">%1$s: status unknown (server not reached)</string>
 
     <!-- what to do now, in the box under the steps -->
     <string name="help_plug">Plug the LEAKCAM into a USB charger or a computer with its USB-C cable. It can be set up only while it is on USB power: someone has to plug it in first, so it cannot be paired while it runs on its battery. Then tap Find LEAKCAM.</string>
