@@ -701,3 +701,56 @@ static int bat_watch(int argc, char **argv)
     }
 }
 MSH_CMD_EXPORT(bat_watch, test038: VBAT log + heartbeat until VBAT < cut [cut_mv] [log_s]);
+
+/*
+ * test115: the K230's USB device on USB-C 1 (CherryUSB, CDC ACM "ttyGS0", 1209:ABD1; test image only). usb_echo [s]:
+ * every byte the host sends comes back, for s seconds (default 30) or until the host sends nothing for 5 s after it
+ * started; then the byte count. The host times the round trips and the throughput (tests/test115 run.py).
+ */
+static int usb_echo(int argc, char **argv)
+{
+    rt_uint32_t secs = argc > 1 ? (rt_uint32_t)atoi(argv[1]) : 30;
+    rt_device_t d = rt_device_find("ttyGS0");
+    rt_uint8_t buf[512];
+    rt_uint64_t total = 0, t0 = now(), last = 0, nap = t0;
+    if (!d || rt_device_open(d, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_INT_RX) != RT_EOK)
+    {
+        rt_kprintf("usb_echo: ttyGS0 not available (USB device not enumerated?)\n");
+        return -1;
+    }
+    rt_kprintf("usb_echo: echoing on ttyGS0 for %u s\n", (unsigned)secs);
+    while (now() - t0 < (rt_uint64_t)secs * 27000000u)
+    {
+        rt_size_t r = rt_device_read(d, 0, buf, sizeof(buf));
+        if (r > 0)
+        {
+            rt_size_t w = 0;
+            while (w < r)                                /* a full TX buffer: wait for room, deadline-bound */
+            {
+                rt_size_t n = rt_device_write(d, 0, buf + w, r - w);
+                w += n;
+                if (n == 0)
+                    rt_thread_mdelay(1);
+                if (now() - t0 > (rt_uint64_t)secs * 27000000u)
+                    break;
+            }
+            total += r;
+            last = now();
+        }
+        else
+        {
+            if (last && now() - last > 5u * 27000000u)  /* the host stopped */
+                break;
+            rt_thread_mdelay(1);
+        }
+        if (now() - nap > 27000000u)                     /* the watchdog's feeder gets its turn */
+        {
+            rt_thread_mdelay(1);
+            nap = now();
+        }
+    }
+    rt_device_close(d);
+    rt_kprintf("usb_echo: %u bytes echoed in %u ms\n", (unsigned)total, (unsigned)((now() - t0) / 27000));
+    return 0;
+}
+MSH_CMD_EXPORT(usb_echo, test115: echo the host on the USB device (ttyGS0) [s]);

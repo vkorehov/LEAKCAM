@@ -7,3 +7,5 @@ SUBSYSTEM=="tty", ATTRS{idVendor}=="ffff", ATTRS{idProduct}=="ffff", ENV{ID_USB_
 SUBSYSTEM=="tty", ATTRS{idVendor}=="ffff", ATTRS{idProduct}=="ffff", ENV{ID_USB_INTERFACE_NUM}=="02", SYMLINK+="leakcam-k230"
 SUBSYSTEM=="tty", ATTRS{idVendor}=="349b", ATTRS{idProduct}=="6160", MODE="0666"
 SUBSYSTEM=="usb", ATTRS{idVendor}=="29f1", ATTRS{idProduct}=="0230", MODE="0666"
+# the K230's USB device on USB-C 1 in the test image (CherryUSB CDC ACM, test115)
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="abd1", MODE="0666", SYMLINK+="leakcam-k230usb"

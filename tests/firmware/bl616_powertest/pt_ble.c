@@ -9,6 +9,7 @@
  *   pt_ble creds      wifi_ssid / wifi_psk in easyflash: length and CRC-32 each, never the passphrase itself
  *   pt_ble erase      wifi_ssid, wifi_psk and the remembered AP (wifi_ap) deleted
  *   pt_ble pin <6>    the BLE pairing PIN stored (as the product's `prov pin`; provision_pin.py from make flash)
+ *   pt_ble adv <ms>   the advertising interval (20 .. 10240 ms; test114's sweep)
  *   pt_ble decoy      a fixed made-up network (t110-decoy / password1) stored directly: test110 then tells "stored"
  *                     from "not stored" without a 16 s save through the app
  */
@@ -16,6 +17,7 @@
 
 #if PT_TEST_BLE
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <FreeRTOS.h>
@@ -88,6 +90,14 @@ static void cmd_ble(int argc, char **argv)
             printf("pt_ble: erase failed\r\n");
         else
             printf("pt_ble: credentials and remembered AP erased\r\n");
+    } else if (!strcmp(op, "adv") && argc > 2) {
+        int ms = atoi(argv[2]);
+        if (ms < 20 || ms > 10240)
+            printf("pt_ble: adv: 20 .. 10240 ms\r\n");
+        else {
+            ble_pairing_adv_interval((unsigned int)ms);
+            printf("pt_ble: advertising every %d ms\r\n", ms);
+        }
     } else if (!strcmp(op, "pin") && argc > 2) {
         if (strlen(argv[2]) != 6 || strspn(argv[2], "0123456789") != 6)
             printf("pt_ble: pin: 6 digits\r\n");
@@ -108,7 +118,7 @@ static void cmd_ble(int argc, char **argv)
         print_key("wifi_psk");
         printf("pt_ble: pairing PIN %s\r\n", ble_pairing_pin() < 0 ? "none (pt_ble pin)" : "stored");
     } else
-        printf("usage: pt_ble [on | creds | erase | decoy | pin <6 digits>]\r\n");
+        printf("usage: pt_ble [on | creds | erase | decoy | pin <6 digits> | adv <ms>]\r\n");
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_ble, pt_ble, test040 BLE provisioning: on | creds | erase | decoy | pin <6 digits>);
+SHELL_CMD_EXPORT_ALIAS(cmd_ble, pt_ble, test040 BLE provisioning: on | creds | erase | decoy | pin <6 digits> | adv <ms>);
 #endif

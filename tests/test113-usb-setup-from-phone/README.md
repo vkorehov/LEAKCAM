@@ -1,4 +1,4 @@
-# test113: Wi-Fi setup from the phone over USB (like BLE, over the cable)
+# test113: the whole setup over USB alone (no BLE)
 
 Status: **planned** (2026-11-01, user: setup over the phone's USB connection, as over BLE).
 
@@ -18,6 +18,9 @@ BL616's own USB is PR1, the debug pads inside the enclosure. So over USB the pho
   for it.
 - A small K230 relay: CDC frames <-> link frames to the BL616, which runs the same provisioning as for BLE (the
   ble_pairing.c GATT handlers split into a transport-independent part).
+- The app's status screen: the configure button is on when the selected LEAKCAM is reachable over BLE or over USB
+  (user, 2026-11-01); over USB it is recognised by the K230's USB serial number carrying the board's device ID (the
+  BL616 gives it to the K230 over the link at the session start).
 - Security: the cable is physical access, like the USB power gate; the same pairing PIN (from the server, entered by
   the app) authenticates the session, so a phone without the app cannot configure it over USB either.
 - Rev 2 option (bugs/v2.txt): route the BL616's USB to USB-C 1 instead (a mux or the second connector): the BL616 then
@@ -25,11 +28,18 @@ BL616's own USB is PR1, the debug pads inside the enclosure. So over USB the pho
 
 ## Steps (when built)
 
-1. Low level: the K230 enumerates as CDC ACM on the phone (OTG), on the Mac; frames echo through the link to the
-   BL616 and back.
-2. The app sends a network over USB: Done, stored, same STATUS states and times as BLE.
-3. Loss: the cable pulled during the check: the app reconnects (BLE or USB) and reads STATUS (test110's rule).
-4. No PIN: refused.
+The whole setup by USB alone (user, 2026-11-01): the board's BLE off for the run (`pt_ble off` / the product's
+`prov ble off`), nothing over the radio but the Wi-Fi check itself.
+
+1. Low level: test115 (the K230 enumerates as CDC ACM on the bench, echo, throughput).
+2. Device initialization over USB: the bench (standing in for the phone) reads the device ID and whether a network is
+   stored, gets the pairing PIN from the server and proves it, as the app would.
+3. Wi-Fi setup over USB: SSID, passphrase, commit with an attempt id; STATUS: joining, address, internet, saved; the
+   board stored it and checks in at the server; the app lists it (online, its network).
+4. Failures as over BLE: a wrong password named, a network not seen named, the old network kept.
+5. Loss: the cable pulled during the check; plugged back, STATUS read for the attempt (test110's rule).
+6. No PIN: refused.
+7. By hand (the user, later): the same from the phone over an OTG cable, with BLE off on the board.
 
 ## Needs (build features and dependencies)
 

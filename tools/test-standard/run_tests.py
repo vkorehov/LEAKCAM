@@ -50,7 +50,11 @@ def crash_check(when):
     always check it): a record is decoded, logged and cleared, and stops the batch (stop on any issue). A firmware
     without the recorder stops it too: no test runs where a hang would leave no backtrace."""
     from board import bl
-    out = re.sub(r"\x1b\[[0-9;]*m", "", bl("crash", 2))
+    out = ""
+    for _ in range(3):          # its own answer; the presence check-ins' Wi-Fi logs can drown one read (2026-11-01)
+        out = re.sub(r"\x1b\[[0-9;]*m", "", bl("crash", 3, r"crash: no record|crash #"))
+        if "crash: no record" in out or "crash #" in out:
+            break
     if "crash: no record" in out:
         print(f"crash record {when}: none", flush=True)
         return True

@@ -32,6 +32,7 @@
 static struct bt_conn *active_conn;
 static volatile bool adv_wanted;         /* ble_pairing_advertise(): provision.c decides when */
 static bool adv_on, ready;               /* advertising now; the stack up with a stored PIN */
+static uint16_t adv_int_min = BT_GAP_ADV_FAST_INT_MIN_2, adv_int_max = BT_GAP_ADV_FAST_INT_MAX_2;   /* 0.625 ms */
 static char ssid[33];
 static char psk[64];
 static uint8_t status[7];                /* state, detail LE16, attempt LE32: the STATUS characteristic */
@@ -273,8 +274,8 @@ static void adv_start(void)
     };
     struct bt_le_adv_param param;
     memset(&param, 0, sizeof(param));
-    param.interval_min = BT_GAP_ADV_FAST_INT_MIN_2;     /* 100-150 ms: USB powered, no need to save */
-    param.interval_max = BT_GAP_ADV_FAST_INT_MAX_2;
+    param.interval_min = adv_int_min;                   /* 100-150 ms unless set (ble_pairing_adv_interval) */
+    param.interval_max = adv_int_max;
     param.options = BT_LE_ADV_OPT_CONNECTABLE | BT_LE_ADV_OPT_USE_NAME;
     if (bt_le_adv_start(&param, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd)))
         vAssertCalled();                 /* not advertising: the board could never be set up */
@@ -367,6 +368,21 @@ void ble_pairing_start(void)
 bool ble_pairing_connected(void)
 {
     return active_conn != NULL;
+}
+
+/* test114 (the test firmware's `pt_ble adv`): the advertising interval, restarted at once when advertising */
+void ble_pairing_adv_interval(unsigned int ms)
+{
+    unsigned int units = ms * 1000u / 625u;
+    if (units < 32u || units > 16384u)
+        vAssertCalled();                 /* outside BLE's 20 ms .. 10.24 s: the caller's bug */
+    adv_int_min = adv_int_max = (uint16_t)units;
+    if (adv_on && !active_conn) {
+        if (bt_le_adv_stop())
+            vAssertCalled();
+        adv_on = false;
+        adv_start();
+    }
 }
 
 /* only advertising starts and stops: the stack stays up (a BLE restart after a stop was never proven, test106) */

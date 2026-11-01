@@ -6,7 +6,7 @@ board's own USB-C 1 power reading (`pt_ble`; the console stays up on PR1) marks 
   hand_steps.py meter       test firmware, cell full: 60 s holds for the USB-C 1 meter - BLE off, advertising,
                             connected, a Wi-Fi check
   (the USB power gate it also checked is gone since 2026-11-01: the PIN proves the phone; the battery behaviour,
-  advertising windows while no network is stored, is product logic: tests/test106 hand_step7.py)
+  advertising windows while no network is stored, is product logic: tests/test116-ble-only-setup/run.py)
 """
 import os
 import re
