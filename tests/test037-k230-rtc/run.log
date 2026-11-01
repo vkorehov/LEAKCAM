@@ -1,8 +1,8 @@
-09:08:57 test037-k230-rtc: 0 metric rows MISSING: none
-09:09:09 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
-09:10:15 sample boot 1 {'board': 34.3, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 44.589, 'k_free': (7311744, 1521216), 'vbat': 4146}
-09:10:27 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
-09:11:33 sample boot 2 {'board': 35.2, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 45.794, 'k_free': (7311744, 1521216), 'vbat': 4131}
-09:11:45 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
-09:12:52 sample boot 3 {'board': 35.8, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 46.998, 'k_free': (7311744, 1521216), 'vbat': 4167}
-09:12:54 test037-k230-rtc: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+11:41:45 test037-k230-rtc: 0 metric rows MISSING: none
+11:41:57 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.52 msh 0.53
+11:43:03 sample boot 1 {'board': 30.7, 'bl_mem': (122728, 103492, 93424, 106, 79532, 17, 0), 'die': 39.76, 'k_free': (7311744, 1521216), 'vbat': 4403}
+11:43:15 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.52 msh 0.53
+11:44:21 sample boot 2 {'board': 33.0, 'bl_mem': (122728, 103492, 93424, 106, 79532, 17, 0), 'die': 43.082, 'k_free': (7311744, 1521216), 'vbat': 4369}
+11:44:33 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.52 msh 0.53
+11:45:39 sample boot 3 {'board': 34.4, 'bl_mem': (122728, 103492, 93424, 106, 79532, 17, 0), 'die': 45.192, 'k_free': (7311744, 1521216), 'vbat': 4354}
+11:45:41 test037-k230-rtc: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

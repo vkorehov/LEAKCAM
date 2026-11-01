@@ -1,6 +1,7 @@
 # test037: K230 PMU RTC: start, set from the BL616, timekeeping
 
-Status: **partial: step 0 pass** (2026-10-25): the PMU RTC runs from Y1, +27 ppm against the 27 MHz timer (3 boots),
+Status: **partial: step 0 pass** (2026-11-01, again: +28, +28, +27 ppm, 3 boots): the PMU RTC runs from Y1, about
++27 ppm against the 27 MHz timer,
 `date` in UTC; handover from the BL616, roll-overs, absolute ppm and the 10 cold starts open.
 
 The K230's PMU RTC (Y1, 32.768 kHz, AVDD1P8_RTC on the switched 1V8 rail) restarts at every power-up; the BL616
