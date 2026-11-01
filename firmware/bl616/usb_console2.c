@@ -557,9 +557,8 @@ void usb_console_init(void)
     Ring_Buffer_Init(&ports[1].tx_ring, p1_tx_pool, sizeof(p1_tx_pool), NULL, NULL);
 
     usb_console.event_sem = xSemaphoreCreateBinary();
-    if (usb_console.event_sem == NULL) {
-        return;
-    }
+    if (usb_console.event_sem == NULL)
+        vAssertCalled();                 /* no console: no hands-free flash or check (fail fast) */
 
     shell_init_with_task(NULL);
 
@@ -573,15 +572,8 @@ void usb_console_init(void)
     board_usb_gpio_init();
 #endif
 
-    if (usbd_initialize(USB_CONSOLE_BUS_ID, 0, event_cb) != 0) {
-        vSemaphoreDelete(usb_console.event_sem);
-        usb_console.event_sem = NULL;
-        return;
-    }
-    if (xTaskCreate(usb_console_task, "usb_console", CONFIG_CONSOLE_USB_CDC_TASK_STACK_SIZE, NULL,
-                    configMAX_PRIORITIES - 2U, NULL) != pdPASS) {
-        usbd_deinitialize(USB_CONSOLE_BUS_ID);
-        vSemaphoreDelete(usb_console.event_sem);
-        usb_console.event_sem = NULL;
-    }
+    if (usbd_initialize(USB_CONSOLE_BUS_ID, 0, event_cb) != 0 ||
+        xTaskCreate(usb_console_task, "usb_console", CONFIG_CONSOLE_USB_CDC_TASK_STACK_SIZE, NULL,
+                    configMAX_PRIORITIES - 2U, NULL) != pdPASS)
+        vAssertCalled();
 }

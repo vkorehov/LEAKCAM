@@ -11,11 +11,14 @@
  *   SSID     ...0002  write, encrypted     Wi-Fi SSID (UTF-8, <= 32 bytes)
  *   PSK      ...0003  write, encrypted     Wi-Fi passphrase (8..63 bytes)
  *   COMMIT   ...0004  write, encrypted     1 byte: 0x01 check, then store if the check passed;
- *                                          0x02 store without checking (set up away from the router)
- *   STATUS   ...0005  read, notify,        3 bytes: state, detail (little-endian 16 bit), states in
- *                     encrypted            wifi_check_calc.h: idle on connect, progress (joining, address,
- *                                          internet), then saved or the failure. STATUS is the state:
- *                                          a notification can be lost, so the phone also reads it
+ *                                          0x02 store without checking (set up away from the router);
+ *                                          + 4 bytes: the phone's attempt id (little-endian 32 bit)
+ *   STATUS   ...0005  read, notify,        7 bytes: state, detail (LE16), attempt id (LE32): the last
+ *                     encrypted            commit's state, kept across connections. States in
+ *                                          wifi_check_calc.h: progress (joining, address, internet), then
+ *                                          saved or the failure. STATUS is the state: a notification or
+ *                                          the link can be lost, so the phone also reads it and, after a
+ *                                          lost link, reconnects and reads it for its attempt id
  *
  * The check (wifi_check.h) joins the network, gets an address by DHCP and fetches a well-known
  * URL from the BL616 itself, so a wrong password, a network out of reach and a network without
@@ -23,7 +26,6 @@
  * running K230 session (BLE first, user 2026-10-28): the K230 hears a link loss and gets the radio
  * back after the check; no K230 session starts during it. New credentials stored while a K230
  * session runs end that session; a new one starts on them (ble_credentials_stored()).
- * BUSY now only means no memory for the check's task.
  *
  * The credentials live on the BL616 because it is the Wi-Fi device (SDIO Wi-Fi for the K230).
  */

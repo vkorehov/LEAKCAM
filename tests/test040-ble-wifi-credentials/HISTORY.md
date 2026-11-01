@@ -4,6 +4,38 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-01 09:21 (run.py, 338 s): pass
+
+46 of 46 checks passed, shortened (store cycles 20 -> 8, the dropped-link wait polled). Two runs before it failed on
+this change, not the board: STATUS notified only on change suppressed a second SAVED with the same (0) attempt id
+(fixed: each commit clears STATUS first); "nothing stored with the link dropped" was the old rule (the board now
+stores; the phone reads STATUS). One earlier failure of 4/20 store cycles was the phone: writes never left it (pairing
+dialog not answered in time, the laptop on its charger replug), store_cycles_capture.py: 19/20, the one the phone. Not automated: advertising stops on unplug, pairing refused on battery, power cut (README Steps 1, 2, 5).
+
+- phone USB port was the power source: swapped to sink
+
+
+### Automated run 2026-11-01 (run.py, 486 s): **FAIL**
+
+44 of 46 checks passed; failed: 20 store cycles (4 failed); the real network stored again at the end () Not automated: advertising stops on unplug, pairing refused on battery, power cut (README Steps 1, 2, 5).
+
+- phone USB port was the power source: swapped to sink
+
+
+### Automated run 2026-11-01 (run.py, 703 s): **FAIL**
+
+42 of 46 checks passed; failed: store unchecked 6/8 bytes: SAVED ([]); store 0x02 during a session: SAVED ([]); password changed: the session restarts on the old one and fails (); 20 store cycles (20 failed) Not automated: advertising stops on unplug, pairing refused on battery, power cut (README Steps 1, 2, 5).
+
+- phone USB port was the power source: swapped to sink
+
+
+### Automated run 2026-11-01 (run.py, 506 s): **FAIL**
+
+41 of 46 checks passed; failed: check with the link dropped: nothing stored ([1, 1, 2, 3, 4]); checked store: JOINING -> ADDRESS -> INTERNET -> SAVED ([1, 1, 2, 3, 4]); a second commit during the check starts no second check (); checked store during a session: SAVED ([1, 1, 2, 3, 4]); password changed: the check of the new one during the retries passes ([1, 1, 2, 3, 4]) Not automated: advertising stops on unplug, pairing refused on battery, power cut (README Steps 1, 2, 5).
+
+- phone USB port was the power source: swapped to sink
+
+
 
 ### Status line before the 2026-10-29 cleanup
 

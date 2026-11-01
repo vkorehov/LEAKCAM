@@ -60,17 +60,20 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 The APK is signed with the debug key: fine for installing on your own phones, not for a store.
 
 **On an aarch64 Linux host** Google publishes `aapt2` for x86-64 only. It runs under
-qemu-user 11.1 (the one in `attic/firmware/k230_nn/qemu11`) with an x86-64 libc taken from the
-`python:3.11-slim` image:
+qemu-user 11.1 (Debian's static build, a tool install in `~/.local/opt/qemu11`, not in the repo) with an
+x86-64 libc taken from the `python:3.11-slim` image:
 
 ```bash
+mkdir -p ~/.local/opt/qemu11 && cd ~/.local/opt/qemu11
+curl -sSLO http://deb.debian.org/debian/pool/main/q/qemu/qemu-user_11.1.1+ds-1_arm64.deb
+dpkg-deb --fsys-tarfile qemu-user_11.1.1+ds-1_arm64.deb | tar -x --wildcards '*/qemu-x86_64' && rm qemu-user_*.deb
 mkdir -p ~/.local/opt/aapt2-x86 && cd ~/.local/opt/aapt2-x86
 V=8.7.3-12006047                        # the aapt2 of AGP 8.7.3
 curl -sSLO https://dl.google.com/android/maven2/com/android/tools/build/aapt2/$V/aapt2-$V-linux.jar
 unzip -oq aapt2-$V-linux.jar aapt2 && mv aapt2 aapt2.bin
 mkdir sysroot && cid=$(docker create --platform linux/amd64 python:3.11-slim)
 docker export $cid | tar -x -C sysroot lib lib64 usr/lib/x86_64-linux-gnu usr/lib64; docker rm $cid
-printf '#!/bin/sh\nexec %s -L %s %s "$@"\n' ~/k230d-hw/LEAKCAM/firmware/k230_nn/qemu11/usr/bin/qemu-x86_64 \
+printf '#!/bin/sh\nexec %s -L %s %s "$@"\n' ~/.local/opt/qemu11/usr/bin/qemu-x86_64 \
   ~/.local/opt/aapt2-x86/sysroot ~/.local/opt/aapt2-x86/aapt2.bin > aapt2 && chmod +x aapt2
 
 cd ~/k230d-hw/LEAKCAM/android

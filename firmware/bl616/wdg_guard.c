@@ -24,8 +24,8 @@ static void wdg_feed_task(void *arg)
 bool wdg_guard_start(void)
 {
     GLB_RESET_RECORD_Type rr;
-    GLB_Get_Reset_Reason(&rr);
-    GLB_Clr_Reset_Reason();
+    if (GLB_Get_Reset_Reason(&rr) != SUCCESS || GLB_Clr_Reset_Reason() != SUCCESS)
+        vAssertCalled();
     struct bflb_wdg_config_s cfg = {
         .clock_source = WDG_CLKSRC_32K,
         .clock_div = 31,                    /* 32768 / 32: ~1 kHz */
@@ -35,7 +35,8 @@ bool wdg_guard_start(void)
     wdg = bflb_device_get_by_name("watchdog0");
     bflb_wdg_init(wdg, &cfg);
     bflb_wdg_start(wdg);
-    xTaskCreate(wdg_feed_task, "wdg", 256, NULL, configMAX_PRIORITIES - 1, NULL);
+    if (xTaskCreate(wdg_feed_task, "wdg", 256, NULL, configMAX_PRIORITIES - 1, NULL) != pdPASS)
+        vAssertCalled();
     return rr.reset_recorder_wdt_rst_n;
 }
 
@@ -59,10 +60,12 @@ static void cmd_isp(int argc, char **argv)
     bflb_wdg_stop(wdg);
     printf("isp: USB detach, the ROM in 0.5 s\r\n");
     bflb_mtimer_delay_ms(20);
-    usbd_deinitialize(0);                   /* the console's bus (usb_console2.c USB_CONSOLE_BUS_ID) */
+    (void)usbd_deinitialize(0);             /* the console's bus (usb_console2.c USB_CONSOLE_BUS_ID); the ROM is
+                                             * entered either way */
     bflb_mtimer_delay_ms(500);
-    HBN_Set_User_Boot_Config(1);
-    bl_sys_reset_por();
+    if (HBN_Set_User_Boot_Config(1) != SUCCESS)
+        vAssertCalled();
+    (void)bl_sys_reset_por();               /* never returns */
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_isp, isp, watchdog off then reset into the ROM for USB ISP);
 #endif

@@ -1,9 +1,9 @@
 # test110: setup app recovery from loss at every step
 
-Status: **fail, 31/34** (2026-11-01, run.py on the BL616 test firmware): lost notifications recovered (STATUS reads);
-link loss and Wi-Fi loss named in 4-10 s; **open**: a link lost with the result leaves the app saying "nothing
-stored" while the board stored it; the phone's Bluetooth off waits out the 60 s timeout; an Android connect failure
-(GATT 133) is not retried.
+Status: **pass, 37/37** (2026-11-01 run 3, run.py on the BL616 test firmware): lost notifications, a link lost at any
+step after the save, the phone's Bluetooth off during the check: the app reconnects, reads the board's STATUS for its
+attempt and shows the board's result (Done 7.1-14.6 s); a link lost on every connect, Bluetooth off before the save,
+DNS / HTTP loss: named in 5.7-11.1 s; app and board agree in every case.
 
 Every interaction of a Wi-Fi setup from the phone (test106) with a loss injected into it: the app must either recover
 by itself or tell the user a named failure in time, its message must match what the board stored (eventual
@@ -16,7 +16,8 @@ consistency: STATUS is the board's state and the app reconciles with it), and a 
   link layer, so a loss there is a dropped notification (host buffers full) or a dropped link (supervision timeout);
   on Wi-Fi a DNS or HTTP answer that never comes.
 - Android phone with the LEAKCAM Setup app on adb (test106 Setup), unlocked, Bluetooth on; USB-C 1 in.
-- The test network from `~/.leakcam_wifi`; a decoy network ("t110-decoy") stored unchecked before each case, so the
+- The test network from `~/.leakcam_wifi`; a decoy network ("t110-decoy") stored directly by the test firmware (`pt_ble decoy`, under a second; through the
+  app it took 16 s a case) before each case, so the
   stored network after the case says whether the board stored the real one.
 
 ## Needs (build features and dependencies)
@@ -35,7 +36,8 @@ bt_conn_set_security, lwip_getaddrinfo, lwip_recv). Phone: adb `cmd bluetooth_ma
    was stored" never with the network stored).
 4. **Wi-Fi answers lost** (`dns`, `http`): the reason named, the decoy kept.
 5. **Phone Bluetooth off** 6.5 s into the setup for 4 s: a named failure, app and board agree.
-6. After every case: the fault off, a clean setup Done (recovery); BL616 memory sampled at the end.
+6. After every case that did not end in Done: the fault off, a clean setup Done (recovery; a Done case was itself a
+   full setup); BL616 memory sampled at the end.
 
 ## Pass
 
@@ -44,23 +46,19 @@ board disagreeing, and every case is followed by a working setup.
 
 ## Result
 
-run.py, 2026-11-01 07:46, BL616 test firmware with pt_fault + the setup app with STATUS reads (6b6b51e), bench phone
-(Samsung, Android 13): 31/34, 605 s; crash record none before and after; BL616 free 122816 B at the end.
+run.py, 2026-11-01 08:25 (run 3), BL616 test firmware with pt_fault + the setup app with reconciliation, bench phone
+(Samsung, Android 13): 37/37, 647 s; crash record none before and after; BL616 free 122796 B at the end.
 
-- Lost notifications (every one: 5 dropped; every second: 2): Done in 7.0 / 7.5 s, app and board agree.
-- Link lost at connect, at joining, while getting an address, while reaching the internet: named in 4.1-7.5 s, nothing
-  stored on the board, app and board agree. The joining case says "refused the save command (error 133)": the commit
-  write failed with the link, nothing was refused (wording).
-- **Link lost with the result: the board stored the real network (store() runs before the result notification), the
-  app said "Nothing was stored"**: the only disagreement. The app claims what it cannot know; it must reconnect and
-  read the board's state.
-- DNS / HTTP answer lost: "names do not resolve" / "cannot reach the internet", decoy kept.
-- **Phone Bluetooth off for 4 s during the check: the app waited 66.1 s for "did not answer"**: Android gave no
-  disconnect callback; the app does not watch the adapter state.
-- **GATT 133 on the second connection of a save-without-checking** (no fault armed: a real Android connect failure)
-  ended that setup with "disconnected"; the app does not retry a failed connect. Case "result notification lost" was
-  skipped (its decoy did not store).
-- Every clean setup after a case: Done, 6.9-7.9 s.
+| Case | App, time | Board |
+|---|---|---|
+| every notification lost (5) / every second (2) / the result's (1) | Done 7.3 / 7.1 / 7.4 s | real network |
+| link lost at every connect (6 faults = 3 connects) | "disconnected (133)", 5.7 s | decoy |
+| link lost when the check starts / getting an address / reaching the internet / with the result | Done 9.5 / 10.0 / 10.2 / 10.3 s (reconnect + STATUS read) | real network |
+| DNS / HTTP answer lost | named, 7.2 / 7.3 s | decoy |
+| phone Bluetooth off 4 s before the save | "Bluetooth is off", 11.1 s | decoy |
+| phone Bluetooth off 4 s during the check | Done 14.6 s (reconnected when it came back) | real network |
+
+Every clean setup after a case: Done, 7.1-7.6 s. The fixes that got here (run 1: 31/34) are in HISTORY.md.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
@@ -71,7 +69,7 @@ Probes: none (on USB; the setup's current is test040's).
 | Boot, power-on -> READY (median of 5) | n/a: setup runs on the BL616 alone, K230 off | target (test022) | longest step: |
 | This part's boot share | n/a: no K230 boot in setup | - | |
 | Test run time | 605 s automated (run.py, 2026-11-01), no setup | - | setup (flashing, plugging, waiting) separately |
-| recovery: per case app message, time, board state | 2026-11-01: notify all 7.0 s Done; notify half 7.5 s Done; notify final not run (decoy failed, status 133); link at connect 4.1 s disconnected (133); link at joining 6.5 s "refused the save command (133)"; link at address 7.1 s / internet 7.5 s "dropped, nothing stored", board decoy; **link with the result 10.1 s "nothing stored", board stored the real network**; DNS 6.8 s / HTTP 7.4 s named, decoy kept; **phone Bluetooth off 66.1 s "did not answer"**; every clean setup after 6.9-7.9 s | - | % of the top |
+| recovery: per case app message, time, board state | 2026-11-01 run 3: notifications lost -> Done 7.1-7.4 s; link lost after the save (4 points) -> Done 9.5-10.3 s; Bluetooth off during the check -> Done 14.6 s; link lost on every connect 5.7 s, Bluetooth off before the save 11.1 s, DNS 7.2 s, HTTP 7.3 s -> named, decoy kept; app and board agree in all 12 | - | % of the top |
 | Current idle / during (min / avg / peak) | n/a: not metered; the same BLE + check path in test040 on USB: advertising 63.4, connected 63.1, check peak 86 mA (2026-10-29) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | n/a: setup only on USB power | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | n/a for the cell: setup draws from USB | - | scripts/energy.py |

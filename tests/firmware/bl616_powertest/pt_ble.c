@@ -8,6 +8,8 @@
  *   pt_ble            started?, USB power, the stored credentials (as pt_ble creds)
  *   pt_ble creds      wifi_ssid / wifi_psk in easyflash: length and CRC-32 each, never the passphrase itself
  *   pt_ble erase      wifi_ssid, wifi_psk and the remembered AP (wifi_ap) deleted
+ *   pt_ble decoy      a fixed made-up network (t110-decoy / password1) stored directly: test110 then tells "stored"
+ *                     from "not stored" without a 16 s save through the app
  */
 #include "tests.h"
 
@@ -91,21 +93,29 @@ static void cmd_ble(int argc, char **argv)
             return;
         wl_trace(0x7f);
         started = true;
-        xTaskCreate(ble_task, "ble", 1024, NULL, 3, NULL);
-        xTaskCreate(usb_watch_task, "bleusb", 512, NULL, 2, NULL);
+        if (xTaskCreate(ble_task, "ble", 1024, NULL, 3, NULL) != pdPASS ||
+            xTaskCreate(usb_watch_task, "bleusb", 512, NULL, 2, NULL) != pdPASS)
+            vAssertCalled();
         printf("pt_ble: starting (USB power %s)\r\n", usb_present() ? "yes" : "no");
     } else if (!strcmp(op, "erase")) {
-        ef_del_env("wifi_ssid");
-        ef_del_env("wifi_psk");
-        ef_del_env("wifi_ap");
-        printf("pt_ble: credentials and remembered AP erased\r\n");
+        if (ef_del_env("wifi_ssid") != EF_NO_ERR || ef_del_env("wifi_psk") != EF_NO_ERR ||
+            ef_del_env("wifi_ap") != EF_NO_ERR)
+            printf("pt_ble: erase failed\r\n");
+        else
+            printf("pt_ble: credentials and remembered AP erased\r\n");
+    } else if (!strcmp(op, "decoy")) {
+        if (ef_set_env_blob("wifi_ssid", "t110-decoy", 10) != EF_NO_ERR ||
+            ef_set_env_blob("wifi_psk", "password1", 9) != EF_NO_ERR)
+            printf("pt_ble: decoy store failed\r\n");
+        else
+            printf("pt_ble: decoy stored\r\n");
     } else if (!strcmp(op, "creds") || !*op) {
         if (!*op)
             printf("pt_ble: %s, USB power %s\r\n", started ? "on" : "off", usb_present() ? "yes" : "no");
         print_key("wifi_ssid");
         print_key("wifi_psk");
     } else
-        printf("usage: pt_ble [on | creds | erase]\r\n");
+        printf("usage: pt_ble [on | creds | erase | decoy]\r\n");
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_ble, pt_ble, test040 BLE provisioning: on | creds | erase);
+SHELL_CMD_EXPORT_ALIAS(cmd_ble, pt_ble, test040 BLE provisioning: on | creds | erase | decoy);
 #endif

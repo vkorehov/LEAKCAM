@@ -22,7 +22,8 @@ target_sources(app PRIVATE
                wifi_link.c)
 
 # crash_rec.c: the trap entry and the Wi-Fi library's stack overflow hook (skill firmware-crash-recorder)
-sdk_add_link_options(-Wl,--wrap=exception_entry -Wl,--wrap=vApplicationStackOverflowHook)
+sdk_add_link_options(-Wl,--wrap=exception_entry -Wl,--wrap=vApplicationStackOverflowHook -Wl,--wrap=malloc
+                     -Wl,--wrap=calloc -Wl,--wrap=realloc)
 # the Wi-Fi library build options (the SDK's NetHub example); NetHub's SDIO device has four ports
 sdk_add_compile_definitions(-DCONFIG_RWNX_LWIP -DBL_RA_EN=1 -DWPA_SUPPLICANT_CLEANUP_INTERVAL=1800)
 sdk_add_compile_definitions(-D SDIO2_MAX_PORT_NUM=4)

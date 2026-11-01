@@ -24,7 +24,8 @@ void mem_stat(struct mem_stat *m)
     m->min_free = kmin_free_size();
     m->blocks = 0;
     m->used_bytes = 0;
-    mm_walk_allocated_blocks(count_block, m);
+    if (mm_walk_allocated_blocks(count_block, m) != 0)
+        printf("mem: heap walk failed, blocks and used not counted\r\n");
     m->tasks = (unsigned)uxTaskGetNumberOfTasks();
     m->deleted = 0;
     TaskStatus_t *st = malloc(sizeof(*st) * (m->tasks + 4));

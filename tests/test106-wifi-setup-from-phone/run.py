@@ -15,7 +15,7 @@ from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
 from phone import creds, op, product, ready, want   # noqa: E402
 
-REPEATS = 10
+REPEATS = 8                                     # the leak verdict's minimum (mem_leak.py)
 
 _lock = open(__file__)
 try:

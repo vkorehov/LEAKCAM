@@ -60,7 +60,7 @@ static void on_event(int code)
         default: break;
     }
     if (b)
-        xEventGroupSetBits(evg, b);
+        (void)xEventGroupSetBits(evg, b);   /* returns the bits, not an error */
 }
 
 static EventBits_t wait(EventBits_t bits, uint32_t ms)
@@ -99,10 +99,10 @@ static bool ssid_seen(struct seen *s, uint32_t dwell_tu)
     sp.ssid_length = (uint8_t)s->len;      /* probe for it: hidden networks answer too */
     memcpy(sp.ssid_array, s->ssid, s->len);
     sp.duration = dwell_tu;                /* 0: the SDK's default */
-    xEventGroupClearBits(evg, EV_SCANNED);
+    (void)xEventGroupClearBits(evg, EV_SCANNED);   /* the old bits, not an error */
     if (wifi_mgmr_sta_scan(&sp) != 0 || !wait(EV_SCANNED, SCAN_MS))
         LOG_W("scan did not finish, using what the manager has\r\n");
-    wifi_mgmr_scan_ap_all(NULL, s, scan_item);
+    (void)wifi_mgmr_scan_ap_all(NULL, s, scan_item);   /* always 0 (wifi_mgmr_ext.h) */
     return s->found;
 }
 
@@ -112,9 +112,10 @@ static int probe_connect(const struct addrinfo *ai)
     int fd = lwip_socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0)
         return -1;
-    lwip_fcntl(fd, F_SETFL, O_NONBLOCK);
-    if (lwip_connect(fd, ai->ai_addr, ai->ai_addrlen) != 0 && errno != EINPROGRESS) {
-        lwip_close(fd);
+    /* blocking, the connect would wait out the SYN retries instead of TCP_MS */
+    if (lwip_fcntl(fd, F_SETFL, O_NONBLOCK) != 0 ||
+        (lwip_connect(fd, ai->ai_addr, ai->ai_addrlen) != 0 && errno != EINPROGRESS)) {
+        (void)lwip_close(fd);           /* dropped: nothing to do on a close error */
         return -1;
     }
     fd_set w;
@@ -125,13 +126,16 @@ static int probe_connect(const struct addrinfo *ai)
     socklen_t len = sizeof(err);
     if (lwip_select(fd + 1, NULL, &w, NULL, &tv) != 1 || lwip_getsockopt(fd, SOL_SOCKET, SO_ERROR, &err, &len) != 0 ||
         err != 0) {
-        lwip_close(fd);
+        (void)lwip_close(fd);           /* dropped: nothing to do on a close error */
         return -1;
     }
-    lwip_fcntl(fd, F_SETFL, 0);
+    /* without them a recv would return at once (still non-blocking) or never (no timeout) */
     struct timeval io = { TCP_MS / 1000, 0 };
-    lwip_setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &io, sizeof(io));
-    lwip_setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &io, sizeof(io));
+    if (lwip_fcntl(fd, F_SETFL, 0) != 0 || lwip_setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &io, sizeof(io)) != 0 ||
+        lwip_setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &io, sizeof(io)) != 0) {
+        (void)lwip_close(fd);           /* dropped: nothing to do on a close error */
+        return -1;
+    }
     return fd;
 }
 
@@ -157,7 +161,7 @@ static enum wifi_check_state internet(uint16_t *detail)
         while (n < 12 && (k = lwip_recv(fd, buf + n, sizeof(buf) - (size_t)n, 0)) > 0)
             n += k;
     }
-    lwip_close(fd);
+    (void)lwip_close(fd);               /* the answer is read: a close error changes nothing */
     if (n == 0)
         return WCHK_NO_INTERNET;
     int status = wchk_http_status(buf, (size_t)n);
@@ -198,9 +202,9 @@ enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const ch
     enum wifi_check_state st;
 
     *detail = 0;
-    if (evg == NULL)
-        evg = xEventGroupCreate();
-    xEventGroupClearBits(evg, 0xFF);
+    if (evg == NULL && (evg = xEventGroupCreate()) == NULL)
+        vAssertCalled();
+    (void)xEventGroupClearBits(evg, 0xFF);   /* the old bits, not an error */
     progress(WCHK_JOINING, 0);
     wifi_link_local_begin(on_event);
     if (!wait(EV_READY, READY_MS)) {
@@ -231,7 +235,7 @@ enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const ch
     snprintf(p.bssid_str, sizeof(p.bssid_str), "%02X:%02X:%02X:%02X:%02X:%02X", s.bssid[0], s.bssid[1], s.bssid[2],
              s.bssid[3], s.bssid[4], s.bssid[5]);   /* the SDK wants it upper case */
     p.quick_connect = 1;
-    xEventGroupClearBits(evg, EV_CONNECTED | EV_DISCONNECTED | EV_GOT_IP | EV_IP_TIMEOUT);
+    (void)xEventGroupClearBits(evg, EV_CONNECTED | EV_DISCONNECTED | EV_GOT_IP | EV_IP_TIMEOUT);   /* the old bits */
     if (wifi_mgmr_sta_connect(&p) != 0) {
         st = WCHK_JOIN_FAILED;
         goto out;
@@ -240,7 +244,7 @@ enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const ch
     if (!(b & EV_CONNECTED)) {
         wifi_mgmr_connect_ind_stat_info_t info;
         memset(&info, 0, sizeof(info));
-        wifi_mgmr_sta_connect_ind_stat_get(&info);
+        (void)wifi_mgmr_sta_connect_ind_stat_get(&info);   /* zeroed above: a failed read gives 0/0 */
         uint16_t fw = wifi_mgmr_sta_info_status_code_get();
         st = wchk_join_failure(fw, info.status_code, info.reason_code, detail);
         LOG_I("join failed: fw %u status %u reason %u\r\n", fw, info.status_code, info.reason_code);
@@ -257,7 +261,8 @@ enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const ch
 
 out:
     LOG_I("check of \"%.*s\": state 0x%02x detail %u\r\n", (int)ssid_len, ssid, st, *detail);
-    leave();
+    if (!leave())                          /* the next check answers WCHK_BUSY, a K230 join reports FAILED */
+        LOG_W("station stayed busy after the check\r\n");
     wifi_link_local_end();
     return st;
 }

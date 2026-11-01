@@ -90,7 +90,7 @@ Leak tests, one per operation the product repeats:
 | [test107 change-net update from the server (GET /v1/nn)](test107-change-net-update/README.md) | 2026-10-30 | **planned**: K230 test image with `leakcam_wake`, sessions and the Wi-Fi bridge from the BL616 test |
 | [test108 production server check by the BL616 (schedule, lease reuse, server address, back-off)](test108-server-check-schedule/README.md) | 2026-10-30 | **planned**: the scheduler, lease reuse and server address are not written yet (DESIGN 5.1 |
 | [test109 secure server (TLS, device identity, pinned certificate, signed change net)](test109-secure-server/README.md) | 2026-10-30 | **planned**: the real server is not built (DESIGN 7, SECURITY.txt 4); it will run on the Windows PC for the test. |
-| [test110 setup app recovery from loss at every step](test110-ble-loss-recovery/README.md) | 2026-11-01, run.py 31/34 | **fail**: lost notifications recovered; open: link lost with the result (app "nothing stored", board stored), phone Bluetooth off waits 60 s, GATT 133 not retried |
+| [test110 setup app recovery from loss at every step](test110-ble-loss-recovery/README.md) | 2026-11-01, run.py 37/37 | **pass**: lost notifications, a link lost after the save, Bluetooth off during the check: the app reconnects and shows the board's result; failures named in 5.7-11.1 s; app and board agree in every case |
 
 ## Not tested yet (audit 2026-10-30)
 

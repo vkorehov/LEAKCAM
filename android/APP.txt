@@ -120,8 +120,13 @@ HTTP answer. The codes are for support, the text does not depend on them.
   pairing declined, timed out, or board on battery    [err_pairing_refused]
   the phone would not remove its old bond (the board    [err_unpair]: Bluetooth settings,
     keeps none, so every send removes it, then pairs)    Forget LEAKCAM-xxyy, try again
-  connection dropped during the check                  [err_lost_during_check]: nothing stored
-  connection dropped at another point                  [err_disconnected] (with the status)
+  connection failed or dropped before the save         retried by itself (3 connects), then
+                                                         [err_disconnected] (with the status)
+  connection dropped after the save was sent, or       [help_reconnecting] / [help_bluetooth_off_
+    Bluetooth turned off: the app never guesses          reconnect]: reconnects and reads the board's
+                                                         STATUS for this send, then shows its result;
+                                                         [err_not_sent] if the board never got it;
+                                                         [err_unconfirmed] if not reached within 20 s
   no answer for 60 s in any step                       [err_timeout], including "accept the
                                                          pairing request if one is still open"
   not a LEAKCAM in setup mode                          [err_no_service]

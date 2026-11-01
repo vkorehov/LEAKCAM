@@ -9,6 +9,7 @@ user, how long it took, whether that matches what the board stored (consistency)
 import fcntl
 import os
 import re
+import subprocess
 import sys
 import threading
 import time
@@ -50,8 +51,8 @@ def fault(f):
 
 
 def store_decoy():
-    last, _, _ = setup(*DECOY, anyway=True)
-    return last.startswith("Saved without checking.") and creds() == want(*DECOY)
+    """written by the test firmware directly (pt_ble decoy): a save through the app took 16 s a case"""
+    return "decoy stored" in bl("pt_ble decoy", 2) and creds() == want(*DECOY)
 
 
 def recover(case):
@@ -63,7 +64,8 @@ def recover(case):
 
 
 def case(name, f, expect, during=None):
-    """expect: 'done' (the app recovers by itself) or 'fail' (a named failure, in time, matching the board)"""
+    """expect: 'done' (the app recovers by itself: STATUS reads, reconnect and read after a lost link) or 'fail' (a
+    named failure, in time, matching the board)"""
     if not store_decoy():
         check(f"{name}: decoy stored first", False)
         return
@@ -88,15 +90,35 @@ def case(name, f, expect, during=None):
     check(f"{name}: app and board agree", said_done == stored_real and not (said_nothing and stored_real),
           f"app {'Done' if said_done else 'not stored' if said_nothing else 'failure'}, board "
           f"{'real network' if stored_real else 'decoy'}")
-    recover(name)
+    if not said_done:                    # a case that ended in Done was itself a full working setup
+        recover(name)
+
+
+def bt_off_for(secs):
+    adb("shell", "cmd", "bluetooth_manager", "disable")
+    time.sleep(secs)
+    adb("shell", "cmd", "bluetooth_manager", "enable")
 
 
 def bt_off_during_check():
-    """the phone's Bluetooth off while the board checks: pairing and writes take about 5 s from opening the app"""
-    time.sleep(6.5)
-    adb("shell", "cmd", "bluetooth_manager", "disable")
-    time.sleep(4)
-    adb("shell", "cmd", "bluetooth_manager", "enable")
+    """the phone's Bluetooth off for 4 s once the app shows the check running: its own log line (the app logs every
+    screen), not a fixed delay - a faster setup finished before a 6.5 s delay (2026-11-01)"""
+    adb("logcat", "-c")
+    log_ = subprocess.Popen(["adb", "logcat", "-s", "LeakcamSetup:I"], stdout=subprocess.PIPE, text=True)
+    t0 = time.time()
+    try:
+        for line in log_.stdout:
+            if "is now joining" in line or time.time() - t0 > 40:
+                break
+    finally:
+        log_.kill()
+    bt_off_for(4)
+
+
+def bt_off_before_save():
+    """Bluetooth off 2 s after the app opens, while it connects: nothing sent yet"""
+    time.sleep(2)
+    bt_off_for(4)
 
 
 ssid, psk = wifi_credentials()
@@ -122,17 +144,21 @@ check("baseline: Done without faults", last.startswith("Done."), f"{secs:.1f} s"
 case("every notification lost", "notify all", "done")
 case("every second notification lost", "notify half", "done")
 case("the result notification lost", "notify final", "done")
-# the link lost at each step: a named failure, never a claim the board contradicts
-case("link lost at connect", "link connect", "fail")
-case("link lost when the check starts", "link joining", "fail")
-case("link lost while getting an address", "link address", "fail")
-case("link lost while reaching the internet", "link internet", "fail")
-case("link lost with the result", "link result", "fail")
+# the link lost on every connect: retried, then a named failure; nothing reached the board
+case("link lost at every connect", "link connect", "fail")
+# the link lost after the commit (with the commit write's answer, during each check state, with the result): the board
+# goes on and stores; the app reconnects, reads STATUS for its attempt and shows the board's result
+case("link lost when the check starts", "link joining", "done")
+case("link lost while getting an address", "link address", "done")
+case("link lost while reaching the internet", "link internet", "done")
+case("link lost with the result", "link result", "done")
 # Wi-Fi answers lost on the board's side: named, the old network kept
 case("DNS answer lost", "dns", "fail")
 case("HTTP answer lost", "http", "fail")
-# the phone's Bluetooth off during the check
-case("phone Bluetooth off during the check", "off", "fail", during=bt_off_during_check)
+# the phone's Bluetooth off for 4 s: before the save a named failure (nothing sent); during the check the app sees the
+# adapter go and reconnects when it is back
+case("phone Bluetooth off before the save", "off", "fail", during=bt_off_before_save)
+case("phone Bluetooth off during the check", "off", "done", during=bt_off_during_check)
 r.sample("after all cases")
 
 failed = [c for c in checks if not c[1]]

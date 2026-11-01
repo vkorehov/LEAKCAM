@@ -5,7 +5,7 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
-#include "bflb_mtd.h"
+#include "bflb_boot2.h"
 #include "easyflash.h"
 #include "rfparam_adapter.h"
 #include "shell.h"
@@ -18,37 +18,31 @@
 
 extern int bl_sys_reset_por(void);
 
-/* easyflash and the RF calibration once per boot, in this order: rfparam reads its calibration through the partition
- * table, and a second easyflash_init() leaves littlefs unusable (tests/test040) */
-static bool radio_init(void)
+/* the partition table, easyflash and the RF calibration once per boot, in this order: rfparam reads its calibration
+ * through the partition table, and a second easyflash_init() leaves littlefs unusable (tests/test040). Any failure is
+ * a broken flash: fail fast (bflb_mtd_init() would drop the partition table's result) */
+static void radio_init(void)
 {
-    bflb_mtd_init();
-    if (easyflash_init() != EF_NO_ERR) {
-        printf("provision: easyflash init failed\r\n");
-        return false;
-    }
-    if (rfparam_init(0, NULL, 0) != 0) {
-        printf("provision: RF init failed\r\n");
-        return false;
-    }
-    return true;
+    if (bflb_boot2_init() != 0 || easyflash_init() != EF_NO_ERR || rfparam_init(0, NULL, 0) != 0)
+        vAssertCalled();
 }
 
 static void provision_task(void *arg)
 {
-    enum { IDLE, ADVERTISING, STOPPED, FAILED } state = IDLE;
+    enum { IDLE, ADVERTISING, STOPPED } state = IDLE;
     (void)arg;
     for (;;) {
         bool usb = usb_present();
         if (usb && state == IDLE) {
-            state = radio_init() ? ADVERTISING : FAILED;
-            if (state == ADVERTISING)
-                ble_pairing_start();
+            radio_init();
+            ble_pairing_start();
+            state = ADVERTISING;
         } else if (!usb && state == ADVERTISING) {
             ble_pairing_stop();             /* a held connection drops at once (test106 step 7) */
             state = STOPPED;
         } else if (usb && state == STOPPED) {
-            bl_sys_reset_por();             /* a fresh boot is the proven BLE start; a restart after stop is not */
+            (void)bl_sys_reset_por();       /* a fresh boot is the proven BLE start; a restart after stop is not.
+                                             * Never returns */
         }
         vTaskDelay(pdMS_TO_TICKS(POLL_MS));
     }
@@ -56,7 +50,8 @@ static void provision_task(void *arg)
 
 void provision_start(void)
 {
-    xTaskCreate(provision_task, "prov", 1536, NULL, 3, NULL);
+    if (xTaskCreate(provision_task, "prov", 1536, NULL, 3, NULL) != pdPASS)
+        vAssertCalled();
 }
 
 /* new credentials: the remembered AP of the old network no longer applies */
@@ -92,9 +87,11 @@ static void print_key(const char *key)
 static void cmd_prov(int argc, char **argv)
 {
     if (argc > 1 && !strcmp(argv[1], "erase")) {
-        ef_del_env("wifi_ssid");
-        ef_del_env("wifi_psk");
-        ef_del_env("wifi_ap");
+        if (ef_del_env("wifi_ssid") != EF_NO_ERR || ef_del_env("wifi_psk") != EF_NO_ERR ||
+            ef_del_env("wifi_ap") != EF_NO_ERR) {
+            printf("prov: erase failed\r\n");     /* easyflash not up (no USB power since boot) or a flash error */
+            return;
+        }
         printf("prov: credentials and remembered AP erased\r\n");
         return;
     }

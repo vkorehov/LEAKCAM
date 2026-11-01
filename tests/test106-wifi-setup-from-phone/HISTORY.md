@@ -4,6 +4,13 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-01 (run.py, 214 s): pass
+
+17/17 checks pass. First setup (app opened -> Done) 7.5 s; repeats 6.9-7.6 s.
+
+- phone USB port was the power source: swapped to sink
+
+
 ### Product v1 with STATUS reconciliation 2026-11-01 07:33 (run.py, 250 s): pass
 
 17/17 checks pass on the product image (firmware/bl616) with the reconciliation change: the board sets STATUS idle on
