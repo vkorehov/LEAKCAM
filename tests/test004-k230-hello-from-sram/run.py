@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from harness import Run, bl, REPO, KDIMG   # noqa: E402,F401
 
 r = Run(__file__)
-hello = os.path.join(REPO, "tools", "power-bringup", "k230_hello")
+hello = os.path.join(REPO, "tests", "firmware", "k230_hello")
 res, fails = [], []
 for i in range(3):
     r.boot(boot1="high", until=b"zzz", secs=3, expect_msh=False)

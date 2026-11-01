@@ -85,7 +85,7 @@ def check(name, ok, detail=""):
 
 ssid, psk = wifi_credentials()
 if "--flash" in sys.argv:
-    subprocess.run(["make", "-C", os.path.join(REPO, "tools/power-bringup/bl616_powertest"), "flash"], check=True)
+    subprocess.run(["make", "-C", os.path.join(REPO, "tests/firmware/bl616_powertest"), "flash"], check=True)
     time.sleep(5)
 if not os.path.exists(BL_PORT):
     r.obstacle("no BL616 console on USB (board or the VM's USB hub gone): reconnect, then run again")

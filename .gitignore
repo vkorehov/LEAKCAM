@@ -151,4 +151,4 @@ __pycache__/
 !/Project Outputs for LEDS panel/*.csv
 !/mechanical/enclosure/form_report.json
 !/tools/jlcpcb-cart/package-lock.json
-!/tools/power-bringup/k230_hello/k230_hello.bin
+!/tests/firmware/k230_hello/k230_hello.bin

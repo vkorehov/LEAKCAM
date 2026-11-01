@@ -11,7 +11,7 @@ product flow are test106.
 
 ## Setup
 
-- BL616 test firmware (tools/power-bringup/bl616_powertest) with BLE added: `ble_pairing.c` + `wifi_check.c` built
+- BL616 test firmware (tests/firmware/bl616_powertest) with BLE added: `ble_pairing.c` + `wifi_check.c` built
   in (today's defconfig has no BLE), and a `pt_ble` shell command: `pt_ble` (advertising, connection, last status),
   `pt_ble creds` (lengths and a CRC of the stored `wifi_ssid` / `wifi_psk`, never the passphrase itself),
   `pt_ble erase` (delete both keys and `wifi_ap`). Console PR1 (`/dev/ttyACM0`).

@@ -1,4 +1,4 @@
-# Shared by firmware/bl616 and tools/power-bringup/bl616_powertest. Set HW_ROOT (the k230d-hw directory) first.
+# Shared by firmware/bl616 and tests/firmware/bl616_powertest. Set HW_ROOT (the k230d-hw directory) first.
 #
 # The T-Head RISC-V toolchain is x86-64 only. On an arm64 host the build runs in the K230 build container
 # (firmware/BUILD.md 2.2: native arm64 Debian with amd64 runtime libraries), which this file starts by itself.

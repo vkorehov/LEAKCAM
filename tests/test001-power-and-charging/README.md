@@ -8,7 +8,7 @@ Board: MIFA rev 1 (fab 11a6a38). Rails and limits: [tools/power-bringup](../../t
 
 ## Setup
 
-- Battery only: the cell (3.9 V), USB unplugged. Wiring: [hookup_battery.png](../../tools/power-bringup/hookup_battery.png);
+- Battery only: the cell (3.9 V), USB unplugged. Wiring: [hookup_battery.png](hookup_battery.png);
   probe points: [battery_only.png](battery_only.png).
 - Charging: thermistor on JT, USB on USB-C 1. Probe points: [charging.png](charging.png). Charger set to ~0.89 A
   (ISET R7 1 k), 1.0 A input limit (ILIM R5 1.5 k), 6.3 h timer (TMR R21 47 k); red D1 = /CHG. 47 k fitted from C2

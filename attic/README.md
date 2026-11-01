@@ -11,7 +11,7 @@ from what the tests proved (skill leakcam-product-firmware); this code is refere
 | firmware/k230_nn/ | the change-net training and kmodel compile (nncase) |
 
 **Nothing builds from here** (user, 2026-10-31: the attic is fully decoupled). The K230 test image carries its own
-copy of the programs the tests ran (tools/test-standard/k230_apps, installed by build_test_image.sh); docs that name
+copy of the programs the tests ran (tests/firmware/k230_apps, installed by build_test_image.sh); docs that name
 files here only say where the old code was.
 
 What stayed in firmware/: everything the tests build from - the BL616 modules the test firmware compiles (wifi_link,

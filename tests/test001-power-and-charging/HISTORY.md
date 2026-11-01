@@ -66,7 +66,7 @@ set to ~0.89 A (ISET R7 1 k), 1.0 A input limit (ILIM R5 1.5 k), 6.3 h timer (TM
 
 ### Battery only, 2026-10-17
 
-The cell on JB1 (3.9 V), USB unplugged. Wiring: [hookup_battery.png](../../tools/power-bringup/hookup_battery.png);
+The cell on JB1 (3.9 V), USB unplugged. Wiring: [hookup_battery.png](hookup_battery.png);
 probe points: [battery_only.png](battery_only.png).
 
 | # | Rail | Measured | Limit | |

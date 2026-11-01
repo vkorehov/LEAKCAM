@@ -40,13 +40,13 @@ from mem_leak import leak_verdict   # noqa: E402
 
 KDIMG = os.path.expanduser("~/k230_rtos_sdk/output/k230d_rtos_leakcam_defconfig/"
                            "LEAKCAM_K230D_rtsmart_local_nncase_v2.11.0.kdimg")
-BL616_BIN = glob.glob(os.path.join(REPO, "tools/power-bringup/bl616_powertest/build/build_out/bl616_powertest_bl616.bin"))
+BL616_BIN = glob.glob(os.path.join(REPO, "tests/firmware/bl616_powertest/build/build_out/bl616_powertest_bl616.bin"))
 METER_FIFO = os.path.expanduser("~/.leakcam_meter")
 METER_WAIT_S = 600
 METER_CACHE = os.path.expanduser("~/.leakcam_meter_cache.json")
-BAT_FULL_SCALE_MV = 5329          # test023 calibration (tools/test-standard/k230_apps/leakcam_agent.c)
+BAT_FULL_SCALE_MV = 5329          # test023 calibration (tests/firmware/k230_apps/leakcam_agent.c)
 # the flags of the builds on the board (2026-10-25): ~/k230_rtos_sdk rtconfig.py (LEAKCAM: kernel opt),
-# tools/test-standard/k230_apps/rtsmart/Makefile (LEAKCAM_OPT), bouffalo_sdk cmake/compiler_flags.cmake (no
+# tests/firmware/k230_apps/rtsmart/Makefile (LEAKCAM_OPT), bouffalo_sdk cmake/compiler_flags.cmake (no
 # CONFIG_GCC_OPTIMISE_LEVEL in the test firmware's defconfig)
 FLAGS = ("K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os -march=rv64imafdcv, sections + "
          "--gc-sections, strip, no LTO; BL616 test firmware -Os -g (SDK Kconfig default), no LTO")

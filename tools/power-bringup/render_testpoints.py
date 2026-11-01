@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Draw the power bring-up probe points on the MIFA board, from the fab ODB++.
 
-  python3 render_testpoints.py [MIFA.tgz | git revision]   -> top.png, top_power_zoom.png,
-      hookup_top.png, hookup_bottom.png, hookup_battery.png, hookup_debug.png, led_wiring.png next to this
-      script, each test's probe sheets in its tests/testNNN/ folder, and bugs/bug-001/workaround_47k.png
+  python3 render_testpoints.py [MIFA.tgz | git revision]   -> every picture into the test or
+      bug folder that uses it (no images under tools/): test001 top.png, top_power_zoom.png, hookup_top.png,
+      hookup_battery.png; test002 hookup_bottom.png, hookup_debug.png; test009 led_wiring.png; each test's probe sheets, and bugs/bug-001/workaround_47k.png
 
 Reads "Project Outputs for LEAKCAM/MIFA.tgz" as committed in the fab package of the ordered board
 (git 11a6a38, rev 1; the working tree may already hold later layout changes) by default, checks
@@ -25,6 +25,8 @@ from PIL import Image, ImageDraw, ImageFont
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
 TESTS = os.path.join(REPO, "tests")                  # per-test sheets go into their test folder
+# the wiring sheets go to the test that wires that side first: battery + NTC (top), the PR1 cable (bottom)
+HOOKUP_TEST = {"top": "test001-power-and-charging", "bottom": "test002-bl616-flash-and-console"}
 FAB_REV = "11a6a38"              # fab package of rev 1 (ordered 2026-09-29)
 ODB_PATH = "Project Outputs for LEAKCAM/MIFA.tgz"
 PX = 22.0                       # pixels per mm
@@ -547,17 +549,17 @@ def main():
                 bad.append(f"{p['id']} {p['rail']}: {p[key]} is on {got}, expected {want}")
     if bad:
         raise SystemExit("probe table does not match the board:\n  " + "\n  ".join(bad))
-    render(pcb, comps, points, os.path.join(HERE, "top.png"))
-    render(pcb, comps, points, os.path.join(HERE, "top_power_zoom.png"), region=(43.0, 60.5, 24.0, 49.0),
+    render(pcb, comps, points, os.path.join(TESTS, "test001-power-and-charging", "top.png"))
+    render(pcb, comps, points, os.path.join(TESTS, "test001-power-and-charging", "top_power_zoom.png"), region=(43.0, 60.5, 24.0, 49.0),
            px=55.0, label=", power corner (zoom)")
     for side in ("top", "bottom"):
-        render_hookup(pcb, comps, side, os.path.join(HERE, f"hookup_{side}.png"))
+        render_hookup(pcb, comps, side, os.path.join(TESTS, HOOKUP_TEST[side], f"hookup_{side}.png"))
     # the battery and NTC corner of hookup_top.png, enlarged: the sheet printed for wiring the cells
-    Image.open(os.path.join(HERE, "hookup_top.png")).crop((1560, 740, 2320, 1360)).resize((1520, 1240)).save(
-        os.path.join(HERE, "hookup_battery.png"))
+    Image.open(os.path.join(TESTS, "test001-power-and-charging", "hookup_top.png")).crop((1560, 740, 2320, 1360)).resize((1520, 1240)).save(
+        os.path.join(TESTS, "test001-power-and-charging", "hookup_battery.png"))
     # the PR1 corner of hookup_bottom.png with the USB cable, enlarged: the sheet printed for wiring the debug cable
-    Image.open(os.path.join(HERE, "hookup_bottom.png")).crop((820, 360, 2290, 790)).resize((2058, 602)).save(
-        os.path.join(HERE, "hookup_debug.png"))
+    Image.open(os.path.join(TESTS, "test002-bl616-flash-and-console", "hookup_bottom.png")).crop((820, 360, 2290, 790)).resize((2058, 602)).save(
+        os.path.join(TESTS, "test002-bl616-flash-and-console", "hookup_debug.png"))
     by_id = {p["id"]: p for p in points}
     render_points_sheet(pcb, comps, [by_id[i] for i in (2, 3, 4)], os.path.join(TESTS, "test001-power-and-charging", "battery_only.png"),
                         (49.0, 60.5, 28.0, 40.0), 80.0, ", battery only (no USB): 3 points",
@@ -660,7 +662,7 @@ def main():
                         ("Remove D3 (PRTR5V0U2F, SOT886, near USBC2) with hot air. Bridge pad 1 to pad 6 (D+) and pad 3 to pad 4 (D-).",
                          "Leave pad 5 (VUSB) and pad 2 (GND) bare. Check: no short between the bridges, D+/D- not to VUSB/GND.",
                          "Then rails on, no USB cable: VUSB (C2 pad 1) ~0 V instead of ~2.2 V. The debug USB loses its ESD clamp."))
-    render_led_wiring(pcb, comps, os.path.join(HERE, "led_wiring.png"))
+    render_led_wiring(pcb, comps, os.path.join(TESTS, "test009-led-chains", "led_wiring.png"))
     # test023 battery ADC: the K230 reads VBAT (C15) through R59/R61; BAT (C11) is the cell
     adc = [{"id": "VBAT", "rail": "VBAT (what the ADC reads)", "pad": "C15.1", "gnd": "C15.2", "side": "top"},
            {"id": "BAT", "rail": "BAT (the cell)", "pad": "C11.1", "gnd": "C11.2", "side": "top"}]

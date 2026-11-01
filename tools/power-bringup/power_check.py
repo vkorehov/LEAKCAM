@@ -7,7 +7,7 @@
   python3 power_check.py battery   battery on JB1, no USB: BAT, VBAT, 3V3_SLEEP up, the K230 rails off
   python3 power_check.py all       the four phases in order, stopping at the first failure
 
-For each point it names the pads to probe (see top.png / top_power_zoom.png, numbers match),
+For each point it names the pads to probe (see tests/test001-power-and-charging/top.png / top_power_zoom.png, numbers match),
 reads the value you type, checks it against testpoints.json and appends it to
 power_check_<board>.csv in the current directory. Type s to skip a point, q to stop.
 A failing reading stops the phase: a wrong rail can damage the K230, find the cause first.

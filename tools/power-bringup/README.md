@@ -1,14 +1,14 @@
 # Bring-up tools: MIFA rev 1
 
 The tools for the first power-on of a new board: what to solder by hand, how to wire the debug
-port, the rail checks with a multimeter, and a small BL616 test firmware. Test records, readings and
+port and the rail checks with a multimeter (the BL616 test firmware: [tests/firmware](../../tests/firmware/README.md)). Test records, readings and
 results: [tests/](../../tests/README.md).
 
 **Order**
 
 1. Rail-to-GND resistance, power off (`power_check.py off`). Nothing soldered yet.
 2. USB on USB-C 1, BL616 still blank (`power_check.py blank`): only VBAT and 3V3_SLEEP may be up.
-3. Wire the debug port PR1, flash the test firmware ([bl616_powertest/](bl616_powertest)), switch
+3. Wire the debug port PR1, flash the test firmware ([tests/firmware/bl616_powertest](../../tests/firmware/bl616_powertest)), switch
    the K230 rails on from its console and measure them (`power_check.py flashed`).
 4. Solder the battery, thermistor, leak connectors and LED strips; check each with the test firmware.
 5. Flash the product firmware ([firmware/BUILD.md](../../firmware/BUILD.md)).
@@ -25,7 +25,7 @@ points are on the **top** side (the regulators are on the bottom, their output c
 
 | Full top side | Power corner (zoom) |
 |---|---|
-| ![top](top.png) | ![zoom](top_power_zoom.png) |
+| ![top](../../tests/test001-power-and-charging/top.png) | ![zoom](../../tests/test001-power-and-charging/top_power_zoom.png) |
 
 ### Power tree
 
@@ -81,9 +81,9 @@ what confirms or rules that out.
 
 ## 2. Debug port PR1 (bottom side)
 
-![bottom side wiring](hookup_bottom.png)
+![bottom side wiring](../../tests/test002-bl616-flash-and-console/hookup_bottom.png)
 
-![PR1 debug cable, zoom](hookup_debug.png)
+![PR1 debug cable, zoom](../../tests/test002-bl616-flash-and-console/hookup_debug.png)
 
 PR1 is the BL616's own USB: no USB-serial bridge is needed, a USB cable is soldered to the pads.
 Cut a USB-A cable, solder **green D+ to pad 1, white D- to pad 2, black GND to pad 3**. Cut the red
@@ -105,62 +105,11 @@ USB-C to USB-A adapter or a hub on the computer side does this itself. On macOS 
 
 ## 3. BL616 test firmware
 
-[bl616_powertest/](bl616_powertest): switches the K230 rails and tests the BL616-side hardware
-from the PR1 console. Not the product firmware; flash that afterwards.
-
-```
-cd bl616_powertest
-make                              # arm64 host: builds in the K230 build container by itself
-make flash                        # running firmware -> ROM, flashes, boots it, waits for the console
-```
-
-On an arm64 host the RISC-V toolchain (x86-64 only) runs in the `k230-rtos-sdk-build:arm64-x86tc`
-container from [firmware/BUILD.md](../../firmware/BUILD.md) section 2.2, which `make` starts; the
-SDK sits next to LEAKCAM (`~/k230d-hw/bouffalo_sdk`). `make flash` runs in the same container with the
-x86-64 `BLFlashCommand-ubuntu` (the SDK's `BLFlashCommand-arm` is 32-bit armhf and does not start on an arm64-only
-host). Port permissions: install [99-leakcam.rules](99-leakcam.rules) in /etc/udev/rules.d (all four board USB devices, every re-plug).
-
-Rails start **off**; nothing switches until you type. Commands:
-
-| Command | Does | Expect |
-|---|---|---|
-| `pt_status` | everything at a glance (printed when the console opens) | |
-| `pt_mon [on\|off]` | one status line per second | |
-| `pt_on` | K230 rails on, K230 held in reset, 3V3 ramp timed | `OK: 3V3 up ~3 ms`; then measure with `power_check.py flashed` |
-| `pt_off` | rails off, 3V3 discharge timed | `OK: 3V3 gone 56-82 ms` |
-| `pt_run` / `pt_hold` | release / hold the K230 reset | blank NAND: the K230 ROM enumerates on USB-C 1 as `29f1:0230` (all four K230 rails good) |
-| `pt_cycle [n]` | n power cycles with min/max timing | |
-| `pt_uart on\|off\|send <text>` | UART0 = the K230 link (IO21 TX, IO22 RX, 115200 8N1): one message per second, received bytes echoed | only while 3V3 is up |
-| `pt_i2c [scan]` | AHT20 humidity/temperature, or a scan of I2C0 | `0x38` |
-| `pt_usb` | USB cable on USB-C 1 (BQ24072 PGOOD); plug/unplug is reported live | |
-| `pt_leak` | leak node (IO20, ADC) and the resistance across S1..S3 | dry ~1650 mV; a 100k across S1 reads ~100 kohm |
-| `pt_sdio watch [s]` / `drive <hex>` / `park` | SDIO lines to K230 MMC0: edge counts while the K230 probes; CMD/D0-D3 driven (bit 0 CMD .. bit 4 D3, rails on only) for the K230 to read | CLK and CMD toggle; every pattern read back (tests/test014) |
-
-The BL616 sees the switched 3V3 through the SDIO pull-ups (read as inputs only, never driven);
-0V8 is implied (3V3's regulator is enabled by 0V8's power-good); 1V8 and 1V1 need the multimeter
-or `pt_run`. Each test can be left out: set it to 0 in
-[tests.h](bl616_powertest/tests.h) and rebuild.
-
-### K230 hello (no NAND needed)
-
-[k230_hello/](k230_hello): 0.8 KB of bare-metal RISC-V that the boot ROM loads into SRAM over USB-C 1 and runs:
-a status line per second on the K230 console (the BL616's `/dev/ttyACM1`; before 2026-10-22 USB-C 2 `/dev/ttyUSB0`) and a heartbeat on K230_ALIVE.
-For checking a board's K230 before the NAND holds anything.
-
-```
-cd k230_hello
-make                 # builds in the K230 build container
-make run             # K230 in USB boot mode (29f1:0230; after pt_on + pt_run on a blank NAND)
-```
-
-In this state UART0 register reads return 0 (writes work), so the program paces characters by time rather
-than polling THRE. The flasher (`k230_flash_cli`) is x86-64 only; `make run` runs it in the build container
-with `timeout` inside the container: a `timeout` around `docker run` only kills the client and leaves the
-container holding the K230's USB.
+The test firmware and the K230 hello program are in [tests/firmware](../../tests/firmware/README.md).
 
 ## 4. Hand-soldered parts
 
-![top side wiring](hookup_top.png)
+![top side wiring](../../tests/test001-power-and-charging/hookup_top.png)
 
 The bottom side (PR1 cable, leak probes, camera 2) is the picture in section 2.
 
@@ -183,7 +132,7 @@ The four strips (A..D, cut from the panel) carry 2 white + 2 IR LEDs each. **Eac
 series chain through all four strips**: 8 white LEDs on J1 (about 22 V from U14) and 8 IR LEDs on
 J2 (about 11 V from U15). Twist each go/return pair.
 
-![LED strip wiring](led_wiring.png)
+![LED strip wiring](../../tests/test009-led-chains/led_wiring.png)
 
 The wires, numbered in soldering order (made to print in black and white: white chain solid, IR dashed).
 
@@ -203,9 +152,8 @@ The wires, numbered in soldering order (made to print in black and white: white 
 
 - `testpoints.json`: probe pads and limits per phase
 - `power_check.py`: the interactive multimeter check, writes the CSV log
-- `render_testpoints.py`: redraws the pictures here: probe points (`top.png`, `top_power_zoom.png`), wiring
-  (`hookup_top.png`, `hookup_bottom.png`, `hookup_battery.png`, `hookup_debug.png`, `led_wiring.png`), and each
-  test's probe sheets into its `tests/testNNN-*/` folder, from the ODB++ of the ordered board (git `11a6a38`);
+- `render_testpoints.py`: redraws the pictures into the tests that use them (no images under tools/): probe points
+  and battery wiring (`top.png`, `top_power_zoom.png`, `hookup_top.png`, `hookup_battery.png`) in test001, the PR1
+  wiring (`hookup_bottom.png`, `hookup_debug.png`) in test002, `led_wiring.png` in test009, and each test's probe
+  sheets into its `tests/testNNN-*/` folder, from the ODB++ of the ordered board (git `11a6a38`);
   it refuses to draw if a probe pad is not on the net the table says
-- `bl616_powertest/`: the BL616 test firmware
-- `k230_hello/`: bare-metal K230 check from SRAM (no NAND needed)

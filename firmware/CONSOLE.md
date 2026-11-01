@@ -48,9 +48,9 @@ Only the K230 BootROM's own lines (errors, USB boot) stay on UART0 = CH340X: it 
 | `firmware/bl616/k230_linesplit.h` | the splitter, shared by both BL616 firmwares and copied into the K230 kernel driver |
 | `attic/firmware/bl616/test/test_linesplit.c` | host test: frames, text, `$` in text, bad CRC, a restarting candidate, over-long lines, in every chunking |
 | `firmware/bl616/usb_console2.c`, `.h` | the two-port USB console (a copy of the SDK's `bsp/common/usb_app/usb_console.c`, SDK 2.3.35, with a second CDC ACM port: EP 0x81/0x02/0x86; strings 4/5 name the ports); `usb_k230_write()` to the host, `usb_k230_rx()` (weak) from it |
-| `attic/firmware/bl616/CMakeLists.txt`, `tools/power-bringup/bl616_powertest/CMakeLists.txt` | swap the SDK's `usb_console.c` for `usb_console2.c` (see 3.1) |
+| `attic/firmware/bl616/CMakeLists.txt`, `tests/firmware/bl616_powertest/CMakeLists.txt` | swap the SDK's `usb_console.c` for `usb_console2.c` (see 3.1) |
 | `attic/firmware/bl616/k230_link.c` (product) | `link_poll()` feeds the splitter: frames to `parse()`/`accept()`, text to `usb_k230_write()` |
-| `tools/power-bringup/bl616_powertest/main.c` (test firmware) | `uart_bridge_task`: UART0 polled (as test018's echo, no byte lost at 4 Mbaud) into the splitter, text to port 1, frames printed as `link rx:`; `usb_k230_rx()` sends what is typed on ACM1 to UART0; the bridge starts by itself whenever the rails come up (`rails_on_timed()`); DTR (`console_open`) counts only port 0 |
+| `tests/firmware/bl616_powertest/main.c` (test firmware) | `uart_bridge_task`: UART0 polled (as test018's echo, no byte lost at 4 Mbaud) into the splitter, text to port 1, frames printed as `link rx:`; `usb_k230_rx()` sends what is typed on ACM1 to UART0; the bridge starts by itself whenever the rails come up (`rails_on_timed()`); DTR (`console_open`) counts only port 0 |
 | `firmware/k230_board/rtsmart/drivers/link_mux/link_mux.c`, `Kconfig`, `SConscript` | the K230 kernel driver (see 4) |
 | `attic/firmware/k230_agent/leakcam_agent.c` | opens `/dev/link` instead of `/dev/uart1` (the `-u` option is gone) |
 | `firmware/k230_board/rtsmart/configs/k230d_leakcam_defconfig` | `CONFIG_RT_CONSOLE_DEVICE_NAME="uart1"`, `CONFIG_RT_USING_LINK_MUX=y` |

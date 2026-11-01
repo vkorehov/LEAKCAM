@@ -60,7 +60,7 @@ if not os.path.exists(BL_PORT):
 PRODUCT = product()
 log("BL616 firmware:", "product (firmware/bl616)" if PRODUCT else "test (bl616_powertest)")
 if not PRODUCT and "pt_ble" not in bl("help", 2):
-    r.obstacle("the BL616 test firmware on the board has no pt_ble: flash tools/power-bringup/bl616_powertest")
+    r.obstacle("the BL616 test firmware on the board has no pt_ble: flash tests/firmware/bl616_powertest")
     r.finish("not run: no pt_ble in the BL616 firmware.", False)
     sys.exit(1)
 why = ready(r.notes)
