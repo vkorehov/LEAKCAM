@@ -10,6 +10,10 @@ first product firmware is in attic/firmware (reference only, not built).
 |---|---|---|---|
 | 1 | Wi-Fi provisioning from the phone: with USB power the BL616 advertises the provisioning service; the LEAKCAM Setup app sends a network; the BL616 checks it (join, address, internet) and stores it. No USB, no BLE. | tests/test040, tests/test106 | provision.c, ble_pairing.c, wifi_check.c, wifi_link.c, usb_power.c |
 
+| 2 | More than one LEAKCAM: one device ID (the factory MAC) as USB serial number, in the BLE scan response (with a flag: a network is stored) and in every server check-in; from boot, on USB and on battery, the board checks in at the presence server every poll interval (the server's, 60 s by default) whenever a network is stored, never during a BLE connection. The app opens on a status screen (its LEAKCAMs online/offline from the server, deletable), sets up only a board on USB power, gives a known one the short "change Wi-Fi" flow, and stores no Wi-Fi network. On battery the board stays awake between check-ins until the HBN scheduler (test108). | tests/test111 | device_id.c, presence.c, wifi_check.c (target + one run at a time), ble_pairing.c (scan response) |
+
+The presence server is server/ (Go), on the Pi as the systemd unit leakcam-server (`server/deploy.sh`).
+
 Always: the K230 is held off (k230_power.c), the watchdog and the `isp` entry (wdg_guard.c), the crash recorder
 (crash_rec.c), memory statistics (mem_stat.c), the two-port USB console (usb_console2.c).
 
@@ -30,6 +34,7 @@ whole SDK (about 10 min); other changes build incrementally.
 |---|---|
 | `prov` | USB power, the stored network as length + CRC-32 (never the passphrase) |
 | `prov erase` | delete the stored network and the remembered AP |
+| `presence` | the device ID, the server, the poll interval and the last check-in's state |
 | `crash` / `crash clear` | the last crash record (exception, hang, assert, overflow, malloc) with its backtrace |
 | `mem` | heap free / lowest / blocks: the leak check of every repeated operation |
 | `isp` | watchdog off, USB detach, into the ROM for flashing |

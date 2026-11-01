@@ -20,6 +20,7 @@
 #include "easyflash.h"
 #include "log.h"
 
+#include "device_id.h"
 #include "usb_power.h"
 #include "wifi_check.h"
 #include "wifi_link.h"
@@ -113,8 +114,7 @@ static void check_task(void *arg)
         vTaskDelay(pdMS_TO_TICKS(10));
     memcpy(s, ssid, sizeof(s));
     memcpy(k, psk, sizeof(k));
-    enum wifi_check_state st = wifi_check_run(s, strlen(s), k, strlen(k), progress, &detail);
-    wifi_link_release(WIFI_OWNER_CHECK);
+    enum wifi_check_state st = wifi_check_run(s, strlen(s), k, strlen(k), &wifi_check_probe, progress, &detail);
     if (st != WCHK_INTERNET)
         set_status(st, detail);
     else                                 /* also with the phone gone: it reconnects and reads STATUS (tests/test110) */
@@ -139,10 +139,7 @@ static ssize_t commit_write(struct bt_conn *conn, const struct bt_gatt_attr *att
         store(ssid, psk);
         return len;
     }
-    /* the check blocks for up to a minute: its own task, never the BLE host's. The radio is always granted (BLE
-     * first): a K230 session using it hears a link loss and gets it back after the check */
-    if (!wifi_link_claim(WIFI_OWNER_CHECK))
-        vAssertCalled();
+    /* the check blocks for up to a minute: its own task, never the BLE host's (wifi_check_run claims the radio) */
     checking = true;
     set_status(WCHK_JOINING, 0);         /* a STATUS read after this write's answer is this check's */
     if (xTaskCreate(check_task, "wchk", 1536, NULL, 3, NULL) != pdPASS)
@@ -236,16 +233,27 @@ static void adv_start(void)
 {
     /* local, as in the SDK example: BT_DATA_BYTES builds compound literals, and bt_le_adv_start()
      * copies the payload into the controller before returning */
+    /* manufacturer data, company 0xFFFF (none): the device ID (device_id.c) and a flags byte (bit 0: a Wi-Fi network
+     * is stored). The app tells a LEAKCAM it set up before from a new one and shows a stored network as hidden,
+     * without connecting. In the scan response with the name (11 + 14 bytes): the advertisement is full (21 + 10) */
+    uint8_t mfg[9] = { 0xFF, 0xFF };
+    size_t saved = 0;
+    device_id_bytes(&mfg[2]);
+    (void)ef_get_env_blob("wifi_ssid", NULL, 0, &saved);   /* only the length: 0 when none is stored */
+    mfg[8] = saved ? 0x01 : 0x00;
     struct bt_data ad[] = {
         BT_DATA_BYTES(BT_DATA_FLAGS, BT_LE_AD_NO_BREDR | BT_LE_AD_GENERAL),
         BT_DATA_BYTES(BT_DATA_UUID128_ALL, LEAKCAM_UUID_BYTES(0x000000000001)),
+    };
+    struct bt_data sd[] = {
+        BT_DATA(BT_DATA_MANUFACTURER_DATA, mfg, sizeof(mfg)),
     };
     struct bt_le_adv_param param;
     memset(&param, 0, sizeof(param));
     param.interval_min = BT_GAP_ADV_FAST_INT_MIN_2;     /* 100-150 ms: USB powered, no need to save */
     param.interval_max = BT_GAP_ADV_FAST_INT_MAX_2;
     param.options = BT_LE_ADV_OPT_CONNECTABLE | BT_LE_ADV_OPT_USE_NAME;
-    if (bt_le_adv_start(&param, ad, ARRAY_SIZE(ad), NULL, 0))
+    if (bt_le_adv_start(&param, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd)))
         vAssertCalled();                 /* not advertising: the board could never be set up */
 }
 
@@ -329,6 +337,11 @@ void ble_pairing_start(void)
     if (bt_enable(on_bt_ready))
         vAssertCalled();
     wl_trace(0x73);
+}
+
+bool ble_pairing_connected(void)
+{
+    return active_conn != NULL;
 }
 
 void ble_pairing_stop(void)

@@ -8,7 +8,8 @@ find_package(bouffalo_sdk REQUIRED HINTS $ENV{BL_SDK_BASE})
 get_target_property(_app_sources app SOURCES)
 list(FILTER _app_sources EXCLUDE REGEX "usb_app/usb_console\\.c$")
 set_property(TARGET app PROPERTY SOURCES ${_app_sources})
-target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/usb_console2.c)
+target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/usb_console2.c
+                           ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/device_id.c)
 target_include_directories(app PRIVATE ${BL_SDK_BASE}/bsp/common/usb_app)
 
 

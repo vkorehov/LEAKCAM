@@ -1,57 +1,57 @@
-09:21:07 test040-ble-wifi-credentials: 0 metric rows MISSING: none
-09:21:19 sample start {'board': 29.3, 'bl_mem': (166784, 164004, 164044, 19, 36048, 7, 0)}
-09:21:19 CHECK pass BLE started (pt_ble on) 
-09:21:21 CHECK pass advertises on USB power LEAKCAM-B14A rssi -30 after 2.5 s
-09:21:48 CHECK pass no write succeeds after a cancelled pairing [-1, -1]
-09:21:51 CHECK pass nothing stored without pairing 
-09:22:00 CHECK pass paired (Just Works on USB power) bonded after 'Устан. сопряж.'+'Устан. сопряж.', MTU 247
-09:22:00 CHECK pass ssid 32 bytes accepted GATT 0
-09:22:00 CHECK pass ssid 33 bytes refused GATT 13
-09:22:00 CHECK pass psk 7 bytes refused GATT 13
-09:22:00 CHECK pass psk 64 bytes refused GATT 13
-09:22:00 CHECK pass psk 8 bytes accepted GATT 0
-09:22:00 CHECK pass psk 63 bytes accepted GATT 0
-09:22:00 CHECK pass commit 1 bytes refused GATT 13
-09:22:00 CHECK pass commit 2 bytes refused GATT 13
-09:22:06 CHECK pass commit without an SSID refused GATT 13
-09:22:08 CHECK pass commit without an SSID stores nothing 
-09:22:14 CHECK pass offset (long) write refused GATT 6
-09:22:18 CHECK pass store unchecked 32/63 bytes: SAVED [4]
-09:22:20 CHECK pass stored exactly 32/63 bytes 
-09:22:23 CHECK pass store unchecked 6/8 bytes: SAVED [4]
-09:22:25 CHECK pass stored exactly 6/8 bytes 
-09:22:37 CHECK pass BLE started again after HBN sleep and wake 
-09:22:50 CHECK pass kept over HBN sleep and wake 
-09:23:12 CHECK pass BLE started again after a watchdog reset 
-09:23:25 CHECK pass kept over a watchdog reset 
-09:23:33 CHECK pass check, wrong passphrase: 0x11 [1, 17]
-09:23:35 CHECK pass check, wrong passphrase: old credentials kept 
-09:23:42 CHECK pass check, unknown SSID: 0x10 [1, 16]
-09:23:44 CHECK pass check, unknown SSID: old credentials kept 
-09:23:53 CHECK pass check with the link dropped: the board finishes and stores [1, 2, 3, 4]
-09:23:58 CHECK pass checked store: JOINING -> ADDRESS -> INTERNET -> SAVED [1, 2, 3, 4]
-09:23:58 CHECK pass a second commit during the check starts no second check 
-09:24:00 CHECK pass checked store: the real network stored 
-09:24:04 CHECK pass session: the bridge on the stored network 
-09:24:13 CHECK pass check during a session runs (BLE first): WRONG_PASSWORD [1, 17]
-09:24:15 CHECK pass check during a session: old credentials kept 
-09:24:15 CHECK pass check during a session: the session rejoins 0.1 s after the result
-09:24:19 CHECK pass checked store during a session: SAVED [1, 2, 3, 4]
-09:24:19 CHECK pass checked store during a session: the session restarts on the network 0.1 s after SAVED
-09:24:23 CHECK pass store 0x02 during a session: SAVED [4]
-09:24:23 CHECK pass store 0x02 during a session: the session restarts on the new network (gone from the old one) 
-09:24:45 CHECK pass the real network stored again after a failed join: the session restarts on it 4.0 s
-09:24:48 CHECK pass password changed: the session restarts on the old one and fails 
-09:25:14 CHECK pass password changed: the check of the new one during the retries passes [1, 2, 3, 4]
-09:25:19 CHECK pass password changed: the session back on the network 4.7 s after SAVED
-09:25:30 sample cycle 1 {'board': 29.4, 'bl_mem': (97760, 86580, 82592, 170, 104376, 20, 0)}
-09:25:39 sample cycle 2 {'board': 29.4, 'bl_mem': (97760, 86580, 82592, 170, 104376, 20, 0)}
-09:25:48 sample cycle 3 {'board': 29.4, 'bl_mem': (97760, 86580, 82592, 170, 104376, 20, 0)}
-09:25:57 sample cycle 4 {'board': 29.4, 'bl_mem': (97760, 86580, 82592, 170, 104376, 20, 0)}
-09:26:07 sample cycle 5 {'board': 29.4, 'bl_mem': (97760, 86580, 82592, 170, 104376, 20, 0)}
-09:26:16 sample cycle 6 {'board': 29.4, 'bl_mem': (97768, 86580, 82592, 170, 104364, 20, 0)}
-09:26:26 sample cycle 7 {'board': 29.4, 'bl_mem': (97768, 86580, 82592, 170, 104364, 20, 0)}
-09:26:35 sample cycle 8 {'board': 29.4, 'bl_mem': (97768, 86580, 82592, 170, 104364, 20, 0)}
-09:26:35 CHECK pass 8 store cycles 0 failed
-09:26:40 CHECK pass the real network stored again at the end 
-09:26:44 test040-ble-wifi-credentials: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+11:27:16 test040-ble-wifi-credentials: 0 metric rows MISSING: none
+11:27:28 sample start {'board': 27.6, 'bl_mem': (166640, 163876, 163900, 19, 36048, 7, 0)}
+11:27:28 CHECK pass BLE started (pt_ble on) 
+11:27:30 CHECK pass advertises on USB power LEAKCAM-B14A rssi -35 after 2.3 s
+11:27:57 CHECK pass no write succeeds after a cancelled pairing [-1, -1]
+11:28:02 CHECK pass nothing stored without pairing 
+11:28:11 CHECK pass paired (Just Works on USB power) bonded after 'Устан. сопряж.'+'Устан. сопряж.', MTU 247
+11:28:11 CHECK pass ssid 32 bytes accepted GATT 0
+11:28:11 CHECK pass ssid 33 bytes refused GATT 13
+11:28:11 CHECK pass psk 7 bytes refused GATT 13
+11:28:11 CHECK pass psk 64 bytes refused GATT 13
+11:28:11 CHECK pass psk 8 bytes accepted GATT 0
+11:28:11 CHECK pass psk 63 bytes accepted GATT 0
+11:28:11 CHECK pass commit 1 bytes refused GATT 13
+11:28:11 CHECK pass commit 2 bytes refused GATT 13
+11:28:18 CHECK pass commit without an SSID refused GATT 13
+11:28:22 CHECK pass commit without an SSID stores nothing 
+11:28:28 CHECK pass offset (long) write refused GATT 6
+11:28:31 CHECK pass store unchecked 32/63 bytes: SAVED [4]
+11:28:36 CHECK pass stored exactly 32/63 bytes 
+11:28:39 CHECK pass store unchecked 6/8 bytes: SAVED [4]
+11:28:43 CHECK pass stored exactly 6/8 bytes 
+11:28:55 CHECK pass BLE started again after HBN sleep and wake 
+11:29:10 CHECK pass kept over HBN sleep and wake 
+11:29:31 CHECK pass BLE started again after a watchdog reset 
+11:29:47 CHECK pass kept over a watchdog reset 
+11:29:55 CHECK pass check, wrong passphrase: 0x11 [1, 17]
+11:29:59 CHECK pass check, wrong passphrase: old credentials kept 
+11:30:06 CHECK pass check, unknown SSID: 0x10 [1, 16]
+11:30:10 CHECK pass check, unknown SSID: old credentials kept 
+11:30:23 CHECK pass check with the link dropped: the board finishes and stores [1, 2, 3, 4]
+11:30:27 CHECK pass checked store: JOINING -> ADDRESS -> INTERNET -> SAVED [1, 2, 3, 4]
+11:30:27 CHECK pass a second commit during the check starts no second check 
+11:30:31 CHECK pass checked store: the real network stored 
+11:30:36 CHECK pass session: the bridge on the stored network 
+11:30:44 CHECK pass check during a session runs (BLE first): WRONG_PASSWORD [1, 17]
+11:30:48 CHECK pass check during a session: old credentials kept 
+11:30:48 CHECK pass check during a session: the session rejoins 0.1 s after the result
+11:30:53 CHECK pass checked store during a session: SAVED [1, 2, 3, 4]
+11:30:53 CHECK pass checked store during a session: the session restarts on the network 0.1 s after SAVED
+11:30:56 CHECK pass store 0x02 during a session: SAVED [4]
+11:30:56 CHECK pass store 0x02 during a session: the session restarts on the new network (gone from the old one) 
+11:31:19 CHECK pass the real network stored again after a failed join: the session restarts on it 3.4 s
+11:31:22 CHECK pass password changed: the session restarts on the old one and fails 
+11:31:48 CHECK pass password changed: the check of the new one during the retries passes [1, 2, 3, 4]
+11:31:53 CHECK pass password changed: the session back on the network 4.7 s after SAVED
+11:32:05 sample cycle 1 {'board': 28.6, 'bl_mem': (97652, 85736, 82452, 169, 104344, 20, 0)}
+11:32:17 sample cycle 2 {'board': 28.6, 'bl_mem': (97652, 85736, 82452, 169, 104344, 20, 0)}
+11:32:28 sample cycle 3 {'board': 28.7, 'bl_mem': (97652, 85736, 82452, 169, 104344, 20, 0)}
+11:32:39 sample cycle 4 {'board': 28.7, 'bl_mem': (97652, 85736, 82452, 169, 104344, 20, 0)}
+11:32:50 sample cycle 5 {'board': 28.7, 'bl_mem': (97652, 85736, 82452, 169, 104344, 20, 0)}
+11:33:01 sample cycle 6 {'board': 28.7, 'bl_mem': (97652, 85736, 82452, 169, 104344, 20, 0)}
+11:33:13 sample cycle 7 {'board': 28.7, 'bl_mem': (97652, 85736, 82452, 169, 104344, 20, 0)}
+11:33:24 sample cycle 8 {'board': 28.7, 'bl_mem': (97652, 85736, 82452, 169, 104344, 20, 0)}
+11:33:24 CHECK pass 8 store cycles 0 failed
+11:33:31 CHECK pass the real network stored again at the end 
+11:33:35 test040-ble-wifi-credentials: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

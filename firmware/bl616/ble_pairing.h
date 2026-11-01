@@ -39,6 +39,8 @@
 void ble_pairing_start(void);
 /* Stop advertising and drop any connection (called when USB is unplugged). */
 void ble_pairing_stop(void);
+/* a phone is connected (presence.c waits: setup first) */
+bool ble_pairing_connected(void);
 /* Called after new credentials are stored, from the BLE host or the check's task (must not block). The product
  * (provision.c) drops the remembered AP; the test firmware (pt_wifi.c) also restarts its bridge. */
 void ble_credentials_stored(void);

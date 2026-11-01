@@ -47,7 +47,9 @@ import java.util.regex.Pattern
  *   op app      the setup app itself, as a user meets it (test106): opens it, Find, the network (ssid, psk: hex; empty =
  *               open), Pair, check and save, the pairing dialogs accepted; every help text with its time (the app
  *               shows the SSID, never the passphrase) until the buttons are back or secs; anyway=1: then Save
- *               without checking, where the app offers it
+ *               without checking, where the app offers it. On the status screen (LEAKCAMs remembered) it waits for
+ *               the LEAKCAM on USB power and opens its setup (setup_open) first
+ *   op delete   id: on the status screen, that LEAKCAM's Delete and the confirmation (test111)
  *
  * Values are hex so any length and byte reaches the board unchanged; the passphrase is never logged or returned.
  */
@@ -75,6 +77,7 @@ class BleOp {
                 "unpair" -> unpair()
                 "session" -> session()
                 "app" -> app()
+                "delete" -> delete()
                 else -> out.put("error", "unknown op '$op'")
             }
         } catch (e: Exception) {
@@ -219,6 +222,20 @@ class BleOp {
         }
     }
 
+    private fun delete() {
+        val ui = UiDevice.getInstance(inst)
+        val pkg = ctx.packageName
+        ctx.startActivity(ctx.packageManager.getLaunchIntentForPackage(pkg)!!.addFlags(
+            android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK))
+        val button = ui.wait(Until.findObject(By.desc("delete ${arg("id", "")}")), 10000)
+        out.put("found", button != null)
+        button?.click() ?: return
+        val ok = ui.wait(Until.findObject(By.res("android", "button1")), 5000)
+        out.put("confirmed", ok != null)
+        ok?.click()
+        SystemClock.sleep(1000)
+    }
+
     private fun app() {
         val ui = UiDevice.getInstance(inst)
         val pkg = ctx.packageName
@@ -243,7 +260,25 @@ class BleOp {
         }
         fun enabled(id: String) = safe(false) { find(id)?.isEnabled == true }
         fun busy() = !enabled("send") || !enabled("scan")
-        safe(Unit) { ui.wait(Until.findObject(By.res(pkg, "scan")), 10000)?.click() }
+        /* the status screen first when the app remembers LEAKCAMs: its button opens the setup once the board on USB
+         * power is found (test111, 2026-11-01) */
+        val shown = SystemClock.elapsedRealtime() + 5000
+        while (SystemClock.elapsedRealtime() < shown && ui.findObject(By.res(pkg, "status_panel")) == null &&
+               ui.findObject(By.res(pkg, "send")) == null)
+            SystemClock.sleep(100)
+        if (ui.findObject(By.res(pkg, "status_panel")) != null) {
+            out.put("status_screen", true)
+            /* UiAutomator's own wait for the enabled button: the scrolling find() lost it for 40 s while the list
+             * redrew (test106, 2026-11-01) */
+            val button = safe(null) { ui.wait(Until.findObject(By.res(pkg, "setup_open").enabled(true)), 40000) }
+            out.put("ms_status", ms())
+            safe(Unit) { button?.click() }
+            ui.wait(Until.findObject(By.res(pkg, "send")), 5000)
+        }
+        /* from the status screen the board is picked already: no second Find, as a user would not tap it (a second
+         * scan right after a setup missed the board once, test106 2026-11-01) */
+        if (!out.optBoolean("status_screen"))
+            safe(Unit) { ui.wait(Until.findObject(By.res(pkg, "scan")), 10000)?.click() }
         val found = SystemClock.elapsedRealtime() + 15000
         /* Send turns on at the first board (Find goes on behind it since test106's timing work) */
         while (SystemClock.elapsedRealtime() < found && !enabled("send")) { note(); SystemClock.sleep(100) }
@@ -268,8 +303,19 @@ class BleOp {
                 out.put("taps_$button", attempt + 1)
             }
             val until = SystemClock.elapsedRealtime() + arg("secs", "150").toLong() * 1000
+            var lastSeen = SystemClock.elapsedRealtime()
             while (SystemClock.elapsedRealtime() < until) {
                 note()
+                /* the phone sent the app to the background a second after pairing (Samsung, test106 2026-11-01): it
+                 * went on to Done unseen; brought back to the front, not restarted */
+                if (ui.findObject(By.pkg(pkg)) != null)
+                    lastSeen = SystemClock.elapsedRealtime()
+                else if (SystemClock.elapsedRealtime() - lastSeen > 3000 && ui.findObject(By.res("android", "button1")) == null) {
+                    out.put("brought_back", ms())
+                    ctx.startActivity(ctx.packageManager.getLaunchIntentForPackage(pkg)!!.addFlags(
+                        android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT))
+                    lastSeen = SystemClock.elapsedRealtime()
+                }
                 safe(Unit) {   /* the dialog can go between finding and pressing */
                     ui.findObject(By.res("android", "button1"))?.let { pressed.add("'${it.text}'@${ms()}"); it.click(); SystemClock.sleep(500) }
                 }

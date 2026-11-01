@@ -1,2208 +1,332 @@
-    2.949   | [0mc[0m[0mr[0m[0ma[0m[0ms[0m[0mh[0m[0m
-    2.949   | [0mcrash: no record
-    2.949   | [36mbouffalolab />[0m[0m
-    2.949   | [0m[36mbouffalolab />[0m[0mm[0m[0me[0m[0mm[0m[0m
-    2.949   | [0mmem: free 154552 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-    2.949   | [36mbouffalolab />[0m[0m
-    9.527   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-   10.456   | Disable Auto Reconnect
-   10.456   | Not connected
-   11.081   | start connecting ...
-   11.081   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-   11.086   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   11.086   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   11.086   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-   11.254   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-   11.254   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-   11.266   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-   11.266   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-   11.302   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-   11.302   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   11.302   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-   11.302   | --- OPT rxu_mgmt_ind is detected
-   11.302   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-   11.302   | rc_init: station_id=3 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-   11.302   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-   11.303   | ��No handler found for msg:1d from tsk:0 to tsk:6
-   11.307   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-   11.307   | [FU]Tx cfm ongoing--, value is 0
-   11.307   | [FL]RECV AUTH,sn:1995
-   11.307   | [FU]RECV AUTH,sn:1995
-   11.307   | [FU]Rx handler,state:5,fctl:0xb0
-   11.307   | [FU]Clear timer in auth handler
-   11.307   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-   11.312   | [FU]Tx cfm ongoing--, value is 0
-   11.312   | [FL]RECV ASSOCRSP,sn:1997
-   11.312   | [FU]RECV ASSOCRSP,sn:1997
-   11.312   | [FU]Rx handler,state:8,fctl:0x10
-   11.312   | [FU]Clear timer in assoc rsp handler
-   11.312   | sm_connect_ind sm_env.auth_retry_gap = 0
-   11.312   | [lwip] default netif: wl1
-   11.312   | [lwip] netif status callback
-   11.317   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-   11.317   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   11.317   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-   11.317   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-   11.322   | �[WPA] STA-RX-EAPOL1
-   11.322   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   11.322   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   11.327   | �[WPA] STA-TX-EAPOL2
-   11.327   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   11.327   | �[WPA] STA-RX-EAPOL3
-   11.332   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   11.332   | �[WPA] STA-TX-EAPOL4
-   11.332   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   11.332   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   11.332   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-   11.341   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-   11.341   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   11.341   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   11.341   | =================================================================
-   11.341   | [AT][RX] Connection Status
-   11.341   | [AT][RX]   status_code 0
-   11.341   | [AT][RX]   reason_code 0
-   11.341   | [AT][RX]   status detail: sm connect ind ok
-   11.341   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-   11.341   | [AT][RX]   vif_idx 1
-   11.341   | [AT][RX]   ap_idx 3
-   11.341   | [AT][RX]   ch_idx 1
-   11.341   | [AT][RX]   qos 1
-   11.341   | [AT][RX]   aid 8
-   11.341   | [AT][RX]   band 2.4G
-   11.341   | [AT][RX]   channel 11
-   11.341   | =================================================================
-   11.341   | start dhcping on vif 0 ...
-   11.359   | [32mLwIP DHCP ack (wl 1): [0m
-   11.359   | IP:192.168.1.222
-   11.359   | MASK: 255.255.255.0
-   11.359   | Gateway: 192.168.1.1
-   11.359   | [quick_connect] dhcp bind ip callback
-   11.359   | IP: 192.168.1.222
-   11.359   | MK: 255.255.255.0
-   11.359   | GW: 192.168.1.1
-   11.393   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-   11.481   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-   11.481   | Disable Auto Reconnect
-   11.481   | ��==========================  Keyram Config ========================
-   11.481   | ��  start 08 -->> end 11; nVAP 02; max 31
-   11.481   | ==========================  Keyram Dump =========================
-   11.481   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-   11.481   | ==========================  MAC Address =========================
-   11.481   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-   11.481   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-   11.486   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 365
-   11.486   | =================================================================
-   11.486   | [AT][RX] Connection Status
-   11.486   | [AT][RX]   status_code 19
-   11.486   | [AT][RX]   reason_code 0
-   11.486   | [AT][RX]   status detail: user disconnect and send deauth
-   11.486   | [AT][RX]   state detail: 0x0
-   11.486   | [AT][RX]   vif_idx 0
-   11.486   | =================================================================
-   11.486   | [lwip] default netif cleared
-   11.486   | [lwip] netif status callback
-   11.491   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-   11.491   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   11.491   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   11.491   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   11.491   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-   11.496   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-   11.496   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   11.496   | WiFi disconnect
-   11.520   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-   13.170 setup 1: 7.8 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-   13.175   | [0mm[0m[0me[0m[0mm[0m[0m
-   13.175   | [0mmem: free 154552 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-   13.175   | [36mbouffalolab />[0m[0m
-   20.342   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-   21.181   | Disable Auto Reconnect
-   21.181   | Not connected
-   21.805   | start connecting ...
-   21.805   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-   21.811   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   21.811   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   21.811   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-   21.984   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-   21.984   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-   21.995   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-   21.995   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-   22.031   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-   22.031   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   22.031   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-   22.031   | --- OPT rxu_mgmt_ind is detected
-   22.031   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-   22.031   | rc_init: station_id=0 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-   22.031   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-   22.036   | ��No handler found for msg:1d from tsk:0 to tsk:6
-   22.036   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-   22.036   | [FU]Tx cfm ongoing--, value is 0
-   22.036   | [FL]RECV AUTH,sn:2112
-   22.036   | [FU]RECV AUTH,sn:2112
-   22.036   | [FU]Rx handler,state:5,fctl:0xb0
-   22.036   | [FU]Clear timer in auth handler
-   22.036   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-   22.042   | [FU]Tx cfm ongoing--, value is 0
-   22.042   | [FL]RECV ASSOCRSP,sn:2113
-   22.042   | [FU]RECV ASSOCRSP,sn:2113
-   22.042   | [FU]Rx handler,state:8,fctl:0x10
-   22.042   | [FU]Clear timer in assoc rsp handler
-   22.042   | sm_connect_ind sm_env.auth_retry_gap = 0
-   22.042   | [lwip] default netif: wl1
-   22.042   | [lwip] netif status callback
-   22.042   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-   22.047   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   22.047   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-   22.047   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-   22.047   | �[WPA] STA-RX-EAPOL1
-   22.047   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   22.047   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   22.053   | �[WPA] STA-TX-EAPOL2
-   22.053   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   22.053   | �[WPA] STA-RX-EAPOL3
-   22.058   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   22.058   | �[WPA] STA-TX-EAPOL4
-   22.058   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   22.058   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   22.058   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-   22.058   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-   22.066   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   22.066   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   22.066   | =================================================================
-   22.066   | [AT][RX] Connection Status
-   22.066   | [AT][RX]   status_code 0
-   22.066   | [AT][RX]   reason_code 0
-   22.066   | [AT][RX]   status detail: sm connect ind ok
-   22.066   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-   22.066   | [AT][RX]   vif_idx 0
-   22.066   | [AT][RX]   ap_idx 0
-   22.066   | [AT][RX]   ch_idx 2
-   22.066   | [AT][RX]   qos 1
-   22.066   | [AT][RX]   aid 8
-   22.066   | [AT][RX]   band 2.4G
-   22.066   | [AT][RX]   channel 11
-   22.066   | =================================================================
-   22.066   | start dhcping on vif 0 ...
-   22.081   | [32mLwIP DHCP ack (wl 1): [0m
-   22.081   | IP:192.168.1.222
-   22.081   | MASK: 255.255.255.0
-   22.081   | Gateway: 192.168.1.1
-   22.081   | [quick_connect] dhcp bind ip callback
-   22.081   | IP: 192.168.1.222
-   22.081   | MK: 255.255.255.0
-   22.081   | GW: 192.168.1.1
-   22.118   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-   22.151   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-   22.151   | Disable Auto Reconnect
-   22.151   | ��==========================  Keyram Config ========================
-   22.151   | ��  start 08 -->> end 11; nVAP 02; max 31
-   22.151   | ==========================  Keyram Dump =========================
-   22.151   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-   22.151   | ==========================  MAC Address =========================
-   22.151   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-   22.151   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-   22.151   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 398
-   22.151   | =================================================================
-   22.151   | [AT][RX] Connection Status
-   22.151   | [AT][RX]   status_code 19
-   22.151   | [AT][RX]   reason_code 0
-   22.151   | [AT][RX]   status detail: user disconnect and send deauth
-   22.151   | [AT][RX]   state detail: 0x0
-   22.151   | [AT][RX]   vif_idx 0
-   22.151   | =================================================================
-   22.151   | [lwip] default netif cleared
-   22.151   | [lwip] netif status callback
-   22.156   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-   22.156   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   22.156   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   22.156   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   22.156   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-   22.156   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-   22.162   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   22.162   | WiFi disconnect
-   22.185   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-   23.991 setup 2: 7.5 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-   23.996   | [0mm[0m[0me[0m[0mm[0m[0m
-   23.996   | [0mmem: free 154552 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-   23.996   | [36mbouffalolab />[0m[0m
-   31.382   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-   32.491   | Disable Auto Reconnect
-   32.491   | Not connected
-   33.115   | start connecting ...
-   33.115   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-   33.121   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   33.121   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   33.121   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-   33.295   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-   33.295   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-   33.308   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-   33.308   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-   33.344   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-   33.345   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   33.345   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-   33.345   | --- OPT rxu_mgmt_ind is detected
-   33.345   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-   33.345   | rc_init: station_id=1 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-   33.345   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-   33.349   | ��No handler found for msg:1d from tsk:0 to tsk:6
-   33.349   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-   33.349   | [FU]Tx cfm ongoing--, value is 0
-   33.354   | [FL]RECV AUTH,sn:2242
-   33.354   | [FU]RECV AUTH,sn:2242
-   33.354   | [FU]Rx handler,state:5,fctl:0xb0
-   33.354   | [FU]Clear timer in auth handler
-   33.354   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-   33.359   | [FU]Tx cfm ongoing--, value is 0
-   33.359   | [FL]RECV ASSOCRSP,sn:2243
-   33.359   | [FU]RECV ASSOCRSP,sn:2243
-   33.359   | [FU]Rx handler,state:8,fctl:0x10
-   33.359   | [FU]Clear timer in assoc rsp handler
-   33.364   | sm_connect_ind sm_env.auth_retry_gap = 0
-   33.364   | [lwip] default netif: wl1
-   33.364   | [lwip] netif status callback
-   33.364   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-   33.364   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   33.364   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-   33.364   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-   33.364   | �[WPA] STA-RX-EAPOL1
-   33.369   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   33.369   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   33.369   | �[WPA] STA-TX-EAPOL2
-   33.369   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   33.379   | �[WPA] STA-RX-EAPOL3
-   33.379   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   33.379   | �[WPA] STA-TX-EAPOL4
-   33.379   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   33.379   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   33.379   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-   33.387   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-   33.387   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   33.387   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   33.387   | =================================================================
-   33.387   | [AT][RX] Connection Status
-   33.387   | [AT][RX]   status_code 0
-   33.387   | [AT][RX]   reason_code 0
-   33.387   | [AT][RX]   status detail: sm connect ind ok
-   33.387   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-   33.387   | [AT][RX]   vif_idx 1
-   33.387   | [AT][RX]   ap_idx 1
-   33.387   | [AT][RX]   ch_idx 0
-   33.387   | [AT][RX]   qos 1
-   33.387   | [AT][RX]   aid 8
-   33.387   | [AT][RX]   band 2.4G
-   33.387   | [AT][RX]   channel 11
-   33.387   | =================================================================
-   33.387   | start dhcping on vif 0 ...
-   33.415   | [32mLwIP DHCP ack (wl 1): [0m
-   33.415   | IP:192.168.1.222
-   33.415   | MASK: 255.255.255.0
-   33.415   | Gateway: 192.168.1.1
-   33.415   | [quick_connect] dhcp bind ip callback
-   33.415   | IP: 192.168.1.222
-   33.415   | MK: 255.255.255.0
-   33.415   | GW: 192.168.1.1
-   33.440   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-   33.499   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-   33.499   | Disable Auto Reconnect
-   33.499   | ��==========================  Keyram Config ========================
-   33.499   | ��  start 08 -->> end 11; nVAP 02; max 31
-   33.499   | ==========================  Keyram Dump =========================
-   33.499   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-   33.499   | ==========================  MAC Address =========================
-   33.499   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-   33.499   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-   33.499   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 431
-   33.499   | =================================================================
-   33.499   | [AT][RX] Connection Status
-   33.499   | [AT][RX]   status_code 19
-   33.499   | [AT][RX]   reason_code 0
-   33.499   | [AT][RX]   status detail: user disconnect and send deauth
-   33.499   | [AT][RX]   state detail: 0x0
-   33.499   | [AT][RX]   vif_idx 0
-   33.499   | =================================================================
-   33.499   | [lwip] default netif cleared
-   33.499   | [lwip] netif status callback
-   33.503   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-   33.503   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   33.503   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   33.503   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   33.503   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-   33.503   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-   33.503   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   33.508   | WiFi disconnect
-   33.557   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-   35.329 setup 3: 8.0 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-   35.334   | [0mm[0m[0me[0m[0mm[0m[0m
-   35.334   | [0mmem: free 154552 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-   35.334   | [36mbouffalolab />[0m[0m
-   43.307   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-   44.116   | Disable Auto Reconnect
-   44.116   | Not connected
-   44.739   | start connecting ...
-   44.740   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-   44.745   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   44.746   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   44.746   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-   44.919   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-   44.920   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-   44.930   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-   44.930   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-   44.967   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-   44.967   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   44.967   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-   44.967   | --- OPT rxu_mgmt_ind is detected
-   44.967   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-   44.967   | rc_init: station_id=2 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-   44.967   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-   44.971   | ��No handler found for msg:1d from tsk:0 to tsk:6
-   44.971   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-   44.971   | [FU]Tx cfm ongoing--, value is 0
-   44.971   | [FL]RECV AUTH,sn:2364
-   44.971   | [FU]RECV AUTH,sn:2364
-   44.971   | [FU]Rx handler,state:5,fctl:0xb0
-   44.972   | [FU]Clear timer in auth handler
-   44.972   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-   44.976   | [FU]Tx cfm ongoing--, value is 0
-   44.976   | [FL]RECV ASSOCRSP,sn:2365
-   44.976   | [FU]RECV ASSOCRSP,sn:2365
-   44.976   | [FU]Rx handler,state:8,fctl:0x10
-   44.976   | [FU]Clear timer in assoc rsp handler
-   44.976   | sm_connect_ind sm_env.auth_retry_gap = 0
-   44.981   | [lwip] default netif: wl1
-   44.981   | [lwip] netif status callback
-   44.981   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-   44.981   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   44.981   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-   44.981   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-   44.981   | �[WPA] STA-RX-EAPOL1
-   44.986   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   44.986   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   44.986   | �[WPA] STA-TX-EAPOL2
-   44.986   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   44.993   | �[WPA] STA-RX-EAPOL3
-   44.993   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   44.993   | �[WPA] STA-TX-EAPOL4
-   44.993   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   44.993   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   44.993   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-   45.002   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-   45.002   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   45.002   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   45.002   | =================================================================
-   45.002   | [AT][RX] Connection Status
-   45.002   | [AT][RX]   status_code 0
-   45.002   | [AT][RX]   reason_code 0
-   45.002   | [AT][RX]   status detail: sm connect ind ok
-   45.002   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-   45.002   | [AT][RX]   vif_idx 0
-   45.002   | [AT][RX]   ap_idx 2
-   45.002   | [AT][RX]   ch_idx 1
-   45.002   | [AT][RX]   qos 1
-   45.002   | [AT][RX]   aid 8
-   45.002   | [AT][RX]   band 2.4G
-   45.002   | [AT][RX]   channel 11
-   45.002   | =================================================================
-   45.002   | start dhcping on vif 0 ...
-   45.019   | [32mLwIP DHCP ack (wl 1): [0m
-   45.019   | IP:192.168.1.222
-   45.019   | MASK: 255.255.255.0
-   45.019   | Gateway: 192.168.1.1
-   45.019   | [quick_connect] dhcp bind ip callback
-   45.019   | IP: 192.168.1.222
-   45.019   | MK: 255.255.255.0
-   45.019   | GW: 192.168.1.1
-   45.055   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-   45.087   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-   45.088   | Disable Auto Reconnect
-   45.088   | ��==========================  Keyram Config ========================
-   45.088   | ��  start 08 -->> end 11; nVAP 02; max 31
-   45.088   | ==========================  Keyram Dump =========================
-   45.088   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-   45.088   | ==========================  MAC Address =========================
-   45.088   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-   45.088   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-   45.088   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 464
-   45.088   | =================================================================
-   45.088   | [AT][RX] Connection Status
-   45.088   | [AT][RX]   status_code 19
-   45.088   | [AT][RX]   reason_code 0
-   45.088   | [AT][RX]   status detail: user disconnect and send deauth
-   45.088   | [AT][RX]   state detail: 0x0
-   45.088   | [AT][RX]   vif_idx 0
-   45.088   | =================================================================
-   45.088   | [lwip] default netif cleared
-   45.088   | [lwip] netif status callback
-   45.092   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-   45.092   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   45.092   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   45.092   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   45.092   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-   45.097   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-   45.097   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   45.097   | WiFi disconnect
-   45.121   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-   46.806 setup 4: 7.5 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-   46.811   | [0mm[0m[0me[0m[0mm[0m[0m
-   46.811   | [0mmem: free 154552 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-   46.811   | [36mbouffalolab />[0m[0m
-   55.501   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-   56.356   | Disable Auto Reconnect
-   56.356   | Not connected
-   56.981   | start connecting ...
-   56.981   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-   56.985   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   56.985   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   56.985   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-   57.156   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-   57.156   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-   57.166   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-   57.167   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-   57.201   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-   57.202   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   57.202   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-   57.202   | --- OPT rxu_mgmt_ind is detected
-   57.202   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-   57.202   | rc_init: station_id=3 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-   57.202   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-   57.210   | ��No handler found for msg:1d from tsk:0 to tsk:6
-   57.210   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-   57.214   | [FU]Tx cfm ongoing--, value is 0
-   57.215   | [FL]RECV AUTH,sn:2499
-   57.215   | [FU]RECV AUTH,sn:2499
-   57.215   | [FU]Rx handler,state:5,fctl:0xb0
-   57.215   | [FU]Clear timer in auth handler
-   57.215   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-   57.215   | [FU]Tx cfm ongoing--, value is 0
-   57.253   | [FL]RECV ASSOCRSP,sn:2500
-   57.253   | [FU]RECV ASSOCRSP,sn:2500
-   57.253   | [FU]Rx handler,state:8,fctl:0x10
-   57.253   | [FU]Clear timer in assoc rsp handler
-   57.253   | sm_connect_ind sm_env.auth_retry_gap = 0
-   57.253   | [lwip] default netif: wl1
-   57.253   | [lwip] netif status callback
-   57.253   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-   57.253   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   57.253   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-   57.257   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-   57.258   | �[WPA] STA-RX-EAPOL1
-   57.258   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   57.258   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   57.263   | �[WPA] STA-TX-EAPOL2
-   57.263   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   57.263   | �[WPA] STA-RX-EAPOL3
-   57.263   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   57.268   | �[WPA] STA-TX-EAPOL4
-   57.268   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   57.268   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   57.268   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-   57.268   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-   57.268   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   57.268   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   57.274   | =================================================================
-   57.274   | [AT][RX] Connection Status
-   57.274   | [AT][RX]   status_code 0
-   57.274   | [AT][RX]   reason_code 0
-   57.274   | [AT][RX]   status detail: sm connect ind ok
-   57.274   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-   57.274   | [AT][RX]   vif_idx 1
-   57.274   | [AT][RX]   ap_idx 3
-   57.274   | [AT][RX]   ch_idx 2
-   57.274   | [AT][RX]   qos 1
-   57.274   | [AT][RX]   aid 8
-   57.274   | [AT][RX]   band 2.4G
-   57.274   | [AT][RX]   channel 11
-   57.274   | =================================================================
-   57.274   | start dhcping on vif 0 ...
-   57.303   | [32mLwIP DHCP ack (wl 1): [0m
-   57.303   | IP:192.168.1.222
-   57.303   | MASK: 255.255.255.0
-   57.303   | Gateway: 192.168.1.1
-   57.303   | [quick_connect] dhcp bind ip callback
-   57.303   | IP: 192.168.1.222
-   57.303   | MK: 255.255.255.0
-   57.303   | GW: 192.168.1.1
-   57.328   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-   57.359   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-   57.359   | Disable Auto Reconnect
-   57.359   | ��==========================  Keyram Config ========================
-   57.359   | ��  start 08 -->> end 11; nVAP 02; max 31
-   57.359   | ==========================  Keyram Dump =========================
-   57.359   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-   57.359   | ==========================  MAC Address =========================
-   57.359   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-   57.359   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-   57.359   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 497
-   57.359   | =================================================================
-   57.359   | [AT][RX] Connection Status
-   57.359   | [AT][RX]   status_code 19
-   57.359   | [AT][RX]   reason_code 0
-   57.359   | [AT][RX]   status detail: user disconnect and send deauth
-   57.359   | [AT][RX]   state detail: 0x0
-   57.359   | [AT][RX]   vif_idx 0
-   57.359   | =================================================================
-   57.359   | [lwip] default netif cleared
-   57.359   | [lwip] netif status callback
-   57.363   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-   57.363   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   57.363   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   57.363   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   57.363   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-   57.363   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-   57.368   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   57.368   | WiFi disconnect
-   57.392   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-   59.173 setup 5: 7.8 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-   59.178   | [0mm[0m[0me[0m[0mm[0m[0m
-   59.178   | [0mmem: free 154552 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-   59.178   | [36mbouffalolab />[0m[0m
-   67.202   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-   68.026   | Disable Auto Reconnect
-   68.026   | Not connected
-   68.650   | start connecting ...
-   68.651   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-   68.655   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   68.655   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   68.655   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-   68.830   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-   68.830   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-   68.840   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-   68.840   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-   68.876   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-   68.877   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   68.877   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-   68.877   | --- OPT rxu_mgmt_ind is detected
-   68.877   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-   68.877   | rc_init: station_id=0 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-   68.881   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-   68.881   | ��No handler found for msg:1d from tsk:0 to tsk:6
-   68.882   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-   68.882   | [FU]Tx cfm ongoing--, value is 0
-   68.882   | [FL]RECV AUTH,sn:2626
-   68.882   | [FU]RECV AUTH,sn:2626
-   68.882   | [FU]Rx handler,state:5,fctl:0xb0
-   68.882   | [FU]Clear timer in auth handler
-   68.882   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-   68.887   | [FU]Tx cfm ongoing--, value is 0
-   68.887   | [FL]RECV ASSOCRSP,sn:2627
-   68.887   | [FU]RECV ASSOCRSP,sn:2627
-   68.887   | [FU]Rx handler,state:8,fctl:0x10
-   68.887   | [FU]Clear timer in assoc rsp handler
-   68.892   | sm_connect_ind sm_env.auth_retry_gap = 0
-   68.892   | [lwip] default netif: wl1
-   68.892   | [lwip] netif status callback
-   68.892   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-   68.892   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   68.892   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-   68.892   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-   68.928   | �[WPA] STA-RX-EAPOL1
-   68.929   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   68.929   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   68.929   | �[WPA] STA-TX-EAPOL2
-   68.929   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   68.936   | �[WPA] STA-RX-EAPOL3
-   68.936   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   68.936   | �[WPA] STA-TX-EAPOL4
-   68.936   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   68.936   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   68.945   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-   68.945   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-   68.945   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   68.945   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   68.945   | =================================================================
-   68.945   | [AT][RX] Connection Status
-   68.945   | [AT][RX]   status_code 0
-   68.945   | [AT][RX]   reason_code 0
-   68.945   | [AT][RX]   status detail: sm connect ind ok
-   68.945   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-   68.945   | [AT][RX]   vif_idx 0
-   68.945   | [AT][RX]   ap_idx 0
-   68.945   | [AT][RX]   ch_idx 0
-   68.945   | [AT][RX]   qos 1
-   68.945   | [AT][RX]   aid 8
-   68.945   | [AT][RX]   band 2.4G
-   68.945   | [AT][RX]   channel 11
-   68.945   | =================================================================
-   68.945   | start dhcping on vif 0 ...
-   68.957   | [32mLwIP DHCP ack (wl 1): [0m
-   68.957   | IP:192.168.1.222
-   68.957   | MASK: 255.255.255.0
-   68.957   | Gateway: 192.168.1.1
-   68.957   | [quick_connect] dhcp bind ip callback
-   68.957   | IP: 192.168.1.222
-   68.957   | MK: 255.255.255.0
-   68.957   | GW: 192.168.1.1
-   68.998   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-   69.035   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-   69.035   | Disable Auto Reconnect
-   69.035   | ��==========================  Keyram Config ========================
-   69.035   | ��  start 08 -->> end 11; nVAP 02; max 31
-   69.035   | ==========================  Keyram Dump =========================
-   69.035   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-   69.035   | ==========================  MAC Address =========================
-   69.035   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-   69.035   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-   69.035   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 530
-   69.035   | =================================================================
-   69.035   | [AT][RX] Connection Status
-   69.035   | [AT][RX]   status_code 19
-   69.035   | [AT][RX]   reason_code 0
-   69.035   | [AT][RX]   status detail: user disconnect and send deauth
-   69.035   | [AT][RX]   state detail: 0x0
-   69.035   | [AT][RX]   vif_idx 0
-   69.035   | =================================================================
-   69.035   | [lwip] default netif cleared
-   69.035   | [lwip] netif status callback
-   69.039   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-   69.039   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   69.039   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   69.039   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   69.039   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-   69.039   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-   69.039   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   69.044   | WiFi disconnect
-   69.067   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-   70.631 setup 6: 7.5 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-   70.636   | [0mm[0m[0me[0m[0mm[0m[0m
-   70.636   | [0mmem: free 154548 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-   70.636   | [36mbouffalolab />[0m[0m
-   82.937   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-   83.761   | Disable Auto Reconnect
-   83.762   | Not connected
-   84.391   | start connecting ...
-   84.391   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-   84.396   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   84.396   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   84.396   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-   84.556   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-   84.556   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-   84.594   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-   84.595   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-   84.630   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-   84.631   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   84.631   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-   84.631   | --- OPT rxu_mgmt_ind is detected
-   84.631   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-   84.631   | rc_init: station_id=1 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-   84.631   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-   84.631   | ��No handler found for msg:1d from tsk:0 to tsk:6
-   84.635   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-   84.635   | [FU]Tx cfm ongoing--, value is 0
-   84.641   | [FL]RECV AUTH,sn:2796
-   84.641   | [FU]RECV AUTH,sn:2796
-   84.641   | [FU]Rx handler,state:5,fctl:0xb0
-   84.641   | [FU]Clear timer in auth handler
-   84.641   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-   84.641   | [FU]Tx cfm ongoing--, value is 0
-   84.649   | [FL]RECV ASSOCRSP,sn:2797,Retry
-   84.649   | [FU]RECV ASSOCRSP,sn:2797,Retry
-   84.649   | [FU]Rx handler,state:8,fctl:0x10
-   84.649   | [FU]Clear timer in assoc rsp handler
-   84.649   | sm_connect_ind sm_env.auth_retry_gap = 0
-   84.649   | [lwip] default netif: wl1
-   84.649   | [lwip] netif status callback
-   84.649   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-   84.649   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   84.650   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-   84.654   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-   84.654   | �[WPA] STA-RX-EAPOL1
-   84.654   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   84.654   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   84.660   | �[WPA] STA-TX-EAPOL2
-   84.660   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   84.660   | �[WPA] STA-RX-EAPOL3
-   84.665   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   84.665   | �[WPA] STA-TX-EAPOL4
-   84.665   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   84.665   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   84.665   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-   84.665   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-   84.665   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   84.672   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   84.672   | =================================================================
-   84.673   | [AT][RX] Connection Status
-   84.673   | [AT][RX]   status_code 0
-   84.673   | [AT][RX]   reason_code 0
-   84.673   | [AT][RX]   status detail: sm connect ind ok
-   84.673   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-   84.673   | [AT][RX]   vif_idx 1
-   84.673   | [AT][RX]   ap_idx 1
-   84.673   | [AT][RX]   ch_idx 1
-   84.673   | [AT][RX]   qos 1
-   84.673   | [AT][RX]   aid 8
-   84.673   | [AT][RX]   band 2.4G
-   84.673   | [AT][RX]   channel 11
-   84.673   | =================================================================
-   84.673   | start dhcping on vif 0 ...
-   84.684   | [32mLwIP DHCP ack (wl 1): [0m
-   84.685   | IP:192.168.1.222
-   84.685   | MASK: 255.255.255.0
-   84.685   | Gateway: 192.168.1.1
-   84.685   | [quick_connect] dhcp bind ip callback
-   84.685   | IP: 192.168.1.222
-   84.685   | MK: 255.255.255.0
-   84.685   | GW: 192.168.1.1
-   84.724   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-   84.755   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-   84.755   | Disable Auto Reconnect
-   84.755   | ��==========================  Keyram Config ========================
-   84.755   | ��  start 08 -->> end 11; nVAP 02; max 31
-   84.755   | ==========================  Keyram Dump =========================
-   84.755   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-   84.755   | ==========================  MAC Address =========================
-   84.755   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-   84.755   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-   84.755   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 563
-   84.755   | =================================================================
-   84.755   | [AT][RX] Connection Status
-   84.755   | [AT][RX]   status_code 19
-   84.755   | [AT][RX]   reason_code 0
-   84.755   | [AT][RX]   status detail: user disconnect and send deauth
-   84.755   | [AT][RX]   state detail: 0x0
-   84.755   | [AT][RX]   vif_idx 0
-   84.755   | =================================================================
-   84.755   | [lwip] default netif cleared
-   84.755   | [lwip] netif status callback
-   84.759   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-   84.759   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   84.759   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   84.760   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   84.760   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-   84.764   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-   84.764   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   84.764   | WiFi disconnect
-   84.788   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-   86.604 setup 7: 8.5 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-   86.616   | [0mm[0m[0me[0m[0mm[0m[0m
-   86.616   | [0mmem: free 154548 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-   86.616   | [36mbouffalolab />[0m[0m
-   95.492   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-   96.317   | Disable Auto Reconnect
-   96.317   | Not connected
-   96.942   | start connecting ...
-   96.942   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-   96.947   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   96.947   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   96.947   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-   97.119   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-   97.120   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-   97.129   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-   97.129   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-   97.166   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-   97.166   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   97.166   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-   97.166   | --- OPT rxu_mgmt_ind is detected
-   97.166   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-   97.166   | rc_init: station_id=2 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-   97.170   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-   97.170   | ��No handler found for msg:1d from tsk:0 to tsk:6
-   97.170   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-   97.170   | [FU]Tx cfm ongoing--, value is 0
-   97.170   | [FL]RECV AUTH,sn:2935
-   97.170   | [FU]RECV AUTH,sn:2935
-   97.170   | [FU]Rx handler,state:5,fctl:0xb0
-   97.170   | [FU]Clear timer in auth handler
-   97.170   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-   97.176   | [FU]Tx cfm ongoing--, value is 0
-   97.177   | [FL]RECV ASSOCRSP,sn:2936
-   97.177   | [FU]RECV ASSOCRSP,sn:2936
-   97.177   | [FU]Rx handler,state:8,fctl:0x10
-   97.177   | [FU]Clear timer in assoc rsp handler
-   97.177   | sm_connect_ind sm_env.auth_retry_gap = 0
-   97.177   | [lwip] default netif: wl1
-   97.177   | [lwip] netif status callback
-   97.177   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-   97.177   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   97.181   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-   97.181   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-   97.181   | �[WPA] STA-RX-EAPOL1
-   97.181   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   97.181   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   97.187   | �[WPA] STA-TX-EAPOL2
-   97.187   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   97.187   | �[WPA] STA-RX-EAPOL3
-   97.187   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   97.198   | �[WPA] STA-TX-EAPOL4
-   97.198   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   97.198   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   97.198   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-   97.198   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-   97.198   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   97.198   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   97.198   | =================================================================
-   97.198   | [AT][RX] Connection Status
-   97.198   | [AT][RX]   status_code 0
-   97.198   | [AT][RX]   reason_code 0
-   97.198   | [AT][RX]   status detail: sm connect ind ok
-   97.198   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-   97.198   | [AT][RX]   vif_idx 0
-   97.198   | [AT][RX]   ap_idx 2
-   97.198   | [AT][RX]   ch_idx 2
-   97.198   | [AT][RX]   qos 1
-   97.198   | [AT][RX]   aid 8
-   97.198   | [AT][RX]   band 2.4G
-   97.198   | [AT][RX]   channel 11
-   97.198   | =================================================================
-   97.198   | start dhcping on vif 0 ...
-   97.209   | [32mLwIP DHCP ack (wl 1): [0m
-   97.209   | IP:192.168.1.222
-   97.210   | MASK: 255.255.255.0
-   97.210   | Gateway: 192.168.1.1
-   97.210   | [quick_connect] dhcp bind ip callback
-   97.210   | IP: 192.168.1.222
-   97.210   | MK: 255.255.255.0
-   97.210   | GW: 192.168.1.1
-   97.251   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-   97.283   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-   97.283   | Disable Auto Reconnect
-   97.283   | ��==========================  Keyram Config ========================
-   97.283   | ��  start 08 -->> end 11; nVAP 02; max 31
-   97.283   | ==========================  Keyram Dump =========================
-   97.283   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-   97.283   | ==========================  MAC Address =========================
-   97.283   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-   97.283   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-   97.283   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 596
-   97.283   | =================================================================
-   97.283   | [AT][RX] Connection Status
-   97.283   | [AT][RX]   status_code 19
-   97.283   | [AT][RX]   reason_code 0
-   97.283   | [AT][RX]   status detail: user disconnect and send deauth
-   97.283   | [AT][RX]   state detail: 0x0
-   97.283   | [AT][RX]   vif_idx 0
-   97.283   | =================================================================
-   97.283   | [lwip] default netif cleared
-   97.283   | [lwip] netif status callback
-   97.287   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-   97.287   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-   97.287   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   97.287   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   97.292   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-   97.292   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-   97.292   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-   97.292   | WiFi disconnect
-   97.316   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-   98.869 setup 8: 7.9 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-   98.875   | [0mm[0m[0me[0m[0mm[0m[0m
-   98.875   | [0mmem: free 154552 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-   98.875   | [36mbouffalolab />[0m[0m
-  106.847   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-  107.687   | Disable Auto Reconnect
-  107.688   | Not connected
-  108.312   | start connecting ...
-  108.312   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-  108.316   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  108.316   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  108.316   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-  108.486   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-  108.486   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-  108.494   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-  108.494   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-  108.531   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-  108.531   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  108.531   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-  108.531   | --- OPT rxu_mgmt_ind is detected
-  108.531   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-  108.531   | rc_init: station_id=3 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-  108.531   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-  108.535   | ��No handler found for msg:1d from tsk:0 to tsk:6
-  108.535   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-  108.535   | [FU]Tx cfm ongoing--, value is 0
-  108.552   | [FL]RECV AUTH,sn:3061
-  108.553   | [FU]RECV AUTH,sn:3061
-  108.553   | [FU]Rx handler,state:5,fctl:0xb0
-  108.553   | [FU]Clear timer in auth handler
-  108.553   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-  108.553   | [FU]Tx cfm ongoing--, value is 0
-  108.558   | [FL]RECV ASSOCRSP,sn:3062
-  108.558   | [FU]RECV ASSOCRSP,sn:3062
-  108.558   | [FU]Rx handler,state:8,fctl:0x10
-  108.558   | [FU]Clear timer in assoc rsp handler
-  108.558   | sm_connect_ind sm_env.auth_retry_gap = 0
-  108.558   | [lwip] default netif: wl1
-  108.558   | [lwip] netif status callback
-  108.558   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-  108.564   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  108.564   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-  108.564   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-  108.564   | �[WPA] STA-RX-EAPOL1
-  108.565   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  108.565   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  108.565   | �[WPA] STA-TX-EAPOL2
-  108.569   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  108.574   | �[WPA] STA-RX-EAPOL3
-  108.574   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  108.574   | �[WPA] STA-TX-EAPOL4
-  108.574   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  108.574   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  108.583   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-  108.584   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-  108.584   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  108.584   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  108.584   | =================================================================
-  108.584   | [AT][RX] Connection Status
-  108.584   | [AT][RX]   status_code 0
-  108.584   | [AT][RX]   reason_code 0
-  108.584   | [AT][RX]   status detail: sm connect ind ok
-  108.584   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-  108.584   | [AT][RX]   vif_idx 1
-  108.584   | [AT][RX]   ap_idx 3
-  108.584   | [AT][RX]   ch_idx 0
-  108.584   | [AT][RX]   qos 1
-  108.584   | [AT][RX]   aid 8
-  108.584   | [AT][RX]   band 2.4G
-  108.584   | [AT][RX]   channel 11
-  108.584   | =================================================================
-  108.584   | start dhcping on vif 0 ...
-  108.594   | [32mLwIP DHCP ack (wl 1): [0m
-  108.594   | IP:192.168.1.222
-  108.594   | MASK: 255.255.255.0
-  108.594   | Gateway: 192.168.1.1
-  108.594   | [quick_connect] dhcp bind ip callback
-  108.594   | IP: 192.168.1.222
-  108.594   | MK: 255.255.255.0
-  108.594   | GW: 192.168.1.1
-  108.636   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-  108.667   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-  108.667   | Disable Auto Reconnect
-  108.667   | ��==========================  Keyram Config ========================
-  108.667   | ��  start 08 -->> end 11; nVAP 02; max 31
-  108.667   | ==========================  Keyram Dump =========================
-  108.667   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-  108.667   | ==========================  MAC Address =========================
-  108.667   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-  108.667   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-  108.667   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 629
-  108.667   | =================================================================
-  108.667   | [AT][RX] Connection Status
-  108.667   | [AT][RX]   status_code 19
-  108.667   | [AT][RX]   reason_code 0
-  108.667   | [AT][RX]   status detail: user disconnect and send deauth
-  108.667   | [AT][RX]   state detail: 0x0
-  108.667   | [AT][RX]   vif_idx 0
-  108.667   | =================================================================
-  108.667   | [lwip] default netif cleared
-  108.667   | [lwip] netif status callback
-  108.671   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-  108.671   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  108.671   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  108.671   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  108.671   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-  108.676   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-  108.677   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  108.677   | WiFi disconnect
-  108.701   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-  110.602 setup 9: 8.2 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-  110.606   | [0mm[0m[0me[0m[0mm[0m[0m
-  110.606   | [0mmem: free 154552 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-  110.606   | [36mbouffalolab />[0m[0m
-  119.358   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-  120.227   | Disable Auto Reconnect
-  120.227   | Not connected
-  120.853   | start connecting ...
-  120.853   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-  120.858   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  120.858   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  120.859   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-  121.033   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-  121.033   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-  121.050   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-  121.050   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-  121.086   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-  121.086   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  121.086   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-  121.086   | --- OPT rxu_mgmt_ind is detected
-  121.086   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-  121.086   | rc_init: station_id=0 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-  121.086   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-  121.086   | ��No handler found for msg:1d from tsk:0 to tsk:6
-  121.091   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-  121.091   | [FU]Tx cfm ongoing--, value is 0
-  121.095   | [FL]RECV AUTH,sn:3200,Retry
-  121.095   | [FU]RECV AUTH,sn:3200,Retry
-  121.095   | [FU]Rx handler,state:5,fctl:0xb0
-  121.095   | [FU]Clear timer in auth handler
-  121.095   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-  121.095   | [FU]Tx cfm ongoing--, value is 0
-  121.100   | [FL]RECV ASSOCRSP,sn:3201
-  121.100   | [FU]RECV ASSOCRSP,sn:3201
-  121.100   | [FU]Rx handler,state:8,fctl:0x10
-  121.100   | [FU]Clear timer in assoc rsp handler
-  121.100   | sm_connect_ind sm_env.auth_retry_gap = 0
-  121.101   | [lwip] default netif: wl1
-  121.101   | [lwip] netif status callback
-  121.101   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-  121.101   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  121.101   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-  121.106   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-  121.106   | �[WPA] STA-RX-EAPOL1
-  121.106   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  121.106   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  121.106   | �[WPA] STA-TX-EAPOL2
-  121.106   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  121.117   | �[WPA] STA-RX-EAPOL3
-  121.118   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  121.151   | �[WPA] STA-TX-EAPOL4
-  121.151   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  121.151   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  121.151   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-  121.151   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-  121.151   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  121.151   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  121.156   | =================================================================
-  121.156   | [AT][RX] Connection Status
-  121.156   | [AT][RX]   status_code 0
-  121.156   | [AT][RX]   reason_code 0
-  121.156   | [AT][RX]   status detail: sm connect ind ok
-  121.156   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-  121.156   | [AT][RX]   vif_idx 0
-  121.156   | [AT][RX]   ap_idx 0
-  121.156   | [AT][RX]   ch_idx 1
-  121.156   | [AT][RX]   qos 1
-  121.156   | [AT][RX]   aid 8
-  121.156   | [AT][RX]   band 2.4G
-  121.156   | [AT][RX]   channel 11
-  121.156   | =================================================================
-  121.156   | start dhcping on vif 0 ...
-  121.167   | [32mLwIP DHCP ack (wl 1): [0m
-  121.167   | IP:192.168.1.222
-  121.167   | MASK: 255.255.255.0
-  121.167   | Gateway: 192.168.1.1
-  121.167   | [quick_connect] dhcp bind ip callback
-  121.167   | IP: 192.168.1.222
-  121.167   | MK: 255.255.255.0
-  121.167   | GW: 192.168.1.1
-  121.210   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-  121.274   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-  121.274   | Disable Auto Reconnect
-  121.274   | ��==========================  Keyram Config ========================
-  121.274   | ��  start 08 -->> end 11; nVAP 02; max 31
-  121.274   | ==========================  Keyram Dump =========================
-  121.274   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-  121.274   | ==========================  MAC Address =========================
-  121.274   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-  121.274   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-  121.274   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 662
-  121.274   | =================================================================
-  121.274   | [AT][RX] Connection Status
-  121.274   | [AT][RX]   status_code 19
-  121.274   | [AT][RX]   reason_code 0
-  121.274   | [AT][RX]   status detail: user disconnect and send deauth
-  121.274   | [AT][RX]   state detail: 0x0
-  121.274   | [AT][RX]   vif_idx 0
-  121.274   | =================================================================
-  121.274   | [lwip] default netif cleared
-  121.274   | [lwip] netif status callback
-  121.278   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-  121.279   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  121.279   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  121.279   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  121.279   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-  121.279   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-  121.283   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  121.283   | WiFi disconnect
-  121.307   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-  123.227 setup 10: 8.4 s Enter the name and password of the Wi-Fi network the LEAKCAM | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-  123.232   | [0mm[0m[0me[0m[0mm[0m[0m
-  123.232   | [0mmem: free 154552 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-  123.232   | [36mbouffalolab />[0m[0m
-  130.684   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-  131.462   | Disable Auto Reconnect
-  131.462   | Not connected
-  132.087   | start connecting ...
-  132.087   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-  132.093   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  132.093   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  132.093   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-  132.266   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-  132.266   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-  132.274   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-  132.275   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-  132.311   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-  132.311   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  132.311   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-  132.311   | --- OPT rxu_mgmt_ind is detected
-  132.311   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-  132.311   | rc_init: station_id=1 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-  132.311   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-  132.315   | ��No handler found for msg:1d from tsk:0 to tsk:6
-  132.315   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-  132.315   | [FU]Tx cfm ongoing--, value is 0
-  132.320   | [FL]RECV AUTH,sn:3324
-  132.320   | [FU]RECV AUTH,sn:3324
-  132.320   | [FU]Rx handler,state:5,fctl:0xb0
-  132.320   | [FU]Clear timer in auth handler
-  132.320   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-  132.320   | [FU]Tx cfm ongoing--, value is 0
-  132.326   | [FL]RECV ASSOCRSP,sn:3325
-  132.326   | [FU]RECV ASSOCRSP,sn:3325
-  132.326   | [FU]Rx handler,state:8,fctl:0x10
-  132.326   | [FU]Clear timer in assoc rsp handler
-  132.326   | sm_connect_ind sm_env.auth_retry_gap = 0
-  132.326   | [lwip] default netif: wl1
-  132.326   | [lwip] netif status callback
-  132.326   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-  132.326   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  132.326   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-  132.326   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-  132.331   | �[WPA] STA-RX-EAPOL1
-  132.331   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  132.331   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  132.331   | �[WPA] STA-TX-EAPOL2
-  132.331   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  132.337   | �[WPA] STA-RX-EAPOL3
-  132.338   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  132.338   | �[WPA] STA-TX-EAPOL4
-  132.338   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  132.338   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  132.346   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-  132.347   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-  132.347   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  132.347   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  132.347   | =================================================================
-  132.347   | [AT][RX] Connection Status
-  132.347   | [AT][RX]   status_code 0
-  132.347   | [AT][RX]   reason_code 0
-  132.347   | [AT][RX]   status detail: sm connect ind ok
-  132.347   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-  132.347   | [AT][RX]   vif_idx 1
-  132.347   | [AT][RX]   ap_idx 1
-  132.347   | [AT][RX]   ch_idx 2
-  132.347   | [AT][RX]   qos 1
-  132.347   | [AT][RX]   aid 8
-  132.347   | [AT][RX]   band 2.4G
-  132.347   | [AT][RX]   channel 11
-  132.347   | =================================================================
-  132.347   | start dhcping on vif 0 ...
-  132.356   | [32mLwIP DHCP ack (wl 1): [0m
-  132.357   | IP:192.168.1.222
-  132.357   | MASK: 255.255.255.0
-  132.357   | Gateway: 192.168.1.1
-  132.357   | [quick_connect] dhcp bind ip callback
-  132.357   | IP: 192.168.1.222
-  132.357   | MK: 255.255.255.0
-  132.357   | GW: 192.168.1.1
-  132.399   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-  132.431   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-  132.431   | Disable Auto Reconnect
-  132.431   | ��==========================  Keyram Config ========================
-  132.431   | ��  start 08 -->> end 11; nVAP 02; max 31
-  132.431   | ==========================  Keyram Dump =========================
-  132.431   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-  132.431   | ==========================  MAC Address =========================
-  132.431   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-  132.431   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-  132.431   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 695
-  132.431   | =================================================================
-  132.431   | [AT][RX] Connection Status
-  132.431   | [AT][RX]   status_code 19
-  132.431   | [AT][RX]   reason_code 0
-  132.431   | [AT][RX]   status detail: user disconnect and send deauth
-  132.431   | [AT][RX]   state detail: 0x0
-  132.431   | [AT][RX]   vif_idx 0
-  132.431   | =================================================================
-  132.431   | [lwip] default netif cleared
-  132.431   | [lwip] netif status callback
-  132.436   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-  132.436   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  132.436   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  132.436   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  132.436   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-  132.436   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-  132.436   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  132.441   | WiFi disconnect
-  132.489   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-  134.120 setup 11: 7.4 s Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining VK to check the name and password | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-  134.125   | [0mm[0m[0me[0m[0mm[0m[0m
-  134.126   | [0mmem: free 154548 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-  134.126   | [36mbouffalolab />[0m[0m
-  141.738   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-  142.607   | Disable Auto Reconnect
-  142.607   | Not connected
-  142.761   | [SCAN] Format check failed for BSSID: 54:13:10:a2:4f:4c
-  143.231   | start connecting ...
-  143.231   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-  143.236   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  143.236   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  143.236   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-  143.417   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-  143.417   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-  143.425   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-  143.425   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-  143.462   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-  143.462   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  143.462   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-  143.462   | --- OPT rxu_mgmt_ind is detected
-  143.462   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-  143.462   | rc_init: station_id=2 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-  143.462   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-  143.466   | ��No handler found for msg:1d from tsk:0 to tsk:6
-  143.466   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-  143.466   | [FU]Tx cfm ongoing--, value is 0
-  143.472   | [FL]RECV AUTH,sn:3447
-  143.472   | [FU]RECV AUTH,sn:3447
-  143.472   | [FU]Rx handler,state:5,fctl:0xb0
-  143.472   | [FU]Clear timer in auth handler
-  143.472   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-  143.472   | [FU]Tx cfm ongoing--, value is 0
-  143.478   | [FL]RECV ASSOCRSP,sn:3448,Retry
-  143.478   | [FU]RECV ASSOCRSP,sn:3448,Retry
-  143.478   | [FU]Rx handler,state:8,fctl:0x10
-  143.478   | [FU]Clear timer in assoc rsp handler
-  143.478   | sm_connect_ind sm_env.auth_retry_gap = 0
-  143.478   | [lwip] default netif: wl1
-  143.478   | [lwip] netif status callback
-  143.483   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-  143.483   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  143.483   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-  143.483   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-  143.483   | �[WPA] STA-RX-EAPOL1
-  143.483   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  143.483   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  143.488   | �[WPA] STA-TX-EAPOL2
-  143.488   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  143.495   | �[WPA] STA-RX-EAPOL3
-  143.495   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  143.495   | �[WPA] STA-TX-EAPOL4
-  143.495   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  143.495   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  143.503   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-  143.503   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-  143.503   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  143.503   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  143.503   | =================================================================
-  143.503   | [AT][RX] Connection Status
-  143.503   | [AT][RX]   status_code 0
-  143.503   | [AT][RX]   reason_code 0
-  143.503   | [AT][RX]   status detail: sm connect ind ok
-  143.503   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-  143.503   | [AT][RX]   vif_idx 0
-  143.503   | [AT][RX]   ap_idx 2
-  143.503   | [AT][RX]   ch_idx 0
-  143.503   | [AT][RX]   qos 1
-  143.503   | [AT][RX]   aid 8
-  143.503   | [AT][RX]   band 2.4G
-  143.503   | [AT][RX]   channel 11
-  143.503   | =================================================================
-  143.503   | start dhcping on vif 0 ...
-  143.513   | [32mLwIP DHCP ack (wl 1): [0m
-  143.514   | IP:192.168.1.222
-  143.514   | MASK: 255.255.255.0
-  143.514   | Gateway: 192.168.1.1
-  143.514   | [quick_connect] dhcp bind ip callback
-  143.514   | IP: 192.168.1.222
-  143.514   | MK: 255.255.255.0
-  143.514   | GW: 192.168.1.1
-  143.556   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-  143.600   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-  143.600   | Disable Auto Reconnect
-  143.600   | ��==========================  Keyram Config ========================
-  143.600   | ��  start 08 -->> end 11; nVAP 02; max 31
-  143.600   | ==========================  Keyram Dump =========================
-  143.600   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-  143.600   | ==========================  MAC Address =========================
-  143.600   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-  143.600   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-  143.600   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 728
-  143.600   | =================================================================
-  143.600   | [AT][RX] Connection Status
-  143.600   | [AT][RX]   status_code 19
-  143.600   | [AT][RX]   reason_code 0
-  143.600   | [AT][RX]   status detail: user disconnect and send deauth
-  143.600   | [AT][RX]   state detail: 0x0
-  143.600   | [AT][RX]   vif_idx 0
-  143.600   | =================================================================
-  143.600   | [lwip] default netif cleared
-  143.600   | [lwip] netif status callback
-  143.604   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-  143.604   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  143.604   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  143.604   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  143.604   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-  143.604   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-  143.609   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  143.609   | WiFi disconnect
-  143.633   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-  145.364 setup 12: 7.9 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-  145.368   | [0mm[0m[0me[0m[0mm[0m[0m
-  145.368   | [0mmem: free 154548 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-  145.368   | [36mbouffalolab />[0m[0m
-  152.914   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-  153.723   | Disable Auto Reconnect
-  153.723   | Not connected
-  154.346   | start connecting ...
-  154.346   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-  154.351   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  154.352   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  154.352   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-  154.527   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-  154.527   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-  154.536   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-  154.536   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-  154.573   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-  154.573   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  154.573   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-  154.573   | --- OPT rxu_mgmt_ind is detected
-  154.573   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-  154.573   | rc_init: station_id=3 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-  154.573   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-  154.578   | ��No handler found for msg:1d from tsk:0 to tsk:6
-  154.578   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-  154.578   | [FU]Tx cfm ongoing--, value is 0
-  154.578   | [FL]RECV AUTH,sn:3571
-  154.578   | [FU]RECV AUTH,sn:3571
-  154.578   | [FU]Rx handler,state:5,fctl:0xb0
-  154.578   | [FU]Clear timer in auth handler
-  154.582   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-  154.583   | [FU]Tx cfm ongoing--, value is 0
-  154.583   | [FL]RECV ASSOCRSP,sn:3572
-  154.583   | [FU]RECV ASSOCRSP,sn:3572
-  154.583   | [FU]Rx handler,state:8,fctl:0x10
-  154.583   | [FU]Clear timer in assoc rsp handler
-  154.583   | sm_connect_ind sm_env.auth_retry_gap = 0
-  154.583   | [lwip] default netif: wl1
-  154.587   | [lwip] netif status callback
-  154.587   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-  154.587   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  154.587   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-  154.587   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-  154.587   | �[WPA] STA-RX-EAPOL1
-  154.587   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  154.587   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  154.594   | �[WPA] STA-TX-EAPOL2
-  154.594   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  154.594   | �[WPA] STA-RX-EAPOL3
-  154.599   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  154.599   | �[WPA] STA-TX-EAPOL4
-  154.599   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  154.599   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  154.599   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-  154.599   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-  154.608   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  154.609   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  154.609   | =================================================================
-  154.609   | [AT][RX] Connection Status
-  154.609   | [AT][RX]   status_code 0
-  154.609   | [AT][RX]   reason_code 0
-  154.609   | [AT][RX]   status detail: sm connect ind ok
-  154.609   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-  154.609   | [AT][RX]   vif_idx 1
-  154.609   | [AT][RX]   ap_idx 3
-  154.609   | [AT][RX]   ch_idx 1
-  154.609   | [AT][RX]   qos 1
-  154.609   | [AT][RX]   aid 8
-  154.609   | [AT][RX]   band 2.4G
-  154.609   | [AT][RX]   channel 11
-  154.609   | =================================================================
-  154.609   | start dhcping on vif 0 ...
-  154.620   | [32mLwIP DHCP ack (wl 1): [0m
-  154.620   | IP:192.168.1.222
-  154.620   | MASK: 255.255.255.0
-  154.620   | Gateway: 192.168.1.1
-  154.620   | [quick_connect] dhcp bind ip callback
-  154.621   | IP: 192.168.1.222
-  154.621   | MK: 255.255.255.0
-  154.621   | GW: 192.168.1.1
-  154.661   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-  154.702   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-  154.702   | Disable Auto Reconnect
-  154.702   | ��==========================  Keyram Config ========================
-  154.702   | ��  start 08 -->> end 11; nVAP 02; max 31
-  154.702   | ==========================  Keyram Dump =========================
-  154.702   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-  154.702   | ==========================  MAC Address =========================
-  154.702   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-  154.702   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-  154.702   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 761
-  154.702   | =================================================================
-  154.702   | [AT][RX] Connection Status
-  154.702   | [AT][RX]   status_code 19
-  154.702   | [AT][RX]   reason_code 0
-  154.702   | [AT][RX]   status detail: user disconnect and send deauth
-  154.702   | [AT][RX]   state detail: 0x0
-  154.702   | [AT][RX]   vif_idx 0
-  154.702   | =================================================================
-  154.702   | [lwip] default netif cleared
-  154.702   | [lwip] netif status callback
-  154.707   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-  154.707   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  154.707   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  154.707   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  154.711   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-  154.711   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-  154.711   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  154.711   | WiFi disconnect
-  154.737   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-  156.509 setup 13: 7.8 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-  156.513   | [0mm[0m[0me[0m[0mm[0m[0m
-  156.513   | [0mmem: free 154552 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-  156.513   | [36mbouffalolab />[0m[0m
-  163.834   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-  164.658   | Disable Auto Reconnect
-  164.658   | Not connected
-  165.282   | start connecting ...
-  165.282   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-  165.287   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  165.287   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  165.287   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-  165.460   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-  165.460   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-  165.470   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-  165.470   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-  165.506   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-  165.507   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  165.507   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-  165.507   | --- OPT rxu_mgmt_ind is detected
-  165.507   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-  165.511   | rc_init: station_id=0 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-  165.512   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-  165.512   | ��No handler found for msg:1d from tsk:0 to tsk:6
-  165.512   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-  165.512   | [FU]Tx cfm ongoing--, value is 0
-  165.512   | [FL]RECV AUTH,sn:3690
-  165.512   | [FU]RECV AUTH,sn:3690
-  165.512   | [FU]Rx handler,state:5,fctl:0xb0
-  165.512   | [FU]Clear timer in auth handler
-  165.517   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-  165.517   | [FU]Tx cfm ongoing--, value is 0
-  165.517   | [FL]RECV ASSOCRSP,sn:3691
-  165.517   | [FU]RECV ASSOCRSP,sn:3691
-  165.517   | [FU]Rx handler,state:8,fctl:0x10
-  165.517   | [FU]Clear timer in assoc rsp handler
-  165.517   | sm_connect_ind sm_env.auth_retry_gap = 0
-  165.517   | [lwip] default netif: wl1
-  165.517   | [lwip] netif status callback
-  165.522   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-  165.522   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  165.522   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-  165.522   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-  165.522   | �[WPA] STA-RX-EAPOL1
-  165.522   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  165.526   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  165.527   | �[WPA] STA-TX-EAPOL2
-  165.527   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  165.534   | �[WPA] STA-RX-EAPOL3
-  165.534   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  165.534   | �[WPA] STA-TX-EAPOL4
-  165.534   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  165.534   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  165.543   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-  165.543   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-  165.543   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  165.543   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  165.543   | =================================================================
-  165.543   | [AT][RX] Connection Status
-  165.543   | [AT][RX]   status_code 0
-  165.543   | [AT][RX]   reason_code 0
-  165.543   | [AT][RX]   status detail: sm connect ind ok
-  165.543   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-  165.543   | [AT][RX]   vif_idx 0
-  165.543   | [AT][RX]   ap_idx 0
-  165.543   | [AT][RX]   ch_idx 2
-  165.543   | [AT][RX]   qos 1
-  165.543   | [AT][RX]   aid 8
-  165.543   | [AT][RX]   band 2.4G
-  165.543   | [AT][RX]   channel 11
-  165.543   | =================================================================
-  165.543   | start dhcping on vif 0 ...
-  165.554   | [32mLwIP DHCP ack (wl 1): [0m
-  165.554   | IP:192.168.1.222
-  165.554   | MASK: 255.255.255.0
-  165.554   | Gateway: 192.168.1.1
-  165.554   | [quick_connect] dhcp bind ip callback
-  165.554   | IP: 192.168.1.222
-  165.554   | MK: 255.255.255.0
-  165.554   | GW: 192.168.1.1
-  165.596   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-  165.630   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-  165.630   | Disable Auto Reconnect
-  165.630   | ��==========================  Keyram Config ========================
-  165.630   | ��  start 08 -->> end 11; nVAP 02; max 31
-  165.630   | ==========================  Keyram Dump =========================
-  165.630   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-  165.630   | ==========================  MAC Address =========================
-  165.630   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-  165.630   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-  165.630   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 794
-  165.630   | =================================================================
-  165.630   | [AT][RX] Connection Status
-  165.630   | [AT][RX]   status_code 19
-  165.630   | [AT][RX]   reason_code 0
-  165.630   | [AT][RX]   status detail: user disconnect and send deauth
-  165.630   | [AT][RX]   state detail: 0x0
-  165.630   | [AT][RX]   vif_idx 0
-  165.630   | =================================================================
-  165.630   | [lwip] default netif cleared
-  165.630   | [lwip] netif status callback
-  165.635   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-  165.635   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  165.635   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  165.635   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  165.635   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-  165.635   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-  165.635   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  165.639   | WiFi disconnect
-  165.663   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-  167.398 setup 14: 7.7 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-  167.403   | [0mm[0m[0me[0m[0mm[0m[0m
-  167.403   | [0mmem: free 154552 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-  167.404   | [36mbouffalolab />[0m[0m
-  174.934   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-  175.728   | Disable Auto Reconnect
-  175.728   | Not connected
-  176.353   | start connecting ...
-  176.353   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-  176.358   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  176.359   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  176.359   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-  176.520   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-  176.520   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-  176.529   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-  176.529   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-  176.567   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-  176.567   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  176.567   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-  176.567   | --- OPT rxu_mgmt_ind is detected
-  176.567   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-  176.567   | rc_init: station_id=1 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-  176.567   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-  176.567   | ��No handler found for msg:1d from tsk:0 to tsk:6
-  176.572   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-  176.572   | [FU]Tx cfm ongoing--, value is 0
-  176.572   | [FL]RECV AUTH,sn:3813
-  176.572   | [FU]RECV AUTH,sn:3813
-  176.572   | [FU]Rx handler,state:5,fctl:0xb0
-  176.572   | [FU]Clear timer in auth handler
-  176.572   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-  176.577   | [FU]Tx cfm ongoing--, value is 0
-  176.577   | [FL]RECV ASSOCRSP,sn:3814
-  176.577   | [FU]RECV ASSOCRSP,sn:3814
-  176.577   | [FU]Rx handler,state:8,fctl:0x10
-  176.577   | [FU]Clear timer in assoc rsp handler
-  176.577   | sm_connect_ind sm_env.auth_retry_gap = 0
-  176.577   | [lwip] default netif: wl1
-  176.577   | [lwip] netif status callback
-  176.577   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-  176.582   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  176.582   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-  176.582   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-  176.582   | �[WPA] STA-RX-EAPOL1
-  176.582   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  176.582   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  176.587   | �[WPA] STA-TX-EAPOL2
-  176.587   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  176.592   | �[WPA] STA-RX-EAPOL3
-  176.592   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  176.592   | �[WPA] STA-TX-EAPOL4
-  176.592   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  176.592   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  176.599   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-  176.599   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-  176.599   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  176.599   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  176.599   | =================================================================
-  176.599   | [AT][RX] Connection Status
-  176.599   | [AT][RX]   status_code 0
-  176.599   | [AT][RX]   reason_code 0
-  176.599   | [AT][RX]   status detail: sm connect ind ok
-  176.599   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-  176.599   | [AT][RX]   vif_idx 1
-  176.599   | [AT][RX]   ap_idx 1
-  176.599   | [AT][RX]   ch_idx 0
-  176.599   | [AT][RX]   qos 1
-  176.599   | [AT][RX]   aid 8
-  176.599   | [AT][RX]   band 2.4G
-  176.600   | [AT][RX]   channel 11
-  176.600   | =================================================================
-  176.600   | start dhcping on vif 0 ...
-  176.612   | [32mLwIP DHCP ack (wl 1): [0m
-  176.612   | IP:192.168.1.222
-  176.612   | MASK: 255.255.255.0
-  176.612   | Gateway: 192.168.1.1
-  176.612   | [quick_connect] dhcp bind ip callback
-  176.612   | IP: 192.168.1.222
-  176.612   | MK: 255.255.255.0
-  176.612   | GW: 192.168.1.1
-  176.653   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-  176.685   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-  176.685   | Disable Auto Reconnect
-  176.685   | ��==========================  Keyram Config ========================
-  176.685   | ��  start 08 -->> end 11; nVAP 02; max 31
-  176.685   | ==========================  Keyram Dump =========================
-  176.685   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-  176.685   | ==========================  MAC Address =========================
-  176.685   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-  176.685   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-  176.685   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 827
-  176.685   | =================================================================
-  176.685   | [AT][RX] Connection Status
-  176.685   | [AT][RX]   status_code 19
-  176.685   | [AT][RX]   reason_code 0
-  176.685   | [AT][RX]   status detail: user disconnect and send deauth
-  176.685   | [AT][RX]   state detail: 0x0
-  176.685   | [AT][RX]   vif_idx 0
-  176.685   | =================================================================
-  176.685   | [lwip] default netif cleared
-  176.685   | [lwip] netif status callback
-  176.689   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-  176.689   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  176.689   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  176.690   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  176.690   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-  176.690   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-  176.694   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  176.694   | WiFi disconnect
-  176.718   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-  178.515 setup 15: 7.9 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-  178.519   | [0mm[0m[0me[0m[0mm[0m[0m
-  178.519   | [0mmem: free 154552 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-  178.519   | [36mbouffalolab />[0m[0m
-  185.989   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-  186.813   | Disable Auto Reconnect
-  186.813   | Not connected
-  187.436   | start connecting ...
-  187.436   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-  187.441   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  187.441   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  187.441   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-  187.610   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-  187.610   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-  187.620   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-  187.620   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-  187.657   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-  187.657   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  187.657   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-  187.657   | --- OPT rxu_mgmt_ind is detected
-  187.657   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-  187.657   | rc_init: station_id=2 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-  187.657   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-  187.661   | ��No handler found for msg:1d from tsk:0 to tsk:6
-  187.661   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-  187.661   | [FU]Tx cfm ongoing--, value is 0
-  187.666   | [FL]RECV AUTH,sn:3939,Retry
-  187.666   | [FU]RECV AUTH,sn:3939,Retry
-  187.666   | [FU]Rx handler,state:5,fctl:0xb0
-  187.666   | [FU]Clear timer in auth handler
-  187.666   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-  187.666   | [FU]Tx cfm ongoing--, value is 0
-  187.672   | [FL]RECV ASSOCRSP,sn:3940
-  187.672   | [FU]RECV ASSOCRSP,sn:3940
-  187.672   | [FU]Rx handler,state:8,fctl:0x10
-  187.672   | [FU]Clear timer in assoc rsp handler
-  187.672   | sm_connect_ind sm_env.auth_retry_gap = 0
-  187.672   | [lwip] default netif: wl1
-  187.672   | [lwip] netif status callback
-  187.672   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-  187.672   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  187.672   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-  187.672   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-  187.677   | �[WPA] STA-RX-EAPOL1
-  187.677   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  187.677   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  187.719   | �[WPA] STA-TX-EAPOL2
-  187.719   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  187.719   | �[WPA] STA-RX-EAPOL3
-  187.724   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  187.724   | �[WPA] STA-TX-EAPOL4
-  187.724   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  187.724   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  187.724   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-  187.731   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-  187.731   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  187.731   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  187.731   | =================================================================
-  187.731   | [AT][RX] Connection Status
-  187.731   | [AT][RX]   status_code 0
-  187.731   | [AT][RX]   reason_code 0
-  187.731   | [AT][RX]   status detail: sm connect ind ok
-  187.731   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-  187.731   | [AT][RX]   vif_idx 0
-  187.731   | [AT][RX]   ap_idx 2
-  187.731   | [AT][RX]   ch_idx 1
-  187.731   | [AT][RX]   qos 1
-  187.731   | [AT][RX]   aid 8
-  187.731   | [AT][RX]   band 2.4G
-  187.731   | [AT][RX]   channel 11
-  187.731   | =================================================================
-  187.731   | start dhcping on vif 0 ...
-  187.748   | [32mLwIP DHCP ack (wl 1): [0m
-  187.748   | IP:192.168.1.222
-  187.748   | MASK: 255.255.255.0
-  187.748   | Gateway: 192.168.1.1
-  187.748   | [quick_connect] dhcp bind ip callback
-  187.748   | IP: 192.168.1.222
-  187.748   | MK: 255.255.255.0
-  187.748   | GW: 192.168.1.1
-  187.784   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-  187.831   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-  187.831   | Disable Auto Reconnect
-  187.831   | ��==========================  Keyram Config ========================
-  187.831   | ��  start 08 -->> end 11; nVAP 02; max 31
-  187.831   | ==========================  Keyram Dump =========================
-  187.831   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-  187.831   | ==========================  MAC Address =========================
-  187.831   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-  187.831   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-  187.831   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 860
-  187.831   | =================================================================
-  187.831   | [AT][RX] Connection Status
-  187.831   | [AT][RX]   status_code 19
-  187.831   | [AT][RX]   reason_code 0
-  187.831   | [AT][RX]   status detail: user disconnect and send deauth
-  187.831   | [AT][RX]   state detail: 0x0
-  187.831   | [AT][RX]   vif_idx 0
-  187.831   | =================================================================
-  187.831   | [lwip] default netif cleared
-  187.831   | [lwip] netif status callback
-  187.835   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-  187.835   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  187.835   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  187.835   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  187.835   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-  187.840   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-  187.840   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  187.840   | WiFi disconnect
-  187.865   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-  189.574 setup 16: 7.9 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-  189.579   | [0mm[0m[0me[0m[0mm[0m[0m
-  189.579   | [0mmem: free 154552 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-  189.579   | [36mbouffalolab />[0m[0m
-  196.684   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-  197.463   | Disable Auto Reconnect
-  197.463   | Not connected
-  198.089   | start connecting ...
-  198.089   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-  198.094   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  198.094   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  198.094   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-  198.267   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-  198.267   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-  198.277   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-  198.277   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-  198.313   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-  198.313   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  198.313   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-  198.313   | --- OPT rxu_mgmt_ind is detected
-  198.313   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-  198.313   | rc_init: station_id=3 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-  198.313   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-  198.317   | ��No handler found for msg:1d from tsk:0 to tsk:6
-  198.317   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-  198.317   | [FU]Tx cfm ongoing--, value is 0
-  198.317   | [FL]RECV AUTH,sn:4057
-  198.317   | [FU]RECV AUTH,sn:4057
-  198.317   | [FU]Rx handler,state:5,fctl:0xb0
-  198.317   | [FU]Clear timer in auth handler
-  198.317   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-  198.322   | [FU]Tx cfm ongoing--, value is 0
-  198.322   | [FL]RECV ASSOCRSP,sn:4058
-  198.322   | [FU]RECV ASSOCRSP,sn:4058
-  198.328   | [FU]Rx handler,state:8,fctl:0x10
-  198.328   | [FU]Clear timer in assoc rsp handler
-  198.328   | sm_connect_ind sm_env.auth_retry_gap = 0
-  198.328   | [lwip] default netif: wl1
-  198.328   | [lwip] netif status callback
-  198.328   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-  198.328   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  198.328   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-  198.332   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-  198.332   | �[WPA] STA-RX-EAPOL1
-  198.332   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  198.332   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  198.332   | �[WPA] STA-TX-EAPOL2
-  198.332   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  198.341   | �[WPA] STA-RX-EAPOL3
-  198.341   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  198.341   | �[WPA] STA-TX-EAPOL4
-  198.341   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  198.341   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  198.349   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-  198.349   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-  198.349   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  198.349   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  198.349   | =================================================================
-  198.349   | [AT][RX] Connection Status
-  198.349   | [AT][RX]   status_code 0
-  198.349   | [AT][RX]   reason_code 0
-  198.349   | [AT][RX]   status detail: sm connect ind ok
-  198.349   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-  198.349   | [AT][RX]   vif_idx 1
-  198.349   | [AT][RX]   ap_idx 3
-  198.349   | [AT][RX]   ch_idx 2
-  198.349   | [AT][RX]   qos 1
-  198.349   | [AT][RX]   aid 8
-  198.349   | [AT][RX]   band 2.4G
-  198.349   | [AT][RX]   channel 11
-  198.350   | =================================================================
-  198.350   | start dhcping on vif 0 ...
-  198.360   | [32mLwIP DHCP ack (wl 1): [0m
-  198.360   | IP:192.168.1.222
-  198.360   | MASK: 255.255.255.0
-  198.360   | Gateway: 192.168.1.1
-  198.360   | [quick_connect] dhcp bind ip callback
-  198.360   | IP: 192.168.1.222
-  198.360   | MK: 255.255.255.0
-  198.360   | GW: 192.168.1.1
-  198.403   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-  198.467   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-  198.468   | Disable Auto Reconnect
-  198.468   | ��==========================  Keyram Config ========================
-  198.468   | ��  start 08 -->> end 11; nVAP 02; max 31
-  198.468   | ==========================  Keyram Dump =========================
-  198.468   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-  198.468   | ==========================  MAC Address =========================
-  198.468   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-  198.468   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-  198.468   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 893
-  198.468   | =================================================================
-  198.468   | [AT][RX] Connection Status
-  198.468   | [AT][RX]   status_code 19
-  198.468   | [AT][RX]   reason_code 0
-  198.468   | [AT][RX]   status detail: user disconnect and send deauth
-  198.468   | [AT][RX]   state detail: 0x0
-  198.468   | [AT][RX]   vif_idx 0
-  198.468   | =================================================================
-  198.468   | [lwip] default netif cleared
-  198.468   | [lwip] netif status callback
-  198.473   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-  198.473   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  198.473   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  198.473   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  198.473   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-  198.473   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-  198.473   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  198.477   | WiFi disconnect
-  198.500   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-  200.190 setup 17: 7.4 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-  200.195   | [0mm[0m[0me[0m[0mm[0m[0m
-  200.195   | [0mmem: free 154552 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-  200.195   | [36mbouffalolab />[0m[0m
-  207.079   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-  207.888   | Disable Auto Reconnect
-  207.888   | Not connected
-  208.514   | start connecting ...
-  208.514   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-  208.520   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  208.520   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  208.520   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-  208.682   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-  208.682   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-  208.691   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-  208.691   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-  208.727   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-  208.727   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  208.727   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-  208.727   | --- OPT rxu_mgmt_ind is detected
-  208.727   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-  208.727   | rc_init: station_id=0 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-  208.727   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-  208.732   | ��No handler found for msg:1d from tsk:0 to tsk:6
-  208.732   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-  208.732   | [FU]Tx cfm ongoing--, value is 0
-  208.732   | [FL]RECV AUTH,sn:76
-  208.732   | [FU]RECV AUTH,sn:76
-  208.732   | [FU]Rx handler,state:5,fctl:0xb0
-  208.732   | [FU]Clear timer in auth handler
-  208.732   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-  208.736   | [FU]Tx cfm ongoing--, value is 0
-  208.737   | [FL]RECV ASSOCRSP,sn:77
-  208.737   | [FU]RECV ASSOCRSP,sn:77
-  208.737   | [FU]Rx handler,state:8,fctl:0x10
-  208.737   | [FU]Clear timer in assoc rsp handler
-  208.737   | sm_connect_ind sm_env.auth_retry_gap = 0
-  208.737   | [lwip] default netif: wl1
-  208.737   | [lwip] netif status callback
-  208.742   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-  208.742   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  208.742   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-  208.742   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-  208.742   | �[WPA] STA-RX-EAPOL1
-  208.742   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  208.742   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  208.748   | �[WPA] STA-TX-EAPOL2
-  208.748   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  208.754   | �[WPA] STA-RX-EAPOL3
-  208.754   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  208.754   | �[WPA] STA-TX-EAPOL4
-  208.754   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  208.763   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  208.763   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-  208.763   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-  208.763   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  208.763   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  208.763   | =================================================================
-  208.763   | [AT][RX] Connection Status
-  208.763   | [AT][RX]   status_code 0
-  208.763   | [AT][RX]   reason_code 0
-  208.763   | [AT][RX]   status detail: sm connect ind ok
-  208.763   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-  208.763   | [AT][RX]   vif_idx 0
-  208.763   | [AT][RX]   ap_idx 0
-  208.763   | [AT][RX]   ch_idx 0
-  208.763   | [AT][RX]   qos 1
-  208.763   | [AT][RX]   aid 8
-  208.763   | [AT][RX]   band 2.4G
-  208.763   | [AT][RX]   channel 11
-  208.763   | =================================================================
-  208.763   | start dhcping on vif 0 ...
-  208.774   | [32mLwIP DHCP ack (wl 1): [0m
-  208.774   | IP:192.168.1.222
-  208.774   | MASK: 255.255.255.0
-  208.774   | Gateway: 192.168.1.1
-  208.774   | [quick_connect] dhcp bind ip callback
-  208.774   | IP: 192.168.1.222
-  208.774   | MK: 255.255.255.0
-  208.774   | GW: 192.168.1.1
-  208.816   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-  208.845   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-  208.845   | Disable Auto Reconnect
-  208.845   | ��==========================  Keyram Config ========================
-  208.845   | ��  start 08 -->> end 11; nVAP 02; max 31
-  208.845   | ==========================  Keyram Dump =========================
-  208.845   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-  208.845   | ==========================  MAC Address =========================
-  208.845   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-  208.845   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-  208.845   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 926
-  208.845   | =================================================================
-  208.845   | [AT][RX] Connection Status
-  208.845   | [AT][RX]   status_code 19
-  208.845   | [AT][RX]   reason_code 0
-  208.845   | [AT][RX]   status detail: user disconnect and send deauth
-  208.845   | [AT][RX]   state detail: 0x0
-  208.845   | [AT][RX]   vif_idx 0
-  208.845   | =================================================================
-  208.845   | [lwip] default netif cleared
-  208.845   | [lwip] netif status callback
-  208.850   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-  208.850   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  208.850   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  208.850   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  208.850   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-  208.854   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-  208.855   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  208.855   | WiFi disconnect
-  208.879   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-  210.425 setup 18: 7.0 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-  210.431   | [0mm[0m[0me[0m[0mm[0m[0m
-  210.431   | [0mmem: free 154552 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-  210.431   | [36mbouffalolab />[0m[0m
-  217.384   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-  218.178   | Disable Auto Reconnect
-  218.178   | Not connected
-  218.801   | start connecting ...
-  218.801   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-  218.807   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  218.807   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  218.807   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-  218.980   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-  218.980   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-  218.991   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-  218.991   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-  219.027   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-  219.027   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  219.027   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-  219.027   | --- OPT rxu_mgmt_ind is detected
-  219.027   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-  219.027   | rc_init: station_id=1 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-  219.031   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-  219.031   | ��No handler found for msg:1d from tsk:0 to tsk:6
-  219.031   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-  219.031   | [FU]Tx cfm ongoing--, value is 0
-  219.036   | [FL]RECV AUTH,sn:189
-  219.036   | [FU]RECV AUTH,sn:189
-  219.036   | [FU]Rx handler,state:5,fctl:0xb0
-  219.037   | [FU]Clear timer in auth handler
-  219.037   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-  219.037   | [FU]Tx cfm ongoing--, value is 0
-  219.042   | [FL]RECV ASSOCRSP,sn:190
-  219.042   | [FU]RECV ASSOCRSP,sn:190
-  219.042   | [FU]Rx handler,state:8,fctl:0x10
-  219.042   | [FU]Clear timer in assoc rsp handler
-  219.042   | sm_connect_ind sm_env.auth_retry_gap = 0
-  219.042   | [lwip] default netif: wl1
-  219.042   | [lwip] netif status callback
-  219.042   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-  219.042   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  219.042   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-  219.046   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-  219.046   | �[WPA] STA-RX-EAPOL1
-  219.046   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  219.046   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  219.051   | �[WPA] STA-TX-EAPOL2
-  219.052   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  219.052   | �[WPA] STA-RX-EAPOL3
-  219.052   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  219.058   | �[WPA] STA-TX-EAPOL4
-  219.058   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  219.058   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  219.058   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-  219.058   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-  219.058   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  219.058   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  219.063   | =================================================================
-  219.063   | [AT][RX] Connection Status
-  219.063   | [AT][RX]   status_code 0
-  219.063   | [AT][RX]   reason_code 0
-  219.063   | [AT][RX]   status detail: sm connect ind ok
-  219.063   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-  219.063   | [AT][RX]   vif_idx 1
-  219.063   | [AT][RX]   ap_idx 1
-  219.063   | [AT][RX]   ch_idx 1
-  219.063   | [AT][RX]   qos 1
-  219.063   | [AT][RX]   aid 8
-  219.063   | [AT][RX]   band 2.4G
-  219.063   | [AT][RX]   channel 11
-  219.063   | =================================================================
-  219.063   | start dhcping on vif 0 ...
-  219.075   | [32mLwIP DHCP ack (wl 1): [0m
-  219.075   | IP:192.168.1.222
-  219.075   | MASK: 255.255.255.0
-  219.075   | Gateway: 192.168.1.1
-  219.075   | [quick_connect] dhcp bind ip callback
-  219.075   | IP: 192.168.1.222
-  219.075   | MK: 255.255.255.0
-  219.075   | GW: 192.168.1.1
-  219.117   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-  219.147   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-  219.147   | Disable Auto Reconnect
-  219.147   | ��==========================  Keyram Config ========================
-  219.147   | ��  start 08 -->> end 11; nVAP 02; max 31
-  219.147   | ==========================  Keyram Dump =========================
-  219.147   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-  219.147   | ==========================  MAC Address =========================
-  219.147   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-  219.147   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-  219.147   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 959
-  219.147   | =================================================================
-  219.147   | [AT][RX] Connection Status
-  219.147   | [AT][RX]   status_code 19
-  219.147   | [AT][RX]   reason_code 0
-  219.147   | [AT][RX]   status detail: user disconnect and send deauth
-  219.147   | [AT][RX]   state detail: 0x0
-  219.147   | [AT][RX]   vif_idx 0
-  219.147   | =================================================================
-  219.147   | [lwip] default netif cleared
-  219.147   | [lwip] netif status callback
-  219.152   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-  219.152   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  219.152   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  219.152   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  219.152   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-  219.152   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-  219.152   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  219.157   | WiFi disconnect
-  219.205   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-  220.660 setup 19: 7.0 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-  220.665   | [0mm[0m[0me[0m[0mm[0m[0m
-  220.665   | [0mmem: free 154552 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-  220.665   | [36mbouffalolab />[0m[0m
-  228.064   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
-  228.843   | Disable Auto Reconnect
-  228.843   | Not connected
-  229.467   | start connecting ...
-  229.467   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
-  229.473   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  229.473   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  229.473   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
-  229.643   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
-  229.643   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
-  229.653   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
-  229.653   | �[WPA] CTRL-EVENT-SCAN-RESULTS
-  229.689   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
-  229.689   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  229.689   | sm_connect_req_handler sm_env.auth_retry_gap = 0
-  229.689   | --- OPT rxu_mgmt_ind is detected
-  229.689   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
-  229.689   | rc_init: station_id=2 format_mod=2 pre_type=0 short_gi=1 max_bw=0
-  229.689   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
-  229.689   | ��No handler found for msg:1d from tsk:0 to tsk:6
-  229.693   | [FU]Set timer,state is 5,ongoing++, timeout:512000
-  229.694   | [FU]Tx cfm ongoing--, value is 0
-  229.694   | [FL]RECV AUTH,sn:308,Retry
-  229.694   | [FU]RECV AUTH,sn:308,Retry
-  229.694   | [FU]Rx handler,state:5,fctl:0xb0
-  229.694   | [FU]Clear timer in auth handler
-  229.698   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
-  229.698   | [FU]Tx cfm ongoing--, value is 0
-  229.704   | [FL]RECV ASSOCRSP,sn:309
-  229.704   | [FU]RECV ASSOCRSP,sn:309
-  229.704   | [FU]Rx handler,state:8,fctl:0x10
-  229.704   | [FU]Clear timer in assoc rsp handler
-  229.704   | sm_connect_ind sm_env.auth_retry_gap = 0
-  229.704   | [lwip] default netif: wl1
-  229.704   | [lwip] netif status callback
-  229.704   | [FH]fhost_tx_req_do relese this buf(Line:882)!
-  229.704   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  229.708   | �[WPA] Associated with 84:D8:1B:24:0A:3C
-  229.709   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-  229.709   | �[WPA] STA-RX-EAPOL1
-  229.709   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  229.709   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  229.713   | �[WPA] STA-TX-EAPOL2
-  229.713   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  229.713   | �[WPA] STA-RX-EAPOL3
-  229.713   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  229.721   | �[WPA] STA-TX-EAPOL4
-  229.721   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  229.721   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  229.721   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
-  229.721   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
-  229.721   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  229.721   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  229.725   | =================================================================
-  229.726   | [AT][RX] Connection Status
-  229.726   | [AT][RX]   status_code 0
-  229.726   | [AT][RX]   reason_code 0
-  229.726   | [AT][RX]   status detail: sm connect ind ok
-  229.726   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
-  229.726   | [AT][RX]   vif_idx 0
-  229.726   | [AT][RX]   ap_idx 2
-  229.726   | [AT][RX]   ch_idx 2
-  229.726   | [AT][RX]   qos 1
-  229.726   | [AT][RX]   aid 8
-  229.726   | [AT][RX]   band 2.4G
-  229.726   | [AT][RX]   channel 11
-  229.726   | =================================================================
-  229.726   | start dhcping on vif 0 ...
-  229.743   | [32mLwIP DHCP ack (wl 1): [0m
-  229.743   | IP:192.168.1.222
-  229.743   | MASK: 255.255.255.0
-  229.743   | Gateway: 192.168.1.1
-  229.743   | [quick_connect] dhcp bind ip callback
-  229.743   | IP: 192.168.1.222
-  229.743   | MK: 255.255.255.0
-  229.743   | GW: 192.168.1.1
-  229.780   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-  229.853   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
-  229.854   | Disable Auto Reconnect
-  229.854   | ��==========================  Keyram Config ========================
-  229.854   | ��  start 08 -->> end 11; nVAP 02; max 31
-  229.854   | ==========================  Keyram Dump =========================
-  229.854   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
-  229.854   | ==========================  MAC Address =========================
-  229.854   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
-  229.854   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
-  229.854   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 992
-  229.854   | =================================================================
-  229.854   | [AT][RX] Connection Status
-  229.854   | [AT][RX]   status_code 19
-  229.854   | [AT][RX]   reason_code 0
-  229.854   | [AT][RX]   status detail: user disconnect and send deauth
-  229.854   | [AT][RX]   state detail: 0x0
-  229.854   | [AT][RX]   vif_idx 0
-  229.854   | =================================================================
-  229.854   | [lwip] default netif cleared
-  229.854   | [lwip] netif status callback
-  229.859   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
-  229.859   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
-  229.859   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  229.859   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  229.859   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
-  229.859   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
-  229.863   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
-  229.864   | WiFi disconnect
-  229.886   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
-  231.519 setup 20: 7.6 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-  231.524   | [0mm[0m[0me[0m[0mm[0m[0m
-  231.525   | [0mmem: free 154552 largest 135396 min 128268 blocks 103 used 71100 tasks 15 deleted 0
-  231.525   | [36mbouffalolab />[0m[0m
-  232.520 end: 20 setups, 0 failed
+    2.290   | [0mc[0m[0mr[0m[0ma[0m[0ms[0m[0mh[0m[0m
+    2.290   | [0mcrash: no record
+    2.290   | [36mbouffalolab />[0m[0m
+    2.290   | [0m[36mbouffalolab />[0m[0mm[0m[0me[0m[0mm[0m[0m
+    2.290   | [0mmem: free 146068 largest 133924 min 120084 blocks 105 used 79432 tasks 16 deleted 0
+    2.290   | [36mbouffalolab />[0m[0m
+    9.587   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
+   10.352   | Disable Auto Reconnect
+   10.352   | Not connected
+   10.976   | start connecting ...
+   10.977   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
+   10.982   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   10.982   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   10.982   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
+   11.166   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
+   11.166   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
+   11.178   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
+   11.178   | �[WPA] CTRL-EVENT-SCAN-RESULTS
+   11.213   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
+   11.213   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   11.213   | sm_connect_req_handler sm_env.auth_retry_gap = 0
+   11.213   | --- OPT rxu_mgmt_ind is detected
+   11.213   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
+   11.213   | rc_init: station_id=2 format_mod=2 pre_type=0 short_gi=1 max_bw=0
+   11.213   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
+   11.213   | ��No handler found for msg:1d from tsk:0 to tsk:6
+   11.218   | [FU]Set timer,state is 5,ongoing++, timeout:512000
+   11.218   | [FU]Tx cfm ongoing--, value is 0
+   11.218   | [FL]RECV AUTH,sn:1480
+   11.218   | [FU]RECV AUTH,sn:1480
+   11.218   | [FU]Rx handler,state:5,fctl:0xb0
+   11.218   | [FU]Clear timer in auth handler
+   11.218   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
+   11.218   | [FU]Tx cfm ongoing--, value is 0
+   11.224   | [FL]RECV ASSOCRSP,sn:1481
+   11.224   | [FU]RECV ASSOCRSP,sn:1481
+   11.224   | [FU]Rx handler,state:8,fctl:0x10
+   11.224   | [FU]Clear timer in assoc rsp handler
+   11.224   | sm_connect_ind sm_env.auth_retry_gap = 0
+   11.224   | [lwip] default netif: wl1
+   11.224   | [lwip] netif status callback
+   11.224   | [FH]fhost_tx_req_do relese this buf(Line:882)!
+   11.224   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   11.224   | �[WPA] Associated with 84:D8:1B:24:0A:3C
+   11.229   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
+   11.229   | �[WPA] STA-RX-EAPOL1
+   11.229   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   11.229   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   11.229   | �[WPA] STA-TX-EAPOL2
+   11.229   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   11.237   | �[WPA] STA-RX-EAPOL3
+   11.237   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   11.237   | �[WPA] STA-TX-EAPOL4
+   11.237   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   11.245   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   11.245   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
+   11.245   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
+   11.245   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   11.245   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   11.245   | =================================================================
+   11.245   | [AT][RX] Connection Status
+   11.245   | [AT][RX]   status_code 0
+   11.245   | [AT][RX]   reason_code 0
+   11.245   | [AT][RX]   status detail: sm connect ind ok
+   11.245   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
+   11.245   | [AT][RX]   vif_idx 1
+   11.245   | [AT][RX]   ap_idx 2
+   11.245   | [AT][RX]   ch_idx 2
+   11.245   | [AT][RX]   qos 1
+   11.245   | [AT][RX]   aid 10
+   11.245   | [AT][RX]   band 2.4G
+   11.245   | [AT][RX]   channel 11
+   11.245   | =================================================================
+   11.245   | start dhcping on vif 0 ...
+   11.286   | [32mLwIP DHCP ack (wl 1): [0m
+   11.286   | IP:192.168.1.222
+   11.286   | MASK: 255.255.255.0
+   11.286   | Gateway: 192.168.1.1
+   11.286   | [quick_connect] dhcp bind ip callback
+   11.286   | IP: 192.168.1.222
+   11.286   | MK: 255.255.255.0
+   11.286   | GW: 192.168.1.1
+   11.297   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
+   11.330   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
+   11.330   | Disable Auto Reconnect
+   11.330   | ��==========================  Keyram Config ========================
+   11.330   | ��  start 08 -->> end 11; nVAP 02; max 31
+   11.330   | ==========================  Keyram Dump =========================
+   11.330   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
+   11.330   | ==========================  MAC Address =========================
+   11.330   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
+   11.330   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
+   11.330   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 99
+   11.339   | =================================================================
+   11.339   | [AT][RX] Connection Status
+   11.339   | [AT][RX]   status_code 19
+   11.339   | [AT][RX]   reason_code 0
+   11.339   | [AT][RX]   status detail: user disconnect and send deauth
+   11.339   | [AT][RX]   state detail: 0x0
+   11.339   | [AT][RX]   vif_idx 0
+   11.339   | =================================================================
+   11.339   | [lwip] default netif cleared
+   11.339   | [lwip] netif status callback
+   11.339   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
+   11.339   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   11.339   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
+   11.339   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
+   11.339   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
+   11.339   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
+   11.339   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
+   11.339   | WiFi disconnect
+   11.366   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
+   21.509 setup 1: 17.2 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
+   21.513   | [0mm[0m[0me[0m[0mm[0m[0m
+   21.513   | [0mmem: free 146068 largest 133924 min 120084 blocks 105 used 79432 tasks 16 deleted 0
+   21.513   | [36mbouffalolab />[0m[0m
+   24.772   | [0m[36mbouffalolab />[0mDisable Auto Reconnect
+   24.772   | Not connected
+   25.017   | [SCAN] Format check failed for BSSID: 54:13:10:a2:4f:4c
+   25.394   | start connecting ...
+   25.394   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
+   25.398   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   25.398   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   25.398   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
+   25.581   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
+   25.581   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
+   25.592   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
+   25.592   | �[WPA] CTRL-EVENT-SCAN-RESULTS
+   25.628   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
+   25.628   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   25.628   | sm_connect_req_handler sm_env.auth_retry_gap = 0
+   25.628   | --- OPT rxu_mgmt_ind is detected
+   25.628   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
+   25.628   | rc_init: station_id=3 format_mod=2 pre_type=0 short_gi=1 max_bw=0
+   25.628   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
+   25.628   | ��No handler found for msg:1d from tsk:0 to tsk:6
+   25.632   | [FU]Set timer,state is 5,ongoing++, timeout:512000
+   25.632   | [FU]Tx cfm ongoing--, value is 0
+   25.632   | [FL]RECV AUTH,sn:1636
+   25.632   | [FU]RECV AUTH,sn:1636
+   25.632   | [FU]Rx handler,state:5,fctl:0xb0
+   25.632   | [FU]Clear timer in auth handler
+   25.632   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
+   25.632   | [FU]Tx cfm ongoing--, value is 0
+   25.639   | [FL]RECV ASSOCRSP,sn:1637
+   25.639   | [FU]RECV ASSOCRSP,sn:1637
+   25.639   | [FU]Rx handler,state:8,fctl:0x10
+   25.639   | [FU]Clear timer in assoc rsp handler
+   25.639   | sm_connect_ind sm_env.auth_retry_gap = 0
+   25.639   | [lwip] default netif: wl1
+   25.639   | [lwip] netif status callback
+   25.639   | [FH]fhost_tx_req_do relese this buf(Line:882)!
+   25.639   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   25.639   | �[WPA] Associated with 84:D8:1B:24:0A:3C
+   25.639   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
+   25.643   | �[WPA] STA-RX-EAPOL1
+   25.644   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   25.644   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   25.650   | �[WPA] STA-TX-EAPOL2
+   25.650   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   25.656   | �[WPA] STA-RX-EAPOL3
+   25.656   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   25.656   | �[WPA] STA-TX-EAPOL4
+   25.656   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   25.656   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   25.664   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
+   25.664   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
+   25.664   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   25.664   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   25.664   | =================================================================
+   25.664   | [AT][RX] Connection Status
+   25.664   | [AT][RX]   status_code 0
+   25.664   | [AT][RX]   reason_code 0
+   25.664   | [AT][RX]   status detail: sm connect ind ok
+   25.664   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
+   25.664   | [AT][RX]   vif_idx 0
+   25.664   | [AT][RX]   ap_idx 3
+   25.664   | [AT][RX]   ch_idx 0
+   25.664   | [AT][RX]   qos 1
+   25.664   | [AT][RX]   aid 10
+   25.664   | [AT][RX]   band 2.4G
+   25.664   | [AT][RX]   channel 11
+   25.664   | =================================================================
+   25.664   | start dhcping on vif 0 ...
+   25.679   | [32mLwIP DHCP ack (wl 1): [0m
+   25.679   | IP:192.168.1.222
+   25.679   | MASK: 255.255.255.0
+   25.679   | Gateway: 192.168.1.1
+   25.679   | [quick_connect] dhcp bind ip callback
+   25.679   | IP: 192.168.1.222
+   25.679   | MK: 255.255.255.0
+   25.679   | GW: 192.168.1.1
+   25.717   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
+   25.968   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
+   25.969   | Disable Auto Reconnect
+   25.969   | ��==========================  Keyram Config ========================
+   25.969   | ��  start 08 -->> end 11; nVAP 02; max 31
+   25.969   | ==========================  Keyram Dump =========================
+   25.969   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
+   25.969   | ==========================  MAC Address =========================
+   25.969   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
+   25.969   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
+   25.969   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 132
+   25.969   | =================================================================
+   25.969   | [AT][RX] Connection Status
+   25.969   | [AT][RX]   status_code 19
+   25.969   | [AT][RX]   reason_code 0
+   25.969   | [AT][RX]   status detail: user disconnect and send deauth
+   25.969   | [AT][RX]   state detail: 0x0
+   25.969   | [AT][RX]   vif_idx 0
+   25.969   | =================================================================
+   25.969   | [lwip] default netif cleared
+   25.969   | [lwip] netif status callback
+   25.973   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
+   25.974   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   25.974   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
+   25.974   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
+   25.974   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
+   25.974   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
+   25.974   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
+   25.974   | WiFi disconnect
+   29.898   | [0m[I][] ble: paired, bonded=1
+   30.752   | Disable Auto Reconnect
+   30.752   | Not connected
+   31.375   | start connecting ...
+   31.375   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
+   31.381   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   31.381   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   31.381   | �[WPA] CTRL-EVENT-NETWORK-ADDED 0
+   31.564   | WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
+   31.565   | Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c
+   31.573   | �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
+   31.573   | �[WPA] CTRL-EVENT-SCAN-RESULTS
+   31.609   | �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
+   31.610   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   31.610   | sm_connect_req_handler sm_env.auth_retry_gap = 0
+   31.610   | --- OPT rxu_mgmt_ind is detected
+   31.610   | [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
+   31.610   | rc_init: station_id=0 format_mod=2 pre_type=0 short_gi=1 max_bw=0
+   31.610   | rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
+   31.610   | ��No handler found for msg:1d from tsk:0 to tsk:6
+   31.610   | [FU]Set timer,state is 5,ongoing++, timeout:512000
+   31.614   | [FU]Tx cfm ongoing--, value is 0
+   31.614   | [FL]RECV AUTH,sn:1714
+   31.614   | [FU]RECV AUTH,sn:1714
+   31.614   | [FU]Rx handler,state:5,fctl:0xb0
+   31.614   | [FU]Clear timer in auth handler
+   31.614   | [FU]Set timer,state is 8,ongoing++, timeout:1024000
+   31.614   | [FU]Tx cfm ongoing--, value is 0
+   31.621   | [FL]RECV ASSOCRSP,sn:1715
+   31.621   | [FU]RECV ASSOCRSP,sn:1715
+   31.621   | [FU]Rx handler,state:8,fctl:0x10
+   31.621   | [FU]Clear timer in assoc rsp handler
+   31.621   | sm_connect_ind sm_env.auth_retry_gap = 0
+   31.621   | [lwip] default netif: wl1
+   31.621   | [lwip] netif status callback
+   31.621   | [FH]fhost_tx_req_do relese this buf(Line:882)!
+   31.621   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   31.621   | �[WPA] Associated with 84:D8:1B:24:0A:3C
+   31.621   | �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
+   31.628   | �[WPA] STA-RX-EAPOL1
+   31.628   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   31.628   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   31.651   | �[WPA] STA-TX-EAPOL2
+   31.651   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   31.651   | �[WPA] STA-RX-EAPOL3
+   31.656   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   31.657   | �[WPA] STA-TX-EAPOL4
+   31.657   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   31.657   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   31.657   | �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
+   31.657   | �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
+   31.657   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   31.657   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   31.661   | =================================================================
+   31.661   | [AT][RX] Connection Status
+   31.661   | [AT][RX]   status_code 0
+   31.661   | [AT][RX]   reason_code 0
+   31.661   | [AT][RX]   status detail: sm connect ind ok
+   31.661   | [AT][RX]   MAC 84:D8:1B:24:0A:3C
+   31.661   | [AT][RX]   vif_idx 1
+   31.661   | [AT][RX]   ap_idx 0
+   31.661   | [AT][RX]   ch_idx 1
+   31.661   | [AT][RX]   qos 1
+   31.661   | [AT][RX]   aid 10
+   31.661   | [AT][RX]   band 2.4G
+   31.661   | [AT][RX]   channel 11
+   31.661   | =================================================================
+   31.661   | start dhcping on vif 0 ...
+   31.674   | [32mLwIP DHCP ack (wl 1): [0m
+   31.674   | IP:192.168.1.222
+   31.674   | MASK: 255.255.255.0
+   31.674   | Gateway: 192.168.1.1
+   31.674   | [quick_connect] dhcp bind ip callback
+   31.674   | IP: 192.168.1.222
+   31.674   | MK: 255.255.255.0
+   31.674   | GW: 192.168.1.1
+   31.716   | {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
+   31.776   | [0m[I][WCHK] check of "VK": state 0x03 detail 0
+   31.776   | Disable Auto Reconnect
+   31.776   | ��==========================  Keyram Config ========================
+   31.776   | ��  start 08 -->> end 11; nVAP 02; max 31
+   31.776   | ==========================  Keyram Dump =========================
+   31.776   | [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
+   31.776   | ==========================  MAC Address =========================
+   31.776   | MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
+   31.776   | BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
+   31.776   | [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 165
+   31.776   | =================================================================
+   31.776   | [AT][RX] Connection Status
+   31.776   | [AT][RX]   status_code 19
+   31.776   | [AT][RX]   reason_code 0
+   31.776   | [AT][RX]   status detail: user disconnect and send deauth
+   31.776   | [AT][RX]   state detail: 0x0
+   31.776   | [AT][RX]   vif_idx 0
+   31.776   | =================================================================
+   31.776   | [lwip] default netif cleared
+   31.776   | [lwip] netif status callback
+   31.780   | �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
+   31.780   | wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   31.780   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
+   31.780   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
+   31.780   | �[WPA] CTRL-EVENT-NETWORK-REMOVED 0
+   31.780   | �[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
+   31.780   | �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
+   31.785   | WiFi disconnect
+   31.808   | [0m[I][] ble: Wi-Fi credentials stored for "VK"
+   41.713 setup 2: 17.0 s Enter the name and password of the Wi-Fi network the LEAKCAM | Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
+   41.718   | [0mm[0m[0me[0m[0mm[0m[0m
+   41.718   | [0mmem: free 146068 largest 133924 min 120084 blocks 105 used 79432 tasks 16 deleted 0
+   41.718   | [36mbouffalolab />[0m[0m
+   42.714 end: 2 setups, 0 failed

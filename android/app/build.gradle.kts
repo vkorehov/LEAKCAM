@@ -14,6 +14,11 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"   // BleOp: tests/test040, test106
+        // the presence server (server/, the Pi's systemd unit leakcam-server)
+        buildConfigField("String", "SERVER", "\"http://192.168.1.159:8090\"")
+    }
+    buildFeatures {
+        buildConfig = true
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

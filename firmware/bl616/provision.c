@@ -11,6 +11,7 @@
 #include "shell.h"
 
 #include "ble_pairing.h"
+#include "presence.h"
 #include "usb_power.h"
 #include "wifi_link.h"
 
@@ -31,11 +32,12 @@ static void provision_task(void *arg)
 {
     enum { IDLE, ADVERTISING, STOPPED } state = IDLE;
     (void)arg;
+    radio_init();
+    presence_start();                       /* always: checks in whenever a network is stored (use case 2) */
     for (;;) {
         bool usb = usb_present();
         if (usb && state == IDLE) {
-            radio_init();
-            ble_pairing_start();
+            ble_pairing_start();            /* BLE only on USB power: the proof of physical access */
             state = ADVERTISING;
         } else if (!usb && state == ADVERTISING) {
             ble_pairing_stop();             /* a held connection drops at once (test106 step 7) */

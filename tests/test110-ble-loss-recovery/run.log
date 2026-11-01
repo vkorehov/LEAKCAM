@@ -1,62 +1,62 @@
-09:27:01 test110-ble-loss-recovery: 0 metric rows MISSING: none
-09:27:18 setup <network> 7.8 s Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-09:27:18 CHECK pass baseline: Done without faults 7.8 s
-09:27:34 setup <network> 7.6 s Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-09:27:38 CHECK pass every notification lost: app recovers, Done 7.6 s, fault fired 4
-09:27:38 CHECK pass every notification lost: app and board agree app Done, board real network
-09:27:54 setup <network> 7.5 s Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-09:27:59 CHECK pass every second notification lost: app recovers, Done 7.5 s, fault fired 2
-09:27:59 CHECK pass every second notification lost: app and board agree app Done, board real network
-09:28:14 setup <network> 7.0 s Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-09:28:18 CHECK pass the result notification lost: app recovers, Done 7.0 s, fault fired 1
-09:28:18 CHECK pass the result notification lost: app and board agree app Done, board real network
-09:28:33 setup <network> 6.3 s Connecting to LEAKCAM-B14A… | The LEAKCAM disconnected (status 133). Keep it on USB power 
-09:28:37 CHECK pass link lost at every connect: failure told in time 6.3 s: The LEAKCAM disconnected (status 133). Keep it on USB power and nearby
-09:28:37 CHECK pass link lost at every connect: app and board agree app failure, board decoy
-09:28:48 setup <network> 6.8 s Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-09:28:50 CHECK pass link lost at every connect: clean setup after it Done 6.8 s
-09:29:08 setup <network> 9.4 s The connection to LEAKCAM-B14A dropped. Reconnecting to see  | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-09:29:13 CHECK pass link lost when the check starts: app recovers, Done 9.4 s, fault fired 1
-09:29:13 CHECK pass link lost when the check starts: app and board agree app Done, board real network
-09:29:31 setup <network> 9.9 s The connection to LEAKCAM-B14A dropped. Reconnecting to see  | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-09:29:35 CHECK pass link lost while getting an address: app recovers, Done 9.9 s, fault fired 1
-09:29:35 CHECK pass link lost while getting an address: app and board agree app Done, board real network
-09:29:53 setup <network> 9.5 s The connection to LEAKCAM-B14A dropped. Reconnecting to see  | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-09:29:57 CHECK pass link lost while reaching the internet: app recovers, Done 9.5 s, fault fired 1
-09:29:57 CHECK pass link lost while reaching the internet: app and board agree app Done, board real network
-09:30:16 setup <network> 10.2 s The connection to LEAKCAM-B14A dropped. Reconnecting to see  | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-09:30:20 CHECK pass link lost with the result: app recovers, Done 10.2 s, fault fired 1
-09:30:20 CHECK pass link lost with the result: app and board agree app Done, board real network
-09:30:36 setup <network> 7.4 s Connecting to LEAKCAM-B14A… | The LEAKCAM is on the network, but internet names do not res
-09:30:41 CHECK pass DNS answer lost: failure told in time 7.4 s: The LEAKCAM is on the network, but internet names do not resolve. Is t
-09:30:41 CHECK pass DNS answer lost: app and board agree app failure, board decoy
-09:30:52 setup <network> 7.1 s Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-09:30:54 CHECK pass DNS answer lost: clean setup after it Done 7.1 s
-09:31:10 setup <network> 7.5 s Connecting to LEAKCAM-B14A… | The LEAKCAM is on the network, but it cannot reach the inter
-09:31:14 CHECK pass HTTP answer lost: failure told in time 7.5 s: The LEAKCAM is on the network, but it cannot reach the internet. Is th
-09:31:14 CHECK pass HTTP answer lost: app and board agree app failure, board decoy
-09:31:26 setup <network> 7.4 s Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-09:31:28 CHECK pass HTTP answer lost: clean setup after it Done 7.4 s
-09:31:48 setup <network> 11.3 s Enter the name and password of the Wi-Fi network the LEAKCAM | Bluetooth is off. Turn it on, then tap again.
-09:31:52 CHECK pass phone Bluetooth off before the save: failure told in time 11.3 s: Bluetooth is off. Turn it on, then tap again.
-09:31:52 CHECK pass phone Bluetooth off before the save: app and board agree app failure, board decoy
-09:32:04 setup <network> 7.6 s Connecting to LEAKCAM-B14A… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-09:32:06 CHECK pass phone Bluetooth off before the save: clean setup after it Done 7.6 s
-09:32:30 setup <network> 14.9 s The connection to LEAKCAM-B14A dropped. Reconnecting to see  | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
-09:32:34 CHECK pass phone Bluetooth off during the check: app recovers, Done 14.9 s, fault fired 0
-09:32:34 CHECK pass phone Bluetooth off during the check: app and board agree app Done, board real network
-09:32:38 sample after all cases {'board': 28.3, 'bl_mem': (122832, 103664, 96548, 107, 79572, 17, 0)}
-09:32:38 cases (name, s, app said, board stored, fault fired):
-09:32:38    every notification lost | 7.6 | Done | real | 4
-09:32:38    every second notification lost | 7.5 | Done | real | 2
-09:32:38    the result notification lost | 7.0 | Done | real | 1
-09:32:38    link lost at every connect | 6.3 | The LEAKCAM disconnected (status 133) | decoy | 6
-09:32:38    link lost when the check starts | 9.4 | Done | real | 1
-09:32:38    link lost while getting an address | 9.9 | Done | real | 1
-09:32:38    link lost while reaching the internet | 9.5 | Done | real | 1
-09:32:38    link lost with the result | 10.2 | Done | real | 1
-09:32:38    DNS answer lost | 7.4 | The LEAKCAM is on the network, but internet names do not res | decoy | 1
-09:32:38    HTTP answer lost | 7.5 | The LEAKCAM is on the network, but it cannot reach the inter | decoy | 1
-09:32:38    phone Bluetooth off before the save | 11.3 | Bluetooth is off | decoy | 0
-09:32:38    phone Bluetooth off during the check | 14.9 | Done | real | 0
-09:32:38 test110-ble-loss-recovery: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+11:33:52 test110-ble-loss-recovery: 0 metric rows MISSING: none
+11:34:09 setup <network> 8.1 s The LEAKCAM is now joining VK to check the name and password | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
+11:34:09 CHECK pass baseline: Done without faults 8.1 s
+11:34:28 setup <network> 7.9 s Paired. Sending the Wi-Fi settings… | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
+11:34:34 CHECK pass every notification lost: app recovers, Done 7.9 s, fault fired 4
+11:34:34 CHECK pass every notification lost: app and board agree app Done, board real network
+11:34:53 setup <network> 7.7 s The LEAKCAM is now joining VK to check the name and password | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
+11:34:59 CHECK pass every second notification lost: app recovers, Done 7.7 s, fault fired 2
+11:34:59 CHECK pass every second notification lost: app and board agree app Done, board real network
+11:35:17 setup <network> 8.0 s The LEAKCAM is now joining VK to check the name and password | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
+11:35:24 CHECK pass the result notification lost: app recovers, Done 8.0 s, fault fired 1
+11:35:24 CHECK pass the result notification lost: app and board agree app Done, board real network
+11:35:41 setup <network> 6.9 s Connecting to LEAKCAM-B14A… | The LEAKCAM disconnected (status 133). Keep it on USB power 
+11:35:47 CHECK pass link lost at every connect: failure told in time 6.9 s: The LEAKCAM disconnected (status 133). Keep it on USB power and nearby
+11:35:47 CHECK pass link lost at every connect: app and board agree app failure, board decoy
+11:36:00 setup <network> 7.7 s The LEAKCAM is now joining VK to check the name and password | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
+11:36:04 CHECK pass link lost at every connect: clean setup after it Done 7.7 s
+11:36:24 setup <network> 10.1 s The connection to LEAKCAM-B14A dropped. Reconnecting to see  | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
+11:36:31 CHECK pass link lost when the check starts: app recovers, Done 10.1 s, fault fired 1
+11:36:31 CHECK pass link lost when the check starts: app and board agree app Done, board real network
+11:36:52 setup <network> 10.7 s The connection to LEAKCAM-B14A dropped. Reconnecting to see  | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
+11:36:58 CHECK pass link lost while getting an address: app recovers, Done 10.7 s, fault fired 1
+11:36:58 CHECK pass link lost while getting an address: app and board agree app Done, board real network
+11:37:19 setup <network> 10.3 s The connection to LEAKCAM-B14A dropped. Reconnecting to see  | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
+11:37:25 CHECK pass link lost while reaching the internet: app recovers, Done 10.3 s, fault fired 1
+11:37:25 CHECK pass link lost while reaching the internet: app and board agree app Done, board real network
+11:37:47 setup <network> 11.0 s The connection to LEAKCAM-B14A dropped. Reconnecting to see  | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
+11:37:53 CHECK pass link lost with the result: app recovers, Done 11.0 s, fault fired 1
+11:37:53 CHECK pass link lost with the result: app and board agree app Done, board real network
+11:38:11 setup <network> 7.5 s The LEAKCAM is now joining VK to check the name and password | The LEAKCAM is on the network, but internet names do not res
+11:38:17 CHECK pass DNS answer lost: failure told in time 7.5 s: The LEAKCAM is on the network, but internet names do not resolve. Is t
+11:38:17 CHECK pass DNS answer lost: app and board agree app failure, board decoy
+11:38:30 setup <network> 8.0 s The LEAKCAM is now joining VK to check the name and password | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
+11:38:34 CHECK pass DNS answer lost: clean setup after it Done 8.0 s
+11:38:52 setup <network> 7.4 s The LEAKCAM is now joining VK to check the name and password | The LEAKCAM is on the network, but it cannot reach the inter
+11:38:58 CHECK pass HTTP answer lost: failure told in time 7.4 s: The LEAKCAM is on the network, but it cannot reach the internet. Is th
+11:38:58 CHECK pass HTTP answer lost: app and board agree app failure, board decoy
+11:39:11 setup <network> 8.2 s The LEAKCAM is now joining VK to check the name and password | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
+11:39:15 CHECK pass HTTP answer lost: clean setup after it Done 8.2 s
+11:39:33 setup <network> 7.3 s Enter the new Wi-Fi network for LEAKCAM-B14A. It replaces th | Bluetooth is off. Turn it on, then tap again.
+11:39:39 CHECK pass phone Bluetooth off before the save: failure told in time 7.3 s: Bluetooth is off. Turn it on, then tap again.
+11:39:39 CHECK pass phone Bluetooth off before the save: app and board agree app failure, board decoy
+11:39:52 setup <network> 8.5 s The LEAKCAM is now joining VK to check the name and password | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
+11:39:57 CHECK pass phone Bluetooth off before the save: clean setup after it Done 8.5 s
+11:40:22 setup <network> 14.8 s The connection to LEAKCAM-B14A dropped. Reconnecting to see  | Done. LEAKCAM-B14A joined "VK", reached the internet and sto
+11:40:28 CHECK pass phone Bluetooth off during the check: app recovers, Done 14.8 s, fault fired 0
+11:40:28 CHECK pass phone Bluetooth off during the check: app and board agree app Done, board real network
+11:40:32 sample after all cases {'board': 27.7, 'bl_mem': (122728, 103492, 93424, 106, 79532, 17, 0)}
+11:40:32 cases (name, s, app said, board stored, fault fired):
+11:40:32    every notification lost | 7.9 | Done | real | 4
+11:40:32    every second notification lost | 7.7 | Done | real | 2
+11:40:32    the result notification lost | 8.0 | Done | real | 1
+11:40:32    link lost at every connect | 6.9 | The LEAKCAM disconnected (status 133) | decoy | 6
+11:40:32    link lost when the check starts | 10.1 | Done | real | 1
+11:40:32    link lost while getting an address | 10.7 | Done | real | 1
+11:40:32    link lost while reaching the internet | 10.3 | Done | real | 1
+11:40:32    link lost with the result | 11.0 | Done | real | 1
+11:40:32    DNS answer lost | 7.5 | The LEAKCAM is on the network, but internet names do not res | decoy | 1
+11:40:32    HTTP answer lost | 7.4 | The LEAKCAM is on the network, but it cannot reach the inter | decoy | 1
+11:40:32    phone Bluetooth off before the save | 7.3 | Bluetooth is off | decoy | 0
+11:40:32    phone Bluetooth off during the check | 14.8 | Done | real | 0
+11:40:32 test110-ble-loss-recovery: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

@@ -4,6 +4,60 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-01 (run.py, 211 s): pass
+
+17/17 checks pass. First setup (app opened -> Done) 7.9 s; repeats 7.8-8.4 s.
+
+- phone USB port was the power source: swapped to sink
+
+
+### Automated run 2026-11-01 (run.py, 227 s): **FAIL**
+
+16/17 checks pass. First setup (app opened -> Done) 8.9 s; repeats 8.9-15.6 s. Failed: 8 setups in a row: every one Done (7/8).
+
+- phone USB port was the power source: swapped to sink
+
+
+### Automated run 2026-11-01 (run.py, 374 s): **FAIL**
+
+16/17 checks pass. First setup (app opened -> Done) 8.9 s; repeats 8.7-160.9 s. Failed: 8 setups in a row: every one Done (7/8).
+
+- phone USB port was the power source: swapped to sink
+
+
+### Automated run 2026-11-01 (run.py, 306 s): **FAIL**
+
+14/17 checks pass. First setup (app opened -> Done) 10.0 s; repeats 8.6-15.6 s. Failed: network not seen named (0.0 s); network not seen: Save without checking offered; 8 setups in a row: every one Done (7/8).
+
+- phone USB port was the power source: swapped to sink
+
+
+### Automated run 2026-11-01 (run.py, 231 s): pass
+
+17/17 checks pass. First setup (app opened -> Done) 9.8 s; repeats 9.4-11.1 s.
+
+- phone USB port was the power source: swapped to sink
+
+
+### Automated run 2026-11-01 (run.py, 242 s): **FAIL**
+
+16/17 checks pass. First setup (app opened -> Done) 12.2 s; repeats 9.5-10.5 s. Failed: BLE started again after a reset.
+
+- phone USB port was the power source: swapped to sink
+
+
+### Automated run 2026-11-01 (run.py, 322 s): **FAIL**
+
+16/17 checks pass. First setup (app opened -> Done) 16.6 s; repeats 10.5-18.4 s. Failed: 8 setups in a row: every one Done (7/8).
+
+- phone USB port was the power source: swapped to sink
+
+
+### Automated run 2026-11-01 (run.py, 6 s): **FAIL**
+
+not run: no pt_ble in the BL616 firmware.
+
+
 ### Automated run 2026-11-01 (run.py, 214 s): pass
 
 17/17 checks pass. First setup (app opened -> Done) 7.5 s; repeats 6.9-7.6 s.
@@ -63,6 +117,14 @@ idempotent handler, the timeout counts from a state change). First setup (app op
 No run yet. Status before the step 6 rewrite: **planned** (2026-10-27).
 
 ## Obstacles
+
+- 2026-11-01, use case 2: setups 17 s (from 7 s): the app's LEAKCAM list above the steps pushed the fields down and
+  the driver scrolled for them (one repeat never found them). The board's check took 1.4 s and the app showed Done
+  7.4 s after opening. Fixed: the list below the setup; 9.4-10.5 s since, the driver re-finding redrawn fields.
+- 2026-11-01: product detection and the BLE-on check read the console while the presence check-in's Wi-Fi logs flooded
+  it: both now wait for their own answer and retry once.
+
+- the BL616 test firmware on the board has no pt_ble: flash tests/firmware/bl616_powertest (2026-11-01, automated run)
 
 - 2026-11-01, product v1: one setup of 24 got no answer after the ADDRESS progress step (the app's 60 s step timeout);
   not reproduced in 20 captured repeats. The board sent each STATUS change once as a notification (bt_gatt_notify's

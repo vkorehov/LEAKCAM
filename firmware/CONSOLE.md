@@ -5,10 +5,12 @@ the PC through the **BL616's USB port (PR1)**, not the CH340X on USB-C 2. One US
 
 | Port | Linux | Stable name | What |
 |---|---|---|---|
-| CDC port 0 (interfaces 0/1) | `/dev/ttyACM0` | `/dev/serial/by-id/usb-Bouffalo_Lab_Bouffalo_Lab_USB_Console_00000001-if00` | BL616 shell, printf |
-| CDC port 1 (interfaces 2/3) | `/dev/ttyACM1` | `...-if02` | K230 console (read and type) |
+| CDC port 0 (interfaces 0/1) | `/dev/ttyACM0` | `/dev/leakcam-bl616` | BL616 shell, printf |
+| CDC port 1 (interfaces 2/3) | `/dev/ttyACM1` | `/dev/leakcam-k230` | K230 console (read and type) |
 
-Both are opened for everyone by `/etc/udev/rules.d/99-leakcam.rules` (copy: `tools/power-bringup/99-leakcam.rules`)
+The USB serial number is the board's device ID (its factory MAC, device_id.c), so `/dev/serial/by-id/` names differ
+per board; the stable names come from the udev rules. Both ports are opened for everyone and linked by
+`/etc/udev/rules.d/99-leakcam.rules` (copy: `tools/power-bringup/99-leakcam.rules`)
 and need one VMware "connect to Linux" for the BL616. The K230 port stays when the K230 is power-cycled.
 
 **Why** (user, 2026-10-22): the CH340X lives on the K230's switched 3V3, so it re-enumerated with every K230 power
