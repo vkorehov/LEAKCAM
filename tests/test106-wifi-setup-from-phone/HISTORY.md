@@ -4,6 +4,18 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Product v1 2026-11-01 (firmware/bl616, Gitea PR #1): pass with one unexplained stall
+
+- run.py on the product image (07:09-07:13 UTC+2, stopped by hand at the stall): crash record none before; steps 1 3 4 5
+  6 pass - first setup 12.9 s (pairing included), wrong password 12.1 s, network not seen 11.3 s, save without
+  checking 15.2 s, change back 7.3 s; repeats 7.9, 7.5 s, then **repeat 3: 67.6 s "The LEAKCAM did not answer"**
+  after "Password accepted. Getting an address from the router..."; the next setup 8.5 s Done. Board alive (mem
+  sampled right after: free 154548, unchanged), no crash record, no reset.
+- repeat_capture.py 20 (new: the BL616 console held open the whole run, every line timestamped,
+  repeat_capture.log): 20/20 Done, 7.0-8.5 s; mem free 154548-154552, min 128268, blocks 103 throughout (no leak);
+  crash record none. Each check: join 0.3 s, DHCP ack 20 ms, `check of "VK": state 0x03` about 0.4 s after the join
+  started.
+
 ### Automated run 2026-10-30 (run.py, 249 s): pass
 
 17/17 checks pass. First setup (app opened -> Done) 8.0 s; repeats 7.3-9.4 s.
@@ -35,6 +47,11 @@ No run yet. Status before the step 6 rewrite: **planned** (2026-10-27).
 
 ## Obstacles
 
+- 2026-11-01, product v1: one setup of 24 got no answer after the ADDRESS progress step (the app's 60 s step timeout);
+  not reproduced in 20 captured repeats. The board's worst case after that step is DHCP 20 s + DNS + connect 10 s +
+  answer 10 s, under 60 s, so a lost BLE notification (the INTERNET step or the result) is the likelier cause, not
+  proven. run.py opened the console only per command, so the board's lines of that setup were lost: repeat_capture.py
+  keeps them for the next occurrence.
 - The 08:24 run's runner (2026-10-30), each fixed in run.py / BleOp:
   - "BLE advertising" failed: the check looked for "already on", `pt_ble` says "pt_ble: on".
   - "memory leak" was false: a watchdog reset just before the repeats made the first memory sample a fresh heap
