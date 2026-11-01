@@ -1,7 +1,8 @@
 # test032: RTC wake (BL616 HBN timer, 32.768 kHz crystal)
 
-Status: **partial** (2026-10-25): HBN RTC wake on Y3 works (10 s and 600 s, every wake arrived); Y3 +17 ppm with a
-+-35 ppm band (target +-20); 100-cycle run and 24 h drift not run.
+Status: **partial** (2026-11-01, run.py 1285 s, again): HBN RTC wake on Y3 works (10 s -> 13.6-14.6 s, 600 s ->
+603.7 s host-timed, every wake arrived); Y3 within the earlier +17 ppm +-35 ppm band (target +-20); 100-cycle run and
+24 h drift not run.
 
 The BL616's hibernate RTC (Y3, 32.768 kHz) wakes it every 10 min for humidity and at the K230's requested interval;
 it also keeps the wall clock between NTP syncs (aon_state.c: ~20 ppm, 1.7 s/day expected). A wake that comes late,

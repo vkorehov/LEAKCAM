@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-01 (run.py, 1285 s): pass
+
+RTC wakes: 10 s -> 14.56, 13.64, 13.65 s; 600 s -> 603.67, 603.71 s (host, command -> console back).
+
+
 ### Automated run 2026-10-25 (run.py, 1285 s): pass
 
 RTC wakes: 10 s -> 14.60, 13.68, 13.69 s; 600 s -> 603.69, 603.71 s (host, command -> console back).

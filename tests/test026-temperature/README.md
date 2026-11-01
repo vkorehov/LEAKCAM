@@ -1,7 +1,8 @@
 # test026: K230 die temperature (TS)
 
-Status: **in progress** (2026-10-25): open board idle and CPU/DDR (memtest) load pass, die 44.7 C idle, 52.7 C peak;
-KPU/encoder/camera load, the closed enclosure and the die limit open.
+Status: **in progress** (2026-11-01, run.py 1364 s): open board, every load pass: die 37.8 C idle, memtest peak 53.6 C,
+KPU 49.4 C, encoder 52.4 C, KPU + encoder 53.6 C (3 min each); the camera load, the closed enclosure and the die
+limit open.
 
 `CONFIG_RT_USING_TS=y`: the K230's die temperature sensor. How hot the K230 gets in a session, and with the
 enclosure closed.
