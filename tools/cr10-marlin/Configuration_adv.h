@@ -332,7 +332,7 @@
   /**
    * As described above, except for the bed (M140/M190/M303).
    */
-  #define WATCH_BED_TEMP_PERIOD                60 // (seconds)
+  #define WATCH_BED_TEMP_PERIOD               180 // (seconds) 60 tripped "Heating failed" near 95-100 °C with the enclosure open (2026-11-01)
   #define WATCH_BED_TEMP_INCREASE               2 // (°C)
 #endif
 
