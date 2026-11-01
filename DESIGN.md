@@ -361,9 +361,9 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
   own 6-digit PIN, pre-stored when its firmware is flashed (`make flash` runs provision_pin.py); only
   the flashing host and the presence server know how it is derived, and the app asks the server for it
   right before pairing and enters it itself. Just Works is refused, so a phone without the app cannot
-  pair. No USB power gate: BLE runs from boot; the board advertises always on USB power and, on battery,
-  60 s every 5 minutes while no network is stored (provision.c). The SDK's profile for our controller
-  library needs `sdk_patch.py` for Secure Connections at all; `CONFIG_BT_FIXED_PASSKEY=y` for the PIN.
+  pair. No USB power gate: BLE runs from boot; when it advertises follows the two modes in 5.3.1. The SDK's
+  profile for our controller library needs `sdk_patch.py` for Secure Connections at all;
+  `CONFIG_BT_FIXED_PASSKEY=y` for the PIN.
   Threats, findings and open items: [SECURITY.txt](SECURITY.txt).
 - **Stored in easyflash** (`wifi_ssid`, `wifi_psk`), and nothing else.
 - **No pairings kept (user, 2026-10-29).** No bond keys in flash (`CONFIG_BT_SETTINGS` off): every
@@ -398,6 +398,55 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
 - **Room for BLE in the Wi-Fi RAM.** The BLE controller library keeps 32 KB of the 160 KB Wi-Fi
   RAM as exchange memory; the BL616's own lwIP heap is 6 KB so the 26 NetHub buffers still fit
   (`lwipopts_user.h`, tests/test040).
+
+### 5.3.1 Two modes: setup (low power, no presence) and operational (user, 2026-11-01)
+
+- **Setup mode whenever there is no working presence:** no network stored, or the last check-in did not reach the
+  server (presence lost, for whatever reason: tests/test117). The app is always able to reach the board in this mode:
+  - **BLE in low power:** the BL616 sleeps in PDS (RAM kept) and the SDK's low-power firmware (lpfw, `CONFIG_LPAPP`,
+    bouffalo_sdk examples/pmu/wl_ble_lp) wakes it only for each advertisement, connectable, every ~2 s (the phone
+    finds it every time at 2 s: test114; vendor figure ~0.43 mA on their kit, ours: test120). The 32 kHz clock is
+    the RC32K with the SDK's auto calibration (the Y3 crystal is not needed). A phone connecting wakes the app:
+    pairing, check and save run awake as today; the board goes back to low power when the phone leaves.
+  - **USB as the fallback to BLE:** plugging USB-C 1 (BQ24072 PGOOD, a PDS wake pin) wakes the BL616; it stays awake
+    while USB power is there and offers the same setup over USB (the K230's CDC on USB-C 1 relaying to the BL616:
+    tests/test113, test115). Unplugged, it goes back to low-power advertising.
+  - **A stored network is retried** at the check-in interval: the BL616 wakes, tries one check-in and goes back to
+    low power when it fails; a check-in that reaches the server ends setup mode.
+- **Operational mode only once presence is established:** BLE off on battery (a phone wakes it through the server:
+  tests/test119); check-ins, wakes and K230 sessions as before; on USB power BLE stays on. The first failed check-in
+  goes back to setup mode.
+- **Two firmwares, switched at runtime (user, 2026-11-01).** Setup and operational are separate BL616 images in the
+  two FW slots of the partition table (slot 0 2 MB at 0x10000, slot 1 at 0x210000; both images ~1.3 MB, the unused
+  mfg partition overlapping slot 1 goes): presence lost -> the operational firmware marks the setup slot active and
+  resets (~1 s); presence established -> the setup firmware marks the operational slot active and resets. Why: the
+  low-power firmware takes 30 KB of the Wi-Fi RAM (lpfw_share), which does not fit next to NetHub (bl616_powertest +
+  `CONFIG_LPAPP`: ram_wifi over by 30144 bytes). The setup firmware has no bridge: its Wi-Fi is the BL616's own
+  station for the credential check and the check-in (wifi_local.c, the wifi_link.h interface); BLE provisioning and
+  the check are the same sources as today. Shared by both: the settings in easyflash (credentials, PIN, clock
+  source), the crash record at one fixed address, the watchdog and `isp`. A flapping presence must not rewrite the
+  partition table every check-in (switch to setup after a few failed check-ins). OTA then writes the inactive image
+  and checks it before switching (no A/B fallback); the ROM's USB ISP stays the recovery. To prove: the boot2 slot
+  switch after a software reset, then a slot-switch test (operational -> lose presence -> setup -> presence ->
+  operational, USB working in both).
+- **Rules for the setup firmware's sleep (tests/test120, 2026-11-01; skill bl616-ble-low-power).**
+  - **Never enter the low-power sleep path while BLE is up but idle** (no advertising, no connection). The SDK asks the
+    BLE controller for its next deadline before any veto; with none the BLE core went to sleep for good, and after any
+    software reset (reboot, ISP, watchdog, POR/system reset) its init hung forever. Only the EN pin cleared it, which
+    a board in a pipe cannot get. The idle hook checks `ble_pairing_sleep_ok()` first. Setup mode always advertises.
+  - The controller's PDS reset stays off (it drops USB); BLE sleep works without it.
+  - The low-power board init gates the USB and watchdog clocks: the firmware enables them, and again after each wake.
+  - USB is detached once for the whole sleep and attached again when the chip stays awake (a phone connected, USB
+    power, the window's end), not around each advertising wake. The watchdog's feeding holds while asleep; each wake
+    restarts its counter, so an app hung while awake is still reset.
+  - Measured on rev 1 at 2 s advertising: 99.4 % of the time in PDS, ~12 ms awake per advertisement; the phone finds
+    the sleeping board 10/10, median 1.1 s, max 3.7 s. The battery current is measured on the next assembled board
+    (the vendor's 428 uA until then).
+- **Replaces** the 60 s every 5 minutes advertising windows (2026-11-01, provision.c) once test120 has proven the low
+  power mode on rev 1; until then the windows stay.
+- Tests: test120 the low-power mode alone (test firmware: PDS floor, advertising intervals against discovery and
+  current, a phone's connection waking it, USB waking it); then the setup tests in it: test116 (BLE only, on battery),
+  test113 (USB only), test117 (presence lost -> setup mode), test106/test111 (the app's setup and list).
 
 ### 5.4 K230-BL616 link and time
 

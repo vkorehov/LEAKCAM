@@ -1987,6 +1987,21 @@ static void pins_init(void)
 #endif
 }
 
+/* tests/test120: the boot breadcrumb of the low-power test firmware (tests/firmware/bl616_lp main.c lp_crumb), kept in
+ * HBN RAM across a reset: how far it got when it hung before its USB console */
+static int cmd_lpcrumb(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    volatile uint32_t *w = (volatile uint32_t *)(0x20010000 + 0xE00);
+    if (w[0] != 0x3142504cu)
+        printf("pt_lpcrumb: none\r\n");
+    else
+        printf("pt_lpcrumb: last step %lu, %lu marks\r\n", (unsigned long)w[1], (unsigned long)w[2]);
+    return 0;
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_lpcrumb, pt_lpcrumb, the low-power firmware boot breadcrumb (test120));
+
 int main(void)
 {
 #if PT_TEST_SLEEP

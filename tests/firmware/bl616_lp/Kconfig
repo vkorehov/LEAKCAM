@@ -1,0 +1,14 @@
+mainmenu "WL/BLE Low-Power Configuration"
+
+source "$BL_SDK_BASE/Kconfig"
+
+config USBH_MSC
+    bool "USB host mass storage"
+    default n
+    select CHERRYUSB
+    select CHERRYUSB_HOST
+    select CHERRYUSB_HOST_MSC
+    select FATFS
+    select FATFS_USBH
+    help
+      Enable USB mass-storage host support backed by FatFs.

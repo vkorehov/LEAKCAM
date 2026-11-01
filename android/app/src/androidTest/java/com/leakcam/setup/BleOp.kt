@@ -39,7 +39,7 @@ import java.util.regex.Pattern
  *
  *   adb shell am instrument -w -r -e op <op> [-e key value ...] com.leakcam.setup.test/androidx.test.runner.AndroidJUnitRunner
  *
- *   op scan     name prefix (default LEAKCAM-), secs: first advertisement with the service UUID: name, address, rssi, ms
+ *   op scan     secs: first advertisement with the service UUID: name (the serial), address, rssi, ms
  *   op unpair   address: the phone's bond removed
  *   op session  address, pair (accept | cancel | skip), pin (the board's 6 digits, from the server; without it a PIN
  *               dialog is cancelled: a phone without the app), mtu (247; 23 = no exchange: long values go as offset writes),
@@ -90,12 +90,10 @@ class BleOp {
     }
 
     private fun scan() {
-        val prefix = arg("prefix", "LEAKCAM-")
         val q = LinkedBlockingQueue<ScanResult>()
         val cb = object : ScanCallback() {
             override fun onScanResult(type: Int, r: ScanResult) {
-                if (r.device.name?.startsWith(prefix) == true || r.scanRecord?.deviceName?.startsWith(prefix) == true)
-                    q.offer(r)
+                q.offer(r)
             }
         }
         val filter = ScanFilter.Builder().setServiceUuid(ParcelUuid(SERVICE)).build()
@@ -271,7 +269,9 @@ class BleOp {
             out.put("status_screen", true)
             /* UiAutomator's own wait for the enabled button: the scrolling find() lost it for 40 s while the list
              * redrew (test106, 2026-11-01) */
-            val button = safe(null) { ui.wait(Until.findObject(By.res(pkg, "setup_open").enabled(true)), 40000) }
+            /* the setup itself, never Wake (a present board out of range: test119 taps that one itself) */
+            val button = safe(null) { ui.wait(Until.findObject(By.res(pkg, "setup_open").enabled(true)
+                .text(java.util.regex.Pattern.compile("(?!Wake).*"))), 40000) }
             out.put("ms_status", ms())
             safe(Unit) { button?.click() }
             ui.wait(Until.findObject(By.res(pkg, "send")), 5000)
@@ -380,7 +380,7 @@ class BleOp {
             if (!shade && pressed.isEmpty() && SystemClock.elapsedRealtime() > until - 22000) {
                 shade = true
                 ui.openNotification()
-                ui.wait(Until.findObject(By.text(Pattern.compile("(?i).*(LEAKCAM|pair|сопряж|подключ).*"))), 2000)?.click()
+                ui.wait(Until.findObject(By.text(Pattern.compile("(?i).*([0-9A-F]{12}|pair|сопряж|подключ).*"))), 2000)?.click()
                     ?: ui.pressBack()
             }
         }

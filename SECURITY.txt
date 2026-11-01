@@ -18,7 +18,7 @@ them.
 2. BLE provisioning (Wi-Fi credentials only)
 --------------------------------------------
 
-  What it does (DESIGN.md 5.3): on USB power the BL616 advertises as LEAKCAM-xxyy, a phone pairs, writes the SSID and
+  What it does (DESIGN.md 5.3): on USB power the BL616 advertises as its serial (the device ID), a phone pairs, writes the SSID and
   the passphrase, the BL616 checks them (join, DHCP, internet) and stores them. BLE does nothing else.
 
   Pairing PIN (user, 2026-11-01: only a phone with the app may pair and configure Wi-Fi; against device hijack):
@@ -42,7 +42,7 @@ them.
   acceptable (crackle); LE Secure Connections must stay on.
 
   No USB power gate since 2026-11-01 (user: the pre-stored PIN is enough to prove the phone). BLE runs from boot;
-  the board advertises always on USB power, and on battery only while no network is stored (60 s every 5 minutes,
+  the board advertises always on USB power, and on battery only while no network is stored or presence is lost (60 s every 5 minutes,
   provision.c), so a new board is found without a cable and a configured one on battery is silent.
     - Written into the stored credentials only after a passed check (commit 0x01) or on request (0x02); never on a
       failed check or a dropped link.

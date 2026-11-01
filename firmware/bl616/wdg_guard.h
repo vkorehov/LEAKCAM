@@ -12,5 +12,7 @@
 #define WDG_GUARD_MS 8000u
 
 bool wdg_guard_start(void);           /* right after board_init(), before the scheduler; true: last reset was ours */
+void wdg_guard_pause(bool pause);     /* around PDS sleep (setup mode, tests/test120) */
+void wdg_guard_feed_hold(bool hold);  /* no feeding (no wakes) for a whole sleep window (setup mode) */
 
 #endif

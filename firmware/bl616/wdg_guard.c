@@ -2,6 +2,7 @@
 
 #include "bflb_mtimer.h"
 #include "bflb_wdg.h"
+#include "bflb_clock.h"
 #include <stdio.h>
 #include "bl616_glb.h"
 #include "bl616_hbn.h"
@@ -10,11 +11,15 @@
 #include "crash_rec.h"
 
 static struct bflb_device_s *wdg;
+static TaskHandle_t feed_task;
+static volatile bool feed_held;
 
 static void wdg_feed_task(void *arg)
 {
     (void)arg;
     while (1) {
+        if (feed_held)
+            (void)ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         bflb_wdg_reset_countervalue(wdg);
         crash_rec_fed();
         vTaskDelay(pdMS_TO_TICKS(1000));
@@ -32,12 +37,36 @@ bool wdg_guard_start(void)
         .comp_val = WDG_GUARD_MS,
         .mode = WDG_MODE_RESET,
     };
+    /* the watchdog's bus clock: a low-power build's board_init() gates it (peripheral_clock_init_lp(), tests/test120) */
+    PERIPHERAL_CLOCK_TIMER0_1_WDG_ENABLE();
     wdg = bflb_device_get_by_name("watchdog0");
     bflb_wdg_init(wdg, &cfg);
     bflb_wdg_start(wdg);
-    if (xTaskCreate(wdg_feed_task, "wdg", 256, NULL, configMAX_PRIORITIES - 1, NULL) != pdPASS)
+    if (xTaskCreate(wdg_feed_task, "wdg", 256, NULL, configMAX_PRIORITIES - 1, &feed_task) != pdPASS)
         vAssertCalled();
     return rr.reset_recorder_wdt_rst_n;
+}
+
+/* setup mode (tests/test120): no feeding while the chip sleeps in PDS between radio events; stopped before the sleep,
+ * started again (counter reset) after the wake */
+void wdg_guard_pause(bool pause)
+{
+    if (pause) {
+        bflb_wdg_stop(wdg);
+    } else {
+        bflb_wdg_reset_countervalue(wdg);
+        bflb_wdg_start(wdg);
+    }
+}
+
+/* setup mode (tests/test120): the feed task's 1 s period woke the chip from PDS twice per 2 s advertising interval
+ * (180 wakes in 120 s, 2026-11-01). Held for the sleep window: each wake restarts the counter (wdg_guard_pause), so an
+ * app hung while awake is still reset after WDG_GUARD_MS. */
+void wdg_guard_feed_hold(bool hold)
+{
+    feed_held = hold;
+    if (!hold)
+        xTaskNotifyGive(feed_task);
 }
 
 #ifdef CONFIG_SHELL

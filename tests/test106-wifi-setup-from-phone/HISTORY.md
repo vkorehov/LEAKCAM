@@ -4,6 +4,20 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-01 (run.py, 216 s): pass
+
+17/17 checks pass. First setup (app opened -> Done) 8.5 s; repeats 8.2-9.1 s.
+
+- phone USB port was the power source: swapped to sink
+
+
+### Automated run 2026-11-01 (run.py, 216 s): pass
+
+17/17 checks pass. First setup (app opened -> Done) 9.1 s; repeats 8.3-9.2 s.
+
+- phone USB port was the power source: swapped to sink
+
+
 ### Automated run 2026-11-01 (run.py, 211 s): pass
 
 17/17 checks pass. First setup (app opened -> Done) 7.9 s; repeats 7.8-8.4 s.

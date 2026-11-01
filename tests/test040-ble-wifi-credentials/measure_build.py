@@ -32,10 +32,10 @@ def ble_start():
     cmd(fd, "", 0.5)
     t0, out = time.time(), ""
     cmd(fd, "pt_ble on", 0.0)
-    while time.time() - t0 < 10 and "advertising as" not in out:
+    while time.time() - t0 < 10 and "ble: ready as" not in out:
         out += cmd(fd, None, 0.02)
     os.close(fd)
-    return time.time() - t0 if "advertising as" in out else None
+    return time.time() - t0 if "ble: ready as" in out else None
 
 
 def join(ssid, psk, mode="", net=False):

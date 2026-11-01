@@ -2,7 +2,7 @@
  * test040: the product's BLE provisioning (firmware/bl616/ble_pairing.c + wifi_check.c) on the test firmware. The
  * phone side is the instrumented test of android/ (BleOp), driven over adb by tests/test040's run.py.
  *
- *   pt_ble on         RF parameters, then BLE as the product starts it: advertising as LEAKCAM-xxyy, pairing with
+ *   pt_ble on         RF parameters, then BLE as the product starts it: advertising as its serial, pairing with
  *                     the stored PIN (passkey entry); unlike the product (advertising windows on battery while no
  *                     network is stored, provision.c) it advertises all the time once started.
  *   pt_ble            started?, USB power, the stored credentials (as pt_ble creds)
@@ -10,6 +10,7 @@
  *   pt_ble erase      wifi_ssid, wifi_psk and the remembered AP (wifi_ap) deleted
  *   pt_ble pin <6>    the BLE pairing PIN stored (as the product's `prov pin`; provision_pin.py from make flash)
  *   pt_ble adv <ms>   the advertising interval (20 .. 10240 ms; test114's sweep)
+ *   pt_ble adv off|on advertising stopped / again, BLE stays up (test118: the board out of the app's BLE range)
  *   pt_ble decoy      a fixed made-up network (t110-decoy / password1) stored directly: test110 then tells "stored"
  *                     from "not stored" without a 16 s save through the app
  */
@@ -90,6 +91,9 @@ static void cmd_ble(int argc, char **argv)
             printf("pt_ble: erase failed\r\n");
         else
             printf("pt_ble: credentials and remembered AP erased\r\n");
+    } else if (!strcmp(op, "adv") && argc > 2 && (!strcmp(argv[2], "off") || !strcmp(argv[2], "on"))) {
+        ble_pairing_advertise(argv[2][1] == 'n');
+        printf("pt_ble: advertising %s\r\n", argv[2]);
     } else if (!strcmp(op, "adv") && argc > 2) {
         int ms = atoi(argv[2]);
         if (ms < 20 || ms > 10240)
@@ -118,7 +122,7 @@ static void cmd_ble(int argc, char **argv)
         print_key("wifi_psk");
         printf("pt_ble: pairing PIN %s\r\n", ble_pairing_pin() < 0 ? "none (pt_ble pin)" : "stored");
     } else
-        printf("usage: pt_ble [on | creds | erase | decoy | pin <6 digits> | adv <ms>]\r\n");
+        printf("usage: pt_ble [on | creds | erase | decoy | pin <6 digits> | adv <ms> | adv off | adv on]\r\n");
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_ble, pt_ble, test040 BLE provisioning: on | creds | erase | decoy | pin <6 digits> | adv <ms>);
 #endif

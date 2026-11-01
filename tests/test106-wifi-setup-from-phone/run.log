@@ -1,43 +1,43 @@
-11:20:49 test106-wifi-setup-from-phone: 0 metric rows MISSING: none
-11:20:49 BL616 firmware: product (firmware/bl616)
-11:20:56 CHECK pass BLE advertising on USB power 
-11:20:58 CHECK pass nothing stored before the first setup 
-11:21:08 setup <network> 7.9 s {'pairing': "'Устан. сопряж.'@4894", 'save_anyway': False} Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining VK to check the name and password. This tak | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-11:21:08 CHECK pass first setup: Done 7.9 s, pairing 'Устан. сопряж.'@4894
-11:21:08 CHECK pass first setup: the network stored 
-11:21:12 sample after the first setup {'board': None, 'bl_mem': (146032, 133960, 120088, 106, 79460, 16, 0)}
-11:21:27 setup <network> 12.5 s {'pairing': "'Устан. сопряж.'@5586", 'save_anyway': False} Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining VK to check the name and password. This tak | The router refused the password for "VK" (code 33). Check the password
-11:21:27 CHECK pass wrong password named 12.5 s
-11:21:27 CHECK pass wrong password: no Save without checking 
-11:21:27 CHECK pass wrong password: the old network kept 
-11:21:39 setup t106-not-here 9.9 s {'pairing': "'Устан. сопряж.'@4630", 'save_anyway': True} Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining t106-not-here to check the name and passwor | The LEAKCAM cannot see "t106-not-here".  • Check the name: upper and l
-11:21:39 CHECK pass network not seen named 9.9 s
-11:21:39 CHECK pass network not seen: Save without checking offered 
-11:21:39 CHECK pass network not seen: the old network kept 
-11:21:56 setup t106-not-here 14.4 s {'pairing': "'Устан. сопряж.'@5030+'Устан. сопряж.'@12463", 'save_anyway': True, 'ms_anyway': 10443} The LEAKCAM cannot see "t106-not-here".  • Check the name: upper and l | Connecting to LEAKCAM-B14A… | Saved without checking. LEAKCAM-B14A stored the Wi-Fi network "t106-no
-11:21:56 CHECK pass save without checking: said so 14.4 s
-11:21:56 CHECK pass save without checking: the new network stored 
-11:22:07 setup <network> 8.4 s {'pairing': "'Устан. сопряж.'@5275", 'save_anyway': False} Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining VK to check the name and password. This tak | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-11:22:07 CHECK pass change back: Done 8.4 s
-11:22:07 CHECK pass change back: the first network stored again 
-11:22:17 setup <network> 8.0 s {'pairing': "'Устан. сопряж.'@5077", 'save_anyway': False} Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining VK to check the name and password. This tak | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-11:22:20 sample repeat 1 {'board': None, 'bl_mem': (146032, 133960, 120052, 106, 79460, 16, 0)}
-11:22:31 setup <network> 8.1 s {'pairing': "'Устан. сопряж.'@4972", 'save_anyway': False} Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining VK to check the name and password. This tak | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-11:22:35 sample repeat 2 {'board': None, 'bl_mem': (146032, 133960, 120052, 106, 79460, 16, 0)}
-11:22:45 setup <network> 7.9 s {'pairing': "'Устан. сопряж.'@4911", 'save_anyway': False} Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining VK to check the name and password. This tak | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-11:22:48 sample repeat 3 {'board': None, 'bl_mem': (146032, 133960, 120052, 106, 79460, 16, 0)}
-11:22:59 setup <network> 8.2 s {'pairing': "'Устан. сопряж.'@5072", 'save_anyway': False} Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining VK to check the name and password. This tak | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-11:23:02 sample repeat 4 {'board': None, 'bl_mem': (146032, 133960, 120052, 106, 79460, 16, 0)}
-11:23:13 setup <network> 8.1 s {'pairing': "'Устан. сопряж.'@4842", 'save_anyway': False} Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining VK to check the name and password. This tak | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-11:23:16 sample repeat 5 {'board': None, 'bl_mem': (146032, 133960, 120052, 106, 79460, 16, 0)}
-11:23:27 setup <network> 8.1 s {'pairing': "'Устан. сопряж.'@5121", 'save_anyway': False} Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining VK to check the name and password. This tak | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-11:23:30 sample repeat 6 {'board': None, 'bl_mem': (146032, 133960, 120052, 106, 79460, 16, 0)}
-11:23:40 setup <network> 7.8 s {'pairing': "'Устан. сопряж.'@4664", 'save_anyway': False} Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining VK to check the name and password. This tak | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-11:23:44 sample repeat 7 {'board': None, 'bl_mem': (146032, 133960, 120052, 106, 79460, 16, 0)}
-11:23:55 setup <network> 8.4 s {'pairing': "'Устан. сопряж.'@5389", 'save_anyway': False} Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining VK to check the name and password. This tak | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-11:23:58 sample repeat 8 {'board': None, 'bl_mem': (146032, 133960, 120052, 106, 79460, 16, 0)}
-11:23:58 CHECK pass 8 setups in a row: every one Done 8/8
-11:24:09 CHECK pass BLE started again after a reset 
-11:24:19 setup <network> 8.5 s {'pairing': "'Устан. сопряж.'@5333", 'save_anyway': False} Connecting to LEAKCAM-B14A… | The LEAKCAM is now joining VK to check the name and password. This tak | Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne
-11:24:19 CHECK pass after the reset: Done with no Forget by hand 8.5 s, pairing 'Устан. сопряж.'@5333
-11:24:19 test106-wifi-setup-from-phone: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+14:33:11 test106-wifi-setup-from-phone: 0 metric rows MISSING: none
+14:33:13 BL616 firmware: product (firmware/bl616)
+14:33:16 CHECK pass BLE advertising on USB power 
+14:33:18 CHECK pass nothing stored before the first setup 
+14:33:29 setup <network> 8.5 s {'pairing': '', 'save_anyway': False} Connecting to 7C3E8262B149… | Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | Done. 7C3E8262B149 joined "VK", reached the internet and stored the ne
+14:33:29 CHECK pass first setup: Done 8.5 s, pairing 
+14:33:29 CHECK pass first setup: the network stored 
+14:33:33 sample after the first setup {'board': None, 'bl_mem': (146024, 133928, 120100, 105, 79444, 16, 0)}
+14:33:47 setup <network> 12.3 s {'pairing': '', 'save_anyway': False} Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "VK" to check the name and password. This t | The router refused the password for "VK" (code 33). Check the password
+14:33:47 CHECK pass wrong password named 12.3 s
+14:33:47 CHECK pass wrong password: no Save without checking 
+14:33:47 CHECK pass wrong password: the old network kept 
+14:34:01 setup t106-not-here 11.4 s {'pairing': '', 'save_anyway': True} Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "t106-not-here" to check the name and passw | The LEAKCAM cannot see "t106-not-here".  • Check the name: upper and l
+14:34:01 CHECK pass network not seen named 11.4 s
+14:34:01 CHECK pass network not seen: Save without checking offered 
+14:34:01 CHECK pass network not seen: the old network kept 
+14:34:19 setup t106-not-here 15.2 s {'pairing': '', 'save_anyway': True, 'ms_anyway': 11056} Connecting to 7C3E8262B149… | Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | Saved without checking. 7C3E8262B149 stored the Wi-Fi network "t106-no
+14:34:19 CHECK pass save without checking: said so 15.2 s
+14:34:19 CHECK pass save without checking: the new network stored 
+14:34:30 setup <network> 8.7 s {'pairing': '', 'save_anyway': False} Connecting to 7C3E8262B149… | Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | Done. 7C3E8262B149 joined "VK", reached the internet and stored the ne
+14:34:30 CHECK pass change back: Done 8.7 s
+14:34:30 CHECK pass change back: the first network stored again 
+14:34:40 setup <network> 8.3 s {'pairing': '', 'save_anyway': False} Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "VK" to check the name and password. This t | Done. 7C3E8262B149 joined "VK", reached the internet and stored the ne
+14:34:44 sample repeat 1 {'board': None, 'bl_mem': (146004, 133928, 120068, 106, 79460, 16, 0)}
+14:34:55 setup <network> 8.8 s {'pairing': '', 'save_anyway': False} Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "VK" to check the name and password. This t | Done. 7C3E8262B149 joined "VK", reached the internet and stored the ne
+14:34:59 sample repeat 2 {'board': None, 'bl_mem': (146004, 133928, 120052, 106, 79460, 16, 0)}
+14:35:09 setup <network> 8.5 s {'pairing': '', 'save_anyway': False} Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "VK" to check the name and password. This t | Done. 7C3E8262B149 joined "VK", reached the internet and stored the ne
+14:35:13 sample repeat 3 {'board': None, 'bl_mem': (146004, 133928, 120052, 106, 79460, 16, 0)}
+14:35:24 setup <network> 8.2 s {'pairing': '', 'save_anyway': False} Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "VK" to check the name and password. This t | Done. 7C3E8262B149 joined "VK", reached the internet and stored the ne
+14:35:27 sample repeat 4 {'board': None, 'bl_mem': (146004, 133928, 120052, 106, 79460, 16, 0)}
+14:35:38 setup <network> 8.4 s {'pairing': '', 'save_anyway': False} Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "VK" to check the name and password. This t | Done. 7C3E8262B149 joined "VK", reached the internet and stored the ne
+14:35:42 sample repeat 5 {'board': None, 'bl_mem': (146008, 133928, 120052, 106, 79460, 16, 0)}
+14:35:53 setup <network> 8.6 s {'pairing': '', 'save_anyway': False} Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "VK" to check the name and password. This t | Done. 7C3E8262B149 joined "VK", reached the internet and stored the ne
+14:35:56 sample repeat 6 {'board': None, 'bl_mem': (146004, 133928, 120052, 106, 79460, 16, 0)}
+14:36:08 setup <network> 9.1 s {'pairing': '', 'save_anyway': False} Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "VK" to check the name and password. This t | Done. 7C3E8262B149 joined "VK", reached the internet and stored the ne
+14:36:11 sample repeat 7 {'board': None, 'bl_mem': (146004, 133928, 120052, 106, 79460, 16, 0)}
+14:36:22 setup <network> 8.7 s {'pairing': '', 'save_anyway': False} Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "VK" to check the name and password. This t | Done. 7C3E8262B149 joined "VK", reached the internet and stored the ne
+14:36:26 sample repeat 8 {'board': None, 'bl_mem': (146004, 133928, 120052, 106, 79460, 16, 0)}
+14:36:26 CHECK pass 8 setups in a row: every one Done 8/8
+14:36:36 CHECK pass BLE started again after a reset 
+14:36:47 setup <network> 8.9 s {'pairing': '', 'save_anyway': False} Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "VK" to check the name and password. This t | Done. 7C3E8262B149 joined "VK", reached the internet and stored the ne
+14:36:47 CHECK pass after the reset: Done with no Forget by hand 8.9 s, pairing 
+14:36:47 test106-wifi-setup-from-phone: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

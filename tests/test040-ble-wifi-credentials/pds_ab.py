@@ -43,7 +43,7 @@ for i in range(1, 6):
     time.sleep(2)
     since = time.strftime("%Y-%m-%d %H:%M:%S")
     try:
-        adv = "advertising as" in bl("pt_ble on", 5, r"advertising as|already on")
+        adv = "ble: ready as" in bl("pt_ble on", 5, r"ble: ready as|already on")
     except (OSError, termios.error):
         adv = False
     time.sleep(5)

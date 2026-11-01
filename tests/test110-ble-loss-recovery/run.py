@@ -100,25 +100,29 @@ def bt_off_for(secs):
     adb("shell", "cmd", "bluetooth_manager", "enable")
 
 
-def bt_off_during_check():
-    """the phone's Bluetooth off for 4 s once the app shows the check running: its own log line (the app logs every
-    screen), not a fixed delay - a faster setup finished before a 6.5 s delay (2026-11-01)"""
+def bt_off_at(text):
+    """the phone's Bluetooth off for 4 s once the app's screen log (it logs every screen) shows text: not a fixed delay -
+    a faster setup finished before a 6.5 s delay, and the known board's setup was past the save 2 s after the open
+    (2026-11-01)"""
     adb("logcat", "-c")
     log_ = subprocess.Popen(["adb", "logcat", "-s", "LeakcamSetup:I"], stdout=subprocess.PIPE, text=True)
     t0 = time.time()
     try:
         for line in log_.stdout:
-            if "is now joining" in line or time.time() - t0 > 40:
+            if text in line or time.time() - t0 > 40:
                 break
     finally:
         log_.kill()
     bt_off_for(4)
 
 
+def bt_off_during_check():
+    bt_off_at("is now joining")
+
+
 def bt_off_before_save():
-    """Bluetooth off 2 s after the app opens, while it connects: nothing sent yet"""
-    time.sleep(2)
-    bt_off_for(4)
+    """at the app's first screen, while it connects: nothing sent yet"""
+    bt_off_at("step ")
 
 
 ssid, psk = wifi_credentials()
@@ -136,7 +140,7 @@ if why:
     r.finish(f"not run: {why.split(' (')[0]}.", False, switch_off=False)
     sys.exit(1)
 fault("off")
-bl("pt_ble on", 5, r"advertising as|already on")
+bl("pt_ble on", 5, r"ble: ready as|already on")
 last, secs, _ = setup(ssid, psk)
 check("baseline: Done without faults", last.startswith("Done."), f"{secs:.1f} s")
 

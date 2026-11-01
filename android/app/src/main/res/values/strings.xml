@@ -39,6 +39,11 @@
     <string name="mine_ssid_unknown">not reported yet</string>
     <string name="icon_bluetooth">in Bluetooth range</string>
     <string name="mine_new">new</string>
+    <string name="setup_wake">Wake %1$s to change its Wi-Fi</string>
+    <string name="nearby_wake">%1$s is online but not in Bluetooth range. Standing near it? Tap Wake: it opens Bluetooth at its next check-in.</string>
+    <string name="nearby_waking">Waiting for %1$s to open Bluetooth at its next check-in (up to %2$d s). Keep the phone near it.</string>
+    <string name="nearby_lost">%1$s is not reachable. If it lost its Wi-Fi, it opens Bluetooth by itself: bring the phone near it.</string>
+    <string name="err_wake">The server could not be reached to wake %1$s. Check the phone\'s network, then try again.</string>
     <string name="nearby_away">%1$s is not in Bluetooth range: bring it within a few metres to change its Wi-Fi (a configured one on its battery shows up on USB power).</string>
 
     <!-- what to do now, in the box under the steps -->

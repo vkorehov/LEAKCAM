@@ -12,11 +12,11 @@ now and, when something fails, why and what to try.
 
 1. **Plug the LEAKCAM into USB power.** Only then does it advertise its setup service and accept
    pairing: being able to plug it in is the proof of physical access.
-2. **Find it.** *Find LEAKCAM* lists every board in range as `LEAKCAM-xxyy` with its signal
+2. **Find it.** *Find LEAKCAM* lists every board in range by its serial (`7C3E8262B149`, 12 hex digits, no prefix) with its signal
    strength; the nearest usually has the strongest.
 3. **Enter your Wi-Fi network**: a 2.4 GHz one (the board has no 5 GHz radio); empty password
    for an open network.
-4. **Pair, check and save.** The first time, the phone asks to pair with `LEAKCAM-xxyy`: tap Pair
+4. **Pair, check and save.** The first time, the phone asks to pair with the board (its serial): tap Pair
    (or Allow). There is no PIN, the board has no screen. If no dialog appears, the request is in
    the notification shade. The app then sends the settings and the LEAKCAM checks them itself:
    it joins the network, gets an address and reaches `connectivitycheck.gstatic.com`, which takes

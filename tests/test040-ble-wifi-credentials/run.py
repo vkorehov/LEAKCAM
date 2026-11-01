@@ -15,7 +15,7 @@ import time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
 from harness import Run, bl, REPO   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import creds, op, ready, want   # noqa: E402
+from phone import board_id, creds, op, ready, want   # noqa: E402
 
 SAVED, NOT_FOUND, WRONG_PSK = 0x04, 0x10, 0x11
 
@@ -30,7 +30,7 @@ def states(res):
 
 def ble_on():
     """pt_ble on, True once BLE says it advertises (or was already on)"""
-    return bool(re.search(r"advertising as|already on", bl("pt_ble on", 5, r"advertising as|already on")))
+    return bool(re.search(r"ble: ready as|already on", bl("pt_ble on", 5, r"ble: ready as|already on")))
 
 
 def bl_back(what, secs=40):
@@ -111,6 +111,8 @@ check("BLE started (pt_ble on)", ble_on())
 res = op("scan", secs=20)
 times["advertising"] = time.time() - t0
 check("advertises on USB power", res.get("found"), f"{res.get('name')} rssi {res.get('rssi')} after {times['advertising']:.1f} s")
+check("BLE name = the serial (USB serial number), no prefix", res.get("found") and res.get("name") == board_id(),
+      f"{res.get('name')}")
 if not res.get("found"):
     r.finish("the board was never seen advertising.", False)
     sys.exit(1)
@@ -172,7 +174,7 @@ check("kept over a watchdog reset", creds() == mark)
 # 7. checked store: failures keep the old credentials, the right ones are stored after JOINING -> ADDRESS -> INTERNET
 bad = psk[:-1] + ("x" if psk[-1] != "x" else "y")
 for name, s_, p_, final in (("wrong passphrase", ssid, bad, (WRONG_PSK,)),   # 0x11 since the SDK firmware status is read (test106)
-                            ("unknown SSID", "LEAKCAM-T040-NONE", psk, (NOT_FOUND,))):
+                            ("unknown SSID", "T040-NONE", psk, (NOT_FOUND,))):
     res = op("session", address=addr, pair="accept", writes=f"ssid:{hexs(s_)},psk:{hexs(p_)},commit:01", secs=90)
     st = states(res)
     check(f"check, {name}: {final[0]:#x}", st and st[-1] in final, str(st))
@@ -211,7 +213,7 @@ t = link(ssid)
 check("checked store during a session: the session restarts on the network", t >= 0 and connects() > n,
       f"{t:.1f} s after SAVED")
 times["restart"] = t
-other = "LEAKCAM-T040-NEW"                      # a network that is not there: the restarted session must try it
+other = "T040-NEW"                      # a network that is not there: the restarted session must try it
 res = op("session", address=addr, pair="accept", writes=f"ssid:{hexs(other)},psk:{hexs('pass1234')},commit:02", secs=10)
 check("store 0x02 during a session: SAVED", states(res) == [SAVED], str(states(res)))
 t = link(None)

@@ -4,6 +4,20 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-01 (run.py, 449 s): pass
+
+49 of 49 checks passed. Not automated: advertising stops on unplug, pairing refused on battery, power cut (README Steps 1, 2, 5).
+
+- phone USB port was the power source: swapped to sink
+
+
+### Automated run 2026-11-01 (run.py, 445 s): pass
+
+48 of 48 checks passed. Not automated: advertising stops on unplug, pairing refused on battery, power cut (README Steps 1, 2, 5).
+
+- phone USB port was the power source: swapped to sink
+
+
 ### Automated run 2026-11-01 (run.py, 380 s): pass
 
 46 of 46 checks passed. Not automated: advertising stops on unplug, pairing refused on battery, power cut (README Steps 1, 2, 5).
@@ -164,6 +178,10 @@ the board was never seen advertising.
 - Optimised build note (2026-10-29): "-O3 + LTO adopted in the product and test defconfigs".
 
 ## Obstacles
+
+- 2026-11-01, first run after PR4: "BLE started (pt_ble on)" FAIL although the phone saw the board 7 s later: PR4
+  replaced the firmware's "ble: advertising as" line with "ble: ready as" and the runners still waited for the old
+  one. Fixed in every runner (test040, test042, test106, test110); run stopped and started again.
 
 - 2026-10-30 12:20: the re-run after the audit found no BL616 port: board and phone both gone from the VM's USB
   (the hub drop of 2026-10-29 again); run.py read it as "no pt_ble" - not a test result.

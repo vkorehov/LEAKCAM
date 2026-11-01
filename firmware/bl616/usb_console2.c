@@ -579,3 +579,16 @@ void usb_console_init(void)
                     configMAX_PRIORITIES - 2U, NULL) != pdPASS)
         vAssertCalled();
 }
+
+/* setup mode (DESIGN.md 5.3.1, tests/test120): the USB device goes before PDS sleep (its PHY and clock are off there)
+ * and comes back after the wake; the host sees an unplug and a new attach, the console task and rings stay */
+void usb_console_suspend(void)
+{
+    (void)usbd_deinitialize(USB_CONSOLE_BUS_ID);
+}
+
+void usb_console_resume(void)
+{
+    if (usbd_initialize(USB_CONSOLE_BUS_ID, 0, event_cb) != 0)
+        vAssertCalled();                 /* no console after a wake: fail fast */
+}

@@ -48,6 +48,11 @@ Android 8.0+, the app's BLE permissions.
    2026-11-01).
 8. **Repeats:** 8 setups in a row (the leak verdict's minimum) (alternating two networks): every one Done, BL616 memory steady (mem_leak.py).
 
+## Setup mode (DESIGN.md 5.3.1, planned)
+
+- In setup mode (once test120 passed): every setup case starts from the low-power mode (the phone's connection wakes
+  the board); the times from opening the app to Done compared with the awake board.
+
 ## Pass
 
 A new board goes from unboxed to a working Wi-Fi wake with only the app; every failure is named in the app and

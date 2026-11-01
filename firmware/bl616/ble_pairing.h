@@ -2,7 +2,7 @@
  * BLE, used for one thing only: setting the Wi-Fi credentials (and checking them
  * before they are stored).
  *
- * The device advertises as "LEAKCAM-xxyy" and exposes one provisioning service. Its characteristics
+ * The device advertises as its serial (device_id.h) and exposes one provisioning service. Its characteristics
  * need an authenticated link: LE Secure Connections passkey entry with a per-device PIN, stored on
  * the board at manufacture (easyflash "pair_pin", `prov pin`); only the server knows how it is
  * derived and gives it to the app (GET /v1/devices/<id>/pin) right before it pairs (user 2026-11-01:
@@ -40,8 +40,8 @@
 /* Initialise the BLE controller and host and register the service (RF must be up); advertising follows
  * ble_pairing_advertise(). Must run inside a FreeRTOS task (the host calls back from its own tasks). */
 void ble_pairing_start(void);
-/* advertise or not (provision.c: always on USB power, on battery in windows while no network is stored); a held
- * connection stays, advertising resumes after it as wanted */
+/* advertise or not (provision.c: always on USB power, on battery in windows while no network is stored or presence
+ * is lost); a held connection stays, advertising resumes after it as wanted */
 void ble_pairing_advertise(bool on);
 /* the advertising interval in ms (20 .. 10240); the product keeps its 100-150 ms, the test firmware sweeps it
  * (tests/test114): a shared-module function only the test firmware calls, dropped from the product by the linker */
@@ -50,6 +50,8 @@ void ble_pairing_adv_interval(unsigned int ms);
 int ble_pairing_pin(void);
 /* a phone is connected (presence.c waits: setup first) */
 bool ble_pairing_connected(void);
+/* the low-power sleep path is safe for BLE now: not started, advertising or connected (the setup firmware's idle hook) */
+bool ble_pairing_sleep_ok(void);
 /* Called after new credentials are stored, from the BLE host or the check's task (must not block). The product
  * (provision.c) drops the remembered AP; the test firmware (pt_wifi.c) also restarts its bridge. */
 void ble_credentials_stored(void);

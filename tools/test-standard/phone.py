@@ -19,15 +19,20 @@ RUNNER = "com.leakcam.setup.test/androidx.test.runner.AndroidJUnitRunner"
 SERVER = "http://192.168.1.159:8090"   # the presence server (server/, the Pi): the board's pairing PIN comes from it
 
 
-def board_pin():
-    """the board's pairing PIN as the app gets it (GET /v1/devices/<id>/pin), for BleOp's raw sessions; the ID from the
-    board's USB serial number. Never logged"""
+def board_id():
+    """the board's serial (device ID) from its USB serial number; "" when the console is not there"""
     from board import BL_PORT
     usb = subprocess.run(["udevadm", "info", "-q", "property", BL_PORT], capture_output=True, text=True).stdout
     m = re.search(r"ID_SERIAL_SHORT=([0-9A-F]{12})\b", usb)
-    if not m:
+    return m.group(1) if m else ""
+
+
+def board_pin():
+    """the board's pairing PIN as the app gets it (GET /v1/devices/<id>/pin), for BleOp's raw sessions. Never logged"""
+    dev = board_id()
+    if not dev:
         return ""
-    with urllib.request.urlopen(f"{SERVER}/v1/devices/{m.group(1)}/pin", timeout=5) as f:
+    with urllib.request.urlopen(f"{SERVER}/v1/devices/{dev}/pin", timeout=5) as f:
         return json.loads(f.read())["pin"]
 
 

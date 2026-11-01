@@ -4,6 +4,20 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-01 (run.py, 414 s): pass
+
+29/29 checks pass.
+
+- phone USB port was the power source: swapped to sink
+
+
+### Automated run 2026-11-01 (run.py, 456 s): **FAIL**
+
+27/28 checks pass. Failed: phone Bluetooth off before the save: failure told in time (38.3 s: Done. LEAKCAM-B14A joined "VK", reached the internet and stored the ne).
+
+- phone USB port was the power source: swapped to sink
+
+
 ### Automated run 2026-11-01 (run.py, 399 s): pass
 
 29/29 checks pass.
@@ -45,6 +59,10 @@ stored the network; the phone's Bluetooth off waited out the 60 s timeout ("did 
 connect was not retried; a link lost with the commit write said "refused the save command".
 
 ## Obstacles
+
+- 2026-11-01 13:35, after PR4: "Bluetooth off before the save" came too late: 2 s after the app opened the known board
+  was already being checked ("is now joining"), so the app recovered to Done (38.3 s) instead of a named failure. The
+  fixed delay replaced by the app's first screen log line (bt_off_at, as the during-check case).
 
 - 2026-11-01: an Android GATT 133 on a connection without any fault armed (the second connection of a save without
   checking) failed case "result notification lost" before its fault: a real phone-side loss, now a finding of its own.

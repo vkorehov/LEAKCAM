@@ -70,14 +70,14 @@ def app_mine():
     return lines
 
 
-def add_to_app(dev_id, name, only=False):
+def add_to_app(dev_id, only=False):
     """an entry in the app's list as a setup would leave it (debug build: run-as writes its prefs); only: the list
     holds just this one (the run's starting state, whatever a stopped run left)"""
     adb("shell", "am", "force-stop", PKG)
     xml = adb("shell", "run-as", PKG, "cat", "shared_prefs/devices.xml")
     m = re.search(r'<string name="devices">(.*)</string>', xml, re.S)
     devices = {} if only or not m else json.loads(m.group(1).replace("&quot;", '"'))
-    devices[dev_id] = {"name": name}
+    devices[dev_id] = {}                       # the ID is its name: nothing else stored
     body = json.dumps(devices).replace('"', "&quot;")
     new = f"<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n    <string name=\"devices\">{body}</string>\n</map>\n"
     subprocess.run(["adb", "shell", f"run-as {PKG} sh -c 'cat > shared_prefs/devices.xml'"], input=new, text=True,
@@ -109,7 +109,7 @@ try:
     usb_id = (re.search(r"ID_SERIAL_SHORT=(\S+)", usb) or [None, None])[1]
     check("the board has a device ID", dev is not None, str(dev))
     check("USB serial number = the device ID", usb_id == dev, f"USB {usb_id}")
-    add_to_app(dev, "LEAKCAM-" + dev[-4:], only=True)   # starting state: the app knows this board, nothing else
+    add_to_app(dev, only=True)   # starting state: the app knows this board, nothing else
     adb("logcat", "-c")
     res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=150)
     helps = res.get("help", [])
@@ -129,7 +129,9 @@ try:
     check("advertisement: a stored network flagged", re.search(rf"found \S+ id {dev} creds 1", logcat) is not None,
           (re.findall(rf"found \S+ id {dev} creds (\d)", logcat) or ["?"])[-1])
     prefs = adb("shell", "run-as", PKG, "cat", "shared_prefs/devices.xml")
-    check("the app stores no Wi-Fi network", "ssid" not in prefs and ssid not in prefs, "devices.xml: ids and names only")
+    check("the app stores no Wi-Fi network", "ssid" not in prefs and ssid not in prefs, "devices.xml: ids only")
+    check("the app names the board by its serial", "LEAKCAM-" not in prefs and "name" not in prefs.split("devices", 1)[-1],
+          "devices.xml: no name, no prefix")
 
     # 2. the board checks in at the server: online within two intervals after the setup (the phone left)
     t0, online = time.time(), False
@@ -150,7 +152,7 @@ try:
           lines.get(dev))
 
     # 4. a second LEAKCAM: listed, online while it checks in, offline when it stops
-    add_to_app(SECOND, "LEAKCAM-SECOND")
+    add_to_app(SECOND)
     lines = app_mine()
     check("app: second LEAKCAM listed, not seen yet", "not seen yet" in lines.get(SECOND, ""), lines.get(SECOND))
     server(f"/v1/poll?id={SECOND}&ssid=t111-second")   # as a board reports its network
