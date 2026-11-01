@@ -39,10 +39,16 @@ def op(name, **kw):
     return json.loads(m.group(1)) if m else {"error": "no result from the phone"}
 
 
+def product():
+    """True on the BL616 product firmware (firmware/bl616: `prov`, BLE on by itself with USB power), False on the test
+    firmware (bl616_powertest: `pt_ble`)"""
+    return re.search(r"^\s*prov\b", re.sub(r"\x1b\[[0-9;]*m", "", bl("help", 2)), re.M) is not None
+
+
 def creds():
-    """(ssid len, crc), (psk len, crc) as stored on the BL616 (`pt_ble creds`, never the passphrase); None for a
-    missing key"""
-    out = bl("pt_ble creds", 2, r"wifi_psk[^\n]*\n")
+    """(ssid len, crc), (psk len, crc) as stored on the BL616 (`prov` / `pt_ble creds`, never the passphrase); None
+    for a missing key"""
+    out = bl("prov" if product() else "pt_ble creds", 2, r"wifi_psk[^\n]*\n")
     got = []
     for key in ("wifi_ssid", "wifi_psk"):
         m = re.search(key + r" len (\d+) crc ([0-9a-f]{8})", out)

@@ -4,6 +4,35 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-01 (run.py, 214 s): pass
+
+17/17 checks pass. First setup (app opened -> Done) 7.5 s; repeats 6.9-7.6 s.
+
+- phone USB port was the power source: swapped to sink
+
+
+### Product v1 with STATUS reconciliation 2026-11-01 07:33 (run.py, 250 s): pass
+
+17/17 checks pass on the product image (firmware/bl616) with the reconciliation change: the board sets STATUS idle on
+connect and JOINING inside the commit write, the app reads STATUS every second besides the notifications (one
+idempotent handler, the timeout counts from a state change). First setup (app opened -> Done) 7.9 s; repeats 7.1-7.6 s
+(no slower than notifications alone); BLE again after a reset, 7.3 s; crash record none before and after.
+
+- phone USB port was the power source: swapped to sink (it came back as source after the USB drop below)
+
+
+### Product v1 2026-11-01 (firmware/bl616, Gitea PR #1): pass with one unexplained stall
+
+- run.py on the product image (07:09-07:13 UTC+2, stopped by hand at the stall): crash record none before; steps 1 3 4 5
+  6 pass - first setup 12.9 s (pairing included), wrong password 12.1 s, network not seen 11.3 s, save without
+  checking 15.2 s, change back 7.3 s; repeats 7.9, 7.5 s, then **repeat 3: 67.6 s "The LEAKCAM did not answer"**
+  after "Password accepted. Getting an address from the router..."; the next setup 8.5 s Done. Board alive (mem
+  sampled right after: free 154548, unchanged), no crash record, no reset.
+- repeat_capture.py 20 (new: the BL616 console held open the whole run, every line timestamped,
+  repeat_capture.log): 20/20 Done, 7.0-8.5 s; mem free 154548-154552, min 128268, blocks 103 throughout (no leak);
+  crash record none. Each check: join 0.3 s, DHCP ack 20 ms, `check of "VK": state 0x03` about 0.4 s after the join
+  started.
+
 ### Automated run 2026-10-30 (run.py, 249 s): pass
 
 17/17 checks pass. First setup (app opened -> Done) 8.0 s; repeats 7.3-9.4 s.
@@ -35,6 +64,14 @@ No run yet. Status before the step 6 rewrite: **planned** (2026-10-27).
 
 ## Obstacles
 
+- 2026-11-01, product v1: one setup of 24 got no answer after the ADDRESS progress step (the app's 60 s step timeout);
+  not reproduced in 20 captured repeats. The board sent each STATUS change once as a notification (bt_gatt_notify's
+  result unchecked, no resend) and the app learned the result only from notifications: one lost notification left it
+  waiting with the board done. Fixed by design, not by a detector (user: reconciliation and eventual consistency):
+  STATUS is the state, idle on connect, JOINING set in the commit write, and the app reads it every second as well;
+  a lost notification now only delays the answer by up to a second. Rule in skill leakcam-product-firmware section 3.
+- 2026-11-01 07:19:55: the board and the phone dropped off USB together, a minute after repeat_capture.py ended (no VM
+  pause in the vmware log); the user reconnected both. The phone came back as the USB power source (run.py swapped it).
 - The 08:24 run's runner (2026-10-30), each fixed in run.py / BleOp:
   - "BLE advertising" failed: the check looked for "already on", `pt_ble` says "pt_ble: on".
   - "memory leak" was false: a watchdog reset just before the repeats made the first memory sample a fresh heap

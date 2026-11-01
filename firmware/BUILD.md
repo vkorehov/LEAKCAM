@@ -87,11 +87,12 @@ the following:
 
 ### 2.4 Build
 
-The programs on /sdcard/app come from the test image script, run after install.sh (the first product's apps are in
-attic/firmware and are not built; the test image carries its own copy in tools/test-standard/k230_apps):
+The programs on /sdcard/app come from test_install.sh, which runs install.sh first and also builds the BL616 test
+firmware (the first product's apps are in attic/firmware and are not built; the test image carries its own copy in
+tests/firmware/k230_apps):
 
 ```
-$LEAKCAM/tools/test-standard/build_test_image.sh ~/k230_rtos_sdk    # apps + test tools, then the full build
+$LEAKCAM/tests/firmware/test_install.sh ~/k230_rtos_sdk    # install.sh, apps + test tools, the full build, BL616 test firmware
 ```
 
 Or by hand:
@@ -222,7 +223,7 @@ link frames), the BL616 forwards it. Only the BootROM's own lines (errors, USB b
 2. `k230_read_toc`, then slot A loading.
 3. The OpenSBI banner.
 4. The RT-Smart `msh />` prompt.
-5. `ls /sdcard/app` (test image, tools/test-standard/build_test_image.sh) lists `leakcam_agent`, `leakcam_wake`,
+5. `ls /sdcard/app` (test image, tests/firmware/test_install.sh) lists `leakcam_agent`, `leakcam_wake`,
    `leakcam_hist`, `leakcam_stream`, `leakcam_change.kmodel` and the test tools.
 
 **Not yet verified on hardware:**
@@ -246,7 +247,7 @@ The T-Head toolchain is x86-64 only. On the arm64 host it runs through qemu, but
 amd64 runtime libraries, so build inside the K230 build container (section 2.2):
 
 ```
-cd ~/k230d-hw/LEAKCAM/tools/power-bringup/bl616_powertest
+cd ~/k230d-hw/LEAKCAM/tests/firmware/bl616_powertest
 docker run --rm --user $(id -u):$(id -g) -e HOME=/tmp \
     -e PATH=$HOME/k230d-hw/toolchain_gcc_t-head_linux/bin:/usr/bin:/bin \
     -v $HOME/k230d-hw:$HOME/k230d-hw -w $PWD k230-rtos-sdk-build:arm64-x86tc make -j5
@@ -254,7 +255,7 @@ docker run --rm --user $(id -u):$(id -g) -e HOME=/tmp \
 
 ### 4.2 Build
 
-The firmware built today is the BL616 **test firmware** (tools/power-bringup/bl616_powertest; the first product
+The firmware built today is the BL616 **test firmware** (tests/firmware/bl616_powertest; the first product
 application is in attic/firmware and is not built). `make` runs the build in the container by itself on an arm64 host
 ([bl616/host.mk](bl616/host.mk)); CHIP=bl616 BOARD=bl616dk are the defaults. The firmware lands in
 `build/build_out/bl616_powertest_bl616.bin`. `defconfig` moves the SDK

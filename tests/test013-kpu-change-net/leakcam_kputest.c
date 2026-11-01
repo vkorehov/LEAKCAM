@@ -3,7 +3,7 @@
  * Loads the factory kmodel as leakcam_wake does (change_load), then times change_distance() on synthetic
  * IMGDIFF_W x IMGDIFF_H luma pairs with a fixed seed: an identical pair (distance must be ~0), the same scene a
  * quarter brighter (light: below CHANGE_THRESHOLD expected) and a new scene (change: above it expected). Built with the
- * programs only with LEAKCAM_BENCH=1 (tools/test-standard/k230_apps/rtsmart/Makefile), never part of the product image.
+ * programs only with LEAKCAM_BENCH=1 (tests/firmware/k230_apps/rtsmart/Makefile), never part of the product image.
  *
  *   leakcam_kputest [runs]    (default 20) -> load time, per-pair min / median / max ms, the three distances
  */

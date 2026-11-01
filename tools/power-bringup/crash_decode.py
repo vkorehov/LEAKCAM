@@ -17,7 +17,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 HW = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 TOOL = os.path.join(HW, "toolchain_gcc_t-head_linux", "bin", "riscv64-unknown-elf-addr2line")
 IMAGE = "k230-rtos-sdk-build:arm64-x86tc"
-ELF = os.path.join(HERE, "bl616_powertest", "build", "build_out", "bl616_powertest_bl616.elf")
+ELF = os.path.join(HERE, "..", "..", "tests", "firmware", "bl616_powertest", "build", "build_out", "bl616_powertest_bl616.elf")
 
 
 def addr2line(elf, addrs):

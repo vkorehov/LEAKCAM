@@ -1,7 +1,8 @@
 # test040: BLE provisioning on the BL616: Wi-Fi credentials into flash
 
-Status: **pass** (2026-10-29): run.py 46/46 (run 13, test firmware -O3 + LTO with the sdk_patch.py console fix) and
-hand steps 1 and 2; step 5's full power cut not done (user: the cell stays in). Test firmware only.
+Status: **pass** (2026-11-01): run.py 46/46 in 338 s on the test firmware with STATUS reconciliation (attempt id, kept
+across connections, a passed check stored also with the phone gone, notified only on change), fail fast and checked
+return values; hand steps 1 and 2 (2026-10-29); step 5's full power cut not done (user: the cell stays in).
 
 The BL616's one BLE job (firmware/bl616/ble_pairing.c): on USB power it advertises as `LEAKCAM-xxyy`, accepts Just
 Works pairing, takes the SSID and passphrase over its provisioning service and stores them in easyflash
@@ -11,7 +12,7 @@ product flow are test106.
 
 ## Setup
 
-- BL616 test firmware (tools/power-bringup/bl616_powertest) with BLE added: `ble_pairing.c` + `wifi_check.c` built
+- BL616 test firmware (tests/firmware/bl616_powertest) with BLE added: `ble_pairing.c` + `wifi_check.c` built
   in (today's defconfig has no BLE), and a `pt_ble` shell command: `pt_ble` (advertising, connection, last status),
   `pt_ble creds` (lengths and a CRC of the stored `wifi_ssid` / `wifi_psk`, never the passphrase itself),
   `pt_ble erase` (delete both keys and `wifi_ap`). Console PR1 (`/dev/ttyACM0`).
@@ -61,7 +62,8 @@ littlefs (PSM partition, `CONFIG_LITTLEFS_KV_EASYFLASH`), Wi-Fi fhost + lwIP + D
    SAVED); commit 0x02 of another network: the session restarts on it (gone from the old one); the real network
    stored again after that failed join: back on it (time); the router's password changed (0x02 of a wrong one: the
    session retries and fails), then the new one with a check during those retries: SAVED, back on it (time).
-9. **Repeats (leak test):** 20 connect / pair / write / commit 0x02 / disconnect cycles and 8 checked commits: BL616
+9. **Repeats (leak test):** 8 connect / pair / write / commit 0x02 / disconnect cycles (the leak verdict's minimum; a cycle
+   that never left the phone is retried once and noted) and 8 checked commits: BL616
    `mem` before and after each (mem_leak.py), easyflash still writes (its garbage collection runs), no reset.
 
 ## Pass

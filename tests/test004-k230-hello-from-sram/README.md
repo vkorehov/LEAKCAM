@@ -2,12 +2,12 @@
 
 Status: **pass** (2026-10-25): k230_hello loads over USB into SRAM in 4.2 s and runs (3 of 3 boots), K230_ALIVE toggles.
 
-[k230_hello](../../tools/power-bringup/k230_hello): 0.8 KB bare-metal program the boot ROM loads into SRAM over
+[k230_hello](../../tests/firmware/k230_hello): 0.8 KB bare-metal program the boot ROM loads into SRAM over
 USB-C 1 (`make run`), nothing written to the NAND.
 
 ## Setup
 
-K230 in USB boot on USB-C 1; k230_hello built in tools/power-bringup/k230_hello; BL616 `pt_status` to read K230_ALIVE.
+K230 in USB boot on USB-C 1; k230_hello built in tests/firmware/k230_hello; BL616 `pt_status` to read K230_ALIVE.
 
 ## Needs (build features and dependencies)
 

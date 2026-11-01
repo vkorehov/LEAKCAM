@@ -57,7 +57,10 @@
     <string name="chk_busy">The LEAKCAM could not start the check. Try again.</string>
     <string name="chk_save_failed">The LEAKCAM could not store the settings. Try again; if it keeps failing, the board needs service.</string>
     <string name="chk_unknown">The LEAKCAM reported an unexpected result (%1$d). Try again.</string>
-    <string name="err_lost_during_check">The connection to the LEAKCAM dropped during the check. Nothing was stored. Keep the phone close to it and try again.</string>
+    <string name="help_reconnecting">The connection to %1$s dropped. Reconnecting to see what it did with the network…</string>
+    <string name="help_bluetooth_off_reconnect">Bluetooth was turned off. Turn it back on: the app reconnects to %1$s to see what it did with the network.</string>
+    <string name="err_not_sent">The connection to %1$s dropped before it got the network. Nothing was changed. Keep the phone close to it and try again.</string>
+    <string name="err_unconfirmed">The connection to %1$s dropped and the app could not reach it again, so it cannot tell whether the network was stored. Keep it on USB power and nearby, then send again.</string>
     <string name="err_no_service">This device is not a LEAKCAM in setup mode. Keep it on USB power and scan again.</string>
     <string name="err_refused">The LEAKCAM refused the %1$s (error %2$d). Check it and try again.</string>
     <string name="err_write">Could not send the %1$s. Try again.</string>

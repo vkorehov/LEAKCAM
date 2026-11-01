@@ -44,7 +44,7 @@
 #define BL616_SIZE_UNIT        64    /* unit of HOST_READY / CARD_READY */
 #define BL616_BLOCK_SIZE       512
 /* ports per direction: SDIO2_MAX_PORT_NUM on the BL616, which NetHub builds with
- * CONFIG_MR_SDIO_QUEUE_DEPTH (4, set in tools/power-bringup/bl616_powertest/defconfig). Both ends count the
+ * CONFIG_MR_SDIO_QUEUE_DEPTH (4, set in tests/firmware/bl616_powertest/defconfig). Both ends count the
  * ports in the same order, so the two numbers must be equal; there is no register for it. */
 #define BL616_PORTS            4
 

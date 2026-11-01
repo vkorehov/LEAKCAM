@@ -3,7 +3,7 @@
 Status: **pass** (2026-10-25): both chains light and reach full current at 100 % duty on the K230 PWM (white +0.34 A,
 IR +0.38 A, both +0.73 A at 5 V USB input); the battery carries both chains + the K230 without a brownout.
 
-Wiring: [led_wiring.png](../../tools/power-bringup/led_wiring.png); design: [LED_STRIPS.txt](../../LED_STRIPS.txt).
+Wiring: [led_wiring.png](led_wiring.png); design: [LED_STRIPS.txt](../../LED_STRIPS.txt).
 
 ## Setup
 

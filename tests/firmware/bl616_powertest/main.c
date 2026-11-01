@@ -1732,7 +1732,7 @@ SHELL_CMD_EXPORT_ALIAS(cmd_rtc, pt_rtc, HBN RTC counter rate [xtal | rc]);
 #endif
 
 #if PT_TEST_TIMING
-#include "bflb_mtd.h"
+#include "bflb_boot2.h"
 #include "easyflash.h"
 
 static void min_max(uint32_t v, uint32_t *lo, uint32_t *hi)
@@ -1853,8 +1853,8 @@ static int cmd_time(int argc, char **argv)
 
     if (!ef_up) {
         uint64_t t0 = bflb_mtimer_get_time_us();
-        bflb_mtd_init();
-        easyflash_init();
+        if (bflb_boot2_init() != 0 || easyflash_init() != EF_NO_ERR)
+            vAssertCalled();                        /* broken flash: fail fast (bflb_mtd_init() drops the result) */
         ef_up = true;
         printf("easyflash on littlefs (PSM) init: %lu us\r\n", (unsigned long)(bflb_mtimer_get_time_us() - t0));
     }

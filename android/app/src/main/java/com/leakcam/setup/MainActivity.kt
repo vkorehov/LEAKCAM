@@ -47,7 +47,10 @@ import java.util.UUID
  * service, connects, pairs (LE Secure Connections, Just Works: the board accepts pairing only on USB
  * power), subscribes to STATUS, then writes SSID, passphrase and commit. Commit 0x01 makes the
  * board join the network, get an address and reach the internet before it stores anything; STATUS
- * reports each step and the result (firmware/bl616/wifi_check_calc.h). Commit 0x02 stores without
+ * reports each step and the result (firmware/bl616/wifi_check_calc.h). STATUS is the board's state for the
+ * commit's attempt id: read once a second as well, so a lost notification only delays the answer; after a lost
+ * link (or Bluetooth off) the app reconnects and reads it, and never claims what the board did without it
+ * (tests/test110). A failed connect is retried. Commit 0x02 stores without
  * checking, for a board set up out of reach of its network.
  *
  * The screen walks through four steps (plug in, find, Wi-Fi, pair and save); the box under them
@@ -66,6 +69,7 @@ class MainActivity : Activity() {
         const val COMMIT_CHECK: Byte = 1
         const val COMMIT_UNCHECKED: Byte = 2
         // STATUS states, as in firmware/bl616/wifi_check_calc.h
+        const val WCHK_IDLE = 0x00
         const val WCHK_JOINING = 0x01
         const val WCHK_ADDRESS = 0x02
         const val WCHK_INTERNET = 0x03
@@ -83,6 +87,10 @@ class MainActivity : Activity() {
         const val MTU = 247              // the longest value, a 63-byte passphrase, in one write
         const val SCAN_MS = 10_000L           // the longest Find: no board by then
         const val SEND_TIMEOUT_MS = 60_000L   // per step: pairing (the user reads and accepts), each check step
+        const val POLL_MS = 1_000L            // STATUS read while the check runs: a notification can be lost (test106)
+        const val CONNECT_TRIES = 3           // connects before a failure is shown: Android's GATT 133 is common (test110)
+        const val RETRY_MS = 500L
+        const val RECONCILE_MS = 20_000L      // reconnecting after a lost link to read what the board did
         const val REQUEST_PERMISSIONS = 1
         const val REQUEST_ENABLE_BT = 2
         const val STEP_PLUG = 1
@@ -116,6 +124,15 @@ class MainActivity : Activity() {
     private var boardName = ""
     private var checked = true           // this send asks the board to check the network first
     private var committed = false        // commit written: STATUS reports from here on
+    private var lastState = -1           // the last STATUS state shown: a read repeating it changes nothing
+    private var sending = false
+    private var device: BluetoothDevice? = null
+    private var attempt = 0              // this send's id in COMMIT; STATUS answers for it
+    private var planned = listOf<Pair<UUID, ByteArray>>()
+    private var tries = 0                // connects of this send before the commit
+    private var reconciling = false      // the link was lost after the commit: reconnecting to read STATUS
+    private var firstRead = false        // the first STATUS after a reconnect decides
+    private var adapterReceiver: BroadcastReceiver? = null
     private var ssidText = ""
     private var writes = ArrayDeque<Pair<UUID, ByteArray>>()
     private var bondReceiver: BroadcastReceiver? = null
@@ -317,10 +334,18 @@ class MainActivity : Activity() {
         checked = check
         committed = false
         val commit = if (check) COMMIT_CHECK else COMMIT_UNCHECKED
+        attempt = (1..Int.MAX_VALUE).random()
+        val id = ByteArray(4) { (attempt shr (8 * it)).toByte() }
         /* an open network writes no passphrase: the board starts each connection empty and its BLE stack refuses
          * zero-length writes (tests/test040) */
-        writes = ArrayDeque(listOfNotNull(SSID to ssid, if (psk.isNotEmpty()) PSK to psk else null,
-            COMMIT to byteArrayOf(commit)))
+        planned = listOfNotNull(SSID to ssid, if (psk.isNotEmpty()) PSK to psk else null,
+            COMMIT to byteArrayOf(commit) + id)
+        writes = ArrayDeque(planned)
+        this.device = device
+        sending = true
+        tries = 1
+        reconciling = false
+        watchAdapter()
         sendButton.isEnabled = false
         scanButton.isEnabled = false
         saveAnywayButton.visibility = View.GONE
@@ -338,7 +363,7 @@ class MainActivity : Activity() {
     private fun connectWhenUnpaired(device: BluetoothDevice, until: Long) {
         when {
             device.bondState == BluetoothDevice.BOND_NONE -> {
-                gatt = device.connectGatt(this, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
+                connect()
                 // the phone starts the pairing: Samsung then asks once, not twice as for the board's Security Request
                 // (2.3 -> 1.2 s and one tap less, test106)
                 device.createBond()
@@ -351,9 +376,24 @@ class MainActivity : Activity() {
         }
     }
 
+    private val timeout = Runnable { fail(R.string.err_timeout) }
+
     private fun armTimeout() {
-        main.removeCallbacksAndMessages(null)
-        main.postDelayed({ fail(R.string.err_timeout) }, SEND_TIMEOUT_MS)
+        main.removeCallbacks(timeout)
+        main.postDelayed(timeout, SEND_TIMEOUT_MS)
+    }
+
+    /** the next STATUS read; each answer schedules the one after it (one GATT request at a time) */
+    private val poll = Runnable {
+        val g = gatt ?: return@Runnable
+        val c = g.getService(SERVICE)?.getCharacteristic(STATUS) ?: return@Runnable
+        if (!g.readCharacteristic(c))
+            schedulePoll()               // the stack was busy: try again
+    }
+
+    private fun schedulePoll() {
+        main.removeCallbacks(poll)
+        main.postDelayed(poll, POLL_MS)
     }
 
     /** closes the connection and turns the buttons back on; then [done], if a send was running */
@@ -361,14 +401,12 @@ class MainActivity : Activity() {
         main.removeCallbacksAndMessages(null)
         bondReceiver?.let { unregisterReceiver(it) }
         bondReceiver = null
-        gatt?.let {
-            if (permissionsGranted()) {
-                it.disconnect()
-                it.close()
-            }
-        }
-        val wasSending = gatt != null
-        gatt = null
+        adapterReceiver?.let { unregisterReceiver(it) }
+        adapterReceiver = null
+        closeGatt()
+        val wasSending = sending
+        sending = false
+        reconciling = false
         sendButton.isEnabled = true
         scanButton.isEnabled = true
         if (wasSending)
@@ -376,6 +414,65 @@ class MainActivity : Activity() {
     }
 
     private fun fail(res: Int, vararg args: Any) = finishSend { problem(STEP_SAVE, res, *args) }
+
+    private fun closeGatt() {
+        gatt?.let {
+            if (permissionsGranted()) {
+                it.disconnect()
+                it.close()
+            }
+        }
+        gatt = null
+    }
+
+    private fun connect() {
+        val d = device ?: return
+        discovered = false
+        gatt = d.connectGatt(this, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
+    }
+
+    /** a connect that failed or dropped before the commit: nothing reached the board, connect again */
+    private fun retryConnect() {
+        closeGatt()
+        tries++
+        writes = ArrayDeque(planned)
+        main.postDelayed({ if (sending && gatt == null) connect() }, RETRY_MS)
+    }
+
+    private val reconcileDeadline = Runnable { fail(R.string.err_unconfirmed, boardName) }
+
+    /** the link (or Bluetooth) lost after the commit: the board may have stored the network; reconnect and read STATUS
+     *  for this attempt instead of guessing */
+    private fun lostAfterCommit() {
+        closeGatt()
+        main.removeCallbacks(timeout)
+        main.removeCallbacks(poll)
+        if (!reconciling) {
+            reconciling = true
+            main.postDelayed(reconcileDeadline, RECONCILE_MS)
+        }
+        firstRead = true
+        writes = ArrayDeque()
+        if (adapter?.isEnabled != true)
+            return show(STEP_SAVE, R.string.help_bluetooth_off_reconnect, boardName)
+        show(STEP_SAVE, R.string.help_reconnecting, boardName)
+        main.postDelayed({ if (sending && gatt == null) connect() }, RETRY_MS)
+    }
+
+    /** Bluetooth turned off during a send gives no disconnect callback (test110): watch the adapter itself */
+    private fun watchAdapter() {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(ctx: Context, intent: Intent) {
+                when (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)) {
+                    BluetoothAdapter.STATE_TURNING_OFF, BluetoothAdapter.STATE_OFF ->
+                        if (committed) lostAfterCommit() else fail(R.string.err_bluetooth_off)
+                    BluetoothAdapter.STATE_ON -> if (reconciling && gatt == null) lostAfterCommit()
+                }
+            }
+        }
+        adapterReceiver = receiver
+        registerReceiver(receiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED))
+    }
 
     /** a pairing that did not complete: declined, or the board on battery */
     private fun pairingFailed() = fail(R.string.err_pairing_refused)
@@ -392,8 +489,9 @@ class MainActivity : Activity() {
                         pairThenDiscover(g)
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                     when {
+                        committed -> lostAfterCommit()
                         bondReceiver != null -> pairingFailed()                  // dropped while pairing
-                        committed -> fail(R.string.err_lost_during_check)
+                        tries < CONNECT_TRIES -> retryConnect()
                         else -> fail(R.string.err_disconnected, st)
                     }
                 }
@@ -434,12 +532,24 @@ class MainActivity : Activity() {
             main.post { if (g == gatt && c.uuid == STATUS) onStatus(value) }
         }
 
+        override fun onCharacteristicRead(g: BluetoothGatt, c: BluetoothGattCharacteristic, value: ByteArray, st: Int) {
+            main.post { if (g == gatt && c.uuid == STATUS) onRead(value, st) }
+        }
+
+        @Deprecated("Android 12 and older")
+        override fun onCharacteristicRead(g: BluetoothGatt, c: BluetoothGattCharacteristic, st: Int) {
+            @Suppress("DEPRECATION")
+            val value = c.value ?: ByteArray(0)
+            main.post { if (g == gatt && c.uuid == STATUS) onRead(value, st) }
+        }
+
         override fun onCharacteristicWrite(g: BluetoothGatt, c: BluetoothGattCharacteristic, st: Int) {
             main.post {
                 if (g != gatt) return@post
-                when (st) {
-                    BluetoothGatt.GATT_SUCCESS -> writeNext(g)
-                    BluetoothGatt.GATT_INSUFFICIENT_AUTHENTICATION, BluetoothGatt.GATT_INSUFFICIENT_ENCRYPTION -> pairingFailed()
+                when {
+                    st == BluetoothGatt.GATT_SUCCESS -> writeNext(g)
+                    st == BluetoothGatt.GATT_INSUFFICIENT_AUTHENTICATION || st == BluetoothGatt.GATT_INSUFFICIENT_ENCRYPTION -> pairingFailed()
+                    c.uuid == COMMIT -> lostAfterCommit()     // the board may have taken it: read STATUS for it
                     else -> fail(R.string.err_refused, what(c.uuid), st)
                 }
             }
@@ -454,7 +564,8 @@ class MainActivity : Activity() {
         bonded = device.bondState == BluetoothDevice.BOND_BONDED
         g.discoverServices()
         if (bonded) {
-            show(STEP_SAVE, R.string.help_sending)          // paired already while the MTU was asked
+            if (!reconciling)
+                show(STEP_SAVE, R.string.help_sending)      // paired already while the MTU was asked
             return
         }
         show(STEP_SAVE, R.string.help_pairing, boardName)
@@ -468,7 +579,8 @@ class MainActivity : Activity() {
                         unregisterReceiver(this)
                         bondReceiver = null
                         bonded = true
-                        show(STEP_SAVE, R.string.help_sending)
+                        if (!reconciling)
+                            show(STEP_SAVE, R.string.help_sending)
                         startWrites(g)
                     }
                     BluetoothDevice.BOND_NONE -> pairingFailed()
@@ -511,11 +623,32 @@ class MainActivity : Activity() {
             fail(R.string.err_no_service)
     }
 
-    /** the board's check: progress, then SAVED or a failure (nothing stored) */
+    private fun onRead(v: ByteArray, st: Int) {
+        if (st == BluetoothGatt.GATT_SUCCESS)
+            onStatus(v)
+        if (gatt != null)
+            schedulePoll()
+    }
+
+    /** the board's check, from a notification or a read alike: progress, then SAVED or a failure (nothing stored) */
     private fun onStatus(v: ByteArray) {
         if (!committed || v.isEmpty()) return
         val state = v[0].toInt() and 0xff
         val detail = if (v.size >= 3) (v[1].toInt() and 0xff) or ((v[2].toInt() and 0xff) shl 8) else 0
+        val id = if (v.size >= 7) (3..6).fold(0) { a, i -> a or ((v[i].toInt() and 0xff) shl (8 * (i - 3))) } else 0
+        if (id != attempt) {
+            if (reconciling && firstRead)        // after a lost link: the board never took this commit, or restarted
+                fail(if (id == 0 && state == WCHK_IDLE) R.string.err_unconfirmed else R.string.err_not_sent, boardName)
+            return
+        }
+        if (reconciling) {                       // reconnected: the board answers for this attempt
+            reconciling = false
+            main.removeCallbacks(reconcileDeadline)
+            lastState = -1
+        }
+        firstRead = false
+        if (state == WCHK_IDLE || state == lastState) return
+        lastState = state
         armTimeout()
         when (state) {
             WCHK_JOINING -> show(STEP_SAVE, R.string.help_check_join, ssidText)
@@ -548,12 +681,17 @@ class MainActivity : Activity() {
 
     private fun writeNext(g: BluetoothGatt) {
         val next = writes.removeFirstOrNull()
-        if (next == null)
-            return                       // committed: the board reports on STATUS
+        if (next == null) {
+            if (committed)
+                schedulePoll()           // the board reports on STATUS: notified, and read as well
+            return
+        }
 
         val (uuid, value) = next
-        if (uuid == COMMIT)
+        if (uuid == COMMIT) {
             committed = true             // STATUS may answer before the write does (save, busy)
+            lastState = -1
+        }
         val c = g.getService(SERVICE)?.getCharacteristic(uuid) ?: return fail(R.string.err_no_service)
         val started = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             g.writeCharacteristic(c, value, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) == BluetoothStatusCodes.SUCCESS

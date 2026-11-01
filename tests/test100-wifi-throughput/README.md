@@ -30,7 +30,7 @@ Metrics.
 
 Built up one function at a time, each passed on the board before the next (user, 2026-10-23):
 
-- **Step 1, the BL616 radio alone** ([pt_wifi.c](../../tools/power-bringup/bl616_powertest/pt_wifi.c), `PT_TEST_WIFI`):
+- **Step 1, the BL616 radio alone** ([pt_wifi.c](../../tests/firmware/bl616_powertest/pt_wifi.c), `PT_TEST_WIFI`):
   `pt_wifi scan` / `join <ssid> [psk]` / `status` / `leave`: the antenna and RF before SDIO; join and DHCP on the
   BL616's own lwIP, each step timed (the product's wifi_check.c path, proven here first).
 - Step 2, the NetHub bridge over SDIO: the K230 scans through the BL616.

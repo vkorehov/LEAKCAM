@@ -7,7 +7,7 @@ The always-on side's speed: how fast a wake turns into a K230 power-on, and the 
 
 ## Setup
 
-BL616 test firmware (tools/power-bringup/bl616_powertest) with `pt_time` (PT_TEST_TIMING): min / max of 5 runs on the
+BL616 test firmware (tests/firmware/bl616_powertest) with `pt_time` (PT_TEST_TIMING): min / max of 5 runs on the
 core timer (us). Wake latency: `pt_sleep 10` writes the RTC tick the wake is due at into HBN RAM (t021,
 linker section `.hbn_noinit`), `main()` reads the RTC (30.5 us ticks) and the core timer before `board_init()`.
 `pt_time hstress` tests HBN RAM access per HBN_SRAM mode; `pt_time recal` forgets the stored ADC calibration. K230 off except for the 3V3 ramp. USB-C 1 powers the board.

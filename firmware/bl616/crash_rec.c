@@ -181,6 +181,36 @@ void vApplicationMallocFailedHook(void)
     abort();
 }
 
+/* fail fast on every allocation failure (user, 2026-11-01): FreeRTOS's pvPortMalloc calls the hook above, plain
+ * malloc() (picolibc) returned NULL and ran on; linked with --wrap=malloc/calloc/realloc */
+void *__real_malloc(size_t n);
+void *__real_calloc(size_t k, size_t n);
+void *__real_realloc(void *p, size_t n);
+
+void *__wrap_malloc(size_t n)
+{
+    void *p = __real_malloc(n);
+    if (p == NULL && n != 0)
+        vApplicationMallocFailedHook();
+    return p;
+}
+
+void *__wrap_calloc(size_t k, size_t n)
+{
+    void *p = __real_calloc(k, n);
+    if (p == NULL && k != 0 && n != 0)
+        vApplicationMallocFailedHook();
+    return p;
+}
+
+void *__wrap_realloc(void *old, size_t n)
+{
+    void *p = __real_realloc(old, n);
+    if (p == NULL && n != 0)
+        vApplicationMallocFailedHook();
+    return p;
+}
+
 static void print_rec(void)
 {
     printf("crash #%lu: %s in task '%s' at %lu ms; mcause 0x%08lx mepc 0x%08lx mtval 0x%08lx ra 0x%08lx sp 0x%08lx\r\n",

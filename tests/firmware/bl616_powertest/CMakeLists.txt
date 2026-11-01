@@ -21,7 +21,8 @@ target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/a
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/wdg_guard.c)
 # crash_rec.c: faults and hangs with a backtrace, kept across the reset (user 2026-10-31: every firmware has it)
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/crash_rec.c)
-sdk_add_link_options(-Wl,--wrap=exception_entry -Wl,--wrap=vApplicationStackOverflowHook)
+sdk_add_link_options(-Wl,--wrap=exception_entry -Wl,--wrap=vApplicationStackOverflowHook -Wl,--wrap=malloc
+                     -Wl,--wrap=calloc -Wl,--wrap=realloc)
 # the product's memory metrics (`mem`: every test logs it, leak detection)
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/mem_stat.c)
 sdk_add_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616)
@@ -34,6 +35,10 @@ target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/w
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/pt_ble.c
                            ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/ble_pairing.c
                            ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616/wifi_check.c)
+# pt_fault (test110): loss injected into the provisioning through wraps; the product sources stay as they are
+target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/pt_fault.c)
+sdk_add_link_options(-Wl,--wrap=bt_gatt_notify_cb -Wl,--wrap=bt_conn_set_security -Wl,--wrap=lwip_getaddrinfo
+                     -Wl,--wrap=lwip_recv)
 sdk_add_compile_definitions(-DCONFIG_RWNX_LWIP)
 sdk_add_compile_definitions(-DBL_RA_EN=1)
 sdk_add_compile_definitions(-DWPA_SUPPLICANT_CLEANUP_INTERVAL=1800)

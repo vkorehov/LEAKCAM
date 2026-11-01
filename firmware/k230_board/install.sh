@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Install the LEAKCAM board (K230D + W25N02KV SPI NAND), the BL616 Wi-Fi driver and the
-# leakcam programs into a k230_rtos_sdk checkout. Idempotent: rerun after editing anything in
-# firmware/k230_board or firmware/bl616/wifi_ctrl_proto.h (the test image programs: tools/test-standard/build_test_image.sh).
+# Install the LEAKCAM board (K230D + W25N02KV SPI NAND) and the BL616 Wi-Fi driver into a
+# k230_rtos_sdk checkout. Idempotent: rerun after editing anything in firmware/k230_board or
+# firmware/bl616/wifi_ctrl_proto.h. All test firmware: tests/firmware/test_install.sh (runs this first).
 #
 #   firmware/k230_board/install.sh <k230_rtos_sdk>
 #   cd <k230_rtos_sdk> && make k230d_rtos_leakcam_defconfig && make
@@ -505,16 +505,6 @@ open(p, 'w').write(s.replace(a, b))
 PY
 grep -q 'LEAKCAM: ov5647 1280x960 only' "$ISPMK" || { echo "ISP files patch not applied"; exit 1; }
 rm -f "$SDK"/output/*/images/bin/ov5647-*                  # earlier builds' sets: the rule only adds files
-
-# 5. the tests' bench programs (memtest test025, venctest test027), built into the image with the apps. The SDK's
-#    defconfig sources a Kconfig from every app folder: without one it failed and every build since kept the old
-#    .config (2026-10-30, found when the link rate changed)
-for t in test025-ddr-stress/memtest test027-video-encoder/venctest; do
-    n=$(basename "$t"); A=$SDK/src/applications/$n
-    rm -rf "$A"; cp -r "$HERE/../../tests/$t" "$A"
-    [ -f "$A/Kconfig" ] || : > "$A/Kconfig"
-    grep -q "subdirs-y += $n" "$SDK/src/applications/apps.mk" || echo "subdirs-y += $n" >> "$SDK/src/applications/apps.mk"
-done
 
 echo "LEAKCAM board installed into $SDK"
 echo "next: cd $SDK && make k230d_rtos_leakcam_defconfig && make"

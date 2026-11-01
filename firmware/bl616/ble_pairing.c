@@ -20,7 +20,6 @@
 #include "easyflash.h"
 #include "log.h"
 
-#include "evlog.h"
 #include "usb_power.h"
 #include "wifi_check.h"
 #include "wifi_link.h"
@@ -32,7 +31,8 @@
 static struct bt_conn *active_conn;
 static char ssid[33];
 static char psk[64];
-static uint8_t status[3];                /* state, detail LE16: the STATUS characteristic */
+static uint8_t status[7];                /* state, detail LE16, attempt LE32: the STATUS characteristic */
+static uint32_t attempt;                 /* the phone's id of the last commit: STATUS answers for it */
 static volatile bool checking;
 
 /* the controller's init resets the PDS block (SDK weak hook, GLB_AHB_MCU_SW_PDS); the BL616's USB PHY is controlled
@@ -82,7 +82,6 @@ static void store(const char *s, const char *k)
         return;
     }
     LOG_I("ble: Wi-Fi credentials stored for \"%s\"\r\n", s);
-    evlog_add(EV_BLE_CREDS, 0, 0);
     set_status(WCHK_SAVED, 0);
     ble_credentials_stored();
 }
@@ -118,10 +117,8 @@ static void check_task(void *arg)
     wifi_link_release(WIFI_OWNER_CHECK);
     if (st != WCHK_INTERNET)
         set_status(st, detail);
-    else if (active_conn)
+    else                                 /* also with the phone gone: it reconnects and reads STATUS (tests/test110) */
         store(s, k);
-    else                                 /* the phone left: it told its user nothing was stored */
-        LOG_W("ble: check passed but the phone is gone, not stored\r\n");
     checking = false;
     vTaskDelete(NULL);
 }
@@ -130,24 +127,26 @@ static ssize_t commit_write(struct bt_conn *conn, const struct bt_gatt_attr *att
                             const void *buf, u16_t len, u16_t offset, u8_t flags)
 {
     (void)conn; (void)attr; (void)flags;
-    uint8_t cmd = len == 1 ? ((const uint8_t *)buf)[0] : 0;
+    const uint8_t *b = buf;
+    uint8_t cmd = len == 1 || len == 5 ? b[0] : 0;
     if (offset != 0 || (cmd != 0x01 && cmd != 0x02) || ssid[0] == 0)
         return BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
     if (checking)
         return len;                      /* the running check reports */
+    attempt = len == 5 ? b[1] | b[2] << 8 | b[3] << 16 | (uint32_t)b[4] << 24 : 0;
+    status[0] = WCHK_IDLE;               /* a new commit: its first state is always notified, also with the same id */
     if (cmd == 0x02) {
         store(ssid, psk);
         return len;
     }
     /* the check blocks for up to a minute: its own task, never the BLE host's. The radio is always granted (BLE
      * first): a K230 session using it hears a link loss and gets it back after the check */
-    wifi_link_claim(WIFI_OWNER_CHECK);
+    if (!wifi_link_claim(WIFI_OWNER_CHECK))
+        vAssertCalled();
     checking = true;
-    if (xTaskCreate(check_task, "wchk", 1536, NULL, 3, NULL) != pdPASS) {
-        checking = false;
-        wifi_link_release(WIFI_OWNER_CHECK);
-        set_status(WCHK_BUSY, 0);    /* no memory for the check's task */
-    }
+    set_status(WCHK_JOINING, 0);         /* a STATUS read after this write's answer is this check's */
+    if (xTaskCreate(check_task, "wchk", 1536, NULL, 3, NULL) != pdPASS)
+        vAssertCalled();
     return len;
 }
 
@@ -179,11 +178,15 @@ static struct bt_gatt_service prov_svc = BT_GATT_SERVICE(prov_attrs);
 
 static void set_status(enum wifi_check_state st, uint16_t detail)
 {
-    status[0] = (uint8_t)st;
-    status[1] = (uint8_t)detail;
-    status[2] = (uint8_t)(detail >> 8);
+    uint8_t next[sizeof(status)] = { (uint8_t)st, (uint8_t)detail, (uint8_t)(detail >> 8) };
+    for (int i = 0; i < 4; i++)
+        next[3 + i] = (uint8_t)(attempt >> (8 * i));
+    if (!memcmp(next, status, sizeof(status)))
+        return;                          /* the same state again (JOINING from the commit, then from the check) */
+    memcpy(status, next, sizeof(status));
+    /* not subscribed or no buffer: the app reads STATUS too, the notification only saves it the wait */
     if (active_conn)
-        bt_gatt_notify(active_conn, &prov_attrs[8], status, sizeof(status));   /* STATUS value */
+        (void)bt_gatt_notify(active_conn, &prov_attrs[8], status, sizeof(status));   /* STATUS value */
 }
 
 /* ---------------- pairing policy ---------------- */
@@ -192,10 +195,11 @@ static void auth_pairing_confirm(struct bt_conn *conn)
 {
     /* no display, no buttons: USB power is the proof of physical access */
     if (usb_present()) {
-        bt_conn_auth_pairing_confirm(conn);
+        if (bt_conn_auth_pairing_confirm(conn))
+            LOG_W("ble: pairing confirm failed\r\n");
     } else {
         LOG_W("ble: pairing refused, not on USB power\r\n");
-        bt_conn_auth_cancel(conn);
+        (void)bt_conn_auth_cancel(conn);    /* not confirmed, the pairing times out anyway */
     }
 }
 
@@ -241,9 +245,8 @@ static void adv_start(void)
     param.interval_min = BT_GAP_ADV_FAST_INT_MIN_2;     /* 100-150 ms: USB powered, no need to save */
     param.interval_max = BT_GAP_ADV_FAST_INT_MAX_2;
     param.options = BT_LE_ADV_OPT_CONNECTABLE | BT_LE_ADV_OPT_USE_NAME;
-    int err = bt_le_adv_start(&param, ad, ARRAY_SIZE(ad), NULL, 0);
-    if (err)
-        LOG_E("ble: advertising failed (%d)\r\n", err);
+    if (bt_le_adv_start(&param, ad, ARRAY_SIZE(ad), NULL, 0))
+        vAssertCalled();                 /* not advertising: the board could never be set up */
 }
 
 static void on_connected(struct bt_conn *conn, u8_t err)
@@ -255,7 +258,8 @@ static void on_connected(struct bt_conn *conn, u8_t err)
      * pairing follows our own Security Request below (smp.c), and the board paired on battery (tests/test040) */
     if (!usb_present()) {
         LOG_W("ble: connection refused, not on USB power\r\n");
-        bt_conn_disconnect(conn, BT_HCI_ERR_REMOTE_USER_TERM_CONN);
+        if (bt_conn_disconnect(conn, BT_HCI_ERR_REMOTE_USER_TERM_CONN))
+            vAssertCalled();             /* a phone left connected on battery could pair: never limp on */
         return;
     }
     active_conn = conn;
@@ -264,12 +268,13 @@ static void on_connected(struct bt_conn *conn, u8_t err)
     memset(ssid, 0, sizeof(ssid));
     memset(psk, 0, sizeof(psk));
     /* ask for encryption right away so the phone's pairing dialog appears on connect */
-    bt_conn_set_security(conn, BT_SECURITY_L2);
+    if (bt_conn_set_security(conn, BT_SECURITY_L2))
+        LOG_W("ble: security request failed\r\n");   /* the phone pairs at its first encrypted write instead */
     /* Wi-Fi up while the phone pairs and writes: the check then starts at once (tests/test106) */
     if (!warming) {
         warming = true;
         if (xTaskCreate(warm_task, "wwarm", 1536, NULL, 3, NULL) != pdPASS)
-            warming = false;             /* no memory: the check starts Wi-Fi itself */
+            vAssertCalled();
     }
 }
 
@@ -296,19 +301,18 @@ void wl_trace(uint8_t code);
 static void on_bt_ready(int err)
 {
     wl_trace(0x74);
-    if (err) {
-        LOG_E("ble: bt_enable failed (%d)\r\n", err);
-        return;
-    }
+    if (err)
+        vAssertCalled();                 /* the BLE host did not come up */
     bt_addr_le_t addr;
     size_t count = 1;
     bt_id_get(&addr, &count);
     char name[16];
     snprintf(name, sizeof(name), "LEAKCAM-%02X%02X", addr.a.val[1], addr.a.val[0]);
-    bt_set_name(name);
+    if (bt_set_name(name))
+        vAssertCalled();
     bt_conn_cb_register(&conn_cb);
-    bt_conn_auth_cb_register(&auth_cb);
-    bt_gatt_service_register(&prov_svc);
+    if (bt_conn_auth_cb_register(&auth_cb) || bt_gatt_service_register(&prov_svc))
+        vAssertCalled();
     adv_start();
     wl_trace(0x75);
     LOG_I("ble: advertising as %s\r\n", name);
@@ -319,15 +323,17 @@ void ble_pairing_start(void)
     wl_trace(0x70);
     btble_controller_init(configMAX_PRIORITIES - 1);
     wl_trace(0x71);
-    hci_driver_init();
+    if (hci_driver_init())
+        vAssertCalled();
     wl_trace(0x72);
-    bt_enable(on_bt_ready);
+    if (bt_enable(on_bt_ready))
+        vAssertCalled();
     wl_trace(0x73);
 }
 
 void ble_pairing_stop(void)
 {
-    bt_le_adv_stop();
+    (void)bt_le_adv_stop();             /* not advertising (a phone connected) is fine */
     if (active_conn)
-        bt_conn_disconnect(active_conn, BT_HCI_ERR_REMOTE_USER_TERM_CONN);
+        (void)bt_conn_disconnect(active_conn, BT_HCI_ERR_REMOTE_USER_TERM_CONN);   /* -ENOTCONN: already gone */
 }

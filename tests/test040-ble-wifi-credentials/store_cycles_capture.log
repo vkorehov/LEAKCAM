@@ -1,0 +1,210 @@
+    0.001   | USB cable plugged in (PGOOD low)
+    0.004   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mo[0m[0mn[0m[0m
+    0.005   | [0mActive Partition[0] consumed 596 Bytes
+    0.005   | ======= PtTable_Config @0x62fd8a24=======
+    0.005   | magicCode 0x54504642; version 0x0000; entryCnt 8; age 0; crc32 0xE38928F3
+    0.005   | idx  type device active_index     name   Address[0]  Address[1]  Length[0]   Length[1]   age
+    0.005   | [00]  16     0         0        Boot2  0x00000000  0x00000000  0x0000e000  0x00000000  0
+    0.005   | [01]  00     0         0           FW  0x00010000  0x00210000  0x00200000  0x00168000  0
+    0.005   | [02]  10     0         0          mfg  0x00210000  0x00000000  0x00168000  0x00000000  0
+    0.005   | [03]  02     0         0        media  0x00378000  0x00000000  0x00071000  0x00000000  0
+    0.005   | [04]  03     0         0          PSM  0x003e9000  0x00000000  0x00008000  0x00000000  0
+    0.005   | [05]  04     0         0          KEY  0x003f1000  0x00000000  0x00002000  0x00000000  0
+    0.005   | [06]  05     0         0         DATA  0x003f3000  0x00000000  0x00005000  0x00000000  0
+    0.010   | [07]  06     0         0      factory  0x003f8000  0x00000000  0x00008000  0x00000000  0
+    0.010   | [MTD] >>>>>> Hanlde info Dump >>>>>>
+    0.010   | name PSM
+    0.010   | id 0
+    0.010   | offset 0x003e9000(4100096)
+    0.010   | size 0x00008000(32Kbytes)
+    0.010   | xip_addr 0xa03d8000
+    0.010   | [MTD] <<<<<< Hanlde info End <<<<<<
+    0.010   | [0m[I][LFS] Found valid PSM partition, XIP addr a03d8000, flash addr 003e9000, size 32768
+    0.010   | [0m[I][LFS] mount success
+    0.010   | [0m[I][rfparam] xtal value 40000000
+    0.010   | [0m[I][rfparam] dcdc_trim value 3
+    0.010   | [0m[I][rfparam] icx value 21
+    0.010   | [0m[I][rfparam] iptat value 23
+    0.010   | [0m[I][rfparam] tmp_mp use default value 35
+    0.010   | [0m[I][rfparam] RF_PARAM TLV ADDRESS: 0xA0000400
+    0.010   | [0m[I][rfparam] pwr_mode is bf
+    0.010   | Empty slot:0
+    0.010   | No written slot found
+    0.010   | [0m[I][rfparam] no wlan pwr_offset in efuse
+    0.010   | [0m[I][rfparam] tlv wlan pwr_offset[14]: 0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0.010   | [0m[I][rfparam] wlan pwr_offset[14]: 0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0.010   | Empty slot:0
+    0.010   | No written slot found
+    0.010   | [0m[I][rfparam] no wlan lp pwr_offset in efuse
+    0.010   | [0m[I][rfparam] tlv wlan lp pwr_offset[14]: 0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0.013   | [0m[I][rfparam] wlan lp pwr_offset[14]: 0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0.013   | Empty slot:0
+    0.013   | No written slot found
+    0.013   | [0m[I][rfparam] no bz pwr_offset in efuse
+    0.013   | [0m[I][rfparam] tlv bz pwr_offset[5]: 0,0,0,0,0,
+    0.013   | [0m[I][rfparam] bz pwr_offset[5]: 0,0,0,0,0,
+    0.013   | [0m[I][rfparam] pwr_11b[4]: 20,20,20,20,
+    0.013   | [0m[I][rfparam] pwr_11g[8]: 18,18,18,18,18,18,16,16,
+    0.013   | [0m[I][rfparam] pwr_11n_ht20[8]: 18,18,18,18,18,16,15,15,
+    0.013   | [0m[I][rfparam] pwr_11n_ht40[8]: 18,18,18,18,18,16,15,14,
+    0.013   | [0m[I][rfparam] pwr_11ac_vht20[10]: 18,18,18,18,18,16,15,15,15,14,
+    0.013   | [0m[I][rfparam] pwr_11ac_vht40[10]: 18,18,18,18,18,16,15,14,14,13,
+    0.013   | [0m[I][rfparam] pwr_11ax_he20[12]: 18,18,18,18,18,16,15,15,15,14,13,13,
+    0.013   | [0m[I][rfparam] pwr_11ax_he40[12]: 18,18,18,18,18,16,15,14,14,13,12,12,
+    0.013   | [0m[I][rfparam] capcode mode is MF
+    0.013   | Empty slot:1
+    0.013   | [0m[I][rfparam] efuse capcode_in 17,capcode_out 17
+    0.013   | [0m[I][rfparam] capcode_in 17,capcode_out 17
+    0.013   | [0m[I][rfparam] tcal.en_tcal = 0
+    0.013   | [0m[I][rfparam] tcal.linear_or_follow = 1
+    0.017   | [0m[I][rfparam] tcal.Tchannels[5]: 2412,2427,2442,2457,2472,
+    0.018   | [0m[I][rfparam] tcal.Tchannel_os[5]: 180,168,163,160,157,
+    0.018   | [0m[I][rfparam] tcal.Tchannel_os_low[5]: 199,186,170,165,160,
+    0.018   | [0m[I][rfparam] tcal.Troom_os = -1
+    0.018   | [0m[I][rfparam] pwr_ble = 13
+    0.018   | [0m[I][rfparam] pwr_bt[3]: 10,8,8,
+    0.018   | [0m[I][rfparam] pwr_zigbee = 13
+    0.018   | [0m[I][rfparam] country_code = CN
+    0.018   | [0m[I][rfparam] en_tcap = 0
+    0.018   | [0m[I][rfparam] tcap_tsen[10]: -3,-4,20,39,39,40,41,42,43,44,
+    0.018   | [0m[I][rfparam] tcap_cap[11]: 28,29,30,31,32,33,34,35,36,37,38,
+    0.138   | pt_ble: starting (USB power yes)
+    0.138   | [36mbouffalolab />[0m[0m
+    0.138   | [0m[36mbouffalolab />[0mRead slot:0
+    0.187   | ACL LE buffers: pkts 4 mtu 251,CONFIG_BT_L2CAP_TX_BUF_COUNT=4, le_read_buffer_size_complete
+    0.191   | [0m[I][] ble: advertising as LEAKCAM-B14A
+    9.072   | macsw features:
+    9.072   | macsw mode: normal
+    9.072   | macsw platform dma: enable
+    9.575   | SIGTERM is NOT supported yet!
+    9.575   | SIGHUP is NOT supported yet!
+    9.575   | [CHIP] fhost_config_prepare: Fixing chan5G_cnt from 28 to 0 (2.4G-only chip)
+    9.575   | ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
+    9.575   | Read slot:0
+    9.575   | get sta mac: 7c:3e:82:62:b1:49
+    9.575   | Read slot:0
+    9.575   | get ap mac: 7c:3e:82:62:b1:49
+    9.581   | wifi_mgmr: code = CN
+    9.581   | 2.4G channels: 1-13 (total: 13)
+    9.581   | 5G channels: none
+   34.745   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+   34.745   | [0mpt_ble: wifi_ssid len 10 crc 6b3a7c24
+   34.745   | pt_ble: wifi_psk len 11 crc 5222c573
+   34.745   | [36mbouffalolab />[0m[0m
+   35.740 cycle 1: FAIL states [] writes [('ssid', -1), ('psk', -1), ('commit', -1)] error None stored ((10, 1798994980), (11, 1378010483))
+   38.729   | [0m[36mbouffalolab />[0m[0m[I][] ble: paired, bonded=1
+   40.468   | [0m[I][] ble: Wi-Fi credentials stored for "t040-rep1"
+   40.744   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+   40.744   | [0mpt_ble: wifi_ssid len 9 crc 5e47a043
+   40.744   | pt_ble: wifi_psk len 11 crc 4c54302b
+   40.744   | [36mbouffalolab />[0m[0m
+   41.739 cycle 2: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+   45.524   | [0m[36mbouffalolab />[0m[0m[I][] ble: Wi-Fi credentials stored for "t040-rep2"
+   45.802   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+   45.802   | [0mpt_ble: wifi_ssid len 9 crc c74ef1f9
+   45.802   | pt_ble: wifi_psk len 11 crc d55d6191
+   45.802   | [36mbouffalolab />[0m[0m
+   46.797 cycle 3: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+   49.934   | [0m[36mbouffalolab />[0m[0m[I][] ble: Wi-Fi credentials stored for "t040-rep3"
+   50.262   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+   50.262   | [0mpt_ble: wifi_ssid len 9 crc b049c16f
+   50.262   | pt_ble: wifi_psk len 11 crc a25a5107
+   50.262   | [36mbouffalolab />[0m[0m
+   51.257 cycle 4: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+   54.569   | [0m[36mbouffalolab />[0m[0m[I][] ble: Wi-Fi credentials stored for "t040-rep4"
+   54.887   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+   54.887   | [0mpt_ble: wifi_ssid len 9 crc 2e2d54cc
+   54.887   | pt_ble: wifi_psk len 11 crc 3c3ec4a4
+   54.887   | [36mbouffalolab />[0m[0m
+   55.882 cycle 5: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+   58.754   | [0m[36mbouffalolab />[0m[0m[I][] ble: Wi-Fi credentials stored for "t040-rep5"
+   59.033   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+   59.033   | [0mpt_ble: wifi_ssid len 9 crc 592a645a
+   59.033   | pt_ble: wifi_psk len 11 crc 4b39f432
+   59.033   | [36mbouffalolab />[0m[0m
+   60.028 cycle 6: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+   62.670   | [0m[36mbouffalolab />[0m[0m[I][] ble: Wi-Fi credentials stored for "t040-rep6"
+   63.000   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+   63.000   | [0mpt_ble: wifi_ssid len 9 crc c02335e0
+   63.000   | pt_ble: wifi_psk len 11 crc d230a588
+   63.000   | [36mbouffalolab />[0m[0m
+   63.995 cycle 7: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+   67.665   | [0m[36mbouffalolab />[0m[0m[I][] ble: Wi-Fi credentials stored for "t040-rep7"
+   67.969   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+   67.969   | [0mpt_ble: wifi_ssid len 9 crc b7240576
+   67.969   | pt_ble: wifi_psk len 11 crc a537951e
+   67.969   | [36mbouffalolab />[0m[0m
+   68.964 cycle 8: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+   72.255   | [0m[36mbouffalolab />[0m[0m[I][] ble: Wi-Fi credentials stored for "t040-rep8"
+   72.604   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+   72.604   | [0mpt_ble: wifi_ssid len 9 crc 279b18e7
+   72.604   | pt_ble: wifi_psk len 11 crc 3588888f
+   72.604   | [36mbouffalolab />[0m[0m
+   73.600 cycle 9: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+   76.693   | [0m[36mbouffalolab />[0m[0m[I][] ble: Wi-Fi credentials stored for "t040-rep9"
+   76.926   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+   76.926   | [0mpt_ble: wifi_ssid len 9 crc 509c2871
+   76.926   | pt_ble: wifi_psk len 11 crc 428fb819
+   76.926   | [36mbouffalolab />[0m[0m
+   77.921 cycle 10: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+   80.804   | [0m[36mbouffalolab />[0m[0m[I][] ble: Wi-Fi credentials stored for "t040-rep10"
+   81.123   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+   81.123   | [0mpt_ble: wifi_ssid len 10 crc 1b5088ab
+   81.123   | pt_ble: wifi_psk len 11 crc 224831fc
+   81.123   | [36mbouffalolab />[0m[0m
+   82.118 cycle 11: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+   85.124   | [0m[36mbouffalolab />[0m[0m[I][] ble: Wi-Fi credentials stored for "t040-rep11"
+   85.326   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+   85.326   | [0mpt_ble: wifi_ssid len 10 crc 6c57b83d
+   85.326   | pt_ble: wifi_psk len 11 crc 554f016a
+   85.326   | [36mbouffalolab />[0m[0m
+   86.321 cycle 12: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+   89.534   | [0m[36mbouffalolab />[0m[0m[I][] ble: Wi-Fi credentials stored for "t040-rep12"
+   89.879   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+   89.879   | [0mpt_ble: wifi_ssid len 10 crc f55ee987
+   89.879   | pt_ble: wifi_psk len 11 crc cc4650d0
+   89.879   | [36mbouffalolab />[0m[0m
+   90.875 cycle 13: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+   93.989   | [0m[36mbouffalolab />[0m[0m[I][] ble: Wi-Fi credentials stored for "t040-rep13"
+   94.312   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+   94.312   | [0mpt_ble: wifi_ssid len 10 crc 8259d911
+   94.312   | pt_ble: wifi_psk len 11 crc bb416046
+   94.312   | [36mbouffalolab />[0m[0m
+   95.307 cycle 14: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+   98.355   | [0m[36mbouffalolab />[0m[0m[I][] ble: Wi-Fi credentials stored for "t040-rep14"
+   98.667   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+   98.667   | [0mpt_ble: wifi_ssid len 10 crc 1c3d4cb2
+   98.667   | pt_ble: wifi_psk len 11 crc 2525f5e5
+   98.667   | [36mbouffalolab />[0m[0m
+   99.663 cycle 15: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+  102.585   | [0m[36mbouffalolab />[0m[0m[I][] ble: Wi-Fi credentials stored for "t040-rep15"
+  102.940   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+  102.940   | [0mpt_ble: wifi_ssid len 10 crc 6b3a7c24
+  102.940   | pt_ble: wifi_psk len 11 crc 5222c573
+  102.940   | [36mbouffalolab />[0m[0m
+  103.934 cycle 16: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+  107.356   | [0m[36mbouffalolab />[0m[0m[I][] ble: Wi-Fi credentials stored for "t040-rep16"
+  107.737   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+  107.738   | [0mpt_ble: wifi_ssid len 10 crc f2332d9e
+  107.738   | pt_ble: wifi_psk len 11 crc cb2b94c9
+  107.738   | [36mbouffalolab />[0m[0m
+  108.733 cycle 17: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+  111.659   | [0m[36mbouffalolab />[0m[0m[I][] ble: Wi-Fi credentials stored for "t040-rep17"
+  111.928   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+  111.928   | [0mpt_ble: wifi_ssid len 10 crc 85341d08
+  111.928   | pt_ble: wifi_psk len 11 crc bc2ca45f
+  111.928   | [36mbouffalolab />[0m[0m
+  112.923 cycle 18: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+  115.545   | [0m[36mbouffalolab />[0m[0m[I][] ble: Wi-Fi credentials stored for "t040-rep18"
+  115.791   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+  115.791   | [0mpt_ble: wifi_ssid len 10 crc 158b0099
+  115.791   | pt_ble: wifi_psk len 11 crc 2c93b9ce
+  115.791   | [36mbouffalolab />[0m[0m
+  116.786 cycle 19: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+  119.685   | [0m[36mbouffalolab />[0m[0m[I][] ble: Wi-Fi credentials stored for "t040-rep19"
+  120.028   | [0mp[0m[0mt[0m[0m_[0m[0mb[0m[0ml[0m[0me[0m[0m [0m[0mc[0m[0mr[0m[0me[0m[0md[0m[0ms[0m[0m
+  120.028   | [0mpt_ble: wifi_ssid len 10 crc 628c300f
+  120.028   | pt_ble: wifi_psk len 11 crc 5b948958
+  120.028   | [36mbouffalolab />[0m[0m
+  121.023 cycle 20: ok states [4] writes [('ssid', 0), ('psk', 0), ('commit', 0)] error None stored this
+  121.023 end: 1/20 failed

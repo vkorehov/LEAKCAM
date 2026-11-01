@@ -35,7 +35,7 @@ programs are rebuilt with the firmware rewrite.
 
 ### Flags B, 2026-10-23: the programs at -Os / -O2 / -O3, each with and without LTO (sizes; speed open)
 
-`LEAKCAM_OPT` / `LEAKCAM_LTO` in tools/test-standard/k230_apps/rtsmart/Makefile (defaults `-Os`, no LTO), six builds (56-97 s
+`LEAKCAM_OPT` / `LEAKCAM_LTO` in tests/firmware/k230_apps/rtsmart/Makefile (defaults `-Os`, no LTO), six builds (56-97 s
 each), stripped sizes in bytes:
 
 | build | leakcam_wake | leakcam_stream | leakcam_hist | leakcam_agent | leakcam_cpubench |

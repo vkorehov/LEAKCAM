@@ -125,7 +125,8 @@ static void send_status(void)
     s.type = WCP_STATUS;
     s.state = state;
     if (state == WCP_STATE_UP) {
-        wifi_mgmr_sta_rssi_get(&rssi);
+        if (wifi_mgmr_sta_rssi_get(&rssi) != 0)
+            rssi = 0;                   /* unknown: 0, as before the first beacons */
         s.rssi = (int8_t)rssi;
         memset(&info, 0, sizeof(info));
         if (wifi_mgmr_sta_connect_ind_stat_get(&info) == 0) {
@@ -163,11 +164,12 @@ static void set_state(uint8_t s)
  */
 bool wifi_link_sta_leave(void)
 {
-    wifi_mgmr_sta_autoconnect_disable();
+    /* a refused request shows as the station staying busy below */
+    (void)wifi_mgmr_sta_autoconnect_disable();
     own_disc_until = bflb_mtimer_get_time_ms() + IDLE_MS + OWN_DISC_MS;
     for (int ms = 0; ms < IDLE_MS; ms += 20) {
         if (ms % 1000 == 0)
-            wifi_sta_disconnect();
+            (void)wifi_sta_disconnect();
         vTaskDelay(pdMS_TO_TICKS(20));
         if (wifi_mgmr_sta_state_get_ext() <= 2) {
             own_disc_until = bflb_mtimer_get_time_ms() + OWN_DISC_MS;
@@ -245,7 +247,8 @@ static int join_as(enum join_mode mode)
 
     want_link = true;
     wl_trace(0x61);
-    wifi_mgmr_sta_autoconnect_enable();
+    if (wifi_mgmr_sta_autoconnect_enable() != 0)
+        LOG_W("autoconnect not enabled: no reconnect after a loss\r\n");
     set_state(WCP_STATE_JOINING);
     wl_trace(0x62);
     int r = wifi_mgmr_sta_connect(&p);
@@ -280,7 +283,7 @@ static void join_stored(void)
         return;
     }
     LOG_I("joining \"%.*s\"\r\n", (int)ssid_len, ssid);
-    join(ssid, (uint8_t)ssid_len, psk, (uint8_t)psk_len);
+    (void)join(ssid, (uint8_t)ssid_len, psk, (uint8_t)psk_len);   /* a failure is logged and sent as FAILED */
 }
 
 bool wifi_link_has_credentials(void)
@@ -316,7 +319,7 @@ static void scan_done(void)
 
     wl_trace(0x30);
     scan_pending = false;
-    wifi_mgmr_scan_ap_all(NULL, &d.count, scan_item);
+    (void)wifi_mgmr_scan_ap_all(NULL, &d.count, scan_item);   /* always 0 (wifi_mgmr_ext.h) */
     if (vchan_send(&d, sizeof(d)) != 0)
         wl_trace(0x34);
     wl_trace(0x31);
@@ -381,7 +384,8 @@ static void wifi_event(async_input_event_t ev, void *priv)
     if (code == CODE_WIFI_ON_MGMR_DONE)
         mgmr_ready = true;
     if (code == CODE_WIFI_ON_INIT_DONE) {
-        wifi_mgmr_task_start();
+        if (wifi_mgmr_task_start() != 0)
+            vAssertCalled();
         return;
     }
     if (check) {
@@ -424,7 +428,7 @@ static void bridge_event(int code)
             } else if (state != WCP_STATE_UP && join_mode != JOIN_FULL) {
                 /* a failed attempt with the remembered AP or a quick scan: once more one step wider (the AP moved
                  * channel or was replaced); after a full scan the manager's autoconnect goes on as before */
-                join_as(join_mode == JOIN_REMEMBERED ? JOIN_QUICK : JOIN_FULL);
+                (void)join_as(join_mode == JOIN_REMEMBERED ? JOIN_QUICK : JOIN_FULL);   /* logged, sent as FAILED */
             } else {
                 set_state(state == WCP_STATE_UP ? WCP_STATE_JOINING : WCP_STATE_FAILED);
             }
@@ -472,14 +476,15 @@ static void ctrl_handle(const uint8_t *data, uint16_t len)
                 set_state(WCP_STATE_FAILED);
                 break;
             }
-            join(j->ssid, j->ssid_len, j->psk, j->psk_len);
+            (void)join(j->ssid, j->ssid_len, j->psk, j->psk_len);   /* a failure is logged and sent as FAILED */
             break;
         case WCP_LEAVE:
             want_link = false;
             if (state == WCP_STATE_UP || state == WCP_STATE_JOINING)
                 own_disc_until = bflb_mtimer_get_time_ms() + OWN_DISC_MS;   /* not a loss for a later JOIN */
-            wifi_mgmr_sta_autoconnect_disable();
-            wifi_sta_disconnect();
+            if (wifi_mgmr_sta_autoconnect_disable() != 0)
+                LOG_W("autoconnect not disabled: the station may join again\r\n");
+            (void)wifi_sta_disconnect();   /* fails when not joined (DOWN, FAILED): nothing to leave then */
             set_state(WCP_STATE_DOWN);
             break;
         case WCP_SCAN:
@@ -566,7 +571,8 @@ void wifi_link_release(enum wifi_owner who)
     taskEXIT_CRITICAL();
     if (back) {
         struct wl_item it = { .code = WL_REJOIN, .len = 0 };
-        xQueueSend(wl_ev_q, &it, portMAX_DELAY);
+        if (xQueueSend(wl_ev_q, &it, portMAX_DELAY) != pdTRUE)
+            vAssertCalled();
     }
 }
 
@@ -575,12 +581,16 @@ void wifi_link_release(enum wifi_owner who)
  * Wi-Fi on USB power, as in examples/wifi/coex/wifi_ble */
 static void start_wifi(void)
 {
-    wl_ev_q = xQueueCreate(WL_EV_DEPTH, sizeof(struct wl_item));
-    xTaskCreate(wl_ev_task, "wl_ev", 1024, NULL, 10, NULL);   /* below the Wi-Fi tasks, above the app */
-    async_register_event_filter(EV_WIFI, wifi_event, NULL);
+    if ((wl_ev_q = xQueueCreate(WL_EV_DEPTH, sizeof(struct wl_item))) == NULL)
+        vAssertCalled();
+    if (xTaskCreate(wl_ev_task, "wl_ev", 1024, NULL, 10, NULL) != pdPASS)   /* below the Wi-Fi tasks, above the app */
+        vAssertCalled();
+    if (async_register_event_filter(EV_WIFI, wifi_event, NULL) != 0)
+        vAssertCalled();
     wifi_task_create();
     vTaskDelay(pdMS_TO_TICKS(500));
-    fhost_init();
+    if (fhost_init() != 0)
+        vAssertCalled();
     wifi_up = true;
 }
 
@@ -601,7 +611,8 @@ int wifi_link_start(void)
         sdio_pins_low_drive();
         if (rejoin) {
             struct wl_item it = { .code = WL_REJOIN, .len = 0 };
-            xQueueSend(wl_ev_q, &it, portMAX_DELAY);
+            if (xQueueSend(wl_ev_q, &it, portMAX_DELAY) != pdTRUE)
+                vAssertCalled();
         }
         return ret;
     }
@@ -609,14 +620,16 @@ int wifi_link_start(void)
     start_lwip();
 
     /* NetHub first: the SDU must be answering by the time the K230's card detection runs */
-    nethub_set_wifi_rx_filter(rx_filter, NULL);
+    if (nethub_set_wifi_rx_filter(rx_filter, NULL) != NETHUB_OK)
+        vAssertCalled();                /* NetHub's own policy would keep DHCP and ARP from the K230 */
     ret = nethub_bootstrap();
     if (ret != NETHUB_OK) {
         LOG_E("nethub bootstrap failed: %d\r\n", ret);
         return ret;
     }
     sdio_pins_low_drive();
-    nethub_vchan_user_recv_register(ctrl_rx, NULL);
+    if (nethub_vchan_user_recv_register(ctrl_rx, NULL) != NETHUB_OK)
+        vAssertCalled();
     bridge_up = true;
 
     if (!wifi_up)
@@ -680,8 +693,8 @@ void wifi_link_local_end(void)
 void wifi_link_stop(void)
 {
     /* SDU off and its pads released; k230_power_off() then parks them in analog mode */
-    if (bridge_up)
-        mr_sdio_drv_lowpower_prepare();
+    if (bridge_up && mr_sdio_drv_lowpower_prepare() != 0)
+        vAssertCalled();                /* fails only if the SDIO driver never started: not with bridge_up */
     /* the next K230 session starts unheard, like the first (see set_state()) */
     host_seen = false;
 }

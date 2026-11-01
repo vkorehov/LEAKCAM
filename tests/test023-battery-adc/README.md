@@ -42,7 +42,7 @@ between reads.
   noise to ~6-7 mV (2026-10-21).
 - Calibration from 7 pairs at 4.07-4.37 V (USB and battery): meter = ADC x 0.9868 (full scale 5329 mV instead of
   5400), mean of 64 conversions; within +-10 mV of the meter: **pass** at a full cell. In
-  tools/test-standard/k230_apps/leakcam_agent.c (BAT_FULL_SCALE_MV) (2026-10-21).
+  tests/firmware/k230_apps/leakcam_agent.c (BAT_FULL_SCALE_MV) (2026-10-21).
 - VBAT on USB 4355-4395 mV over 8 samples (idle, then memtest), spread 40 mV, with the calibration (2026-10-25,
   run.py).
 - A short on the cell trips the pack's PCM, which stays latched (BAT ~1.5 V) until USB is plugged in: a shorted unit

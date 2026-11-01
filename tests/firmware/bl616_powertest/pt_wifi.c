@@ -41,7 +41,7 @@
 
 #include "bflb_mtimer.h"
 #include "easyflash.h"
-#include "bflb_mtd.h"
+#include "bflb_boot2.h"
 #include "net_al.h"
 #include "net_al_ext.h"
 #include "rfparam_adapter.h"
@@ -56,8 +56,10 @@ static EfErrCode ef_once(void)
     static bool done;
     static EfErrCode r;
     if (!done) {
-        bflb_mtd_init();                    /* the partition table first, as the product's storage_init(): without it
-                                             * littlefs found no PSM partition and easyflash never worked here (EF 7) */
+        /* the partition table first, as the product's radio_init(): without it littlefs found no PSM partition and
+         * easyflash never worked here (EF 7). bflb_mtd_init() drops its result: fail fast instead */
+        if (bflb_boot2_init() != 0)
+            vAssertCalled();
         r = easyflash_init();
         done = true;
     }

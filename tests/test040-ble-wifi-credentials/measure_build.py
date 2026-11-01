@@ -60,7 +60,7 @@ for _ in range(5):
 m = re.search(r"mem: free (\d+)[^\n]*min (\d+)", bl("mem", 2, r"mem: [^\n]*\n"))
 full = join(ssid, psk, net=True)
 rem = [join(ssid, psk, "remembered") for _ in range(5)]
-image = os.path.getsize(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "power-bringup",
+image = os.path.getsize(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "firmware",
                                      "bl616_powertest", "build", "build_out", "bl616_powertest_bl616.bin"))
 ok = [s for s in starts if s]
 print("image", image, "B")

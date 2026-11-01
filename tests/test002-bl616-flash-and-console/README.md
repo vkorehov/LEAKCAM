@@ -3,7 +3,7 @@
 Status: **pass** (2026-10-25): flash over PR1 and the USB CDC console work; `pt_status` reads leak node, AHT20 and USB.
 
 PR1 cable and flash mode: [tools/power-bringup](../../tools/power-bringup/README.md) sections 2-3; test
-firmware [bl616_powertest](../../tools/power-bringup/bl616_powertest).
+firmware [bl616_powertest](../../tests/firmware/bl616_powertest).
 
 ## Setup
 
