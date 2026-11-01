@@ -336,6 +336,9 @@
   #define WATCH_BED_TEMP_INCREASE               2 // (°C)
 #endif
 
+// Minutes per autotune cycle before M303 gives up (Marlin default 20; the bed timed out at C8)
+#define MAX_CYCLE_TIME_PID_AUTOTUNE 60L
+
 /**
  * Thermal Protection parameters for the heated chamber.
  */

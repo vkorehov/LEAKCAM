@@ -13,7 +13,7 @@ Creality CR-10 (300 x 300 x 400) with an inductive probe on the Z-min input.
 ## Configuration
 
 Built from the official example `config/examples/Creality/CR-10/CrealityV1`
-(MarlinFirmware/Configurations, branch release-2.1.2.8). `Configuration_adv.h` differs only in the fan options and the bed heating watch below.
+(MarlinFirmware/Configurations, branch release-2.1.2.8). `Configuration_adv.h` differs only in the fan options, the bed heating watch and the autotune cycle limit below.
 `Configuration.h` changes:
 
 | Setting | Value | Why |
@@ -31,6 +31,7 @@ Built from the official example `config/examples/Creality/CR-10/CrealityV1`
 | DEFAULT_KP/KI/KD; DEFAULT_BED_KP/KI/KD | 31.66 / 3.00 / 83.64; 192.76 / 35.12 / 705.31 | PID autotune: hot end `M303 E0 S230 C8 U1` on 2026-10-26 after the Kapton air baffle was removed: holding 230 °C takes ~60 %; on 2026-10-20 with the baffle 30.30 / 2.82 / 81.29, ~58 % (bias ~144/255; ~80 % without the baffle on 2026-10-19), 25 -> 230 °C in 164 s. Bed `M303 E-1 S80 C4 U1`. The insulated bed needs about 10 min per cycle, and C8 runs into Marlin's autotune timeout |
 | SLIM_LCD_MENUS | on | needed to fit in 130048 bytes |
 | WATCH_BED_TEMP_PERIOD (Configuration_adv.h) | 180 s (example 60), +2 °C | the bed gains only ~2 °C/min near 95-100 °C (enclosure open) and Marlin stopped with "Heating failed" while heating to 100/110 for ABS (2026-11-01); the runaway check while holding (THERMAL_PROTECTION_BED_PERIOD 20 s) is unchanged |
+| MAX_CYCLE_TIME_PID_AUTOTUNE (Configuration_adv.h) | 60 min (Marlin default 20) | the bed autotune (M303 E-1) at C8 timed out per cycle |
 | EEPROM_SETTINGS | on (from the example) | M500 saves offsets and the mesh |
 
 Steps/mm 80 / 80 / 400 / **139.08**. X, Y, Z are confirmed from the old firmware. E is for the dual-gear extruder: the old firmware's
