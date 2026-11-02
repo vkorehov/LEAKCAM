@@ -21,7 +21,7 @@ BL616's own USB is PR1, the debug pads inside the enclosure. So over USB the pho
 - The app's status screen: the configure button is on when the selected LEAKCAM is reachable over BLE or over USB
   (user, 2026-11-01); over USB it is recognised by the K230's USB serial number carrying the board's device ID (the
   BL616 gives it to the K230 over the link at the session start).
-- Security: the cable is physical access, like the USB power gate; the same pairing PIN (from the server, entered by
+- Security: the cable is physical access; the same pairing PIN (from the server, entered by
   the app) authenticates the session, so a phone without the app cannot configure it over USB either.
 - Rev 2 option (bugs/v2.txt): route the BL616's USB to USB-C 1 instead (a mux or the second connector): the BL616 then
   answers alone, no K230 boot.
@@ -51,8 +51,9 @@ is in use). Hands: the cable change between the Mac and the phone.
 
 ## Setup mode (DESIGN.md 5.3.1, planned)
 
-- In setup mode (once test120 passed): the board sleeps in low power; plugging USB-C 1 wakes it and the whole setup
-  runs over USB with BLE off; unplugged without a network it goes back to low-power advertising.
+- From setup mode: plugging USB-C 1 wakes the setup firmware (test121), which switches to the full firmware (slot
+  switch); the whole USB setup runs there. Unplugged without a network, the full firmware switches back to the setup
+  firmware (low-power advertising).
 
 ## Pass
 

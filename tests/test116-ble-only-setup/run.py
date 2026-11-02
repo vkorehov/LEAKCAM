@@ -14,7 +14,7 @@ from harness import bl   # noqa: E402  (puts tools/power-bringup on the path)
 from board import log, wifi_credentials   # noqa: E402
 from phone import op, ready   # noqa: E402
 
-WINDOW_S, PERIOD_S = 60, 300                 # firmware/bl616/provision.c
+WINDOW_S, PERIOD_S = 60, 300                 # firmware/bl616_full/provision.c
 
 
 def usb(present, secs=600):

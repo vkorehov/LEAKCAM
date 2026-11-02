@@ -11,7 +11,7 @@ tuned on the board) serves Wi-Fi (clips, checks) and BLE (setup).
 
 ## Setup
 
-- Board on the bench in the open, USB-C 1 in (BLE advertises only on USB power), K230 off; BL616 test firmware with
+- Board on the bench in the open, USB-C 1 in (BLE then advertised only on USB power), K230 off; BL616 test firmware with
   `pt_wifi` and `pt_ble`.
 - The bench phone (SM-G715FN) lying flat right beside the board (same spot, a few cm apart), on adb, unlocked,
   Bluetooth and Wi-Fi on; skill android-bench-phone.

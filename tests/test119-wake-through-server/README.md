@@ -12,7 +12,7 @@ presence cannot hear the server: it advertises by itself when its presence is lo
 
 ## Setup
 
-- Product firmware (firmware/bl616, make flash), the PIN stored, a network stored; USB-C 1 in; the phone on adb,
+- Full firmware (firmware/bl616_full, make flash), the PIN stored, a network stored; USB-C 1 in; the phone on adb,
   unlocked. `prov battery on`: the battery rule on USB power, so the radio is as on battery.
 - The server with the wake endpoint (server/deploy.sh); the runner sets its poll interval to 20 s and puts back 60 s.
 

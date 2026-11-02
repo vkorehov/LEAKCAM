@@ -46,7 +46,7 @@ opposite-side contacts), the connector's contact type or a crossover does. Decid
   part; AFC07-S22ECA-00_drawing.pdf: E = upper contact, land 0.30 x 1.20 / tabs 2.2 x 3.3 at 1.60 beyond the end pins,
   2.17 below the row; ours 0.30 x 1.30 / 2.0 x 3.0 at 1.65, 2.35: lands pad for pad), with the existing cable type; on the plain fold the camera then faces
   the board, so the cameras are rotated 180 degrees (lens out) and need longer cables to reach their connectors.
-- Rev 2: reverse the J4/J5 pinout (bugs/v2.txt item 10).
+- Rev 2: reverse the J4/J5 pinout (bugs/v2.txt item 9).
 - Before power after any connector or cable change: continuity camera pin 15 (3V3) -> J4/J5 pin 22.
 - Review rule: for every connector, trace each conductor from the far end through the cable's contact sides and
   the connector's contact type to the pad, in the mounted (folded) position, not only the pin numbers.

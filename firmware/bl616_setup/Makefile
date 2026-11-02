@@ -1,5 +1,5 @@
-# LEAKCAM BL616 product firmware.
-#   make          build (on an arm64 host inside the K230 build container: host.mk)
+# LEAKCAM BL616 setup firmware (DESIGN.md 5.3.1: BLE in low power while there is no presence).
+#   make          build (on an arm64 host inside the K230 build container: ../bl616/host.mk)
 #   make flash    flash through PR1, the running firmware switches to the ROM by itself
 #   make clean
 SDK_DEMO_PATH ?= $(abspath .)
@@ -13,7 +13,7 @@ CROSS_COMPILE ?= riscv64-unknown-elf-
 
 ifeq ($(shell uname -m)-$(LEAKCAM_IN_CONTAINER),aarch64-)
 HW_ROOT := $(abspath ../../..)
-include host.mk
+include ../bl616/host.mk
 else
 include $(BL_SDK_BASE)/project.build
 endif

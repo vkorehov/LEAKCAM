@@ -11,7 +11,7 @@ new credentials the board checks in at once (presence_now), not at the next inte
 
 ## Setup
 
-- Product firmware (firmware/bl616, make flash), the PIN stored; USB-C 1 in; the phone on adb, unlocked.
+- Full firmware (firmware/bl616_full, make flash), the PIN stored; USB-C 1 in; the phone on adb, unlocked.
 - The presence server on the Pi: the runner sets its poll interval to 10 s, stops and starts it, and puts back 60 s.
 
 On USB power the board advertises anyway: the runner reads the battery rule the firmware drives its advertising with
@@ -36,7 +36,8 @@ As test111: BLE provisioning, the Wi-Fi check, presence; the advertising rule (p
 
 - In setup mode (once test120 passed): a lost presence puts the board into low power with advertising (not the
   60 s windows); the app sets the Wi-Fi out of it; the first check-in that reaches the server makes it operational.
-  A stored network is retried at the check-in interval from low power.
+  Every 6 h the setup firmware switches to the full firmware, which tries its check-in (back to setup if it fails;
+  the setup firmware has no check-in of its own, DESIGN.md 5.3.1, test125).
 
 ## Pass
 

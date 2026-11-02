@@ -2,8 +2,8 @@
 
 Status: **pass** (2026-10-22): plug / unplug seen awake, HBN wake on both edges, 19 charger plug transitions all reported.
 
-A USB plug wakes the hibernating BL616 through PGOOD on ACOMP0 (threshold 1.65 V today; 0.5 V with the rev 2 battery
-divider, bug-004) and switches it to USB mode (BLE pairing, awake). Unplug returns it to the battery path.
+A USB plug wakes the hibernating BL616 through PGOOD on ACOMP0 (threshold 1.65 V) and switches it to USB mode (BLE
+pairing, awake). Unplug returns it to the battery path.
 
 ## Setup
 
@@ -73,7 +73,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Memory BL616 / K230 (start / min / end), leak | n/a: every HBN wake restarts the BL616 heap; repeated HBN wakes: test021 | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | BL616 test firmware ~150 KB (2026-10-22, before the Wi-Fi set) | minimal image (rule) | the image this run used |
 | Compile flags | BL616 test firmware -Os -g (SDK Kconfig default), sections, --gc-sections, no LTO | smallest code (rule) | |
-| Features over the minimal image | `pt_usb`, `pt_sleep` (test firmware commands); the USB comparator setup is firmware/bl616 leak_wake.c's | test008 floor | bytes, boot ms, RAM, current |
+| Features over the minimal image | `pt_usb`, `pt_sleep` (test firmware commands); the USB comparator setup is attic/firmware/bl616 leak_wake.c's (not yet in the full firmware) | test008 floor | bytes, boot ms, RAM, current |
 | Optimised build (-O3, LTO, -march) | n/a: not an optimisation test (test builds use the default flags: user, 2026-10-29) | the faster one stays | |
 
 ## Boot time

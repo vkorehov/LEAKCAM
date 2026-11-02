@@ -1,4 +1,4 @@
-# Shared by firmware/bl616 and tests/firmware/bl616_powertest. Set HW_ROOT (the k230d-hw directory) first.
+# Shared by the BL616 firmwares (firmware/bl616_full, bl616_setup) and the test firmwares (tests/firmware/*). Set HW_ROOT (the k230d-hw directory) first.
 #
 # The T-Head RISC-V toolchain is x86-64 only. On an arm64 host the build runs in the K230 build container
 # (firmware/BUILD.md 2.2: native arm64 Debian with amd64 runtime libraries), which this file starts by itself.
@@ -22,8 +22,8 @@ ISP := $(HW_ROOT)/LEAKCAM/tools/power-bringup/bl616_isp.py
 # CMakeLists.txt older than the cache) the generated build in build/ runs directly: only changed files compile, and
 # CMake still re-runs by itself when one of its files changed (sdk_patch.py's .cmake edit; it needs BL_SDK_BASE in
 # the container, 2026-10-29). Otherwise the SDK's path.
-INCREMENTAL := [ build/CMakeCache.txt -nt defconfig ] && [ build/CMakeCache.txt -nt Kconfig ] && \
-	[ build/CMakeCache.txt -nt CMakeLists.txt ]
+# A test firmware may build from a product's defconfig (DEFCONFIG_FILE) and the SDK's Kconfig: the files it really uses.
+INCREMENTAL := $(foreach f,$(or $(DEFCONFIG_FILE),defconfig) $(wildcard Kconfig) CMakeLists.txt,[ build/CMakeCache.txt -nt $(f) ] &&) true
 all build:
 	python3 $(HW_ROOT)/LEAKCAM/firmware/bl616/sdk_patch.py $(BL_SDK_BASE)
 	docker run --rm --user $$(id -u):$$(id -g) -e HOME=/tmp -e LEAKCAM_IN_CONTAINER=1 -e BL_SDK_BASE=$(BL_SDK_BASE) \

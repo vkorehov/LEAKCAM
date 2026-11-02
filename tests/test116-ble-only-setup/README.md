@@ -8,7 +8,7 @@ app finds it, pairs with the PIN from the server and sets the network.
 
 ## Setup
 
-- Product firmware (firmware/bl616) with its pairing PIN stored (make flash), the cell charged.
+- Full firmware (firmware/bl616_full) with its pairing PIN stored (make flash), the cell charged.
 - The phone with the app on adb (its own USB to the bench is the phone's, not the board's).
 - Hands: USB-C 1 unplugged at the start (the board's console stays up on PR1 for the checks), plugged back at the end.
 

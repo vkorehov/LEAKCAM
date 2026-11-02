@@ -7,13 +7,13 @@ as hidden and stores none; the board online at the server after a setup; a secon
 Each LEAKCAM is known by its device ID, the BL616's factory MAC (device_id.c): its USB serial number, its BLE
 advertisement (manufacturer data, company 0xFFFF) and its server check-ins (`GET /v1/poll?id=`) carry the same 12 hex
 digits. The app remembers the LEAKCAMs it set up and shows above the steps whether each is online, from the presence
-server (`GET /v1/devices/<id>`). From boot, on USB and on battery, the board checks in every poll interval (the server's, 60 s by
-default) whenever a network is stored; sleeping between check-ins on battery is a later use case (the HBN scheduler,
-test108).
+server (`GET /v1/devices/<id>`). From boot the board checks in at the interval the server gives by its power (`usb=1|0`:
+60 s on USB, 24 h on battery; DESIGN.md 5.3.1) whenever a network is stored; sleeping between check-ins on battery is a
+later use case (the HBN scheduler, test108).
 
 ## Setup
 
-- BL616 product firmware with presence (firmware/bl616); the setup app (android/); the presence server on the Pi
+- BL616 full firmware with presence (firmware/bl616_full); the setup app (android/); the presence server on the Pi
   (vhome 192.168.1.159:8090, systemd unit leakcam-server, `server/deploy.sh`).
 - The phone on adb, unlocked; USB-C 1 in; the test network from `~/.leakcam_wifi`.
 - A second LEAKCAM simulated: an ID no board has (02AB12CD34EF) put into the app's list (debug build: run-as), checked

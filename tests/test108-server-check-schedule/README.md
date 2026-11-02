@@ -1,7 +1,7 @@
 # test108: production server check by the BL616 (schedule, lease reuse, server address, back-off)
 
 Status: **planned** (2026-10-30): the scheduler, lease reuse and server address are not written yet (DESIGN 5.1
-Production design): they go into firmware/bl616 and the test firmware, growing test100's `pt_poll`.
+Production design): they go into firmware/bl616_full and the test firmware, growing test100's `pt_poll`.
 
 The BL616 alone asks the server whether a viewer wants live video (`GET /v1/poll`), without the K230. Production
 design: jobs scheduled by time in HBN RAM (humidity 10 min, the K230's report interval, the server's poll interval);
@@ -34,11 +34,13 @@ the server address, the K230 power path; K230: agent `SERVER` message, `leakcam_
 4. Stream request: `{"stream":30}` -> K230 session with reason `stream`, both cameras streamed 30 s, then sleep.
 5. Server address: the agent sends `SERVER` each session; the BL616 writes easyflash only when it changed (count the
    writes over 20 sessions); a new address is used at the next check.
-6. Failures: AP off, AP without internet, server down, HTTP 500, a stalled answer: each backs off (longer interval,
-   lease and cached IP dropped), recovers at the next good check; nothing hangs the BL616 (watchdog not fired).
+6. Failures: AP off, AP without internet, server down, HTTP 500, a stalled answer: the first failed check-in switches
+   to the setup firmware at once (DESIGN.md 5.3.1; lease and cached IP dropped), the 6 h retry brings it back
+   (test125); nothing hangs the BL616 (watchdog not fired).
 7. Priority: a leak edge and a humidity alarm during a check, and during a back-off: the K230 session starts at once,
    the check is dropped or finished after.
-8. Nothing configured: no credentials, or no server address: no check, no radio (current = sleep floor).
+8. Nothing configured: no credentials, or no server address: no check; the board runs the setup firmware (BLE in low
+   power, test120).
 9. Energy: awake time and mAh per check at the product interval, per day; target 0.6-0.8 s awake (DESIGN).
 
 ## Pass

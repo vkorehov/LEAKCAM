@@ -56,7 +56,7 @@ Probes: current - battery lead, USB out (sleep/wake); voltage - 3V3_SLEEP, VBAT 
 | Current idle / during (min / avg / peak) | BL616 awake on USB, rails off 0.061 A (2026-10-25); HBN sleep on the cell 35 uA (test031) (2026-10-25, from recorded readings) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | n/a: BL616-only test, rails off - VBAT is read by the K230 ADC (test023) (2026-10-25) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | n/a: the sleep itself is test031 (35 uA); the wake is below the USB meter's resolution (2026-10-25) | - | scripts/energy.py |
-| Per day | 144 RTC wakes a day for humidity (every 10 min, DESIGN 5.1), inside the test031 sleep budget; the server check every 15 min (96 a day, test100) wakes on its own | ENERGY.txt line | n per day |
+| Per day | 144 RTC wakes a day for humidity (every 10 min, DESIGN 5.1), inside the test031 sleep budget; the server check once a day on battery (24 h interval, DESIGN.md 5.3.1) wakes on its own | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | die n/a: K230 off; board 32.2 / 32.2 / 23.7 C (AHT20) (2026-10-25) | K230 limit (datasheet) | chip_temp, AHT20 |
 | Memory BL616 / K230 (start / min / end), leak | BL616 free 208608 / min 204396 / 208608 B, blocks 14 -> 14, deleted 0; leak: n/a, 6 snapshots (mem_leak.py needs >= 8 cycles) (2026-10-25) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | BL616 test firmware 121 KB (+ boot2 53 KB) | minimal image (rule) | the image this run used |

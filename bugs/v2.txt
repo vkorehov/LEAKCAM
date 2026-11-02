@@ -41,24 +41,21 @@ From the rev 1 bugs
 7. K230 BOOT1: read 0.5 V with the BL616's IO27 floating (at the 1.8 V bank's VIL). Stronger pull-down
    (R31 lower than 10 k) or IO27 driven low by the BL616 from reset (the test firmware does; the product firmware
    too since 2026-10-22, tests/test033 - it never drove IO27 before).
-8. bug-004: battery sense on the BL616 (no rev 1 rework: too dense): PGOOD (IO3) pull-up to VBAT through
-   680 k with 510 k to GND (reads VBAT x 0.429 while USB is out, ~0 V with USB), 100 nF at IO3. The BL616 then
-   stops the K230 and hibernates below the cutoff; the charger has no discharge cutoff of its own.
-9. Charger input limit from a USB host (2026-10-21, tests/test001): EN2 high / EN1 low (R8, ILIM mode) sets
+8. Charger input limit from a USB host (2026-10-21, tests/test001): EN2 high / EN1 low (R8, ILIM mode) sets
    1.07 A (R5 1.5 k, KILIM 1610) and turns VIN-DPM off - the BQ24072 only backs off on a sagging input with
    EN2 low. Through an ammeter (10 A range, leads, spliced cable) the input collapsed when charging started
    and D1 blinked, no charge; the same Mac port without the meter, or a wall adapter, charges. Rev 2: EN2/EN1 from the BL616 (USB500 by default, ILIM only when the
    USB-C CC level says 1.5 A or 3 A), or USB500 (EN1 high, EN2 low) fixed.
-10. bug-005: J4/J5 camera connectors - reverse the pinout (pad k -> signal of pin 23-k) so a standard Pi Zero
+9. bug-005: J4/J5 camera connectors - reverse the pinout (pad k -> signal of pin 23-k) so a standard Pi Zero
    15-to-22 cable folded 180 degrees over the board (cameras folded back, lens out, DESIGN.md) lands camera 3V3 on
    3V3. Rev 1: 05B20L22P (bottom contact) + that cable mirrors the order (camera 3V3 on GND); rev 1 fix is a
    top-contact connector (JUSHUO AFC07-S22ECA-00, LCSC C262642) with the cameras rotated 180 degrees and longer cables. Before
    ordering: trace each conductor camera -> cable -> connector -> pad in the folded, mounted position.
-11. Sleep current (tests/test031, 2026-10-25: 35 uA asleep, ~26 uA of it the board): 3V3_SLEEP from a nano-amp
+10. Sleep current (tests/test031, 2026-10-25: 35 uA asleep, ~26 uA of it the board): 3V3_SLEEP from a nano-amp
    regulator (TPS63900 buck-boost or TPS7A02 LDO class) instead of U5 TPS63802 (11 uA quiescent + 5.5 uA in its
    R22/R24 feedback divider, whose low side TI caps at 100 k): about -16 uA, nearly half the sleep. BQ24072T on battery
    4.3 uA typ stays unless the charger changes too.
-12. Illumination (user, 2026-10-31): two more LED drivers (4 x TPS61161 instead of 2) and twice the LEDs (16 white +
+11. Illumination (user, 2026-10-31): two more LED drivers (4 x TPS61161 instead of 2) and twice the LEDs (16 white +
    16 IR instead of 8 + 8). Split the LED boards for easy mechanical fitting: each small board carries 1 IR LED and
    1 white LED (16 small boards instead of 4 strips of 2 + 2), joined by the flex of item 1. Check the drivers' chain
    voltage against the 38 V OVP when splitting the chains, and the current against the cell (tests/test105).

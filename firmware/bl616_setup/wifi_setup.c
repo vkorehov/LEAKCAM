@@ -1,13 +1,13 @@
 /*
  * The setup firmware's Wi-Fi (DESIGN.md 5.3.1, tests/test120): the wifi_link.h interface for the BL616's own station
- * only, no NetHub bridge (the operational firmware links wifi_link.c instead; NetHub and the low-power firmware's
- * 30 KB of the Wi-Fi RAM do not fit together). wifi_check.c (the BLE credential check) runs on it unchanged.
+ * only, no NetHub bridge (the full firmware links firmware/bl616_full/wifi_link.c instead; NetHub and the low-power
+ * firmware's 30 KB of the Wi-Fi RAM do not fit together). wifi_check.c (the BLE credential check) runs on it unchanged.
  *
- * lwIP starts at boot (wifi_local_start()), Wi-Fi at its first use (warm-up or check), as wifi_link.c: BLE starts
- * first. The BLE controller's init never returned when it ran after fhost_init() in this low-power build (test120,
- * 2026-11-01: stuck in btble_controller_init; the SDK example and the power test firmware start BLE before Wi-Fi).
- * Nobody else owns the radio, so a claim always succeeds.
+ * Wi-Fi starts at boot in its own task, as the SDK's low-power example does, with the BLE start running during its
+ * 500 ms pause (setup_boot.c): the order proven on rev 1 (test120, 2026-11-01). Nobody else owns the radio, so a
+ * claim always succeeds.
  */
+#include "wifi_setup.h"
 #include "wifi_link.h"
 
 #include <stdbool.h>
@@ -29,7 +29,6 @@
 
 static void (*volatile local_ev)(int code);
 static volatile bool mgmr_ready;
-static bool wifi_up;
 
 /* breadcrumbs (wifi_link.c): empty here */
 __attribute__((weak)) void wl_trace(uint8_t code)
@@ -55,22 +54,22 @@ static void wifi_event(async_input_event_t ev, void *priv)
         check(code);
 }
 
-void wifi_local_start(void)
-{
-    tcpip_init(NULL, NULL);
-    if (async_register_event_filter(EV_WIFI, wifi_event, NULL) != 0)
-        vAssertCalled();
-}
-
 /* as wifi_link.c start_wifi(); the rest follows from wifi_event() */
-static void start_wifi(void)
+static void wifi_start_task(void *arg)
 {
-    if (wifi_up)
-        return;
-    wifi_up = true;
+    (void)arg;
     wifi_task_create();
     vTaskDelay(pdMS_TO_TICKS(500));
     if (fhost_init() != 0)
+        vAssertCalled();
+    vTaskDelete(NULL);
+}
+
+void wifi_setup_start(void)
+{
+    tcpip_init(NULL, NULL);
+    if (async_register_event_filter(EV_WIFI, wifi_event, NULL) != 0 ||
+        xTaskCreate(wifi_start_task, "wifi init", 1024, NULL, 27, NULL) != pdPASS)
         vAssertCalled();
 }
 
@@ -112,10 +111,8 @@ bool wifi_link_sta_leave(void)
 void wifi_link_local_begin(void (*ev)(int code))
 {
     local_ev = ev;
-    if (!wifi_up)
-        start_wifi();               /* ev gets CODE_WIFI_ON_MGMR_DONE */
-    else if (mgmr_ready)
-        ev(CODE_WIFI_ON_MGMR_DONE);
+    if (mgmr_ready)
+        ev(CODE_WIFI_ON_MGMR_DONE);  /* else ev gets it from wifi_event() */
 }
 
 void wifi_link_local_end(void)
@@ -123,10 +120,9 @@ void wifi_link_local_end(void)
     local_ev = NULL;
 }
 
-/* a phone connected: Wi-Fi up now, so the check starts at once (wifi_link.h); blocks ~1 s, ble_pairing.c's own task */
+/* Wi-Fi is started at boot: nothing to warm */
 void wifi_link_warm(void)
 {
-    start_wifi();
 }
 
 /* Wi-Fi stays up once started (the setup firmware has nothing else for the radio) */
