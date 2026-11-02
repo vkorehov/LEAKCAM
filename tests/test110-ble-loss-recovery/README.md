@@ -12,7 +12,7 @@ consistency: STATUS is the board's state and the app reconciles with it), and a 
 ## Setup
 
 - BL616 test firmware (tests/firmware/bl616_powertest) with `pt_fault`: linker wraps around the product's
-  provisioning (firmware/bl616/ble_pairing.c, wifi_check.c), the product sources unchanged. BLE retransmits on the
+  provisioning (firmware/bl616_setup/ble_pairing.c, wifi_check.c), the product sources unchanged. BLE retransmits on the
   link layer, so a loss there is a dropped notification (host buffers full) or a dropped link (supervision timeout);
   on Wi-Fi a DNS or HTTP answer that never comes.
 - Android phone with the LEAKCAM Setup app on adb (test106 Setup), unlocked, Bluetooth on; USB-C 1 in.

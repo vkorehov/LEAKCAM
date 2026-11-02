@@ -41,7 +41,7 @@ cp "$K/rtsmart/Makefile" "$A/leakcam/Makefile"
 cp "$K/rtsmart/Kconfig.app" "$A/leakcam/Kconfig"
 ( cd "$K" && cp -r --parents *.c *.cc *.h leakcam_change.kmodel third_party/miniz/miniz.c third_party/miniz/miniz.h \
       third_party/miniz/LICENSE third_party/opus "$A/leakcam/src/" )
-cp "$L/firmware/bl616/k230_link.h" "$A/leakcam/src/"      # the link protocol shared with the BL616
+cp "$L/firmware/k230_board/k230_link.h" "$A/leakcam/src/"      # the link protocol shared with the BL616
 cp "$L/tests/test008-minimal-image/leakcam_cpubench.c" "$L/tests/test013-kpu-change-net/leakcam_kputest.c" "$A/leakcam/src/"
 grep -q 'CONFIG_APP_ENABLE_LEAKCAM' "$A/apps.mk" || echo 'subdirs-$(CONFIG_APP_ENABLE_LEAKCAM) += leakcam' >> "$A/apps.mk"
 for t in "test027-video-encoder/venctest" "test025-ddr-stress/memtest"; do

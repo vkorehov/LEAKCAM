@@ -10,7 +10,7 @@ import select
 import statistics
 import sys
 import time
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run   # noqa: E402
 from board import log, openp   # noqa: E402
 

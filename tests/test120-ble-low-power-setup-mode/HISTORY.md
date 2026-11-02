@@ -13,6 +13,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Obstacles
 
+- 2026-11-02, my own slip in the regression: `wakeup_timer 60000` on USB power was refused (no sleep window without
+  `usb`), but the test bed had already started the window's 60 s timer; the next window (`usb`) ended 9.35 s in when
+  that timer fired (lp_pwr total 9353 ms), so 4 of 5 "asleep" scans hit an awake board. Found from lp_pwr's total;
+  the test bed now refuses before creating the timer; the rerun was clean.
+
 - 2026-11-01, the port of bouffalo_sdk examples/pmu/wl_ble_lp to rev 1 (tests/firmware/bl616_lp):
   - the example does not build for the BL616 as shipped: its defconfig sets `CONFIG_TICKLESS_ACCURATE` alone (it
     depends on `CONFIG_TICKLESS_EXT`: tickless_enter undefined), uses a controller library the SDK does not ship

@@ -13,7 +13,7 @@ CROSS_COMPILE ?= riscv64-unknown-elf-
 
 ifeq ($(shell uname -m)-$(LEAKCAM_IN_CONTAINER),aarch64-)
 HW_ROOT := $(abspath ../../../..)
-include ../../../firmware/bl616/host.mk
+include ../../../firmware/bl616_common/host.mk
 else
 include $(BL_SDK_BASE)/project.build
 endif

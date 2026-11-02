@@ -87,8 +87,8 @@ handler; a full linux/amd64 container fails under qemu-user (bison/m4 crash).
 | `uboot/configs/k230d_leakcam_defconfig` | `src/uboot/uboot/configs/` | U-Boot/SPL config |
 | `sdk/configs/k230d_rtos_leakcam_defconfig` | `configs/` | top-level board config, cameras |
 | `sdk/boards/k230d_leakcam/` | `boards/k230d_leakcam/` | U-Boot env, NAND image layout |
-| `../k230_capture/rtsmart/` + `../k230_agent/leakcam_agent.c` + `../bl616/k230_link.h` | `src/applications/leakcam/` (sources in `src/`) | the leakcam programs, including the BL616 link agent (started by `RTT_AUTO_EXEC_CMD`) |
-| `rtsmart/drivers/bl616_nethub/` + `../bl616/wifi_ctrl_proto.h` | `.../bsp/maix3/drivers/extdrv/bl616_nethub/` | BL616 Wi-Fi driver and `/dev/bl616` (MMC0 rescan), see `../bl616/WIFI.md` |
+| `../k230_capture/rtsmart/` + `../k230_agent/leakcam_agent.c` + `k230_link.h` | `src/applications/leakcam/` (sources in `src/`) | the leakcam programs, including the BL616 link agent (started by `RTT_AUTO_EXEC_CMD`) |
+| `rtsmart/drivers/bl616_nethub/` + `../bl616_common/wifi_ctrl_proto.h` | `.../bsp/maix3/drivers/extdrv/bl616_nethub/` | BL616 Wi-Fi driver and `/dev/bl616` (MMC0 rescan), see `../bl616_common/WIFI.md` |
 
 `install.sh` also adds the board to `boards/Kconfig` and the dtb to U-Boot's dts Makefile.
 
@@ -133,7 +133,7 @@ handler; a full linux/amd64 container fails under qemu-user (bison/m4 crash).
 ## Not in this port yet
 
 - **Wi-Fi on hardware.** The BL616 driver (`bl616_nethub`, NetHub over SDIO, `wlan0` with DHCP on
-  the K230) builds and links, but has never talked to a BL616; `../bl616/WIFI.md` lists what to
+  the K230) builds and links, but has never talked to a BL616; `../bl616_common/WIFI.md` lists what to
   check first.
 - **OTA writer.** The SPL reads `ota_meta` and both slots; nothing on RT-Smart writes the
   inactive slot and the slot record yet.

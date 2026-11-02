@@ -1,5 +1,5 @@
 /*
- * test110: loss injected into the product's provisioning (firmware/bl616/ble_pairing.c + wifi_check.c), so the
+ * test110: loss injected into the product's provisioning (firmware/bl616_setup/ble_pairing.c + wifi_check.c), so the
  * phone app's recovery is tested at every step. Linker wraps (CMakeLists.txt): the product sources stay unchanged.
  * BLE retransmits on the link layer, so loss shows there as a dropped notification (host buffers full) or a dropped
  * link (supervision timeout); Wi-Fi loss as a DNS answer or an HTTP answer that never comes.

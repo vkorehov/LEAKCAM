@@ -65,7 +65,7 @@ class BleOp {
     private val t0 = SystemClock.elapsedRealtime()
 
     private fun ms() = SystemClock.elapsedRealtime() - t0
-    /* the arguments come in a JSON file (argsfile, pushed by tools/test-standard/phone.py and removed after the call):
+    /* the arguments come in a JSON file (argsfile, pushed by tools/test-runner/phone.py and removed after the call):
      * on the command line adbd logged them, the Wi-Fi passphrase in hex included, into the phone's logcat (2026-10-30) */
     private val fileArgs = args.getString("argsfile")?.let { JSONObject(java.io.File(it).readText()) } ?: JSONObject()
     private fun arg(k: String, d: String) = fileArgs.optString(k, args.getString(k) ?: d)

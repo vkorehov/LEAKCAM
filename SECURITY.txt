@@ -50,7 +50,7 @@ them.
   Findings (tests/test040, 2026-10-28), all fixed:
     - LE Secure Connections did not work: the SDK's profile for the BLE controller library we use
       (ble1m0s1bredr0) compiled out the host's ECC handlers while still offering Secure Connections; Android's
-      pairing failed ("Unhandled SMP code 0x0c"). Fixed in firmware/bl616/sdk_patch.py (CONFIG_DISABLE_BT_ECC n).
+      pairing failed ("Unhandled SMP code 0x0c"). Fixed in firmware/bl616_common/sdk_patch.py (CONFIG_DISABLE_BT_ECC n).
     - The USB power gate could be bypassed: the host skips the consent callback when pairing follows the board's
       own Security Request, so the board paired while on battery. Fixed: the gate is at connection time.
     - The SDK printed every link key (LTK) to the console ("BLE LTK: ..."): anyone with the console or a log could
@@ -78,7 +78,7 @@ them.
     Accepted for now: whoever has the device in hand had the physical access anyway. Open: BL616 flash encryption
     and locking the ISP/JTAG with eFuses for production (section 6).
   - The passphrase is never printed: wifi_set (debug builds only) prints the SSID and the passphrase length.
-  - pair_pin (the BLE pairing PIN): in easyflash, not encrypted, never printed (`prov` says only "stored"/"none").
+  - pair_pin (the BLE pairing PIN): in easyflash, not encrypted, never printed (`provision` says only "stored"/"none").
     Anyone with the board in hand reads it like the credentials; it opens pairing to that one board only.
   - The phone app stores no Wi-Fi credentials (only each LEAKCAM's ID and name); the SSID is shown from the server
     (each check-in reports it: not secret), the passphrase never.

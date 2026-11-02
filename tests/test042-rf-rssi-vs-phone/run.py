@@ -14,7 +14,7 @@ import re
 import statistics
 import sys
 import time
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import bl   # noqa: E402  (puts tools/power-bringup on the path)
 from phone import adb, op   # noqa: E402
 

@@ -24,9 +24,9 @@
  *                          0.5 V on rev 1 (2026-10-17), at the 1.8 V bank's VIL, and the ROM did not boot the
  *                          NAND. High = the ROM's SD-card path, which fails into USB boot (re-flashing).
  */
-#include "../../../firmware/bl616/k230_link.h"   /* LINK_BAUD: the link's one rate */
-#include "../../../firmware/bl616/k230_linesplit.h"   /* frames vs K230 console text on the link */
-#include "../../../firmware/bl616/usb_console2.h"     /* the second USB port: the K230 console */
+#include "../../../firmware/k230_board/k230_link.h"   /* LINK_BAUD: the link's one rate */
+#include "../../../firmware/k230_board/k230_linesplit.h"   /* frames vs K230 console text on the link */
+#include "../../../firmware/bl616_common/usb_console2.h"     /* the second USB port: the K230 console */
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -42,14 +42,14 @@
 #include "shell.h"
 #include "tests.h"
 
-#include "../../../firmware/bl616/board_pins.h"   /* one pin map for the product and this test */
+#include "../../../firmware/bl616_common/board_pins.h"   /* one pin map for the product and this test */
 
 #if PT_TEST_UART
 #include "bflb_uart.h"
 #include "hardware/uart_reg.h"   /* raw RX FIFO overflow bit and fill level (test010 diagnostics) */
 #endif
 #if PT_TEST_I2C
-#include "../../../firmware/bl616/aht20.h"
+#include "aht20.h"
 #include "bflb_i2c.h"
 #endif
 #if PT_TEST_LEAK
@@ -395,7 +395,7 @@ static bool adc_first_restored;                         /* ... and whether it re
 #endif
 
 /*
- * test021: kept across HBN and resets in HBN RAM, placed by the linker in .hbn_noinit (firmware/bl616/
+ * test021: kept across HBN and resets in HBN RAM, placed by the linker in .hbn_noinit (firmware/bl616_common/
  * bl616_leakcam.ld.in; never loaded, never zeroed). HBN RAM is only reliable with its retention mode off while the
  * firmware runs: main() turns it off before the first access, pt_sleep turns it on as the very last step (see the
  * HBN RAM rule at main()).

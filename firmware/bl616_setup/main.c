@@ -1,10 +1,12 @@
 /*
  * LEAKCAM BL616 setup firmware (DESIGN.md 5.3.1): runs while there is no working presence. It sleeps in PDS and
  * advertises BLE every 2 s, so the app can always reach the board; a phone sets the Wi-Fi as in the full firmware
- * (ble_pairing.c, wifi_check.c). USB-C 1 plugged in hands over to the full firmware. Only what setup mode needs.
+ * (ble_pairing.c, wifi_check.c). USB-C 1 plugged in switches to the full firmware. Only what setup mode needs.
  *
- * Not built yet (tests to come): the slot switch to the full firmware: on a USB plug, after new credentials, and every
- * 6 h for the full firmware's check-in (presence is proved there, not here: DESIGN.md 5.3.1).
+ * All setup runs here, the normal run in the full firmware (user, 2026-11-02). The switch to the full firmware
+ * (switch_to_full.c, slot.c): on a USB plug once the stored network passes its check up to the API, and after new credentials
+ * (checked the same way); back by itself after a phone's wake (2 min) or every 6 h while a network is stored
+ * (tests/test125). Not built yet: the USB cable setup (tests/test113).
  */
 #include "FreeRTOS.h"
 #include "task.h"
@@ -14,6 +16,7 @@
 
 #include "ble_pairing.h"
 #include "crash_rec.h"
+#include "switch_to_full.h"
 #include "setup_boot.h"
 #include "setup_sleep.h"
 #include "wdg_guard.h"
@@ -31,19 +34,21 @@ void vApplicationGetIdleTaskMemory(StaticTask_t **tcb, StackType_t **stack, uint
 
 void ble_credentials_stored(void)
 {
-    printf("setup: credentials stored (the switch to the full firmware: not built yet)\r\n");
+    switch_to_full_after_credentials();
 }
 
 void setup_usb_plugged(void)
 {
-    printf("setup: USB plugged (the switch to the full firmware: not built yet)\r\n");
+    ble_pairing_adv_interval(SETUP_ADV_FAST_MS);   /* awake from now on: the phone connects sooner */
+    switch_to_full_on_usb();
 }
 
 static void boot_task(void *arg)
 {
     (void)arg;
     setup_boot();
-    if (setup_usb_present())
+    bool from_full = switch_to_full_start();     /* the way back to the full firmware */
+    if (setup_usb_present() && !from_full)  /* plugged in: from the full firmware it is not a plug */
         setup_usb_plugged();
     else
         setup_sleep_begin(false);   /* BLE-idle veto until advertising runs (setup_sleep.c) */

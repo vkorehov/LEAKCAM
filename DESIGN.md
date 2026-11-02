@@ -57,7 +57,7 @@ These apply to every part of the project.
  |  - AHT20 humidity every 10 min |  GPIO2   |  2x OV5647 222 deg fisheye (CSI0, CSI2)        |
  |  - wall clock (HBN RTC, Y3)    |<---------|  2x TPS61161 LED drivers (PWM0 IR, PWM1 white) |
  |  - Wi-Fi radio (NetHub bridge) |  hb      |  MEMS mic (codec left input)                   |
- |  - BLE: Wi-Fi credentials only |          |  USB0 on USB-C 1 (flashing), console via BL616 |
+ |  - BLE (setup firmware only)   |          |  USB0 on USB-C 1 (flashing), console via BL616 |
  +--------------------------------+          +------------------------------------------------+
             ^ BQ24072 charger, 1000 mAh LiPo, USB-C power
 ```
@@ -69,11 +69,12 @@ These apply to every part of the project.
   µA and runs the Wi-Fi and BLE radio.
 - **The BL616 decides when the K230 runs.** It wakes on its RTC, on a leak probe (analog
   comparator) or on USB plug-in, powers the K230 up, and cuts it off when the session ends.
-- **One BL616 firmware** (`firmware/bl616`): power manager, Wi-Fi bridge and BLE provisioning in
-  one image. A battery wake decides bare-metal; only a K230 session starts FreeRTOS, because the
-  Wi-Fi stack runs in its own tasks.
-- **Radios only on demand.** Wi-Fi starts only when the K230 sends `WIFI`; BLE runs only on USB
-  power. A battery session that never asks for Wi-Fi never powers the RF.
+- **Two BL616 firmwares, one at a time** (5.3.1): the full firmware (`firmware/bl616_full`: power
+  manager, Wi-Fi bridge, K230 sessions, **no BLE**) and the setup firmware (`firmware/bl616_setup`: BLE
+  provisioning while asleep in PDS, no K230). Whenever BLE is needed the board switches to the setup
+  firmware (user, 2026-11-02).
+- **Radios only on demand.** Wi-Fi starts only when the K230 sends `WIFI` (or for a check-in); BLE
+  only in the setup firmware. A battery session that never asks for Wi-Fi never powers the RF.
 
 ## 3. Hardware decisions
 
@@ -316,7 +317,7 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
 
 - **Hibernate (HBN) between wakes.** Session flags, the wall clock, the last battery reading and the
   ADC calibration (aon_state), and the event log (evlog) live in HBN RAM, with a magic word and a CRC.
-  The linker places them in `.hbn_noinit` (firmware/bl616/bl616_leakcam.ld.in: NOLOAD, the top 1 KB,
+  The linker places them in `.hbn_noinit` (firmware/bl616_common/bl616_leakcam.ld.in: NOLOAD, the top 1 KB,
   clear of the SDK's fixed HBN RAM blocks at +000/+300/+400). `HBN_RSV0` is not usable because
   `pm_hbn_mode_enter()` overwrites it.
 - **Sleep current, measured once (tests/test031, 2026-10-25, meter in the cell lead; not to be repeated):** the
@@ -342,18 +343,25 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
   humidity at or above 85 %RH at any wake starts a K230 session, every time, and the values
   ride in `WAKE`. The K230 decides leak or no leak and how long to sleep. The only state the
   BL616 keeps is the failed-boot count (for the retry back-off) and the USB-exit flag.
-- **USB mode.** On USB power the BL616 stays awake and advertises BLE for provisioning. The phone
-  side is the Android app in [android/](android/README.md): SSID and password on one screen.
-  Before it stores them the BL616 checks them itself: it joins, gets an address and reaches a
-  well-known internet URL, and the app shows which step failed.
-  Unplugging returns it to the battery schedule.
+- **USB mode.** On USB power the full firmware stays awake (60 s check-ins, 5.3.1); it has no BLE.
+  Provisioning over BLE is the setup firmware's (5.3, 5.3.1). The phone side is the Android app in
+  [android/](android/README.md): SSID and password on one screen. Before it stores them the BL616
+  checks them itself: it joins, gets an address, reaches a well-known internet URL and then the
+  LEAKCAM API (the presence server answers a check-in: the end goal, 5.3.1), and the app shows
+  which step failed. Unplugging returns it to the battery schedule.
 - **No recovery of its own.** A stopped heartbeat means the session is over, whatever the
   reason: the BL616 cuts the power (300 ms discharge wait included) and schedules the next wake.
 - **Console on USB CDC.** It requires the SDK shell, FreeRTOS and CherryUSB CDC-ACM. If any of
   these is missing, Kconfig drops the option silently and the console lands on the K230 link
   pins. Check `CONFIG_BSP_CONSOLE_USB_CDC` in the generated config.
 
-### 5.3 BLE: Wi-Fi credentials only
+### 5.3 BLE: Wi-Fi credentials only, in the setup firmware only
+
+- **The full firmware has no BLE at all (user, 2026-11-02):** no BLE stack, controller or advertising windows. Each
+  time BLE is needed (no network stored, presence lost, a phone asks for setup) the board switches to the setup
+  firmware (5.3.1). The full firmware gets simpler: its Wi-Fi is only the NetHub bridge and the check-in, no BLE
+  coexistence, no credential check during a K230 session, and the BLE controller's 32 KB exchange RAM goes back to
+  Wi-Fi.
 
 - **One GATT service:** SSID, passphrase and commit (write only), and STATUS (read and notify: the
   check's progress and result).
@@ -361,7 +369,8 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
   own 6-digit PIN, pre-stored when its firmware is flashed (`make flash` runs provision_pin.py); only
   the flashing host and the presence server know how it is derived, and the app asks the server for it
   right before pairing and enters it itself. Just Works is refused, so a phone without the app cannot
-  pair. No USB power gate: BLE runs from boot; when it advertises follows the two modes in 5.3.1. The SDK's
+  pair. The setup firmware advertises from its start, every 2 s asleep in between, every 100 ms while awake on USB
+  power or after a phone's wake (5.3.1, test106 2026-11-02). The SDK's
   profile for our controller library needs `sdk_patch.py` for Secure Connections at all;
   `CONFIG_BT_FIXED_PASSKEY=y` for the PIN.
   Threats, findings and open items: [SECURITY.txt](SECURITY.txt).
@@ -375,16 +384,9 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
   (use case 2, user 2026-11-01): the advertisement carries the device ID (manufacturer data, company 0xFFFF: the
   BL616's factory MAC, device_id.c), so the app tells a LEAKCAM it set up before from a new one; the same ID is the USB
   serial number and goes with every server check-in (tests/test111).
-- **BLE first (user, 2026-10-28).** The check (commit 0x01) takes the radio even from a running K230
-  session (on USB power: a leak alarm): the K230 hears a link loss (JOINING), its requests wait, and
-  the bridge rejoins the stored network when the check ends. The alarm's upload pauses for the
-  check (5-15 s). A K230 session never starts during a check.
-- **New network during a K230 session: the session starts again.** Credentials stored while a
-  session runs (0x01 passed, or 0x02) end it once the K230 uses Wi-Fi: the K230's address, DNS and
-  server connections belong to the old network. `main.c` powers it off (`END_NEW_WIFI`, evlog
-  session-end -3) and starts a new session for the same wake reason, which joins the new network.
-  A failed check stores nothing and the session goes on. Tested in tests/test040 step 8 (the
-  bridge standing in for the session).
+- **No K230 during BLE.** The setup firmware never starts the K230, so a BLE check never competes with a session
+  (the full firmware's former "BLE first" rule and the session restart on new credentials, tests/test040 step 8, are
+  gone with its BLE). Credentials checked and stored -> the switch to the full firmware, which joins them.
 - **Switching networks never waits on the old one.** After a failed join (a network that is gone, a
   changed router password) the Wi-Fi supplicant keeps retrying, and a connect sent into those
   retries never returns. Every join and every check first leaves until the supplicant is idle
@@ -394,32 +396,56 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
   hook `btblecontroller_software_pds_reset`); the BL616's USB PHY is controlled from PDS. A/B on
   the test firmware (tests/test040, 2026-10-29): with the SDK's reset the USB device dropped at
   `pt_ble on` and never came back (EN needed); with `ble_pairing.c`'s empty hook BLE started dozens
-  of times in runs 12 and 13 with USB kept. The empty hook stays (no BLE sleep, so PDS needs no reset).
-- **Room for BLE in the Wi-Fi RAM.** The BLE controller library keeps 32 KB of the 160 KB Wi-Fi
-  RAM as exchange memory; the BL616's own lwIP heap is 6 KB so the 26 NetHub buffers still fit
-  (`lwipopts_user.h`, tests/test040).
+  of times in runs 12 and 13 with USB kept. The empty hook stays; BLE sleep in PDS works without it (test120).
+- **Wi-Fi RAM.** The BLE controller library keeps 32 KB of the 160 KB Wi-Fi RAM as exchange memory and lpfw 30 KB:
+  both only in the setup firmware, which has no NetHub. The full firmware's 26 NetHub buffers no longer share it
+  with BLE (its 6 KB own lwIP heap, `lwipopts_user.h`, tests/test040, can grow).
 
 ### 5.3.1 Two firmwares: setup (no presence, BLE in low power) and full (user, 2026-11-01)
 
-The BL616 runs one of two firmwares, each an image in its own flash slot. The setup firmware is there so the app can
-always reach a board that is not online. The full firmware does everything else.
+The BL616 runs one of two firmwares, each an image in its own flash slot. **All setup activity runs in the setup
+firmware, the normal product run in the full firmware** (user, 2026-11-02): BLE and the USB cable setup are the setup
+firmware's; check-ins, K230 sessions, leak alarms and uploads the full firmware's. The setup firmware is there so the
+app can always reach a board that is not online.
 
 | | Setup firmware (firmware/bl616_setup) | Full firmware (firmware/bl616_full) |
 |---|---|---|
-| Runs while | no presence: no network stored, or the last check-in failed | presence works, or USB power is present |
-| BLE | advertising every 2 s while the chip sleeps in PDS; a phone sets the Wi-Fi | off on battery (a phone wakes it through the server, test119); on with USB power |
-| Wi-Fi | only the credential check after a phone sends a network | check-ins, the K230's bridge (NetHub) |
-| K230 | never started | sessions as before |
+| Runs while | setup: no network stored, the last check-in failed, or the app asked for setup | the normal run: presence works (on battery or USB power) |
+| BLE | advertising every 2 s while the chip sleeps in PDS (100 ms while awake); a phone sets the Wi-Fi | **none** (user, 2026-11-02): every BLE need switches to the setup firmware |
+| Wi-Fi | only the credential check after a phone sends a network (BLE or cable) | check-ins, the K230's bridge (NetHub), the remote network change (5.3.2: over the server, needs presence) |
+| K230 | only as the USB cable relay while a phone is plugged in (below), never a session | sessions as before |
 
 **Switching (slot switch: mark the other slot active and reset, ~1 s):**
-- Full -> setup: at once on the first failed check-in, or with no network stored (tests/test117).
+- Full -> setup, **each time BLE is needed** (user, 2026-11-02):
+  - the first failed check-in, or no network stored (tests/test117);
+  - a phone asks for setup through the server (the app's "set up again" on a board online, test119): the check-in
+    answer says so and the full firmware switches.
 - Setup -> full:
-  - USB-C 1 plugged in: PGOOD wakes the chip from PDS (tests/test121); USB setup then runs in the full firmware
-    (tests/test113).
-  - New credentials saved over BLE (checked first: join, address, internet).
+  - USB-C 1 plugged in (PGOOD wakes the chip from PDS, tests/test121) **and the stored network passes the check up
+    to the API** (user, 2026-11-02): the setup firmware runs the network check on the stored network first, and only
+    a pass switches to the full firmware (on USB power: 60 s check-ins, K230 sessions). No network stored, or the check
+    fails at any step: it stays in the setup firmware (setup is needed), awake while on USB power, offers BLE and the
+    cable setup, and reports the failed step (BLE STATUS, the cable, the console).
+  - New credentials saved over BLE or the cable: they are stored only after the same check passed up to the API.
+
+  **The network check's end goal is the API reachable** (user, 2026-11-02): join -> address (DHCP) -> internet (the
+  well-known URL, generate_204) -> **API** (a check-in answered by the presence server, server/). The internet step
+  stays so a failure names the right cause: no internet (the network's fault) or API not reachable (the server's, or
+  a network that blocks it). wifi_check.c already runs with a target (presence.c's check-in uses the server); the
+  credential check gets the API as its last step and STATUS a new failure "API not reachable". Code, BLE STATUS and
+  app: to do (tests/test040 and test106 re-prove it).
   - Every 6 h, for a retry (tests/test125): the full firmware tries its normal check-in. Reached: presence is back
     and it stays. Not reached: back to the setup firmware at once. The setup firmware has no check-in of its own.
 - Partition-table writes: two per 6 h retry, 8 a day, ~3000 a year, far inside the flash's endurance.
+
+**Setup over the USB cable is the setup firmware's too** (user, 2026-11-02; tests/test113). On rev 1, USB-C 1 is the
+K230's USB0, so the setup firmware powers the K230 with a small relay image while the phone is plugged in and no
+network is stored: phone (OTG) -> K230 USB0 (CDC ACM) -> link UART -> the setup firmware's provisioning (the same
+operations and STATUS as over BLE, the same PIN). No session, no NetHub, no camera: the K230 is off again when the
+cable is pulled or the credentials are saved. The setup firmware gains k230_power.c and the link UART framing
+(k230_link.h); its RAM has room (no NetHub). Rev 2 option (bugs/v2.txt): the BL616's own USB on USB-C 1, no K230.
+A configured board set up again over the cable: the app asks the full firmware (through the server, or over the
+cable to the K230 in its session) and it switches to the setup firmware.
 
 **Check-in intervals (full firmware):** the server gives the interval in each check-in's answer, by the power the
 check-in reports (`usb=1|0`): **60 s on USB power, 24 h on battery** (~0.036 mAh per check-in). The server judges a
@@ -434,16 +460,28 @@ notice (test122) check in at once.
 - Low power: the SDK's low-power firmware (lpfw, `CONFIG_LPAPP`, from examples/pmu/wl_ble_lp), PDS between
   advertisements, the RC32K with the SDK's auto calibration (no Y3 needed).
 - A phone connecting keeps the chip awake (pairing, check, save); when the phone leaves it sleeps again.
+- The USB cable setup: the K230 powered with the relay image only while a phone is plugged in (k230_power.c, the
+  link UART; tests/test113, to come).
 - The watchdog, the crash recorder, the USB console (`isp` for flashing).
 
 **Why two images, not one:** the low-power firmware takes 30 KB of the Wi-Fi RAM (lpfw_share), which does not fit next
 to NetHub (bl616_powertest + `CONFIG_LPAPP`: ram_wifi over by 30144 bytes).
 
-**Slots:** slot 0 (2 MB at 0x10000) and slot 1 (at 0x210000); both images ~1.3 MB; the unused mfg partition
-overlapping slot 1 goes. Shared by both images: the settings in easyflash (credentials, PIN, clock source), the
-crash record at one fixed address, the watchdog and `isp`. OTA writes the inactive image and checks it before
-switching (no A/B fallback); the ROM's USB ISP stays the recovery. To prove first: the boot2 slot switch after a
-software reset.
+**Slots:** the SDK's partition table as it is: boot2's FW entry with slot 0 (full, 2 MB at 0x10000) and slot 1
+(setup, 1.41 MB at 0x210000); both images ~1.3 MB. The SDK's mfg partition overlaps slot 1; nothing writes it. The
+switch (firmware/bl616_common/slot.c, `slot switch`) flips the FW entry's active index into the other partition-table copy
+with a higher age and resets. Flashing writes both copies (firmware/bl616_common/host.mk; `SLOT1_BIN=` adds the setup image):
+after a switch the newer copy otherwise still names the other slot. Shared by both images: the settings in easyflash
+(credentials, PIN, clock source), the crash record at one fixed address, the watchdog and `isp`.
+
+**One product version for both images** (user, 2026-11-02): firmware/VERSION; each build stamps it with the git
+commit (and the build time on a tree with uncommitted changes) as "leakcam-build <image> <version>", printed at boot
+and by `slot`. The full firmware's `make flash` writes the pair (the setup image into slot 1) and refuses two images
+of different versions or commits. The crash record keeps the image and version that wrote it: the other image may be
+the one that reads it after a switch, and decoded with the wrong ELF the addresses name wrong but plausible code
+(tests/test126); every flashed ELF is kept by its build (~/.cache/leakcam-elf), and crash_decode.py picks it. OTA writes the
+inactive image and checks it before switching (no A/B fallback); the ROM's USB ISP stays the recovery. The switch
+alone, both ways: tests/test126.
 
 **Rules for the setup firmware's sleep** (tests/test120; skill bl616-ble-low-power):
 - **Never enter the low-power sleep path while BLE is up but idle** (no advertising, no connection). The SDK asks the
@@ -456,7 +494,8 @@ software reset.
   asleep; each wake restarts its counter, so an app hung while awake is still reset.
 - Measured on rev 1 at 2 s advertising: 99.4 % of the time in PDS, ~12 ms awake per advertisement; the phone finds the
   sleeping board 10/10, median 1.1 s, max 3.7 s. The battery current is measured on the next assembled board (the
-  vendor's 428 uA until then).
+  vendor's 428 uA until then). At 2 s the phone's 5 s connect limit runs out now and then: a setup on battery takes
+  16-23 s at times, without a dialog (test106, 2026-11-02; user: 2 s kept).
 
 **The battery's lowest voltage: the cell's protection board, ~2.4 V** (user decision; bug-004, accepted):
 - The 503450 cell (34 x 50 x 5 mm, 1000 mAh) has a built-in protection board (EXTERNAL_PARTS.md; typically a DW01-type
@@ -480,13 +519,16 @@ software reset.
   - Wi-Fi: one check-in with the flag right after the cut; the server keeps it and the app shows "battery low, please
     charge" (also a phone notification when it can wake the app).
   - BLE: the flag in the advertisement while it advertises, and in STATUS once connected.
-  - USB: the console status (`prov`) and the USB setup path's status.
+  - USB: the console status (`provision`) and the USB setup path's status.
 - Then the lockout: no K230 session, no RTC or leak wake (a leak alarm cannot run on an empty cell); only the USB plug
   wakes it. It ends with USB power and the next reading >= 3.50 V (test038). The charge left lasts weeks of lockout
   before the cell's protection.
 
-**Until the setup firmware ships,** the full firmware keeps its BLE advertising windows on battery (60 s every 5 min
-while no network is stored or presence is lost, provision.c).
+**Built (2026-11-02):** the full firmware has no BLE: no network stored, a failed check-in or "ble":1 switch it to the
+setup firmware, with the reason in easyflash (`setup_why`: "lost", "wake"). The setup firmware reads and deletes it at
+its start: after a wake it goes back in 2 minutes, otherwise every 6 h while a network is stored (firmware/bl616_setup/
+switch_to_full.c); never while a phone is connected. Coming from the full firmware with USB power in is not a plug: no
+hand-over check then. To prove on the board: tests/test117, test119, test125.
 
 **Tests:** test120 (BLE in low power alone), test121 (USB plug wake), test125 (the 6 h retry and the whole
 full -> setup -> full cycle), test122 (battery low), test124 (BL616 brown-out), test038 step 7 (the real cutoff); in
@@ -506,7 +548,8 @@ The change goes through the presence server and the board's own check-in, so it 
   - Works: the new network is stored, the old one kept as `wifi_*_prev`; the result (attempt id, saved) goes with
     that check-in.
   - Fails or 15 s pass: back to the previous network (stored, still the current one), a check-in there with the
-    result (attempt id, the failure: wrong password, network not seen, no address, no internet); nothing stored.
+    result (attempt id, the failure: wrong password, network not seen, no address, no internet, API not reachable);
+    nothing stored.
   - Lost in between (power, reset): the stored network is still the old one, so the board comes back on it; the app
     reads the result by attempt id, or "not done" (the same reconciled state as BLE's STATUS, test110).
 - **The app** shows the outcome by attempt id: moved, or kept on the old network with the reason.
@@ -515,6 +558,23 @@ The change goes through the presence server and the board's own check-in, so it 
   server in clear: encrypt it with a per-device key derived like the pairing PIN (the server and the flashing host
   hold the secret), and the server drops it once delivered. And a remote change needs the app authorized for that
   device (today the device ID alone would do), or anyone knowing an ID could move a board onto their own network.
+
+### 5.3.3 Crash records go to the server over Wi-Fi (user, 2026-11-02; tests/test128)
+
+A crash record (crash_rec.c: kind, task, registers, backtrace, the build that wrote it) is kept in HBN RAM until the
+server has it. It is sent **over Wi-Fi only, as soon as Wi-Fi reaches the LEAKCAM API**, by whichever firmware gets
+there first: the full firmware with its next check-in (at boot it checks in at once when a record is kept, not after
+a 24 h battery interval), the setup firmware with its network check's API step (a BLE setup, the USB hand-over).
+Not over BLE or USB: the console still prints it at boot and with `crash`, as today.
+- **State, not events:** the record carries its build and count; the server stores it per device, keyed by the
+  whole record text (the count starts at 1 again after every send, so (build, count) is no key), so a resend is
+  harmless. The board clears the record only after the server's answer; a lost answer only sends it again next time.
+- **A new crash before the old one was sent** overwrites it (one record, the count tells how many were lost).
+- **Server:** POST /v1/devices/{id}/crash (a url-encoded form: build, count, kind, task, registers, up to 16 backtrace
+  words; the server rebuilds the text `crash` prints); GET
+  /v1/devices/{id}/crashes for the bench and later the app; the host decodes with the kept ELF of that build
+  (crash_decode.py, ~/.cache/leakcam-elf). The record holds no secrets (no credentials, no PIN).
+- **Cost:** one extra HTTP request per crash, nothing when there is none.
 
 ### 5.4 K230-BL616 link and time
 
@@ -590,7 +650,7 @@ The change goes through the presence server and the board's own check-in, so it 
   (12-20 per second), down **~26 Mbit/s** (18-31); after the upload fixes below **27.5 up** (peaks 32), UDP 35.4.
 - **Upload limit (2026-10-25):** the bridge, not the radio. The K230 driver now waits up to 20 ms for a transmit slot
   instead of dropping the frame (drops made TCP back off), with 16 slots; the BL616 gets 26 NetHub download buffers
-  and 23 netdev credits instead of 15 / 8 (`firmware/bl616/sdk_patch.py`, applied by host.mk before every build). Two H.265 streams at full resolution (2592x1944, an estimated
+  and 23 netdev credits instead of 15 / 8 (`firmware/bl616_common/sdk_patch.py`, applied by host.mk before every build). Two H.265 streams at full resolution (2592x1944, an estimated
   4-8 Mbit/s with audio) fit; RTMP over TCP stalls on the dips, so a steady upload matters more than the peak. Next:
   find the upload limit (air, BL616 transmit credits, one frame per SDIO transfer, K230 TCP buffers; a UDP run and
   the counters), then the real load (two RTMP streams, after the cameras).

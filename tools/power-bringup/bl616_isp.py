@@ -138,7 +138,7 @@ def main():
         return
     if APP not in now:
         sys.exit("bl616_isp: no BL616 on USB (PR1 cable?); else BOOT + 3V3 cut by hand")
-    # `isp` stops the watchdog first (firmware/bl616/wdg_guard.c); `reboot uart` left it running into the ROM, which it
+    # `isp` stops the watchdog first (firmware/bl616_common/wdg_guard.c); `reboot uart` left it running into the ROM, which it
     # reset every 8 s before the ROM enumerated (2026-10-23). Firmware without `isp` (older builds) gets `reboot uart`.
     print(f"{now[APP]}: isp", file=sys.stderr)
     send(now[APP], "isp")

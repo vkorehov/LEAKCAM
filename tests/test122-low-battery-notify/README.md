@@ -41,7 +41,7 @@ advertisement (ble_pairing.c). Server: the flag kept per device and shown in GET
 3. The notice over BLE: the advertisement carries the flag while the board advertises (setup mode, or after presence is
    lost): BleOp scan reads it; the app shows it for a board it sees only over BLE (no network stored).
 3a. The notice over USB: with USB-C 1 plugged in during the lockout (before the cell is back above 3.50 V) the console
-   status (`prov`) and the USB setup path's status (test113) show battery low and the last VBAT.
+   status (`provision`) and the USB setup path's status (test113) show battery low and the last VBAT.
 4. Lockout: no K230 session for an RTC wake or a leak on S1 (1 h); current = the sleep floor; the notice is not sent
    again every wake (one per cut).
 5. Recovery: USB plugged -> charging; the lockout ends with the next reading >= 3.50 V; the flag clears at the server

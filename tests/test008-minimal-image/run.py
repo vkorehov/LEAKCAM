@@ -3,7 +3,7 @@
 fills the minimal-image Metrics the harness measures. The image steps themselves (3-7) are build work."""
 import os
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run   # noqa: E402
 
 r = Run(__file__)

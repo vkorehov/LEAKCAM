@@ -1,5 +1,12 @@
 # test106: Wi-Fi setup from the phone, end to end
 
+Status: **pass on the product pair** (2026-11-02 21:16-21:22 UTC: full firmware in slot 0, setup firmware in slot 1, all
+BLE in the setup firmware; phone on adb over Wi-Fi): run.py 29/29, first setup 8.5 s from opening the app to Done,
+8 repeats 8.4-9.5 s, every stored network back in the full firmware 3.1-4.1 s, no pairing dialog, crash record none.
+Faster than the day's first product-pair runs (10.3-23.5 s): DHCP without the ARP check in the setup firmware too,
+advertising every 100 ms while awake, the app bonding with every connect (HISTORY.md). The run's leak FAIL was false
+(each setup ends in a reset); fixed in run.py. Earlier status (test firmware, product v1) below.
+
 Status: **pass, steps 1 3 4 5 6 7 8** (2026-10-30, run.py 18/18; step 7 2026-10-31, hand_step7.py 5/5): setup 7.3-8.0 s
 from opening the app to Done; on battery the app lists no board and a stored bond cannot connect; step 2 open (the test
 firmware's battery wake to the stored network and a K230 session). **Product v1** (firmware/bl616, now firmware/bl616_full; 2026-11-01 09:33):
@@ -8,6 +15,10 @@ run.py 17/17 in 215 s, first setup 7.5 s, repeats 6.9-7.6 s, no leak, crash reco
 With use case 2 (presence, the app's LEAKCAM list; 10:14): 17/17, repeats 9.4-10.5 s - the product's part (Send ->
 Done) unchanged at 3.5 s, the rest the driver re-finding fields the presence refresh redrew (HISTORY.md).
 
+Re-proved 2026-11-02 (above; DESIGN.md 5.3.1): the check's end goal is the API reachable: join -> address -> internet
+-> a check-in answered by the presence server; STATUS gains "API not reachable"; and it runs on the setup firmware
+(all setup there, the full firmware has no BLE). The pass above is on the earlier check (internet as the last step).
+
 The installation flow as a user meets it: a new LEAKCAM on USB power, the LEAKCAM Setup app (android/, APP.txt) finds
 it, pairs, sends the Wi-Fi network, the board checks and stores it in the BL616's flash; then, on battery, the
 product's wakes use it (BL616 server check, K230 session over SDIO Wi-Fi). The BL616 side alone, characteristic by
@@ -15,7 +26,7 @@ characteristic, is test040.
 
 ## Setup
 
-- BL616 test firmware (bl616_powertest, BLE provisioning and the Wi-Fi check from firmware/bl616); K230 test image
+- BL616 test firmware (bl616_powertest, BLE provisioning and the Wi-Fi check from firmware/bl616_common); K230 test image
   (test019) for the session step.
 - Android phone with the LEAKCAM Setup app (debug APK, `./gradlew assembleDebug`), on adb (USB to the VM or Wi-Fi
   adb); the app's steps driven by `adb shell uiautomator` / UI Automator so the run needs no hands, the system
@@ -115,7 +126,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Power, energy per operation | n/a for the cell: setup draws from USB (~7 s at 63-86 mA, test040 readings) | - | scripts/energy.py |
 | Per day | n/a: once per installation, on USB; the battery wakes of step 2 are open | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | die n/a: K230 off; board 28.0 / 28.2 / 28.1 C (AHT20) (2026-10-30) | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | BL616 free 131104 / min 105132 / 131104 B, blocks 107 -> 107, deleted 0; BL616 no leak (mem_leak.py, 11 snapshots) (2026-10-30) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Memory BL616 / K230 (start / min / end), leak | product pair: full firmware 194-210 KB free after each setup's reset (fresh boots, no leak test: no heap carries over a setup) (2026-11-02); test firmware: BL616 free 131104 / min 105132 / 131104 B, blocks 107 -> 107, deleted 0; BL616 no leak (mem_leak.py, 11 snapshots) (2026-10-30) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | BL616 test firmware 1309616 B (2026-10-30, on the board at the run) | minimal image (rule) | the image this run used |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os -march=rv64imafdcv, sections + --gc-sections, strip, no LTO; BL616 test firmware -Os -g (SDK Kconfig default), no LTO (2026-10-30) | smallest code (rule) | |
 | Features over the minimal image | as test040 (BLE 182 KB flash, 14.2 KB static RAM, 18.8 KB heap at run time); this firmware 1309616 B | test008 floor | bytes, boot ms, RAM, current |

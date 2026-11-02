@@ -25,17 +25,39 @@ ISP := $(HW_ROOT)/LEAKCAM/tools/power-bringup/bl616_isp.py
 # A test firmware may build from a product's defconfig (DEFCONFIG_FILE) and the SDK's Kconfig: the files it really uses.
 INCREMENTAL := $(foreach f,$(or $(DEFCONFIG_FILE),defconfig) $(wildcard Kconfig) CMakeLists.txt,[ build/CMakeCache.txt -nt $(f) ] &&) true
 all build:
-	python3 $(HW_ROOT)/LEAKCAM/firmware/bl616/sdk_patch.py $(BL_SDK_BASE)
+	python3 $(HW_ROOT)/LEAKCAM/firmware/bl616_common/sdk_patch.py $(BL_SDK_BASE)
 	docker run --rm --user $$(id -u):$$(id -g) -e HOME=/tmp -e LEAKCAM_IN_CONTAINER=1 -e BL_SDK_BASE=$(BL_SDK_BASE) \
 	    -e PATH=$(TOOLCHAIN)/bin:/usr/bin:/bin -v $(HW_ROOT):$(HW_ROOT) -w $(CURDIR) $(IMAGE) sh -c \
 	    'if $(INCREMENTAL); then for t in pre_build all post_build combine; do \
 	        make --no-print-directory -C build -j8 $$t || exit 1; done; else make -j5; fi'
 	@ls -l build/build_out/*.bin
+# The SDK's flash config plus: the partition table into both of boot2's copies (0xE000, 0xF000): after a slot switch
+# (slot.c) the copy at 0xF000 is newer and still names the other slot, so writing 0xE000 alone booted the old image.
+# SLOT1_BIN=<image> also writes slot 1 (0x210000): the setup firmware next to the full one (DESIGN.md 5.3.1).
+# Each image carries "leakcam-build <image> <version>" (crash_rec.c): both images of a pair must have the same product
+# version and commit (firmware/VERSION; user 2026-11-02: one product version for both firmwares; a dirty tree's build
+# time may differ), and every flashed ELF is kept as ~/.cache/leakcam-elf/<image>-<version>.elf: the crash record
+# names its build, and crash_decode.py finds the ELF by it. No commas inside $(if ...) recipes: make splits on them.
+FLASH_INI := $(CURDIR)/build/flash_leakcam.ini
+ELF_KEEP := $(HOME)/.cache/leakcam-elf
+ELF := $(firstword $(wildcard build/build_out/*_bl616.elf))
+build_tag = $$(grep -ao 'leakcam-build [a-z_]* [0-9A-Za-z.+-]*' $(1) | head -1)
+keep_elf = t="$(call build_tag,$(1:.elf=.bin))"; [ -n "$$t" ] || { echo "flash: no leakcam-build tag in $(1:.elf=.bin)"; exit 1; }; \
+	set -- $$t; mkdir -p $(ELF_KEEP); cp $(1) "$(ELF_KEEP)/$$2-$$3.elf"; echo "flash: $$t"
 flash:
+	@$(call keep_elf,$(ELF))
+	$(if $(SLOT1_BIN),@$(call keep_elf,$(abspath $(SLOT1_BIN:.bin=.elf))))
+	$(if $(SLOT1_BIN),@a="$(call build_tag,$(ELF:.elf=.bin))"; b="$(call build_tag,$(abspath $(SLOT1_BIN)))"; \
+	    a=$${a##* }; b=$${b##* }; [ "$${a%%-dirty*}" = "$${b%%-dirty*}" ] || \
+	    { echo "flash: slot 0 is $$a but slot 1 $$b: one product version and commit for both (firmware/VERSION)"; exit 1; })
+	cp build/flash_prog_cfg.ini $(FLASH_INI)
+	printf '\n[partition1]\nfiledir = %s\naddress = 0xF000\n' $(CURDIR)/build/build_out/partition.bin >> $(FLASH_INI)
+	$(if $(SLOT1_BIN),printf '\n[FW1]\nfiledir = %s\naddress = 0x210000\n' $(abspath $(SLOT1_BIN)) >> $(FLASH_INI))
 	port=$$($(ISP)) && \
 	docker run --rm --user $$(id -u):$$(id -g) --group-add $$(stat -c %g $$port) --device $$port -e HOME=/tmp \
 	    -e LEAKCAM_IN_CONTAINER=1 -v $(HW_ROOT):$(HW_ROOT) -w $(CURDIR) $(IMAGE) \
-	    make flash COMX=$$port BL_FLASH_PROGRAM=$(BL_SDK_BASE)/tools/bflb_tools/bouffalo_flash_cube/BLFlashCommand-ubuntu
+	    $(BL_SDK_BASE)/tools/bflb_tools/bouffalo_flash_cube/BLFlashCommand-ubuntu --interface=uart --baudrate=2000000 \
+	    --port=$$port --chipname=bl616 --config=$(FLASH_INI)
 	$(ISP) --boot $$($(ISP))
 	@$(ISP) --wait-app
 	@python3 $(HW_ROOT)/LEAKCAM/tools/power-bringup/provision_pin.py   # the BLE pairing PIN, pre-stored once

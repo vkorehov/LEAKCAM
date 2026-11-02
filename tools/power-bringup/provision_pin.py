@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Pre-store the board's BLE pairing PIN, the last step of `make flash` (firmware/bl616/host.mk): the device ID from
+"""Pre-store the board's BLE pairing PIN, the last step of `make flash` (firmware/bl616_common/host.mk): the device ID from
 the board's USB serial number, the PIN derived here with the key in .secrets/pairing_secret (the flashing host is the
 manufacturing station; the presence server derives it with the same key for the app), written through the console
-(`prov pin` on the product, `pt_ble pin` on the test firmware), then a reboot so the board advertises with it. The
+(`provision pin` on the product, `pt_ble pin` on the test firmware), then a reboot so the board advertises with it. The
 PIN is never printed; a board that already holds a PIN is left alone (--force writes it again).
     tools/power-bringup/provision_pin.py [--force]
 """
@@ -47,15 +47,15 @@ m = re.search(r"ID_SERIAL_SHORT=([0-9A-F]{12})\b", usb)
 if not m:
     sys.exit("provision_pin: no device ID in the USB serial number (a firmware before use case 2?)")
 dev = m.group(1)
-product = bool(answer("prov", r"prov: pairing PIN (stored|none)"))
-cmd = "prov" if product else "pt_ble creds"
+product = bool(answer("provision", r"provision: pairing PIN (stored|none)"))
+cmd = "provision" if product else "pt_ble creds"
 state = answer(cmd, r"pairing PIN (stored|none)")
 if not state:
     sys.exit("provision_pin: the firmware reports no pairing PIN state (built before the PIN change?)")
 if "pairing PIN stored" in state and "--force" not in sys.argv:
     print(f"provision_pin: {dev} holds a pairing PIN already")
     sys.exit(0)
-ok = answer(f"{'prov' if product else 'pt_ble'} pin {pin_for(dev, key)}", r"pairing PIN stored|pin store failed")
+ok = answer(f"{'provision' if product else 'pt_ble'} pin {pin_for(dev, key)}", r"pairing PIN stored|pin store failed")
 if "pairing PIN stored" not in ok:
     sys.exit(f"provision_pin: storing the PIN on {dev} failed")
 bl("reboot", 1)

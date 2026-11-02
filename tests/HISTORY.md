@@ -32,22 +32,22 @@ line, every value at its maximum), `## Boot time`, `## Battery energy`, `## Obst
 written when it happens). Nothing is left out: an empty part says so ("Not run yet.", "None yet.", "not measured:
 <reason>"). The status here and in the README's Status line say the same.
 
-**One standard, no gaps after a run (user rule, 2026-10-24):** `tools/test-standard/check_tests.py` checks every
+**One standard, no gaps after a run (user rule, 2026-10-24):** `tools/test-runner/check_tests.py` checks every
 README against the sections above and the 14 metric rows of skill leakcam-test-metrics; a value not measured is
 `**MISSING**`, one that cannot apply is `n/a: <reason>`. After a run of a test, `check_tests.py testNNN` must print
 "every metric filled" before the run is reported (2026-10-24: 476 values MISSING over 44 tests; the count falls as
 tests are re-run).
 
 **Automated runs (2026-10-25, user: "aiming at automating all"):** a test with a `run.py` runs unattended through
-PR1 alone; `tools/test-standard/run_tests.py [testNNN ...]` runs them one after another (in the order given; a fresh
+PR1 alone; `tools/test-runner/run_tests.py [testNNN ...]` runs them one after another (in the order given; a fresh
 process each, output in the test's `run.log`, kept in git) and `check_tests.py` after each. The shared
-`tools/test-standard/harness.py` times the K230 cold boot from its console milestones and samples die / board
+`tools/test-runner/harness.py` times the K230 cold boot from its console milestones and samples die / board
 temperature, VBAT (K230 ADC, test023 calibration), memory on both chips (leak verdict from 8 snapshots) after each
 step; it writes **only cells that still say MISSING** (readings already recorded, the user's meter readings above
 all, are never overwritten), appends a dated `### Automated run` to Results and the run's obstacles. Meter readings
 are asked only with `LEAKCAM_METER=ask`, one per state per day (cached in ~/.leakcam_meter_cache.json, given through
 the FIFO ~/.leakcam_meter). The test tools sit in one K230 test image, built by
-`tools/test-standard/build_test_image.sh` and flashed by test019's run (USB boot, no hands). Never touch the board
+`tools/test-runner/build_test_image.sh` and flashed by test019's run (USB boot, no hands). Never touch the board
 while a run is going (2026-10-25: a hand-run command cut test023 off). Not automated: the cameras (020, 030, 103),
 cables and probes by hand (001's charge readings, 034 wet probe, 035 plug, 038 low cell, 105 unplug), the product
 firmware sessions (101, 102, 104), test015's SDIO bench (needs its own driver patch and BL616 firmware).

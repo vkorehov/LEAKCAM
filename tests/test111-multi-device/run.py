@@ -14,7 +14,7 @@ import subprocess
 import sys
 import time
 import urllib.request
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
 from phone import adb, op, product, ready   # noqa: E402
@@ -90,7 +90,7 @@ if not os.path.exists(BL_PORT):
     r.finish("not run: no BL616 console on USB.", False, switch_off=False)
     sys.exit(1)
 if not product():
-    r.obstacle("the BL616 runs the test firmware: flash the product (firmware/bl616, make flash)")
+    r.obstacle("the BL616 runs the test firmware: flash the product (firmware/bl616_full, make flash)")
     r.finish("not run: not the product firmware.", False, switch_off=False)
     sys.exit(1)
 why = ready(r.notes)

@@ -1,6 +1,6 @@
 # test117: presence lost brings BLE back (the phone sets the Wi-Fi at once)
 
-Status: **pass** (2026-11-01, 13/13; user: "loosing of presence for whatever reason re-enabled ble wake, so phone nearby
+Status: **setup firmware: the trigger passes (2026-11-02, bench, no phone); the phone steps to re-run** (old pass 2026-11-01, 13/13, on the full firmware's own BLE;
 can reconfigure wifi instantly").
 
 A LEAKCAM with a network stored stops advertising on battery while it is present at the server. When a check-in does
@@ -15,7 +15,7 @@ new credentials the board checks in at once (presence_now), not at the next inte
 - The presence server on the Pi: the runner sets its poll interval to 10 s, stops and starts it, and puts back 60 s.
 
 On USB power the board advertises anyway: the runner reads the battery rule the firmware drives its advertising with
-(`prov`: "on battery on (presence lost)" / "off (configured, present)"), not the radio. The radio itself on battery:
+(`provision`: "on battery on (presence lost)" / "off (configured, present)"), not the radio. The radio itself on battery:
 test116's hand steps.
 
 ## Needs (build features and dependencies)
@@ -46,7 +46,14 @@ sets the Wi-Fi in one go, and a present board stops advertising on battery.
 
 ## Result
 
-2026-11-01, 13/13 checks (poll 10 s, `prov battery on`): present -> the phone does not find the board; the server
+- 2026-11-02 17:55 UTC, the product pair (full + setup, 0.6+g1d2b375-dirty-202611021742; the full firmware without BLE),
+  USB-C 1 in, no phone: the server stopped -> the full firmware's next check-in failed -> **the setup firmware 36.3 s
+  later** (slot 1); on USB power it stayed (only the 6 h retry pending, firmware/bl616_setup/switch_to_full.c); the
+  server back and a `slot switch` by hand (standing in for the retry) -> the full firmware checked in again (0x03).
+  Open: the phone finding the board in the setup firmware and setting the Wi-Fi out of it (the runner still drives the
+  old `provision battery` rule: to rework), the battery case (setup sleeping, the 6 h retry).
+
+2026-11-01, 13/13 checks (poll 10 s, `provision battery on`): present -> the phone does not find the board; the server
 stopped -> presence lost in 5 s, the phone finds the board (its serial) in 0.3 s; the server back -> silent again in
 9 s; a missing network saved without checking -> lost in 4 s; the app sets the real network at once (Done 8.7 s) ->
 silent again 2 s later, present at the server 14 s after that setup started.
@@ -59,11 +66,11 @@ silent again 2 s later, present at the server 14 s after that setup started.
 | This part's boot share | n/a: no K230 boot | - | |
 | Test run time | 163 s automated (run.py, 2026-11-01), no setup | - | |
 | presence lost -> advertising; set up again from the app | presence lost -> advertising: see the CHECK lines; set up again from the app 0.0 s | - | % of the top |
-| Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 meter (LEAKCAM_METER=ask) |
+| Current idle / during (min / avg / peak) | n/a: on USB power, no meter reading (2026-11-02 bench run; the battery case is the setup firmware's, test120) | floor (test031) | USB-C 1 meter (LEAKCAM_METER=ask) |
 | Voltage under load (min) | n/a: on USB power | cutoff 3.10 V (bug-004) | |
-| Power, energy per operation | **MISSING** | - | |
+| Power, energy per operation | n/a: on USB power; a switch is one reset and a 4 KB partition-table write (test126) | - | |
 | Per day | n/a: a fault case | ENERGY.txt line | |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | |
+| Temperature die / board (start / peak / end) | n/a: K230 off, the BL616 at idle load | K230 limit (datasheet) | |
 | Memory BL616 / K230 (start / min / end), leak | BL616 free 145288 / min 120104 / 145288 B, blocks 107 -> 107, deleted 0; leak: n/a, 1 snapshots (mem_leak.py needs >= 8 cycles) (2026-11-01) | no leak | |
 | Image (sizes) | BL616 test firmware 1317888 B (2026-11-01, on the board at the run) | minimal image (rule) | |
 | Compile flags | BL616 product (test compiles: no -O3/LTO) | smallest code (rule) | |

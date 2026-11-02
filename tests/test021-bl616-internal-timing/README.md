@@ -34,7 +34,7 @@ Figures recorded; wake to K230 power-on within the design's budget (DESIGN.md).
 
 - RTC wake -> `main()` **17.3 / 17.4 / 17.4 ms**, of it core reset -> `main()` 8.0 ms (ROM + boot2 + C start-up);
   K230_PWR -> 3V3 up 1.7 ms; AHT20 trigger -> data **36.5 ms** (min / median / max of 8 wakes, 2026-10-25, run.py).
-- AHT20: the sample is ready 36.7 ms after the trigger; firmware/bl616/aht20.c reads first at 35 ms, then polls every
+- AHT20: the sample is ready 36.7 ms after the trigger; tests/firmware/bl616_powertest/aht20.c reads first at 35 ms, then polls every
   1 ms (2026-10-22).
 - Leak probe ADC (init + 6 conversions, the first 5 dropped as stale; conversions every ~411 us, polled every 10 us):
   **2.6 ms** (2026-10-22).
@@ -53,7 +53,7 @@ Figures recorded; wake to K230 power-on within the design's budget (DESIGN.md).
   SDK's fixed users stay below (+000 hbn_ram / pre-jump stub, +300 boot2 parameters, +400 low-power parameters). With
   the fix: marker 14.6 ms both wakes, no wrong read anywhere.
 - The calibration and the HBN RAM rule (leak_probe_mv(), aon_state, 2026-10-22) ran on the test firmware;
-  firmware/bl616 carries the same code.
+  the old product firmware (attic/firmware/bl616) carries the same code.
 
 Open:
 - One RTC wake took 245.6 ms (the first sleep after a cold Y3 start, 2026-10-22); not reproduced in 3 more wakes

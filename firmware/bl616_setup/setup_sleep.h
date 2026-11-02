@@ -24,7 +24,7 @@ void setup_sleep_end(void);
 /* BQ24072 PGOOD low: USB-C 1 has power */
 bool setup_usb_present(void);
 /* given by the firmware: USB-C 1 was plugged in during the sleep (task context, the sleep has ended). The setup
- * firmware hands over to the full firmware there (slot switch); the test firmware reports it */
+ * firmware switches to the full firmware there (slot switch); the test firmware reports it */
 void setup_usb_plugged(void);
 
 struct setup_sleep_stats {
@@ -32,6 +32,9 @@ struct setup_sleep_stats {
     uint32_t short_idle;    /* of those, idle time too short to sleep */
     uint32_t max_idle;      /* the longest idle time offered, ms */
     uint32_t entered;       /* sleeps that reached the low-power firmware */
+    uint32_t exited;        /* of those, wakes through lp_exit (the clocks, the tick and the watchdog restarted) */
+    uint32_t wdg_enter_max; /* the watchdog counter at a sleep's start, highest (it restarts at every wake) */
+    uint32_t wdg_exit_max;  /* the counter right after a wake's restart, highest (0 or near) */
     uint32_t vetoed;        /* idle hook calls kept out of the sleep path: BLE up but idle */
     uint32_t usb_wakes;     /* wakes by the USB plug */
 };

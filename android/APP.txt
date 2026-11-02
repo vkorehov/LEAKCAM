@@ -4,7 +4,7 @@ LEAKCAM Setup app: user experience
 What the user sees and does, screen state by screen state, and every message the app can show.
 The code is app/src/main/java/com/leakcam/setup/MainActivity.kt; all text is in
 app/src/main/res/values/strings.xml (names in [brackets] below). The board side is
-firmware/bl616/ble_pairing.h (BLE service) and firmware/bl616/wifi_check.c (the check).
+firmware/bl616_setup/ble_pairing.h (BLE service) and firmware/bl616_common/wifi_check.c (the check).
 
   goal        put the home Wi-Fi name and password on a LEAKCAM, and know it works
   who         the owner, once per board (again after a router change or a reset)
@@ -186,7 +186,7 @@ has already said nothing was stored, and the board keeps to that.
 - The LEAKCAM server address: set on the board, not here.
 - Anything after setup (alarms, clips): other apps and the server.
 - Typing a PIN: the pairing PIN (passkey entry, since 2026-11-01) comes from the server and the app
-  enters it itself (firmware/bl616/ble_pairing.h); the user never sees it. No server, no setup
+  enters it itself (firmware/bl616_setup/ble_pairing.h); the user never sees it. No server, no setup
   ([err_no_pin]).
 
 Not yet run on a phone with a real board: the texts and flow are built and lint-clean, the

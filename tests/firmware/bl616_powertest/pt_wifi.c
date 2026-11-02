@@ -48,7 +48,7 @@
 #include "shell.h"
 #include "wifi_mgmr.h"
 #include "wifi_mgmr_ext.h"
-#include "ble_pairing.h"
+#include "../../../firmware/bl616_setup/ble_pairing.h"
 
 /* easyflash once per boot: a second easyflash_init() re-inits littlefs and can leave it unusable (EF 7, 2026-10-25) */
 static EfErrCode ef_once(void)

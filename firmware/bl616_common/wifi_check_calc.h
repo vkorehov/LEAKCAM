@@ -28,6 +28,8 @@ enum wifi_check_state {
     WCHK_CAPTIVE = 0x16,          /* an answer other than 204 (login page, proxy): detail = HTTP status */
     WCHK_BUSY = 0x17,             /* the check could not start: the station stayed busy */
     WCHK_SAVE_FAILED = 0x18,      /* flash write failed */
+    WCHK_NO_API = 0x19,           /* the internet answered, the LEAKCAM API did not: detail = its HTTP status, 0 none
+                                   * (api.h; the check's end goal, DESIGN.md 5.3.1) */
 };
 
 /* a join that ended without a connection: the network was seen, so either the key did not

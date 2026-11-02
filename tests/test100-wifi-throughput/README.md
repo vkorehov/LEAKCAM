@@ -65,7 +65,7 @@ TCP up >= 2 x the two streams' rate with margin at the install distance; no RTMP
   (2026-10-25).
 - Step 4, TCP throughput on "VK" (ch 11, -47 dBm): **TCP up 27.5 Mbit/s** (peaks 32), TCP down 22.1, **UDP up 35.4**
   (peaks 37), after the K230 driver waits for a slot (TX_WAIT_MS 20, ring 16) and the BL616 NetHub download buffers
-  15 -> 26, netdev credits 8 -> 23 (`firmware/bl616/sdk_patch.py`); 9 frames dropped, 3880 credit stalls per 10 s
+  15 -> 26, netdev credits 8 -> 23 (`firmware/bl616_common/sdk_patch.py`); 9 frames dropped, 3880 credit stalls per 10 s
   upload. The bridge was the limit, not the radio; download stays 22-26 Mbit/s (one frame per SDIO read); runs sag to
   ~16 Mbit/s in their second half on channel 11 (the air). Two H.265 streams (~1 Mbit/s with audio) use a few % of it
   (2026-10-25).

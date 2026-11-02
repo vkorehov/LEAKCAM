@@ -18,7 +18,7 @@ once configured).
   ID); on hearing it the board advertises for 60 s. For each duty: the beacon-to-discovery time and the current.
 - **C, BLE sleep:** A and B with the BL616 in PDS between radio events (the BLE controller wakes it), if the SDK's
   low-power framework carries it on our controller library (CONFIG_LPAPP and the PDS hook, kept empty since test040's
-  USB finding, firmware/bl616/ble_pairing.c): the step that makes the numbers worth having on battery.
+  USB finding, firmware/bl616_setup/ble_pairing.c): the step that makes the numbers worth having on battery.
 
 ## Setup
 

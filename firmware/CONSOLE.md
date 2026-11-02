@@ -34,9 +34,9 @@ Only the K230 BootROM's own lines (errors, USB boot) stay on UART0 = CH340X: it 
  leakcam_agent ◄─ /dev/link ◄─ valid frame ◄─ k230_linesplit ◄─ UART1 ◄════ UART0 ◄─ link frames / what is typed on ACM1
 ```
 
-- **One wire, one rate.** The link frames (`$<seq>,CMD,...*XX\n`, CRC-8, firmware/bl616/k230_link.h) and the console
+- **One wire, one rate.** The link frames (`$<seq>,CMD,...*XX\n`, CRC-8, firmware/k230_board/k230_link.h) and the console
   text share UART1 <-> UART0 at `LINK_BAUD` = 4 Mbaud (tests/test018: clean over 10 MB, 6 Mbaud fails).
-- **The same splitter on both ends** (`firmware/bl616/k230_linesplit.h`, header-only, no OS): a `$...*XX\n` line with
+- **The same splitter on both ends** (`firmware/k230_board/k230_linesplit.h`, header-only, no OS): a `$...*XX\n` line with
   a correct CRC is a frame, everything else is console text. Text is passed on at once (keystrokes do not wait for a
   newline); only a `$`-candidate is held until it completes or is proven not to be a frame. The CRC keeps console
   output containing `$` from being taken as a frame.
@@ -47,9 +47,9 @@ Only the K230 BootROM's own lines (errors, USB boot) stay on UART0 = CH340X: it 
 
 | File | Role |
 |---|---|
-| `firmware/bl616/k230_linesplit.h` | the splitter, shared by both BL616 firmwares and copied into the K230 kernel driver |
+| `firmware/k230_board/k230_linesplit.h` | the splitter, copied into the K230 kernel driver and used by the BL616 power test firmware |
 | `attic/firmware/bl616/test/test_linesplit.c` | host test: frames, text, `$` in text, bad CRC, a restarting candidate, over-long lines, in every chunking |
-| `firmware/bl616/usb_console2.c`, `.h` | the two-port USB console (a copy of the SDK's `bsp/common/usb_app/usb_console.c`, SDK 2.3.35, with a second CDC ACM port: EP 0x81/0x02/0x86; strings 4/5 name the ports); `usb_k230_write()` to the host, `usb_k230_rx()` (weak) from it |
+| `firmware/bl616_common/usb_console2.c`, `.h` | the two-port USB console (a copy of the SDK's `bsp/common/usb_app/usb_console.c`, SDK 2.3.35, with a second CDC ACM port: EP 0x81/0x02/0x86; strings 4/5 name the ports); `usb_k230_write()` to the host, `usb_k230_rx()` (weak) from it |
 | `attic/firmware/bl616/CMakeLists.txt`, `tests/firmware/bl616_powertest/CMakeLists.txt` | swap the SDK's `usb_console.c` for `usb_console2.c` (see 3.1) |
 | `attic/firmware/bl616/k230_link.c` (product) | `link_poll()` feeds the splitter: frames to `parse()`/`accept()`, text to `usb_k230_write()` |
 | `tests/firmware/bl616_powertest/main.c` (test firmware) | `uart_bridge_task`: UART0 polled (as test018's echo, no byte lost at 4 Mbaud) into the splitter, text to port 1, frames printed as `link rx:`; `usb_k230_rx()` sends what is typed on ACM1 to UART0; the bridge starts by itself whenever the rails come up (`rails_on_timed()`); DTR (`console_open`) counts only port 0 |
@@ -75,7 +75,7 @@ added the SDK file when our CMakeLists continues, so it is taken out and ours pu
 get_target_property(_app_sources app SOURCES)
 list(FILTER _app_sources EXCLUDE REGEX "usb_app/usb_console\\.c$")
 set_property(TARGET app PROPERTY SOURCES ${_app_sources})
-target_sources(app PRIVATE <path>/firmware/bl616/usb_console2.c)
+target_sources(app PRIVATE <path>/firmware/bl616_common/usb_console2.c)
 target_include_directories(app PRIVATE ${BL_SDK_BASE}/bsp/common/usb_app)
 ```
 
@@ -86,7 +86,7 @@ target_include_directories(app PRIVATE ${BL_SDK_BASE}/bsp/common/usb_app)
 ## 4. K230 kernel: `link_mux` (`firmware/k230_board/rtsmart/drivers/link_mux/link_mux.c`)
 
 Installed by `install.sh` into `$RTT/drivers/extdrv/link_mux/` together with `k230_linesplit.h` and `k230_link.h`
-(from `firmware/bl616/`); one `source "drivers/extdrv/link_mux/Kconfig"` line is added to `extdrv/Kconfig` after
+(from `firmware/bl616_common/`); one `source "drivers/extdrv/link_mux/Kconfig"` line is added to `extdrv/Kconfig` after
 the bl616_nethub line (asserted). `extdrv/SConscript` builds every subfolder.
 
 - At `INIT_COMPONENT_EXPORT` (after the UART driver, before finsh) it registers two character devices:

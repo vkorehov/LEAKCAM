@@ -1,6 +1,9 @@
 # test124: the BL616's own brown-out protection
 
-Status: **planned** (2026-11-01, user: "separate low level test for brown out protection on bl616 itself"). Design:
+Status: **steps 1-2 pass; watchdog after PDS sleep fixed** (2026-11-02): BOD on at 2.40 V with reset; the reset record
+per kind read; a hang after a sleep window was never reset (the SDK's wake gates the watchdog's clock and PDS loses its
+setup), fixed in wdg_guard.c and proven; steps 3-6 need a lab supply (next board). (2026-11-01, user: "separate low
+level test for brown out protection on bl616 itself"). Design:
 DESIGN.md 5.3.1 (the battery's lowest voltage: the cell's protection board at ~2.4 V; the BL616's brown-out handles
 the collapse; bug-004 accepted).
 
@@ -48,4 +51,46 @@ restarts cleanly, and easyflash survives a write in flight; the reset record nam
 
 ## Result
 
-Not run.
+- Step 1, configuration (2026-11-02, `lp_bod` in the setup test bed, the full firmware the same SDK start): HBN BOR_CFG
+  0x1f: enabled, threshold 2.40 V (7), reset on trip, interrupt off, comparator out 0 (supply above the threshold).
+- Step 2, the reset record (GLB reset recorder, read and cleared at the start by wdg_guard.c, `lp_bod`):
+  - after `slot switch` or `reboot` (bl_sys_reset_por): 0x00;
+  - after a watchdog reset in the full firmware or the bed without sleep: 0x08 (wdt);
+  - after a watchdog reset in the bed after PDS sleeps: 0x7d (wdt, pds, ana_powb, cpu_porst, sys_reset,
+    cpu_sys_rstreq): the sleep sets bits of its own, `wdt` is the watchdog's mark;
+  - no reset since the start (bed running): 0x80;
+  - EN pin: not read yet (the EN taps today were to free a hung board, the record was not read first).
+- **The watchdog after a PDS wake (found 2026-11-02, fixed, proven):** a hang after the setup firmware's sleep window was
+  never reset and left no record: only EN ended it (three times today). `lp_wdg` (the bed: enable bit, counter, tick):
+  after a window the watchdog read enabled but its counter stood still (3 -> 3; before the window 946 -> 226 in
+  300 ms). Two causes, both in the wake: the SDK's `board_recovery()` (`peripheral_clock_init_lp()`) rewrites the clock
+  gates without the timer's, after the firmware's own wake code (setup_sleep.c `lp_exit`); and PDS loses the timer's
+  clock source and divider: with the clock alone ungated it counted fast and reset the chip a few seconds into every
+  window (reset record `wdt 1`, no hang record). Fix (firmware/bl616_common/wdg_guard.c `wdg_guard_pause(false)`, run
+  after every wake): the watchdog's clock ungated and its whole setup again, then counter reset and start. Proof
+  (17:48 UTC): a 20 s window with 12 sleeps and no reset; the counter after it 700 -> 1007 in 300 ms (1 kHz); the
+  highest count at a sleep's start 672 (limit 8000), 0 after every wake's restart; `crash hang` after the window ->
+  reset by the watchdog 12.4 s later with the record "watchdog hang in task 'shell_task'".
+- The record's uptime after a sleep counts from the last wake (the wake restarts the mtimer: "at 12017 ms" for a hang
+  ~300 s after the start). Harmless for the decode; noted for test128.
+- Open: steps 3-6 (lab supply, next board); the EN pin's reset record; whether HBN RAM (the crash record) survives an EN
+  reset (no record after the EN taps, but the record was never written then).
+
+## Metrics
+
+| Metric | Value | Top / budget | Note |
+|---|---|---|---|
+| Boot, power-on -> READY (median of 5) | n/a: the BL616 alone, K230 off | target (test022) | |
+| This part's boot share | n/a: no K230 boot | - | |
+| Test run time | steps 1-2 and the watchdog proof ~40 min with three EN taps (before the fix); the proof itself 2 min, no hand step | - | |
+| hang -> watchdog reset after a sleep window | 12.4 s (hang detector 6 s + watchdog 8 s from the last feed, minus the feed period) | WDG_GUARD_MS 8 s | before the fix: never |
+| Current idle / during (min / avg / peak) | n/a: steps 3-6 (lab supply) | - | |
+| Voltage under load (min) | n/a: steps 3-6 (lab supply) | - | |
+| Power, energy per operation | n/a: no operation measured here | - | |
+| Per day | n/a | - | |
+| Temperature die / board (start / peak / end) | n/a: no load | - | |
+| Memory BL616 / K230 (start / min / end), leak | n/a: no repeated operation (one window, one hang) | - | |
+| Image (sizes) | setup test bed 1284 KB, full 1086 KB | slot sizes | |
+| Compile flags | BL616 -Os -g (SDK default), no LTO | smallest code (rule) | |
+| Features over the minimal image | `lp_bod`, `lp_wdg` (test bed commands), the sleep counters' watchdog fields | - | |
+| Optimised build (-O3, LTO, -march) | n/a | - | |

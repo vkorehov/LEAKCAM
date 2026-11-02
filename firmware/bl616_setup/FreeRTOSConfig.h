@@ -48,7 +48,7 @@
 #define configUSE_IDLE_HOOK                     0
 #endif
 
-#define configUSE_TICK_HOOK                     0
+#define configUSE_TICK_HOOK                     1   /* crash_rec.c: the hang detector; off, a hang left no record (test124) */
 #define configCPU_CLOCK_HZ                      ((uint32_t)(1 * 1000 * 1000))
 #define configTICK_RATE_HZ                      ((TickType_t)1000)
 #define configMAX_PRIORITIES                    (32)

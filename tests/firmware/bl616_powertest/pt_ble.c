@@ -1,5 +1,5 @@
 /*
- * test040: the product's BLE provisioning (firmware/bl616/ble_pairing.c + wifi_check.c) on the test firmware. The
+ * test040: the product's BLE provisioning (firmware/bl616_setup/ble_pairing.c + wifi_check.c) on the test firmware. The
  * phone side is the instrumented test of android/ (BleOp), driven over adb by tests/test040's run.py.
  *
  *   pt_ble on         RF parameters, then BLE as the product starts it: advertising as its serial, pairing with
@@ -8,7 +8,7 @@
  *   pt_ble            started?, USB power, the stored credentials (as pt_ble creds)
  *   pt_ble creds      wifi_ssid / wifi_psk in easyflash: length and CRC-32 each, never the passphrase itself
  *   pt_ble erase      wifi_ssid, wifi_psk and the remembered AP (wifi_ap) deleted
- *   pt_ble pin <6>    the BLE pairing PIN stored (as the product's `prov pin`; provision_pin.py from make flash)
+ *   pt_ble pin <6>    the BLE pairing PIN stored (as the product's `provision pin`; provision_pin.py from make flash)
  *   pt_ble adv <ms>   the advertising interval (20 .. 10240 ms; test114's sweep)
  *   pt_ble adv off|on advertising stopped / again, BLE stays up (test118: the board out of the app's BLE range)
  *   pt_ble decoy      a fixed made-up network (t110-decoy / password1) stored directly: test110 then tells "stored"
@@ -27,7 +27,7 @@
 #include "easyflash.h"
 #include "shell.h"
 
-#include "ble_pairing.h"
+#include "../../../firmware/bl616_setup/ble_pairing.h"
 
 void wl_trace(uint8_t code);   /* pt_wifi.c: breadcrumbs kept across a reset (pt_trace) */
 

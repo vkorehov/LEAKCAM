@@ -6,7 +6,7 @@ import os
 import re
 import sys
 import time
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 
 BENCH = r"bl616_bench: \d+ frames[^\n]*\n"

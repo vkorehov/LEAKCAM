@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Install the LEAKCAM board (K230D + W25N02KV SPI NAND) and the BL616 Wi-Fi driver into a
 # k230_rtos_sdk checkout. Idempotent: rerun after editing anything in firmware/k230_board or
-# firmware/bl616/wifi_ctrl_proto.h. All test firmware: tests/firmware/test_install.sh (runs this first).
+# firmware/bl616_common/wifi_ctrl_proto.h. All test firmware: tests/firmware/test_install.sh (runs this first).
 #
 #   firmware/k230_board/install.sh <k230_rtos_sdk>
 #   cd <k230_rtos_sdk> && make k230d_rtos_leakcam_defconfig && make
@@ -228,7 +228,7 @@ DRV=$RTT/drivers/extdrv/bl616_nethub
 rm -rf "$DRV"; mkdir -p "$DRV"
 # files only: test/ holds the host tests and their RT-Thread stand-in headers
 find "$HERE"/rtsmart/drivers/bl616_nethub -maxdepth 1 -type f -exec cp {} "$DRV/" \;
-cp "$HERE/../bl616/wifi_ctrl_proto.h" "$DRV/"
+cp "$HERE/../bl616_common/wifi_ctrl_proto.h" "$DRV/"
 python3 - "$RTT/drivers/extdrv/Kconfig" <<'PY'
 import sys
 p = sys.argv[1]; s = open(p).read()
@@ -244,7 +244,7 @@ PY
 MUX=$RTT/drivers/extdrv/link_mux
 rm -rf "$MUX"; mkdir -p "$MUX"
 cp "$HERE"/rtsmart/drivers/link_mux/* "$MUX/"
-cp "$HERE/../bl616/k230_linesplit.h" "$HERE/../bl616/k230_link.h" "$MUX/"
+cp "$HERE/k230_linesplit.h" "$HERE/k230_link.h" "$MUX/"
 python3 - "$RTT/drivers/extdrv/Kconfig" <<'PY'
 import sys
 p = sys.argv[1]; s = open(p).read()
@@ -418,17 +418,17 @@ open(p, 'w').write(s.replace(a, b))
 PY
 grep -q 'LEAKCAM: UTC' "$TZC" || { echo "UTC patch not applied"; exit 1; }
 
-# BL616 link: UART1 registers at LINK_BAUD of bl616/k230_link.h (the one source for both chips; tests/test039: 2 Mbaud,
+# BL616 link: UART1 registers at LINK_BAUD of k230_board/k230_link.h (the one source for both chips; tests/test039: 2 Mbaud,
 # 4 Mbaud lost ~0.5 % of short writes after an idle gap). The serial layer has no termios: the agent cannot set it.
 UARTC=$RTT/drivers/interdrv/uart/drv_uart.c
-LINK_BAUD=$(awk '/^#define LINK_BAUD/ {print $3}' "$HERE/../bl616/k230_link.h")
-[ -n "$LINK_BAUD" ] || { echo "LINK_BAUD not found in bl616/k230_link.h"; exit 1; }
+LINK_BAUD=$(awk '/^#define LINK_BAUD/ {print $3}' "$HERE/k230_link.h")
+[ -n "$LINK_BAUD" ] || { echo "LINK_BAUD not found in k230_board/k230_link.h"; exit 1; }
 grep -q 'LEAKCAM: link baud' "$UARTC" || python3 - "$UARTC" <<'PY'
 import sys
 p = sys.argv[1]; s = open(p).read()
 a = '        rt_snprintf(dev_name, sizeof(dev_name), "uart%d", inst->uart.index);\n        rt_hw_interrupt_install('
 b = ('        if (inst->uart.index == 1)\n'
-     '            inst->device.config.baud_rate = 2000000;   /* LEAKCAM: link baud (bl616/k230_link.h LINK_BAUD) */\n'
+     '            inst->device.config.baud_rate = 2000000;   /* LEAKCAM: link baud (k230_board/k230_link.h LINK_BAUD) */\n'
      + a)
 assert s.count(a) == 1, 'drv_uart.c changed, cannot set the link baud'
 open(p, 'w').write(s.replace(a, b))

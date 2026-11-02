@@ -5,7 +5,7 @@ no test has read - a K230 session while the agent works (test101: 24.5 s after R
 wake = the states over test101's session timeline."""
 import os
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 
 r = Run(__file__)

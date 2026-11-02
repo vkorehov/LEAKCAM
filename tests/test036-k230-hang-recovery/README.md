@@ -55,7 +55,7 @@ Every hang ends in rails off within its timeout, no session runs on; retries and
 
 Open:
 - Not covered: the READY / link path itself (the test firmware has no link protocol yet: add it from
-  firmware/bl616); a real hang inside the agent (a hook that loops) - the session cap covers it whatever its form.
+  firmware/bl616_common); a real hang inside the agent (a hook that loops) - the session cap covers it whatever its form.
 - Steps 2-4 (retries / back-off interval, the K230 watchdog's own reset, HBN current after): `pt_session` gets retries and the back-off.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)

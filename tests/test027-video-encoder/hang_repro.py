@@ -11,7 +11,7 @@ import re
 import select
 import sys
 import time
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import MILESTONES, bl   # noqa: E402
 from board import k230   # noqa: E402
 

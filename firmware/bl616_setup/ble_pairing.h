@@ -4,7 +4,7 @@
  *
  * The device advertises as its serial (device_id.h) and exposes one provisioning service. Its characteristics
  * need an authenticated link: LE Secure Connections passkey entry with a per-device PIN, stored on
- * the board at manufacture (easyflash "pair_pin", `prov pin`); only the server knows how it is
+ * the board at manufacture (easyflash "pair_pin", `provision pin`); only the server knows how it is
  * derived and gives it to the app (GET /v1/devices/<id>/pin) right before it pairs (user 2026-11-01:
  * only the app pairs; neither app nor firmware holds the derivation). No PIN stored: no advertising.
  * Just Works is refused. No USB power gate since 2026-11-01: the PIN proves the phone; on battery a
@@ -46,7 +46,7 @@ void ble_pairing_advertise(bool on);
 /* the advertising interval in ms (20 .. 10240); the product keeps its 100-150 ms, the test firmware sweeps it
  * (tests/test114): a shared-module function only the test firmware calls, dropped from the product by the linker */
 void ble_pairing_adv_interval(unsigned int ms);
-/* the stored pairing PIN, 0..999999; -1 when none (`prov pin` stores it) */
+/* the stored pairing PIN, 0..999999; -1 when none (`provision pin` stores it) */
 int ble_pairing_pin(void);
 /* a phone is connected (presence.c waits: setup first) */
 bool ble_pairing_connected(void);

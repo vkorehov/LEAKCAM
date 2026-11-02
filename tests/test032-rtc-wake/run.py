@@ -7,7 +7,7 @@ import re
 import subprocess
 import sys
 import time
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl, REPO, KDIMG   # noqa: E402,F401
 from board import BL_PORT   # noqa: E402
 

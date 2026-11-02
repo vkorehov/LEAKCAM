@@ -4,6 +4,37 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-02 (run.py, 356 s): **FAIL** (false: memory verdict)
+
+29/29 checks pass. First setup (app opened -> Done) 8.5 s; repeats 8.4-9.5 s. Final firmware pair (2 s advertising
+asleep, 100 ms awake, board Security Request) and the app bonding with every connect; no dialog. The FAIL was the leak
+verdict over the repeats' samples: each setup ends in the switch back (a reset), the samples were fresh boots of the
+full firmware (194308-210052 B by their timing, the last three equal); run.py takes no repeat samples on the product
+pair since.
+
+
+### Setup speed on the setup firmware, 2026-11-02 20:30-20:56 UTC (traces, 15 + 15 + 4 + 1 setups)
+
+Board console and phone logcat timestamped beside the app's steps (one setup each, credentials masked).
+- Send -> Done 5.9 s -> 4.3 s with two fixes: the setup firmware's lwipopts_user.h lacked the full firmware's
+  `DHCP_DOES_ARP_CHECK 0` (1.0 s from the DHCP ACK to the address in use); advertising every 100 ms while awake (USB
+  power, a phone's wake) instead of 2 s (connect 1.6 -> 1.1 s). App opened -> Done 8.5-9.9 s, 15/15, no pairing dialog.
+- Left: the board's scan for the network 0.6 s (could run while the phone pairs); pairing + writes 1.8 s (phone side).
+- Slow setups (19-31 s, the system "Pair" dialog) reproduced only with 2 s advertising (2 of 6): the phone's direct
+  connect missed adverts and gave up after its 5 s limit (status 133), twice; the app's early `createBond()` failed
+  with it (SMP_FAIL 101); the third connect paired through the board's Security Request, which Samsung confirms with
+  its dialog. A debug build logged a board-side connect only when the link came up: the phone never reached it
+  before. At 2 s even good connects took 2-3 s.
+- No board Security Request (tried, 21:04 UTC): every pairing refused, "pairing without the PIN refused": Android's
+  own request has no MITM flag. Kept. Fix in the app instead: `createBond()` with every connect, retries too (the
+  dialog comes when the board's request arrives with none pending): 10/10 at 2 s without a dialog, two slow ones
+  (16, 23 s). User: 2 s kept on battery (1 s tried in the source, reverted before any flash).
+
+### Automated run 2026-11-02 (run.py, 457 s): pass
+
+29/29 checks pass. First setup (app opened -> Done) 10.3 s; repeats 12.5-23.5 s.
+
+
 ### Automated run 2026-11-01 (run.py, 216 s): pass
 
 17/17 checks pass. First setup (app opened -> Done) 8.5 s; repeats 8.2-9.1 s.
@@ -132,6 +163,16 @@ No run yet. Status before the step 6 rewrite: **planned** (2026-10-27).
 
 ## Obstacles
 
+- memory leak (mem_leak.py verdict in the Memory row): a leak fails the test (2026-11-02, automated run)
+
+- 2026-11-02 20:19 UTC: the first run on the product pair stopped after repeat 1: the VM's xHCI hung on the board's
+  USB drop at the firmware switch (`hub_ext_port_status err -32`), port gone for 3 min; a rebind of 0000:0a:00.0
+  brought it back, the board was fine (full firmware, no crash record). Re-run with a watcher that rebinds on the
+  error (scratchpad, not needed again in that run). The VM also restarted at 20:07 UTC and left the board on the
+  Mac's side until a replug.
+- 2026-11-02: the phone on adb over Wi-Fi from now on (no free USB-C port); the runner reconnects from
+  `~/.leakcam_phone`. A trace script's logcat pipe filled (read only at the end) and logcat stalled after 1.7 s:
+  logcat goes to a file.
 - 2026-11-01, use case 2: setups 17 s (from 7 s): the app's LEAKCAM list above the steps pushed the fields down and
   the driver scrolled for them (one repeat never found them). The board's check took 1.4 s and the app showed Done
   7.4 s after opening. Fixed: the list below the setup; 9.4-10.5 s since, the driver re-finding redrawn fields.

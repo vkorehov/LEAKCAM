@@ -63,6 +63,11 @@ from low power, and the measured current per day fits a months-long wait on one 
   service, PIN pairing) on the setup firmware, every 2 s: the phone (BleOp `scan`) found it 3/3 awake and **10/10 in a
   120 s sleep window, median 1.14 s, max 3.66 s** (RSSI -33 to -53); the board in PDS 119.3 of 120 s, 62 sleeps,
   SDK prediction 434 uA; the USB console gone in the window (really asleep).
+- 2026-11-02 05:41-05:45 UTC, regression after the firmware split (PR #7; the setup test bed now builds
+  firmware/bl616_setup's sources): `lp_boot` -> "lp: boot done", PIN stored; the phone found it 3/3 awake and **8/8 in
+  a 60 s sleep window** (USB power present: `wakeup_timer 60000 usb`); 59.6 of 60.0 s in PDS, 32 sleeps (one per 2 s
+  advertisement), SDK prediction 471 uA. A first try ended 9 s in: the test bed's `wakeup_timer` without `usb` had
+  refused its window but still started its timer, which then ended the next window (fixed: refused before the timer).
 - **BLE core wedge** (the hard rule of this test): with BLE up but idle (advertising off, no connection) the sleep
   path's controller-deadline call left the BLE core asleep for good; after any software reset the BLE init hung.
   Cases: A no sleep -> fine, B advertising window -> fine, C advertising off without sleep -> fine, D advertising off +

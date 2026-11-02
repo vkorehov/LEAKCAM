@@ -5,6 +5,9 @@
  */
 #include "setup_boot.h"
 
+#include <stdint.h>
+#include <string.h>
+
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -21,16 +24,18 @@
 #include "setup_sleep.h"
 #include "wifi_setup.h"
 
-/* the product's BLE: advertising as the device ID with the provisioning service, PIN pairing, every 2 s (setup mode,
- * test114: the phone finds it every time; test120: 10/10 while the chip sleeps). Started during the Wi-Fi start's
- * pause, as the SDK example orders it. app_clock_init() first: the stored RC32K calibration */
+/* the product's BLE: advertising as the device ID with the provisioning service, PIN pairing; every 2 s while the chip
+ * sleeps (test114: the phone finds it every time; test120: 10/10 while it sleeps), every 100 ms while it is awake
+ * anyway (USB power) or a phone waits (its wake). The phone connects at an advertisement it catches and gives up after
+ * 5 s: at 2 s a setup takes 16-23 s now and then, without a dialog since the app bonds with every connect (test106,
+ * 2026-11-02; user: 2 s kept on battery). Started during the Wi-Fi start's pause, as the SDK example orders it.
+ * app_clock_init() first: the stored RC32K calibration */
 static void ble_start_task(void *arg)
 {
-    (void)arg;
     app_clock_init();
     ble_pairing_start();
     setup_sleep_ble_register();
-    ble_pairing_adv_interval(2000);
+    ble_pairing_adv_interval((unsigned int)(uintptr_t)arg);
     ble_pairing_advertise(true);
     vTaskDelete(NULL);
 }
@@ -61,6 +66,10 @@ void setup_boot(void)
         vAssertCalled();            /* no radio: nothing to set up with */
 
     wifi_setup_start();
-    if (xTaskCreate(ble_start_task, "ble_start", 1024, NULL, 15, NULL) != pdPASS)
+    char why[8] = { 0 };
+    size_t len = 0;
+    (void)ef_get_env_blob("setup_why", why, sizeof(why) - 1, &len);   /* read, not deleted: switch_to_full_start() */
+    uintptr_t adv_ms = setup_usb_present() || !strcmp(why, "wake") ? SETUP_ADV_FAST_MS : SETUP_ADV_SLEEP_MS;
+    if (xTaskCreate(ble_start_task, "ble_start", 1024, (void *)adv_ms, 15, NULL) != pdPASS)
         vAssertCalled();
 }

@@ -3,7 +3,7 @@
 Everything here runs on the board for the tests; none of it is the product (firmware/). Host tools are in tools/.
 
 - [bl616_powertest/](bl616_powertest): the BL616 test firmware for the full firmware's hardware and radio (all `pt_*`
-  commands, the shared modules from firmware/bl616 and wifi_link.c from firmware/bl616_full linked in).
+  commands, the shared modules from firmware/bl616_common and wifi_link.c from firmware/bl616_full linked in).
 - [bl616_setup_test/](bl616_setup_test): the setup firmware's test bed (tests/test120, test121): firmware/bl616_setup's
   sources and its defconfig, with test commands (`lp_boot`, `wakeup_timer`, `lp_sleepstat`, `lp_pwr`, `lp_task`,
   `pt_ble`) instead of its main.c.

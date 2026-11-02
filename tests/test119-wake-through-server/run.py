@@ -2,8 +2,8 @@
 """test119 automated: a phone wakes a present board's BLE through the server (user 2026-11-01: "stay notified by the
 phone"). A configured, present board on battery does not advertise. The app shows a present board out of range with
 a Wake button; the tap asks the server (POST /v1/devices/<id>/wake), the board's next check-in gets "ble":1 and it
-advertises for 2 minutes (`prov`: "on (woken by a phone)"); the app finds it and its button turns into "Change the Wi-Fi";
-the Wi-Fi is changed from the app. A second wake within 2 minutes is refused (429). Product firmware; `prov battery on`
+advertises for 2 minutes (`provision`: "on (woken by a phone)"); the app finds it and its button turns into "Change the Wi-Fi";
+the Wi-Fi is changed from the app. A second wake within 2 minutes is refused (429). Product firmware; `provision battery on`
 makes it follow the battery rule on USB power. USB-C 1 in, the phone on adb, unlocked; nothing by hand.
     tests/test119-wake-through-server/run.py
 """
@@ -16,7 +16,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
 from phone import adb, board_id, op, product, ready   # noqa: E402
@@ -64,7 +64,7 @@ def on_run_interval():
 
 
 def rule():
-    m = re.search(r"on battery (on \([^)]*\)|off \([^)]*\))", bl("prov", 2, r"on battery (on|off)"))
+    m = re.search(r"on battery (on \([^)]*\)|off \([^)]*\))", bl("provision", 2, r"on battery (on|off)"))
     return m.group(1) if m else "?"
 
 
@@ -115,7 +115,7 @@ if not os.path.exists(BL_PORT):
     r.finish("not run: no BL616 console on USB.", False, switch_off=False)
     sys.exit(1)
 if not product():
-    r.obstacle("the BL616 runs the test firmware: flash the product (firmware/bl616, make flash)")
+    r.obstacle("the BL616 runs the test firmware: flash the product (firmware/bl616_full, make flash)")
     r.finish("not run: not the product firmware.", False, switch_off=False)
     sys.exit(1)
 why = ready(r.notes)
@@ -129,7 +129,7 @@ try:
     on_run_interval()
     # 0. present, silent on battery; the app knows the board and shows it out of range with a Wake button
     wait_for("present: silent on battery", lambda: ((g := rule()).startswith("off (configured"), g), 2 * POLL_S + 20)
-    bl("prov battery on", 2, r"battery rule")
+    bl("provision battery on", 2, r"battery rule")
     add_only(dev)
     adb("logcat", "-c")
     adb("shell", "am", "start", "-n", f"{PKG}/.MainActivity")
@@ -165,7 +165,7 @@ try:
     r.set("speed", f"Wake tap -> the button changes the Wi-Fi {t_ready:.0f} s (poll {POLL_S} s: up to one interval)")
     r.sample("after the checks")
 finally:
-    bl("prov battery off", 2)
+    bl("provision battery off", 2)
     poll_interval(60)
 
 failed = [c for c in checks if not c[1]]

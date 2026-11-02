@@ -2,7 +2,7 @@
 
 | Program | Sources | What it does |
 |---|---|---|
-| `leakcam_agent` | `../../k230_agent/leakcam_agent.c`, `../../bl616/k230_link.h` | BL616 link, heartbeat, hook, Wi-Fi request (started at boot) |
+| `leakcam_agent` | `../../k230_agent/leakcam_agent.c`, `../../k230_board/k230_link.h` | BL616 link, heartbeat, hook, Wi-Fi request (started at boot) |
 | `leakcam_wake` | `leakcam_wake.c`, `vicap_cap.c` (MPP VICAP devices 0 and 1, offline mode), `led_rtsmart.c` (`/dev/pwm`), `netclient.c`, core | the wake algorithm (DESIGN.md 5.1): capture, compare with the history, server check, video, history |
 | `leakcam_hist` | `leakcam_hist.c`, core | list and rebuild stored frames |
 | `leakcam_stream` | `leakcam_stream.c`, `rtmp.c`, `netclient.c`, libopus | video with audio, live: 5 s over RTMP to the server on a leak (`-p host:1935`), below |

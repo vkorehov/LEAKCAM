@@ -21,6 +21,7 @@
 #include "log.h"
 
 #include "device_id.h"
+#include "api.h"
 #include "wifi_check.h"
 #include "wifi_link.h"
 
@@ -110,6 +111,8 @@ static void warm_task(void *arg)
 static void check_task(void *arg)
 {
     static char s[33], k[64];            /* this check's copy: the phone may write again meanwhile */
+    static char path[API_PATH_CAP];
+    struct wifi_check_target api;
     uint16_t detail;
 
     (void)arg;
@@ -117,7 +120,9 @@ static void check_task(void *arg)
         vTaskDelay(pdMS_TO_TICKS(10));
     memcpy(s, ssid, sizeof(s));
     memcpy(k, psk, sizeof(k));
-    enum wifi_check_state st = wifi_check_run(s, strlen(s), k, strlen(k), &wifi_check_probe, progress, &detail);
+    /* stored only once the LEAKCAM API answers over this network (the check's end goal, DESIGN.md 5.3.1) */
+    api_poll_target(&api, path, s, strlen(s), NULL, 0);
+    enum wifi_check_state st = wifi_check_run(s, strlen(s), k, strlen(k), &wifi_check_probe, &api, progress, &detail);
     if (st != WCHK_INTERNET)
         set_status(st, detail);
     else                                 /* also with the phone gone: it reconnects and reads STATUS (tests/test110) */
@@ -192,7 +197,7 @@ static void set_status(enum wifi_check_state st, uint16_t detail)
 /* ---------------- pairing policy ---------------- */
 
 /* the pairing PIN (LE Secure Connections passkey entry, user 2026-11-01: only the app pairs): 6 digits stored in
- * easyflash ("pair_pin") once at manufacture (`prov pin`, the console inside the enclosure). How it is derived is
+ * easyflash ("pair_pin") once at manufacture (`provision pin`, the console inside the enclosure). How it is derived is
  * known only to the server, which gives it to the app right before it pairs (GET /v1/devices/<id>/pin): neither the
  * firmware nor the app holds the derivation. 0..999999, or -1 when none is stored (the board cannot be set up then). */
 int ble_pairing_pin(void)
@@ -294,7 +299,9 @@ static void on_connected(struct bt_conn *conn, u8_t err)
      * zero-length writes (BFLB_HOST_PARAMETER_CHECK, 0x13) - and an earlier session's values are never reused */
     memset(ssid, 0, sizeof(ssid));
     memset(psk, 0, sizeof(psk));
-    /* ask for encryption right away so the phone's pairing dialog appears on connect */
+    /* ask for encryption right away: Android's own pairing request (the app's createBond) carries no MITM flag, and
+     * the board refuses pairing without the PIN; this request makes it a passkey pairing. With the app's createBond
+     * pending the app enters the PIN; without it Samsung shows its "Pair" dialog first (tests/test106, 2026-11-02) */
     if (bt_conn_set_security(conn, BT_SECURITY_L3))   /* L3: authenticated (passkey), not Just Works */
         LOG_W("ble: security request failed\r\n");   /* the phone pairs at its first encrypted write instead */
     /* Wi-Fi up while the phone pairs and writes: the check then starts at once (tests/test106) */
@@ -333,7 +340,7 @@ static void on_bt_ready(int err)
     const char *name = device_id();      /* the serial everywhere (USB, BLE, server), no prefix (user 2026-11-01) */
     int pin = ble_pairing_pin();
     if (pin < 0) {
-        LOG_E("ble: no pairing PIN stored (prov pin): not advertising, the board cannot be set up\r\n");
+        LOG_E("ble: no pairing PIN stored (provision pin): not advertising, the board cannot be set up\r\n");
         return;
     }
     if (bt_set_name(name) || bt_passkey_set((unsigned int)pin))

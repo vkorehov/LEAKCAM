@@ -27,7 +27,7 @@ Design, files and every SDK patch with its location: [firmware/CONSOLE.md](../..
 
 K230: link_mux driver in the kernel (UART1 shared by the console and the link, 2 Mbaud), msh. BL616: test firmware with
 the 2-port USB CDC (`/dev/ttyACM0` BL616, `/dev/ttyACM1` K230 console) and the UART0 bridge task with k230_linesplit.
-Host: udev rule 99-leakcam.rules, tools/test-standard/harness.py.
+Host: udev rule 99-leakcam.rules, tools/test-runner/harness.py.
 
 ## Steps
 

@@ -5,7 +5,7 @@ import os
 import re
 import sys
 import time
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402,F401
 
 r = Run(__file__)
@@ -13,7 +13,7 @@ frames, fails = 0, []
 
 
 def ok_frame(f):
-    """CRC-8 (poly 0x07) of the bytes between '$' and '*', as link_crc8() in firmware/bl616/k230_link.h"""
+    """CRC-8 (poly 0x07) of the bytes between '$' and '*', as link_crc8() in firmware/k230_board/k230_link.h"""
     body, cs = f.rsplit("*", 1)
     c = 0
     for ch in body.lstrip("$").encode():

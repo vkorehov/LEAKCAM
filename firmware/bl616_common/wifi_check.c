@@ -26,6 +26,8 @@
 #include "wifi_mgmr.h"
 #include "wifi_mgmr_ext.h"
 
+#include "api.h"
+#include "crash_rec.h"
 #include "wifi_link.h"
 
 #define DBG_TAG "WCHK"
@@ -146,10 +148,17 @@ static int probe_connect(const struct addrinfo *ai)
 static enum wifi_check_state internet(const struct wifi_check_target *t, uint16_t *detail)
 {
     struct addrinfo hints, *ai = NULL;
-    char req[256], buf[320];             /* req: a path with a URL-encoded SSID (presence.c) fits */
+    static char req[640];                /* the headers + a crash record's form (api.h); static: one run at a time */
+    char buf[320];
     int n = 0, want = t->body ? (int)sizeof(buf) - 1 : 12;   /* the status line, or the whole short answer */
+    int rl;
 
-    int rl = snprintf(req, sizeof(req), "GET %s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", t->path,
+    if (t->post)                         /* a form (the crash record, api.c) */
+        rl = snprintf(req, sizeof(req), "POST %s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n"
+                      "Content-Type: application/x-www-form-urlencoded\r\nContent-Length: %u\r\n\r\n%s",
+                      t->path, t->host, (unsigned)strlen(t->post), t->post);
+    else
+        rl = snprintf(req, sizeof(req), "GET %s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", t->path,
                       t->host);
     if (rl < 0 || rl >= (int)sizeof(req))
         vAssertCalled();                 /* a target too long for the request: a build-time mistake */
@@ -183,6 +192,19 @@ static enum wifi_check_state internet(const struct wifi_check_target *t, uint16_
     return WCHK_CAPTIVE;
 }
 
+/* a kept crash record to the server, while the link is up; cleared only on the server's 200 (a lost answer: sent
+ * again next time, the server keeps one per build and count) */
+static void send_crash(void)
+{
+    static char path[API_PATH_CAP], form[API_CRASH_FORM_CAP];
+    struct wifi_check_target c;
+    uint32_t count;
+    uint16_t d;
+
+    if (api_crash_target(&c, path, form, &count) && internet(&c, &d) == WCHK_INTERNET)
+        crash_rec_sent(count);
+}
+
 /* false if the station stayed busy (wifi_link_sta_leave()): no connect then, it would never return */
 static bool leave(void)
 {
@@ -208,8 +230,8 @@ static bool got_address(void)
 }
 
 enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const char *psk, size_t psk_len,
-                                     const struct wifi_check_target *t, wifi_check_progress_cb progress,
-                                     uint16_t *detail)
+                                     const struct wifi_check_target *t, const struct wifi_check_target *api,
+                                     wifi_check_progress_cb progress, uint16_t *detail)
 {
     static StaticEventGroup_t evg_mem;
     static StaticSemaphore_t one_run_mem;
@@ -283,6 +305,10 @@ enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const ch
     }
     progress(WCHK_INTERNET, 0);
     st = internet(t, detail);
+    if (st == WCHK_INTERNET && api != NULL && internet(api, detail) != WCHK_INTERNET)
+        st = WCHK_NO_API;                  /* the internet works: the API's own failure (detail its status, 0 none) */
+    if (st == WCHK_INTERNET && (api != NULL || t->api))
+        send_crash();                      /* the first contact with the API sends a kept record (DESIGN.md 5.3.3) */
 
 out:
     LOG_I("check of \"%.*s\": state 0x%02x detail %u\r\n", (int)ssid_len, ssid, st, *detail);

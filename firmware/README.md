@@ -2,8 +2,9 @@
 
 The BL616 (Ai-M62-CBS, U11) runs from the always-on `3V3_SLEEP` rail and owns the K230's power.
 It wakes on a leak or on its RTC, powers the K230 up, lets it capture, and powers it down again.
-When USB power is plugged in it wakes, stays awake and advertises over BLE so a phone can set the
-Wi-Fi credentials; unplugging returns it to the battery schedule. Every 10 minutes it wakes on its
+It runs one of two firmwares (DESIGN.md 5.3.1): the full firmware (bl616_full: K230 sessions, Wi-Fi, USB power, no
+BLE) and the setup firmware (bl616_setup: BLE provisioning, asleep in PDS between advertisements); whenever BLE is
+needed it switches to the setup firmware. Every 10 minutes it wakes on its
 RTC to read the AHT20 humidity sensor and goes back to sleep without the K230 unless humidity is high.
 
 
@@ -99,22 +100,8 @@ U7 PG -> RSTN (R30 100k to 1V8, C23 100n)        BL616 IO00 K230_RSTN -> Q4 -> R
 - The RTC runs from the 32.768 kHz crystal Y3 (`rtc_use_crystal()`), RC32K until it has started.
 
 ### USB / BLE mode
-- On boot, if PGOOD is low: FreeRTOS + BLE (bring-up as the SDK's `examples/btble/peripheral`),
-  advertising as its serial (device ID, `7C3E8262B149`) with one service, `4c43a000-4c45-4b43-414d-000000000001`:
-  SSID (...0002), passphrase (...0003), commit (...0004), status (...0005, read/notify). All need
-  an encrypted link. Commit 0x01 checks before it stores: the BL616 joins the network, gets an
-  address by DHCP and fetches `http://connectivitycheck.gstatic.com/generate_204` itself
-  (`wifi_check.c`; the K230 is off and no K230 session starts meanwhile, so the MAC's DHCP is
-  the BL616's), reports each step and the result on status (`wifi_check_calc.h`: wrong password,
-  network not found, no address, no DNS, no internet, login page), and stores only after the 204.
-  Commit 0x02 stores without checking. The credentials are stored in easyflash on the BL616,
-  which is the Wi-Fi device.
-  The phone side is the Android app in [android/](../android/README.md).
-- Pairing is LE Secure Connections Just Works (no display, no buttons) and is accepted only while
-  USB power is present: plugging in is the proof of physical access.
-- The probes are still watched; a leak on USB starts a normal K230 session.
-- Unplug (debounced 1 s): BLE stops, the BL616 reboots into the battery path with a flag that
-  suppresses the cold-start K230 session, and hibernates with both comparators armed.
+Superseded (2026-11-02): BLE is only in the setup firmware (DESIGN.md 5.3, 5.3.1; firmware/bl616_setup/README.md),
+pairing with the board's PIN (no Just Works); USB power runs the full firmware when a network is stored.
 
 ### Discharge resistors RD1 / RD2 (fitted)
 - **1.5 k on 1V8 (RD1) and on 3V3 (RD2)** (0402). They draw 1.2 mA and 2.2 mA only while the K230 is

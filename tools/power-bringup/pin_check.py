@@ -4,7 +4,7 @@
     pin_check.py <state> <dump.txt> [...]      state: off | on_reset | running | boot1_high | uart_on
 
 Each rule: the pin's function, direction and pulls the firmware must have set, and its pad level where the state
-fixes it. Sources: firmware/bl616/board_pins.h, WIFI.SchDoc notes in tests/test033-bl616-pins/README.md.
+fixes it. Sources: firmware/bl616_common/board_pins.h, WIFI.SchDoc notes in tests/test033-bl616-pins/README.md.
 """
 import re
 import sys

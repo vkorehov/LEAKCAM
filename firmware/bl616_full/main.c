@@ -1,10 +1,13 @@
 /*
  * LEAKCAM BL616 product firmware.
  *
- * Version 1: use case 1, Wi-Fi provisioning from the phone (tests/test040, tests/test106). The BL616 boots with the
- * K230 held off; while USB powers the board it advertises the provisioning service, checks the network the phone
- * sends (join, address, internet) and stores it. Built only from code those tests proved (skill
- * leakcam-product-firmware); the next use cases add HBN sleep, the K230 session and the wake sources.
+ * No BLE (DESIGN.md 5.3, user 2026-11-02): each time BLE is needed it switches to the setup firmware (slot.c): no
+ * network stored, a check-in that did not reach the server, or a phone asking through the server ("ble":1). The setup
+ * firmware sets the Wi-Fi and comes back (firmware/bl616_setup/switch_to_full.c).
+ *
+ * Use case 2, presence (tests/test111): the BL616 boots with the K230 held off and checks in at the server every
+ * poll interval (presence.c). Built only from code the tests proved (skill leakcam-product-firmware); the next use
+ * cases add HBN sleep, the K230 session and the wake sources.
  */
 #include "FreeRTOS.h"
 #include "task.h"
@@ -13,7 +16,7 @@
 
 #include "crash_rec.h"
 #include "k230_power.h"
-#include "provision.h"
+#include "full_boot.h"
 #include "usb_power.h"
 #include "wdg_guard.h"
 
@@ -29,7 +32,7 @@ int main(void)
                                          * watchdog reset, the flag is not needed here */
     k230_power_init();                  /* K230 held off: reset asserted, rails off, its pins parked */
     usb_sense_init();
-    provision_start();
+    full_boot_start();
     vTaskStartScheduler();
     for (;;) {
     }

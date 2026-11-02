@@ -46,7 +46,7 @@ def reset_bl616():
 
 
 def crash_check(when):
-    """The BL616's crash record (firmware/bl616/crash_rec.c) before the batch and after every test (user 2026-10-31:
+    """The BL616's crash record (firmware/bl616_common/crash_rec.c) before the batch and after every test (user 2026-10-31:
     always check it): a record is decoded, logged and cleared, and stops the batch (stop on any issue). A firmware
     without the recorder stops it too: no test runs where a hang would leave no backtrace."""
     from board import bl
@@ -62,8 +62,9 @@ def crash_check(when):
         print(f"CRASH RECORDER MISSING in the BL616 firmware ({when}): flash the test firmware with crash_rec.c",
               flush=True)
         return False
-    dec = subprocess.run([sys.executable, os.path.join(HERE, "..", "power-bringup", "crash_decode.py")], input=out,
-                         capture_output=True, text=True).stdout
+    r = subprocess.run([sys.executable, os.path.join(HERE, "..", "power-bringup", "crash_decode.py")], input=out,
+                       capture_output=True, text=True)
+    dec = r.stdout + r.stderr       # the decoder names a missing ELF on stderr: the record's build is in it
     print(f"CRASH RECORD {when}:\n{dec}", flush=True)
     bl("crash clear", 1)
     return False

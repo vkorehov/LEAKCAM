@@ -1,6 +1,9 @@
 # test113: the whole setup over USB alone (no BLE)
 
 Status: **planned** (2026-11-01, user: setup over the phone's USB connection, as over BLE).
+Decided (user, 2026-11-02): "all setup activity to be done in [the setup firmware] and normal product run in full".
+This path moves into the setup firmware (DESIGN.md 5.3.1): it powers the K230 with only the USB relay while the phone
+is plugged in, no session; the steps below run there.
 
 The LEAKCAM Setup app configures the board over a USB-C cable from the phone (Android as USB host, OTG): the same
 operations and the same reconciled state as over BLE (SSID, passphrase, commit with attempt id, STATUS), so the app's
@@ -28,8 +31,8 @@ BL616's own USB is PR1, the debug pads inside the enclosure. So over USB the pho
 
 ## Steps (when built)
 
-The whole setup by USB alone (user, 2026-11-01): the board's BLE off for the run (`pt_ble off` / the product's
-`prov ble off`), nothing over the radio but the Wi-Fi check itself.
+The whole setup by USB alone (user, 2026-11-01), in the setup firmware: its BLE advertising off for the run (a test
+command), nothing over the radio but the Wi-Fi check itself.
 
 1. Low level: test115 (the K230 enumerates as CDC ACM on the bench, echo, throughput).
 2. Device initialization over USB: the bench (standing in for the phone) reads the device ID and whether a network is
@@ -43,17 +46,18 @@ The whole setup by USB alone (user, 2026-11-01): the board's BLE off for the run
 
 ## Needs (build features and dependencies)
 
-K230 USB device stack (CDC ACM) and a relay program; the BL616 provisioning split from BLE; the app's USB host code
+K230 USB device stack (CDC ACM) and a relay program (a small image, booted by the setup firmware); the BL616 provisioning split from BLE, k230_power.c and the link UART in the setup firmware; the app's USB host code
 (UsbManager, permission dialog); a USB-C OTG cable phone <-> LEAKCAM, adb over Wi-Fi meanwhile (the phone's own USB
 is in use). Hands: the cable change between the Mac and the phone.
 
 (What this test uses; the union over all tests is the feature set the minimal image keeps.)
 
-## Setup mode (DESIGN.md 5.3.1, planned)
+## Setup mode (DESIGN.md 5.3.1)
 
-- From setup mode: plugging USB-C 1 wakes the setup firmware (test121), which switches to the full firmware (slot
-  switch); the whole USB setup runs there. Unplugged without a network, the full firmware switches back to the setup
-  firmware (low-power advertising).
+- USB-C 1 plugged in with no network stored: the setup firmware wakes (test121), stays (BLE awake), powers the K230
+  with the relay image and serves the cable setup; credentials saved -> K230 off, the switch to the full firmware.
+- With a network stored the plug switches to the full firmware (the normal run); setting up again over the cable
+  means the app asks the full firmware, which switches to the setup firmware first.
 
 ## Pass
 

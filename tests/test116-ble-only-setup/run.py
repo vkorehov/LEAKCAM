@@ -9,7 +9,7 @@ import os
 import re
 import sys
 import time
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import bl   # noqa: E402  (puts tools/power-bringup on the path)
 from board import log, wifi_credentials   # noqa: E402
 from phone import op, ready   # noqa: E402
@@ -18,10 +18,10 @@ WINDOW_S, PERIOD_S = 60, 300                 # firmware/bl616_full/provision.c
 
 
 def usb(present, secs=600):
-    """USB-C 1 power as the board sees it (`prov`)"""
+    """USB-C 1 power as the board sees it (`provision`)"""
     t0 = time.time()
     while time.time() - t0 < secs:
-        m = re.search(r"USB power (yes|no)", bl("prov", 2, r"USB power (yes|no)"))
+        m = re.search(r"USB power (yes|no)", bl("provision", 2, r"USB power (yes|no)"))
         if m and (m.group(1) == "yes") == present:
             return time.time()
         time.sleep(0.5)
@@ -37,11 +37,11 @@ notes = []
 why = ready(notes)
 if why:
     sys.exit(f"phone not ready: {why}")
-if "prov: USB power" not in bl("prov", 2, r"prov: USB power"):
-    sys.exit("the product firmware is needed (firmware/bl616, make flash)")
+if "provision: USB power" not in bl("provision", 2, r"provision: USB power"):
+    sys.exit("the product firmware is needed (firmware/bl616_full, make flash)")
 ssid, psk = wifi_credentials()
 usb(True)
-bl("prov erase", 2)                          # no network: the board advertises on battery in its windows
+bl("provision erase", 2)                          # no network: the board advertises on battery in its windows
 log("ACTION: unplug USB-C 1 now (the cell stays in)")
 t_unplug = usb(False)
 r = scan(PERIOD_S + WINDOW_S)
@@ -51,7 +51,7 @@ res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), secs=150)
 helps = [h["help"] for h in res.get("help", [])]
 log("CHECK", "pass" if helps and helps[-1].startswith("Done.") else "FAIL", "set up from the app on battery (PIN)",
     helps[-1][:80] if helps else res.get("error"))
-log("CHECK", "pass" if "len" in bl("prov", 2, r"wifi_psk[^\n]*\n") else "FAIL", "network stored on battery")
+log("CHECK", "pass" if "len" in bl("provision", 2, r"wifi_psk[^\n]*\n") else "FAIL", "network stored on battery")
 r = scan(PERIOD_S + WINDOW_S)
 log("CHECK", "FAIL" if r else "pass", "configured, on battery: silent for a whole period")
 log("ACTION: plug USB-C 1 back in")

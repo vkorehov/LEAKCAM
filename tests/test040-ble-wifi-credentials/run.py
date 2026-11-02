@@ -12,7 +12,7 @@ import re
 import subprocess
 import sys
 import time
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl, REPO   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
 from phone import board_id, creds, op, ready, want   # noqa: E402

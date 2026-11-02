@@ -10,7 +10,7 @@ matters (a session waits on each ACK, 300 ms resend timeout); throughput only if
 ## Setup
 
 One rate only: the K230 UART driver sets UART1 to LINK_BAUD 2000000 at boot (k230_board/install.sh patch; RT-Smart
-serial has no termios); BL616 `pt_uart echo` always runs LINK_BAUD (firmware/bl616/k230_link.h), the echo in the UART
+serial has no termios); BL616 `pt_uart echo` always runs LINK_BAUD (firmware/k230_board/k230_link.h), the echo in the UART
 RX interrupt, leaving echo after 300 ms of silence. K230 bench image with `uart_bench 1024`
 ([leakcam_bench.c](../test017-nand-raw-speed/leakcam_bench.c), SDK copy): 16 B frames timed to their echo, then a
 checked bulk transfer with <= 48 B in flight (the serial RX ring is 64 B); it never sets a rate, reports the one set at

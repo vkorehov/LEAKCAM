@@ -11,15 +11,15 @@ below is generated from each test's Status line, so the two always agree.
   `leakcam-product-build`, one rule per lesson with its test.
 - This index's own history: [HISTORY.md](HISTORY.md).
 
-**Standard:** `tools/test-standard/check_tests.py` checks every README's sections and the 14 metric rows of skill
+**Standard:** `tools/test-runner/check_tests.py` checks every README's sections and the 14 metric rows of skill
 leakcam-test-metrics (a value measured, `n/a: <reason>`, or `**MISSING**`); after a run `check_tests.py testNNN` must
 pass before the run is reported. Every test records boot time, battery energy, temperature and memory on both chips;
 every repeated operation is a leak test (`tools/power-bringup/mem_leak.py`). Tests run on the **test firmware only**
 (the product firmware is rewritten after the tests), built with the SDK's default flags (-Os -g, no LTO) for fast builds; -O3 / LTO
 only in tests about optimisation (user, 2026-10-29).
 
-**Automated runs:** a test with a `run.py` runs unattended through PR1; `tools/test-standard/run_tests.py` runs them in
-turn (output in the test's `run.log`). `tools/test-standard/harness.py` times the K230 cold boot, samples temperature,
+**Automated runs:** a test with a `run.py` runs unattended through PR1; `tools/test-runner/run_tests.py` runs them in
+turn (output in the test's `run.log`). `tools/test-runner/harness.py` times the K230 cold boot, samples temperature,
 VBAT and memory, fills only metric cells that still say MISSING (recorded readings, the user's meter readings above
 all, are never overwritten) and appends the run and its obstacles to HISTORY.md; the README's Status and Result are
 then rewritten from the run. Never touch the board while a run is going.
@@ -105,6 +105,63 @@ Leak tests, one per operation the product repeats:
 | [test123 change the Wi-Fi network remotely, fallback in 15 s](test123-remote-wifi-change/README.md) | 2026-11-01 | **planned**: new network from the app through the server, checked in 15 s, else back on the previous one with the reason |
 | [test124 the BL616's own brown-out protection](test124-bl616-brownout/README.md) | 2026-11-01 | **planned**: BOD config read back (on, 2.40 V, reset), the reset record per reset kind; trip, slow collapse and a write in flight with a lab supply (next board) |
 | [test125 setup mode retries presence every 6 h](test125-presence-retry/README.md) | 2026-11-01 | **planned**: one check-in attempt every 6 h on the stored network; success -> back to the full firmware; the whole operational -> setup -> operational cycle |
+| [test126 the slot switch between the full and the setup firmware](test126-firmware-slot-switch/README.md) | 2026-11-02 | **pass** steps 1-7: 20 switches both ways, 4.3 s each, settings shared, re-flash after switches boots the flashed image; the crash record now names its image |
+| [test127 the setup firmware hands over on a USB plug, checked to the API](test127-usb-handover-to-full/README.md) | 2026-11-02 | **pass** 1-6: a real plug from BLE sleep hands over; server down 0x19, wrong password 0x11, no network: setup stays; BLE setup hands over after SAVED |
+| [test128 crash records reach the server over Wi-Fi](test128-crash-record-to-server/README.md) | 2026-11-02 | **pass** 1 2 3 5 7: exception and hang at the server 4.1 s after the reset, kept while the server is down, sent by the setup firmware too, count 2 for two; records on disk at the server |
+
+## Re-test audit after the two-firmware design (2026-11-02)
+
+The design changes behind it (DESIGN.md 5.3, 5.3.1, 5.3.3):
+- Two BL616 firmwares in two slots. The full firmware has no BLE. Every setup activity (BLE, the USB cable) runs in
+  the setup firmware.
+- The network check ends at the API (a check-in answered by the server). New failure: 0x19, API not reachable.
+- A USB plug hands over to the full firmware only after that check passes.
+- Crash records carry their build and go to the server over Wi-Fi.
+- One version for both images, flashed as a pair.
+
+**Re-prove: the pass is on the old design (the full firmware's own BLE, the check ending at the internet):**
+
+| Test | What changes | Blocked by |
+|---|---|---|
+| test040 | Runs on the setup firmware. Step 7 gains the API step and 0x19. Step 8 (BLE first, session restart) is dropped: no K230 during BLE. Step 5's HBN becomes PDS sleep. The pt_ble commands are needed in the setup test bed. | `pt_ble` equivalents in bl616_setup_test |
+| test106 | Runs on the setup firmware; its "Setup mode" section becomes the main path. Step 2 (on battery) is the full firmware after the hand-over. Step 3 adds server down -> "API not reachable" in the app. | as test040 |
+| test110 | `pt_fault` (linker wraps) moves to the setup test bed. New case: the API answer lost. | as test040 |
+| test111 | Step 1 reads the ID from the setup firmware's advertisement. Step 5 "set up again on USB power" now goes through the server: the full firmware switches to setup. | full -> setup trigger |
+| test117 | Presence lost now means the switch to the setup firmware, not advertising windows; the `provision` battery rule is gone. | full -> setup trigger (failed check-in, no network) |
+| test119 | "ble":1 in the check-in answer means the switch to setup; back to full after the setup or 2 min. | full -> setup trigger |
+| test116 | The setup firmware advertises on battery all the time (no 5-min windows). Step 4 "silent" means the full firmware. Step 5 (USB back in, network stored) means the hand-over, not advertising. | full -> setup trigger |
+| test042 | Steps 3-4 (BLE transmit, 3 m) move to the setup firmware (2 s advertising in PDS); the Wi-Fi steps stay. | - |
+
+**Rework the plan before the first run (not run yet):**
+
+| Test | What changes |
+|---|---|
+| test113 | Already moved to the setup firmware (K230 relay image while the phone is plugged in); the cable path is not built. |
+| test114 | Part A holds. Part B (wake beacon) is replaced by the server wake (test119). Part C is test120. The choice (2 s) lives in the setup firmware, not provision.c. Close it. |
+| test120 | Step 7 (USB wake) is done by test121 + test127. Step 5 (full setup from low power) is the test040/106 re-proof. Steps 4 and 6, the battery-side current and the crash-recorder start deadline are still open. |
+| test121 | Step 5: with USB in and no network, the setup firmware stays awake (it no longer hands over regardless); the hand-over is test127. README text only; the result holds. |
+| test122 | The BLE flag goes in the setup firmware's advertisement. The USB notice (3a) goes through the setup firmware's cable path. The lockout and the flag must survive a slot switch (HBN RAM at a fixed address, like the crash record). Step 6 becomes the switch to setup with the flag. |
+| test123 | The failure list adds "API not reachable" (0x19). Otherwise unchanged: full firmware, over the server. |
+| test124 | Steps 1-2 done today (record per reset kind). Step 1 needs a read in the full firmware too. Step 5 adds a partition-table write in flight (a slot switch during the drop): the board must boot one slot or the other. |
+| test125 | Step 5: a USB plug with presence still lost keeps the setup firmware (test127: the check fails at the API), not "the full firmware takes over". |
+| test108 | Adds an at-once check-in at boot when a crash record is kept, 60 s / 24 h intervals, and a failed check-in -> setup. |
+| test104 | Adds the setup mode's day (PDS + 2 s advertising) and the 6 h retries. |
+| test008 | The image feature set changes: the full firmware loses BLE. Re-size both images. |
+
+**Still valid as passed:**
+- Hardware and K230 tests: 001, 003-039, 100, 101, 105 and 115. They don't run the changed code paths, or they run
+  them only on the test firmware.
+- test118: the app's icon logic. The bench stands in for the board.
+- test126, test127 and test128: new and passed today. Open: test128 steps 4 and 6, test127's setup bed hang record.
+- test002 and test019 hold for the test firmware. The product pair flash (`make flash` writes both partition tables
+  and slot 1) still needs a timing in test002.
+
+**Code needed before those re-runs:**
+- The full -> setup triggers: no network, failed check-in, "ble":1. Then the full firmware's BLE comes out
+  (provision.c, ble_pairing.c).
+- `pt_ble` / `pt_fault` equivalents in bl616_setup_test.
+- The cable relay (test113), the 6 h retry (test125), the battery-low flag across slots (test122), the remote change
+  (test123) and the check-in intervals.
 
 ## Not tested yet (audit 2026-10-30)
 
@@ -112,7 +169,7 @@ Leak tests, one per operation the product repeats:
 
 | Behaviour | Where it belongs |
 |---|---|
-| What the BL616 does after each wake (the wake sources themselves pass on the test firmware: RTC test032, leak probe test034, USB plug test035, timing test021): doing what is due (humidity, report, server check with / without a stream request) and overlaps (a leak during a check, a check with a report due, a check while on USB; no AP, no server, no credentials) | new test, on the test firmware with the wake handling from firmware/bl616 (DESIGN 5.1 asks for it) |
+| What the BL616 does after each wake (the wake sources themselves pass on the test firmware: RTC test032, leak probe test034, USB plug test035, timing test021): doing what is due (humidity, report, server check with / without a stream request) and overlaps (a leak during a check, a check with a report due, a check while on USB; no AP, no server, no credentials) | new test, on the test firmware with the wake handling from attic/firmware/bl616 (DESIGN 5.1 asks for it) |
 | Humidity alarm (AHT20 threshold -> report) | test041 (planned) |
 | `leakcam_wake` on the board: capture -> history compare (imgdiff + change net) -> `/v1/check` to the mock server -> the sleep it chooses | test103 |
 | Change-net update from the server (`GET /v1/nn`, bad downloads, power cut while saving, unloadable net) | test107 (planned) |

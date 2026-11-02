@@ -19,6 +19,7 @@
 #include "conn_internal.h"   /* conn->type */
 
 #include "ble_pairing.h"
+#include "bflb_wdg.h"
 #include "board_pins.h"
 #include "usb_console2.h"
 #include "wdg_guard.h"
@@ -165,6 +166,9 @@ static int lp_enter(void *arg)
 {
     (void)arg;
     st.entered++;
+    uint16_t c = bflb_wdg_get_countervalue(bflb_device_get_by_name("watchdog0"));
+    if (c > st.wdg_enter_max)
+        st.wdg_enter_max = c;
     if (!usb_off) {
         usb_console_suspend();
         usb_off = true;
@@ -175,7 +179,8 @@ static int lp_enter(void *arg)
 
 /* The clocks after a wake, as the example's set_cpu_bclk_80M_and_gate_clk(), plus the USB and watchdog clocks: with
  * CONFIG_LPAPP the board init gates everything else (peripheral_clock_init_lp(): USB only with CONFIG_BSP_USB, the
- * watchdog never; the first builds never reached USB, test120) */
+ * watchdog never: wdg_guard_pause() ungates its own after board_recovery(); the first builds never reached USB,
+ * test120) */
 static void clocks_after_wake(void)
 {
     uint32_t v;
@@ -208,7 +213,6 @@ static void clocks_after_wake(void)
 
     PERIPHERAL_CLOCK_USB_ENABLE();
     GLB_Set_USB_CLK_From_WIFIPLL(1);
-    PERIPHERAL_CLOCK_TIMER0_1_WDG_ENABLE();
 }
 
 extern void vPortSetupTimerInterrupt(void);
@@ -222,10 +226,14 @@ static int lp_exit(void *arg)
     BaseType_t woken = pdFALSE;
 
     (void)arg;
+    st.exited++;
     clocks_after_wake();
     board_recovery();
     vPortSetupTimerInterrupt();
     wdg_guard_pause(false);
+    uint16_t c = bflb_wdg_get_countervalue(bflb_device_get_by_name("watchdog0"));
+    if (c > st.wdg_exit_max)
+        st.wdg_exit_max = c;
 
     if (bl_lp_get_wake_reason() & LPFW_WAKEUP_WIFI_BROADCAST) {
         vTaskNotifyGiveFromISR(rxl_process_task_hd, &woken);

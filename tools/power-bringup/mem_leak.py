@@ -2,7 +2,7 @@
 """Memory metrics and leak detection for LEAKCAM tests (2026-10-24, user rule: memory metrics in every test).
 
 Snapshots:
-  BL616 `mem`  -> "mem: free F largest L min M blocks B used U tasks T deleted D"   (firmware/bl616/mem_stat.c)
+  BL616 `mem`  -> "mem: free F largest L min M blocks B used U tasks T deleted D"   (firmware/bl616_common/mem_stat.c)
   K230  `free` -> RT-Thread memheap table ("heap  pool size  max used size  available size")
 
 A test runs an operation N times and takes a snapshot after each cycle (and one before). leak_verdict() fits a line

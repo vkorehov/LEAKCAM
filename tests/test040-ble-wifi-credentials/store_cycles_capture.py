@@ -10,7 +10,7 @@ import select
 import sys
 import threading
 import time
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import REPO   # noqa: E402,F401  (puts tools/power-bringup on the path)
 from board import BL_PORT, openp   # noqa: E402
 from phone import op, want   # noqa: E402

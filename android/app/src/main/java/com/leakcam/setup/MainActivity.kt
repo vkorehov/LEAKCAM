@@ -46,13 +46,13 @@ import java.net.URL
 import java.util.UUID
 
 /**
- * Sets the Wi-Fi network of a LEAKCAM over BLE (firmware/bl616/ble_pairing.h).
+ * Sets the Wi-Fi network of a LEAKCAM over BLE (firmware/bl616_setup/ble_pairing.h).
  *
  * The board advertises the provisioning service while it is on USB power. The app scans for that
  * service, connects, pairs (LE Secure Connections, Just Works: the board accepts pairing only on USB
  * power), subscribes to STATUS, then writes SSID, passphrase and commit. Commit 0x01 makes the
  * board join the network, get an address and reach the internet before it stores anything; STATUS
- * reports each step and the result (firmware/bl616/wifi_check_calc.h). STATUS is the board's state for the
+ * reports each step and the result (firmware/bl616_common/wifi_check_calc.h). STATUS is the board's state for the
  * commit's attempt id: read once a second as well, so a lost notification only delays the answer; after a lost
  * link (or Bluetooth off) the app reconnects and reads it, and never claims what the board did without it
  * (tests/test110). A failed connect is retried. Commit 0x02 stores without
@@ -86,7 +86,7 @@ class MainActivity : Activity() {
         val CCC: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
         const val COMMIT_CHECK: Byte = 1
         const val COMMIT_UNCHECKED: Byte = 2
-        // STATUS states, as in firmware/bl616/wifi_check_calc.h
+        // STATUS states, as in firmware/bl616_common/wifi_check_calc.h
         const val WCHK_IDLE = 0x00
         const val WCHK_JOINING = 0x01
         const val WCHK_ADDRESS = 0x02
@@ -101,6 +101,7 @@ class MainActivity : Activity() {
         const val WCHK_CAPTIVE = 0x16
         const val WCHK_BUSY = 0x17
         const val WCHK_SAVE_FAILED = 0x18
+        const val WCHK_NO_API = 0x19     // the internet works, the LEAKCAM server does not answer (detail: HTTP status)
         const val TAG = "LeakcamSetup"
         const val MTU = 247              // the longest value, a 63-byte passphrase, in one write
         const val SCAN_MS = 10_000L           // the longest Find: no board by then
@@ -685,12 +686,7 @@ class MainActivity : Activity() {
 
     private fun connectWhenUnpaired(device: BluetoothDevice, until: Long) {
         when {
-            device.bondState == BluetoothDevice.BOND_NONE -> {
-                connect()
-                // the phone starts the pairing: Samsung then asks once, not twice as for the board's Security Request
-                // (2.3 -> 1.2 s and one tap less, test106)
-                device.createBond()
-            }
+            device.bondState == BluetoothDevice.BOND_NONE -> connect()
             SystemClock.elapsedRealtime() > until -> {
                 finishSend(null)
                 problem(STEP_SAVE, R.string.err_unpair, boardName)
@@ -755,6 +751,12 @@ class MainActivity : Activity() {
         val d = device ?: return
         discovered = false
         gatt = d.connectGatt(this, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
+        // the phone starts the pairing with every connect, retries too: with it pending the board's Security Request
+        // asks the app for the PIN (no dialog: Samsung asks once, 2.3 -> 1.2 s, test106); without it Samsung shows its
+        // "Pair" dialog first. A connect that timed out (status 133, the phone's 5 s) ended the pending one with it,
+        // and the retry got that dialog (test106, 2026-11-02)
+        if (d.bondState == BluetoothDevice.BOND_NONE)
+            d.createBond()
     }
 
     /** a connect that failed or dropped before the commit: nothing reached the board, connect again */
@@ -986,7 +988,7 @@ class MainActivity : Activity() {
             }
             else -> {
                 // where the board is now may be the only problem: offer to store unchecked
-                val placeOnly = state in setOf(WCHK_NOT_FOUND, WCHK_NO_ADDRESS, WCHK_NO_DNS, WCHK_NO_INTERNET, WCHK_CAPTIVE)
+                val placeOnly = state in setOf(WCHK_NOT_FOUND, WCHK_NO_ADDRESS, WCHK_NO_DNS, WCHK_NO_INTERNET, WCHK_CAPTIVE, WCHK_NO_API)
                 finishSend {
                     when (state) {
                         WCHK_NOT_FOUND -> problem(STEP_WIFI, R.string.chk_not_found, ssidText)
@@ -998,6 +1000,7 @@ class MainActivity : Activity() {
                         WCHK_CAPTIVE -> problem(STEP_WIFI, R.string.chk_captive, detail)
                         WCHK_BUSY -> problem(STEP_SAVE, R.string.chk_busy)
                         WCHK_SAVE_FAILED -> problem(STEP_SAVE, R.string.chk_save_failed)
+                        WCHK_NO_API -> problem(STEP_SAVE, R.string.chk_no_api, detail)
                         else -> problem(STEP_SAVE, R.string.chk_unknown, state)
                     }
                     saveAnywayButton.visibility = if (placeOnly) View.VISIBLE else View.GONE

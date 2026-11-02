@@ -2,9 +2,9 @@
 """test117 automated: presence lost, for whatever reason, brings BLE back, so a phone nearby sets the Wi-Fi at once
 (user 2026-11-01). On the product firmware with a network stored and present: on battery it would not advertise. Each
 cause of a lost presence (the server down; the stored network gone: a missing one saved without checking from the app)
-must switch the battery rule to advertising at once (`prov`: "on battery on (presence lost)"), and the board is found
+must switch the battery rule to advertising at once (`provision`: "on battery on (presence lost)"), and the board is found
 and set up from the app at once; present again, the rule goes back off. On USB power the board would advertise anyway:
-`prov battery on` makes it follow the battery rule on USB power too, so the phone sees the radio as on battery (a
+`provision battery on` makes it follow the battery rule on USB power too, so the phone sees the radio as on battery (a
 present board silent, a lost one found). USB-C 1 in, the phone on adb, unlocked; nothing by hand.
     tests/test117-presence-loss-ble/run.py
 """
@@ -16,7 +16,7 @@ import subprocess
 import sys
 import time
 import urllib.request
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-standard"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
 from phone import board_id, op, product, ready   # noqa: E402
@@ -68,7 +68,7 @@ def on_run_interval():
 
 
 def rule():
-    m = re.search(r"on battery (on \([^)]*\)|off \([^)]*\))", bl("prov", 2, r"on battery (on|off)"))
+    m = re.search(r"on battery (on \([^)]*\)|off \([^)]*\))", bl("provision", 2, r"on battery (on|off)"))
     return m.group(1) if m else "?"
 
 
@@ -106,7 +106,7 @@ if not os.path.exists(BL_PORT):
     r.finish("not run: no BL616 console on USB.", False, switch_off=False)
     sys.exit(1)
 if not product():
-    r.obstacle("the BL616 runs the test firmware: flash the product (firmware/bl616, make flash)")
+    r.obstacle("the BL616 runs the test firmware: flash the product (firmware/bl616_full, make flash)")
     r.finish("not run: not the product firmware.", False, switch_off=False)
     sys.exit(1)
 why = ready(r.notes)
@@ -122,7 +122,7 @@ try:
     check("start: set up from the app", last.startswith("Done."), f"{secs:.1f} s")
     wait_rule("present: no advertising on battery", "off (configured, present)", 2 * POLL_S + 20)
     on_run_interval()
-    bl("prov battery on", 2, r"battery rule")
+    bl("provision battery on", 2, r"battery rule")
     res = op("scan", secs=15)
     check("present: the phone does not find the board", not res.get("found"), str(res.get("name")))
 
@@ -140,9 +140,9 @@ try:
 
     # 2. the stored network gone (a missing one saved without checking): lost at once -> the phone sets the real
     #    network at once -> present, off again
-    bl("prov battery off", 2, r"battery rule")    # present and silent on battery: the save itself over USB power
+    bl("provision battery off", 2, r"battery rule")    # present and silent on battery: the save itself over USB power
     last, secs = setup(GONE, psk, anyway=True)
-    bl("prov battery on", 2, r"battery rule")
+    bl("provision battery on", 2, r"battery rule")
     check("network gone: saved without checking", "without checking" in last.lower() or last.startswith("Saved"),
           last[:70])
     wait_rule("network gone: advertising on battery (presence lost)", "on (presence lost)", 60)
@@ -159,7 +159,7 @@ try:
     r.set("speed", f"presence lost -> advertising: see the CHECK lines; set up again from the app {secs:.1f} s")
     r.sample("after the checks")
 finally:
-    bl("prov battery off", 2)
+    bl("provision battery off", 2)
     poll_interval(60)
 
 failed = [c for c in checks if not c[1]]

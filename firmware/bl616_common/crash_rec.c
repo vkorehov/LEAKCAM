@@ -6,8 +6,9 @@
 #include "task.h"
 #include "bflb_mtimer.h"
 #include "wdg_guard.h"
+#include "leakcam_version.h"
 
-#define CRASH_MAGIC 0x43524153u    /* "CRAS" */
+#define CRASH_MAGIC 0x32415243u    /* "CRA2": the record names its build (an older "CRAS" record reads as none) */
 #define BT_N        24             /* return-address candidates from the stack */
 #define SCAN_WORDS  256            /* stack words scanned for them (1 KB) */
 /* the hang detector fires this long after the last feed, before the hardware watchdog resets at WDG_GUARD_MS */
@@ -21,6 +22,10 @@ static struct {
     uint32_t magic, stage, kind, count, uptime_ms, scanned;
     uint32_t mcause, mepc, mtval, ra, sp;
     char task[16];
+    /* the build that wrote it (leakcam_version.h): the full and the setup firmware share the record at one HBN RAM
+     * address (DESIGN.md 5.3.1), and addresses decoded with another build's ELF name wrong but plausible code
+     * (tests/test126: cmd_crash in one image, cmd_ble in the other) */
+    char image[12], version[36];
     uint32_t n_bt, bt[BT_N];
 } rec __attribute__((section(".hbn_noinit")));
 
@@ -66,6 +71,8 @@ static void begin(uint32_t kind)
     rec.kind = kind;
     rec.magic = CRASH_MAGIC;                /* first: a record cut short still shows how far it got (stage) */
     STAGE(1);
+    strncpy(rec.image, LEAKCAM_IMAGE, sizeof(rec.image) - 1);
+    strncpy(rec.version, LEAKCAM_VERSION, sizeof(rec.version) - 1);
     rec.uptime_ms = (uint32_t)bflb_mtimer_get_time_ms();
     TaskHandle_t t = xTaskGetCurrentTaskHandle();
     strncpy(rec.task, t ? pcTaskGetName(t) : "(none)", sizeof(rec.task) - 1);
@@ -213,8 +220,13 @@ void *__wrap_realloc(void *old, size_t n)
 
 static void print_rec(void)
 {
-    printf("crash #%lu: %s in task '%s' at %lu ms; mcause 0x%08lx mepc 0x%08lx mtval 0x%08lx ra 0x%08lx sp 0x%08lx\r\n",
-           (unsigned long)rec.count, kind_name[rec.kind < 6 ? rec.kind : 0], rec.task, (unsigned long)rec.uptime_ms,
+    if (strncmp(rec.image, LEAKCAM_IMAGE, sizeof(rec.image)) != 0 ||
+        strncmp(rec.version, LEAKCAM_VERSION, sizeof(rec.version)) != 0)
+        printf("crash: recorded by another build (this is %s %s): decode with that build's ELF\r\n", LEAKCAM_IMAGE,
+               LEAKCAM_VERSION);
+    printf("crash #%lu (%s %s): %s in task '%s' at %lu ms; mcause 0x%08lx mepc 0x%08lx mtval 0x%08lx ra 0x%08lx sp 0x%08lx\r\n",
+           (unsigned long)rec.count, rec.image, rec.version, kind_name[rec.kind < 6 ? rec.kind : 0], rec.task,
+           (unsigned long)rec.uptime_ms,
            (unsigned long)rec.mcause, (unsigned long)rec.mepc, (unsigned long)rec.mtval, (unsigned long)rec.ra,
            (unsigned long)rec.sp);
     if (rec.stage != 9)
@@ -228,11 +240,35 @@ static void print_rec(void)
     printf("\r\n");
 }
 
-/* every boot while a record is kept: a crash never goes unseen; `crash clear` drops it */
+/* "leakcam-build <image> <version>" (leakcam_version.h): printed at every boot and by `slot`; host.mk's flash reads it
+ * from each image (the pair must carry the same product version and commit, user 2026-11-02) and keeps the flashed
+ * ELFs by it, for crash_decode.py */
+const char crash_rec_build[] = "leakcam-build " LEAKCAM_IMAGE " " LEAKCAM_VERSION;
+
+/* every boot: the build, and the record while one is kept (a crash never goes unseen; `crash clear` drops it) */
 void crash_rec_report(void)
 {
+    printf("%s\r\n", crash_rec_build);
     if (rec.magic == CRASH_MAGIC)
         print_rec();
+}
+
+bool crash_rec_get(struct crash_rec_info *i)
+{
+    if (rec.magic != CRASH_MAGIC)
+        return false;
+    *i = (struct crash_rec_info){ rec.image, rec.version, rec.task, rec.count, rec.kind, rec.uptime_ms, rec.mcause,
+                                  rec.mepc, rec.mtval, rec.ra, rec.sp, rec.stage, rec.n_bt < BT_N ? rec.n_bt : BT_N,
+                                  rec.bt };
+    return true;
+}
+
+void crash_rec_sent(uint32_t count)
+{
+    if (rec.magic == CRASH_MAGIC && rec.count == count) {
+        memset(&rec, 0, sizeof(rec));
+        printf("crash: record #%lu is at the server, cleared\r\n", (unsigned long)count);
+    }
 }
 
 #ifdef CONFIG_SHELL

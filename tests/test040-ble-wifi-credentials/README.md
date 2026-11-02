@@ -4,7 +4,11 @@ Status: **pass** (2026-11-01): run.py 46/46 in 338 s on the test firmware with S
 across connections, a passed check stored also with the phone gone, notified only on change), fail fast and checked
 return values; hand steps 1 and 2 (2026-10-29); step 5's full power cut not done (user: the cell stays in).
 
-The BL616's one BLE job (firmware/bl616/ble_pairing.c): it advertises as its serial (the device ID, no prefix), accepts pairing with the
+To re-prove (user, 2026-11-02, DESIGN.md 5.3.1): the check's end goal is the API reachable: join -> address -> internet
+-> a check-in answered by the presence server; STATUS gains "API not reachable"; and it runs on the setup firmware
+(all setup there, the full firmware has no BLE). The pass above is on the earlier check (internet as the last step).
+
+The BL616's one BLE job (firmware/bl616_setup/ble_pairing.c): it advertises as its serial (the device ID, no prefix), accepts pairing with the
 board's pre-stored PIN (LE Secure Connections passkey entry, since 2026-11-01; Just Works refused), takes the SSID and passphrase over its provisioning service and stores them in easyflash
 (`wifi_ssid`, `wifi_psk`), after its own check (commit 0x01: join, DHCP, generate_204) or without one (0x02). This
 test checks the BL616 side from a BLE central on the host, characteristic by characteristic; the phone app and the

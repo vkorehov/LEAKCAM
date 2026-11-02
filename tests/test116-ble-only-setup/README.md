@@ -20,7 +20,7 @@ As test106: BLE provisioning, the Wi-Fi check, presence; the advertising windows
 
 ## Steps (run.py)
 
-1. USB in: the board's network erased (`prov erase`): a new board.
+1. USB in: the board's network erased (`provision erase`): a new board.
 2. USB-C 1 out (hand): on battery.
 3. The app finds the board within one period (5 minutes) and sets it up: pairing with the PIN (no prompt), check,
    Done; stored; the board checks in at the server; the app lists it online with its network.

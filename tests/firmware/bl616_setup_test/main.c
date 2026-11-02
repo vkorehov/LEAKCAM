@@ -18,6 +18,8 @@
 #include "timers.h"
 
 #include "bflb_mtimer.h"
+#include "bflb_wdg.h"
+#include "hardware/timer_reg.h"
 #include "board.h"
 #include "bl_lp.h"
 #include "bl616_glb.h"
@@ -27,6 +29,7 @@
 #include "shell.h"
 
 #include "crash_rec.h"
+#include "switch_to_full.h"
 #include "setup_boot.h"
 #include "setup_sleep.h"
 #include "wdg_guard.h"
@@ -61,16 +64,56 @@ bool usb_present(void)
     return setup_usb_present();
 }
 
+/* the product's switch to the full firmware (switch_to_full.c) only when `switch_to_full on`: off, a test here
+ * (test120, test121) stays in this firmware */
+static bool switch_on;
+
 void ble_credentials_stored(void)
 {
     printf("lp: credentials stored\r\n");
+    if (switch_on)
+        switch_to_full_after_credentials();
 }
 
 /* printed before the USB console has attached again: lost on the bench, `lp_sleepstat` counts it (test121) */
 void setup_usb_plugged(void)
 {
     printf("lp: USB plugged\r\n");
+    if (switch_on)
+        switch_to_full_on_usb();
 }
+
+static void cmd_switch_to_full(int argc, char **argv)
+{
+    if (argc > 1 && !strcmp(argv[1], "on"))
+        switch_on = true;
+    else if (argc > 1 && !strcmp(argv[1], "off"))
+        switch_on = false;
+    else if (argc > 1 && !strcmp(argv[1], "usb"))
+        switch_to_full_on_usb();                  /* as on a plug: the stored network's check, then the switch */
+    printf("switch_to_full: %s\r\n", switch_on ? "on" : "off");
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_switch_to_full, switch_to_full, the switch to the full firmware [on | off | usb]);
+
+/* test124 steps 1-2: the brown-out detector as the SDK's startup left it (system_bl616.c System_BOD_Init: on, 2.40 V,
+ * reset) and the reset record of this boot (wdg_guard.c keeps it), read only */
+static void cmd_lp_bod(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    uint32_t v = BL_RD_REG(HBN_BASE, HBN_BOR_CFG);
+    uint8_t r = wdg_guard_reset_record();
+    printf("lp_bod: BOR_CFG 0x%08lx: on %lu, threshold %lu (2.05 + 0.05 V each: %lu mV), reset %lu, irq %s, out %d\r\n",
+           (unsigned long)v, (unsigned long)BL_GET_REG_BITS_VAL(v, HBN_PU_BOD),
+           (unsigned long)BL_GET_REG_BITS_VAL(v, HBN_BOD_VTH), 2050ul + 50ul * BL_GET_REG_BITS_VAL(v, HBN_BOD_VTH),
+           (unsigned long)BL_GET_REG_BITS_VAL(v, HBN_BOD_SEL),
+           BL_GET_REG_BITS_VAL(BL_RD_REG(HBN_BASE, HBN_IRQ_MODE), HBN_IRQ_BOR_EN) ? "on" : "off",
+           (int)HBN_Get_BOD_OUT_State());
+    printf("lp_bod: reset record 0x%02x: ana_powb %d ext_rst_n %d pds %d wdt %d cpu_porst %d sys_reset %d "
+           "cpu_sys_rstreq %d\r\n", r, r & 1, (r >> 1) & 1, (r >> 2) & 1, (r >> 3) & 1, (r >> 4) & 1, (r >> 5) & 1,
+           (r >> 6) & 1);
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_lp_bod, lp_bod, test124: brown-out configuration and the reset record of this boot);
 
 static void boot_task(void *arg)
 {
@@ -115,11 +158,17 @@ static void cmd_wakeup_timer(int argc, char **argv)
         printf("wakeup_timer <ms> [usb]\r\n");
         return;
     }
+    /* refused before the timer: a refused window's timer once ended the next window 9 s in (2026-11-02, test120) */
+    bool usb_too = argc > 2 && !strcmp(argv[2], "usb");
+    if (!usb_too && setup_usb_present()) {
+        printf("wakeup_timer: USB power present: no sleep window (add usb)\r\n");
+        return;
+    }
     t = xTimerCreate("window", pdMS_TO_TICKS(atoi(argv[1])), pdFALSE, NULL, window_end);
     if (t == NULL || xTimerStart(t, 0) != pdPASS)
         vAssertCalled();
     bl_lp_info_clear();
-    setup_sleep_begin(argc > 2 && !strcmp(argv[2], "usb"));
+    setup_sleep_begin(usb_too);
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_wakeup_timer, wakeup_timer, a sleep window <ms> [usb]);
 
@@ -155,8 +204,28 @@ static void cmd_lp_sleepstat(int argc, char **argv)
            "pm event %d\r\n",
            (unsigned long)s.calls, (unsigned long)configEXPECTED_IDLE_TIME_BEFORE_SLEEP, (unsigned long)s.short_idle,
            (unsigned long)s.max_idle, (unsigned long)s.entered, (unsigned long)s.vetoed, (int)bl_pm_event_get());
+    printf("sleeps exited %lu, watchdog counter at sleep max %lu, after wake max %lu\r\n", (unsigned long)s.exited,
+           (unsigned long)s.wdg_enter_max, (unsigned long)s.wdg_exit_max);
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_lp_sleepstat, lp_sleepstat, test120: tickless sleep attempts and entries);
+
+/* test124: is the hardware watchdog running and the tick going (a hang after a sleep window was never reset,
+ * 2026-11-02): its enable bit, its counter and the tick count, each read twice 300 ms apart */
+static void cmd_lp_wdg(int argc, char **argv)
+{
+    struct bflb_device_s *w = bflb_device_get_by_name("watchdog0");
+    (void)argc;
+    (void)argv;
+    uint32_t we = getreg32(w->reg_base + TIMER_WMER_OFFSET) & TIMER_WE;
+    uint16_t c1 = bflb_wdg_get_countervalue(w);
+    TickType_t t1 = xTaskGetTickCount();
+    bflb_mtimer_delay_ms(300);
+    uint16_t c2 = bflb_wdg_get_countervalue(w);
+    TickType_t t2 = xTaskGetTickCount();
+    printf("lp_wdg: enabled %d, counter %u -> %u, ticks %lu -> %lu\r\n", we != 0, c1, c2, (unsigned long)t1,
+           (unsigned long)t2);
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_lp_wdg, lp_wdg, test124: watchdog enable bit and counter and the tick);
 
 /* a task's saved context while it is not running: the words from its saved stack pointer (the first member of the
  * FreeRTOS TCB) up; the PC and return addresses among them resolve with addr2line (test120: the BLE start stuck in

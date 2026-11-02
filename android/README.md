@@ -34,7 +34,7 @@ Bluetooth settings.
 
 ## What it sends
 
-The BL616's provisioning service (`firmware/bl616/ble_pairing.h`), over an encrypted link:
+The BL616's provisioning service (`firmware/bl616_setup/ble_pairing.h`), over an encrypted link:
 
 | Characteristic | UUID | Value |
 |---|---|---|
@@ -42,7 +42,7 @@ The BL616's provisioning service (`firmware/bl616/ble_pairing.h`), over an encry
 | SSID | `...0002` | UTF-8, 1-32 bytes |
 | passphrase | `...0003` | 8-63 bytes, or empty |
 | commit | `...0004` | `0x01`: check, then store; `0x02`: store without checking |
-| status | `...0005` | read/notify: state, detail (LE16), `firmware/bl616/wifi_check_calc.h` |
+| status | `...0005` | read/notify: state, detail (LE16), `firmware/bl616_common/wifi_check_calc.h` |
 
 The app asks for an MTU of 247 first, so a 63-byte passphrase goes in one write (the board
 rejects offset writes), then pairs, subscribes to status, then writes the three in order and

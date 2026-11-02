@@ -33,7 +33,7 @@ Status: **pass; USB-C attach with rails on: bug-002, solved 2026-10-25** (2026-1
 
 ## Obstacles
 
-- **The automated run (2026-10-25) flagged the USB boot as a failed NAND boot** -> the harness expected msh after every boot -> `boot(expect_msh=False)` for USB boots (tools/test-standard/harness.py); the run also waited 1 min on a meter prompt nobody answered -> prompts only with LEAKCAM_METER=ask.
+- **The automated run (2026-10-25) flagged the USB boot as a failed NAND boot** -> the harness expected msh after every boot -> `boot(expect_msh=False)` for USB boots (tools/test-runner/harness.py); the run also waited 1 min on a meter prompt nobody answered -> prompts only with LEAKCAM_METER=ask.
 - **Mac on USB-C 1 gives no power with rails on** -> CH340X D+ back-feeds VUSB via D3 (~2.2 V); the USB-C source
   waits for < 0.8 V -> plug USB before `pt_on`; rev 2 fix (bugs/v2.txt).
 - **PG_1V8 pad too small** -> implied by 1V1 being up.
