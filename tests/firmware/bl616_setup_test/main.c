@@ -8,7 +8,8 @@
  *   lp_sleepstat            the sleep counters (setup_sleep_stats()), USB power
  *   lp_task <name>          a task's saved context (PC and return addresses for addr2line)
  *   lp_blecore, lp_pds, lp_reset   the BLE core wedge experiments (test120 HISTORY; out once the rule has held)
- *   pt_ble ...              the power test firmware's BLE commands (pt_ble.c: pin, creds, adv)
+ *   pt_ble ...              the power test firmware's BLE commands (pt_ble.c: pin, creds, erase, decoy, adv)
+ *   pt_fault ...            test110's loss injection (pt_fault.c)
  */
 #include <stdlib.h>
 #include <string.h>

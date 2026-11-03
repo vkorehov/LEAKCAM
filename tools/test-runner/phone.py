@@ -8,6 +8,7 @@ import re
 import subprocess
 import tempfile
 import threading
+import time
 import urllib.request
 import zlib
 
@@ -67,6 +68,35 @@ def product():
     (bl616_powertest: `pt_ble`)"""
     # its own answer, not the help listing: since presence (test111) the Wi-Fi logs interleave and cut `help` short
     return any("provision: pairing PIN" in bl("provision", 2, r"provision: pairing PIN") for _ in range(2))
+
+
+def firmware():
+    """'full', 'setup' or the image `slot` names (setup_test, powertest), None when it does not answer; asked again
+    when the full firmware's Wi-Fi logs drown the answer (test126 which())"""
+    for _ in range(5):
+        try:
+            m = re.search(r"leakcam-build (\S+)", bl("slot", 3, r"leakcam-build \S+"))
+        except OSError:                         # the port went with a slot switch mid-write (EIO, test119 2026-11-03)
+            time.sleep(2)
+            continue
+        if m:
+            return m.group(1)
+    return None
+
+
+def to_firmware(want, cmd=None, secs=60):
+    """seconds until the want firmware answers (switched by cmd when another one runs, or by the board itself), None
+    if not in secs (setup -> full: the phone leaves in <= 15 s, then the slot switch; test106)"""
+    t0 = time.time()
+    while time.time() - t0 < secs:
+        fw = firmware()                         # bl() waits up to 30 s for a port gone in a switch
+        if fw == want:
+            return time.time() - t0
+        if fw and cmd:
+            bl(cmd, 1)
+            cmd = None
+        time.sleep(2)
+    return None
 
 
 def creds():

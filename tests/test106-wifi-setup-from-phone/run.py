@@ -10,16 +10,14 @@ step 7 a hand on the cable (test040 hand_steps.py usb-gate covers the board side
 """
 import fcntl
 import os
-import re
 import sys
 import time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import creds, op, product, ready, want   # noqa: E402
+from phone import creds, op, product, ready, to_firmware, want   # noqa: E402
 
 REPEATS = 8                                     # the leak verdict's minimum (mem_leak.py)
-SWITCH_WAIT_S = 60                              # setup -> full: the phone leaves (<= 15 s), then the slot switch
 
 _lock = open(__file__)
 try:
@@ -50,30 +48,6 @@ def setup(ssid, psk, anyway=False):
         check("stored: back in the full firmware", back is not None, f"{back:.1f} s" if back else "")
         times.setdefault("back", []).append(back or 0)
     return last, res.get("ms_end", 0) / 1000, res
-
-
-def firmware():
-    """'full' or 'setup' from the image `slot` names, or None; asked again when the full firmware's Wi-Fi logs drown
-    the answer (test126 which())"""
-    for _ in range(5):
-        m = re.search(r"leakcam-build (\S+)", bl("slot", 3, r"leakcam-build \S+"))
-        if m:
-            return "full" if m.group(1) == "full" else "setup"
-    return None
-
-
-def to_firmware(want_fw, cmd=None):
-    """seconds until want_fw answers (switched by cmd when another firmware runs, or by the board itself), or None"""
-    t0 = time.time()
-    while time.time() - t0 < SWITCH_WAIT_S:
-        fw = firmware()                         # bl() waits up to 30 s for a port gone in a switch
-        if fw == want_fw:
-            return time.time() - t0
-        if fw and cmd:
-            bl(cmd, 1)
-            cmd = None
-        time.sleep(2)
-    return None
 
 
 def ble_on():
