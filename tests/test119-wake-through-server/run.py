@@ -6,7 +6,10 @@ board's next check-in gets "ble":1 and the full firmware switches to the setup f
 2 minutes; the app finds it and its button turns into "Change the Wi-Fi"; the Wi-Fi is changed from the app (back to
 the full firmware). A second wake within 2 minutes is refused (429); a wake nobody follows ends by itself after 2
 minutes (back to the full firmware). USB-C 1 in, the phone on adb, unlocked; nothing by hand.
-    tests/test119-wake-through-server/run.py
+--battery: the wake, the change and the unanswered wake with USB-C 1 out (hands: out before the wake, in at the end):
+the setup firmware sleeps with its console off there, so the app's Bluetooth icon and the phone's scan stand for "the
+setup firmware" (bugs/bug-006: tests on USB never began its sleep).
+    tests/test119-wake-through-server/run.py [--battery]
 """
 import fcntl
 import json
@@ -20,12 +23,13 @@ import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import adb, board_id, firmware, op, product, ready, to_firmware   # noqa: E402
+from phone import adb, board_id, firmware, hand, online, op, product, ready, seen, to_firmware   # noqa: E402
 
 SERVER = "http://192.168.1.159:8090"
 PI = "pi@192.168.1.159"
 POLL_S = 20                      # for the run: the wake waits for the next check-in
 PKG = "com.leakcam.setup"
+BATTERY = "--battery" in sys.argv
 
 _lock = open(__file__)
 try:
@@ -147,6 +151,11 @@ try:
         bl("slot switch", 1)                    # a stored network is assumed (test106 leaves the real one)
     wait_for("present: the full firmware", lambda: ((g := firmware()) == "full", g), 60)
     on_run_interval()
+    if BATTERY:
+        check("USB-C 1 out (hand)", hand("unplug USB-C 1 (the cell stays in)", "unplugged") is not None)
+        time.sleep(5)
+        wait_for("on battery: still the full firmware, present", lambda: ((g := firmware()) == "full" and online(dev), g),
+                 30)
     add_only(dev)
     adb("logcat", "-c")
     adb("shell", "am", "start", "-n", f"{PKG}/.MainActivity")
@@ -161,13 +170,16 @@ try:
     if not ok:
         raise Stop("app: Wake tapped")
     wait_for("app: the server took the wake", lambda: ((g := last(rf"wake {dev} answer (-?\d+)")) == "200", g), 10)
-    wait_for("board: woken at its next check-in (the setup firmware)", lambda: ((g := firmware()) == "setup", g),
-             POLL_S + 40)
+    if not BATTERY:                             # on battery asleep without a console: the app's icon below shows it
+        wait_for("board: woken at its next check-in (the setup firmware)", lambda: ((g := firmware()) == "setup", g),
+                 POLL_S + 40)
     t_delivered = time.time()                   # the server's 2 minutes count from the check-in that took the wake
     wait_for("app: the board in range (Bluetooth icon)",
              lambda: ((g := last(rf"row {dev} (wifi \d ble \d red \d)")) == "wifi 1 ble 1 red 0", g), 40)
     wait_for("app: the button changes its Wi-Fi", lambda: ((g := last(r"button (.*) enabled (\d)")) is not None
                                                            and g[0].startswith("Change") and g[1] == "1", g), 15)
+    if BATTERY:
+        t_delivered = time.time()               # later than the delivery: the 2 minutes are surely over below
     t_ready = time.time() - t0
     # 2. the Wi-Fi changed from the app (BleOp taps the same button on the status screen): back to the full firmware
     res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=150)
@@ -185,14 +197,24 @@ try:
         time.sleep(1)
     code = wake()
     check("server: a wake after the 2 minutes taken", code == 200, str(code))
-    t_in = wait_for("unanswered wake: the setup firmware", lambda: ((g := firmware()) == "setup", g), POLL_S + 40)
+    if BATTERY:
+        t_in = seen(dev, POLL_S + 40)
+        check("unanswered wake: the setup firmware (found by the phone)", t_in is not None,
+              f"{t_in:.0f} s" if t_in is not None else "not found")
+        if t_in is None:
+            raise Stop("unanswered wake: the setup firmware")
+    else:
+        t_in = wait_for("unanswered wake: the setup firmware", lambda: ((g := firmware()) == "setup", g), POLL_S + 40)
     t1 = time.time()
     wait_for("unanswered wake: back in the full firmware by itself", lambda: ((g := firmware()) == "full", g), 180)
     t_window = time.time() - t1
-    check("unanswered wake: about 2 minutes in the setup firmware", t_in is not None and 100 <= t_window <= 160,
+    low = 80 if BATTERY else 100                # on battery timed from the phone's find, up to one 20 s scan late
+    check("unanswered wake: about 2 minutes in the setup firmware", t_in is not None and low <= t_window <= 160,
           f"{t_window:.0f} s")
+    if BATTERY:
+        check("USB-C 1 back in (hand)", hand("plug USB-C 1 back in", "plugged") is not None)
     r.set("speed", f"Wake tap -> the button changes the Wi-Fi {t_ready:.0f} s (poll {POLL_S} s: up to one interval); "
-                   f"an unanswered wake back in the full firmware after {t_window:.0f} s")
+                   f"an unanswered wake back in the full firmware after {t_window:.0f} s" + (" (on battery)" if BATTERY else ""))
     r.sample("after the checks")
 except Stop as e:
     log("stopped at:", e)

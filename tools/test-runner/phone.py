@@ -99,6 +99,49 @@ def to_firmware(want, cmd=None, secs=60):
     return None
 
 
+HAND_FILE = os.path.expanduser("~/.leakcam_hand")
+
+
+def hand(action, word, secs=900):
+    """a hand step (USB-C 1 out / in): logged as ACTION, done once HAND_FILE holds word (`echo <word> > ~/.leakcam_hand`,
+    written by whoever watches the bench); the time it was done, None if not in secs"""
+    from board import log
+    try:
+        os.remove(HAND_FILE)
+    except FileNotFoundError:
+        pass
+    log(f"ACTION: {action} (then: echo {word} > {HAND_FILE})")
+    t0 = time.time()
+    while time.time() - t0 < secs:
+        try:
+            if open(HAND_FILE).read().strip() == word:
+                return time.time()
+        except FileNotFoundError:
+            pass
+        time.sleep(0.5)
+    return None
+
+
+def seen(dev, secs=60):
+    """seconds until the phone's scan finds dev, None if not in secs: on battery the setup firmware sleeps with its
+    console off (bugs/bug-006 runs), so the radio is the only sign of it"""
+    t0 = time.time()
+    while time.time() - t0 < secs:
+        res = op("scan", secs=20)
+        if res.get("found") and res.get("name") == dev:
+            return time.time() - t0
+    return None
+
+
+def online(dev):
+    """the presence server's view of dev"""
+    try:
+        with urllib.request.urlopen(f"{SERVER}/v1/devices/{dev}", timeout=5) as f:
+            return json.loads(f.read()).get("online", False)
+    except OSError:
+        return False
+
+
 def creds():
     """(ssid len, crc), (psk len, crc) as stored on the BL616 (`provision` / `pt_ble creds`, never the passphrase); None
     for a missing key"""

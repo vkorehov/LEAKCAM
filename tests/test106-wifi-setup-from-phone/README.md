@@ -64,6 +64,13 @@ Android 8.0+, the app's BLE permissions.
 - In setup mode (once test120 passed): every setup case starts from the low-power mode (the phone's connection wakes
   the board); the times from opening the app to Done compared with the awake board.
 
+## On battery (`run.py --battery`, added 2026-11-03, not run yet)
+
+8 setups in a row with USB-C 1 out (hands: out at the start, in at the end): each from the full firmware
+(`switch_to_setup lost`), the sleeping setup firmware found by the phone (its console is off asleep), Done, back in
+the full firmware with the network stored. Times against the USB run above (2 s advertising, not 100 ms). Why: every
+run above was on USB, where the setup firmware never sleeps - the path that hid bugs/bug-006.
+
 ## Pass
 
 A new board goes from unboxed to a working Wi-Fi wake with only the app; every failure is named in the app and

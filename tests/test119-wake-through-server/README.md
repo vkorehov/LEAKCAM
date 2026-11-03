@@ -37,6 +37,13 @@ As test111 (BLE provisioning, the Wi-Fi check, presence); the server's wake; the
 5. A wake after the 2 minutes, nobody follows it: the setup firmware, back in the full firmware by itself after 2
    minutes.
 
+## On battery (`run.py --battery`, added 2026-11-03, not run yet)
+
+Steps 2-5 with USB-C 1 out (hands: out before the wake, in at the end): the woken setup firmware sleeps with its
+console off, so the app's Bluetooth icon and the phone's scan stand for it; the unanswered wake's 2 minutes timed from
+the phone's find (up to one 20 s scan late). Why: the run above was on USB, where the setup firmware never sleeps
+(bugs/bug-006).
+
 ## Pass
 
 The Wi-Fi of a present, silent board is changed from a phone next to it within one check-in interval plus the setup,

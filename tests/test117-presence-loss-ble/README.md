@@ -35,6 +35,12 @@ As test111: BLE provisioning, the Wi-Fi check (setup firmware), presence and the
 3. A missing network saved without checking from the app: the full firmware cannot check in, the setup firmware at
    once; the app sets the real network at once (Done): the full firmware, present at the server, no BLE.
 
+## On battery (`run.py --battery`, added 2026-11-03, not run yet)
+
+Steps 2 and 3 with USB-C 1 out (hands: out after step 1, in at the end): the setup firmware sleeps with its console
+off, so the phone's scan stands for "the setup firmware"; the full firmware keeps its console on battery. Why: the run
+above was on USB, where the setup firmware never sleeps (bugs/bug-006).
+
 ## Pass
 
 Every cause of a lost presence switches to the setup firmware within one interval (at once after new credentials), the

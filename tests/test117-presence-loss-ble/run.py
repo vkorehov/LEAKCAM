@@ -6,25 +6,27 @@ advertises; each cause (the server down; the stored network gone: a missing one 
 ends with the phone finding the board and setting the real network from the app, which switches it back to the full
 firmware, present again. The setup firmware stays while the server is back (its retry is 6 h): only a setup ends it.
 USB-C 1 in, the phone on adb, unlocked; nothing by hand.
-    tests/test117-presence-loss-ble/run.py
+--battery: steps 1 and 2 with USB-C 1 out (hands: out after the first setup, in at the end): the setup firmware
+sleeps with its console off there, so the phone's scan stands for "the setup firmware" (bugs/bug-006: tests on USB
+never began its sleep).
+    tests/test117-presence-loss-ble/run.py [--battery]
 """
 import fcntl
-import json
 import os
 import re
 import subprocess
 import sys
 import time
-import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import board_id, firmware, op, product, ready, to_firmware   # noqa: E402
+from phone import board_id, firmware, hand, online, op, product, ready, seen, to_firmware   # noqa: E402
 
 SERVER = "http://192.168.1.159:8090"
 PI = "pi@192.168.1.159"
 POLL_S = 10                      # for the run; the server's default is 60
 GONE = "t117-gone"               # a network that is not there
+BATTERY = "--battery" in sys.argv
 
 _lock = open(__file__)
 try:
@@ -82,12 +84,25 @@ def found(name):
     return ok
 
 
-def online(dev):
-    try:
-        with urllib.request.urlopen(f"{SERVER}/v1/devices/{dev}", timeout=5) as f:
-            return json.loads(f.read()).get("online", False)
-    except OSError:
-        return False
+def lost(name, secs):
+    """the full firmware gave up its presence: the setup firmware, found by the phone; seconds or None"""
+    if BATTERY:                                 # asleep, no console: the radio is the sign
+        t = seen(dev, secs)
+        check(name, t is not None, f"found {t:.0f} s" if t is not None else f"not found within {secs} s")
+        return t
+    t = wait_fw(name, "setup", secs)
+    if t is not None:
+        found(name.split(":")[0] + ": the phone finds the board at once")
+    return t
+
+
+def to_setup():
+    """the full firmware sent to the setup firmware as on a lost presence"""
+    if not BATTERY:
+        return to_firmware("setup", "switch_to_setup lost")
+    if firmware() == "full":
+        bl("switch_to_setup lost", 1)
+    return seen(dev, 60)
 
 
 def setup(s, k, anyway=False):
@@ -130,19 +145,23 @@ try:
     res = op("scan", secs=15)
     check("present: the phone does not find the board (no BLE in the full firmware)", not res.get("found"),
           str(res.get("name")))
+    if BATTERY:
+        check("USB-C 1 out (hand)", hand("unplug USB-C 1 (the cell stays in)", "unplugged") is not None)
+        time.sleep(5)
+        check("on battery: still the full firmware, present", firmware() == "full" and online(dev), str(firmware()))
 
     # 1. the server down: the next check-in fails -> the setup firmware at once; it stays with the server back; the
     #    phone sets the network -> the full firmware, present
     pi("sudo systemctl stop leakcam-server")
     try:
-        t = wait_fw("server down: the setup firmware (presence lost)", "setup", POLL_S + 60)
+        t = lost("server down: the setup firmware (presence lost)", POLL_S + 60)
         if t is not None:
             t_lost.append(t)
-            found("server down: the phone finds the board at once")
     finally:
         pi("sudo systemctl start leakcam-server")
     time.sleep(2 * POLL_S)
-    check("server back: the setup firmware stays (only a setup or its 6 h retry ends it)", firmware() == "setup")
+    check("server back: the setup firmware stays (only a setup or its 6 h retry ends it)",
+          seen(dev, 30) is not None if BATTERY else firmware() == "setup")
     t0 = time.time()
     last, secs = setup(ssid, psk)
     check("server back: the phone sets the network", last.startswith("Done."), f"{secs:.1f} s")
@@ -152,13 +171,12 @@ try:
 
     # 2. the stored network gone (a missing one saved without checking): the full firmware cannot check in -> the
     #    setup firmware at once -> the phone sets the real network -> present, no BLE again
-    to_firmware("setup", "switch_to_setup lost")
+    to_setup()
     last, secs = setup(GONE, psk, anyway=True)
     check("network gone: saved without checking", last.startswith("Saved without checking."), last[:70])
-    t = wait_fw("network gone: the setup firmware (presence lost)", "setup", 90)
+    t = lost("network gone: the setup firmware (presence lost)", 90)
     if t is not None:
         t_lost.append(t)
-        found("network gone: the phone finds the board at once")
     t0 = time.time()
     last, secs = setup(ssid, psk)
     check("network gone: the phone sets the real network at once", last.startswith("Done."), f"{secs:.1f} s")
@@ -167,8 +185,10 @@ try:
     check("network back: present at the server", online(dev), f"{time.time() - t0:.0f} s after the setup started")
     res = op("scan", secs=15)
     check("network back: no BLE again", not res.get("found"), str(res.get("name")))
+    if BATTERY:
+        check("USB-C 1 back in (hand)", hand("plug USB-C 1 back in", "plugged") is not None)
     r.set("speed", "presence lost -> setup firmware " + ", ".join(f"{t:.0f} s" for t in t_lost)
-          + f" (poll {POLL_S} s); set up again from the app {secs:.1f} s")
+          + f" (poll {POLL_S} s); set up again from the app {secs:.1f} s" + (" (on battery)" if BATTERY else ""))
     r.sample("after the checks")
 finally:
     poll_interval(60)

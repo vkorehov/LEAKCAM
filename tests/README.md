@@ -119,6 +119,18 @@ The design changes behind it (DESIGN.md 5.3, 5.3.1, 5.3.3):
 - Crash records carry their build and go to the server over Wi-Fi.
 - One version for both images, flashed as a pair.
 
+**Run on battery too (`run.py --battery`, USB-C 1 out; added 2026-11-03 after bugs/bug-006):** every setup-firmware
+pass so far was on USB, where it never sleeps; on battery it sleeps, its console is off and the phone's scan stands
+for it. Hands: USB-C 1 out at the start, in at the end.
+
+| Test | On battery |
+|---|---|
+| test106 | 8 setups in a row from the full firmware: found asleep, Done, back in the full firmware |
+| test116 | already on battery: pass 16/16 (2026-11-03) |
+| test117 | server down and network gone: the setup firmware found asleep, set up, present again |
+| test119 | wake, change and the unanswered wake's 2 minutes, asleep |
+| test125 | the 6 h retry is a battery path by nature: plan it on battery from the start |
+
 **Re-prove: the pass is on the old design (the full firmware's own BLE, the check ending at the internet):**
 
 | Test | What changes | Blocked by |
