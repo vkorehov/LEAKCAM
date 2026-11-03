@@ -162,6 +162,7 @@ case("link lost with the result", "link result", "done")
 # Wi-Fi answers lost on the board's side: named, the old network kept
 case("DNS answer lost", "dns", "fail")
 case("HTTP answer lost", "http", "fail")
+case("API answer lost (the internet answers)", "api", "fail")   # NO_API: the app names the LEAKCAM service
 # the phone's Bluetooth off for 4 s: before the save a named failure (nothing sent); during the check the app sees the
 # adapter go and reconnects when it is back
 case("phone Bluetooth off before the save", "off", "fail", during=bt_off_before_save)

@@ -32,7 +32,6 @@
 static struct bt_conn *active_conn;
 static volatile bool adv_wanted;         /* ble_pairing_advertise(): provision.c decides when */
 static bool adv_on, ready;               /* advertising now; the stack up with a stored PIN */
-static volatile bool started;            /* ble_pairing_start() ran: the controller is up */
 static uint16_t adv_int_min = BT_GAP_ADV_FAST_INT_MIN_2, adv_int_max = BT_GAP_ADV_FAST_INT_MAX_2;   /* 0.625 ms */
 static char ssid[33];
 static char psk[64];
@@ -42,7 +41,8 @@ static volatile bool checking;
 
 /* the controller's init resets the PDS block (SDK weak hook, GLB_AHB_MCU_SW_PDS); the BL616's USB PHY is controlled
  * from PDS: with the SDK's reset the USB device dropped at BLE start and never came back (A/B, tests/test040,
- * 2026-10-29). The setup firmware's PDS sleep runs without it too (tests/test120); see ble_pairing_sleep_ok(). */
+ * 2026-10-29). The setup firmware does that reset first in main(), before USB is up (bugs/bug-006); its PDS sleep runs
+ * without one here (tests/test120); see ble_pairing_sleep_ok(). */
 void btblecontroller_software_pds_reset(void)
 {
 }
@@ -357,7 +357,6 @@ static void on_bt_ready(int err)
 
 void ble_pairing_start(void)
 {
-    started = true;
     wl_trace(0x70);
     btble_controller_init(configMAX_PRIORITIES - 1);
     wl_trace(0x71);
@@ -377,10 +376,12 @@ bool ble_pairing_connected(void)
 /* The low-power sleep path with the controller up but idle (no advertising, no connection: no wake deadline) wedged the
  * BLE core: the SDK asks the controller for its deadline (btble_controller_sleep) before any veto, the core went to
  * sleep for good, and after any software reset its init spun forever; only the EN pin cleared it (tests/test120,
- * 2026-11-01). The setup firmware's idle hook does not enter that path while this is false. */
+ * 2026-11-01). The setup firmware's idle hook does not enter that path while this is false. Nor before BLE runs: a PDS
+ * sleep before the controller's start (sleep begun while ble_start_task was still in app_clock_init) wedged it the
+ * same way (bugs/bug-006, 2026-11-03: a setup firmware started on battery never advertised). */
 bool ble_pairing_sleep_ok(void)
 {
-    return !started || adv_on || active_conn != NULL;
+    return adv_on || active_conn != NULL;
 }
 
 /* test114 (the test firmware's `pt_ble adv`): the advertising interval, restarted at once when advertising */

@@ -19,6 +19,7 @@
 #include "conn_internal.h"   /* conn->type */
 
 #include "ble_pairing.h"
+#include "setup_boot.h"   /* SETUP_ADV_SLEEP_MS */
 #include "bflb_wdg.h"
 #include "board_pins.h"
 #include "usb_console2.h"
@@ -119,13 +120,33 @@ static void usb_wake_cb(uint64_t io_bits)
     portYIELD_FROM_ISR(woken);
 }
 
+/* USB-C 1 pulled while awake (plugged in at the start or since): back to the battery's 2 s advertising and the sleep.
+ * Only the plug wakes the chip (PGOOD's falling edge); the pull is read here every second while awake: before, the
+ * chip stayed awake at 100 ms advertising on the cell until a reset (tests/test116, 2026-11-03). Not under a phone's
+ * connection: its setup ends in the switch to the full firmware anyway. */
 static void usb_plug_task(void *arg)
 {
     (void)arg;
+    bool usb = setup_usb_present();
     while (1) {
-        (void)ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        setup_sleep_end();
-        setup_usb_plugged();
+        /* asleep: only the plug's wake (a 1 s timeout would wake the chip every second) */
+        if (ulTaskNotifyTake(pdTRUE, sleeping ? portMAX_DELAY : pdMS_TO_TICKS(1000))) {
+            setup_sleep_end();
+            setup_usb_plugged();
+            usb = true;
+            continue;
+        }
+        if (sleeping)
+            continue;
+        bool now = setup_usb_present();
+        if (usb && !now) {
+            if (ble_pairing_connected())
+                continue;                 /* under a phone: read again once it has left */
+            printf("setup: USB power gone: advertising every %d ms, sleep\r\n", SETUP_ADV_SLEEP_MS);
+            ble_pairing_adv_interval(SETUP_ADV_SLEEP_MS);
+            setup_sleep_begin(false);
+        }
+        usb = now;
     }
 }
 

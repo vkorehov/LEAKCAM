@@ -12,6 +12,7 @@
 #include "task.h"
 
 #include "board.h"
+#include "bl616_glb.h"
 #include "bl616_hbn.h"
 
 #include "ble_pairing.h"
@@ -59,6 +60,10 @@ int main(void)
 {
     /* HBN RAM rule (tests/test021): retention/sleep mode off before the first HBN RAM access */
     BL_WR_REG(HBN_BASE, HBN_SRAM, BL_RD_REG(HBN_BASE, HBN_SRAM) & ~(HBN_RETRAM_RET_MSK | HBN_RETRAM_SLP_MSK));
+    /* the PDS block reset the BLE controller's own init would do (ble_pairing.c keeps that hook empty: done there it
+     * took the running USB device with it): here, before board_init() brings USB up, it clears a BLE core left asleep
+     * by the run before (a reset during the battery sleep), which no other reset but EN clears (bugs/bug-006) */
+    GLB_AHB_MCU_Software_Reset(GLB_AHB_MCU_SW_PDS);
     board_init();                   /* also the USB console and its shell (defconfig) */
     crash_rec_report();
     (void)wdg_guard_start();
