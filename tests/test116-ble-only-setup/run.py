@@ -5,7 +5,7 @@ finds it, the app sets it up on battery, the stored network switches it to the f
 is silent on battery; erased on battery, the full firmware starts the setup firmware without USB (the path that
 wedged the BLE core, 2026-11-03) and it is set up again; with USB-C 1 back in it stays the full firmware, silent. Hands: USB-C 1 out and back in (the cell stays in); the BL616
 console stays up on PR1 except while the setup firmware sleeps. Each hand step waits for HAND_FILE (written by whoever
-watches the bench: `echo unplugged > ~/.leakcam_hand`).
+watches the bench: `echo unplugged > ~/.leakcam_hand`, phone.hand()).
     tests/test116-ble-only-setup/run.py [--unplugged]   --unplugged: no network stored and USB-C 1 already out (the
                                                          setup firmware asleep: no console), from step 2's scan on
 """
@@ -16,10 +16,8 @@ import time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import board_id, creds, firmware, op, ready, to_firmware, want   # noqa: E402
+from phone import board_id, creds, firmware, hand as ask, online, op, ready, to_firmware, want   # noqa: E402
 
-HAND_FILE = os.path.expanduser("~/.leakcam_hand")
-SERVER = "http://192.168.1.159:8090"
 
 _lock = open(__file__)
 try:
@@ -42,32 +40,11 @@ def check(name, ok, detail="", stop=False):
         raise Stop(name)
 
 
-def hand(action, word, secs=900):
-    """ask for a hand step and wait until HAND_FILE says it is done; the time it was done"""
-    try:
-        os.remove(HAND_FILE)
-    except FileNotFoundError:
-        pass
-    log(f"ACTION: {action} (then: echo {word} > {HAND_FILE})")
-    t0 = time.time()
-    while time.time() - t0 < secs:
-        try:
-            if open(HAND_FILE).read().strip() == word:
-                return time.time()
-        except FileNotFoundError:
-            pass
-        time.sleep(0.5)
-    raise Stop(f"no hand step: {action}")
-
-
-def online(dev):
-    import json
-    import urllib.request
-    try:
-        with urllib.request.urlopen(f"{SERVER}/v1/devices/{dev}", timeout=5) as f:
-            return json.loads(f.read()).get("online", False)
-    except OSError:
-        return False
+def hand(action, word):
+    t = ask(action, word)
+    if t is None:
+        raise Stop(f"no hand step: {action}")
+    return t
 
 
 def found(name, t0, key, secs=60):

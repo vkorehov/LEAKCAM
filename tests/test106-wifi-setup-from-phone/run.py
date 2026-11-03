@@ -6,7 +6,10 @@ old test firmware; what the board stored checked on its console (`provision` / `
 the passphrase). Needs USB-C 1 in, the phone on adb (Wi-Fi), unlocked, Bluetooth on.
 README Steps 1, 3, 4, 5, 6 and 8; step 2 (wakes on battery, the K230 session) needs the rewritten product firmware,
 step 7 a hand on the cable (test040 hand_steps.py usb-gate covers the board side).
-    tests/test106-wifi-setup-from-phone/run.py
+--battery (product pair): REPEATS setups in a row with USB-C 1 out (hands: out at the start, in at the end): each
+from the full firmware (`switch_to_setup lost`), the setup firmware found asleep by the phone (no console there),
+Done, back in the full firmware with the network stored (bugs/bug-006: tests on USB never began its sleep).
+    tests/test106-wifi-setup-from-phone/run.py [--battery]
 """
 import fcntl
 import os
@@ -15,9 +18,10 @@ import time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import creds, op, product, ready, to_firmware, want   # noqa: E402
+from phone import board_id, creds, firmware, hand, op, product, ready, seen, to_firmware, want   # noqa: E402
 
 REPEATS = 8                                     # the leak verdict's minimum (mem_leak.py)
+BATTERY = "--battery" in sys.argv
 
 _lock = open(__file__)
 try:
@@ -75,6 +79,41 @@ if why:
     r.obstacle(why)
     r.finish(f"not run: {why.split(' (')[0]}.", False)
     sys.exit(1)
+if BATTERY:
+    # the setups on the cell: the full firmware has a console on battery, the sleeping setup firmware none
+    dev = board_id()
+    if not PRODUCT or firmware() != "full" or creds() != want(ssid, psk):
+        r.obstacle("--battery needs the product pair in the full firmware with the real network stored")
+        r.finish("not run: not the full firmware with the network.", False, switch_off=False)
+        sys.exit(1)
+    check("USB-C 1 out (hand)", hand("unplug USB-C 1 (the cell stays in)", "unplugged") is not None)
+    found = []
+    done = 0
+    for i in range(REPEATS):
+        if firmware() == "full":
+            bl("switch_to_setup lost", 1)
+        t = seen(dev, 60)
+        found.append(t)
+        if t is None:
+            check(f"battery setup {i + 1}: found", False, "not within 60 s")
+            break
+        last, secs, res = setup(ssid, psk)
+        done += last.startswith("Done.")
+        times.setdefault("repeat", []).append(secs)
+    check(f"{REPEATS} setups on battery: every one found and Done", done == REPEATS,
+          f"{done}/{REPEATS}, found after " + ", ".join(f"{t:.0f}" if t is not None else "-" for t in found) + " s")
+    check("on battery: the network stored", creds() == want(ssid, psk))
+    check("USB-C 1 back in (hand)", hand("plug USB-C 1 back in", "plugged") is not None)
+    failed = [c for c in checks if not c[1]]
+    rep_ = times.get("repeat", [])
+    r.set("speed", f"on battery: found {min(t for t in found if t is not None):.0f}-"
+                   f"{max(t for t in found if t is not None):.0f} s after the switch, app opened -> Done "
+                   f"{min(rep_):.1f}-{max(rep_):.1f} s ({len(rep_)} in a row)" if rep_ else None)
+    r.finish(f"{len(checks) - len(failed)}/{len(checks)} checks pass (on battery)."
+             + (" Failed: " + "; ".join(f"{n} ({d})" if d else n for n, _, d in failed) + "." if failed else ""),
+             not failed, switch_off=False)
+    sys.exit(1 if failed else 0)
+
 check("BLE advertising on USB power", ble_on())
 
 # 1. first setup: nothing stored, the app from opening to Done
