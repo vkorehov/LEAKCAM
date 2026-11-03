@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-03 (run.py, 216 s): pass
+
+16/16 checks pass.
+
+
+### Automated run 2026-11-03 (run.py, 231 s): **FAIL**
+
+8/9 checks pass. Failed: battery start: the phone finds the setup firmware (not within 120 s).
+
+
 ### Automated run 2026-11-03 (run.py, 195 s): **FAIL**
 
 6/7 checks pass. Failed: battery start: the phone finds the setup firmware (not within 120 s).
@@ -20,6 +30,13 @@ not run: the phone is locked: unlock it.
 
 
 ## Obstacles
+
+- 2026-11-03 20:21 UTC, the third run (the sleep veto fixed): step 4 spun again (crash #15, watchdog hang in
+  ble_start at 6.0 s); an EN tap with USB out -> the setup firmware started on the cell and was found at once: the
+  core had been left wedged by the run before (its sleep on battery, the switch's reset), not the battery start.
+  Fixed by a PDS reset at the setup firmware's start (bugs/bug-006); the 20:28 run passed.
+- 2026-11-03 20:15 UTC: the phone off the Wi-Fi (asleep), adb's port changed to 46003 (user); ~/.leakcam_phone updated.
+- 2026-11-03 20:27 UTC: the VM's xHCI hung at the plug (err -32), rebound (0000:0a:00.0).
 
 - 2026-11-03 06:30 UTC, the first run (the board reset over PR1 after the unplug, to start as from its cell): never
   found, even with the phone next to the board: the BLE start spun in rwip_time_get (crash #134); a ROM power-on

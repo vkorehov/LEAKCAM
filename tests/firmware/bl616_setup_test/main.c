@@ -8,6 +8,7 @@
  *   lp_sleepstat            the sleep counters (setup_sleep_stats()), USB power
  *   lp_task <name>          a task's saved context (PC and return addresses for addr2line)
  *   lp_blecore, lp_pds, lp_reset   the BLE core wedge experiments (test120 HISTORY; out once the rule has held)
+ *   lp_reset_in <ms> [wake] bug-006: the slot switch's reset later, e.g. inside a sleep window
  *   pt_ble ...              the power test firmware's BLE commands (pt_ble.c: pin, creds, erase, decoy, adv)
  *   pt_fault ...            test110's loss injection (pt_fault.c)
  */
@@ -303,10 +304,42 @@ static void cmd_lp_reset(int argc, char **argv)
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_lp_reset, lp_reset, test120: reset kinds wdg por sys cpu);
 
+/* bug-006: the slot switch's reset (bl_sys_reset_por) <ms> from now, from a task: inside a sleep window the BLE core
+ * may be in its own deep sleep at the reset. `wake`: the sleep ended and one 2 s advertising interval waited first */
+extern int bl_sys_reset_por(void);   /* as slot.c */
+static uint32_t reset_in_ms;
+static bool reset_in_wake;
+
+static void reset_in_task(void *arg)
+{
+    (void)arg;
+    vTaskDelay(pdMS_TO_TICKS(reset_in_ms));
+    if (reset_in_wake) {
+        setup_sleep_end();
+        vTaskDelay(pdMS_TO_TICKS(2500));
+    }
+    (void)bl_sys_reset_por();
+}
+
+static void cmd_lp_reset_in(int argc, char **argv)
+{
+    if (argc < 2 || atoi(argv[1]) <= 0) {
+        printf("lp_reset_in <ms> [wake]\r\n");
+        return;
+    }
+    reset_in_ms = (uint32_t)atoi(argv[1]);
+    reset_in_wake = argc > 2 && !strcmp(argv[2], "wake");
+    if (xTaskCreate(reset_in_task, "reset_in", 512, NULL, 20, NULL) != pdPASS)
+        vAssertCalled();
+    printf("lp_reset_in: POR reset in %lu ms%s\r\n", (unsigned long)reset_in_ms, reset_in_wake ? " after a wake" : "");
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_lp_reset_in, lp_reset_in, bug-006: the slot switch reset in <ms> [wake]);
+
 int main(void)
 {
     /* HBN RAM rule (tests/test021): retention/sleep mode off before the first HBN RAM access */
     BL_WR_REG(HBN_BASE, HBN_SRAM, BL_RD_REG(HBN_BASE, HBN_SRAM) & ~(HBN_RETRAM_RET_MSK | HBN_RETRAM_SLP_MSK));
+    GLB_AHB_MCU_Software_Reset(GLB_AHB_MCU_SW_PDS);   /* as the setup firmware's main(): bugs/bug-006 */
     board_init();                   /* also the USB console and its shell (defconfig) */
     crash_rec_report();
     (void)wdg_guard_start();
