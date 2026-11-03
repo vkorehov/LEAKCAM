@@ -1,16 +1,20 @@
 # test116: the whole setup over BLE alone (no USB)
 
-Status: **planned** (2026-11-01, user: the same as the USB-only setup, test113, with BLE only and no USB).
+Status: **fail: bug-006** (2026-11-03, run.py on the product pair): USB-C 1 out while the setup firmware runs -> it
+sleeps at 2 s advertising (the unplug path, setup_sleep.c, new 2026-11-03), found in 3.6 s, set up on battery in
+14.8 s, the full firmware, present, silent on battery: pass; the setup firmware started on battery (after an erase on
+battery) never advertises: its BLE start spins (bugs/bug-006).
 
-A new LEAKCAM set up from the app with USB-C 1 unplugged, on its battery: no USB power, no USB data. Since the USB
-power gate is gone (2026-11-01), the board advertises on battery 60 s every 5 minutes while no network is stored; the
-app finds it, pairs with the PIN from the server and sets the network.
+A new LEAKCAM set up from the app with USB-C 1 unplugged, on its battery: no USB power, no USB data. With no network
+stored it runs the setup firmware, asleep in PDS, advertising every 2 s; the app finds it, pairs with the PIN from the
+server and sets the network; the stored network switches it to the full firmware, which has no BLE.
 
 ## Setup
 
-- Full firmware (firmware/bl616_full) with its pairing PIN stored (make flash), the cell charged.
-- The phone with the app on adb (its own USB to the bench is the phone's, not the board's).
-- Hands: USB-C 1 unplugged at the start (the board's console stays up on PR1 for the checks), plugged back at the end.
+- The product pair (firmware/bl616_full + bl616_setup) with its pairing PIN stored, the cell charged.
+- The phone with the app on adb, next to the board for the battery steps.
+- Hands: USB-C 1 unplugged (`echo unplugged > ~/.leakcam_hand`, or `run.py --unplugged` with LEAKCAM_DEV when it is
+  already out) and plugged back at the end; the BL616 console stays up on PR1 except while the setup firmware sleeps.
 
 ## Needs (build features and dependencies)
 
@@ -20,18 +24,11 @@ As test106: BLE provisioning, the Wi-Fi check, presence; the advertising windows
 
 ## Steps (run.py)
 
-1. USB in: the board's network erased (`provision erase`): a new board.
-2. USB-C 1 out (hand): on battery.
-3. The app finds the board within one period (5 minutes) and sets it up: pairing with the PIN (no prompt), check,
-   Done; stored; the board checks in at the server; the app lists it online with its network.
-4. Configured, on battery: silent for a whole period (no advertising).
-5. USB-C 1 back in (hand): advertising again.
-
-## Setup mode (DESIGN.md 5.3.1, planned)
-
-- In setup mode (once test120 passed): the board on battery advertises in low power all the time (no 5-minute
-  windows): found within seconds of the unplug, set up from the app, then operational (BLE off) once its first
-  check-in reached the server.
+1. USB in: the network erased (`provision erase`): the setup firmware.
+2. USB-C 1 out (hand): asleep, found by the phone; set up from the app on battery: the full firmware, present.
+3. Configured, on battery: silent (30 s scan).
+4. Erased on battery: the full firmware starts the setup firmware without USB; found, set up again.
+5. USB-C 1 back in (hand): the full firmware, silent, present.
 
 ## Pass
 
@@ -47,15 +44,15 @@ Not run (planned).
 |---|---|---|---|
 | Boot, power-on -> READY (median of 5) | n/a: the BL616 alone, K230 off | target (test022) | |
 | This part's boot share | n/a: no K230 boot | - | |
-| Test run time | **MISSING** | - | |
-| setup on battery: unplug -> found -> Done | **MISSING** | - | % of the top |
+| Test run time | 119 s automated (run.py, 2026-11-03), no setup | - | |
+| setup on battery: unplug -> found -> Done | found 3.6 s after the unplug, app opened -> Done 14.8 s, the full firmware 4 s after (2026-11-03); the battery start: never found (bug-006) | - | % of the top |
 | Current idle / during (min / avg / peak) | n/a: on battery (no battery-side probes, bench limits) | floor (test031) | |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | |
-| Power, energy per operation | **MISSING** | - | |
-| Per day | **MISSING** | ENERGY.txt line | waiting for setup: test114 |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak | |
-| Image (sizes) | **MISSING** | minimal image (rule) | |
+| Voltage under load (min) | n/a: no battery-side measurement on the bench (memory: bench limits) | cutoff 3.10 V (bug-004) | |
+| Power, energy per operation | n/a: on the cell, no meter on the battery side; the setup firmware asleep is test120's | - | |
+| Per day | n/a: once per installation | ENERGY.txt line | waiting for setup: test114 |
+| Temperature die / board (start / peak / end) | n/a: K230 off, the BL616 at idle load | K230 limit (datasheet) | |
+| Memory BL616 / K230 (start / min / end), leak | n/a: the run stopped at bug-006 before its sample; each switch is a fresh boot | no leak | |
+| Image (sizes) | BL616 test firmware 1322032 B (2026-11-03, on the board at the run) | minimal image (rule) | |
 | Compile flags | BL616 product -O3 + LTO | smallest code (rule) | |
 | Features over the minimal image | as test106 | test008 floor | |
 | Optimised build (-O3, LTO, -march) | n/a: not an optimisation test | the faster one stays | |

@@ -19,7 +19,8 @@ from harness import Run, bl, REPO   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
 from phone import board_id, creds, firmware, op, ready, want   # noqa: E402
 
-SAVED, NOT_FOUND, WRONG_PSK = 0x04, 0x10, 0x11
+SAVED, NOT_FOUND, WRONG_PSK, NO_API = 0x04, 0x10, 0x11, 0x19
+PI = "pi@192.168.1.159"                         # the presence server (server/): the API the check ends at
 CHECKED = [1, 2, 3, SAVED]                      # JOINING -> ADDRESS -> INTERNET (and the API) -> SAVED
 
 
@@ -189,6 +190,15 @@ for name, s_, p_, final in (("wrong passphrase", ssid, bad, (WRONG_PSK,)),   # 0
     st = states(res)
     check(f"check, {name}: {final[0]:#x}", st and st[-1] in final, str(st))
     check(f"check, {name}: old credentials kept", creds() == mark)
+# the API down (the presence server stopped): the internet answers, the API does not -> NO_API, nothing stored
+subprocess.run(["ssh", "-o", "BatchMode=yes", PI, "sudo systemctl stop leakcam-server"], check=True, timeout=30)
+try:
+    res = sess("check, the API down", f"ssid:{hexs(ssid)},psk:{hexs(psk)},commit:01", 90)
+finally:
+    subprocess.run(["ssh", "-o", "BatchMode=yes", PI, "sudo systemctl start leakcam-server"], check=True, timeout=30)
+st = states(res)
+check(f"check, the API down: {NO_API:#x}", st[:3] == [1, 2, 3] and st[-1:] == [NO_API], str(st))
+check("check, the API down: old credentials kept", creds() == mark)
 res = op("session", address=addr, pair="accept", writes=f"ssid:{hexs(ssid)},psk:{hexs(psk)},commit:01", drop_at="01", secs=10)
 t0 = time.time()                                # the check runs on; the phone is gone: until it stored (or 60 s)
 while time.time() - t0 < 60 and creds() != want(ssid, psk):

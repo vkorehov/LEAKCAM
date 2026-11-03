@@ -12,7 +12,7 @@ Rules and obstacles: skill bl616-ble-low-power.
 |---|---|
 | main.c | the start, then the sleep (or the switch to the full firmware when USB power is present) |
 | setup_boot.c | the start's steps: low-power framework, RC32K, easyflash, RF, Wi-Fi and BLE in the proven order |
-| setup_sleep.c | PDS between advertisements: the low-power callbacks, the clocks after a wake, the BLE-idle veto, the USB plug wake (IO3), a phone connection keeping it awake |
+| setup_sleep.c | PDS between advertisements: the low-power callbacks, the clocks after a wake, the BLE-idle veto, the USB plug wake (IO3), the unplug back to the sleep (read every second while awake), a phone connection keeping it awake |
 | switch_to_full.c | the switch to the full firmware: on a USB plug after the stored network's check up to the API, after new credentials once the phone left |
 | ble_pairing.c | BLE provisioning: advertising as the device ID, PIN pairing, the credentials service; `ble_pairing_sleep_ok()` for the sleep (the board's only BLE: the full firmware has none) |
 | ../bl616_common/slot.c | the switch to the other firmware's slot (shared) |

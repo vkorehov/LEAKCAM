@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-/* the low-power callbacks and the USB plug wake; after bl_lp_init() (setup_boot.c) */
+/* the low-power callbacks, the USB plug wake and the unplug (back to the sleep); after bl_lp_init() (setup_boot.c) */
 void setup_sleep_init(void);
 /* the phone connection callbacks (a connection keeps the chip awake); after ble_pairing_start() */
 void setup_sleep_ble_register(void);

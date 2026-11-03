@@ -11,6 +11,7 @@
  *                              the link dropped right after connect, or when STATUS reaches that state (result: SAVED
  *                              or a failure); that state's notification is lost with it
  *   pt_fault dns|http          the check's DNS lookup fails / its HTTP answer never comes
+ *   pt_fault api               only the LEAKCAM API's answer never comes (the internet probe passes): NO_API
  */
 #include <stdio.h>
 #include <string.h>
@@ -23,11 +24,14 @@
 #include "lwip/sockets.h"
 #include "shell.h"
 
-enum mode { OFF, N_ALL, N_HALF, N_FINAL, L_CONNECT, L_JOINING, L_ADDRESS, L_INTERNET, L_RESULT, W_DNS, W_HTTP };
+#include "../../../firmware/bl616_common/api.h"
+
+enum mode { OFF, N_ALL, N_HALF, N_FINAL, L_CONNECT, L_JOINING, L_ADDRESS, L_INTERNET, L_RESULT, W_DNS, W_HTTP, W_API };
 static const char *const names[] = { "off", "notify all", "notify half", "notify final", "link connect",
-                                     "link joining", "link address", "link internet", "link result", "dns", "http" };
+                                     "link joining", "link address", "link internet", "link result", "dns", "http", "api" };
 static volatile enum mode mode;
 static volatile unsigned fired, seen;
+static volatile bool to_api;                     /* the last lookup was the API's: its connection follows (W_API) */
 
 int __real_bt_gatt_notify_cb(struct bt_conn *conn, struct bt_gatt_notify_params *params);
 int __real_bt_conn_set_security(struct bt_conn *conn, bt_security_t sec);
@@ -74,12 +78,13 @@ int __wrap_lwip_getaddrinfo(const char *node, const char *service, const struct 
         fired++;
         return EAI_FAIL;
     }
+    to_api = node != NULL && !strcmp(node, API_HOST);
     return __real_lwip_getaddrinfo(node, service, hints, res);
 }
 
 ssize_t __wrap_lwip_recv(int s, void *mem, size_t len, int flags)
 {
-    if (mode == W_HTTP) {
+    if (mode == W_HTTP || (mode == W_API && to_api)) {
         fired++;
         return -1;                               /* the receive timeout ran out */
     }
@@ -103,4 +108,4 @@ static void cmd_fault(int argc, char **argv)
     }
     printf("pt_fault: %s, fired %u\r\n", names[mode], fired);
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_fault, pt_fault, test110 loss injection: off | notify all|half|final | link <state> | dns | http);
+SHELL_CMD_EXPORT_ALIAS(cmd_fault, pt_fault, test110 loss injection: off | notify all|half|final | link <state> | dns | http | api);
