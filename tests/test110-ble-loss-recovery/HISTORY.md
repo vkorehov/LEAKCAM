@@ -4,6 +4,27 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Earlier result (README Result before 2026-11-03)
+
+run.py, 2026-11-01 08:25 (run 3), BL616 test firmware with pt_fault + the setup app with reconciliation, bench phone
+(Samsung, Android 13): 37/37, 647 s; crash record none before and after; BL616 free 122796 B at the end.
+
+| Case | App, time | Board |
+|---|---|---|
+| every notification lost (5) / every second (2) / the result's (1) | Done 7.3 / 7.1 / 7.4 s | real network |
+| link lost at every connect (6 faults = 3 connects) | "disconnected (133)", 5.7 s | decoy |
+| link lost when the check starts / getting an address / reaching the internet / with the result | Done 9.5 / 10.0 / 10.2 / 10.3 s (reconnect + STATUS read) | real network |
+| DNS / HTTP answer lost | named, 7.2 / 7.3 s | decoy |
+| phone Bluetooth off 4 s before the save | "Bluetooth is off", 11.1 s | decoy |
+| phone Bluetooth off 4 s during the check | Done 14.6 s (reconnected when it came back) | real network |
+
+Every clean setup after a case: Done, 7.1-7.6 s. The fixes that got here (run 1: 31/34) are in HISTORY.md.
+
+### Automated run 2026-11-03 (run.py, 423 s): pass
+
+30/30 checks pass.
+
+
 ### Automated run 2026-11-01 (run.py, 414 s): pass
 
 29/29 checks pass.

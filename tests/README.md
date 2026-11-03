@@ -76,7 +76,7 @@ Leak tests, one per operation the product repeats:
 | [test037 K230 PMU RTC: start, set from the BL616, timekeeping](test037-k230-rtc/README.md) | 2026-10-25 | **partial: step 0 pass**: the PMU RTC runs from Y1, +27 ppm against the 27 MHz timer (3 boots), |
 | [test038 battery brown-out below 3.10 V (cutoff, lockout, recovery)](test038-battery-brownout/README.md) | 2026-10-23 | **partial**: with a raised threshold on the cell the chain works - K230 `bat_watch` cut, |
 | [test039 K230 console over the BL616 link (no CH340)](test039-k230-console-over-link/README.md) | 2026-10-31 | **pass**: 1000 of 1000 commands answered in each of 4 boots at 2 Mbaud, every drop counter 0; 226 mA answering back to back |
-| [test040 BLE provisioning on the BL616: Wi-Fi credentials into flash](test040-ble-wifi-credentials/README.md) | 2026-10-29 | **pass**: run.py 46/46 (run 13, test firmware -O3 + LTO with the sdk_patch.py console fix) and |
+| [test040 BLE provisioning on the BL616: Wi-Fi credentials into flash](test040-ble-wifi-credentials/README.md) | 2026-11-03 | **pass**: run.py 37/37 on the setup firmware's test bed, the phone 8 m away: PIN gate, write limits, persistence, checked store to the API, 8 store cycles without a leak; step 8 gone with the firmware split |
 | [test041 humidity alarm (AHT20 threshold wakes the K230)](test041-humidity-alarm/README.md) | 2026-10-30 | **planned**: the BL616 test firmware needs the humidity slice and alarm decision of |
 | [test042 RF performance against the bench phone (RSSI side by side)](test042-rf-rssi-vs-phone/README.md) | 2026-10-31 | **position 1 done**: Wi-Fi receive board - phone -3..+1 dB, BLE -32..-43 dBm at the phone; one unexplained BL616 watchdog reset (recorder armed since); orientations, distance open |
 | **High level (100+): the product's whole flow** | | |
@@ -90,15 +90,15 @@ Leak tests, one per operation the product repeats:
 | [test107 change-net update from the server (GET /v1/nn)](test107-change-net-update/README.md) | 2026-10-30 | **planned**: K230 test image with `leakcam_wake`, sessions and the Wi-Fi bridge from the BL616 test |
 | [test108 production server check by the BL616 (schedule, lease reuse, server address, back-off)](test108-server-check-schedule/README.md) | 2026-10-30 | **planned**: the scheduler, lease reuse and server address are not written yet (DESIGN 5.1 |
 | [test109 secure server (TLS, device identity, pinned certificate, signed change net)](test109-secure-server/README.md) | 2026-10-30 | **planned**: the real server is not built (DESIGN 7, SECURITY.txt 4); it will run on the Windows PC for the test. |
-| [test110 setup app recovery from loss at every step](test110-ble-loss-recovery/README.md) | 2026-11-01, run.py 37/37 | **pass**: lost notifications, a link lost after the save, Bluetooth off during the check: the app reconnects and shows the board's result; failures named in 5.7-11.1 s; app and board agree in every case |
+| [test110 setup app recovery from loss at every step](test110-ble-loss-recovery/README.md) | 2026-11-03, run.py 30/30 | **pass** on the setup firmware's test bed (pt_fault), the phone 8 m away: lost notifications, a link lost after the save, Bluetooth off during the check -> Done 9.4-15.2 s; failures named in 6.4-8.9 s; app and board agree |
 | [test111 more than one LEAKCAM: one device ID, presence, status screen](test111-multi-device/README.md) | 2026-11-01, run.py 18/18 | **pass**: one ID on board, USB and BLE; the app's status screen (online / offline / delete), the short change-Wi-Fi flow, no stored network |
 | [test113 the whole setup over USB alone (no BLE)](test113-usb-setup-from-phone/README.md) | 2026-11-01 | **planned**: USB-C 1 is the K230's USB0: K230 CDC ACM + relay to the BL616, or rev 2 routes the BL616's USB there |
 | [test114 the lowest BLE energy at which the phone finds the board](test114-ble-discovery-energy/README.md) | 2026-11-01 | **part A run**: found every time up to 2 s advertising (median 0.2-2.2 s), misses from 5 s; currents and parts B, C open |
 | [test115 the K230's USB device on USB-C 1](test115-k230-usb-device/README.md) | 2026-11-01 | **planned, built**: CherryUSB CDC ACM in the test image, usb_echo, run.py; to run after the image rebuild |
 | [test116 the whole setup over BLE alone (no USB)](test116-ble-only-setup/README.md) | 2026-11-01 | **planned**: on battery, USB-C 1 out (hand): found in an advertising window, set up from the app |
-| [test117 presence lost brings BLE back](test117-presence-loss-ble/README.md) | 2026-11-01 | **pass** 13/13: server down -> advertising in 5 s, found in 0.3 s; network gone -> advertising in 4 s, Wi-Fi set again in 8.7 s |
+| [test117 presence lost brings BLE back](test117-presence-loss-ble/README.md) | 2026-11-03 | **pass** 19/19 on the product pair, the phone 8 m away: server down / network gone -> the setup firmware in 9 / 13 s, found at once (RSSI -70), set up in 8.7-9.1 s, back in the full firmware 4 s after |
 | [test118 the app's icons follow the board](test118-app-presence-icons/README.md) | 2026-11-01, 7/7 | **pass**: BLE icon goes 51 s after advertising stops (45 s unseen + scan), Wi-Fi icon and red 29 s after presence stops, both back in 11-20 s |
-| [test119 the phone wakes a board through the server](test119-wake-through-server/README.md) | 2026-11-01 | **pass** 12/12: Wake tap -> woken at the next check-in (6 s) -> Wi-Fi changed 8.4 s; second wake 429 |
+| [test119 the phone wakes a board through the server](test119-wake-through-server/README.md) | 2026-11-03 | **pass** 16/16 on the product pair, the phone 8 m away: Wake tap -> the setup firmware at the next check-in (11 s) -> Wi-Fi changed 8.8 s -> full 4 s after; second wake 429; an unanswered wake back to full after 120 s |
 | [test120 the BLE low-power setup mode alone](test120-ble-low-power-setup-mode/README.md) | 2026-11-01 | **in progress**: product BLE asleep in PDS at 2 s advertising, phone finds it 10/10 (median 1.1 s); the BLE core wedge found and fixed; connection wake next |
 | [test121 USB plug wakes the board from BLE sleep](test121-usb-plug-wake-ble-sleep/README.md) | 2026-11-01 | **pass** 2/2: PGOOD (IO3) wakes PDS, no sleep while USB is in, sleeps again after unplug |
 | [test122 battery low: the K230 stops, the BL616 tells the user to charge](test122-low-battery-notify/README.md) | 2026-11-01 | **planned**: quick K230 stop below 3.10 V, one Wi-Fi check-in with the battery-low flag, the BLE flag, lockout until USB |
@@ -123,12 +123,10 @@ The design changes behind it (DESIGN.md 5.3, 5.3.1, 5.3.3):
 
 | Test | What changes | Blocked by |
 |---|---|---|
-| test040 | Runs on the setup firmware. Step 7 gains the API step and 0x19. Step 8 (BLE first, session restart) is dropped: no K230 during BLE. Step 5's HBN becomes PDS sleep. The pt_ble commands are needed in the setup test bed. | `pt_ble` equivalents in bl616_setup_test |
+| test040 | Re-proved 2026-11-03 on the setup test bed; left: 0x19 (API not reachable) in step 7, a server-down case. | - |
 | test106 | Runs on the setup firmware; its "Setup mode" section becomes the main path. Step 2 (on battery) is the full firmware after the hand-over. Step 3 adds server down -> "API not reachable" in the app. | as test040 |
-| test110 | `pt_fault` (linker wraps) moves to the setup test bed. New case: the API answer lost. | as test040 |
+| test110 | Re-proved 2026-11-03 on the setup test bed; left: the new case "the API answer lost". | - |
 | test111 | Step 1 reads the ID from the setup firmware's advertisement. Step 5 "set up again on USB power" now goes through the server: the full firmware switches to setup. | full -> setup trigger |
-| test117 | Presence lost now means the switch to the setup firmware, not advertising windows; the `provision` battery rule is gone. | full -> setup trigger (failed check-in, no network) |
-| test119 | "ble":1 in the check-in answer means the switch to setup; back to full after the setup or 2 min. | full -> setup trigger |
 | test116 | The setup firmware advertises on battery all the time (no 5-min windows). Step 4 "silent" means the full firmware. Step 5 (USB back in, network stored) means the hand-over, not advertising. | full -> setup trigger |
 | test042 | Steps 3-4 (BLE transmit, 3 m) move to the setup firmware (2 s advertising in PDS); the Wi-Fi steps stay. | - |
 

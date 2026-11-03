@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """test117 automated: presence lost, for whatever reason, brings BLE back, so a phone nearby sets the Wi-Fi at once
-(user 2026-11-01). On the product firmware with a network stored and present: on battery it would not advertise. Each
-cause of a lost presence (the server down; the stored network gone: a missing one saved without checking from the app)
-must switch the battery rule to advertising at once (`provision`: "on battery on (presence lost)"), and the board is found
-and set up from the app at once; present again, the rule goes back off. On USB power the board would advertise anyway:
-`provision battery on` makes it follow the battery rule on USB power too, so the phone sees the radio as on battery (a
-present board silent, a lost one found). USB-C 1 in, the phone on adb, unlocked; nothing by hand.
+(user 2026-11-01). On the product pair (firmware/bl616_full in slot 0, bl616_setup in slot 1; the full firmware has no
+BLE): a full firmware whose check-in does not reach the server switches to the setup firmware ("lost") at once, which
+advertises; each cause (the server down; the stored network gone: a missing one saved without checking from the app)
+ends with the phone finding the board and setting the real network from the app, which switches it back to the full
+firmware, present again. The setup firmware stays while the server is back (its retry is 6 h): only a setup ends it.
+USB-C 1 in, the phone on adb, unlocked; nothing by hand.
     tests/test117-presence-loss-ble/run.py
 """
 import fcntl
@@ -19,7 +19,7 @@ import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import board_id, op, product, ready   # noqa: E402
+from phone import board_id, firmware, op, product, ready, to_firmware   # noqa: E402
 
 SERVER = "http://192.168.1.159:8090"
 PI = "pi@192.168.1.159"
@@ -67,21 +67,19 @@ def on_run_interval():
           f"poll {board_poll()} s after {time.time() - t0:.0f} s")
 
 
-def rule():
-    m = re.search(r"on battery (on \([^)]*\)|off \([^)]*\))", bl("provision", 2, r"on battery (on|off)"))
-    return m.group(1) if m else "?"
+def wait_fw(name, want, secs):
+    """seconds until the board runs the want firmware (a switch of its own), checked; None if not in secs"""
+    t = to_firmware(want, secs=secs)
+    check(name, t is not None, f"{t:.0f} s" if t is not None else f"not within {secs} s: {firmware()}")
+    return t
 
 
-def wait_rule(name, want, secs):
-    t0, got = time.time(), "?"
-    while time.time() - t0 < secs:
-        got = rule()
-        if got.startswith(want):
-            check(name, True, f"{time.time() - t0:.0f} s: {got}")
-            return time.time() - t0
-        time.sleep(1)
-    check(name, False, f"not within {secs} s: {got}")
-    return None
+def found(name):
+    """the phone's scan: the board (its serial) found, the RSSI logged (the phone may be rooms away)"""
+    res = op("scan", secs=20)
+    ok = res.get("found") and res.get("name") == dev
+    check(name, ok, f"{res.get('name')} rssi {res.get('rssi')} after {res.get('ms', 0) / 1000:.1f} s")
+    return ok
 
 
 def online(dev):
@@ -93,11 +91,16 @@ def online(dev):
 
 
 def setup(s, k, anyway=False):
+    """one setup through the app; a stored network (Done, Saved without checking) switches the board back to the full
+    firmware: waited for here"""
     res = op("app", ssid=s.encode().hex(), psk=k.encode().hex(), anyway="1" if anyway else "", secs=150)
     helps = res.get("help", [])
     last = helps[-1]["help"] if helps else res.get("error", "no help text")
-    log("setup", s if s != ssid else "<network>", f"{res.get('ms_end', 0) / 1000:.1f} s", last[:70])
-    return last, res.get("ms_end", 0) / 1000
+    secs = res.get("ms_end", 0) / 1000
+    log("setup", s if s != ssid else "<network>", f"{secs:.1f} s", last[:70].replace(ssid, "<network>"))
+    if last.startswith("Done.") or last.startswith("Saved without checking."):
+        wait_fw("stored: back in the full firmware", "full", 60)
+    return last, secs
 
 
 ssid, psk = wifi_credentials()
@@ -116,50 +119,58 @@ if why:
     sys.exit(1)
 dev = board_id()
 poll_interval(POLL_S)
+t_lost = []
 try:
-    # 0. set up and present: the battery rule off
+    # 0. set up and present: the full firmware, no BLE
+    to_firmware("setup", "switch_to_setup lost")
     last, secs = setup(ssid, psk)
     check("start: set up from the app", last.startswith("Done."), f"{secs:.1f} s")
-    wait_rule("present: no advertising on battery", "off (configured, present)", 2 * POLL_S + 20)
     on_run_interval()
-    bl("provision battery on", 2, r"battery rule")
+    check("present at the server", online(dev))
     res = op("scan", secs=15)
-    check("present: the phone does not find the board", not res.get("found"), str(res.get("name")))
+    check("present: the phone does not find the board (no BLE in the full firmware)", not res.get("found"),
+          str(res.get("name")))
 
-    # 1. the server down: presence lost at the next check-in -> advertising at once; back up -> off again
+    # 1. the server down: the next check-in fails -> the setup firmware at once; it stays with the server back; the
+    #    phone sets the network -> the full firmware, present
     pi("sudo systemctl stop leakcam-server")
     try:
-        t = wait_rule("server down: advertising on battery (presence lost)", "on (presence lost)", POLL_S + 30)
+        t = wait_fw("server down: the setup firmware (presence lost)", "setup", POLL_S + 60)
         if t is not None:
-            res = op("scan", secs=20)
-            check("server down: the phone finds the board at once", res.get("found") and res.get("name") == dev,
-                  f"{res.get('name')} after {res.get('ms', 0) / 1000:.1f} s")
+            t_lost.append(t)
+            found("server down: the phone finds the board at once")
     finally:
         pi("sudo systemctl start leakcam-server")
-    wait_rule("server back: advertising off again", "off (configured, present)", POLL_S + 30)
+    time.sleep(2 * POLL_S)
+    check("server back: the setup firmware stays (only a setup or its 6 h retry ends it)", firmware() == "setup")
+    t0 = time.time()
+    last, secs = setup(ssid, psk)
+    check("server back: the phone sets the network", last.startswith("Done."), f"{secs:.1f} s")
+    while time.time() - t0 < 90 and not online(dev):
+        time.sleep(1)
+    check("server back: present at the server", online(dev), f"{time.time() - t0:.0f} s after the setup started")
 
-    # 2. the stored network gone (a missing one saved without checking): lost at once -> the phone sets the real
-    #    network at once -> present, off again
-    bl("provision battery off", 2, r"battery rule")    # present and silent on battery: the save itself over USB power
+    # 2. the stored network gone (a missing one saved without checking): the full firmware cannot check in -> the
+    #    setup firmware at once -> the phone sets the real network -> present, no BLE again
+    to_firmware("setup", "switch_to_setup lost")
     last, secs = setup(GONE, psk, anyway=True)
-    bl("provision battery on", 2, r"battery rule")
-    check("network gone: saved without checking", "without checking" in last.lower() or last.startswith("Saved"),
-          last[:70])
-    wait_rule("network gone: advertising on battery (presence lost)", "on (presence lost)", 60)
+    check("network gone: saved without checking", last.startswith("Saved without checking."), last[:70])
+    t = wait_fw("network gone: the setup firmware (presence lost)", "setup", 90)
+    if t is not None:
+        t_lost.append(t)
+        found("network gone: the phone finds the board at once")
     t0 = time.time()
     last, secs = setup(ssid, psk)
     check("network gone: the phone sets the real network at once", last.startswith("Done."), f"{secs:.1f} s")
-    wait_rule("network back: advertising off again", "off (configured, present)", 30)
-    while time.time() - t0 < 60 and not online(dev):
+    while time.time() - t0 < 90 and not online(dev):
         time.sleep(1)
     check("network back: present at the server", online(dev), f"{time.time() - t0:.0f} s after the setup started")
-    time.sleep(2)
     res = op("scan", secs=15)
-    check("network back: silent again on battery", not res.get("found"), str(res.get("name")))
-    r.set("speed", f"presence lost -> advertising: see the CHECK lines; set up again from the app {secs:.1f} s")
+    check("network back: no BLE again", not res.get("found"), str(res.get("name")))
+    r.set("speed", "presence lost -> setup firmware " + ", ".join(f"{t:.0f} s" for t in t_lost)
+          + f" (poll {POLL_S} s); set up again from the app {secs:.1f} s")
     r.sample("after the checks")
 finally:
-    bl("provision battery off", 2)
     poll_interval(60)
 
 failed = [c for c in checks if not c[1]]

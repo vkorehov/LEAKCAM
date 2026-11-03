@@ -4,6 +4,25 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Earlier results (README Result before 2026-11-03)
+
+- 2026-11-02 17:55 UTC, the product pair (full + setup, 0.6+g1d2b375-dirty-202611021742; the full firmware without BLE),
+  USB-C 1 in, no phone: the server stopped -> the full firmware's next check-in failed -> **the setup firmware 36.3 s
+  later** (slot 1); on USB power it stayed (only the 6 h retry pending, firmware/bl616_setup/switch_to_full.c); the
+  server back and a `slot switch` by hand (standing in for the retry) -> the full firmware checked in again (0x03).
+  Open: the phone finding the board in the setup firmware and setting the Wi-Fi out of it (the runner still drives the
+  old `provision battery` rule: to rework), the battery case (setup sleeping, the 6 h retry).
+
+2026-11-01, 13/13 checks (poll 10 s, `provision battery on`): present -> the phone does not find the board; the server
+stopped -> presence lost in 5 s, the phone finds the board (its serial) in 0.3 s; the server back -> silent again in
+9 s; a missing network saved without checking -> lost in 4 s; the app sets the real network at once (Done 8.7 s) ->
+silent again 2 s later, present at the server 14 s after that setup started.
+
+### Automated run 2026-11-03 (run.py, 189 s): pass
+
+19/19 checks pass.
+
+
 ### Automated run 2026-11-01 (run.py, 134 s): pass
 
 13/13 checks pass.

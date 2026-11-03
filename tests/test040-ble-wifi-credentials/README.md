@@ -1,12 +1,10 @@
 # test040: BLE provisioning on the BL616: Wi-Fi credentials into flash
 
-Status: **pass** (2026-11-01): run.py 46/46 in 338 s on the test firmware with STATUS reconciliation (attempt id, kept
-across connections, a passed check stored also with the phone gone, notified only on change), fail fast and checked
-return values; hand steps 1 and 2 (2026-10-29); step 5's full power cut not done (user: the cell stays in).
-
-To re-prove (user, 2026-11-02, DESIGN.md 5.3.1): the check's end goal is the API reachable: join -> address -> internet
--> a check-in answered by the presence server; STATUS gains "API not reachable"; and it runs on the setup firmware
-(all setup there, the full firmware has no BLE). The pass above is on the earlier check (internet as the last step).
+Status: **pass** (2026-11-03): run.py 37/37 in 368 s on the setup firmware's test bed (firmware/bl616_setup's own
+sources + pt_ble), the phone 8 m away in another room: the check ends at the API (JOINING -> ADDRESS -> INTERNET ->
+SAVED), every write limit, the PIN gate, persistence over a reset and a watchdog reset, 8 store cycles without a leak.
+Step 8 (a check during a K230 session) is gone with the firmware split (the setup firmware runs no session); hand
+steps 1 and 2 last done 2026-10-29 on the test firmware; step 5's full power cut not done (user: the cell stays in).
 
 The BL616's one BLE job (firmware/bl616_setup/ble_pairing.c): it advertises as its serial (the device ID, no prefix), accepts pairing with the
 board's pre-stored PIN (LE Secure Connections passkey entry, since 2026-11-01; Just Works refused), takes the SSID and passphrase over its provisioning service and stores them in easyflash
@@ -16,10 +14,11 @@ product flow are test106.
 
 ## Setup
 
-- BL616 test firmware (tests/firmware/bl616_powertest) with BLE added: `ble_pairing.c` + `wifi_check.c` built
-  in (today's defconfig has no BLE), and a `pt_ble` shell command: `pt_ble` (advertising, connection, last status),
+- The setup firmware's test bed (tests/firmware/bl616_setup_test, `run.py --flash` or make flash there; since
+  2026-11-03, before: the power test firmware): firmware/bl616_setup's own sources started by `lp_boot`, its switch
+  to the full firmware off (`switch_to_full off`: every store stays here), and the power test firmware's `pt_ble`:
   `pt_ble creds` (lengths and a CRC of the stored `wifi_ssid` / `wifi_psk`, never the passphrase itself),
-  `pt_ble erase` (delete both keys and `wifi_ap`). Console PR1 (`/dev/ttyACM0`).
+  `pt_ble erase` (delete both keys and `wifi_ap`). Console PR1 (`/dev/leakcam-bl616`).
 - BLE central: the user's Android phone on adb over USB (2026-10-27; the VM has no Bluetooth controller of its own).
   `android/app/src/androidTest/.../BleOp.kt` does one BLE operation per call (scan, unpair, session: pair accept /
   cancel, MTU, hex writes, the STATUS notifications, a link drop on a given state) and accepts the system pairing
@@ -52,7 +51,7 @@ littlefs (PSM partition, `CONFIG_LITTLEFS_KV_EASYFLASH`), Wi-Fi fhost + lwIP + D
    with a value other than 0x01 / 0x02 or longer than 1 byte refused.
 4. **Store unchecked (0x02):** STATUS notifies SAVED; `pt_ble creds` matches what was written (length + CRC), no
    passphrase on the console or in the log.
-5. **Persistence:** the stored credentials survive a BL616 reset, a watchdog reset, HBN sleep and wake, and a full
+5. **Persistence:** the stored credentials survive a BL616 reset, a watchdog reset (`crash hang`), and a full
    power cut (cell out, USB out); `pt_wifi join` with the stored keys joins (test100 path).
 6. **Overwrite:** a shorter SSID and passphrase after longer ones: read back exactly (no old tail bytes); the
    remembered AP (`wifi_ap`) of the old network does not stop the join on the new one.
@@ -60,13 +59,8 @@ littlefs (PSM partition, `CONFIG_LITTLEFS_KV_EASYFLASH`), Wi-Fi fhost + lwIP + D
    passphrase: WRONG_PASSWORD, the old credentials kept; unknown SSID: NOT_FOUND; hotspot without data: NO_INTERNET
    (or NO_DNS); the central disconnects during the check: nothing stored; a second commit during the check: no second
    check.
-8. **BLE first, new network during a K230 session** (user, 2026-10-28; the bridge `pt_wifi bridge` stands in for
-   the session, `pt_wifi link` reads its association): commit 0x01 with a wrong passphrase while the bridge is on
-   the stored network: the check runs (no BUSY), WRONG_PASSWORD, old credentials kept, the bridge back on the
-   network; commit 0x01 with the right ones: SAVED, the session restarts and is back on the network (time from
-   SAVED); commit 0x02 of another network: the session restarts on it (gone from the old one); the real network
-   stored again after that failed join: back on it (time); the router's password changed (0x02 of a wrong one: the
-   session retries and fails), then the new one with a check during those retries: SAVED, back on it (time).
+8. **BLE first, new network during a K230 session**: gone since 2026-11-02 (all BLE in the setup firmware, which runs
+   no K230 session; the full firmware has no BLE): not in run.py since 2026-11-03. Its old result: HISTORY.md.
 9. **Repeats (leak test):** 8 connect / pair / write / commit 0x02 / disconnect cycles (the leak verdict's minimum; a cycle
    that never left the phone is retried once and noted) and 8 checked commits: BL616
    `mem` before and after each (mem_leak.py), easyflash still writes (its garbage collection runs), no reset.
@@ -81,37 +75,25 @@ power cut; no leak over the repeats; the passphrase never appears on a console o
 
 ## Result
 
-- Steps 3-9 pass, 46 of 46 checks (run.py runs 12 and 13, 2026-10-29): every write limit enforced; credentials
-  stored exactly (no old tail bytes); kept over HBN and a watchdog reset; checked store reports JOINING -> ADDRESS ->
-  INTERNET -> SAVED; a wrong passphrase fails and stores nothing (0x11 WRONG_PASSWORD since 2026-10-30, the SDK's
-  firmware status read, test106; before it 0x12 JOIN_FAILED), unknown SSID 0x10 NOT_FOUND, the old credentials kept;
-  link dropped during a check: nothing stored; a second commit starts no second check; BLE and Wi-Fi run together.
-- Step 8 (BLE first, during a session; run 13, -O3 + LTO, 2026-10-29): the session is back 0.1 s after a check during
-  it, 0.1 s after SAVED (checked and unchecked), 3.4 s after a failed join to a missing network, 0.1 s after SAVED with
-  a changed router password.
-- Step 9: 20 store cycles, 0 failed, BL616 `mem` flat: no leak (runs 12 and 13, 2026-10-29).
-- Hand step 1 (2026-10-29): advertises on USB power; a held, paired connection drops 0.1 s after USB-C 1 out; no
-  advertising on battery (15 s scan); advertising again after the plug (the test firmware needs `pt_ble on`, the
-  product reboots into its USB mode). Hand step 2: no connection on battery, so no pairing and no write.
-- BLE start -> advertising 0.28-0.29 s (radio init 0.187 s); the phone's scan saw it 2.1-6.0 s after BLE start (scan
-  timing) (2026-10-29).
-- No passphrase and no key dump on the console over 6 joins and leaves (measure_build.py, run 13 image, 2026-10-29);
-  the SDK's psk / key-dump / LTK prints are removed by sdk_patch.py.
-- PDS A/B decided (pds_ab.py, 2026-10-29): with the SDK's PDS reset at BLE start the BL616's USB device drops for good;
-  with the empty `btblecontroller_software_pds_reset()` hook every BLE start kept USB. The empty hook stays (user).
-- No BLE bonds kept (CONFIG_BT_SETTINGS off): after a reset or HBN the phone pairs again (user decision).
-- Test firmware back to the default build flags (-Os -g, the SDK's Kconfig default, no LTO; -O3 / LTO only for
-  optimisation tests, user 2026-10-29), flashed 2026-10-30: `pt_ble on` keeps USB and advertises; test106 ran 18/18
-  on it. The -O2 / -O3 / LTO comparison in Metrics stands (the product defconfig uses -O3 + LTO).
+- 2026-11-03 06:15-06:21 UTC, run.py 37/37, 368 s, setup_test 0.6+g8828b50-dirty-202611030525 (the test bed,
+  `switch_to_full off`), USB-C 1 in, the phone 8 m away in another room: advertising seen 4.7 s after `lp_boot`
+  (RSSI -62); the cancelled pairing and the pairing without the PIN: every write refused, nothing stored; paired with
+  the PIN (passkey entry), MTU 247; every write limit enforced; stored exactly (no old tail bytes); kept over a reset
+  and a watchdog reset (`crash hang`, the record cleared after); wrong passphrase 0x11, unknown SSID 0x10, the old
+  credentials kept; the link dropped during a check: the board finishes and stores; checked store JOINING ->
+  ADDRESS -> INTERNET -> SAVED, a second commit starts no second check; 8 store cycles, BL616 free flat (no leak).
+- Checked store by hand right after the second run (2026-11-03, same sessions, 3 each): JOINING -> SAVED 2.6-2.8 s,
+  unknown SSID 0x10 in 4.6 s.
+- Three runs before it lost sessions that never left the phone at 8 m (HISTORY.md Obstacles): run.py retries such a
+  session once and notes it (sess()); the passing run needed no retry.
+- Kept from before (HISTORY.md): no passphrase or key dump on the console (measure_build.py, 2026-10-29); the empty
+  PDS reset hook keeps USB (pds_ab.py, 2026-10-29); no BLE bonds kept (the phone pairs again after a reset).
 
 Open:
-- Step 5: the full power cut (cell out, USB out) not done (user keeps the cell in); persistence over reset, watchdog
-  reset and HBN passed.
-- The product firmware does not boot after a flash (no USB device, no advertising, 45-46 mA steady, at -O2 and -O3 +
-  LTO; 2026-10-29) - left for the product rewrite.
-- 2026-10-28: `pt_ble on` typed on battery advertised (only pairing gated in the test firmware) vs hand step 1 of
-  2026-10-29: no advertising on battery after the unplug; an explicit `pt_ble on` on battery not rechecked since.
-- Confirm no BLE code runs on a battery wake (Boot time).
+- Step 5: the full power cut (cell out, USB out) not done (user keeps the cell in); persistence over a reset and a
+  watchdog reset passed.
+- Hand steps 1 and 2 on the setup firmware (battery: PDS sleep with 2 s advertising, DESIGN.md 5.3.1, test120): last
+  run on the test firmware (2026-10-29).
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
@@ -121,15 +103,15 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 |---|---|---|---|
 | Boot, power-on -> READY (median of 5) | n/a: the K230 is not powered (BL616 only) | target (test022) | |
 | This part's boot share | `pt_ble on` -> advertising 0.290 s (median of 5 after watchdog resets, spread 1 ms): radio init (rfparam) 0.187 s, controller + host + advertising 0.103 s; host-timed over the USB console (2026-10-29) | - | |
-| Test run time | 494 s automated (run.py, run 13 with step 8, 2026-10-29), no setup | - | setup (flashing, plugging, waiting) separately |
-| provisioning times: connect + pair, write, store, check (JOINING -> SAVED) | advertising seen 2.1 s after BLE start; connect + pair 11.0 s; store 0x02 3.1 s per session; check 0x01 0x1 2.0 s -> 0x2 7.8 s -> 0x3 11.4 s -> 0x4 11.5 s (2026-10-28, run.py) | - | % of the top |
+| Test run time | 368 s automated (run.py, 2026-11-03, the setup test bed), no setup | - | setup (flashing, plugging, waiting) separately |
+| provisioning times: connect + pair, write, store, check (JOINING -> SAVED) | advertising seen 4.7 s after lp_boot (RSSI -62, 8 m); checked store JOINING -> ADDRESS -> INTERNET -> SAVED 2.6-2.8 s (by hand, same sessions); unknown SSID 0x10 4.6 s (2026-11-03) | - | % of the top |
 | Current idle / during (min / avg / peak) | USB-C 1 VBUS, cell full, test firmware -O3 + LTO (hand_steps.py meter, 2026-10-29): BLE off idle 60 / 60.3 mA; advertising 63.4 / peak 63.5 mA; phone connected, idle link 63.1 / 63.2 mA; Wi-Fi check (14 s, JOINING -> SAVED) peak 86 mA. BLE costs ~3.4 mA over idle. With the cell charging the meter read 443 -> 370 -> 144 mA (charge current, not the board) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | n/a: BL616-only test, rails off - VBAT is read by the K230 ADC (test023) (2026-10-28) | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | at ~5 V VBUS: idle 0.30 W, advertising 0.32 W, check peak 0.43 W; one check <= 86 mA x 5 V x 14 s = 6 J from USB (upper bound, peak held the whole check), ~1.6 J over the connected level; the battery pays nothing: BLE runs on USB power only (2026-10-29) | - | scripts/energy.py |
 | Per day | n/a: on USB power only, once per installation | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | die n/a: K230 off; board 32.9 / 32.9 / 32.9 C (AHT20) (2026-10-28) | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | run 13 (-O3 + LTO): BL616 free 105340 -> 105336 B, min 94568, 170 blocks over 20 cycles: no leak; run 12 (-O2, the test firmware's flags now): free 106052 / min 97420 B, 169 blocks, unchanged over 20 cycles with BLE first and session restarts (2026-10-29, run.py) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
-| Image (sizes) | BL616 test firmware 1633088 B (-O3 + LTO, run 13, 2026-10-29); 1305360 B at the default -O2 (2026-10-28, on the board at that run) | minimal image (rule) | the image this run used |
+| Memory BL616 / K230 (start / min / end), leak | setup test bed: BL616 free 161296 / min 135076 / 161008 B, blocks 96 -> 101; 8 store cycles: no leak (free 161008 -> 161008 B, mem_leak.py) (2026-11-03) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
+| Image (sizes) | BL616 setup test bed 1288672 B (-Os -g, 2026-11-03, on the board at the run) | minimal image (rule) | the image this run used |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os -march=rv64imafdcv, sections + --gc-sections, strip, no LTO; BL616 test firmware -O2 (SDK default), no LTO (back to default flags, user 2026-10-29: -O3 / LTO only for optimisation tests; run 13 was -O3 + LTO); BL616 product defconfig -O3 + LTO (2026-10-29) | smallest code (rule) | |
 | Features over the minimal image | BLE in the product image (leakcam_bl616.map, -O2): controller 113.8 KB + host 66.1 KB + ble_pairing.c 2.1 KB = 182 KB flash (14.8 % of 1233 KB), 14.2 KB static RAM; at run time 18.8 KB heap and 5 tasks (`mem` before / after `pt_ble on`: free 176528 -> 157764 B); start 0.29 s, only on USB power, not on the boot path (2026-10-29) | test008 floor | bytes, boot ms, RAM, current |
 | Optimised build (-O3, LTO, -march) | measure_build.py on the test firmware, 2026-10-29: -O2 / -O3 / -O3 + LTO: image 1330080 / 1727920 / 1637200 B; BLE start -> advertising 0.292 / 0.277 / 0.275 s; remembered-AP join (associate + WPA, median of 5) 272 / 250 / 168 ms; full join 3195 / 3170 / 3090 ms; heap after BLE start 157764 / 152260 / 157060 B free. -O3 + LTO adopted in the product defconfig (the test firmware is back to -O2, user 2026-10-29); -march is already the E907's full set (SDK: -march=rv32imafcpzpsfoperand_xtheade -mtune=e907, nothing wider); current not compared (meter, hand step) | the faster one stays | |

@@ -4,6 +4,54 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Earlier status and result (README before 2026-11-03)
+
+Status: **pass** (2026-11-01): run.py 46/46 in 338 s on the test firmware with STATUS reconciliation (attempt id, kept
+across connections, a passed check stored also with the phone gone, notified only on change), fail fast and checked
+return values; hand steps 1 and 2 (2026-10-29); step 5's full power cut not done (user: the cell stays in).
+
+To re-prove (user, 2026-11-02, DESIGN.md 5.3.1): the check's end goal is the API reachable: join -> address -> internet
+-> a check-in answered by the presence server; STATUS gains "API not reachable"; and it runs on the setup firmware
+(all setup there, the full firmware has no BLE). The pass above is on the earlier check (internet as the last step).
+
+- Steps 3-9 pass, 46 of 46 checks (run.py runs 12 and 13, 2026-10-29): every write limit enforced; credentials
+  stored exactly (no old tail bytes); kept over HBN and a watchdog reset; checked store reports JOINING -> ADDRESS ->
+  INTERNET -> SAVED; a wrong passphrase fails and stores nothing (0x11 WRONG_PASSWORD since 2026-10-30, the SDK's
+  firmware status read, test106; before it 0x12 JOIN_FAILED), unknown SSID 0x10 NOT_FOUND, the old credentials kept;
+  link dropped during a check: nothing stored; a second commit starts no second check; BLE and Wi-Fi run together.
+- Step 8 (BLE first, during a session; run 13, -O3 + LTO, 2026-10-29): the session is back 0.1 s after a check during
+  it, 0.1 s after SAVED (checked and unchecked), 3.4 s after a failed join to a missing network, 0.1 s after SAVED with
+  a changed router password.
+- Step 9: 20 store cycles, 0 failed, BL616 `mem` flat: no leak (runs 12 and 13, 2026-10-29).
+- Hand step 1 (2026-10-29): advertises on USB power; a held, paired connection drops 0.1 s after USB-C 1 out; no
+  advertising on battery (15 s scan); advertising again after the plug (the test firmware needs `pt_ble on`, the
+  product reboots into its USB mode). Hand step 2: no connection on battery, so no pairing and no write.
+- BLE start -> advertising 0.28-0.29 s (radio init 0.187 s); the phone's scan saw it 2.1-6.0 s after BLE start (scan
+  timing) (2026-10-29).
+- No passphrase and no key dump on the console over 6 joins and leaves (measure_build.py, run 13 image, 2026-10-29);
+  the SDK's psk / key-dump / LTK prints are removed by sdk_patch.py.
+- PDS A/B decided (pds_ab.py, 2026-10-29): with the SDK's PDS reset at BLE start the BL616's USB device drops for good;
+  with the empty `btblecontroller_software_pds_reset()` hook every BLE start kept USB. The empty hook stays (user).
+- No BLE bonds kept (CONFIG_BT_SETTINGS off): after a reset or HBN the phone pairs again (user decision).
+- Test firmware back to the default build flags (-Os -g, the SDK's Kconfig default, no LTO; -O3 / LTO only for
+  optimisation tests, user 2026-10-29), flashed 2026-10-30: `pt_ble on` keeps USB and advertises; test106 ran 18/18
+  on it. The -O2 / -O3 / LTO comparison in Metrics stands (the product defconfig uses -O3 + LTO).
+
+### Automated run 2026-11-03 (run.py, 368 s): pass
+
+37 of 37 checks passed. Not automated: advertising stops on unplug, pairing refused on battery, power cut (README Steps 1, 2, 5).
+
+
+### Automated run 2026-11-03 (run.py, 379 s): **FAIL**
+
+35 of 37 checks passed; failed: commit without an SSID refused (GATT None); offset (long) write refused (GATT None) Not automated: advertising stops on unplug, pairing refused on battery, power cut (README Steps 1, 2, 5).
+
+
+### Automated run 2026-11-03 (run.py, 398 s): **FAIL**
+
+33 of 37 checks passed; failed: check, unknown SSID: 0x10 ([]); checked store: JOINING -> ADDRESS -> INTERNET -> SAVED ([]); a second commit during the check starts no second check (); 8 store cycles (1 failed) Not automated: advertising stops on unplug, pairing refused on battery, power cut (README Steps 1, 2, 5).
+
+
 ### Automated run 2026-11-01 (run.py, 449 s): pass
 
 49 of 49 checks passed. Not automated: advertising stops on unplug, pairing refused on battery, power cut (README Steps 1, 2, 5).
@@ -178,6 +226,12 @@ the board was never seen advertising.
 - Optimised build note (2026-10-29): "-O3 + LTO adopted in the product and test defconfigs".
 
 ## Obstacles
+
+- store cycle 3: no write left the phone (pairing dialog not answered in time), retried (2026-11-03, automated run)
+- store cycle 4: no write left the phone (pairing dialog not answered in time), retried (2026-11-03, automated run)
+- store cycle 5: no write left the phone (pairing dialog not answered in time), retried (2026-11-03, automated run)
+- store cycle 7: no write left the phone (pairing dialog not answered in time), retried (2026-11-03, automated run)
+- store cycle 8: no write left the phone (pairing dialog not answered in time), retried (2026-11-03, automated run)
 
 - 2026-11-01, first run after PR4: "BLE started (pt_ble on)" FAIL although the phone saw the board 7 s later: PR4
   replaced the firmware's "ble: advertising as" line with "ble: ready as" and the runners still waited for the old
@@ -367,3 +421,14 @@ the board was never seen advertising.
   DNS and the checks' one HTTP GET; the K230's traffic bypasses it), no speed lost; Wi-Fi RAM at 99.6 % (130 496 of 131 072 B), both images
   -> where: firmware/bl616/lwipopts_user.h (LWIP_HEAP_SIZE, comment names this test). To verify on the board: the
   credential check and the BL616-only server check (test100 step 4) still pass with the smaller heap.
+- 2026-11-03 05:58 UTC, the first run on the setup test bed: the VM's xHCI hung at the run's first `reboot` (dmesg
+  hub_ext_port_status err -32, no BL616 port for 60 s: "BLE started (lp_boot)" failed). Stopped, xHCI rebound
+  (0000:0a:00.0), run again with the rebind watcher (skill board-bringup / memory vmware-usb).
+- 2026-11-03 06:03-06:06 UTC, the second run on the setup test bed (the phone 8 m away in another room, RSSI -70 to
+  -77): 33/37; three sessions came back in 3-4 s with no STATUS (unknown SSID, the checked store, one store cycle),
+  the runner logged nothing about why. The same sessions by hand right after: 6/6 (unknown SSID 0x10, the real network
+  SAVED in 2.6-2.8 s). Fixed in run.py: sess() for every paired session: one that never left the phone is retried
+  once and noted (as the store cycles did already), and a session without STATUS logs what the phone saw.
+- 2026-11-03 06:09-06:14 UTC, the third run: 35/37; the commit without an SSID and the offset write came back with no
+  write at all (GATT None: the session never connected, the phone 8 m away), every other session passed. Those
+  sessions moved to sess() as well (a refusal is a status > 0, so the retry cannot hide one).

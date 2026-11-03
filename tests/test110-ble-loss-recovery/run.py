@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""test110 automated: the LEAKCAM Setup app against loss at every step of a setup. The BL616 test firmware injects the
-loss (pt_fault: notifications dropped, the link dropped at connect / each check state / the result, DNS or HTTP
+"""test110 automated: the LEAKCAM Setup app against loss at every step of a setup. The setup firmware's test bed
+(tests/firmware/bl616_setup_test: firmware/bl616_setup's own sources, started by `lp_boot`, its switch to the full
+firmware off) injects the loss (pt_fault: notifications dropped, the link dropped at connect / each check state / the result, DNS or HTTP
 answers lost); the phone's own Bluetooth is switched off during a check over adb. Per case: what the app told the
 user, how long it took, whether that matches what the board stored (consistency), and a clean setup right after
-(recovery). Needs the BL616 test firmware with pt_fault, USB-C 1 in, the phone on adb, unlocked.
+(recovery). Needs the setup test bed flashed (make flash there), USB-C 1 in, the phone on adb, unlocked.
     tests/test110-ble-loss-recovery/run.py
 """
 import fcntl
@@ -16,7 +17,7 @@ import time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import adb, creds, op, ready, want   # noqa: E402
+from phone import adb, creds, firmware, op, ready, want   # noqa: E402
 
 DECOY = ("t110-decoy", "password1")   # stored unchecked before each case: a stored real network then means "stored"
 FAIL_MS = 35                          # a failure must be told by then, not by the app's 60 s step timeout
@@ -41,8 +42,8 @@ def setup(s, k, anyway=False):
     helps = res.get("help", [])
     last = helps[-1]["help"] if helps else res.get("error", "no help text")
     secs = res.get("ms_end", 0) / 1000
-    log("setup", s if s != ssid else "<network>", f"{secs:.1f} s", " | ".join(h["help"][:60].replace("\n", " ")
-                                                                            for h in helps[-2:]))
+    log("setup", s if s != ssid else "<network>", f"{secs:.1f} s",
+        " | ".join(h["help"][:60].replace("\n", " ").replace(ssid, "<network>") for h in helps[-2:]))
     return last, secs, res
 
 
@@ -130,9 +131,9 @@ if not os.path.exists(BL_PORT):
     r.obstacle("no BL616 console on USB: reconnect, then run again")
     r.finish("not run: no BL616 console on USB.", False, switch_off=False)
     sys.exit(1)
-if "pt_fault" not in bl("help", 2):
-    r.obstacle("the BL616 firmware on the board has no pt_fault: flash tests/firmware/bl616_powertest")
-    r.finish("not run: no pt_fault in the BL616 firmware.", False, switch_off=False)
+if firmware() != "setup_test":
+    r.obstacle(f"the BL616 runs {firmware()}: flash tests/firmware/bl616_setup_test (make flash)")
+    r.finish("not run: not the setup test bed.", False, switch_off=False)
     sys.exit(1)
 why = ready(r.notes)
 if why:
@@ -140,7 +141,9 @@ if why:
     r.finish(f"not run: {why.split(' (')[0]}.", False, switch_off=False)
     sys.exit(1)
 fault("off")
-bl("pt_ble on", 5, r"ble: ready as|already on")
+bl("switch_to_full off", 2)
+check("the setup firmware started (lp_boot)", re.search(r"lp: boot done|already run", bl("lp_boot", 20,
+                                                                                         r"lp: boot done|already run")))
 last, secs, _ = setup(ssid, psk)
 check("baseline: Done without faults", last.startswith("Done."), f"{secs:.1f} s")
 

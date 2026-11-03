@@ -49,6 +49,8 @@ if not m:
 dev = m.group(1)
 product = bool(answer("provision", r"provision: pairing PIN (stored|none)"))
 cmd = "provision" if product else "pt_ble creds"
+if not product and "easyflash init failed" in bl(cmd, 3, r"easyflash init failed|pairing PIN"):
+    bl("lp_boot", 20, r"lp: boot done")         # the setup test bed: easyflash comes up with its start (2026-11-03)
 state = answer(cmd, r"pairing PIN (stored|none)")
 if not state:
     sys.exit("provision_pin: the firmware reports no pairing PIN state (built before the PIN change?)")

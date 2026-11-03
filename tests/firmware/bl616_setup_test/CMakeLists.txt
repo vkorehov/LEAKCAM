@@ -4,7 +4,7 @@ find_package(bouffalo_sdk REQUIRED HINTS $ENV{BL_SDK_BASE})
 
 # the setup firmware's test bed (tests/test120, test121): the setup firmware's own sources (firmware/bl616_setup) and the
 # shared modules (firmware/bl616_common), so what passes here is what ships; this folder adds only test commands (main.c)
-# and the power test firmware's pt_ble (test040's runner, provision_pin.py). The defconfig is the
+# and the power test firmware's pt_ble (test040's runner, provision_pin.py) and pt_fault (test110). The defconfig is the
 # setup firmware's (Makefile DEFCONFIG_FILE)
 set(P ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616_setup)
 set(S ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616_common)
@@ -20,6 +20,7 @@ sdk_add_include_directories(${S})
 
 target_sources(app PRIVATE
                ${CMAKE_CURRENT_SOURCE_DIR}/../bl616_powertest/pt_ble.c
+               ${CMAKE_CURRENT_SOURCE_DIR}/../bl616_powertest/pt_fault.c
                ${P}/setup_boot.c
                ${P}/setup_sleep.c
                ${P}/switch_to_full.c
@@ -36,6 +37,9 @@ target_sources(app PRIVATE
 
 sdk_add_link_options(-Wl,--wrap=exception_entry -Wl,--wrap=vApplicationStackOverflowHook -Wl,--wrap=malloc
                      -Wl,--wrap=calloc -Wl,--wrap=realloc -Wl,--wrap=vApplicationSleep)
+# pt_fault (test110): loss injected into the provisioning through wraps; the product sources stay as they are
+sdk_add_link_options(-Wl,--wrap=bt_gatt_notify_cb -Wl,--wrap=bt_conn_set_security -Wl,--wrap=lwip_getaddrinfo
+                     -Wl,--wrap=lwip_recv)
 sdk_add_compile_definitions(-DCFG_BLE_ENABLE -DWPA_SUPPLICANT_CLEANUP_INTERVAL=1800)
 sdk_set_linker_script_macro(${S}/bl616_leakcam.ld.in)
 

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """test119 automated: a phone wakes a present board's BLE through the server (user 2026-11-01: "stay notified by the
-phone"). A configured, present board on battery does not advertise. The app shows a present board out of range with
-a Wake button; the tap asks the server (POST /v1/devices/<id>/wake), the board's next check-in gets "ble":1 and it
-advertises for 2 minutes (`provision`: "on (woken by a phone)"); the app finds it and its button turns into "Change the Wi-Fi";
-the Wi-Fi is changed from the app. A second wake within 2 minutes is refused (429). Product firmware; `provision battery on`
-makes it follow the battery rule on USB power. USB-C 1 in, the phone on adb, unlocked; nothing by hand.
+phone"). On the product pair (firmware/bl616_full in slot 0, bl616_setup in slot 1): the full firmware has no BLE. The
+app shows a present board out of range with a Wake button; the tap asks the server (POST /v1/devices/<id>/wake), the
+board's next check-in gets "ble":1 and the full firmware switches to the setup firmware ("wake"), which advertises for
+2 minutes; the app finds it and its button turns into "Change the Wi-Fi"; the Wi-Fi is changed from the app (back to
+the full firmware). A second wake within 2 minutes is refused (429); a wake nobody follows ends by itself after 2
+minutes (back to the full firmware). USB-C 1 in, the phone on adb, unlocked; nothing by hand.
     tests/test119-wake-through-server/run.py
 """
 import fcntl
@@ -19,7 +20,7 @@ import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import adb, board_id, op, product, ready   # noqa: E402
+from phone import adb, board_id, firmware, op, product, ready, to_firmware   # noqa: E402
 
 SERVER = "http://192.168.1.159:8090"
 PI = "pi@192.168.1.159"
@@ -63,9 +64,8 @@ def on_run_interval():
           f"poll {board_poll()} s after {time.time() - t0:.0f} s")
 
 
-def rule():
-    m = re.search(r"on battery (on \([^)]*\)|off \([^)]*\))", bl("provision", 2, r"on battery (on|off)"))
-    return m.group(1) if m else "?"
+class Stop(Exception):
+    """a step failed: the later steps depend on it, so the run ends there (no waiting out their timeouts)"""
 
 
 def wait_for(name, fn, secs):
@@ -77,7 +77,7 @@ def wait_for(name, fn, secs):
             return time.time() - t0
         time.sleep(1)
     check(name, False, f"not within {secs} s: {got}")
-    return None
+    raise Stop(name)
 
 
 def applog():
@@ -90,15 +90,31 @@ def last(pattern):
 
 
 def tap_setup_button():
-    """the status screen's setup button (Wake / Change the Wi-Fi), from a UI dump (no instrumentation runs now)"""
-    adb("shell", "uiautomator", "dump", "/sdcard/t119.xml")
-    xml = adb("shell", "cat", "/sdcard/t119.xml")
-    m = re.search(r'resource-id="com.leakcam.setup:id/setup_open"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml)
-    if not m:
-        return False
-    x1, y1, x2, y2 = map(int, m.groups())
-    adb("shell", "input", "tap", str((x1 + x2) // 2), str((y1 + y2) // 2))
-    return True
+    """the status screen's setup button (Wake / Change the Wi-Fi), from a UI dump (no instrumentation runs now); the
+    app brought to the front again when another app took the screen (2026-11-03: Chrome opened by hand, the dump
+    had no button)"""
+    for attempt in (1, 2):
+        adb("shell", "uiautomator", "dump", "/sdcard/t119.xml")
+        xml = adb("shell", "cat", "/sdcard/t119.xml")
+        m = re.search(r'resource-id="com.leakcam.setup:id/setup_open"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml)
+        if m:
+            x1, y1, x2, y2 = map(int, m.groups())
+            adb("shell", "input", "tap", str((x1 + x2) // 2), str((y1 + y2) // 2))
+            return True
+        top = re.search(r'package="([^"]+)"', xml)
+        r.obstacle(f"Wake tap {attempt}: the app not on the screen ({top.group(1) if top else 'no dump'} in front)")
+        adb("shell", "am", "start", "-n", f"{PKG}/.MainActivity")
+        time.sleep(3)
+    return False
+
+
+def wake():
+    """the server's wake for the board, as the app asks it: the HTTP status"""
+    try:
+        urllib.request.urlopen(urllib.request.Request(f"{SERVER}/v1/devices/{dev}/wake", method="POST"), timeout=5)
+        return 200
+    except urllib.error.HTTPError as e:
+        return e.code
 
 
 def add_only(dev):
@@ -126,10 +142,11 @@ if why:
 dev = board_id()
 poll_interval(POLL_S)
 try:
+    # 0. present in the full firmware (no BLE); the app knows the board and shows it out of range with a Wake button
+    if firmware() != "full":
+        bl("slot switch", 1)                    # a stored network is assumed (test106 leaves the real one)
+    wait_for("present: the full firmware", lambda: ((g := firmware()) == "full", g), 60)
     on_run_interval()
-    # 0. present, silent on battery; the app knows the board and shows it out of range with a Wake button
-    wait_for("present: silent on battery", lambda: ((g := rule()).startswith("off (configured"), g), 2 * POLL_S + 20)
-    bl("provision battery on", 2, r"battery rule")
     add_only(dev)
     adb("logcat", "-c")
     adb("shell", "am", "start", "-n", f"{PKG}/.MainActivity")
@@ -137,35 +154,49 @@ try:
              lambda: ((g := last(rf"row {dev} (wifi \d ble \d red \d)")) == "wifi 1 ble 0 red 0", g), 90)
     wait_for("app: the button wakes the board", lambda: ((g := last(r"button (.*) enabled (\d)")) is not None
                                                          and g[0].startswith("Wake") and g[1] == "1", g), 15)
-    # 1. the tap: the server holds the wake, the board's next check-in opens BLE for a minute
+    # 1. the tap: the server holds the wake, the board's next check-in switches it to the setup firmware
     t0 = time.time()
-    check("app: Wake tapped", tap_setup_button())
+    ok = tap_setup_button()
+    check("app: Wake tapped", ok)
+    if not ok:
+        raise Stop("app: Wake tapped")
     wait_for("app: the server took the wake", lambda: ((g := last(rf"wake {dev} answer (-?\d+)")) == "200", g), 10)
-    t_woken = wait_for("board: woken at its next check-in", lambda: ((g := rule()).startswith("on (woken"), g),
-                       POLL_S + 20)
+    wait_for("board: woken at its next check-in (the setup firmware)", lambda: ((g := firmware()) == "setup", g),
+             POLL_S + 40)
+    t_delivered = time.time()                   # the server's 2 minutes count from the check-in that took the wake
     wait_for("app: the board in range (Bluetooth icon)",
              lambda: ((g := last(rf"row {dev} (wifi \d ble \d red \d)")) == "wifi 1 ble 1 red 0", g), 40)
     wait_for("app: the button changes its Wi-Fi", lambda: ((g := last(r"button (.*) enabled (\d)")) is not None
                                                            and g[0].startswith("Change") and g[1] == "1", g), 15)
     t_ready = time.time() - t0
-    # 2. the Wi-Fi changed from the app (BleOp taps the same button on the status screen)
+    # 2. the Wi-Fi changed from the app (BleOp taps the same button on the status screen): back to the full firmware
     res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=150)
     helps = res.get("help", [])
     end = helps[-1]["help"] if helps else res.get("error", "no help text")
     check("the Wi-Fi changed after the wake", end.startswith("Done."), f"{res.get('ms_end', 0) / 1000:.1f} s")
+    if not end.startswith("Done."):
+        raise Stop("the Wi-Fi changed after the wake")
+    wait_for("changed: back in the full firmware", lambda: ((g := firmware()) == "full", g), 60)
     # 3. a second wake within 2 minutes: refused, the battery spared
-    try:
-        urllib.request.urlopen(urllib.request.Request(f"{SERVER}/v1/devices/{dev}/wake", method="POST"), timeout=5)
-        code = 200
-    except urllib.error.HTTPError as e:
-        code = e.code
+    code = wake()
     check("server: a second wake within 2 minutes refused", code == 429, str(code))
-    # 4. the 2 minutes over: silent again
-    wait_for("board: silent again after the wake window", lambda: ((g := rule()).startswith("off (configured"), g), 150)
-    r.set("speed", f"Wake tap -> the button changes the Wi-Fi {t_ready:.0f} s (poll {POLL_S} s: up to one interval)")
+    # 4. a wake nobody follows: the setup firmware for 2 minutes, then back by itself
+    while time.time() - t_delivered < 125:
+        time.sleep(1)
+    code = wake()
+    check("server: a wake after the 2 minutes taken", code == 200, str(code))
+    t_in = wait_for("unanswered wake: the setup firmware", lambda: ((g := firmware()) == "setup", g), POLL_S + 40)
+    t1 = time.time()
+    wait_for("unanswered wake: back in the full firmware by itself", lambda: ((g := firmware()) == "full", g), 180)
+    t_window = time.time() - t1
+    check("unanswered wake: about 2 minutes in the setup firmware", t_in is not None and 100 <= t_window <= 160,
+          f"{t_window:.0f} s")
+    r.set("speed", f"Wake tap -> the button changes the Wi-Fi {t_ready:.0f} s (poll {POLL_S} s: up to one interval); "
+                   f"an unanswered wake back in the full firmware after {t_window:.0f} s")
     r.sample("after the checks")
+except Stop as e:
+    log("stopped at:", e)
 finally:
-    bl("provision battery off", 2)
     poll_interval(60)
 
 failed = [c for c in checks if not c[1]]

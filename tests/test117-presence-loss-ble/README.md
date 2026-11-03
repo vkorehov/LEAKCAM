@@ -1,62 +1,52 @@
 # test117: presence lost brings BLE back (the phone sets the Wi-Fi at once)
 
-Status: **setup firmware: the trigger passes (2026-11-02, bench, no phone); the phone steps to re-run** (old pass 2026-11-01, 13/13, on the full firmware's own BLE;
-can reconfigure wifi instantly").
+Status: **pass** (2026-11-03, 19/19, run.py on the product pair, the phone 8 m away in another room): every lost
+presence switched the full firmware to the setup firmware in 9-13 s, the phone found the board at once (RSSI -70) and
+set the network out of it in 8.7-9.1 s, back in the full firmware 4 s after Done (old pass 2026-11-01, 13/13, on the
+full firmware's own BLE and the `provision battery` rule, both gone).
 
-A LEAKCAM with a network stored stops advertising on battery while it is present at the server. When a check-in does
-not reach the server, for whatever reason (the network gone, a wrong password saved without checking, no internet, the
-server down), the presence is lost and BLE advertises again at once (provision.c: the first 60 s window starts at the
-loss, then 60 s every 5 minutes, as for a board with no network), so a phone nearby finds it and sets the Wi-Fi. After
-new credentials the board checks in at once (presence_now), not at the next interval.
+A LEAKCAM with a network stored runs the full firmware, which has no BLE (DESIGN.md 5.3.1). When a check-in does not
+reach the server, for whatever reason (the network gone, a wrong password saved without checking, no internet, the
+server down), the presence is lost and the full firmware switches to the setup firmware at once (presence.c:
+switch_to_setup("lost")), which advertises (100 ms awake, 2 s asleep on battery), so a phone nearby finds it and sets
+the Wi-Fi; the stored network switches it back to the full firmware, which checks in at once. The setup firmware stays
+with the cause gone (the server back): only a setup or its 6 h retry (test125) ends it.
 
 ## Setup
 
-- Full firmware (firmware/bl616_full, make flash), the PIN stored; USB-C 1 in; the phone on adb, unlocked.
+- The product pair (firmware/bl616_full in slot 0, bl616_setup in slot 1: `make flash SLOT1_BIN=...`), the PIN
+  stored, a network stored; USB-C 1 in; the phone on adb, unlocked.
 - The presence server on the Pi: the runner sets its poll interval to 10 s, stops and starts it, and puts back 60 s.
 
-On USB power the board advertises anyway: the runner reads the battery rule the firmware drives its advertising with
-(`provision`: "on battery on (presence lost)" / "off (configured, present)"), not the radio. The radio itself on battery:
-test116's hand steps.
+The runner reads the firmware from `slot` (leakcam-build full / setup); the phone's scan shows the radio itself (none
+in the full firmware). On battery the setup firmware advertises every 2 s (test120, test106).
 
 ## Needs (build features and dependencies)
 
-As test111: BLE provisioning, the Wi-Fi check, presence; the advertising rule (provision.c).
+As test111: BLE provisioning, the Wi-Fi check (setup firmware), presence and the slot switch both ways (test126).
 
 (What this test uses; the union over all tests is the feature set the minimal image keeps.)
 
 ## Steps (run.py)
 
-1. Set up from the app, present: the battery rule off.
-2. The server down: the rule on (presence lost) within one interval; the phone finds the board (its serial) at once;
-   the server back: off again.
-3. A missing network saved without checking from the app: the rule on at once; the app sets the real network at once
-   (Done); the rule off, the board present at the server.
-
-## Setup mode (DESIGN.md 5.3.1, planned)
-
-- In setup mode (once test120 passed): a lost presence puts the board into low power with advertising (not the
-  60 s windows); the app sets the Wi-Fi out of it; the first check-in that reaches the server makes it operational.
-  Every 6 h the setup firmware switches to the full firmware, which tries its check-in (back to setup if it fails;
-  the setup firmware has no check-in of its own, DESIGN.md 5.3.1, test125).
+1. Set up from the app: back in the full firmware, present; the phone does not find the board (no BLE there).
+2. The server down: the setup firmware within one interval; the phone finds the board (its serial) at once; the server
+   back: the setup firmware stays; the app sets the network: the full firmware, present.
+3. A missing network saved without checking from the app: the full firmware cannot check in, the setup firmware at
+   once; the app sets the real network at once (Done): the full firmware, present at the server, no BLE.
 
 ## Pass
 
-Every cause of a lost presence switches advertising on within one interval (at once after new credentials), the phone
-sets the Wi-Fi in one go, and a present board stops advertising on battery.
+Every cause of a lost presence switches to the setup firmware within one interval (at once after new credentials), the
+phone finds the board and sets the Wi-Fi in one go, and a present board runs the full firmware (no BLE).
 
 ## Result
 
-- 2026-11-02 17:55 UTC, the product pair (full + setup, 0.6+g1d2b375-dirty-202611021742; the full firmware without BLE),
-  USB-C 1 in, no phone: the server stopped -> the full firmware's next check-in failed -> **the setup firmware 36.3 s
-  later** (slot 1); on USB power it stayed (only the 6 h retry pending, firmware/bl616_setup/switch_to_full.c); the
-  server back and a `slot switch` by hand (standing in for the retry) -> the full firmware checked in again (0x03).
-  Open: the phone finding the board in the setup firmware and setting the Wi-Fi out of it (the runner still drives the
-  old `provision battery` rule: to rework), the battery case (setup sleeping, the 6 h retry).
-
-2026-11-01, 13/13 checks (poll 10 s, `provision battery on`): present -> the phone does not find the board; the server
-stopped -> presence lost in 5 s, the phone finds the board (its serial) in 0.3 s; the server back -> silent again in
-9 s; a missing network saved without checking -> lost in 4 s; the app sets the real network at once (Done 8.7 s) ->
-silent again 2 s later, present at the server 14 s after that setup started.
+- 2026-11-03 05:25-05:28 UTC, 19/19, run.py 189 s, the product pair (full 0.6+g1d2b375-dirty-202611021742, setup 0.6+g1d2b375-dirty-202611022115), USB-C 1 in, the phone 8 m away in
+  another room: server down -> the setup firmware 9 s later, found by the phone in 0.1 s at RSSI -70; with the server
+  back still the setup firmware 20 s later; set up 9.1 s, back in the full firmware 4 s, present 16 s after the setup
+  started. A missing network saved without checking (15.0 s) -> the setup firmware 13 s after the switch back, found in
+  0.2 s; the real network 8.7 s, present 15 s after; no BLE again.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
@@ -64,15 +54,15 @@ silent again 2 s later, present at the server 14 s after that setup started.
 |---|---|---|---|
 | Boot, power-on -> READY (median of 5) | n/a: the BL616 alone, K230 off | target (test022) | |
 | This part's boot share | n/a: no K230 boot | - | |
-| Test run time | 163 s automated (run.py, 2026-11-01), no setup | - | |
-| presence lost -> advertising; set up again from the app | presence lost -> advertising: see the CHECK lines; set up again from the app 0.0 s | - | % of the top |
+| Test run time | 189 s automated (run.py, 2026-11-03), no setup | - | |
+| presence lost -> the setup firmware; set up again from the app | presence lost -> the setup firmware 9 s (server down) / 13 s (network gone), poll 10 s; set up again from the app 8.7-9.1 s, the full firmware 4 s after Done (2026-11-03) | within one interval | |
 | Current idle / during (min / avg / peak) | n/a: on USB power, no meter reading (2026-11-02 bench run; the battery case is the setup firmware's, test120) | floor (test031) | USB-C 1 meter (LEAKCAM_METER=ask) |
 | Voltage under load (min) | n/a: on USB power | cutoff 3.10 V (bug-004) | |
 | Power, energy per operation | n/a: on USB power; a switch is one reset and a 4 KB partition-table write (test126) | - | |
 | Per day | n/a: a fault case | ENERGY.txt line | |
 | Temperature die / board (start / peak / end) | n/a: K230 off, the BL616 at idle load | K230 limit (datasheet) | |
-| Memory BL616 / K230 (start / min / end), leak | BL616 free 145288 / min 120104 / 145288 B, blocks 107 -> 107, deleted 0; leak: n/a, 1 snapshots (mem_leak.py needs >= 8 cycles) (2026-11-01) | no leak | |
-| Image (sizes) | BL616 test firmware 1317888 B (2026-11-01, on the board at the run) | minimal image (rule) | |
+| Memory BL616 / K230 (start / min / end), leak | full firmware after the last setup's reset: BL616 free 210052 B (2026-11-03; fresh boots, no heap carries over a setup: no leak test) | no leak | |
+| Image (sizes) | full 1085760 B, setup 1284464 B (2026-11-03, the pair on the board) | minimal image (rule) | |
 | Compile flags | BL616 product (test compiles: no -O3/LTO) | smallest code (rule) | |
 | Features over the minimal image | as test111 | test008 floor | |
 | Optimised build (-O3, LTO, -march) | n/a: not an optimisation test | the faster one stays | |
@@ -83,4 +73,4 @@ n/a: no K230 boot.
 
 ## Battery energy
 
-Advertising after a loss costs the battery like the windows of a new board (test114 measures the cost per window).
+Advertising after a loss is the setup firmware's (PDS sleep, 2 s advertising: test120); a switch is one reset and a 4 KB partition-table write (test126).
