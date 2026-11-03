@@ -57,3 +57,21 @@ did not wedge it.
 A board that starts on its cell can never be set up: a new board out of the box, the setup firmware after a lost
 presence or a wake on battery (test117, test119 on battery), its 6 h retry (test125).
 
+## Follow-up (2026-11-03, user: add the cases)
+
+The veto reads ble_pairing.c's own flags (adv_on, active_conn), not the host's state. Where BLE can be idle after its
+start, and what to do:
+
+- No pairing PIN stored: on_bt_ready() never advertises -> vetoed forever -> awake on battery (~50 mA) until the cell
+  is flat. Change: no PIN -> the BLE controller not started at all, the sleep allowed ("never started" is safe, "not
+  started yet" was the wedge) - one experiment first: a sleep window with BLE never started, then `lp_boot`.
+- A stale adv_on (on_connected() returning early, the controller stopping advertising unseen): the veto says
+  "advertising" while BLE is idle -> the wedge, and no advertising again. Change: the veto from the host's own state
+  (bt_dev.flags BT_DEV_ADVERTISING, an LE connection looked up), not the module's flags.
+
+Cases to add (setup test bed, the `wakeup_timer <ms> usb` sleep window, no hands), each ending in a reset + `lp_boot`
+(BLE up = no wedge left):
+1. The phone gone while asleep: a session, the phone's Bluetooth off mid-connection -> advertising again, sleeps go
+   on, found again. Then on battery (test110 `--battery`).
+2. No PIN: sleeps (after the change) and BLE stays healthy.
+3. Many connects / disconnects in one sleep window: vetoes vs sleeps counted, no wedge accumulated.
