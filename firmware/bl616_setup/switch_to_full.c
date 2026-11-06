@@ -35,6 +35,11 @@ static void switch_now(void)
         printf("switch_to_full: the full firmware's upgrade first, staying in setup\r\n");
         return;
     }
+    if (usb_setup_active()) {               /* the relay ends with the K230's power first: counted in the check-in */
+        usb_setup_end("back to the full firmware");   /* (metrics.h); the reset alone cut it unrecorded (test048) */
+        while (usb_setup_active())
+            vTaskDelay(pdMS_TO_TICKS(50));
+    }
     metrics_switch();
     if (slot_switch() != 0)                 /* returns only on a failed partition-table write */
         printf("switch_to_full: slot switch failed, staying in setup\r\n");
