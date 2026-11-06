@@ -76,7 +76,14 @@ network from ~/.leakcam_wifi, nothing printed), product BL616 pair + product K23
 - Order: the pushed `STATUS 1` came **before** COMMIT's `OK` (the status listener runs inside the commit, before the
   answer). The app takes STATUS lines by their keyword, never as the reply to the command it just sent.
 
-Open: steps 7-8 (a wrong password, the cable pulled during the check) are not in run.py yet.
+2026-11-06 09:15, run.py with steps 7-8 (148 s, 13/13 checks, one plug by hand):
+
+- Step 7, a wrong password over the cable: "The router refused the password ... (code 33)", nothing stored, the board
+  stays in setup with the cable screen for the retry.
+- Step 8, the cable pulled during the join check (the phone's port switched to sink/device for 3 s: VBUS and the link
+  gone, no hand): the app shows "unplugged before it confirmed the network ... cannot tell whether it was stored",
+  never Done, and goes to the board list; the board finishes the check by itself: network stored, full firmware,
+  online 3 s later.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
@@ -84,7 +91,7 @@ Open: steps 7-8 (a wrong password, the cable pulled during the check) are not in
 |---|---|---|---|
 | Boot, power-on -> READY (median of 5) | n/a in this run: the K230 boot is timed by test045 (READY 0.43 s after pt_run) | target (test022) | the K230 boots for the USB session |
 | This part's boot share | n/a: the setup session's K230 boot, see test045 | - | |
-| Test run time | 65 s automated (run.py, 2026-11-06), plug -> end about 30 s | - | |
+| Test run time | 148 s automated (run.py, 2026-11-06, steps 7-8 in), plug -> end about 70 s | - | |
 | setup over USB: plug -> Done | plug -> cable screen 4.26 s; the app's setup op 12.7 s over the cable (2026-11-06) | - | % of the top |
 | Current idle / during (min / avg / peak) | n/a: on the phone's USB power, not metered | floor (test031) | USB-C 1 meter |
 | Voltage under load (min) | n/a: on USB power | cutoff 3.10 V (bug-004) | |

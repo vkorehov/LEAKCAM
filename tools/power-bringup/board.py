@@ -14,6 +14,7 @@ or exact checksums, not by long text matches (tests/test100).
 import os
 import re
 import select
+import subprocess
 import termios
 import time
 
@@ -66,16 +67,34 @@ def cmd(fd, c, secs, until=None):
     return out.decode(errors="replace").replace("\r", "")
 
 
+XHCI = "0000:0a:00.0"   # this VM's USB controller (VMware passthrough)
+
+
+def xhci_reset():
+    """the VM's USB controller stops (`hub_ext_port_status failed`, err -32), mostly when the BL616 re-enumerates at
+    a firmware switch (2026-11-05/06, test113 3 times): unbind + bind brings every device back"""
+    log("BL616 port missing: the VM's USB controller reset (xhci unbind/bind)")
+    for op in ("unbind", "bind"):
+        subprocess.run(["sudo", "-n", "tee", f"/sys/bus/pci/drivers/xhci_hcd/{op}"], input=XHCI, text=True,
+                       capture_output=True)
+        time.sleep(2)
+
+
 def bl(c, secs=1.5, until=None):
-    for _ in range(30):
+    for i in range(30):
         try:
             fd = openp(BL_PORT)
             break
         except OSError:
+            if i == 10 and "hub_ext_port_status failed" in subprocess.run(
+                    ["sudo", "-n", "dmesg"], capture_output=True, text=True).stdout[-2000:]:
+                xhci_reset()        # only the controller's fault: a sleeping BL616 has no port either
             time.sleep(1)
     else:
         log("BL616 port missing")
         return ""
+    if i >= 10:
+        cmd(fd, "", 1)          # the first command after a reconnect got lost once (the erase, 2026-11-06)
     r = cmd(fd, c, secs, until)
     os.close(fd)
     return r

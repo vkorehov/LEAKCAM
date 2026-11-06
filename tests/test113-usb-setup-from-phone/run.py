@@ -9,6 +9,7 @@ Setup for this USB device" dialog is answered "always" from a UI dump. Never pri
 import os
 import re
 import sys
+import threading
 import time
 import urllib.request
 import json
@@ -118,12 +119,45 @@ check("the plug opens the app on the cable screen of this board, no network", sc
 if dialogs:
     notes.append(f"Android's USB dialog answered {dialogs} time(s) ('always' ticked: not again on this phone)")
 
+def setup(psk_text, pull=False, secs=30):
+    """the app's setup on the cable screen; pull: the phone's port switched to sink/device (VBUS and the USB link gone,
+    as a pulled cable) once the app shows the join check, back to source/host 3 s later"""
+    stop = []
+    if pull:
+        def puller():
+            t0 = time.time()
+            while not stop and time.time() - t0 < 30:
+                if "now joining" in adb("logcat", "-d", "-s", "LeakcamSetup:I", secs=10):
+                    adb("shell", "dumpsys", "usb", "set-port-roles", "port0", "sink", "device", secs=10)
+                    log("phone: the cable 'pulled' (port to sink/device) during the join check")
+                    time.sleep(3)
+                    adb("shell", "dumpsys", "usb", "set-port-roles", "port0", "source", "host", secs=10)
+                    log("phone: the cable back (port to source/host)")
+                    return
+                time.sleep(0.2)
+        th = threading.Thread(target=puller)
+        adb("logcat", "-c")
+        th.start()
+    res = op("app", ssid=ssid.encode().hex(), psk=psk_text.encode().hex(), secs=secs)
+    if pull:
+        stop.append(1)
+        th.join()
+    helps = [h["help"] for h in res.get("help", [])]
+    last = helps[-1] if helps else res.get("error", "no help text")
+    log("app:", res.get("error", ""), " | ".join(h[:70].replace("\n", " ").replace(ssid, "<network>") for h in helps[-4:]))
+    return res, helps, last
+
+
+# 7. a wrong password over the cable: named, nothing stored, the cable screen stays for the retry
+res, helps, last = setup(psk + "x")
+check("a wrong password is named over the cable", "refused the password" in last and
+      not any("pair with" in h for h in helps), last[:60].replace(ssid, "<network>"))
+check("a wrong password stores nothing: still the setup firmware", creds()[0] is None and firmware() == "setup",
+      firmware() or "?")
+
 # 3. the app does the setup over the cable
-res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), secs=30)
+res, helps, last = setup(psk)
 check("the app's setup ran on the cable screen (no list, no Find)", res.get("usb_screen") is True)
-helps = [h["help"] for h in res.get("help", [])]
-last = helps[-1] if helps else res.get("error", "no help text")
-log("app:", res.get("error", ""), " | ".join(h[:70].replace("\n", " ").replace(ssid, "<network>") for h in helps[-4:]))
 # the cable screen's own text; "Sending ... over the USB cable" lasts milliseconds (answers in 1-3 ms), never seen
 check("the app used the cable (no Bluetooth pairing)", any("Check and save" in h for h in helps) and
       not any("pair with" in h for h in helps), f"{len(helps)} screens")
@@ -146,6 +180,27 @@ t = time.time()
 while not online(dev) and time.time() - t < 30:
     time.sleep(3)
 check("the server sees the board online", online(dev), f"{time.time() - t:.0f} s")
+
+# 8. the cable pulled during the join check: the app claims nothing, the board finishes the check by itself
+log("board: network erased again, the phone stays plugged")
+adb("logcat", "-c")
+bl("provision erase", 2)
+bl("reboot", 1)
+t = time.time()
+while usb_screen() is None and time.time() - t < 30:     # the K230 back on the cable: the plug opens the app
+    time.sleep(1)
+check("erased with the phone in: the cable screen again", usb_screen() == (dev, "0"), f"{time.time() - t:.1f} s")
+res, helps, last = setup(psk, pull=True, secs=15)
+# from the app's log: the error shows only a moment, the app then lists the board (the driver's screen samples missed
+# it, 2026-11-06)
+applog = adb("logcat", "-d", "-s", "LeakcamSetup:I", secs=15)
+check("the cable pulled during the check: the app does not claim Done", "unplugged before it confirmed" in applog
+      and "Done." not in applog, "error shown, no Done" if "unplugged before it confirmed" in applog else "no error")
+t = time.time()
+while (firmware() != "full" or not online(dev)) and time.time() - t < 30:
+    time.sleep(2)
+check("the board finished the check alone: network stored, online", creds() == want(ssid, psk) and online(dev),
+      f"{firmware() or '?'}, {time.time() - t:.0f} s")
 
 hand("USB-C 1: take the phone off, plug the bench cable back in", "bench")
 r.sample("after the setup")

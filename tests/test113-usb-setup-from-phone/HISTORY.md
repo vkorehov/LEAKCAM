@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-06 (run.py, 148 s): pass
+
+13/13 checks pass.
+
+
+### Automated run 2026-11-06 (run.py, 157 s): **FAIL**
+
+12/13 checks pass. Failed: the cable pulled during the check: the app does not claim Done (Enter the Wi-Fi network 7C3E8262B149 should use (2.4 GHz; leave the pa).
+
+
 ### Automated run 2026-11-06 (run.py, 65 s): pass
 
 8/8 checks pass.
@@ -30,6 +40,14 @@ not run: the phone was never unplugged
 
 
 ## Obstacles
+
+- **2026-11-06, the VM's USB controller stopped again at firmware switches** (3 times today, `hub_ext_port_status
+  failed`, err -32): the BL616 re-enumerates at every switch (a reboot into the other slot) and VMware's passthrough
+  controller sometimes stops for every device. board.bl() now resets it (xhci unbind/bind) after 10 s without the
+  port, only when the kernel log shows that fault (a sleeping BL616 has no port either); worked in the 09:12 run.
+- **Step 8 first judged from the driver's screen samples**: the app shows the "unplugged before it confirmed" error
+  only a moment and goes to the board list; the samples missed it (FAIL although the app was right). Judged from the
+  app's log now; the op limit 15 s (the list has no Send button to wait for).
 
 - **2026-11-06, the plug's wake never powered the K230:** the bench cable pulled -> the setup firmware sleeps (PDS);
   the phone's plug wakes it, the session starts, `crash: K230 failure recorded: 3V3 did not come up`: K230_PWR (IO30)
