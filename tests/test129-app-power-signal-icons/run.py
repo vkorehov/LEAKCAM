@@ -101,7 +101,7 @@ dev = board_id()
 try:
     # 1. no network: the setup firmware on USB power, advertising flags bit 1
     bl("provision erase", 2, r"erased|erase failed")
-    t = to_firmware("setup", secs=90)
+    t = to_firmware("setup", secs=90)   # the full firmware sees the erase at its next check-in (31 s measured, test116)
     check("no network: the setup firmware on USB", t is not None, f"{t:.0f} s" if t else str(firmware()), stop=True)
     add_only(dev)
     adb("logcat", "-c")
@@ -125,8 +125,8 @@ except Stop as e:
 finally:
     # the real network back from the app: the full firmware again (as the bench is left)
     adb("shell", "am", "force-stop", PKG)
-    res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=150)
-    t = to_firmware("full", secs=90)
+    res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=45)
+    t = to_firmware("full", secs=30)
     check("end: the real network set again, the full firmware", t is not None and creds() == want(ssid, psk),
           "full" if t else str(firmware()))
 

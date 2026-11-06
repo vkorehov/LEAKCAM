@@ -109,7 +109,7 @@ def to_setup():
 def setup(s, k, anyway=False):
     """one setup through the app; a stored network (Done, Saved without checking) switches the board back to the full
     firmware: waited for here"""
-    res = op("app", ssid=s.encode().hex(), psk=k.encode().hex(), anyway="1" if anyway else "", secs=150)
+    res = op("app", ssid=s.encode().hex(), psk=k.encode().hex(), anyway="1" if anyway else "", secs=45)
     helps = res.get("help", [])
     last = helps[-1]["help"] if helps else res.get("error", "no help text")
     secs = res.get("ms_end", 0) / 1000
@@ -166,7 +166,7 @@ try:
     t0 = time.time()
     last, secs = setup(ssid, psk)
     check("server back: the phone sets the network", last.startswith("Done."), f"{secs:.1f} s")
-    while time.time() - t0 < 90 and not online(dev):
+    while time.time() - t0 < 30 and not online(dev):
         time.sleep(1)
     check("server back: present at the server", online(dev), f"{time.time() - t0:.0f} s after the setup started")
 
@@ -181,7 +181,7 @@ try:
     t0 = time.time()
     last, secs = setup(ssid, psk)
     check("network gone: the phone sets the real network at once", last.startswith("Done."), f"{secs:.1f} s")
-    while time.time() - t0 < 90 and not online(dev):
+    while time.time() - t0 < 30 and not online(dev):
         time.sleep(1)
     check("network back: present at the server", online(dev), f"{time.time() - t0:.0f} s after the setup started")
     res = op("scan", secs=15)

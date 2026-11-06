@@ -40,7 +40,7 @@ def check(name, ok, detail=""):
 
 def setup(ssid, psk, anyway=False):
     """one setup through the app; (last help text, seconds from opening the app to it, the op's result)"""
-    res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="1" if anyway else "", secs=150)
+    res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="1" if anyway else "", secs=45)
     helps = res.get("help", [])
     last = helps[-1]["help"] if helps else res.get("error", "no help text")
     log("setup", ssid if ssid != wifi_ssid else "<network>", f"{res.get('ms_end', 0) / 1000:.1f} s",

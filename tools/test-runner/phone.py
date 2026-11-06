@@ -296,7 +296,11 @@ def ready(notes):
     if "device" not in adb("get-state", secs=10) and os.path.exists(PHONE_FILE):
         ip, _, port = open(PHONE_FILE).read().strip().rpartition(":")
         for host in dict.fromkeys((ip, *PHONE_IPS)):
-            if "connected to" in adb("connect", f"{host}:{port}", secs=10):
+            try:
+                answer = adb("connect", f"{host}:{port}", secs=10)
+            except subprocess.TimeoutExpired:   # a host that does not answer: the next IP (it crashed here, 2026-11-06)
+                continue
+            if "connected to" in answer:
                 open(PHONE_FILE, "w").write(f"{host}:{port}\n")
                 break
     if "device" not in adb("get-state", secs=10):

@@ -38,7 +38,7 @@ def check(name, ok, detail=""):
 
 
 def setup(s, k, anyway=False):
-    res = op("app", ssid=s.encode().hex(), psk=k.encode().hex(), anyway="1" if anyway else "", secs=150)
+    res = op("app", ssid=s.encode().hex(), psk=k.encode().hex(), anyway="1" if anyway else "", secs=60)
     helps = res.get("help", [])
     last = helps[-1]["help"] if helps else res.get("error", "no help text")
     secs = res.get("ms_end", 0) / 1000

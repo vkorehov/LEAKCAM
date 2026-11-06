@@ -180,7 +180,7 @@ try:
         t_delivered = time.time()               # later than the delivery: the 2 minutes are surely over below
     t_ready = time.time() - t0
     # 2. the Wi-Fi changed from the app (BleOp taps the same button on the status screen): back to the full firmware
-    res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=150)
+    res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=45)
     helps = res.get("help", [])
     end = helps[-1]["help"] if helps else res.get("error", "no help text")
     check("the Wi-Fi changed after the wake", end.startswith("Done."), f"{res.get('ms_end', 0) / 1000:.1f} s")

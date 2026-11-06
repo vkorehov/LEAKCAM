@@ -60,17 +60,17 @@ def found(name, t0, key, secs=60):
 
 def setup_on_battery(what):
     """the app sets the network on battery: Done, the full firmware, present at the server"""
-    res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=150)
+    res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=45)
     helps = res.get("help", [])
     last = helps[-1]["help"] if helps else res.get("error", "no help text")
     times.setdefault("setup", []).append(res.get("ms_end", 0) / 1000)
     check(f"{what}: set up from the app on battery (PIN, no dialog)", last.startswith("Done."),
           f"{times['setup'][-1]:.1f} s, pairing {res.get('pairing')}", stop=True)
-    t = to_firmware("full", secs=90)
+    t = to_firmware("full", secs=30)
     check(f"{what}: the full firmware", t is not None, f"{t:.0f} s after Done" if t else str(firmware()), stop=True)
     check(f"{what}: the network stored", creds() == want(ssid, psk))
     t0 = time.time()
-    while time.time() - t0 < 90 and not online(dev):
+    while time.time() - t0 < 30 and not online(dev):
         time.sleep(1)
     check(f"{what}: present at the server", online(dev), f"{time.time() - t0:.0f} s after the switch")
 
@@ -96,7 +96,7 @@ try:
     if not UNPLUGGED:
         bl("provision erase", 2, r"erased|erase failed")
         check("no network stored", creds() == (None, None), stop=True)
-        t = to_firmware("setup", secs=90)
+        t = to_firmware("setup", secs=90)   # the full firmware sees the erase at its next check-in (31 s measured, test116)
         check("no network: the setup firmware", t is not None, f"{t:.0f} s" if t else str(firmware()), stop=True)
 
     # 2. on its cell: USB-C 1 out while awake: back to 2 s advertising and the sleep (setup_sleep.c's unplug path)

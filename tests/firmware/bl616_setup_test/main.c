@@ -32,9 +32,12 @@
 
 #include "ble_pairing.h"
 #include "crash_rec.h"
+#include "k230_power.h"
+#include "k230_session.h"
 #include "switch_to_full.h"
 #include "setup_boot.h"
 #include "setup_sleep.h"
+#include "usb_setup.h"
 #include "wdg_guard.h"
 
 static volatile bool booted;
@@ -121,6 +124,10 @@ SHELL_CMD_EXPORT_ALIAS(cmd_lp_bod, lp_bod, test124: brown-out configuration and 
 static void boot_task(void *arg)
 {
     (void)arg;
+    /* as the product's main.c: the setup firmware's cable setup (switch_to_full.c on USB power) starts a K230 session */
+    k230_power_init();
+    k230_session_init();
+    usb_setup_init();
     setup_boot();
     booted = true;
     printf("lp: boot done\r\n");
