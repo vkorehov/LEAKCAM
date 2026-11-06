@@ -6,6 +6,7 @@ import re
 import select
 import time
 
+import harness   # noqa: F401  first: it puts tools/power-bringup (board) on the path
 from board import log, openp, wifi_credentials
 from phone import board_pin
 
