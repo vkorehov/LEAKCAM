@@ -59,3 +59,11 @@ From the rev 1 bugs
    16 IR instead of 8 + 8). Split the LED boards for easy mechanical fitting: each small board carries 1 IR LED and
    1 white LED (16 small boards instead of 4 strips of 2 + 2), joined by the flex of item 1. Check the drivers' chain
    voltage against the 38 V OVP when splitting the chains, and the current against the cell (tests/test105).
+12. AHT20 (U17) placement and isolation (user, 2026-11-06; tests/test048): on the bench on USB power it reads the
+   board, not the room: 38-44 C, 24-26 %RH (25.8 C, 53.9 %RH on 2026-10-17, test002, same room), with the BL616 die
+   at 37-39 C and the K230 die at 45-56 C during a session. Rev 2: U17 at the board edge farthest from the K230,
+   the BL616, U1 (charger) and the regulators, on a tongue cut free on three sides by a routed slot (board cutout,
+   >= 1 mm wide, the tongue only as wide as U17 + its RC filter R52/C4/C9), no copper pour or plane under or around it
+   on any layer, thin traces only across the remaining bridge; the enclosure open to the room next to it (a vent:
+   an exterior change, needs the user's approval, memory leakcam-exterior-frozen). Check after: `t`/`rh` against a
+   room meter on battery and on USB power (test048 step 2).
