@@ -68,3 +68,25 @@ the board without its full firmware (no leak detection).
 Server: the image store and the offer (built). BL616: ota_fetch.c (full), ota.c with the xz decoder (setup),
 flash_sha.c, the streaming download in wifi_check.c (built). K230: the OTA writer (inactive slot + `ota_meta`), not
 built.
+
+## Metrics (2026-11-06 BL616 runs; skill leakcam-test-metrics)
+
+| Metric | Value | Top / budget | Note |
+|---|---|---|---|
+| Boot, reset release -> app init | the new full firmware's first check-in 6-8 s after its start | test022 | |
+| This part's boot share | n/a: the OTA runs after the check-in, not at boot | - | |
+| Test run time | offer -> running 27-29 s per upgrade | - | |
+| Download | 600 KB in 6988-7905 ms (~80 KB/s) | - | over the board's Wi-Fi, server on the Pi |
+| Copy check | SHA-256 read back 86 ms (600 KB) | - | mbedtls on the SEC engine |
+| Unpack | setup firmware: xz unpack + write + check of slot 0 11.3 s | - | |
+| Voltage under load (min) | n/a: on USB power | cutoff 3.10 V (bug-004) | |
+| Current idle / during | n/a: on USB power, not metered | floor (test031) | |
+| Power, energy per operation | n/a: not metered | - | |
+| Per day | n/a: once per release | ENERGY.txt line | |
+| Temperature die / board (start / peak / end) | BL616 die 37-39 C (check-ins around the upgrades) | K230 limit (datasheet) | |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 193456 before, 194000 after the upgrade, minfree 187976-188084: no leak | no leak | |
+| Image (sizes) | full 1098256 B, its .xz 600584-601028 B | minimal image (rule) | |
+| Speed / rate against the top | 27 s offer to running, of it ~7.5 s download, 11.3 s unpack | SPEEDS.txt | |
+| Compile flags | BL616 product -Os -g (SDK Kconfig default), no LTO | smallest code (rule) | |
+| Features over the minimal image | ota_fetch.c (full), ota.c with xz (setup), flash_sha.c | test008 floor | |
+| Optimised build (-O3, LTO, -march) | n/a: not an optimisation test | the faster one stays | |
