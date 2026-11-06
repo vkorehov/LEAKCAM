@@ -670,9 +670,29 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
   from the intact copy (`full_broken` blocks every other way back to slot 0 meanwhile). Image + copy = 1.6 MB of 2 MB:
   the full image can grow by ~260 kB (24 %) before an offer stops fitting; the board refuses one that does not fit and
   touches nothing. Server: `bl616_full.bin` (its version from its build tag) + `bl616_full.xz` in LEAKCAM_IMAGES.
+- **The K230 image: A/B slots, the product program inside them** (user, 2026-11-06). The SPL already does the A/B
+  part: `ota_meta` (256 KiB at 1 MiB) holds one 512-byte record per slot (A in the first half, B in the second:
+  magic `OTAV`, version, CRC-32 of the record with its CRC field 0); the higher version boots, A on a tie; it checks
+  the slot image's SHA-256 (its K230 firmware header, `none_sec.signature`) and boots the other slot when it fails.
+  A slot (`opensbi_rtt_system.bin`, 1.5 MB of 20 MB) held only OpenSBI and the kernel, the program lived on `/sdcard`
+  (UFFS, one copy): so **the product program moves into the kernel image's ROMFS** (CONFIG_RT_USING_DFS_ROMFS), and one
+  slot = kernel + program, updated and rolled back together. `/sdcard` keeps data only (image history, ISP files,
+  the model). The writer: the new image into the inactive slot, its SHA-256 checked by read-back, then that slot's
+  `ota_meta` record with version = the active one's + 1, written last: a power cut before it leaves the old slot
+  booting; a bad image is the SPL's fallback.
+- **The pre-trained model: its own update, per device, the device ID in the API** (user, 2026-11-06; the file swap
+  below proposed). The model (kmodel, several MB) changes
+  on another schedule than the firmware and **can be optimised for each device** (its scene, its camera), so it is
+  not in the image: the server keeps a model per device ID with a common default, and each board's check-in answer
+  names its model's version, SHA-256 and size; the board fetches it with its ID in the path,
+  `GET /v1/devices/{id}/model` (the server answers that device's model, else the default). On `/sdcard` as a file:
+  written as `<name>.new`, its SHA-256 checked, then renamed over the current one with the previous kept as
+  `<name>.old`; a model that does not load or fails its known-output check (skill k230-kpu) falls back to `.old` and
+  is reported. Independent of the A/B slots: an image update keeps the model, a model update keeps the image.
 - **Built (2026-11-06):** the BL616 part (server offer and download, ota_fetch.c, ota.c with the xz decoder), not run
-  yet. **Not built: the K230 image OTA** (download into the inactive `rtt_a`/`rtt_b` slot, `ota_meta` switched, the
-  SPL's fallback to the old slot): it needs the K230's normal session with Wi-Fi first (tests/test130 step 7).
+  yet. **Not built: the K230 image OTA and the model update** (the program in ROMFS, the slot and record writer, the
+  model swap, the server's per-device model): the transport to the K230 is open (its own Wi-Fi through the BL616's
+  NetHub needs the K230's normal session first; tests/test130 step 7).
 
 ### 5.3.8 One K230 product image; the BL616 picks the program at the start (user, 2026-11-05; tests/test113)
 

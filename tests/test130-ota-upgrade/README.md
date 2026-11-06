@@ -1,6 +1,6 @@
 # test130: OTA upgrade of the BL616 full firmware and the K230 image
 
-Status: **BL616 part built, not run** (2026-11-06); K230 part planned. Both upgradeable over the air; the BL616 setup
+Status: **BL616 part built, not run** (2026-11-06); K230 image and per-device model update planned (DESIGN.md 5.3.7). Both upgradeable over the air; the BL616 setup
 firmware is not, it changes only by wire (`make flash`). Started by the server, automatically: the check-in answer
 names the newest version and a board on an older one installs it with no prompt (user, 2026-11-05); every image
 checksum-verified before the switch (DESIGN.md 5.3.7).
@@ -37,6 +37,15 @@ the board without its full firmware (no leak detection).
 7. K230: the new image into the inactive slot (rtt_a/rtt_b), `ota_meta` switched, the next boot runs it; a broken image
    (checksum mismatch, power cut during the write) -> the SPL boots the old slot.
 8. Both versions reported to the server after the upgrade.
+9. **The model, per device:** a model for this device ID on the server (and a different default): the check-in
+   answer names this device's model (version, SHA-256, size); `GET /v1/devices/{id}/model` gives that file, another
+   device ID gets the default; the board writes `<name>.new`, checks it, renames it in, keeps `.old`.
+10. **The model and the image apart:** a model update leaves both slots and `ota_meta` untouched; an image update
+    leaves the model file untouched.
+11. **A bad model:** one that fails to load or its known-output check: the board falls back to `.old` and reports it;
+    the server's next offer is not retried in a loop (one try per offered version).
+12. **The program in the slot (ROMFS):** after an image update the program that runs is the new slot's (its build tag
+    in the log), with no file on `/sdcard/app`.
 
 ## Needs (build features and dependencies)
 
