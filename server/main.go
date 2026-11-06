@@ -22,6 +22,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -39,7 +40,8 @@ const (
 	Crashes = "/home/pi/leakcam-server/crashes.jsonl" // LEAKCAM_CRASHES
 	WakeGap = 2 * time.Minute                         // at most one BLE wake per device this often: a wake costs its battery 2 minutes awake
 	Phones  = "/home/pi/leakcam-server/phones.json"   // LEAKCAM_PHONES
-	Images  = "/home/pi/leakcam-server/images"        // LEAKCAM_IMAGES: bl616_full.bin + .xz, the version boards get
+	Images  = "/home/pi/leakcam-server/images"        // LEAKCAM_IMAGES: bl616_full.bin + .xz, k230_rtt.bin
+	Models  = "/home/pi/leakcam-server/models"        // LEAKCAM_MODELS: <device id>.kmodel, default.kmodel
 )
 
 type Device struct {
@@ -100,6 +102,7 @@ var (
 	phones    = map[string][]string{}
 	phoneFile = Phones
 	imageDir  = Images
+	modelDir  = Models
 	imageMeta = map[string]Image{} // by file, reread when it changes
 	tagRe     = regexp.MustCompile(`leakcam-build ([a-z_]+) ([0-9A-Za-z.+-]+)`)
 	verRe     = regexp.MustCompile(`^[0-9A-Za-z.+-]{1,48}$`)
@@ -193,6 +196,54 @@ func poll(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	reply(w, ans)
+}
+
+// serveTagged: a file with its ETag; a client whose If-None-Match holds it gets 304 (http.ServeFile checks it)
+func serveTagged(w http.ResponseWriter, r *http.Request, path, etag string) {
+	w.Header().Set("ETag", `"`+etag+`"`)
+	http.ServeFile(w, r, path)
+}
+
+// k230Image: the K230 slot image (DESIGN.md 5.3.7): its ETag is the SHA-256 in its own K230 firmware header (bytes
+// 12..43, none_sec.signature, what the SPL checks), which a running K230 reads from its own slot: If-None-Match with
+// it -> 304, nothing to update
+func k230Image(w http.ResponseWriter, r *http.Request) {
+	path := imageDir + "/k230_rtt.bin"
+	f, err := os.Open(path)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	hdr := make([]byte, 44)
+	_, err = io.ReadFull(f, hdr)
+	f.Close()
+	if err != nil || string(hdr[:4]) != "K230" {
+		log.Printf("%s: no K230 firmware header", path)
+		http.NotFound(w, r)
+		return
+	}
+	serveTagged(w, r, path, hex.EncodeToString(hdr[12:44]))
+}
+
+// model: a device's pre-trained model (DESIGN.md 5.3.7: per device, its own update): <id>.kmodel, else
+// default.kmodel; the ETag is the file's SHA-256, If-None-Match with the one the board has -> 304
+func model(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if !idRe.MatchString(id) {
+		http.Error(w, "id: 12 upper-case hex digits", http.StatusBadRequest)
+		return
+	}
+	for _, name := range []string{id, "default"} {
+		path := modelDir + "/" + name + ".kmodel"
+		b, err := os.ReadFile(path)
+		if err != nil {
+			continue
+		}
+		w.Header().Set("X-Model", name) // this device's own model or the default
+		serveTagged(w, r, path, fmt.Sprintf("%x", sha256.Sum256(b)))
+		return
+	}
+	http.NotFound(w, r)
 }
 
 // images: the upgrade's download, the .xz (the board checks its SHA-256 against the check-in answer's)
@@ -531,6 +582,9 @@ func main() {
 	if d := os.Getenv("LEAKCAM_IMAGES"); d != "" {
 		imageDir = d
 	}
+	if d := os.Getenv("LEAKCAM_MODELS"); d != "" {
+		modelDir = d
+	}
 	if p, err := strconv.Atoi(os.Getenv("LEAKCAM_POLL_S")); err == nil && p > 0 {
 		pollS = p
 	}
@@ -548,7 +602,9 @@ func main() {
 	http.HandleFunc("POST /v1/devices/{id}/wake", wakeUp)
 	http.HandleFunc("DELETE /v1/devices/{id}/phones/{phone}", unregister)
 	http.HandleFunc("GET /v1/phones/{phone}/devices", phoneDevices)
+	http.HandleFunc("GET /v1/images/k230_rtt", k230Image)
 	http.HandleFunc("GET /v1/images/{name}", images)
+	http.HandleFunc("GET /v1/devices/{id}/model", model)
 	log.Printf("listening on %s", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
