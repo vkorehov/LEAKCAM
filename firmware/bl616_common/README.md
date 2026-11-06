@@ -12,7 +12,9 @@ k230_linesplit.h).
 | Module | Does |
 |---|---|
 | slot.c | `slot`, `slot switch`: the other firmware's slot made active, then reset (tests/test126) |
-| api.c | the LEAKCAM API's check-in target (GET /v1/poll): the network check's last step and the presence check-in |
+| api.c | the LEAKCAM API's check-in target (POST /v1/poll, the metrics in its form): the network check's last step and the presence check-in |
+| metrics.c | every metric in the check-in (DESIGN.md 5.3.10): the sensors, uptime, boots, resets, heap, Wi-Fi, counters, the K230's last STATUS; HBN RAM; `metrics` |
+| aht20.c | the AHT20 (U17) on I2C0: temperature and humidity (from the powertest firmware, tests/test021) |
 | leakcam_version.cmake, version_gen.cmake | leakcam_version.h on every build: the image name and the product version (../VERSION + git commit) |
 | wifi_check.c, wifi_check_calc.h | the credential check and the check-in run (join, DHCP, HTTP) through the wifi_link.h interface |
 | wifi_link.h | that interface: the full firmware's wifi_link.c (NetHub bridge) or the setup firmware's wifi_setup.c (own station) |

@@ -21,6 +21,7 @@
 #include "setup_boot.h"   /* SETUP_ADV_SLEEP_MS */
 #include "bflb_wdg.h"
 #include "board_pins.h"
+#include "metrics.h"
 #include "usb_console2.h"
 #include "usb_setup.h"
 #include "wdg_guard.h"
@@ -126,6 +127,7 @@ static void usb_wake_cb(uint64_t io_bits)
     if (!(io_bits & ((uint64_t)1 << PIN_USB_PGOOD)))
         return;
     st.usb_wakes++;
+    metrics_usb_wake();
     vTaskNotifyGiveFromISR(usb_plug_handle, &woken);
     portYIELD_FROM_ISR(woken);
 }

@@ -1,0 +1,37 @@
+/*
+ * The board's metrics in every check-in (DESIGN.md 5.3.10, tests/test048, user 2026-11-06: "all metrics possible"):
+ * the sensors (AHT20 over I2C, the leak probe node, the BL616's die and supply), the battery (battery.h), uptime,
+ * boots and the reset cause, crashes, the heap, this check-in's Wi-Fi (wifi_check.h), counters since the last good
+ * check-in, and the K230 as its last STATUS frame and its last session left it. Kept in HBN RAM where they must outlive
+ * a reset or the switch between the two firmwares; the sensors are read fresh before each check-in's Wi-Fi run (quiet
+ * rails: the AHT20's RC filter is there against the Wi-Fi bursts).
+ */
+#ifndef LEAKCAM_METRICS_H
+#define LEAKCAM_METRICS_H
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+/* each firmware's main(), once, early: the boot counted, the reset cause read and cleared */
+void metrics_boot(void);
+
+/* events counted until the next good check-in */
+void metrics_switch(void);            /* a switch to the other firmware (switch_to_setup.c, switch_to_full.c) */
+void metrics_usb_wake(void);          /* the USB plug woke the setup firmware from PDS (setup_sleep.c) */
+
+/* the K230: its STATUS frame's arguments after <mode>,<uptime s> (k230_link.h), and a session's end */
+void metrics_k230_status(const char *args);
+void metrics_k230_session(uint32_t on_ms, bool ok);
+
+/* before a check-in: AHT20, probe node, BL616 die temperature and supply read now (~70 ms, ADC calibration once per
+ * boot ~29 ms) */
+void metrics_sample(void);
+
+/* the check-in's form, appended after what api.c wrote (&key=value...); returns the new length, or cap on overflow */
+size_t metrics_form(char *form, size_t len, size_t cap);
+
+/* the check-in's answer: ok resets the counters it reported, a failure counts */
+void metrics_checkin(bool ok);
+
+#endif

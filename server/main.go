@@ -1,4 +1,4 @@
-// LEAKCAM server, presence only (use case 2): each device checks in with its chip ID (GET /v1/poll?id=), the app asks
+// LEAKCAM server, presence only (use case 2): each device checks in with its chip ID (POST /v1/poll?id=), the app asks
 // whether a device is online (GET /v1/devices/{id}) and can wake its BLE (POST /v1/devices/{id}/wake: the next check-in
 // answers "ble":1, the board advertises for 2 minutes, tests/test119), and keeps the boards' crash records (POST
 // /v1/devices/{id}/crash, sent at a board's first API contact after a crash, DESIGN.md 5.3.3, tests/test128; listed by GET
@@ -12,7 +12,10 @@
 // board reports its running image and version at each check-in (full= or setup=); when LEAKCAM_IMAGES holds a
 // bl616_full.bin of another version (with its bl616_full.xz, the SDK build's), a full firmware's check-in answer names
 // it with the SHA-256 and size of both; the board fetches the .xz from GET /v1/images/bl616_full into the free end of
-// its slot, and the setup firmware unpacks it over the old image (no network needed from there).
+// its slot, and the setup firmware unpacks it over the old image (no network needed from there). Every check-in's form
+// carries the board's metrics (DESIGN.md 5.3.10, tests/test048: sensors, battery, uptime, resets, memory, Wi-Fi,
+// counters, the K230's last state): the last ones in GET /v1/devices/{id} ("metrics"), every one appended to
+// LEAKCAM_METRICS (one JSON line per check-in) for the history.
 package main
 
 import (
@@ -42,6 +45,7 @@ const (
 	Phones  = "/home/pi/leakcam-server/phones.json"   // LEAKCAM_PHONES
 	Images  = "/home/pi/leakcam-server/images"        // LEAKCAM_IMAGES: bl616_full.bin + .xz, k230_rtt.bin
 	Models  = "/home/pi/leakcam-server/models"        // LEAKCAM_MODELS: <device id>.kmodel, default.kmodel
+	Metrics = "/home/pi/leakcam-server/metrics.jsonl" // LEAKCAM_METRICS: every check-in's metrics
 )
 
 type Device struct {
@@ -55,6 +59,30 @@ type Device struct {
 	// on USB power then (the reading is not refreshed on USB: the K230 reads the charger's rail there)
 	BatteryMV int  `json:"battery_mv"`
 	Charging  bool `json:"charging"`
+	// everything else its last check-in measured (MetricKeys), by the board's keys
+	Metrics map[string]any `json:"metrics"`
+}
+
+// MetricKeys: the check-in's metrics (firmware/bl616_common/metrics.c, DESIGN.md 5.3.10); kept only these, by type
+var MetricKeys = map[string]bool{ // true: an integer, false: text
+	"t": true, "rh": true, "probe": true, "tdie": true, "vdd": true, // 0.1 C, 0.1 %RH, mV, 0.1 C, mV
+	"up": true, "boots": true, "rst": false, "crash": true, // s, count, GLB reset bits (hex), crash record count
+	"free": true, "minfree": true, "blocks": true, // BL616 heap
+	"rssi": true, "ch": true, "scan": true, "join": true, "dhcp": true, "fails": true, // this check-in's Wi-Fi
+	"sw": true, "usbw": true, "ks": true, "kfail": true, "kon": true, // since the last good check-in
+	"klast": true, "kms": true, "kago": true, // the last K230 session: ok 1 / failed 0 / none -1, ms, s ago
+	"kver": false, "kup": true, "ktdie": true, "kheap": true, "kheapmin": true, "kpages": true, "ksago": true, // last STATUS
+}
+
+// Sample is one check-in's metrics in the history file
+type Sample struct {
+	Device  string         `json:"device"`
+	At      string         `json:"at"`
+	Image   string         `json:"image"`
+	Version string         `json:"version"`
+	Bat     int            `json:"bat"`
+	Chg     bool           `json:"chg"`
+	Metrics map[string]any `json:"metrics"`
 }
 
 // Crash is one board crash record, as the board's `crash` prints it (tools/power-bringup/crash_decode.py reads it)
@@ -73,6 +101,7 @@ type CheckIn struct {
 	Version string
 	Bat     int // mV, -1 none
 	Chg     bool
+	Metrics map[string]any
 }
 
 // Image is an upgrade on offer: its version read from its own build tag, so the file is all there is to update
@@ -86,17 +115,18 @@ type Image struct {
 }
 
 var (
-	idRe      = regexp.MustCompile(`^[0-9A-F]{12}$`) // the BL616 chip ID: its factory MAC, 12 upper-case hex digits
-	mu        sync.Mutex
-	seen      = map[string]CheckIn{}
-	wake      = map[string]bool{}      // asked, not yet delivered
-	woken     = map[string]time.Time{} // the last wake delivered
-	pollS     = PollS
-	pinKey    []byte                 // the BLE pairing PIN's key, shared with the firmware (LEAKCAM_PIN_KEY); never in the app
-	crashes   = map[string][]Crash{} // per device; a resend (the same record text) is kept once
-	crashFile = Crashes
-	hexRe     = regexp.MustCompile(`^[0-9a-f]{1,8}$`)
-	phoneRe   = regexp.MustCompile(`^[0-9a-f]{16}$`) // a phone: its Android ID (Settings.Secure.ANDROID_ID)
+	idRe       = regexp.MustCompile(`^[0-9A-F]{12}$`) // the BL616 chip ID: its factory MAC, 12 upper-case hex digits
+	mu         sync.Mutex
+	seen       = map[string]CheckIn{}
+	wake       = map[string]bool{}      // asked, not yet delivered
+	woken      = map[string]time.Time{} // the last wake delivered
+	pollS      = PollS
+	pinKey     []byte                 // the BLE pairing PIN's key, shared with the firmware (LEAKCAM_PIN_KEY); never in the app
+	crashes    = map[string][]Crash{} // per device; a resend (the same record text) is kept once
+	crashFile  = Crashes
+	metricFile = Metrics
+	hexRe      = regexp.MustCompile(`^[0-9a-f]{1,8}$`)
+	phoneRe    = regexp.MustCompile(`^[0-9a-f]{16}$`) // a phone: its Android ID (Settings.Secure.ANDROID_ID)
 	// per device its users; a device whose last phone left stays with an empty list (410 at its check-in), one never
 	// registered is absent (boards set up before the users were kept: no 410)
 	phones    = map[string][]string{}
@@ -156,14 +186,51 @@ func reply(w http.ResponseWriter, v any) {
 	}
 }
 
+// metrics: the form's known metrics (MetricKeys), integers parsed; anything else is dropped
+func metrics(r *http.Request) map[string]any {
+	m := map[string]any{}
+	for k, isInt := range MetricKeys {
+		v := r.PostForm.Get(k)
+		if v == "" || len(v) > 64 {
+			continue
+		}
+		if !isInt {
+			m[k] = v
+		} else if n, err := strconv.ParseInt(v, 10, 64); err == nil {
+			m[k] = n
+		}
+	}
+	return m
+}
+
+// appendSample: one check-in's metrics to the history file (not synced: a sample lost in a crash is harmless)
+func appendSample(s Sample) {
+	f, err := os.OpenFile(metricFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
+	if err != nil {
+		log.Printf("metrics %s: %v", metricFile, err)
+		return
+	}
+	b, _ := json.Marshal(s)
+	if _, err = f.Write(append(b, '\n')); err != nil {
+		log.Printf("metrics %s: %v", metricFile, err)
+	}
+	f.Close()
+}
+
+// poll: the check-in, POST /v1/poll?id=<id> with the form ssid=, full= or setup=<version>, bat=, chg= and the metrics
 func poll(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query()
-	id := q.Get("id")
+	id := r.URL.Query().Get("id")
 	if !idRe.MatchString(id) {
 		http.Error(w, "id: 12 upper-case hex digits", http.StatusBadRequest)
 		return
 	}
-	in := CheckIn{At: time.Now(), SSID: q.Get("ssid"), Bat: -1, Chg: q.Get("chg") == "1"}
+	r.Body = http.MaxBytesReader(w, r.Body, 4096)
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "form: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	q := r.PostForm
+	in := CheckIn{At: time.Now(), SSID: q.Get("ssid"), Bat: -1, Chg: q.Get("chg") == "1", Metrics: metrics(r)}
 	if b, err := strconv.Atoi(q.Get("bat")); err == nil && b >= 0 && b < 10000 {
 		in.Bat = b
 	}
@@ -172,6 +239,7 @@ func poll(w http.ResponseWriter, r *http.Request) {
 			in.Image, in.Version = img, v
 		}
 	}
+	appendSample(Sample{id, in.At.UTC().Format(time.RFC3339), in.Image, in.Version, in.Bat, in.Chg, in.Metrics})
 	mu.Lock()
 	seen[id] = in
 	if p, ok := phones[id]; ok && len(p) == 0 {
@@ -389,6 +457,7 @@ func deviceInfo(id string) Device {
 		d.LastSeen = int64(time.Since(c.At).Seconds())
 		d.SSID = c.SSID
 		d.BatteryMV, d.Charging = c.Bat, c.Chg
+		d.Metrics = c.Metrics
 		d.Online = d.LastSeen < int64(3*pollS) // three check-ins missed: offline
 	}
 	return d
@@ -585,6 +654,9 @@ func main() {
 	if d := os.Getenv("LEAKCAM_MODELS"); d != "" {
 		modelDir = d
 	}
+	if f := os.Getenv("LEAKCAM_METRICS"); f != "" {
+		metricFile = f
+	}
 	if p, err := strconv.Atoi(os.Getenv("LEAKCAM_POLL_S")); err == nil && p > 0 {
 		pollS = p
 	}
@@ -594,7 +666,7 @@ func main() {
 		log.Printf("no LEAKCAM_PIN_KEY (64 hex digits): /v1/devices/{id}/pin answers 503")
 	}
 	http.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) { reply(w, "ok") })
-	http.HandleFunc("GET /v1/poll", poll)
+	http.HandleFunc("POST /v1/poll", poll)
 	http.HandleFunc("GET /v1/devices/{id}", device)
 	http.HandleFunc("GET /v1/devices/{id}/pin", pin)
 	http.HandleFunc("POST /v1/devices/{id}/crash", crash)

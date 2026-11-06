@@ -1,0 +1,7 @@
+config RT_USING_SYS_STAT
+    bool "LEAKCAM: /dev/sysstat, the kernel heap and pages for the STATUS frame"
+    depends on RT_USING_MEMHEAP_AS_HEAP
+    default n
+    help
+        One read() of the kernel heap (memheaps) and the page allocator's totals and free bytes: the product
+        program reports them to the BL616 in its STATUS frame, which passes them to the server (DESIGN.md 5.3.10).

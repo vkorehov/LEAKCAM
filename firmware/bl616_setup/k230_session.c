@@ -16,6 +16,7 @@
 #include "crash_rec.h"
 #include "k230_power.h"
 #include "mem_stat.h"
+#include "metrics.h"
 #include "usb_console2.h"
 
 #define BOOT_TOGGLE_MS   400u    /* K230_ALIVE is JTAG_TCK during the K230's boot: edges before this are not ours */
@@ -186,6 +187,7 @@ static void on_cmd(const struct link_msg *m)
         return;
     }
     if (!strcmp(m->cmd, "STATUS")) {             /* the K230's periodic state; its battery already kept (k230_link.c) */
+        metrics_k230_status(m->args);            /* its version, die, memory: for the check-in (metrics.h) */
         printf("k230: STATUS %s, battery %d mV kept\r\n", m->args, battery_mv());
         return;
     }
@@ -267,6 +269,7 @@ static void session_task(void *arg)
             stop_asked = false;
             if (!asked && !fatal_seen)
                 crash_rec_k230(why);             /* the session failed: in the record, sent once Wi-Fi is up */
+            metrics_k230_session(ms_since(t_on), asked && !fatal_seen);   /* for the check-in (metrics.h) */
             off(why);
         }
     }
@@ -301,6 +304,7 @@ void k230_session_start(const char *why, void (*fn)(const struct link_msg *m))
     t_on = bflb_mtimer_get_time_ms();
     uint32_t ramp = k230_power_on();
     if (!ramp) {
+        metrics_k230_session(0, false);
         crash_rec_k230("3V3 did not come up");
         return;
     }

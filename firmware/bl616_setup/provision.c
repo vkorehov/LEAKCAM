@@ -11,7 +11,6 @@
 #include "crash_rec.h"
 
 #include "api.h"
-#include "battery.h"
 #include "ble_pairing.h"
 #include "wifi_check.h"
 
@@ -70,7 +69,7 @@ static void check_task(void *arg)
     memcpy(s, ssid, sizeof(s));
     memcpy(k, psk, sizeof(k));
     /* stored only once the LEAKCAM API answers over this network (the check's end goal, DESIGN.md 5.3.1) */
-    api_poll_target(&api, path, s, strlen(s), battery_mv(), battery_usb_power(), NULL, 0);
+    api_poll_target(&api, path, s, strlen(s), NULL, 0);
     enum wifi_check_state st = wifi_check_run(s, strlen(s), k, strlen(k), &wifi_check_probe, &api, progress, &detail);
     if (st != WCHK_INTERNET)
         set_status(st, detail);

@@ -18,11 +18,12 @@
 #define API_HOST "192.168.1.159"
 #define API_PORT "8090"
 
-/* the check-in for this device on the network ssid (GET /v1/poll?id=<id>&ssid=<ssid>: the SSID for the app, never the
- * passphrase), 200 expected; path (>= API_PATH_CAP) and body are the caller's, body NULL: not kept */
-#define API_PATH_CAP (32 + 3 * 32 + 8 + 3 * 36 + 18 + 1)   /* + &<image>=<version, %2B for its +>&bat=&chg= */
-void api_poll_target(struct wifi_check_target *t, char *path, const char *ssid, size_t ssid_len, int bat_mv, bool usb,
-                     char *body, size_t body_cap);
+/* the check-in for this device (POST /v1/poll?id=<id>, the form ssid=<ssid>&<image>=<version>&<metrics.h's>: the
+ * SSID for the app, never the passphrase), 200 expected; reads the sensors now (metrics_sample()); path (>=
+ * API_PATH_CAP) and body are the caller's, body NULL: not kept. One check-in at a time (the form's SSID is kept here) */
+#define API_PATH_CAP (64 + 1)                /* /v1/devices/<id>/crash, /v1/poll?id=<id> */
+void api_poll_target(struct wifi_check_target *t, char *path, const char *ssid, size_t ssid_len, char *body,
+                     size_t body_cap);
 
 /* the kept crash record for the server: POST /v1/devices/<id>/crash, the form image=..&ver=..&n=..&k=..&t=..&up=..&c=..
  * &pc=..&v=..&ra=..&sp=..&st=..&bt=<hex,...>; 200 expected; false with no record. path >= API_PATH_CAP, form >=

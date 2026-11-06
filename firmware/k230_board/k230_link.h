@@ -29,9 +29,13 @@
  *                                     the radio is up and the BL616 joins with the stored
  *                                     credentials. NAK codes: NO_CREDENTIALS, RADIO
  *                 USB,<line>          the USB setup (WAKE setup): a line from the phone, for the BL616's provisioning
- *                 STATUS,<mode>,<uptime s>   every 60 s (and at a job's start): the battery read again and
+ *                 STATUS,<mode>,<uptime s>,<version>,<die x10>,<heap free>,<heap min free>,<pages free B>
+ *                                     every 60 s (and at a job's start): the battery read again and
  *                                     carried as ;b= (DESIGN.md 5.3.9); mode = setup (the USB relay) or session
- *                                     (the normal product job): the BL616 sees which job runs (tests/test047)
+ *                                     (the normal product job): the BL616 sees which job runs (tests/test047);
+ *                                     the program's version, the die temperature (-1000 = none) and the kernel's
+ *                                     memory (/dev/sysstat, 0 = none): the BL616 keeps them for its check-in
+ *                                     (DESIGN.md 5.3.10, tests/test048)
  * BL616 -> K230   USB,<line>          the USB setup: a line for the phone
  * BL616 -> K230   WAKE,<reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>,<bat_mv>
  *                                     reply to READY: the reasons, every one that applies,

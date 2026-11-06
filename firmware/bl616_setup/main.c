@@ -20,6 +20,7 @@
 #include "crash_rec.h"
 #include "k230_power.h"
 #include "k230_session.h"
+#include "metrics.h"
 #include "usb_setup.h"
 #include "switch_to_full.h"
 #include "ota.h"
@@ -72,6 +73,7 @@ int main(void)
 {
     /* HBN RAM rule (tests/test021): retention/sleep mode off before the first HBN RAM access */
     BL_WR_REG(HBN_BASE, HBN_SRAM, BL_RD_REG(HBN_BASE, HBN_SRAM) & ~(HBN_RETRAM_RET_MSK | HBN_RETRAM_SLP_MSK));
+    metrics_boot();                 /* boots and the reset cause before the PDS reset below (metrics.h) */
     /* the PDS block reset the BLE controller's own init would do (ble_pairing.c keeps that hook empty: done there it
      * took the running USB device with it): here, before board_init() brings USB up, it clears a BLE core left asleep
      * by the run before (a reset during the battery sleep), which no other reset but EN clears (bugs/bug-006) */

@@ -68,6 +68,7 @@
 #include "bl616_glb.h"
 #include "wdg_guard.h"
 #include "crash_rec.h"
+#include "metrics.h"
 static void sdu_stop(void);
 #endif
 
@@ -2011,6 +2012,7 @@ int main(void)
      */
     BL_WR_REG(HBN_BASE, HBN_SRAM, BL_RD_REG(HBN_BASE, HBN_SRAM) & ~(HBN_RETRAM_RET_MSK | HBN_RETRAM_SLP_MSK));
     wake_mark_take();      /* before board_init: the wake latency ends here */
+    metrics_boot();                                /* the product's check-in metrics (pt_ble's check-in) */
     last_wake = wake_reason_take();
 #endif
     board_init();          /* also starts the USB CDC console and its shell (defconfig) */

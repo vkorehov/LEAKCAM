@@ -1,0 +1,8 @@
+from building import *
+
+cwd = GetCurrentDir()
+src = Glob('*.c')
+
+group = DefineGroup('sys_stat', src, depend=['RT_USING_SYS_STAT'], CPPPATH=[cwd])
+
+Return('group')

@@ -41,6 +41,8 @@
 #include <unistd.h>
 
 #include "k230_link.h"
+#include "leakcam_version.h"   /* written by install.sh: firmware/VERSION + the commit */
+#include "sys_stat.h"
 
 #define HEARTBEAT_HALF_PERIOD_MS 500
 #define READY_RETRY_MS           1000
@@ -310,8 +312,20 @@ static bool next_cmd(struct frame *f, int timeout_ms)
 
 /* ---------------- the USB setup relay ---------------- */
 
-/* every STATUS_PERIOD_MS: the battery read again and STATUS,<mode>,<uptime s> sent (it carries the reading as every
- * frame does); the BL616 keeps the reading and sees which job runs (DESIGN.md 5.3.9) */
+/* the die temperature in tenths of C (the TS driver, /dev/ts: one double per read), -1000 = no reading */
+static int die_x10(void)
+{
+    double t;
+    int fd = open("/dev/ts", O_RDONLY);
+    bool ok = fd >= 0 && read(fd, &t, sizeof(t)) == (ssize_t)sizeof(t);
+    if (fd >= 0)
+        close(fd);
+    return ok && t > -60 && t < 200 ? (int)(t * 10) : -1000;
+}
+
+/* every STATUS_PERIOD_MS: the battery read again and STATUS,<mode>,<uptime s>,<version>,<die x10>,<heap free>,
+ * <heap min free>,<pages free B> sent (it carries the reading as every frame does); the BL616 keeps it all for its
+ * check-in and sees which job runs (DESIGN.md 5.3.9, 5.3.10) */
 static void status_tick(const char *mode)
 {
     static uint64_t last;
@@ -320,8 +334,16 @@ static void status_tick(const char *mode)
         return;
     last = now;
     bat_mv = battery_read_mv();
-    char arg[32];
-    snprintf(arg, sizeof(arg), "%s,%llu", mode, (unsigned long long)(now / 1000));
+    struct sys_stat m = { 0 };
+    int fd = open("/dev/sysstat", O_RDONLY);
+    if (fd < 0 || read(fd, &m, sizeof(m)) != (ssize_t)sizeof(m))
+        logmsg("sysstat: %s", strerror(errno));   /* zeros: no reading */
+    if (fd >= 0)
+        close(fd);
+    char arg[128];
+    snprintf(arg, sizeof(arg), "%s,%llu,%s,%d,%llu,%llu,%llu", mode, (unsigned long long)(now / 1000),
+             LEAKCAM_VERSION, die_x10(), (unsigned long long)m.heap_free, (unsigned long long)m.heap_min_free,
+             (unsigned long long)m.page_free);
     if (link_cmd("STATUS", arg) != LINK_ACKED)
         logmsg("STATUS not answered");
 }
@@ -389,6 +411,7 @@ int main(void)
     pthread_t hb;
     pthread_create(&hb, NULL, heartbeat_thread, NULL);
     step("start");
+    logmsg("version %s", LEAKCAM_VERSION);   /* the build that runs (tests/test130 step 12: the new slot's) */
     bat_mv = battery_read_mv();
     char bat[32];
     snprintf(bat, sizeof(bat), "battery %d mV", bat_mv);

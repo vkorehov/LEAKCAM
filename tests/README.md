@@ -84,6 +84,7 @@ Leak tests, one per operation the product repeats:
 | [test045 link frames reach a K230 program through /dev/link](test045-k230-link-frames/README.md) | 2026-11-05 | **pass**: 5/5 starts the K230 program gets ACK + WAKE (READY 0.43 s after pt_run, READY -> WAKE 8 ms) after the fix: link_mux set `/dev/link`'s file ops before `rt_device_register()`, which clears them; devfs's poll never reported data, no K230 program had ever got a frame |
 | [test046 the K230's battery reading on every link frame, kept by the BL616](test046-battery-attribute/README.md) | 2026-11-06 | **planned**: built (K230 image, BL616 pair), not run |
 | [test047 the K230 from the USB relay to the normal product job](test047-k230-relay-to-session/README.md) | 2026-11-06 | **planned**: steps 1-4, 6 runnable on what is built; step 5 needs the full firmware's K230 session |
+| [test048 every metric in every check-in](test048-checkin-metrics/README.md) | 2026-11-06 | **planned**: built (BL616 pair, K230 image, server), not run |
 | **High level (100+): the product's whole flow** | | |
 | [test100 Wi-Fi throughput, K230 -> SDIO -> BL616 -> AP](test100-wifi-throughput/README.md) | 2026-10-25 | **steps 1-4 pass**: K230 address 0.33-0.59 s after the card binds; TCP up 27.5 / down 22.1 Mbit/s, UDP up 35.4. |
 | [test101 session length (wake to power-off)](test101-boot-and-session-time/README.md) | 2026-10-30 | **pass, steps 1-2**: 10/10 sessions, power-on -> READY 0.87 s, rails off 27.68 s |

@@ -31,11 +31,21 @@ struct wifi_check_target {
     size_t body_cap;
     bool api;                            /* the LEAKCAM API (api.h): once it answered, a kept crash record goes too */
     const char *post;                    /* NULL: GET; else POST of this url-encoded form */
+    /* or the form written just before the request (the check-in: this run's link figures in it, metrics.h) */
+    size_t (*form)(char *buf, size_t cap);
     /* a download (the OTA image, tests/test130): the body handed over piece by piece instead of kept; false stops */
     bool (*sink)(const uint8_t *data, size_t n, void *arg);
     void *sink_arg;
 };
 extern const struct wifi_check_target wifi_check_probe;   /* WCHK_PROBE_HOST / PATH, 204 */
+
+/* the link of the running (or last) check: the AP the scan picked and the time of each step, 0 = not reached */
+struct wifi_check_link {
+    int8_t rssi;                         /* dBm, at the scan */
+    uint8_t channel;
+    uint32_t scan_ms, join_ms, dhcp_ms;
+};
+const struct wifi_check_link *wifi_check_last_link(void);
 
 /* Blocking, from a task of its own; claims the radio (WIFI_OWNER_CHECK) for the run. One run at a time:
  * a second caller waits for the first (the BLE check and a presence check-in). Reports each step

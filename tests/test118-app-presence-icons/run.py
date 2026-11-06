@@ -55,7 +55,7 @@ def checker(dev):
     while True:
         if present.is_set():
             try:
-                urllib.request.urlopen(f"{SERVER}/v1/poll?id={dev}&ssid=t118", timeout=5).read()
+                urllib.request.urlopen(f"{SERVER}/v1/poll?id={dev}", data=b"ssid=t118", timeout=5).read()   # POST, as the board
             except OSError as e:
                 log("check-in failed", repr(e))
         time.sleep(POLL_S)

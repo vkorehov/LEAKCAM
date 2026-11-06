@@ -15,8 +15,8 @@ target_include_directories(app PRIVATE ${BL_SDK_BASE}/bsp/common/usb_app)
 
 sdk_add_include_directories(.)
 
-# the AHT20 driver (I2C test); unused code is dropped by the linker
-target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/aht20.c)
+# the product's AHT20 driver (I2C test, tests/test021); unused code is dropped by the linker
+target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616_common/aht20.c)
 
 # the product's watchdog (the BL616 never stays hung)
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616_common/wdg_guard.c)
@@ -40,7 +40,8 @@ target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/pt_ble.c
                            ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616_setup/provision.c
                            ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616_common/wifi_check.c
                            ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616_common/api.c
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616_common/battery.c)
+                           ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616_common/battery.c
+                           ${CMAKE_CURRENT_SOURCE_DIR}/../../../firmware/bl616_common/metrics.c)
 # pt_fault (test110): loss injected into the provisioning through wraps; the product sources stay as they are
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/pt_fault.c)
 sdk_add_link_options(-Wl,--wrap=bt_gatt_notify_cb -Wl,--wrap=bt_conn_set_security -Wl,--wrap=lwip_getaddrinfo

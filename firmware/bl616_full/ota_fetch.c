@@ -89,7 +89,7 @@ bool ota_fetch(const char *body, const char *ssid, size_t ssid_len, const char *
         return false;
     }
     struct dl d = { xz, (uint32_t)xz_size, 0, 0 };
-    struct wifi_check_target t = { API_HOST, API_PORT, OTA_PATH, 200, NULL, 0, false, NULL, sink, &d };
+    struct wifi_check_target t = { API_HOST, API_PORT, OTA_PATH, 200, NULL, 0, false, NULL, NULL, sink, &d };
     uint16_t detail = 0;
     printf("ota: full firmware %s offered: its copy (%ld B) to 0x%lx\r\n", ver, xz_size, (unsigned long)xz);
     uint64_t t0 = bflb_mtimer_get_time_ms();

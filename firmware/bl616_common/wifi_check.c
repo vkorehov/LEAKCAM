@@ -28,6 +28,7 @@
 
 #include "api.h"
 #include "crash_rec.h"
+#include "metrics.h"
 #include "wifi_link.h"
 
 #define DBG_TAG "WCHK"
@@ -48,6 +49,7 @@
 #define TCP_MS     10000     /* connect, then again for the answer */
 
 static EventGroupHandle_t evg;
+static struct wifi_check_link run_link;      /* this run's AP and step times (metrics.c reports them) */
 static SemaphoreHandle_t one_run;        /* the BLE check and a presence check-in share the station */
 
 const struct wifi_check_target wifi_check_probe = { WCHK_PROBE_HOST, "80", WCHK_PROBE_PATH, 204, NULL, 0 };
@@ -145,6 +147,11 @@ static int probe_connect(const struct addrinfo *ai)
     return fd;
 }
 
+const struct wifi_check_link *wifi_check_last_link(void)
+{
+    return &run_link;
+}
+
 static enum wifi_check_state internet(const struct wifi_check_target *t, uint16_t *detail)
 {
     struct addrinfo hints, *ai = NULL;
@@ -153,10 +160,17 @@ static enum wifi_check_state internet(const struct wifi_check_target *t, uint16_
     int n = 0, want = t->body ? (int)sizeof(buf) - 1 : 12;   /* the status line, or the whole short answer */
     int rl;
 
-    if (t->post)                         /* a form (the crash record, api.c) */
+    static char form[512];               /* the check-in's form (metrics.h: ~420 B with the K230's) */
+    const char *post = t->post;
+    if (t->form) {
+        if (t->form(form, sizeof(form)) >= sizeof(form))
+            vAssertCalled();             /* metrics over the room: a build-time mistake */
+        post = form;
+    }
+    if (post)                            /* a form (the crash record, the check-in: api.c) */
         rl = snprintf(req, sizeof(req), "POST %s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n"
                       "Content-Type: application/x-www-form-urlencoded\r\nContent-Length: %u\r\n\r\n%s",
-                      t->path, t->host, (unsigned)strlen(t->post), t->post);
+                      t->path, t->host, (unsigned)strlen(post), post);
     else
         rl = snprintf(req, sizeof(req), "GET %s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", t->path,
                       t->host);
@@ -276,6 +290,8 @@ enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const ch
         vAssertCalled();
     *detail = 0;
     (void)xEventGroupClearBits(evg, 0xFF);   /* the old bits, not an error */
+    memset(&run_link, 0, sizeof(run_link));
+    uint32_t t0 = (uint32_t)xTaskGetTickCount();
     progress(WCHK_JOINING, 0);
     wifi_link_local_begin(on_event);
     if (!wait(EV_READY, READY_MS)) {
@@ -292,6 +308,9 @@ enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const ch
         st = WCHK_NOT_FOUND;
         goto out;
     }
+    run_link.rssi = s.rssi;
+    run_link.channel = s.channel;
+    run_link.scan_ms = (uint32_t)xTaskGetTickCount() - t0;   /* 1 ms ticks (FreeRTOSConfig.h) */
     memset(&p, 0, sizeof(p));
     memcpy(p.ssid, ssid, ssid_len);
     p.ssid_len = (uint8_t)ssid_len;
@@ -312,6 +331,7 @@ enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const ch
         goto out;
     }
     EventBits_t b = wait(EV_CONNECTED | EV_DISCONNECTED, JOIN_MS);
+    run_link.join_ms = (uint32_t)xTaskGetTickCount() - t0 - run_link.scan_ms;
     if (!(b & EV_CONNECTED)) {
         wifi_mgmr_connect_ind_stat_info_t info;
         memset(&info, 0, sizeof(info));
@@ -327,6 +347,7 @@ enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const ch
         st = WCHK_NO_ADDRESS;
         goto out;
     }
+    run_link.dhcp_ms = (uint32_t)xTaskGetTickCount() - t0 - run_link.scan_ms - run_link.join_ms;
     progress(WCHK_INTERNET, 0);
     st = internet(t, detail);
     if (st == WCHK_INTERNET && api != NULL && internet(api, detail) != WCHK_INTERNET)
@@ -335,6 +356,8 @@ enum wifi_check_state wifi_check_run(const char *ssid, size_t ssid_len, const ch
         send_crash();                      /* the first contact with the API sends a kept record (DESIGN.md 5.3.3) */
 
 out:
+    if (api != NULL || t->api)
+        metrics_checkin(st == WCHK_INTERNET);   /* the counters it reported start again, or a failure counts */
     LOG_I("check of \"%.*s\": state 0x%02x detail %u\r\n", (int)ssid_len, ssid, st, *detail);
     if (!leave())                          /* the next check answers WCHK_BUSY, a K230 join reports FAILED */
         LOG_W("station stayed busy after the check\r\n");

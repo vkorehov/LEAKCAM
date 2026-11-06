@@ -269,6 +269,20 @@ if line not in s:
     open(p, 'w').write(s.replace(a, a + line))
 PY
 
+# /dev/sysstat (DESIGN.md 5.3.10, 2026-11-06): the kernel heap and pages for the program's STATUS frame.
+SST=$RTT/drivers/extdrv/sys_stat
+rm -rf "$SST"; mkdir -p "$SST"
+cp "$HERE"/rtsmart/drivers/sys_stat/* "$SST/"
+python3 - "$RTT/drivers/extdrv/Kconfig" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+line = '    source "drivers/extdrv/sys_stat/Kconfig"\n'
+if line not in s:
+    a = '    source "drivers/extdrv/ota_nand/Kconfig"\n'
+    assert s.count(a) == 1, 'extdrv/Kconfig: no ota_nand line to add sys_stat after'
+    open(p, 'w').write(s.replace(a, a + line))
+PY
+
 # RT-Thread SDIO core: the BL616 SDU function 1 CIS has no FUNCE tuple, so the core reads a
 # max block size of 0 and refuses the function. Give it the 512-byte block of its port FIFO
 # and the 200 ms enable timeout Bouffalo's own host driver sets for the same reason.
@@ -558,7 +572,12 @@ A=$SDK/src/applications
 rm -rf "$A/leakcam"; mkdir -p "$A/leakcam/src"
 cp "$HERE/../k230_app/rtsmart/Makefile" "$HERE/../k230_app/rtsmart/rom_c.py" "$A/leakcam/"
 cp "$HERE/../k230_app/rtsmart/Kconfig.app" "$A/leakcam/Kconfig"
-cp "$HERE/../k230_app/leakcam.c" "$HERE/k230_link.h" "$A/leakcam/src/"
+cp "$HERE/../k230_app/leakcam.c" "$HERE/k230_link.h" "$HERE/rtsmart/drivers/sys_stat/sys_stat.h" "$A/leakcam/src/"
+# the program's version, as the BL616's (version_gen.cmake): firmware/VERSION + the commit (+ -dirty-<UTC> with
+# uncommitted changes); in its STATUS frame for the server (DESIGN.md 5.3.10)
+V=$(tr -d '[:space:]' < "$HERE/../VERSION")+g$(git -C "$HERE" rev-parse --short=7 HEAD)
+[ -z "$(git -C "$HERE" status --porcelain --untracked-files=no)" ] || V=$V-dirty-$(date -u +%Y%m%d%H%M)
+printf '#define LEAKCAM_VERSION "%s"\n' "$V" > "$A/leakcam/src/leakcam_version.h"
 grep -q 'CONFIG_APP_ENABLE_LEAKCAM' "$A/apps.mk" || echo 'subdirs-$(CONFIG_APP_ENABLE_LEAKCAM) += leakcam' >> "$A/apps.mk"
 # test programs a test install left in this SDK tree (tests/firmware/test_install.sh) stay out of the product image
 for t in memtest venctest; do

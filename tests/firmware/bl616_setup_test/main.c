@@ -32,6 +32,7 @@
 
 #include "ble_pairing.h"
 #include "crash_rec.h"
+#include "metrics.h"
 #include "k230_power.h"
 #include "k230_session.h"
 #include "switch_to_full.h"
@@ -348,6 +349,7 @@ int main(void)
 {
     /* HBN RAM rule (tests/test021): retention/sleep mode off before the first HBN RAM access */
     BL_WR_REG(HBN_BASE, HBN_SRAM, BL_RD_REG(HBN_BASE, HBN_SRAM) & ~(HBN_RETRAM_RET_MSK | HBN_RETRAM_SLP_MSK));
+    metrics_boot();
     GLB_AHB_MCU_Software_Reset(GLB_AHB_MCU_SW_PDS);   /* as the setup firmware's main(): bugs/bug-006 */
     board_init();                   /* also the USB console and its shell (defconfig) */
     crash_rec_report();

@@ -270,7 +270,7 @@ is `leak`, or the probe node is below 1100 mV), or always / never with `--leak`.
 |---|---|---|
 | `POST /v1/check?reason=<reasons>&probe_mv=<mV>&bat_mv=<mV>&rh=<%RH>&t=<C>&nn=<CRC>&thr=<cam0>,<cam1>&cam<i>=<state>,<distance>[&sample=1]` (reasons joined by `+`, sent as `%2B`; state first, same, changed or light) | binary PGMs, 320x240, back to back: per camera its frame, then its history view where imgdiff saw a change | `{"leak":true}` or `{"leak":false}`, plus `"nn":"<CRC>","thr":[<cam0>,<cam1>]` when the server has another change net or thresholds, and `"video":<seconds>` when the server wants a clip, for a leak or on request: its length is the server's (the board caps it at 300 s) |
 | `GET /v1/nn/<CRC>` | | the kmodel ([firmware/NN.txt](firmware/NN.txt) 3.4) |
-| `GET /v1/poll?id=<device>` (the BL616, see below) | | `{"stream":0}`, or `{"stream":<seconds>}` when a viewer asked for live video and audio |
+| `POST /v1/poll?id=<device>` (the BL616, see below) | the board's metrics (5.3.10) | `{"stream":0}`, or `{"stream":<seconds>}` when a viewer asked for live video and audio |
 | RTMP `rtmp://<host>:1935/leakcam/cam<N>` (publish, to MediaMTX) | 5 s live: the camera's H.265 from an IDR (Enhanced RTMP) plus the microphone (Opus 16 kHz mono, E-RTMP v2); both cameras at once | the RTMP server's `NetStream.Publish.Start` |
 
 **Live view on request, checked by the BL616 alone (decided 2026-10-25).** Since Wi-Fi is fast (tests/test100: the
@@ -279,7 +279,7 @@ anyone wants to watch, without waking the K230:
 
 ```
 RTC wake (poll interval) -> radio up -> join the stored network at the remembered AP -> DHCP (the BL616's lwIP)
-  -> GET /v1/poll
+  -> POST /v1/poll
      |-- {"stream":0} or no answer -> radio off, hibernate (K230 never powered)
      |-- {"stream":<s>} -> power the K230, WAKE reason "stream": leakcam_stream streams <s> seconds of both cameras
                            with audio (RTMP), then the session ends as usual
@@ -739,7 +739,7 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
   kept; the last one on battery stays, and the board reports "charging" (USB power, PGOOD) instead. The BL616 has no
   CHG input from the BQ24072: charging = on USB power (the charger charges until the cell is full).
 - **Reported on every channel** (the last reading on battery in mV, -1 none; USB power 0/1):
-  - Wi-Fi: every check-in, `&bat=<mV>&chg=<0|1>`; the server keeps it with the check-in, `GET /v1/devices/{id}`
+  - Wi-Fi: every check-in, `bat=<mV>&chg=<0|1>` in its form (5.3.10); the server keeps it with the check-in, `GET /v1/devices/{id}`
     answers `battery_mv` and `charging`.
   - BLE: the advertisement's manufacturer data, byte 10: the battery in 20 mV steps (0xFF none); USB power is the
     flags byte's bit 1 (as before).
@@ -750,6 +750,43 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
   battery". The charge comes from the voltage by a 1-cell Li-ion curve (4.20 V = 100 %, 3.10 V = 0 %: the K230's
   cut-off under load; the reading is under the K230's own ~200 mA load, a little below rest). The freshest channel
   wins: whichever told last (BLE and the cable live, the server as of the last check-in).
+
+### 5.3.10 Every metric in every check-in (user, 2026-11-06; tests/test048)
+
+Every check-in carries **all the metrics the board can give** (user: temperature and humidity over I2C, uptime, the
+firmware versions, the probe voltage, "all metrics possible", and every extra the BL616 and the K230 can give). The
+check-in is `POST /v1/poll?id=<id>` with a form (the earlier GET's query had no room: a request buffer of 768 B):
+
+| Key | What | Source |
+|---|---|---|
+| `ssid`, `full`/`setup` | the network, the running image and its version | api.c |
+| `bat`, `chg` | the battery (mV, -1 none), USB power | battery.c (5.3.9) |
+| `t`, `rh` | the AHT20: 0.1 C, 0.1 %RH (rh -1 = no reading, t then 0) | I2C0 (IO28/IO29), read before the radio starts |
+| `probe` | the leak probe node, mV (1650 dry, < 1100 wet; -1 none) | ADC channel 0 (IO20) |
+| `tdie`, `vdd` | the BL616's die (0.1 C, -1000 none) and its supply (mV) | ADC TSEN, VBAT/2 channel |
+| `up`, `boots`, `rst`, `crash` | BL616 uptime (s, this firmware), boots since the battery, the reset cause (GLB reset recorder bits, hex), the crash record's count | metrics.c, crash_rec.c |
+| `free`, `minfree`, `blocks` | the BL616 heap: free, lowest since boot, live allocations | mem_stat.c |
+| `rssi`, `ch`, `scan`, `join`, `dhcp`, `fails` | this check-in's AP (dBm at the scan, channel), the time of each step (ms), failed check-ins before it | wifi_check.c |
+| `sw`, `usbw`, `ks`, `kfail`, `kon` | since the last good check-in: firmware switches, USB plug wakes, K230 sessions, failed ones, the K230's rails-on time (ms) | metrics.c |
+| `klast`, `kms`, `kago` | the last K230 session: ok 1 / failed 0 / none -1, its length (ms), s since its end (-1 = before this boot) | k230_session.c |
+| `kver`, `kup`, `ktdie`, `kheap`, `kheapmin`, `kpages`, `ksago` | the K230's last STATUS: program version, uptime (s), die (0.1 C), kernel heap free and lowest free, free pages (B), s since (-1 = before this boot) | STATUS frame (k230_link.h) |
+
+- **Sensors read fresh before every check-in** (metrics_sample(), ~70 ms; the ADC calibrates once per boot), before
+  the radio starts: the AHT20's RC filter is there against the Wi-Fi bursts. The Wi-Fi figures are this run's: the
+  form is written when the request goes out (wifi_check.c's `form` hook).
+- **Kept in HBN RAM** (`.hbn_noinit.metrics`, both firmwares at the same address): boots, counters, the K230's last
+  STATUS and session survive resets and the switch between the firmwares; lost only with the battery. The counters
+  start again after a check-in the server answered; a failed check-in counts in `fails` and keeps them.
+- **The K230's STATUS** (every 60 s, 5.3.9) now also carries the program's version (firmware/VERSION + the commit, as
+  the BL616's), the die temperature (`/dev/ts`) and the kernel's memory (`/dev/sysstat`, a small LEAKCAM driver:
+  the SDK's canmv_misc device has the same numbers but brings NTP, soft I2C and touch along).
+- **No clock across a reset yet:** ages (`kago`, `ksago`) are known only within the boot that saw the event; with the
+  BL616 RTC (the sleep's wake source, not built) they become ages across resets.
+- **Wake counters for wakes not built yet** (RTC, leak, humidity) join the form with those wakes; there is no field for
+  an event that cannot happen.
+- **The server** keeps the last check-in's metrics in `GET /v1/devices/{id}` (`metrics`, by these keys, integers as
+  numbers) and appends every check-in to LEAKCAM_METRICS (one JSON line each: device, UTC time, image, version, battery,
+  metrics) for the history. Unknown keys are dropped. `metrics` on the BL616 console prints the form as it would go.
 
 ### 5.4 K230-BL616 link and time
 

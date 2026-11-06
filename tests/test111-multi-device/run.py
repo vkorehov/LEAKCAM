@@ -41,8 +41,9 @@ def check(name, ok, detail=""):
     log("CHECK", "pass" if ok else "FAIL", name, detail)
 
 
-def server(path):
-    with urllib.request.urlopen(SERVER + path, timeout=5) as f:
+def server(path, form=None):
+    """a GET, or a POST of the form (bytes) as a board's check-in"""
+    with urllib.request.urlopen(SERVER + path, data=form, timeout=5) as f:
         return json.loads(f.read())
 
 
@@ -152,7 +153,7 @@ try:
     add_to_app(SECOND)
     lines = app_mine()
     check("app: second LEAKCAM listed, not seen yet", "not seen yet" in lines.get(SECOND, ""), lines.get(SECOND))
-    server(f"/v1/poll?id={SECOND}&ssid=t111-second")   # as a board reports its network
+    server(f"/v1/poll?id={SECOND}", b"ssid=t111-second")   # as a board reports its network
     lines = app_mine()
     check("app: second LEAKCAM online after its check-in", ": online" in lines.get(SECOND, ""), lines.get(SECOND))
     check("app: second LEAKCAM's network shown", 'Wi-Fi "t111-second"' in lines.get(SECOND, ""), lines.get(SECOND))
