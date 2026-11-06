@@ -343,7 +343,8 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
   humidity at or above 85 %RH at any wake starts a K230 session, every time, and the values
   ride in `WAKE`. The K230 decides leak or no leak and how long to sleep. The only state the
   BL616 keeps is the failed-boot count (for the retry back-off) and the USB-exit flag.
-- **USB mode.** On USB power the full firmware stays awake (60 s check-ins, 5.3.1); it has no BLE.
+- **USB mode.** On USB power the full firmware stays awake (60 s check-ins, 5.3.1) with the K230 on the whole
+  time (5.3.11); it has no BLE.
   Provisioning over BLE is the setup firmware's (5.3, 5.3.1). The phone side is the Android app in
   [android/](android/README.md): SSID and password on one screen. Before it stores them the BL616
   checks them itself: it joins, gets an address, reaches a well-known internet URL and then the
@@ -788,6 +789,24 @@ check-in is `POST /v1/poll?id=<id>` with a form (the earlier GET's query had no 
   numbers) and appends every check-in to LEAKCAM_METRICS (one JSON line each: device, UTC time, image, version, battery,
   metrics) for the history. Unknown keys are dropped. `metrics` on the BL616 console prints the form as it would go.
 
+
+### 5.3.11 On USB power the K230 runs all the time (user, 2026-11-06)
+
+**Rule: whenever the setup or the full firmware sees USB power (PGOOD), the K230 is on, the whole time, until USB
+power goes.** No battery budget applies on USB, and a running K230 has its program, its link and its battery reading
+ready at once.
+
+- **Both firmwares.** The setup firmware already powers it for the USB relay (WAKE `setup`, 5.3.8); the full firmware
+  powers it with its normal job (any other WAKE reason) for as long as USB power stays, instead of short sessions.
+  A firmware switch on USB power ends the session first (counted, 5.3.10) and the other firmware starts it again.
+- **The battery at once.** The K230's STATUS every 60 s keeps the server and the phone current (5.3.9). On USB the
+  ADC reads the charger's rail, not the cell (test023): not kept, the board reports charging. **At the unplug** the
+  K230 is already up: its next reading is the cell's, at once (no boot first), and the BL616 keeps it and reports it
+  on every channel before the K230 goes off by the battery rules (5.3.9, 5.3.1).
+- **What it needs.** The full firmware's K230 session (5.3.8, not built), held while PGOOD; the unplug read: a
+  STATUS (or a read command) asked by the BL616 on the PGOOD falling edge, before the K230 is switched off.
+- **Tests.** test046 (the battery at the unplug, within one STATUS), test047 step 5 (the normal job on USB), test131
+  (the app's level right after the unplug).
 ### 5.4 K230-BL616 link and time
 
 - **The UART carries session control.** UART1 at 2 Mbaud 8N1 (stable; 4 Mbaud lost short writes, tests/test039), frames `$<seq>,<CMD>[,args]*XX`
