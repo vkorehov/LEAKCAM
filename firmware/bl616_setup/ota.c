@@ -13,6 +13,7 @@
 #include "xz.h"
 
 #include "flash_sha.h"
+#include "metrics.h"
 #include "ota_env.h"
 #include "slot.h"
 
@@ -145,6 +146,7 @@ static void ota_task(void *arg)
     for (;;) {
         if (run()) {
             printf("ota: to the full firmware\r\n");
+            metrics_switch();                /* counted as every switch (sw in the check-in, test130 step 13) */
             if (slot_switch() != 0)          /* returns only on a failed partition-table write */
                 printf("ota: slot switch failed\r\n");
         } else if (!env_present(OTA_ENV_SHA)) {
