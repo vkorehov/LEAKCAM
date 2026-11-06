@@ -99,9 +99,12 @@ static void watch_task(void *arg)
 {
     (void)arg;
     TickType_t retry_at = 0;
-    bool was_on = false;
+    bool was_on = false, was_usb = usb_present();          /* at boot presence checks in within 5 s anyway */
     for (;;) {
         bool usb = usb_present(), on = k230_session_active();
+        if (usb && !was_usb)
+            presence_now();                                  /* the plug: charging at the server and the app at once */
+        was_usb = usb;
         if (was_on && !on)
             retry_at = xTaskGetTickCount() + pdMS_TO_TICKS(RETRY_MS);
         was_on = on;
