@@ -8,7 +8,11 @@
 // registered as a board's user when it is issued the board's pairing PIN (GET /v1/devices/{id}/pin?phone=), removed by
 // DELETE /v1/devices/{id}/phones/{phone}; clients list a phone's boards with GET /v1/phones/{phone}/devices and keep no
 // list of their own. A board whose last phone left gets 410 Gone at its check-in: it goes back to the setup firmware.
-// The users are kept on disk (LEAKCAM_PHONES, one JSON object).
+// The users are kept on disk (LEAKCAM_PHONES, one JSON object). Firmware upgrades (DESIGN.md 5.3.7, tests/test130): a
+// board reports its running image and version at each check-in (full= or setup=); when LEAKCAM_IMAGES holds a
+// bl616_full.bin of another version (with its bl616_full.xz, the SDK build's), a full firmware's check-in answer names
+// it with the SHA-256 and size of both; the board fetches the .xz from GET /v1/images/bl616_full into the free end of
+// its slot, and the setup firmware unpacks it over the old image (no network needed from there).
 package main
 
 import (
@@ -35,6 +39,7 @@ const (
 	Crashes = "/home/pi/leakcam-server/crashes.jsonl" // LEAKCAM_CRASHES
 	WakeGap = 2 * time.Minute                         // at most one BLE wake per device this often: a wake costs its battery 2 minutes awake
 	Phones  = "/home/pi/leakcam-server/phones.json"   // LEAKCAM_PHONES
+	Images  = "/home/pi/leakcam-server/images"        // LEAKCAM_IMAGES: bl616_full.bin + .xz, the version boards get
 )
 
 type Device struct {
@@ -56,8 +61,20 @@ type Crash struct {
 }
 
 type CheckIn struct {
-	At   time.Time
-	SSID string
+	At      time.Time
+	SSID    string
+	Image   string // the running firmware: "full" or "setup"
+	Version string
+}
+
+// Image is an upgrade on offer: its version read from its own build tag, so the file is all there is to update
+type Image struct {
+	Version string
+	SHA     string // of the image (.bin): what the board must hold in the end
+	Size    int64
+	XzSHA   string // of the download (.xz)
+	XzSize  int64
+	mod     time.Time
 }
 
 var (
@@ -76,7 +93,49 @@ var (
 	// registered is absent (boards set up before the users were kept: no 410)
 	phones    = map[string][]string{}
 	phoneFile = Phones
+	imageDir  = Images
+	imageMeta = map[string]Image{} // by file, reread when it changes
+	tagRe     = regexp.MustCompile(`leakcam-build ([a-z_]+) ([0-9A-Za-z.+-]+)`)
+	verRe     = regexp.MustCompile(`^[0-9A-Za-z.+-]{1,48}$`)
 )
+
+// image: the upgrade imageDir/<name>.bin (its version from its build tag, for a firmware called want: "full") with its
+// compressed download <name>.xz, or false (none, or not that image)
+func image(name, want string) (Image, bool) {
+	path := imageDir + "/" + name
+	st, err1 := os.Stat(path + ".bin")
+	sx, err2 := os.Stat(path + ".xz")
+	if err1 != nil || err2 != nil {
+		return Image{}, false
+	}
+	mod := st.ModTime()
+	if sx.ModTime().After(mod) {
+		mod = sx.ModTime()
+	}
+	mu.Lock()
+	im, ok := imageMeta[name]
+	mu.Unlock()
+	if ok && im.mod.Equal(mod) && im.Size == st.Size() && im.XzSize == sx.Size() {
+		return im, im.Version != ""
+	}
+	b, err1 := os.ReadFile(path + ".bin")
+	x, err2 := os.ReadFile(path + ".xz")
+	if err1 != nil || err2 != nil {
+		log.Printf("image %s: %v %v", path, err1, err2)
+		return Image{}, false
+	}
+	im = Image{SHA: fmt.Sprintf("%x", sha256.Sum256(b)), Size: int64(len(b)), XzSHA: fmt.Sprintf("%x", sha256.Sum256(x)),
+		XzSize: int64(len(x)), mod: mod}
+	if m := tagRe.FindSubmatch(b); m != nil && string(m[1]) == want {
+		im.Version = string(m[2])
+	} else {
+		log.Printf("image %s.bin: no leakcam-build %s tag: not offered", path, want)
+	}
+	mu.Lock()
+	imageMeta[name] = im
+	mu.Unlock()
+	return im, im.Version != ""
+}
 
 // CrashKinds as the firmware names them (crash_rec.c kind_name)
 var CrashKinds = []string{"?", "exception", "watchdog hang", "assert", "stack overflow", "malloc failed", "fatal", "k230 fatal"}
@@ -89,13 +148,20 @@ func reply(w http.ResponseWriter, v any) {
 }
 
 func poll(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+	q := r.URL.Query()
+	id := q.Get("id")
 	if !idRe.MatchString(id) {
 		http.Error(w, "id: 12 upper-case hex digits", http.StatusBadRequest)
 		return
 	}
+	in := CheckIn{At: time.Now(), SSID: q.Get("ssid")}
+	for _, img := range []string{"full", "setup"} {
+		if v := q.Get(img); verRe.MatchString(v) {
+			in.Image, in.Version = img, v
+		}
+	}
 	mu.Lock()
-	seen[id] = CheckIn{time.Now(), r.URL.Query().Get("ssid")}
+	seen[id] = in
 	if p, ok := phones[id]; ok && len(p) == 0 {
 		mu.Unlock()
 		http.Error(w, "no user: back to setup", http.StatusGone)
@@ -108,7 +174,30 @@ func poll(w http.ResponseWriter, r *http.Request) {
 		woken[id] = time.Now()
 	}
 	mu.Unlock()
-	reply(w, map[string]int{"stream": 0, "poll": pollS, "ble": ble})
+	ans := map[string]any{"stream": 0, "poll": pollS, "ble": ble}
+	// an upgrade only to a full firmware that said its version: the setup firmware is changed by wire only
+	if in.Image == "full" {
+		if im, ok := image("bl616_full", "full"); ok && im.Version != in.Version {
+			ans["full"], ans["full_sha"], ans["full_size"] = im.Version, im.SHA, im.Size
+			ans["xz_sha"], ans["xz_size"] = im.XzSHA, im.XzSize
+			log.Printf("%s: full %s -> %s offered", id, in.Version, im.Version)
+		}
+	}
+	reply(w, ans)
+}
+
+// images: the upgrade's download, the .xz (the board checks its SHA-256 against the check-in answer's)
+func images(w http.ResponseWriter, r *http.Request) {
+	name := r.PathValue("name")
+	if name != "bl616_full" {
+		http.NotFound(w, r)
+		return
+	}
+	if _, ok := image(name, "full"); !ok {
+		http.NotFound(w, r)
+		return
+	}
+	http.ServeFile(w, r, imageDir+"/"+name+".xz")
 }
 
 // crash: a board's crash record (firmware/bl616_common/api.c api_crash_target), answered 200 once kept: only then does the
@@ -429,6 +518,9 @@ func main() {
 		phoneFile = f
 	}
 	loadPhones()
+	if d := os.Getenv("LEAKCAM_IMAGES"); d != "" {
+		imageDir = d
+	}
 	if p, err := strconv.Atoi(os.Getenv("LEAKCAM_POLL_S")); err == nil && p > 0 {
 		pollS = p
 	}
@@ -446,6 +538,7 @@ func main() {
 	http.HandleFunc("POST /v1/devices/{id}/wake", wakeUp)
 	http.HandleFunc("DELETE /v1/devices/{id}/phones/{phone}", unregister)
 	http.HandleFunc("GET /v1/phones/{phone}/devices", phoneDevices)
+	http.HandleFunc("GET /v1/images/{name}", images)
 	log.Printf("listening on %s", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }

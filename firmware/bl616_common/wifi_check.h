@@ -31,6 +31,9 @@ struct wifi_check_target {
     size_t body_cap;
     bool api;                            /* the LEAKCAM API (api.h): once it answered, a kept crash record goes too */
     const char *post;                    /* NULL: GET; else POST of this url-encoded form */
+    /* a download (the OTA image, tests/test130): the body handed over piece by piece instead of kept; false stops */
+    bool (*sink)(const uint8_t *data, size_t n, void *arg);
+    void *sink_arg;
 };
 extern const struct wifi_check_target wifi_check_probe;   /* WCHK_PROBE_HOST / PATH, 204 */
 

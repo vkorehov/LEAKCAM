@@ -22,6 +22,7 @@
 #include "k230_session.h"
 #include "usb_setup.h"
 #include "switch_to_full.h"
+#include "ota.h"
 #include "setup_boot.h"
 #include "setup_sleep.h"
 #include "wdg_guard.h"
@@ -56,9 +57,10 @@ static void boot_task(void *arg)
     usb_setup_init();
     setup_boot();
     bool from_full = switch_to_full_start();     /* the way back to the full firmware */
+    bool ota = ota_start();                     /* the full firmware's upgrade: written now, awake until done */
     if (setup_usb_present() && !from_full) {    /* plugged in: from the full firmware it is not a plug */
         setup_usb_plugged();
-    } else {
+    } else if (!ota) {
         setup_sleep_begin(false);   /* BLE-idle veto until advertising runs (setup_sleep.c) */
         if (setup_usb_present())
             usb_setup_begin();      /* sent here by the full firmware on USB power: the cable setup is offered */

@@ -12,6 +12,7 @@
 
 #include "api.h"
 #include "device_id.h"
+#include "ota_fetch.h"
 #include "switch_to_setup.h"
 #include "wifi_check.h"
 
@@ -34,7 +35,7 @@ static void no_progress(enum wifi_check_state st, uint16_t detail)
 
 static void check_in(void)
 {
-    char ssid[33], psk[64], path[API_PATH_CAP], body[64];
+    char ssid[33], psk[64], path[API_PATH_CAP], body[384];   /* an upgrade offer ~280 B */
     size_t ss = 0, ps = 0;
     size_t sl = ef_get_env_blob("wifi_ssid", ssid, sizeof(ssid) - 1, &ss);
     size_t pl = ef_get_env_blob("wifi_psk", psk, sizeof(psk) - 1, &ps);
@@ -65,6 +66,10 @@ static void check_in(void)
         return;
     }
     missed = 0;
+    if (ota_fetch(body, ssid, sl, psk, ps ? pl : 0)) {
+        switch_to_setup("ota");           /* the copy is in: the setup firmware unpacks it (DESIGN.md 5.3.7) */
+        return;
+    }
     if (strstr(body, "\"ble\":1"))
         switch_to_setup("wake");          /* a phone out of range asked through the server (tests/test119) */
 }

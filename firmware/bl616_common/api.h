@@ -20,7 +20,7 @@
 
 /* the check-in for this device on the network ssid (GET /v1/poll?id=<id>&ssid=<ssid>: the SSID for the app, never the
  * passphrase), 200 expected; path (>= API_PATH_CAP) and body are the caller's, body NULL: not kept */
-#define API_PATH_CAP (32 + 3 * 32 + 1)
+#define API_PATH_CAP (32 + 3 * 32 + 8 + 3 * 36 + 1)   /* + &<image>=<version, %2B for its +> */
 void api_poll_target(struct wifi_check_target *t, char *path, const char *ssid, size_t ssid_len, char *body,
                      size_t body_cap);
 

@@ -660,6 +660,11 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
   switching. A mismatch, a broken download or a power cut mid-write keeps the old firmware running, and the next
   check-in retries.
 - **After the switch:** the board reports its new versions at its next check-in.
+- **The BL616 full firmware is written by the setup firmware** (user, 2026-11-06): the 4 MB flash has no room for a
+  second full copy (slot 0 2 MB = full 1.09 MB, slot 1 1.44 MB = setup 1.29 MB). The full firmware switches to the
+  setup firmware with reason `ota`; the setup firmware downloads the new full image straight into slot 0, checks its
+  SHA-256 and switches back. A broken download or a power cut leaves the board on the setup firmware (Wi-Fi and the
+  server check-in work there), which retries; the old full image is gone by then.
 
 ### 5.3.8 One K230 product image; the BL616 picks the program at the start (user, 2026-11-05; tests/test113)
 

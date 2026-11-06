@@ -17,12 +17,14 @@ target_sources(app PRIVATE
                ${S}/k230_power.c
                usb_power.c
                full_boot.c
+               ota_fetch.c
                presence.c
                switch_to_setup.c
                wifi_link.c
                ${S}/usb_console2.c
                ${S}/wdg_guard.c
                ${S}/crash_rec.c
+               ${S}/flash_sha.c
                ${S}/mem_stat.c
                ${S}/device_id.c
                ${S}/provision_cmd.c

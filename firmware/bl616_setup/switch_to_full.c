@@ -10,6 +10,7 @@
 
 #include "api.h"
 #include "ble_pairing.h"
+#include "ota.h"
 #include "slot.h"
 #include "usb_setup.h"
 #include "wifi_check.h"
@@ -29,6 +30,10 @@ static void no_progress(enum wifi_check_state st, uint16_t detail)
 
 static void switch_now(void)
 {
+    if (ota_blocks_full()) {                /* slot 0 waits for its upgrade or is half written (ota.c) */
+        printf("switch_to_full: the full firmware's upgrade first, staying in setup\r\n");
+        return;
+    }
     if (slot_switch() != 0)                 /* returns only on a failed partition-table write */
         printf("switch_to_full: slot switch failed, staying in setup\r\n");
 }

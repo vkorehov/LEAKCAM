@@ -20,10 +20,12 @@ target_sources(app PRIVATE
                ${CMAKE_CURRENT_SOURCE_DIR}/setup_boot.c
                ${CMAKE_CURRENT_SOURCE_DIR}/setup_sleep.c
                ${CMAKE_CURRENT_SOURCE_DIR}/switch_to_full.c
+               ${CMAKE_CURRENT_SOURCE_DIR}/ota.c
                ${CMAKE_CURRENT_SOURCE_DIR}/wifi_setup.c
                ${S}/usb_console2.c
                ${S}/wdg_guard.c
                ${S}/crash_rec.c
+               ${S}/flash_sha.c
                ${S}/mem_stat.c
                ${S}/device_id.c
                ${CMAKE_CURRENT_SOURCE_DIR}/ble_pairing.c

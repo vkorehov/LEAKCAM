@@ -7,6 +7,7 @@
 
 #include "crash_rec.h"
 #include "device_id.h"
+#include "leakcam_version.h"
 
 /* the query value: unreserved characters as they are, every other byte %XX (an SSID is any 0-32 bytes) */
 static void url_encode(char *out, size_t cap, const char *in, size_t n)
@@ -30,10 +31,12 @@ static void url_encode(char *out, size_t cap, const char *in, size_t n)
 void api_poll_target(struct wifi_check_target *t, char *path, const char *ssid, size_t ssid_len, char *body,
                      size_t body_cap)
 {
-    char enc[3 * 32 + 1];
+    char enc[3 * 32 + 1], ver[3 * 36 + 1];
 
     url_encode(enc, sizeof(enc), ssid, ssid_len);
-    snprintf(path, API_PATH_CAP, "/v1/poll?id=%s&ssid=%s", device_id(), enc);
+    /* the running image and version: the server offers an upgrade on it (DESIGN.md 5.3.7, tests/test130) */
+    url_encode(ver, sizeof(ver), LEAKCAM_VERSION, strnlen(LEAKCAM_VERSION, 36));
+    snprintf(path, API_PATH_CAP, "/v1/poll?id=%s&ssid=%s&" LEAKCAM_IMAGE "=%s", device_id(), enc, ver);
     *t = (struct wifi_check_target){ API_HOST, API_PORT, path, 200, body, body_cap, true };
 }
 

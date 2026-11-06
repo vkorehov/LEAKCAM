@@ -25,6 +25,7 @@ CONFIG_FHOST =y
 CONFIG_WIFI6 =y
 CONFIG_RF =y
 CONFIG_MBEDTLS =y
+CONFIG_XZ =y
 # not used (no access point), but the SDK's Wi-Fi lwIP adapter (net_al_ext.c) includes dhcp_server.h
 CONFIG_DHCPD =y
 CONFIG_MBEDTLS_AES_USE_HW =y

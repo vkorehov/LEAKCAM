@@ -149,7 +149,7 @@ static enum wifi_check_state internet(const struct wifi_check_target *t, uint16_
 {
     struct addrinfo hints, *ai = NULL;
     static char req[768];                /* the headers + a crash record's form (api.h); static: one run at a time */
-    char buf[320];
+    static char buf[640];                /* the headers + an upgrade offer's body (~190 B, tests/test130) */
     int n = 0, want = t->body ? (int)sizeof(buf) - 1 : 12;   /* the status line, or the whole short answer */
     int rl;
 
@@ -171,12 +171,36 @@ static enum wifi_check_state internet(const struct wifi_check_target *t, uint16_
     lwip_freeaddrinfo(ai);
     if (fd < 0)
         return WCHK_NO_INTERNET;
+    if (t->sink)
+        want = (int)sizeof(buf) - 1;     /* the headers first, then the body streamed */
+    int sink_status = -1;
+    bool streamed = false;
     if (lwip_send(fd, req, (size_t)rl, 0) == rl) {
         int k;
-        while (n < want && (k = lwip_recv(fd, buf + n, (size_t)want - (size_t)n, 0)) > 0)
+        while (n < want && (k = lwip_recv(fd, buf + n, (size_t)want - (size_t)n, 0)) > 0) {
             n += k;
+            buf[n] = 0;
+            if (t->sink && strstr(buf, "\r\n\r\n"))
+                break;                   /* the headers are in: the rest goes to the sink */
+        }
+        const char *b = t->sink && n > 0 ? strstr(buf, "\r\n\r\n") : NULL;
+        if (b) {
+            sink_status = wchk_http_status(buf, (size_t)n);
+            if (sink_status == t->expect) {
+                b += 4;
+                streamed = t->sink((const uint8_t *)b, (size_t)(buf + n - b), t->sink_arg);
+                while (streamed && (k = lwip_recv(fd, buf, sizeof(buf), 0)) > 0)   /* buf reused: status taken */
+                    streamed = t->sink((const uint8_t *)buf, (size_t)k, t->sink_arg);
+            }
+        }
     }
     (void)lwip_close(fd);               /* the answer is read: a close error changes nothing */
+    if (t->sink) {                       /* the sink checks the length and the checksum itself */
+        if (sink_status == t->expect)
+            return streamed ? WCHK_INTERNET : WCHK_NO_INTERNET;
+        *detail = sink_status < 0 ? 0 : (uint16_t)sink_status;
+        return n == 0 ? WCHK_NO_INTERNET : WCHK_CAPTIVE;
+    }
     if (n == 0)
         return WCHK_NO_INTERNET;
     int status = wchk_http_status(buf, (size_t)n);
