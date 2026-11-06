@@ -135,8 +135,9 @@ handler; a full linux/amd64 container fails under qemu-user (bison/m4 crash).
 - **Wi-Fi on hardware.** The BL616 driver (`bl616_nethub`, NetHub over SDIO, `wlan0` with DHCP on
   the K230) builds and links, but has never talked to a BL616; `../bl616_common/WIFI.md` lists what to
   check first.
-- **OTA writer.** The SPL reads `ota_meta` and both slots; nothing on RT-Smart writes the
-  inactive slot and the slot record yet.
+- **OTA writer (2026-11-06, built, not run):** `/dev/ota` (rtsmart/drivers/ota_nand) writes the inactive slot and
+  its `ota_meta` record; install.sh patches the SPL to read `ota_meta` from NAND (Canaan's read was SD only: slot A
+  always booted). The product program is in the kernel's ROMFS (`/app/leakcam`), so a slot carries kernel + program.
 - **The capture hook** that `leakcam_agent` runs at every wake (`/sdcard/app/on-wake`, a program:
   RT-Smart has no shell) is not written yet; without it the agent reports the wake, waits for
   nothing and asks to sleep for the default 6 h.

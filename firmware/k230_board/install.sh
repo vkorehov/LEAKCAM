@@ -255,6 +255,20 @@ if line not in s:
     open(p, 'w').write(s.replace(a, a + line))
 PY
 
+# /dev/ota (DESIGN.md 5.3.7, 2026-11-06): the A/B image update on SPI NAND, the slot and record writer.
+OTA=$RTT/drivers/extdrv/ota_nand
+rm -rf "$OTA"; mkdir -p "$OTA"
+cp "$HERE"/rtsmart/drivers/ota_nand/* "$OTA/"
+python3 - "$RTT/drivers/extdrv/Kconfig" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+line = '    source "drivers/extdrv/ota_nand/Kconfig"\n'
+if line not in s:
+    a = '    source "drivers/extdrv/link_mux/Kconfig"\n'
+    assert s.count(a) == 1, 'extdrv/Kconfig: no link_mux line to add ota_nand after'
+    open(p, 'w').write(s.replace(a, a + line))
+PY
+
 # RT-Thread SDIO core: the BL616 SDU function 1 CIS has no FUNCE tuple, so the core reads a
 # max block size of 0 and refuses the function. Give it the 512-byte block of its port FIFO
 # and the 200 ms enable timeout Bouffalo's own host driver sets for the same reason.
@@ -309,6 +323,37 @@ grep -q 'LEAKCAM: no DHCP ARP check' "$LWOPT" || { echo "lwIP DHCP ARP check pat
 # 3. U-Boot/SPL: defconfig, device tree (reuses the BPI-Zero TARGET: same K230D SiP board code)
 cp "$HERE/uboot/configs/k230d_leakcam_defconfig" "$UB/configs/"
 cp "$HERE"/uboot/dts/k230d_leakcam.dts "$HERE"/uboot/dts/k230d_leakcam_pins.dtsi "$UB/arch/riscv/dts/"
+
+# SPL: the A/B slot record (ota_meta) from SPI NAND (DESIGN.md 5.3.7, tests/test130). Canaan's k230_read_meta_block()
+# reads it from SD only and answers -1 on NAND: both records "invalid", so the SPL always booted slot A and the OTA's
+# record never chose a slot (found 2026-11-06). The record's 512 bytes at its offset (in its own erase block: a bad one
+# = no record); a corrected bit flip (-EUCLEAN) still reads the data.
+BOOTC=$UB/board/kendryte/common/k230_boot.c
+grep -q 'LEAKCAM: ota_meta from NAND' "$BOOTC" || python3 - "$BOOTC" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+head = 'static int k230_read_meta_block(ulong offset, void *buf)\n{\n'
+i = s.find(head)
+assert i >= 0 and s.count(head) == 1, 'k230_boot.c changed, cannot apply the ota_meta patch'
+tail = '    return -1;\n}\n'
+j = s.find(tail, i)
+assert j > i, 'k230_read_meta_block() end not found'
+nand = ('#if defined(CONFIG_MTD_SPI_NAND)\n'
+        '    /* LEAKCAM: ota_meta from NAND: the record at its offset, in its own erase block (a bad one = no record) */\n'
+        '    if (g_boot_medium == BOOT_MEDIUM_NANDFLASH) {\n'
+        '        struct mtd_info *mtd = get_mtd_by_name(SPINAND_NAME);\n'
+        '        size_t retlen = 0;\n'
+        '        int r;\n\n'
+        '        if (IS_ERR_OR_NULL(mtd))\n'
+        '            return -1;\n'
+        '        r = mtd_block_isbad(mtd, offset) ? -1 : mtd_read(mtd, offset, 512, &retlen, buf);\n'
+        '        put_mtd_device(mtd);\n'
+        '        return ((r == 0 || r == -EUCLEAN) && retlen == 512) ? 0 : -1;\n'
+        '    }\n'
+        '#endif\n\n')
+open(p, 'w').write(s[:j] + nand + s[j:])
+PY
+grep -q 'LEAKCAM: ota_meta from NAND' "$BOOTC" || { echo "ota_meta NAND patch not applied"; exit 1; }
 
 # U-Boot/SPL RX sample delay step (tests/test017, 2026-10-24): Canaan's designware_spi.c computes the step as
 # NSEC_PER_SEC / bus clock in whole ns - 1 ns at the 800 MHz SPI0 clock instead of 1.25 - so the dts's 6 ns gave delay
@@ -511,7 +556,7 @@ rm -f "$SDK"/output/*/images/bin/ov5647-*                  # earlier builds' set
 # programs.
 A=$SDK/src/applications
 rm -rf "$A/leakcam"; mkdir -p "$A/leakcam/src"
-cp "$HERE/../k230_app/rtsmart/Makefile" "$A/leakcam/Makefile"
+cp "$HERE/../k230_app/rtsmart/Makefile" "$HERE/../k230_app/rtsmart/rom_c.py" "$A/leakcam/"
 cp "$HERE/../k230_app/rtsmart/Kconfig.app" "$A/leakcam/Kconfig"
 cp "$HERE/../k230_app/leakcam.c" "$HERE/k230_link.h" "$A/leakcam/src/"
 grep -q 'CONFIG_APP_ENABLE_LEAKCAM' "$A/apps.mk" || echo 'subdirs-$(CONFIG_APP_ENABLE_LEAKCAM) += leakcam' >> "$A/apps.mk"
@@ -520,6 +565,43 @@ for t in memtest venctest; do
     sed -i "/^subdirs-y += $t\$/d" "$A/apps.mk"; rm -rf "$A/$t"
 done
 rm -rf "$SDK"/output/k230d_rtos_leakcam_defconfig/images/sdcard/app/*
+
+# The product program in the kernel's ROMFS, /app/leakcam (DESIGN.md 5.3.7, 2026-11-06): inside the A/B slot, so an
+# image update and its fallback change kernel and program together. The program's Makefile writes
+# app_canmv/leakcam_rom.c (rom_c.py); until the first build an empty one stands in. The root table gets "app".
+ROMC=$RTT/app_canmv/leakcam_rom.c
+[ -f "$ROMC" ] || python3 "$HERE/../k230_app/rtsmart/rom_c.py" - "$ROMC"
+SCON=$RTT/app_canmv/SConscript
+grep -q "leakcam_rom.c" "$SCON" || sed -i "s|^src\t+= Glob('config.c')|src\t+= Glob('config.c')\nsrc\t+= Glob('leakcam_rom.c')     # LEAKCAM: the product program in the ROMFS|" "$SCON"
+grep -q "leakcam_rom.c" "$SCON" || { echo "app_canmv SConscript: leakcam_rom.c not added"; exit 1; }
+grep -q 'LEAKCAM: the program in the ROMFS' "$MNT" || python3 - "$MNT" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = 'const struct romfs_dirent _root_dirent[] = {\n'
+b = ('/* LEAKCAM: the program in the ROMFS, /app/leakcam (leakcam_rom.c, DESIGN.md 5.3.7) */\n'
+     'extern const struct romfs_dirent leakcam_rom_app[];\n\n' + a +
+     '    {ROMFS_DIRENT_DIR, "app",     (rt_uint8_t *)leakcam_rom_app, 1},\n')
+assert s.count(a) == 1, 'mnt.c changed, cannot add the ROMFS program'
+open(p, 'w').write(s.replace(a, b))
+PY
+grep -q 'LEAKCAM: the program in the ROMFS' "$MNT" || { echo "ROMFS program patch not applied"; exit 1; }
+# The SDK builds the kernel, then OpenSBI packs it into the slot image, then the apps: the program must exist before
+# the kernel that carries it. OpenSBI now waits for leakcam-rom: the apps, then the kernel linked again with them.
+MK=$SDK/Makefile
+grep -q 'LEAKCAM: leakcam-rom' "$MK" || python3 - "$MK" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = 'opensbi: prepare rtsmart\n'
+b = ('# LEAKCAM: leakcam-rom: the apps first (the product program -> the kernel\'s ROMFS source), then the kernel again\n'
+     '.PHONY: leakcam-rom\n'
+     'leakcam-rom: prepare rtsmart\n'
+     '\t@$(MAKE) -C $(SDK_APPS_SRC_DIR) all\n'
+     '\t@$(MAKE) -C $(SDK_RTSMART_SRC_DIR) all\n\n'
+     'opensbi: prepare rtsmart leakcam-rom\n')
+assert s.count(a) == 1, 'SDK Makefile changed, cannot order the ROMFS build'
+open(p, 'w').write(s.replace(a, b))
+PY
+grep -q 'LEAKCAM: leakcam-rom' "$MK" || { echo "SDK Makefile ROMFS order not applied"; exit 1; }
 
 # The USB device on USB-C 1 for the phone's USB setup (DESIGN.md 5.3.8; CherryUSB CDC ACM ttyGS0, 1209:ABD1, tests/
 # test043): the SDK's glue calls rt_ioremap without its header: undeclared, the 64-bit address came back as an int

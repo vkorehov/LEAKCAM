@@ -689,10 +689,16 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
   written as `<name>.new`, its SHA-256 checked, then renamed over the current one with the previous kept as
   `<name>.old`; a model that does not load or fails its known-output check (skill k230-kpu) falls back to `.old` and
   is reported. Independent of the A/B slots: an image update keeps the model, a model update keeps the image.
-- **Built (2026-11-06):** the BL616 part (server offer and download, ota_fetch.c, ota.c with the xz decoder), not run
-  yet. **Not built: the K230 image OTA and the model update** (the program in ROMFS, the slot and record writer, the
-  model swap, the server's per-device model): the transport to the K230 is open (its own Wi-Fi through the BL616's
-  NetHub needs the K230's normal session first; tests/test130 step 7).
+- **The SPL never read `ota_meta` on NAND** (found 2026-11-06): Canaan's `k230_read_meta_block()` reads it from SD
+  only and answers -1 on NAND, so both records were "invalid" and slot A always booted. install.sh patches the SPL to
+  read the record's 512 bytes from NAND (its own erase block; a bad one = no record).
+- **Built (2026-11-06), not run:** the BL616 part (server offer and download, ota_fetch.c, ota.c with the xz
+  decoder); the K230 slot writer `/dev/ota` (drivers/ota_nand: the inactive slot by the SPL's rule, bad blocks skipped
+  as the SPL skips them, read-back, the record last; msh `ota_records`, `ota_file <path>` for the bench); the program in
+  the slot's ROMFS (`/app/leakcam`, the SDK's build links the kernel again after the program); the server's
+  `GET /v1/images/k230_rtt` (ETag = the SHA-256 in its K230 header, 304 when current) and
+  `GET /v1/devices/{id}/model` (the device's model or the default, ETag = SHA-256). **Open:** the transport to the
+  K230 (its own Wi-Fi through the BL616's NetHub needs the K230's normal session first) and the model swap on the K230.
 
 ### 5.3.8 One K230 product image; the BL616 picks the program at the start (user, 2026-11-05; tests/test113)
 

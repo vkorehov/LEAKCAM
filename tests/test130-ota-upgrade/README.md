@@ -35,7 +35,11 @@ the board without its full firmware (no leak detection).
    ends on the new full firmware; the setup firmware untouched.
 6. BL616: an image that does not fit (image + copy over slot 0's 2 MB): refused, one log line, nothing written.
 7. K230: the new image into the inactive slot (rtt_a/rtt_b), `ota_meta` switched, the next boot runs it; a broken image
-   (checksum mismatch, power cut during the write) -> the SPL boots the old slot.
+   (checksum mismatch, power cut during the write) -> the SPL boots the old slot. Bench, no network: a kdimg whose
+   /sdcard holds a second slot image; msh `ota_records` (A none, B none: A boots), `ota_file /sdcard/<image>` (slot B
+   written, read back, record 1), reboot: the SPL log names slot B and `ota_records` says B boots; a slot B image
+   corrupted on purpose (one byte flipped in its file before ota_file is refused; one flipped in NAND after the
+   record) -> the SPL's SHA-256 fails and slot A boots.
 8. Both versions reported to the server after the upgrade.
 9. **The model, per device:** a model for this device ID on the server (and a different default): the check-in
    answer names this device's model (version, SHA-256, size); `GET /v1/devices/{id}/model` gives that file, another

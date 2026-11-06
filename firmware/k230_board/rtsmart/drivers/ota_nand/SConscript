@@ -1,0 +1,8 @@
+from building import *
+
+cwd = GetCurrentDir()
+src = Glob('*.c')
+
+group = DefineGroup('ota_nand', src, depend=['RT_USING_OTA_NAND'], CPPPATH=[cwd])
+
+Return('group')

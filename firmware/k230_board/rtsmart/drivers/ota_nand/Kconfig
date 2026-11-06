@@ -1,0 +1,7 @@
+config RT_USING_OTA_NAND
+    bool "LEAKCAM: /dev/ota, the A/B image update on SPI NAND"
+    depends on RT_USING_MTD_NAND
+    default n
+    help
+        Writes the inactive RT-Smart slot (rtt_a / rtt_b) and its ota_meta record the way the SPL
+        reads them (DESIGN.md 5.3.7): bad blocks skipped, the record last. msh: ota_records.

@@ -114,6 +114,7 @@ CONFIG_NETDEV_USING_PING=y
 CONFIG_RT_WLAN_MSH_CMD_ENABLE=y
 # console on UART1 with the BL616 link (link_mux, 2026-10-22): the BL616 forwards it to its USB port /dev/ttyACM1
 CONFIG_RT_USING_LINK_MUX=y
+CONFIG_RT_USING_OTA_NAND=y
 # the USB device on USB-C 1 for the phone's USB setup (DESIGN.md 5.3.8, tests/test043)
 CONFIG_ENABLE_CHERRY_USB=y
 CONFIG_ENABLE_CHERRY_USB_DEVICE=y
