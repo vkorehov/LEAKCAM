@@ -58,8 +58,8 @@ static unsigned sense_high(void)
 uint32_t k230_power_on(void)
 {
     struct bflb_device_s *g = gpio();
-    bflb_gpio_set(g, PIN_K230_RSTN);            /* held in reset */
-    bflb_gpio_reset(g, PIN_K230_BOOT1);
+    k230_power_init();      /* the pins set again: after a PDS sleep K230_PWR (IO30) drove nothing, "3V3 did not come up"
+                             * on the plug's wake (test113, 2026-11-06); also RSTN held, BOOT1 low */
     for (unsigned i = 0; i < sizeof(sense_pins); i++)
         bflb_gpio_init(g, sense_pins[i], GPIO_INPUT | GPIO_FLOAT | GPIO_SMT_EN);
     bflb_gpio_init(g, PIN_K230_ALIVE, GPIO_INPUT | GPIO_FLOAT | GPIO_SMT_EN);

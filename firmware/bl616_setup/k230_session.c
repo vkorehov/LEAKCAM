@@ -251,6 +251,10 @@ static void session_task(void *arg)
             q_sending = link_send_cmd("USB", line);
         }
         heartbeat();
+        if (!k230_power_is_on()) {               /* `k230 off` (flash_nand.sh): an end asked for, no failure record */
+            stop_asked = true;
+            stop_why = "switched off by `k230 off`";
+        }
         if (stop_why) {
             const char *why = (const char *)stop_why;
             bool asked = stop_asked;

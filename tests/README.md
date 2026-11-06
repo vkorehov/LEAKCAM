@@ -95,7 +95,7 @@ Leak tests, one per operation the product repeats:
 | [test109 secure server (TLS, device identity, pinned certificate, signed change net)](test109-secure-server/README.md) | 2026-10-30 | **planned**: the real server is not built (DESIGN 7, SECURITY.txt 4); it will run on the Windows PC for the test. |
 | [test110 setup app recovery from loss at every step](test110-ble-loss-recovery/README.md) | 2026-11-03, run.py 30/30 | **pass** on the setup firmware's test bed (pt_fault), the phone 8 m away: lost notifications, a link lost after the save, Bluetooth off during the check -> Done 9.4-15.2 s; failures named in 6.4-8.9 s; app and board agree |
 | [test111 more than one LEAKCAM: one device ID, presence, status screen](test111-multi-device/README.md) | 2026-11-01, run.py 18/18 | **pass**: one ID on board, USB and BLE; the app's status screen (online / offline / delete), the short change-Wi-Fi flow, no stored network |
-| [test113 full setup from the phone app over a USB-C cable (product firmware)](test113-usb-setup-from-phone/README.md) | 2026-11-05 | **board side pass, app open**: with the PC in the phone's role, full provisioning over the K230 USB on product firmware, SAVED 4.9 s after COMMIT, K230 off 2.3 s later, full firmware online; the app's USB code not written |
+| [test113 full setup from the phone app over a USB-C cable (product firmware)](test113-usb-setup-from-phone/README.md) | 2026-11-06 | **pass**: the phone's plug opens the app on the cable screen (4.3 s), setup over the cable to Done, network saved, full firmware online; 65 s run |
 | [test114 the lowest BLE energy at which the phone finds the board](test114-ble-discovery-energy/README.md) | 2026-11-01 | **part A run**: found every time up to 2 s advertising (median 0.2-2.2 s), misses from 5 s; currents and parts B, C open |
 | [test116 the whole setup over BLE alone (no USB)](test116-ble-only-setup/README.md) | 2026-11-01 | **planned**: on battery, USB-C 1 out (hand): found in an advertising window, set up from the app |
 | [test117 presence lost brings BLE back](test117-presence-loss-ble/README.md) | 2026-11-03 | **pass** 19/19 on the product pair, the phone 8 m away: server down / network gone -> the setup firmware in 9 / 13 s, found at once (RSSI -70), set up in 8.7-9.1 s, back in the full firmware 4 s after |
@@ -150,7 +150,7 @@ for it. Hands: USB-C 1 out at the start, in at the end.
 
 | Test | What changes |
 |---|---|
-| test113 | Already moved to the setup firmware (K230 relay image while the phone is plugged in); the cable path is not built. |
+| test113 | Done: the cable setup runs in the setup firmware (K230 session WAKE setup, USB line protocol), pass 2026-11-06. |
 | test114 | Part A holds. Part B (wake beacon) is replaced by the server wake (test119). Part C is test120. The choice (2 s) lives in the setup firmware, not provision.c. Close it. |
 | test120 | Step 7 (USB wake) is done by test121 + test127. Step 5 (full setup from low power) is the test040/106 re-proof. Steps 4 and 6, the battery-side current and the crash-recorder start deadline are still open. |
 | test121 | Step 5: with USB in and no network, the setup firmware stays awake (it no longer hands over regardless); the hand-over is test127. README text only; the result holds. |

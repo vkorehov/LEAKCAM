@@ -258,7 +258,10 @@ class BleOp {
             }
         }
         fun enabled(id: String) = safe(false) { find(id)?.isEnabled == true }
-        fun busy() = !enabled("send") || !enabled("scan")
+        var usb = false
+        /* the cable screen has no Find: looking for it scrolled the screen up and down until the 150 s timeout, the
+         * setup long Done (test113, 2026-11-06) */
+        fun busy() = !enabled("send") || (!usb && !enabled("scan"))
         /* the status screen first when the app remembers LEAKCAMs: its button opens the setup once the board on USB
          * power is found (test111, 2026-11-01) */
         val shown = SystemClock.elapsedRealtime() + 5000
@@ -285,7 +288,7 @@ class BleOp {
         /* from the status screen the board is picked already: no second Find, as a user would not tap it (a second
          * scan right after a setup missed the board once, test106 2026-11-01) */
         /* the cable screen (a LEAKCAM on the USB cable, test113) has no Find: the board is found by the plug */
-        val usb = safe(false) { ui.findObject(By.res(pkg, "usb_header"))?.let { it.text.isNotEmpty() } == true }
+        usb = safe(false) { ui.findObject(By.res(pkg, "usb_header"))?.let { it.text.isNotEmpty() } == true }
         out.put("usb_screen", usb)
         if (!out.optBoolean("status_screen") && !usb)
             safe(Unit) { ui.wait(Until.findObject(By.res(pkg, "scan")), 10000)?.click() }

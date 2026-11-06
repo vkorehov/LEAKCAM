@@ -21,8 +21,11 @@ def on():
     if rom_up():
         return True
     out = bl("k230 usbboot", 2, r"k230: [^\n]*\n")
+    if "k230: on already" in out:               # a setup session runs (no network stored): end it, then flash
+        bl("k230 off", 1.5)
+        out = bl("k230 usbboot", 2, r"k230: [^\n]*\n")
     if "k230: USB boot" not in out:
-        if "k230:" in out:                      # the product firmware refused (on for a session): say why
+        if "k230:" in out:                      # the product firmware refused: say why
             print(out.strip().splitlines()[-1])
             return False
         for c, s in (("pt_off", 1.5), ("pt_boot1 high", 0.5), ("pt_on", 2), ("pt_run", 1)):   # the test firmware

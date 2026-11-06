@@ -1,9 +1,9 @@
 # test113: full setup from the phone app over a USB-C cable (high level, product firmware)
 
-Status: **board side pass, app side open** (2026-11-05). Full provisioning over the cable on the product firmware
-works with this PC in the phone's role (below); the app's USB host code is not written yet. Low level done: the K230's
-USB device against the bench (test043), the phone sees it as host, 1.41 s after the K230 starts (test044), link frames
-reach the K230 program (test045).
+Status: **pass** (2026-11-06). The phone's plug opens LEAKCAM Setup on the cable screen of the board (4.3 s), the
+app sets the network up over the cable (no Bluetooth) to Done, the board saves it, goes back to the full firmware and is
+online at the server; product BL616 pair + product K230 image. Low level: test043 (K230 USB device), test044 (the
+phone as host), test045 (link frames reach the K230 program).
 
 The whole provisioning of a LEAKCAM with no network stored, by the LEAKCAM Setup app on the bench phone over a USB-C
 cable into USB-C 1, BLE not used: on the **product firmware** pair (BL616 setup + full) and the **product K230 image**
@@ -53,6 +53,16 @@ BLE, and only by an app holding the PIN.
 
 ## Result
 
+2026-11-06, run.py with the bench phone (65 s, 8/8 checks), board with no network stored:
+
+- The phone in USB-C 1 (after the bench cable): the setup firmware wakes from sleep on VBUS, powers the K230 (3V3 in
+  1.6 ms), READY 0.82 s after the run, WAKE setup; the app opens by itself (default handler, "always" ticked once for
+  the name LeakCam) on the cable screen of 7C3E8262B149, no network: **4.26 s after the plug**.
+- The app's setup over the cable, 3 screens (enter the network, joining, Done), no pairing, no list, no Find: the
+  driver's whole op 12.7 s; network stored, full firmware, server online at once.
+- Fixed on the way (HISTORY Obstacles): K230_PWR dead after the setup firmware's sleep (BL616 fix in k230_power.c), a
+  `k230 off` during a session recorded as a crash, the test driver scrolling for a missing Find button.
+
 2026-11-05, bench run, this PC in the phone's role (scratch script on `/dev/leakcam-k230usb`; PIN from the server,
 network from ~/.leakcam_wifi, nothing printed), product BL616 pair + product K230 image, no network stored:
 
@@ -66,25 +76,24 @@ network from ~/.leakcam_wifi, nothing printed), product BL616 pair + product K23
 - Order: the pushed `STATUS 1` came **before** COMMIT's `OK` (the status listener runs inside the commit, before the
   answer). The app takes STATUS lines by their keyword, never as the reply to the command it just sent.
 
-Open: the app (UsbManager, permission, USB > BLE > Wi-Fi channel order, the USB link icon), then this test's run.py
-with the phone.
+Open: steps 7-8 (a wrong password, the cable pulled during the check) are not in run.py yet.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | **MISSING** | target (test022) | the K230 boots for the USB session |
-| This part's boot share | **MISSING** | - | |
-| Test run time | **MISSING** | - | |
-| setup over USB: plug -> Done | **MISSING** | - | % of the top |
-| Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 meter |
+| Boot, power-on -> READY (median of 5) | n/a in this run: the K230 boot is timed by test045 (READY 0.43 s after pt_run) | target (test022) | the K230 boots for the USB session |
+| This part's boot share | n/a: the setup session's K230 boot, see test045 | - | |
+| Test run time | 65 s automated (run.py, 2026-11-06), plug -> end about 30 s | - | |
+| setup over USB: plug -> Done | plug -> cable screen 4.26 s; the app's setup op 12.7 s over the cable (2026-11-06) | - | % of the top |
+| Current idle / during (min / avg / peak) | n/a: on the phone's USB power, not metered | floor (test031) | USB-C 1 meter |
 | Voltage under load (min) | n/a: on USB power | cutoff 3.10 V (bug-004) | |
 | Power, energy per operation | n/a for the cell: on USB | - | |
 | Per day | n/a: once per installation | ENERGY.txt line | |
 | Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak | |
-| Image (sizes) | **MISSING** | minimal image (rule) | |
-| Compile flags | **MISSING** | smallest code (rule) | |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 209772 / min 190728 / 209772 B, blocks 62 -> 62, deleted 0; leak: n/a, 1 snapshots (mem_leak.py needs >= 8 cycles) (2026-11-06) | no leak | |
+| Image (sizes) | BL616 test firmware 1322096 B (2026-11-06, on the board at the run) | minimal image (rule) | |
+| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os -march=rv64imafdcv, sections + --gc-sections, strip, no LTO; BL616 test firmware -Os -g (SDK Kconfig default), no LTO (2026-11-06) | smallest code (rule) | |
 | Features over the minimal image | K230 USB device CDC ACM, the relay | test008 floor | |
 | Optimised build (-O3, LTO, -march) | n/a: not an optimisation test | the faster one stays | |
 
