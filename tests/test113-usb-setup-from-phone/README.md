@@ -1,6 +1,9 @@
 # test113: full setup from the phone app over a USB-C cable (high level, product firmware)
 
-Status: **pass** (2026-11-06). The phone's plug opens LEAKCAM Setup on the cable screen of the board (4.3 s), the
+Status: **pass** (2026-11-06, again 21:53-21:55 on BL616 0.6+g3f9077b/84a2007 and K230 0.6+ga2c63b0: 13/13, the
+cable screen 5.08 s after the plug; step 11 seen in the server history: credential check-in `usbw 1`, `fails 1` (the
+wrong password), `ks 1` (the bench cable's relay), then the full firmware's `ks 1`, `klast 1`, `kver`, `sw 1`,
+`usbw 0`). The phone's plug opens LEAKCAM Setup on the cable screen of the board (4.3 s), the
 app sets the network up over the cable (no Bluetooth) to Done, the board saves it, goes back to the full firmware and is
 online at the server; product BL616 pair + product K230 image. Low level: test043 (K230 USB device), test044 (the
 phone as host), test045 (link frames reach the K230 program).
@@ -37,7 +40,8 @@ cable into USB-C 1, BLE not used: on the **product firmware** pair (BL616 setup 
     (`ID <id> <stored> <mV> 1`); the cable screen's row shows the battery icon green, filled to the board's `battery`.
 11. **The setup in the metrics (DESIGN.md 5.3.10, tests/test048):** the credential check of step 5 is itself a
     check-in (the setup firmware's, the K230 still relaying): `chg=1`, `usbw=1` (the plug woke the setup firmware),
-    `ks=0`; it starts the counters again. The full firmware's first check-in after step 6: `ks=1`, `klast=1`, `kms` ~
+    `ks` = the relays that ended before it (the bench cable's when it was pulled: 1), not the running one; it starts the
+    counters again. The full firmware's first check-in after step 6: `ks=1`, `klast=1`, `kms` ~
     the relay's rails-on time, `kver` (the K230 program that relayed), `sw=1`, `usbw=0`. The wrong password of step 7
     never reaches the server (no sample, `fails` +1 in the next one); `t`/`rh`/`probe` in every sample.
 
@@ -104,7 +108,7 @@ network from ~/.leakcam_wifi, nothing printed), product BL616 pair + product K23
 | Voltage under load (min) | n/a: on USB power | cutoff 3.10 V (bug-004) | |
 | Power, energy per operation | n/a for the cell: on USB | - | |
 | Per day | n/a: once per installation | ENERGY.txt line | |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | |
+| Temperature die / board (start / peak / end) | BL616 die 37-39 C, board (AHT20) 38-42 C in the check-ins (it reads the warm board, bugs/v2.txt 12) | K230 limit (datasheet) | |
 | Memory BL616 / K230 (start / min / end), leak | BL616 free 209772 / min 190728 / 209772 B, blocks 62 -> 62, deleted 0; leak: n/a, 1 snapshots (mem_leak.py needs >= 8 cycles) (2026-11-06) | no leak | |
 | Image (sizes) | BL616 test firmware 1322096 B (2026-11-06, on the board at the run) | minimal image (rule) | |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os -march=rv64imafdcv, sections + --gc-sections, strip, no LTO; BL616 test firmware -Os -g (SDK Kconfig default), no LTO (2026-11-06) | smallest code (rule) | |
