@@ -670,6 +670,9 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
   from the intact copy (`full_broken` blocks every other way back to slot 0 meanwhile). Image + copy = 1.6 MB of 2 MB:
   the full image can grow by ~260 kB (24 %) before an offer stops fitting; the board refuses one that does not fit and
   touches nothing. Server: `bl616_full.bin` (its version from its build tag) + `bl616_full.xz` in LEAKCAM_IMAGES.
+- **Built (2026-11-06):** the BL616 part (server offer and download, ota_fetch.c, ota.c with the xz decoder), not run
+  yet. **Not built: the K230 image OTA** (download into the inactive `rtt_a`/`rtt_b` slot, `ota_meta` switched, the
+  SPL's fallback to the old slot): it needs the K230's normal session with Wi-Fi first (tests/test130 step 7).
 
 ### 5.3.8 One K230 product image; the BL616 picks the program at the start (user, 2026-11-05; tests/test113)
 
@@ -685,11 +688,24 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
 - **The product kernel carries the USB device** (CherryUSB, CDC ACM on USB0) for this; the phone lists it 1.41 s
   after the K230 starts (tests/test044).
 
+- **From the USB relay to the normal product: one job per power-up, no in-place switch** (proposed 2026-11-06;
+  tests/test047). The relay runs only in the setup firmware's session (WAKE `setup`). It ends when the network is
+  saved (STATUS SAVED relayed, 2 s later the K230 off) or the cable is pulled (the K230 off at once). The setup firmware
+  then switches to the full firmware, a BL616 reboot that cuts the K230's power anyway. The full firmware's sessions
+  answer READY with the other reasons (cold, rtc, leak, usb, humid): the same image runs the normal product job
+  (`STATUS session`), and its USB device is not the relay. With a network stored, the full firmware never sends
+  `setup`: a phone plugged in then gets no relay, only the server and BLE paths. Simpler than switching a running
+  program (no relay state to tear down, the setup firmware's code never runs a product session), and the cost is one
+  K230 boot (~0.9 s) at the end of an installation.
+
 ### 5.3.9 The battery level on every channel to the phone (user, 2026-11-06; tests/test046, test131)
 
 - **Measured by the K230** (the only battery input: VBAT/3 through R59/R61 on ADC_1, switched by the K230's 3V3;
   tests/test023: a mean of 64 conversions, calibrated full scale 5329 mV, within +-10 mV of a meter). The product
   program reads it at its start and **attaches it to every frame it sends** as `;b=<mV>` (k230_link.h), ACKs too.
+- **A periodic `STATUS,<mode>,<uptime s>`** every 60 s (and at a job's start): the battery read again and carried as
+  the attribute, so a long or quiet session stays current; `mode` is the K230's job (`setup` = the USB relay,
+  `session` = the normal product job), which the BL616 logs (`k230: STATUS ...`) and the switchover test reads.
 - **Kept by the BL616** (bl616_common/battery.c) in HBN RAM (`.hbn_noinit.battery`; the sections are sorted by name
   so both firmwares put it at the same address): survives sleep, resets and the switch between the firmwares; lost
   only with the battery. `battery` on the console prints it.

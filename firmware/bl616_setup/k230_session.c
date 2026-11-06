@@ -11,6 +11,7 @@
 #include "bflb_uart.h"
 #include "hardware/uart_reg.h"
 
+#include "battery.h"
 #include "board_pins.h"
 #include "crash_rec.h"
 #include "k230_power.h"
@@ -182,6 +183,10 @@ static void on_cmd(const struct link_msg *m)
         q_sending = false;                       /* a restarted program: what was in flight was for the old one */
         if (!link_send_cmd("WAKE", arg))
             printf("k230: WAKE not sent: a command in flight\r\n");
+        return;
+    }
+    if (!strcmp(m->cmd, "STATUS")) {             /* the K230's periodic state; its battery already kept (k230_link.c) */
+        printf("k230: STATUS %s, battery %d mV kept\r\n", m->args, battery_mv());
         return;
     }
     if (state == RUN && cmd_fn)

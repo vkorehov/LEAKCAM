@@ -54,6 +54,7 @@
 #define BAT_FULL_SCALE_MV        5329u
 #define BAT_SAMPLES              64u
 #define ADC_IOCTL_ENABLE         0
+#define STATUS_PERIOD_MS         60000   /* STATUS with a fresh battery reading (k230_link.h): a long session stays current */
 
 static int link_fd = -1, gpio_fd = -1;
 static int bat_mv = -1;                 /* the battery read at the start, -1 = the ADC failed */
@@ -309,6 +310,22 @@ static bool next_cmd(struct frame *f, int timeout_ms)
 
 /* ---------------- the USB setup relay ---------------- */
 
+/* every STATUS_PERIOD_MS: the battery read again and STATUS,<mode>,<uptime s> sent (it carries the reading as every
+ * frame does); the BL616 keeps the reading and sees which job runs (DESIGN.md 5.3.9) */
+static void status_tick(const char *mode)
+{
+    static uint64_t last;
+    uint64_t now = now_ms();
+    if (last && now - last < STATUS_PERIOD_MS)
+        return;
+    last = now;
+    bat_mv = battery_read_mv();
+    char arg[32];
+    snprintf(arg, sizeof(arg), "%s,%llu", mode, (unsigned long long)(now / 1000));
+    if (link_cmd("STATUS", arg) != LINK_ACKED)
+        logmsg("STATUS not answered");
+}
+
 static void usb_relay(void)
 {
     int usb = open(USB_DEV, O_RDWR | O_NONBLOCK);
@@ -321,6 +338,7 @@ static void usb_relay(void)
     size_t len = 0;
     bool too_long = false;
     for (;;) {
+        status_tick("setup");
         struct frame f;
         while (next_cmd(&f, 0)) {               /* the BL616's answers to the phone */
             if (!strcmp(f.cmd, "USB")) {
