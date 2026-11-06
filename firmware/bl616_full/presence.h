@@ -13,5 +13,8 @@
 #define LEAKCAM_PRESENCE_H
 
 void presence_start(void);                   /* after radio_init(): easyflash and RF are up */
+/* check in now, not at the end of the interval: the battery read at the unplug reaches the server and the app at once
+ * (usb_full.c, DESIGN.md 5.3.11) */
+void presence_now(void);
 
 #endif

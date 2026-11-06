@@ -797,7 +797,8 @@ ready at once.
   ADC reads the charger's rail, not the cell (test023): not kept, the board reports charging. **At the unplug** the
   K230 is already up: the BL616 asks `STATUS` (no new command: the same frame, asked now), the K230 reads the cell at
   once (no boot first) and its STATUS carries it; the BL616 keeps it, reports it on every channel, then switches the
-  K230 off (usb_full.c, within 200 ms of PGOOD falling + the reading).
+  K230 off (usb_full.c, within 200 ms of PGOOD falling + the reading), and checks in at once (presence_now): the
+  server and the app have the new level within seconds, not at the next battery interval (24 h).
 - **Tests.** test046 (the battery at the unplug, within one STATUS), test047 step 5 (the normal job on USB), test131
   (the app's level right after the unplug).
 ### 5.4 K230-BL616 link and time

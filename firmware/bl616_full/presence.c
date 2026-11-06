@@ -26,6 +26,7 @@ static enum wifi_check_state last = WCHK_IDLE;
 static uint16_t last_detail;
 static uint32_t last_ms;
 static unsigned missed;                      /* failed check-ins in a row */
+static TaskHandle_t task;
 
 static void no_progress(enum wifi_check_state st, uint16_t detail)
 {
@@ -80,14 +81,20 @@ static void presence_task(void *arg)
     vTaskDelay(pdMS_TO_TICKS(5000));         /* online within seconds of the start */
     for (;;) {
         check_in();                        /* on USB and on battery; it needs a stored network */
-        vTaskDelay(pdMS_TO_TICKS(poll_s * 1000));
+        (void)ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(poll_s * 1000));   /* presence_now() ends the wait */
     }
 }
 
 void presence_start(void)
 {
-    if (xTaskCreate(presence_task, "pres", 2048, NULL, 2, NULL) != pdPASS)
+    if (xTaskCreate(presence_task, "pres", 2048, NULL, 2, &task) != pdPASS)
         vAssertCalled();
+}
+
+void presence_now(void)
+{
+    if (task)
+        xTaskNotifyGive(task);
 }
 
 static void cmd_presence(int argc, char **argv)

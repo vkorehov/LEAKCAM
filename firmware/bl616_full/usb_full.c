@@ -12,6 +12,7 @@
 #include "device_id.h"
 #include "k230_power.h"
 #include "k230_session.h"
+#include "presence.h"
 #include "switch_to_setup.h"
 #include "usb_power.h"
 
@@ -121,6 +122,7 @@ static void watch_task(void *arg)
             k230_session_stop("USB unplugged");
             while (k230_session_active())                    /* the stop is the session task's: asked once */
                 vTaskDelay(pdMS_TO_TICKS(50));
+            presence_now();                                  /* the new level at the server and the app at once */
         }
         vTaskDelay(pdMS_TO_TICKS(POLL_MS));
     }
