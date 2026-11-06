@@ -34,6 +34,11 @@ As test111: BLE provisioning, the Wi-Fi check (setup firmware), presence and the
    back: the setup firmware stays; the app sets the network: the full firmware, present.
 3. A missing network saved without checking from the app: the full firmware cannot check in, the setup firmware at
    once; the app sets the real network at once (Done): the full firmware, present at the server, no BLE.
+4. **The loss in the metrics (DESIGN.md 5.3.10, run.py reads LEAKCAM_METRICS):** in step 2 the full firmware's
+   failed check-ins leave no sample; the setup firmware's first good check-in (its own on USB power, or the credential
+   check when the app sets the network)
+   carries `fails` = those misses (3, MISSED_MAX), `sw=1` (to setup), `boots` up by 1; the full firmware's first
+   check-in after it `sw=1` (back), `fails=0`. Step 3 the same with its own count of misses.
 
 ## On battery (`run.py --battery`, added 2026-11-03, not run yet)
 

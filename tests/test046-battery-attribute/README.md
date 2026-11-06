@@ -26,7 +26,8 @@ USB-C 1 out by hand (the cell in), the console stays on PR1.
 5. A broken reading: `;b=-1` (the ADC failed) changes nothing kept.
 6. Timing: the battery read adds <= 20 ms before READY (K230 log `t` of `start` -> `battery`).
 7. **The periodic STATUS** (every 60 s, k230_link.h): in a session held 3 min the BL616 logs `k230: STATUS <mode>,<s>,
-   battery <mV> mV kept` each minute, each frame with a fresh `;b=` (on battery: the kept value follows the K230's).
+   <version>,<die x10>,<heap>,<heap min>,<pages>, battery <mV> mV kept` each minute, each frame with a fresh `;b=` (on
+   battery: the kept value follows the K230's). The other fields reach the check-in: tests/test048 step 11.
 
 ## Pass
 

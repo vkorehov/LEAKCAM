@@ -26,6 +26,10 @@ Product K230 image and BL616 product pair; the BL616 console on PR1; USB-C 1 on 
    `STATUS session,<s>` from the same image, no CDC relay device on USB-C 1. Needs the full firmware's K230 session.
 6. **No relay with a network stored:** the phone or PC plugged into USB-C 1 on the full firmware: no K230 relay session
    starts (the full firmware never sends `setup`), no LeakCam CDC device appears.
+7. **The job in the check-in (DESIGN.md 5.3.10):** after the relay ended on SAVED, the full firmware's first check-in
+   carries `ks=1`, `klast=1` (ended as asked), `kms` ~ the relay's rails-on time, `kver` = the K230 log's `version`
+   line, `sw=1` (the switch to the full firmware); the one after it `ks=0`, `sw=0`. A relay ended by a pull: `klast=1`
+   too (an end asked for), no crash record.
 
 ## Pass
 

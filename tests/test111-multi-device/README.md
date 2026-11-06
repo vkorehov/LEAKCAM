@@ -5,7 +5,7 @@ opens on its status screen, sets up a known board through it with the short "cha
 as hidden and stores none; the board online at the server after a setup; a second LEAKCAM online, offline, deleted.
 
 Each LEAKCAM is known by its device ID, the BL616's factory MAC (device_id.c): its USB serial number, its BLE
-advertisement (manufacturer data, company 0xFFFF) and its server check-ins (`GET /v1/poll?id=`) carry the same 12 hex
+advertisement (manufacturer data, company 0xFFFF) and its server check-ins (`POST /v1/poll?id=`) carry the same 12 hex
 digits. The app remembers the LEAKCAMs it set up and shows above the steps whether each is online, from the presence
 server (`GET /v1/devices/<id>`). From boot the board checks in at the interval the server gives by its power (`usb=1|0`:
 60 s on USB, 24 h on battery; DESIGN.md 5.3.1) whenever a network is stored; sleeping between check-ins on battery is a

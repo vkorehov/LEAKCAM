@@ -35,6 +35,11 @@ cable into USB-C 1, BLE not used: on the **product firmware** pair (BL616 setup 
 9. Hand: USB-C 1 back to the bench.
 10. **Battery over the cable (DESIGN.md 5.3.9, test131):** the `ID` answer carries the battery and USB power
     (`ID <id> <stored> <mV> 1`); the cable screen's row shows the battery icon green, filled to the board's `battery`.
+11. **The setup in the metrics (DESIGN.md 5.3.10, tests/test048):** the credential check of step 5 is itself a
+    check-in (the setup firmware's, the K230 still relaying): `chg=1`, `usbw=1` (the plug woke the setup firmware),
+    `ks=0`; it starts the counters again. The full firmware's first check-in after step 6: `ks=1`, `klast=1`, `kms` ~
+    the relay's rails-on time, `kver` (the K230 program that relayed), `sw=1`, `usbw=0`. The wrong password of step 7
+    never reaches the server (no sample, `fails` +1 in the next one); `t`/`rh`/`probe` in every sample.
 
 ## Needs (build features and dependencies)
 

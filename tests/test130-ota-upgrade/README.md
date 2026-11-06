@@ -48,8 +48,12 @@ the board without its full firmware (no leak detection).
     leaves the model file untouched.
 11. **A bad model:** one that fails to load or its known-output check: the board falls back to `.old` and reports it;
     the server's next offer is not retried in a loop (one try per offered version).
-12. **The program in the slot (ROMFS):** after an image update the program that runs is the new slot's (its build tag
-    in the log), with no file on `/sdcard/app`.
+12. **The program in the slot (ROMFS):** after an image update the program that runs is the new slot's (the K230
+    log's `version <ver>` line, and `kver=<ver>` in the next check-in, DESIGN.md 5.3.10), with no file on
+    `/sdcard/app`.
+13. **Versions in the metrics:** after the BL616 upgrade the check-in's `full=` is the new version and `boots` up by
+    the switches (to setup for the unpack and back: `sw=2`); after a K230 update a session's STATUS gives the new
+    `kver`; a rolled-back K230 image (step 7's corrupted slot) shows the old `kver`.
 
 ## Needs (build features and dependencies)
 

@@ -3,7 +3,7 @@
 Status: **planned** (2026-10-30): the scheduler, lease reuse and server address are not written yet (DESIGN 5.1
 Production design): they go into firmware/bl616_full and the test firmware, growing test100's `pt_poll`.
 
-The BL616 alone asks the server whether a viewer wants live video (`GET /v1/poll`), without the K230. Production
+The BL616 alone asks the server whether a viewer wants live video (`POST /v1/poll`, the metrics in its form: DESIGN.md 5.3.10), without the K230. Production
 design: jobs scheduled by time in HBN RAM (humidity 10 min, the K230's report interval, the server's poll interval);
 join at the remembered AP; the DHCP lease reused while valid; the server's IP cached; the server address comes from
 the agent (`SERVER,<host>,<port>`, stored in easyflash when it changed); a stream request starts a K230 session with

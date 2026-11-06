@@ -21,7 +21,7 @@ stored over BLE (checked the same way) switch once the phone has read SAVED and 
 ## Needs (build features and dependencies)
 
 BL616: switch_to_full.c, slot.c, wifi_check.c with the API step (api.c, WCHK_NO_API 0x19), the PDS IO wake (test121), BLE
-(ble_pairing.c). Server: GET /v1/poll. App: the "API not reachable" text (0x19).
+(ble_pairing.c). Server: POST /v1/poll (the metrics in its form, DESIGN.md 5.3.10). App: the "API not reachable" text (0x19).
 
 (What this test uses; the union over all tests is the feature set the minimal image keeps.)
 
