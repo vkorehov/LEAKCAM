@@ -1,6 +1,8 @@
 # test117: presence lost brings BLE back (the phone sets the Wi-Fi at once)
 
-Status: **pass** (2026-11-03, 19/19, run.py on the product pair, the phone 8 m away in another room): every lost
+Status: **pass** (again 2026-11-06 21:56-22:02 on BL616 0.6+g3f9077b/84a2007, 19/19 on USB power: server down ->
+setup in 34 s, the phone finds it in 0.2 s, set again in 10.4 s; network gone -> setup in 140 s, set again in 10.2 s;
+`--battery` not run this time). (2026-11-03, 19/19, run.py on the product pair, the phone 8 m away in another room): every lost
 presence switched the full firmware to the setup firmware in 9-13 s, the phone found the board at once (RSSI -70) and
 set the network out of it in 8.7-9.1 s, back in the full firmware 4 s after Done (old pass 2026-11-01, 13/13, on the
 full firmware's own BLE and the `provision battery` rule, both gone).
