@@ -4,7 +4,24 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### By hand 2026-11-06 (bench, server on the Pi): BL616 steps 1-4, 6, 13 pass
+
+| Step | Offer | Result |
+|---|---|---|
+| 1-2 | 0.6+g80b8d44 -> bc32e53 | copy 600584 B 6988 ms, sum 86 ms, running at the check-in 27 s after the offer |
+| 6 | 1600000 B image (padded) | `does not fit: image 1600000 B + copy 600592 B (running image 1098256 B) in slot 0's 2097152 B`, once |
+| 4 | one .xz byte flipped, the offer's sum the good one | read-back sum 60f21bf5... = the corrupted file's: the running firmware stays |
+| 3 | the server stopped 3 s into the download | `download failed ... after 486692 of 600592 B`: stays; next check-in: copy 7905 ms, upgraded in 27 s, `sw 2` |
+| 13 | 3f9077b | `sw 2`, boots +2 (after 84a2007's ota.c fix; `sw 1` before) |
+| 5 | console `reboot` 2.6 s into the unpack | not run by the shell while the unpack held the chip: unpack + write + check 11.3 s, upgraded |
+
 ## Obstacles
+
+- 2026-11-06, the fourth offer upgraded (27 s offer to running) but the check-in said `sw 1` for two switches: the
+  setup firmware's switch back after the unpack (ota.c) called slot_switch() without metrics_switch(). Fixed in
+  84a2007, `sw 2` since.
+- 2026-11-06, the console logger (a scratch script) kept reading the old fd after the BL616 re-enumerated (the fd
+  goes silent, no error): it missed the setup firmware's lines; reopened on a new USB device number since.
 
 - 2026-11-06, the third offer (0.6+g4a2f6a5 -> 0.6+ge3b298c): the sum wrong again (c6ba3c44...), the copy read back
   through the ROM (BLFlashCommand --read --flash) byte-exact (d4c39f21..., the .xz's): the sum, not the download.

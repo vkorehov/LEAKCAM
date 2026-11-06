@@ -114,7 +114,7 @@ Leak tests, one per operation the product repeats:
 | [test127 the setup firmware hands over on a USB plug, checked to the API](test127-usb-handover-to-full/README.md) | 2026-11-02 | **pass** 1-6: a real plug from BLE sleep hands over; server down 0x19, wrong password 0x11, no network: setup stays; BLE setup hands over after SAVED |
 | [test128 crash records reach the server over Wi-Fi](test128-crash-record-to-server/README.md) | 2026-11-02 | **pass** 1 2 3 5 7: exception and hang at the server 4.1 s after the reset, kept while the server is down, sent by the setup firmware too, count 2 for two; records on disk at the server |
 | [test129 app power and signal icons](test129-app-power-signal-icons/README.md) | 2026-11-04 | **pass** 6/6: plug icon on USB power, battery icon on battery, signal bars match the RSSI, long press shows the dB |
-| [test130 OTA upgrade of the BL616 full firmware and the K230 image](test130-ota-upgrade/README.md) | 2026-11-06 | **BL616 part built, not run**: the full firmware stages the .xz in slot 0's free end, the setup firmware unpacks it with no network; K230 part planned |
+| [test130 OTA upgrade of the BL616 full firmware and the K230 image](test130-ota-upgrade/README.md) | 2026-11-06 | **BL616 part pass** (1-4, 6, 13; 27 s offer to running); step 5 by hand, K230 steps not built |
 | [test131 the app's battery icon from every channel](test131-app-battery-level/README.md) | 2026-11-06 | **planned**: built (app, server, BL616 pair, K230 image), not run |
 
 ## Re-test audit after the two-firmware design (2026-11-02)

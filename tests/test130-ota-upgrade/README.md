@@ -1,10 +1,15 @@
 # test130: OTA upgrade of the BL616 full firmware and the K230 image
 
-Status: **BL616 part running** (2026-11-06): steps 1-2 pass on the fourth offer (0.6+g80b8d44 -> 0.6+gbc32e53:
-offer 21:30:08, copy 600584 B in 6988 ms, SHA-256 read back 86 ms, the setup firmware's unpack, the new version's
-check-in 21:30:35: 27 s offer to running); three bugs fixed on the way (HISTORY.md). Steps 3-6, 13 next; K230 image
-and per-device model update planned (DESIGN.md 5.3.7).
-firmware is not, it changes only by wire (`make flash`). Started by the server, automatically: the check-in answer
+Status: **BL616 part: steps 1-4, 6, 8 (BL616), 13 (BL616) pass** (2026-11-06, by hand on the bench with the server on
+the Pi, BL616 pair 0.6+g84a2007): the offer at a check-in, the copy (600 KB) in 7-8 s, its SHA-256 read back in 86 ms,
+the setup firmware's unpack + write + check of slot 0 in 11.3 s, the new version's check-in 27-29 s after the offer
+(`sw 2`, boots +2, no crash). Refused as meant: an image that does not fit (one line per version), a corrupted copy
+(the read-back sum is the corrupted file's), a download cut by the server stopped (486692 of 600592 B: the old
+firmware runs on, the next check-in downloads again and upgrades). Four bugs fixed on the way (HISTORY.md). Open:
+step 5 (a reset in the 11 s unpack: an EN tap by hand; `reboot` on the console is not run while the unpack holds the
+chip), the K230 steps 7, 9-12 (the K230 OTA writer is not built).
+
+Both upgradeable over the air; the BL616 setup firmware is not, it changes only by wire (`make flash`). Started by the server, automatically: the check-in answer
 names the newest version and a board on an older one installs it with no prompt (user, 2026-11-05); every image
 checksum-verified before the switch (DESIGN.md 5.3.7).
 
