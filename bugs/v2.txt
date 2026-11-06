@@ -66,4 +66,8 @@ From the rev 1 bugs
    >= 1 mm wide, the tongue only as wide as U17 + its RC filter R52/C4/C9), no copper pour or plane under or around it
    on any layer, thin traces only across the remaining bridge; the enclosure open to the room next to it (a vent:
    an exterior change, needs the user's approval, memory leakcam-exterior-frozen). Check after: `t`/`rh` against a
-   room meter on battery and on USB power (test048 step 2).
+   room meter on battery and on USB power (test048 step 2). 2026-11-06 22:51: room 21 C, AHT20 42.6 C (+21.6 C) on
+   USB power with the K230 on and the cell charging; the board warm to the touch at U17. Suspected sources: U1
+   (BQ24072, linear: ~1.1 W while charging) and U3 (K230, ~1 W, on the whole time on USB since DESIGN 5.3.11), both
+   ~19 mm from U17; Q1/Q2/Q4 5 mm away (rail switches, not checked). Not yet separated: the same reading on battery
+   after ~10 min (no charging, K230 off) tells. Rev 2: U17 at the end of the board away from U1 and U3 as well.
