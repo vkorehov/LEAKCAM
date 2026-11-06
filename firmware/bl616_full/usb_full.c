@@ -125,6 +125,8 @@ static void watch_task(void *arg)
             k230_session_stop("USB unplugged");
             while (k230_session_active())                    /* the stop is the session task's: asked once */
                 vTaskDelay(pdMS_TO_TICKS(50));
+            was_on = false;                                  /* an end asked for: no retry hold, on at the next plug */
+            retry_at = 0;
             presence_now();                                  /* the new level at the server and the app at once */
         }
         vTaskDelay(pdMS_TO_TICKS(POLL_MS));
