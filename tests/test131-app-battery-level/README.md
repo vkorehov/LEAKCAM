@@ -3,8 +3,11 @@
 Status: **partly run** (2026-11-06): steps 2 and 6 pass for a board with no reading yet, server only (online over
 Wi-Fi, not in BLE range, on USB power): the row shows the outline with the green tip, tooltip "Charging (USB power) ·
 battery not measured yet" (`row ... bat -1 chg 1`). First look: no icon at all, the app drew it only with a level or
-in BLE range though the server said `charging`; fixed (the server's power alone shows the outline). Steps 1, 3-5 need
-a reading taken on battery (USB-C 1 out by hand, test046 step 2): open.
+in BLE range though the server said `charging`; fixed (the server's power alone shows the outline). Steps 1 and 5 pass
+(22:40-22:42, full firmware 0.6+ga2fa289): USB-C 1 out -> the K230's reading at the unplug (3815 mV) at the server 3 s
+later (the check-in at once), the app's row grey, half filled, "Battery 50 %"; USB-C 1 in -> `charging` at the server
+27 s later (the next 60 s check-in), the row green, half filled, "Charging (USB power) · 50 % when last on battery".
+Steps 3-4 (BLE only, the USB cable's ID line) open.
 
 The app shows one battery icon per LEAKCAM: filled to the charge, green while it is on USB power (charging), red at
 15 % and below, only the outline while no level is known; the percent on the icon's tooltip (hover, long press). The

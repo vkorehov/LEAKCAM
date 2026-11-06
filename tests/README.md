@@ -115,7 +115,7 @@ Leak tests, one per operation the product repeats:
 | [test128 crash records reach the server over Wi-Fi](test128-crash-record-to-server/README.md) | 2026-11-02 | **pass** 1 2 3 5 7: exception and hang at the server 4.1 s after the reset, kept while the server is down, sent by the setup firmware too, count 2 for two; records on disk at the server |
 | [test129 app power and signal icons](test129-app-power-signal-icons/README.md) | 2026-11-04 | **pass** 6/6: plug icon on USB power, battery icon on battery, signal bars match the RSSI, long press shows the dB |
 | [test130 OTA upgrade of the BL616 full firmware and the K230 image](test130-ota-upgrade/README.md) | 2026-11-06 | **BL616 part pass** (1-4, 6, 13; 27 s offer to running); step 5 by hand, K230 steps not built |
-| [test131 the app's battery icon from every channel](test131-app-battery-level/README.md) | 2026-11-06 | **partly run**: 2, 6 pass (no reading, server only); 1, 3-5 need a reading on battery |
+| [test131 the app's battery icon from every channel](test131-app-battery-level/README.md) | 2026-11-06 | **partly run**: 1, 2, 5, 6 pass (the level at the unplug in 3 s); 3, 4 open |
 
 ## Re-test audit after the two-firmware design (2026-11-02)
 

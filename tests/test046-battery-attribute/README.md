@@ -6,7 +6,9 @@ t 585 ms: 1 ms), step 7 pass (STATUS at K230 uptime 0, 60, 120, 180 s with every
 on battery (USB-C 1 out by hand): open. **The unplug** (DESIGN.md 5.3.11, full firmware 0.6+g98e16d7, 2026-11-06
 22:26): the K230 on with USB power, the BL616 asked STATUS at PGOOD's fall, the K230's STATUS (uptime 163 s, out of its
 60 s turn) carried the cell, 3801 mV, kept (`usb_full: USB unplugged: battery 3801 mV read now`), the K230 off 1 s
-later, no crash record; plugged back: the K230 on again at once, the USB reading not kept (3801 stays).
+later, no crash record; plugged back: the K230 on again at once, the USB reading not kept (3801 stays). Step 3 for a BL616 reset: 3815 mV
+kept across `reboot` on battery (22:41); across the firmware switch and the sleep not readable on battery (the setup
+firmware's console is off there): open.
 
 The K230 is the only one that can read the battery (VBAT/3 on ADC_1, tests/test023). The product program reads it at
 its start and attaches it to every frame it sends as `;b=<mV>` (k230_link.h). The BL616 takes it from every frame and
