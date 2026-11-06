@@ -6,6 +6,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Obstacles
 
+- 2026-11-06, the third offer (0.6+g4a2f6a5 -> 0.6+ge3b298c): the sum wrong again (c6ba3c44...), the copy read back
+  through the ROM (BLFlashCommand --read --flash) byte-exact (d4c39f21..., the .xz's): the sum, not the download.
+  flash_sha.c drove the SEC engine directly while Wi-Fi ran; the supplicant shares the engine under the SDK's
+  bflb_sec_mutex (mbedtls port hw_acc/sha256_alt.c), which a direct use never takes. Now through mbedtls (80b8d44).
+
 - 2026-11-06, the second offer (0.6+g635915b -> 0.6+g9185ae5): no crash, the copy downloaded in ~7 s, but its
   SHA-256 by read-back was wrong and different each time (61d430dc..., then 4cac9a6c...; the .xz's is 912a273d...):
   flash_sha.c kept its 512 B buffer and the SHA context in cached RAM, the SEC engine reads memory past the cache; the
