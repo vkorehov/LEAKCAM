@@ -1,6 +1,9 @@
 # test130: OTA upgrade of the BL616 full firmware and the K230 image
 
-Status: **BL616 part built, not run** (2026-11-06); K230 image and per-device model update planned (DESIGN.md 5.3.7). Both upgradeable over the air; the BL616 setup
+Status: **BL616 part running** (2026-11-06): steps 1-2 pass on the fourth offer (0.6+g80b8d44 -> 0.6+gbc32e53:
+offer 21:30:08, copy 600584 B in 6988 ms, SHA-256 read back 86 ms, the setup firmware's unpack, the new version's
+check-in 21:30:35: 27 s offer to running); three bugs fixed on the way (HISTORY.md). Steps 3-6, 13 next; K230 image
+and per-device model update planned (DESIGN.md 5.3.7).
 firmware is not, it changes only by wire (`make flash`). Started by the server, automatically: the check-in answer
 names the newest version and a board on an older one installs it with no prompt (user, 2026-11-05); every image
 checksum-verified before the switch (DESIGN.md 5.3.7).
