@@ -4,8 +4,10 @@ Status: **partly run** (2026-11-06, test048's relay, the bench as the phone: tes
 step 1 pass (`WAKE setup taken` 795 ms after the run, STATUS setup,0, the CDC device 4.6 s after the erase), step 2
 pass (STATUS at 60, 120, 180 s), step 3 pass (`k230: off (network saved)`, the CDC device gone 2.4 s after SAVED,
 then the full firmware), step 6 pass (no relay device in any full-firmware run on USB power), step 7 pass (ks 1,
-klast 1, kms 198116, kver = the log's, sw 1; the next ks 0, sw 0). Step 4 (a pull) needs a hand; step 5 needs the
-full firmware's K230 session, not built.
+klast 1, kms 198116, kver = the log's, sw 1; the next ks 0, sw 0). Step 4 (a pull) needs a hand. Since 2026-11-06 (user, DESIGN.md 5.3.8/5.3.11) the K230 runs the same program on
+every power-up (the relay always, the leak detection in parallel) and the full firmware holds it on USB power: step 5
+seen (WAKE `usb` 784-800 ms after the run, the relay device 1209:abd1 on USB-C 1, STATUS every 60 s); step 6 is
+reversed by that design (the relay is there in the full firmware too: ID/PIN/SETUP, usb_full.c).
 
 One K230 image; the BL616's WAKE answer picks the job at each power-up (DESIGN.md 5.3.8): `setup` = the USB relay,
 any other reason = the normal product job. There is no switch inside a running program: the relay ends with the K230's

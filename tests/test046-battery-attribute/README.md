@@ -3,7 +3,10 @@
 Status: **partly run** (2026-11-06, from test048's relay: test048-checkin-metrics/relay_*.log): step 1 on USB power
 pass (the K230 read 3737 mV, the BL616 kept nothing: `battery -1 mV kept`), step 6 pass (start t 584 ms -> battery
 t 585 ms: 1 ms), step 7 pass (STATUS at K230 uptime 0, 60, 120, 180 s with every field). Steps 2-5 need the board
-on battery (USB-C 1 out by hand): open.
+on battery (USB-C 1 out by hand): open. **The unplug** (DESIGN.md 5.3.11, full firmware 0.6+g98e16d7, 2026-11-06
+22:26): the K230 on with USB power, the BL616 asked STATUS at PGOOD's fall, the K230's STATUS (uptime 163 s, out of its
+60 s turn) carried the cell, 3801 mV, kept (`usb_full: USB unplugged: battery 3801 mV read now`), the K230 off 1 s
+later, no crash record; plugged back: the K230 on again at once, the USB reading not kept (3801 stays).
 
 The K230 is the only one that can read the battery (VBAT/3 on ADC_1, tests/test023). The product program reads it at
 its start and attaches it to every frame it sends as `;b=<mV>` (k230_link.h). The BL616 takes it from every frame and
