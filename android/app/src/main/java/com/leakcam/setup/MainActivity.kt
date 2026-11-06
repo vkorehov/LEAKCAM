@@ -597,7 +597,8 @@ class MainActivity : Activity() {
                     icons.add(Pair(bars(rssi[address] ?: -100), getString(R.string.icon_signal)))
                 }
                 // the battery: filled to its charge, green on USB power (DESIGN.md 5.3.9); shown once anything is known
-                // (in range, or a level from any channel); the percent on its tooltip
+                // (in range, a level, or the power from any channel: the server's `charging` alone gives the outline,
+                // test131 step 6); the percent on its tooltip
                 val chg = address == USB_TAG || (address != null && usbPower[address] == true) ||
                           (address == null && charging[id] == true)
                 val pct = batteryMv[id]?.let { BatteryIcon.percent(it) }
@@ -613,7 +614,7 @@ class MainActivity : Activity() {
                         if (address != null && what == getString(R.string.icon_signal))
                             setOnLongClickListener { showDbm(address); true }
                     })
-                if (pct != null || address != null)
+                if (pct != null || address != null || charging.containsKey(id))
                     addView(android.widget.ImageView(context).apply {
                         setImageDrawable(BatteryIcon(pct, chg, resources.displayMetrics.density))
                         contentDescription = getString(if (chg) R.string.icon_plug else R.string.icon_battery)

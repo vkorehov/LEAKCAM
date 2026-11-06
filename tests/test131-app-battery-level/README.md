@@ -1,6 +1,10 @@
 # test131: the app's battery icon from every channel (high level, product firmware + app + server)
 
-Status: **planned** (2026-11-06): built (app, server, BL616 pair, K230 image), not run.
+Status: **partly run** (2026-11-06): steps 2 and 6 pass for a board with no reading yet, server only (online over
+Wi-Fi, not in BLE range, on USB power): the row shows the outline with the green tip, tooltip "Charging (USB power) ·
+battery not measured yet" (`row ... bat -1 chg 1`). First look: no icon at all, the app drew it only with a level or
+in BLE range though the server said `charging`; fixed (the server's power alone shows the outline). Steps 1, 3-5 need
+a reading taken on battery (USB-C 1 out by hand, test046 step 2): open.
 
 The app shows one battery icon per LEAKCAM: filled to the charge, green while it is on USB power (charging), red at
 15 % and below, only the outline while no level is known; the percent on the icon's tooltip (hover, long press). The
