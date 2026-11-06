@@ -1,7 +1,8 @@
 # test041: humidity alarm (AHT20 threshold wakes the K230)
 
-Status: **planned** (2026-10-30): the BL616 test firmware needs the humidity slice and alarm decision of
-attic/firmware/bl616/main.c (HBN slices, AHT20, alarm -> K230 session); steps 1-2 run on it today.
+Status: **dropped** (user, 2026-11-06): no humidity rule, wake or alarm in the product (DESIGN.md "Humidity"). On the
+board the AHT20 reads the board's heat (42.6 C in a 21 C room) and skin vapour moves it (test048 steps 2-3): useless as
+a leak judge. The AHT20 stays reported only; rev 2 moves it off the board (bugs/v2.txt 12). Kept for the record.
 
 The BL616 reads the AHT20 on every RTC slice (every 10 min, ~85 ms awake, K230 off). At **85.0 %RH or more**
 (`HUM_ALARM_X10`, attic/firmware/bl616/main.c) it powers the K230 with wake reason `humid`; `leakcam_wake` takes it as a

@@ -1,7 +1,7 @@
 # LEAKCAM design and decisions
 
-LEAKCAM is a battery-powered leak camera. It sleeps almost all the time and wakes on a leak probe,
-on a timer, or on high humidity. On each wake it photographs the room with two back-to-back
+LEAKCAM is a battery-powered leak camera. It sleeps almost all the time and wakes on a leak probe
+or on a timer. On each wake it photographs the room with two back-to-back
 fisheye cameras, decides whether anything changed and whether it is water, keeps a compressed
 history on flash, and reports over Wi-Fi.
 
@@ -54,7 +54,7 @@ These apply to every part of the project.
  |  - power manager: owns K230    |<-------->|  UART1 IO40/41                                 |
  |    power and reset             |  SDIO    |  MMC0 (4-bit)                                  |
  |  - leak probes (ACOMP wake)    |<-------->|  W25N02KV 256 MiB SPI NAND (OSPI, 3.3 V)       |
- |  - AHT20 humidity every 10 min |  GPIO2   |  2x OV5647 222 deg fisheye (CSI0, CSI2)        |
+ |  - AHT20 (reported, no rule)   |  GPIO2   |  2x OV5647 222 deg fisheye (CSI0, CSI2)        |
  |  - wall clock (HBN RTC, Y3)    |<---------|  2x TPS61161 LED drivers (PWM0 IR, PWM1 white) |
  |  - Wi-Fi radio (NetHub bridge) |  hb      |  MEMS mic (codec left input)                   |
  |  - BLE (setup firmware only)   |          |  USB0 on USB-C 1 (flashing), console via BL616 |
@@ -93,7 +93,7 @@ These apply to every part of the project.
 | Power chain | BQ24072 charger (ISET 0.89 A, ILIM 1.0 A, TMR 6.3 h); TPS62823 0V8 → TPS63802 3V3 and 1V8 → TPS62823 1V1; U7 PG → RSTN | Meets the K230 power-up order (core first, IO after, RSTN 12.5 ms after the last rail). Soft charge chosen on purpose. |
 | Power-off | RD1/RD2 1.5 k discharge 1V8/3V3; firmware waits ≥ 300 ms before re-powering; all BL616 pins toward the K230 go analog before K230_PWR drops | The TPS63802 has no output discharge (RD1/RD2 bring the rails below 10 % in < 0.1 s); pull-ups on the switched 3V3 would back-feed the dead rail |
 | BL616 pins | PGOOD on IO03 (ACOMP0), K230_PWR on IO30, leak line on GPIO20 (ACOMP1) | Hibernate wakes only on GPIO16-19, the RTC and the two comparators; USB plug-in and leak both need a comparator |
-| Humidity | AHT20 on the always-on rail with an RC filter (R52 + C4/C9); polled every 10 min from HBN | No interrupt pin, so polling; the filter keeps Wi-Fi burst ripple off the sensor |
+| Humidity | AHT20 on the always-on rail with an RC filter (R52 + C4/C9); read at a wake and before each check-in, **reported only: no humidity rule, wake or alarm** (user, 2026-11-06: on the board it reads the board's heat, 42.6 C in a 21 C room, and skin vapour moves it; useless as a leak judge, bugs/v2.txt 12) | The filter keeps Wi-Fi burst ripple off the sensor |
 | Clock | Both chips have 32.768 kHz crystals. The BL616 HBN RTC keeps the wall clock; the K230's PMU RTC restarts at every power-up | The K230 RTC supply (AVDD1P8_RTC) is on the switched 1V8 rail. Time is handed over at every boot (section 5.4). |
 | Illumination | 4 strips of 36 × 6 mm, each 2 white + 2 IR; white chain and IR chain on separate TPS61161 drivers; domed 3535 LEDs (2.0-2.1 mm) through 3.4 mm holes in the printed cover; strips tilted 30-45° from the camera axis | Light to 2 m; white and IR switch and dim independently; the domes stand out of the cover; the tilt avoids specular glare. [LED_STRIPS.txt](LED_STRIPS.txt) |
 | LED current | Maximum: R66 3.0R (white 66.7 mA), R68 1.5R (IR 133 mA), no bench tuning; PWM backs off | A typical unit sits at the driver's switch limit on a nominal battery. TPS61161 (38 V OVP), because the TPS61160's 26 V OVP trips inside the white string's range. |
@@ -198,7 +198,7 @@ the kernel NAND glue is patched to report 64.
 
 ### 5.1 A wake, end to end
 
-1. The BL616 wakes on the RTC (every 10 min for humidity, or the K230's requested interval), a
+1. The BL616 wakes on the RTC (the K230's requested interval), a
    leak comparator, or USB plug-in. It powers the K230 and releases reset. Wi-Fi stays off.
 2. RT-Smart boots from NAND and starts `leakcam_agent`. The agent sends `READY` on UART1; the
    BL616 answers `WAKE,<reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>,<bat_mv>`: the wake reason,
@@ -231,7 +231,7 @@ compare each camera with what its history shows (cam<N>.hist; none yet = new):
 imgdiff, then the change net where imgdiff saw a change (below the camera's threshold = light)
   |-- same or light on every camera, and no sensor alarm ----> sleep 6 h
   |   (once a day a light pair near its threshold is reported as a sample)
-  | new, or a sensor alarm (probe wake, humidity alarm, probe node < 1100 mV)
+  | new, or a sensor alarm (probe wake, probe node < 1100 mV)
 no server configured (/sdcard/leakcam/server) --------------> sleep 1 h
   |
 "wifi" to the agent -> WIFI to the BL616 -> MMC0 probe
@@ -255,7 +255,7 @@ POST /v1/check?reason=&probe_mv=&bat_mv=&rh=&t=&nn=&thr=&cam<i>=, both reduced f
 - **Anything not reported is retried in an hour.** Nothing is stored then either, so the retry
   sees the same change.
 - **The sensors count as much as the cameras.** A leak the cameras cannot see (under a cabinet,
-  behind the lens' field) still reaches the server when the probes or the humidity say so. The
+  behind the lens' field) still reaches the server when the probes say so. The
   server decides from the images and the sensor values together.
 - **Wi-Fi only for news.** An unchanged scene with quiet sensors costs a capture and a compare,
   with the radios off.
@@ -296,9 +296,9 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
   per check** (times x the measured currents): every 15 min ~3.4 mAh/day, with the 35 uA sleep and the cells'
   self-discharge ~10 months on 2000 mAh before K230 sessions. Radio up + DHCP are 81 % of it.
 - **Production design (to build; the test firmware proved the cycle):**
-  - *Schedule by time, not by slice count:* HBN RAM keeps the RTC tick each job is due at - humidity sample (10 min),
-    K230 report (the K230's SLEEP), server check (the server's interval); every wake does what is due and sleeps
-    until the earliest. Replaces today's `hum_wakes_left` slice counter.
+  - *Schedule by time, not by slice count:* HBN RAM keeps the RTC tick each job is due at - K230 report (the K230's
+    SLEEP), server check (the server's interval); every wake does what is due and sleeps until the earliest.
+    Replaces today's `hum_wakes_left` slice counter (no humidity job: 2026-11-06).
   - *Least radio time:* join at the remembered AP; reuse the DHCP lease while it is valid (address, mask, gateway,
     DNS and the lease time kept in HBN RAM; `wifi_mgmr_sta_ip_set()` after a `use_dhcp = 0` connect; a failed check
     drops it); no DHCP ARP check on the BL616 either (`lwipopts_user.h`); the server's IP cached; no disconnect
@@ -307,9 +307,9 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
     the BL616 stores it in easyflash when it changed. No server or no credentials: no checks.
   - *A stream request:* `{"stream":<s>}` starts a K230 session with the wake reason `stream`; `leakcam_wake` takes it
     like an alarm (capture, report), and the server's answer carries `"video":<s>` as for any clip request.
-  - *Failures* back off (longer interval, lease and cached IP dropped); the check never blocks a leak or humidity
-    wake, which run as before.
-  - *Every wake case is tested on the board:* RTC humidity only, humidity alarm, report due, check (no request /
+  - *Failures* back off (longer interval, lease and cached IP dropped); the check never blocks a leak wake, which
+    runs as before.
+  - *Every wake case is tested on the board:* report due, check (no request /
     request), leak wet and dry edges, USB plug, and their overlaps (a leak during a check, a check due with a
     report, a check while USB is in), plus no AP, no server, no credentials.
 
@@ -339,8 +339,8 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
   - leak line on ACOMP1, trip at 1.10 V (vio_sel 22, test034 2026-10-31: between a pressed wet towel and a dried salt film; the scaling factor has no effect, tests/test034);
   - USB plug-in via PGOOD on ACOMP0;
   - the RTC.
-- **The BL616 does not judge.** It keeps no memory of what was reported: a probe reading wet or
-  humidity at or above 85 %RH at any wake starts a K230 session, every time, and the values
+- **The BL616 does not judge.** It keeps no memory of what was reported: a probe reading wet at any
+  wake starts a K230 session, every time, and the values
   ride in `WAKE`. The K230 decides leak or no leak and how long to sleep. The only state the
   BL616 keeps is the failed-boot count (for the retry back-off) and the USB-exit flag.
 - **USB mode.** On USB power the full firmware stays awake (60 s check-ins, 5.3.1) with the K230 on the whole
@@ -640,8 +640,8 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
 - **Leak detection runs in the full firmware whatever the presence:** the periodic leak check goes on while the
   server is out of reach (and in the "unused" setup mode, 5.3.5, every 24 h).
 - **A leak found without presence is stored in flash, one record** (the newest; one data point is enough):
-  - the trigger type (probe comparator, humidity, picture change, ...);
-  - the humidity and the temperature (AHT20);
+  - the trigger type (probe comparator, picture change, ...);
+  - the AHT20's temperature and humidity (data only);
   - the probe voltage;
   - a picture reference id: the picture stays on the K230's storage, uploaded from there later.
 - **Presence back -> the record goes out** with the first check-in (then the picture from the K230 by its id) and is
@@ -776,7 +776,7 @@ check-in is `POST /v1/poll?id=<id>` with a form (the earlier GET's query had no 
   the SDK's canmv_misc device has the same numbers but brings NTP, soft I2C and touch along).
 - **No clock across a reset yet:** ages (`kago`, `ksago`) are known only within the boot that saw the event; with the
   BL616 RTC (the sleep's wake source, not built) they become ages across resets.
-- **Wake counters for wakes not built yet** (RTC, leak, humidity) join the form with those wakes; there is no field for
+- **Wake counters for wakes not built yet** (RTC, leak) join the form with those wakes; there is no field for
   an event that cannot happen.
 - **The server** keeps the last check-in's metrics in `GET /v1/devices/{id}` (`metrics`, by these keys, integers as
   numbers) and appends every check-in to LEAKCAM_METRICS (one JSON line each: device, UTC time, image, version, battery,
@@ -820,7 +820,7 @@ ready at once.
   - K230 → BL616: `READY`, `SLEEP,<s>` (the next wake only, not a power-off), `TIME,<unix s>`,
     `WIFI`.
   - BL616 → K230: `WAKE,<reasons>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>,<bat_mv>`, reasons being
-    every cause that applies joined by `+` (`cold`, `leak`, `rtc`, `usb`, `humid`; e.g. `rtc+leak`)
+    every cause that applies joined by `+` (`cold`, `leak`, `rtc`, `usb`, `setup`; e.g. `rtc+leak`)
     (rh -1 = the AHT20 read failed, probe -1 = no reading, bat -1 = no reading since the power loss),
     once per `READY`, answered `ACK,<seq>,<bat_mv>` with the K230's ADC_1 reading; `ACK`.
 - **K230 side: `leakcam_agent`**, an RT-Smart program started at boot (`RTT_AUTO_EXEC_CMD`). It

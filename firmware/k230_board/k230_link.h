@@ -41,7 +41,7 @@
  *                                     and sends its STATUS frame at once, the fresh reading as its ;b=
  * BL616 -> K230   WAKE,<reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>,<bat_mv>
  *                                     reply to READY: the reasons, every one that applies,
- *                                     joined by '+' (cold, leak, rtc, usb, humid, setup: "rtc+leak"; data for the
+ *                                     joined by '+' (cold, leak, rtc, usb, setup: "rtc+leak"; data for the
  *                                     program's log only: it runs the same on every power-up, DESIGN.md 5.3.8); the
  *                                     BL616 wall clock, 0 when it is not valid (after a power
  *                                     loss, until the K230 has sent TIME once); the AHT20 sample

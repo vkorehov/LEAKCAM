@@ -77,7 +77,7 @@ Leak tests, one per operation the product repeats:
 | [test038 battery brown-out below 3.10 V (cutoff, lockout, recovery)](test038-battery-brownout/README.md) | 2026-10-23 | **partial**: with a raised threshold on the cell the chain works - K230 `bat_watch` cut, |
 | [test039 K230 console over the BL616 link (no CH340)](test039-k230-console-over-link/README.md) | 2026-10-31 | **pass**: 1000 of 1000 commands answered in each of 4 boots at 2 Mbaud, every drop counter 0; 226 mA answering back to back |
 | [test040 BLE provisioning on the BL616: Wi-Fi credentials into flash](test040-ble-wifi-credentials/README.md) | 2026-11-03 | **pass**: run.py 37/37 on the setup firmware's test bed, the phone 8 m away: PIN gate, write limits, persistence, checked store to the API, 8 store cycles without a leak; step 8 gone with the firmware split |
-| [test041 humidity alarm (AHT20 threshold wakes the K230)](test041-humidity-alarm/README.md) | 2026-10-30 | **planned**: the BL616 test firmware needs the humidity slice and alarm decision of |
+| [test041 humidity alarm (AHT20 threshold wakes the K230)](test041-humidity-alarm/README.md) | 2026-10-30 | **dropped** (user, 2026-11-06): no humidity rule in the product |
 | [test042 RF performance against the bench phone (RSSI side by side)](test042-rf-rssi-vs-phone/README.md) | 2026-10-31 | **position 1 done**: Wi-Fi receive board - phone -3..+1 dB, BLE -32..-43 dBm at the phone; one unexplained BL616 watchdog reset (recorder armed since); orientations, distance open |
 | [test043 the K230's USB device on USB-C 1](test043-k230-usb-device/README.md) | 2026-11-05 | **pass**: CherryUSB CDC ACM (1209:ABD1) up 0.73 s after the K230 start, seen by the VM at 4.1-4.4 s (~3.3 s VMware passthrough); 200/200 16-byte round trips; 1 MB echoed, 0 wrong, 3317 KB/s (test image only) |
 | [test044 the phone sees the board over a USB-C cable](test044-phone-usb-link/README.md) | 2026-11-05 | **steps 1-6 pass**: phone as USB host lists the K230 device 1.41 s after its start (median of 5, max 1.58 s), gone 0.28 s after power-off; step 7 (app icon) waits for the app |
@@ -188,7 +188,7 @@ for it. Hands: USB-C 1 out at the start, in at the end.
 | Behaviour | Where it belongs |
 |---|---|
 | What the BL616 does after each wake (the wake sources themselves pass on the test firmware: RTC test032, leak probe test034, USB plug test035, timing test021): doing what is due (humidity, report, server check with / without a stream request) and overlaps (a leak during a check, a check with a report due, a check while on USB; no AP, no server, no credentials) | new test, on the test firmware with the wake handling from attic/firmware/bl616 (DESIGN 5.1 asks for it) |
-| Humidity alarm (AHT20 threshold -> report) | test041 (planned) |
+| Humidity alarm (AHT20 threshold -> report) | dropped 2026-11-06 (test041): the AHT20 is reported only |
 | `leakcam_wake` on the board: capture -> history compare (imgdiff + change net) -> `/v1/check` to the mock server -> the sleep it chooses | test103 |
 | Change-net update from the server (`GET /v1/nn`, bad downloads, power cut while saving, unloadable net) | test107 (planned) |
 | Session protocol end to end (READY / WAKE / ACK / TIME / SLEEP) with the product agent; NTP time back to the BL616 | test101, test037 steps 1-6 |
