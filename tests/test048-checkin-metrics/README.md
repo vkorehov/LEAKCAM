@@ -7,6 +7,10 @@ Found: the AHT20 reads the board, not the room, on USB power: 38-44 C, 24-26 %RH
 2026-10-17, test002): the BL616 die 37-38 C, the K230 die 52-56 C during a session; step 2 decides whether the
 check-in's `t` and `rh` can stand for the room at all. Fixed on the way: a timed return to the full firmware cut a
 running relay without recording it (`ks 0` after a relay, a4a09a9; HISTORY.md).
+Hand steps 2026-11-06 22:51 (on USB power, the K230 on, the cell charging): step 2 **fails**, room 21 C against the
+AHT20's 42.6 C, 26 %RH (bugs/v2.txt 12: U1 charger and the K230 suspected, ~19 mm away); step 3 passes in substance, a
+fingertip on U17 raised rh 26 -> 33.5 % within seconds and lowered t 42.6 -> 41.6 C (the finger cooler than the
+board), back in 25 s; step 4 (wet probe) open.
 
 Every check-in is `POST /v1/poll?id=<id>` with a form of all the board's metrics (DESIGN.md 5.3.10): the AHT20 over
 I2C, the probe node, the BL616's die and supply, the battery, uptime, boots, the reset cause, crashes, the heap, this
