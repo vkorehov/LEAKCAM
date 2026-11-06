@@ -1,9 +1,11 @@
 /*
  * leakcam: the K230 product program (RT-Smart user space), started at boot through RTT_AUTO_EXEC_CMD.
  *
- * One image, the BL616 picks the job (DESIGN.md 5.3.8): the program says READY over the link, the BL616's WAKE answer
- * names the reason. setup: the USB setup relay (tests/test113). Any other reason: the normal session, not built yet
- * (the heartbeat stops at once and the BL616 cuts the power).
+ * One program, the same on every power-up (user, 2026-11-06, DESIGN.md 5.3.8): the K230 knows nothing of the BL616's
+ * firmwares or why it was powered. It says READY, takes the WAKE's data (clock, sensors, the last battery), then runs
+ * the USB relay as a service that always runs, and the leak detection in parallel (not built yet). The BL616 owns the
+ * power: on USB power it keeps the K230 on, on battery it cuts it once the job is done; it also gives the cable's lines
+ * their meaning (provisioning in the setup firmware, ID/PIN/SETUP in the full firmware).
  *
  *  - K230_ALIVE (GPIO2 -> BL616 IO01) toggles every 500 ms while the program runs: the BL616 keeps the K230 powered
  *    while the edges come and cuts the power 2 s after the last one; there is no shutdown command;
@@ -14,7 +16,8 @@
  *    start and sent with every frame as the attribute ;b=<mV> (k230_link.h): the BL616 keeps it for the phone and the
  *    server (DESIGN.md 5.3.9). On USB power it reads the charger's output rail, not the cell: the BL616 knows the power
  *    (PGOOD) and does not keep that one;
- *  - the USB setup relay: USB-C 1 is the K230's USB0, the CDC ACM device /dev/ttyGS0 (CherryUSB). Every line the phone
+ *  - the USB relay (its own thread; the only user of the link after the WAKE: the job talks to the BL616 through it):
+ *    USB-C 1 is the K230's USB0, the CDC ACM device /dev/ttyGS0 (CherryUSB). Every line the phone
  *    sends goes to the BL616 as the command USB,<line>; every USB,<line> from the BL616 goes back to the phone as a line.
  *    The provisioning itself is the BL616's (the K230 only carries bytes): the lines carry the Wi-Fi credentials, so
  *    nothing here prints them.
@@ -323,14 +326,14 @@ static int die_x10(void)
     return ok && t > -60 && t < 200 ? (int)(t * 10) : -1000;
 }
 
-/* every STATUS_PERIOD_MS: the battery read again and STATUS,<mode>,<uptime s>,<version>,<die x10>,<heap free>,
+/* every STATUS_PERIOD_MS, or asked now: the battery read again and STATUS,<uptime s>,<version>,<die x10>,<heap free>,
  * <heap min free>,<pages free B> sent (it carries the reading as every frame does); the BL616 keeps it all for its
- * check-in and sees which job runs (DESIGN.md 5.3.9, 5.3.10) */
-static void status_tick(const char *mode)
+ * check-in (DESIGN.md 5.3.9, 5.3.10) */
+static void status_tick(bool now_asked)
 {
     static uint64_t last;
     uint64_t now = now_ms();
-    if (last && now - last < STATUS_PERIOD_MS)
+    if (!now_asked && last && now - last < STATUS_PERIOD_MS)
         return;
     last = now;
     bat_mv = battery_read_mv();
@@ -341,33 +344,37 @@ static void status_tick(const char *mode)
     if (fd >= 0)
         close(fd);
     char arg[128];
-    snprintf(arg, sizeof(arg), "%s,%llu,%s,%d,%llu,%llu,%llu", mode, (unsigned long long)(now / 1000),
+    snprintf(arg, sizeof(arg), "%llu,%s,%d,%llu,%llu,%llu", (unsigned long long)(now / 1000),
              LEAKCAM_VERSION, die_x10(), (unsigned long long)m.heap_free, (unsigned long long)m.heap_min_free,
              (unsigned long long)m.page_free);
     if (link_cmd("STATUS", arg) != LINK_ACKED)
         logmsg("STATUS not answered");
 }
 
+/* the cable relay: every line both ways, whatever they mean (DESIGN.md 5.3.8) */
 static void usb_relay(void)
 {
     int usb = open(USB_DEV, O_RDWR | O_NONBLOCK);
     if (usb < 0) {
         fatal("open %s: %s", USB_DEV, strerror(errno));
     }
-    step("setup: USB relay on " USB_DEV);
+    char what[48];
+    step("relay: USB relay on " USB_DEV);
     unsigned lines = 0;
     char line[USB_LINE];
     size_t len = 0;
     bool too_long = false;
     for (;;) {
-        status_tick("setup");
+        status_tick(false);
         struct frame f;
         while (next_cmd(&f, 0)) {               /* the BL616's answers to the phone */
-            if (!strcmp(f.cmd, "USB")) {
+            if (!strcmp(f.cmd, "STATUS"))       /* asked now (the unplug): the battery read and sent at once */
+                status_tick(true);
+            else if (!strcmp(f.cmd, "USB")) {
                 size_t n = strlen(f.arg);
                 f.arg[n++] = '\n';
                 if (write(usb, f.arg, n) != (ssize_t)n)
-                    logmsg("setup: USB write short");   /* no phone listening: the line is dropped */
+                    logmsg("relay: USB write short");   /* no phone listening: the line is dropped */
             }
         }
         struct pollfd p[2] = { { .fd = usb, .events = POLLIN }, { .fd = link_fd, .events = POLLIN } };
@@ -390,16 +397,22 @@ static void usb_relay(void)
             if (too_long)
                 (void)!write(usb, "ERR LONG\n", 9);
             else if (len && link_cmd("USB", line) != LINK_ACKED)
-                fatal("setup: the BL616 did not take a line (link down)");
+                fatal("relay: the BL616 did not take a line (link down)");
             if (len && ++lines % 16 == 0) {
-                char what[32];
-                snprintf(what, sizeof(what), "setup: %u lines", lines);
+                snprintf(what, sizeof(what), "relay: %u lines", lines);
                 step(what);
             }
             len = 0;
             too_long = false;
         }
     }
+}
+
+static void *relay_service(void *arg)
+{
+    (void)arg;
+    usb_relay();
+    return NULL;
 }
 
 int main(void)
@@ -434,10 +447,10 @@ int main(void)
     char what[48];
     snprintf(what, sizeof(what), "WAKE %s", reason);
     step(what);
-    if (strstr(reason, "setup"))
-        usb_relay();
-    else
-        logmsg("no session program yet: ending");
+    pthread_t relay;
+    pthread_create(&relay, NULL, relay_service, NULL);
+    logmsg("leak detection: not built yet");   /* the job, in parallel with the relay */
+    pthread_join(relay, NULL);                  /* on until the BL616 cuts the power */
     heartbeat_run = 0;                          /* the BL616 cuts the power 2 s after the last edge */
     pthread_join(hb, NULL);
     return 0;

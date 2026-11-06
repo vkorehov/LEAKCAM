@@ -68,18 +68,17 @@ void metrics_usb_wake(void)
     rec.usb_wakes++;
 }
 
-/* <version>,<die x10>,<heap free>,<heap min>,<pages free B> after STATUS's <mode>,<uptime s> (k230_link.h) */
+/* STATUS's <uptime s>,<version>,<die x10>,<heap free>,<heap min>,<pages free B> (k230_link.h) */
 void metrics_k230_status(const char *args)
 {
-    const char *p = strchr(args, ',');
-    if (!p)
-        return;
-    rec.k_up_s = (uint32_t)strtoul(p + 1, NULL, 10);
+    char *q;
+    rec.k_up_s = (uint32_t)strtoul(args, &q, 10);
     rec.k_at_s = (int32_t)up_s();
     rec.k_boot = rec.boots;
-    if (!(p = strchr(p + 1, ',')))
-        return;                              /* an older program: mode and uptime only */
-    const char *e = strchr(++p, ',');
+    if (*q != ',')
+        return;
+    const char *p = q + 1;
+    const char *e = strchr(p, ',');
     size_t n = e ? (size_t)(e - p) : strlen(p);
     if (n >= K230_VER_CAP)
         n = K230_VER_CAP - 1;
@@ -87,7 +86,6 @@ void metrics_k230_status(const char *args)
     rec.k_ver[n] = 0;
     if (!e)
         return;
-    char *q;
     rec.k_tdie_x10 = (int32_t)strtol(e + 1, &q, 10);
     rec.k_heap = *q == ',' ? (uint32_t)strtoul(q + 1, &q, 10) : 0;
     rec.k_heap_min = *q == ',' ? (uint32_t)strtoul(q + 1, &q, 10) : 0;

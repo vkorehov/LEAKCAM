@@ -47,6 +47,8 @@ static bool level;
 static char queue[QUEUE][LINK_MAX_LINE];
 static unsigned q_head, q_count;
 static bool q_sending;
+static volatile bool battery_ask;          /* k230_session_battery(): a STATUS to ask for */
+static volatile uint32_t statuses;        /* STATUS frames taken: k230_session_battery() waits for the next */
 
 static void uart_rx_isr(int irq, void *arg)
 {
@@ -188,6 +190,7 @@ static void on_cmd(const struct link_msg *m)
     }
     if (!strcmp(m->cmd, "STATUS")) {             /* the K230's periodic state; its battery already kept (k230_link.c) */
         metrics_k230_status(m->args);            /* its version, die, memory: for the check-in (metrics.h) */
+        statuses++;
         printf("k230: STATUS %s, battery %d mV kept\r\n", m->args, battery_mv());
         return;
     }
@@ -250,6 +253,8 @@ static void session_task(void *arg)
             q_sending = false;
             taskEXIT_CRITICAL();
         }
+        if (state == RUN && battery_ask && link_send_cmd("STATUS", NULL))
+            battery_ask = false;                 /* its STATUS frame answers it; a USB line waits for the link meanwhile */
         if (state == RUN && !q_sending && q_count) {
             char line[LINK_MAX_LINE];
             taskENTER_CRITICAL();
@@ -330,6 +335,19 @@ void k230_session_stop(const char *why)
 bool k230_session_active(void)
 {
     return state != OFF;
+}
+
+bool k230_session_battery(uint32_t ms)
+{
+    if (state != RUN)
+        return false;
+    uint32_t seen = statuses;
+    battery_ask = true;
+    xTaskNotifyGive(task);
+    for (uint32_t t = 0; t < ms && statuses == seen; t += 20)
+        vTaskDelay(pdMS_TO_TICKS(20));
+    battery_ask = false;
+    return statuses != seen;
 }
 
 bool k230_session_usb_line(const char *line)

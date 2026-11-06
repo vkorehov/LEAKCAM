@@ -28,19 +28,21 @@
  *                 WIFI                start Wi-Fi for this session; nothing else starts it. ACK:
  *                                     the radio is up and the BL616 joins with the stored
  *                                     credentials. NAK codes: NO_CREDENTIALS, RADIO
- *                 USB,<line>          the USB setup (WAKE setup): a line from the phone, for the BL616's provisioning
- *                 STATUS,<mode>,<uptime s>,<version>,<die x10>,<heap free>,<heap min free>,<pages free B>
+ *                 USB,<line>          the USB relay: a line from the phone, for the BL616 (the setup firmware's
+ *                                     provisioning, the full firmware's ID/PIN/SETUP)
+ *                 STATUS,<uptime s>,<version>,<die x10>,<heap free>,<heap min free>,<pages free B>
  *                                     every 60 s (and at a job's start): the battery read again and
- *                                     carried as ;b= (DESIGN.md 5.3.9); mode = setup (the USB relay) or session
- *                                     (the normal product job): the BL616 sees which job runs (tests/test047);
+ *                                     carried as ;b= (DESIGN.md 5.3.9);
  *                                     the program's version, the die temperature (-1000 = none) and the kernel's
  *                                     memory (/dev/sysstat, 0 = none): the BL616 keeps them for its check-in
  *                                     (DESIGN.md 5.3.10, tests/test048)
- * BL616 -> K230   USB,<line>          the USB setup: a line for the phone
+ * BL616 -> K230   USB,<line>          the USB relay: a line for the phone
+ * BL616 -> K230   STATUS              send your STATUS now (the unplug: DESIGN.md 5.3.11): the K230 reads its battery
+ *                                     and sends its STATUS frame at once, the fresh reading as its ;b=
  * BL616 -> K230   WAKE,<reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>,<bat_mv>
  *                                     reply to READY: the reasons, every one that applies,
- *                                     joined by '+' (cold, leak, rtc, usb, humid: "rtc+leak"; setup alone: the K230
- *                                     runs the USB setup relay, DESIGN.md 5.3.8); the
+ *                                     joined by '+' (cold, leak, rtc, usb, humid, setup: "rtc+leak"; data for the
+ *                                     program's log only: it runs the same on every power-up, DESIGN.md 5.3.8); the
  *                                     BL616 wall clock, 0 when it is not valid (after a power
  *                                     loss, until the K230 has sent TIME once); the AHT20 sample
  *                                     (rh -1 = the read failed, t then 0); the leak probe node voltage

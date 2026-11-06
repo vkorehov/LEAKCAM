@@ -177,7 +177,7 @@ time.sleep(190)
 statuses = re.findall(r"k230: STATUS ([^\n]*)", bl_con.text)
 log("BL616 STATUS lines:", " | ".join(statuses[-4:]))
 check("STATUS every 60 s in the relay (3 min: >= 3)", len(statuses) >= 3, f"{len(statuses)} lines")
-check("STATUS carries version, die, heap, pages", any(len(s.split(",")) >= 7 for s in statuses),
+check("STATUS carries version, die, heap, pages", any(len(s.split(",")) >= 6 for s in statuses),
       statuses[-1][:90] if statuses else "none")
 ver = re.search(r"version (\S+)", k_con.text)
 ver = ver.group(1) if ver else None

@@ -701,29 +701,22 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
   `GET /v1/devices/{id}/model` (the device's model or the default, ETag = SHA-256). **Open:** the transport to the
   K230 (its own Wi-Fi through the BL616's NetHub needs the K230's normal session first) and the model swap on the K230.
 
-### 5.3.8 One K230 product image; the BL616 picks the program at the start (user, 2026-11-05; tests/test113)
+### 5.3.8 One K230 product program, the same on every power-up (user, 2026-11-05, revised 2026-11-06; tests/test113)
 
-- **One image, no image switching.** The K230 boots the same product image every time; its product program starts at
-  boot (`RTT_AUTO_EXEC_CMD`) and asks the BL616 what to do.
-- **The parameter is the WAKE reason**, the answer to the program's READY (5.4, k230_link.h): `setup` = the USB setup
-  relay (USB-C 1 CDC ACM <-> the link to the BL616's provisioning; no camera, no Wi-Fi on the K230); the other
-  reasons (cold, leak, rtc, usb, humid) = the normal session. No extra pin, boot argument or flash flag: the question
-  is asked over the link the session needs anyway, and the BL616 owns the decision (it knows VBUS, the stored
-  network and why it powered the K230).
-- **Who sends `setup`:** the setup firmware, when USB-C 1 has VBUS and no network is stored (the phone plugged in to
-  set the board up). The full firmware never does.
-- **The product kernel carries the USB device** (CherryUSB, CDC ACM on USB0) for this; the phone lists it 1.41 s
-  after the K230 starts (tests/test044).
-
-- **From the USB relay to the normal product: one job per power-up, no in-place switch** (proposed 2026-11-06;
-  tests/test047). The relay runs only in the setup firmware's session (WAKE `setup`). It ends when the network is
-  saved (STATUS SAVED relayed, 2 s later the K230 off) or the cable is pulled (the K230 off at once). The setup firmware
-  then switches to the full firmware, a BL616 reboot that cuts the K230's power anyway. The full firmware's sessions
-  answer READY with the other reasons (cold, rtc, leak, usb, humid): the same image runs the normal product job
-  (`STATUS session`), and its USB device is not the relay. With a network stored, the full firmware never sends
-  `setup`: a phone plugged in then gets no relay, only the server and BLE paths. Simpler than switching a running
-  program (no relay state to tear down, the setup firmware's code never runs a product session), and the cost is one
-  K230 boot (~0.9 s) at the end of an installation.
+- **One image, one behaviour.** The K230 boots the same product image every time; its product program starts at boot
+  (`RTT_AUTO_EXEC_CMD`) and **knows nothing of the BL616's firmwares or why it was powered** (user, 2026-11-06). It says
+  READY and takes the WAKE's data (the wall clock, the AHT20 sample, the probe voltage, the last battery: 5.4,
+  k230_link.h); the reasons in WAKE are logged, nothing more.
+- **Two things run at once, every time:** the **USB relay**, a service that always runs (USB-C 1 CDC ACM <-> the link:
+  every line both ways), and the **leak detection** (the job, not built yet), in parallel.
+- **The BL616 gives everything its meaning:** the cable's lines (the setup firmware's provisioning, usb_setup.c; the
+  full firmware's ID / PIN / SETUP, usb_full.c: the app reaches the board over the cable in either firmware and can
+  ask the full firmware for the setup firmware) and the power (5.3.11: on USB the K230 stays on; on battery the BL616
+  cuts it once the job is done).
+- **The product kernel carries the USB device** (CherryUSB, CDC ACM on USB0); the phone lists it 1.41 s after the K230
+  starts (tests/test044).
+- **The switch between the firmwares** is a BL616 reboot: the session ends first (counted, 5.3.10), the other
+  firmware powers the K230 again (one K230 boot, ~0.9 s).
 
 ### 5.3.9 The battery level on every channel to the phone (user, 2026-11-06; tests/test046, test131)
 
@@ -796,15 +789,15 @@ check-in is `POST /v1/poll?id=<id>` with a form (the earlier GET's query had no 
 power goes.** No battery budget applies on USB, and a running K230 has its program, its link and its battery reading
 ready at once.
 
-- **Both firmwares.** The setup firmware already powers it for the USB relay (WAKE `setup`, 5.3.8); the full firmware
-  powers it with its normal job (any other WAKE reason) for as long as USB power stays, instead of short sessions.
-  A firmware switch on USB power ends the session first (counted, 5.3.10) and the other firmware starts it again.
+- **Both firmwares, indefinitely** (user: no time limit while USB power is there). The K230 runs the same program
+  in either (5.3.8: the relay always, the leak detection in parallel); the session caps apply on battery only, the
+  heartbeat watch stays (a failed session starts again 30 s after its end). A firmware switch on USB power ends the
+  session first (counted, 5.3.10) and the other firmware starts it again.
 - **The battery at once.** The K230's STATUS every 60 s keeps the server and the phone current (5.3.9). On USB the
   ADC reads the charger's rail, not the cell (test023): not kept, the board reports charging. **At the unplug** the
-  K230 is already up: its next reading is the cell's, at once (no boot first), and the BL616 keeps it and reports it
-  on every channel before the K230 goes off by the battery rules (5.3.9, 5.3.1).
-- **What it needs.** The full firmware's K230 session (5.3.8, not built), held while PGOOD; the unplug read: a
-  STATUS (or a read command) asked by the BL616 on the PGOOD falling edge, before the K230 is switched off.
+  K230 is already up: the BL616 asks `STATUS` (no new command: the same frame, asked now), the K230 reads the cell at
+  once (no boot first) and its STATUS carries it; the BL616 keeps it, reports it on every channel, then switches the
+  K230 off (usb_full.c, within 200 ms of PGOOD falling + the reading).
 - **Tests.** test046 (the battery at the unplug, within one STATUS), test047 step 5 (the normal job on USB), test131
   (the app's level right after the unplug).
 ### 5.4 K230-BL616 link and time

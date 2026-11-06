@@ -6,8 +6,10 @@
 #include "easyflash.h"
 #include "rfparam_adapter.h"
 
+#include "k230_session.h"
 #include "presence.h"
 #include "switch_to_setup.h"
+#include "usb_full.h"
 #include "wifi_link.h"
 
 /* the partition table, easyflash and the RF calibration once per boot, in this order: rfparam reads its calibration
@@ -26,6 +28,8 @@ static void boot_task(void *arg)
     if (!wifi_link_has_credentials())
         switch_to_setup(NULL);
     presence_start();                       /* checks in whenever a network is stored (use case 2) */
+    k230_session_init();
+    usb_full_start();                       /* on USB power the K230 on the whole time (DESIGN.md 5.3.11) */
     vTaskDelete(NULL);
 }
 

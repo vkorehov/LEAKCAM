@@ -33,8 +33,8 @@ target_sources(app PRIVATE
                ${S}/device_id.c
                ${CMAKE_CURRENT_SOURCE_DIR}/ble_pairing.c
                ${CMAKE_CURRENT_SOURCE_DIR}/provision.c
-               ${CMAKE_CURRENT_SOURCE_DIR}/k230_link.c
-               ${CMAKE_CURRENT_SOURCE_DIR}/k230_session.c
+               ${S}/k230_link.c
+               ${S}/k230_session.c
                ${CMAKE_CURRENT_SOURCE_DIR}/usb_setup.c
                ${S}/k230_power.c
                ${S}/provision_cmd.c

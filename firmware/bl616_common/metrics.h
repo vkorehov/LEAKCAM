@@ -20,7 +20,7 @@ void metrics_boot(void);
 void metrics_switch(void);            /* a switch to the other firmware (switch_to_setup.c, switch_to_full.c) */
 void metrics_usb_wake(void);          /* the USB plug woke the setup firmware from PDS (setup_sleep.c) */
 
-/* the K230: its STATUS frame's arguments after <mode>,<uptime s> (k230_link.h), and a session's end */
+/* the K230: its STATUS frame's arguments (k230_link.h), and a session's end */
 void metrics_k230_status(const char *args);
 void metrics_k230_session(uint32_t on_ms, bool ok);
 
