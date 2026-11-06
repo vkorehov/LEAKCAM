@@ -119,6 +119,8 @@ static void watch_task(void *arg)
             bool got = k230_session_battery(BATTERY_MS);    /* the cell, read by the K230 already up */
             printf("usb_full: USB unplugged: battery %d mV %s\r\n", battery_mv(), got ? "read now" : "not read");
             k230_session_stop("USB unplugged");
+            while (k230_session_active())                    /* the stop is the session task's: asked once */
+                vTaskDelay(pdMS_TO_TICKS(50));
         }
         vTaskDelay(pdMS_TO_TICKS(POLL_MS));
     }
