@@ -17,7 +17,7 @@ import time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl, REPO   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import board_id, creds, firmware, op, ready, want   # noqa: E402
+from phone import board_id, board_pin, creds, firmware, op, ready, want   # noqa: E402
 
 SAVED, NOT_FOUND, WRONG_PSK, NO_API = 0x04, 0x10, 0x11, 0x19
 PI = "pi@192.168.1.159"                         # the presence server (server/): the API the check ends at
@@ -133,15 +133,20 @@ r.sample("start")
 # 2. encryption gate: pairing cancelled -> every write refused, nothing stored
 res = op("session", address=addr, pair="cancel", writes=f"ssid:{hexs('t040-gate')},commit:02", secs=5)
 w = res.get("writes", [])
-check("no write succeeds after a cancelled pairing", w and all(x["status"] != 0 for x in w),
-      str([x["status"] for x in w]))           # the link drops with the cancel: -1, never delivered
+# the link drops with the cancel (the board drops a failed pairing at once since 2026-11-04): no write, or -1
+check("no write succeeds after a cancelled pairing", all(x["status"] != 0 for x in w) and (w or res.get("error")),
+      f"{[x['status'] for x in w]} {res.get('error') or ''}")
 check("nothing stored without pairing", creds() == (None, None))
-# a phone without the app: no PIN (passkey entry since 2026-11-01), the pairing fails, nothing is written
-res = op("session", address=addr, pair="accept", pin="", writes=f"ssid:{hexs('t040-nopin')},commit:02", secs=5)
-w = res.get("writes", [])
-refused = bool(w) and all(x["status"] != 0 for x in w)
-check("no PIN (a phone without the app): every write refused", refused, f"{res.get('pair')}: {[x['status'] for x in w]}")
-check("nothing stored without the PIN", creds() == (None, None))
+# a stranger's phone is dropped (user 2026-11-04: no neighbour holds the board): one that never pairs after 10 s, one
+# whose pairing fails (no PIN) at once; the owner's app connects right after
+res = op("session", address=addr, pair="none", mtu=23, secs=20)
+gone = (res.get("disconnected_ms") or 0) - (res.get("connect_ms") or 0)
+check("a phone that never pairs: dropped after 10 s", res.get("connect_ms") is not None and 9000 <= gone <= 12000,
+      f"{gone} ms after the connect")
+op("unpair", address=addr)
+res = op("session", address=addr, pair="accept", pin="", secs=20)
+check("a phone without the PIN: not bonded, dropped", res.get("bond") != 12 and res.get("disconnected_ms") is not None
+      and not res.get("writes"), f"{res.get('pair')}, dropped {res.get('disconnected_ms')} ms")
 op("unpair", address=addr)
 
 # 3. pairing and the characteristic limits (MTU 247 as the app)
@@ -191,9 +196,10 @@ for name, s_, p_, final in (("wrong passphrase", ssid, bad, (WRONG_PSK,)),   # 0
     check(f"check, {name}: {final[0]:#x}", st and st[-1] in final, str(st))
     check(f"check, {name}: old credentials kept", creds() == mark)
 # the API down (the presence server stopped): the internet answers, the API does not -> NO_API, nothing stored
+pin = board_pin()                               # from the server: before it is stopped
 subprocess.run(["ssh", "-o", "BatchMode=yes", PI, "sudo systemctl stop leakcam-server"], check=True, timeout=30)
 try:
-    res = sess("check, the API down", f"ssid:{hexs(ssid)},psk:{hexs(psk)},commit:01", 90)
+    res = sess("check, the API down", f"ssid:{hexs(ssid)},psk:{hexs(psk)},commit:01", 90, pin=pin)
 finally:
     subprocess.run(["ssh", "-o", "BatchMode=yes", PI, "sudo systemctl start leakcam-server"], check=True, timeout=30)
 st = states(res)

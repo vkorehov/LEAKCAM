@@ -6,7 +6,8 @@
  * All setup runs here, the normal run in the full firmware (user, 2026-11-02). The switch to the full firmware
  * (switch_to_full.c, slot.c): on a USB plug once the stored network passes its check up to the API, and after new credentials
  * (checked the same way); back by itself after a phone's wake (2 min) or every 6 h while a network is stored
- * (tests/test125). Not built yet: the USB cable setup (tests/test113).
+ * (tests/test125). Setup over the USB cable (usb_setup.c, tests/test113): with USB power and setup staying, the
+ * K230 is powered with WAKE setup and relays the phone's lines.
  */
 #include "FreeRTOS.h"
 #include "task.h"
@@ -17,6 +18,9 @@
 
 #include "ble_pairing.h"
 #include "crash_rec.h"
+#include "k230_power.h"
+#include "k230_session.h"
+#include "usb_setup.h"
 #include "switch_to_full.h"
 #include "setup_boot.h"
 #include "setup_sleep.h"
@@ -47,12 +51,18 @@ void setup_usb_plugged(void)
 static void boot_task(void *arg)
 {
     (void)arg;
+    k230_power_init();              /* the K230 off and its pins parked before anything else uses them */
+    k230_session_init();
+    usb_setup_init();
     setup_boot();
     bool from_full = switch_to_full_start();     /* the way back to the full firmware */
-    if (setup_usb_present() && !from_full)  /* plugged in: from the full firmware it is not a plug */
+    if (setup_usb_present() && !from_full) {    /* plugged in: from the full firmware it is not a plug */
         setup_usb_plugged();
-    else
+    } else {
         setup_sleep_begin(false);   /* BLE-idle veto until advertising runs (setup_sleep.c) */
+        if (setup_usb_present())
+            usb_setup_begin();      /* sent here by the full firmware on USB power: the cable setup is offered */
+    }
     vTaskDelete(NULL);
 }
 

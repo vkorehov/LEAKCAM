@@ -703,9 +703,9 @@ static int bat_watch(int argc, char **argv)
 MSH_CMD_EXPORT(bat_watch, test038: VBAT log + heartbeat until VBAT < cut [cut_mv] [log_s]);
 
 /*
- * test115: the K230's USB device on USB-C 1 (CherryUSB, CDC ACM "ttyGS0", 1209:ABD1; test image only). usb_echo [s]:
+ * test043: the K230's USB device on USB-C 1 (CherryUSB, CDC ACM "ttyGS0", 1209:ABD1; test image only). usb_echo [s]:
  * every byte the host sends comes back, for s seconds (default 30) or until the host sends nothing for 5 s after it
- * started; then the byte count. The host times the round trips and the throughput (tests/test115 run.py).
+ * started; then the byte count. The host times the round trips and the throughput (tests/test043 run.py).
  */
 static int usb_echo(int argc, char **argv)
 {
@@ -713,7 +713,8 @@ static int usb_echo(int argc, char **argv)
     rt_device_t d = rt_device_find("ttyGS0");
     rt_uint8_t buf[512];
     rt_uint64_t total = 0, t0 = now(), last = 0, nap = t0;
-    if (!d || rt_device_open(d, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_INT_RX) != RT_EOK)
+    /* ttyGS0 registers DMA RX/TX only: an INT_RX open is refused (serial.c), test043 2026-11-05 */
+    if (!d || rt_device_open(d, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_DMA_RX | RT_DEVICE_FLAG_DMA_TX) != RT_EOK)
     {
         rt_kprintf("usb_echo: ttyGS0 not available (USB device not enumerated?)\n");
         return -1;
@@ -753,4 +754,4 @@ static int usb_echo(int argc, char **argv)
     rt_kprintf("usb_echo: %u bytes echoed in %u ms\n", (unsigned)total, (unsigned)((now() - t0) / 27000));
     return 0;
 }
-MSH_CMD_EXPORT(usb_echo, test115: echo the host on the USB device (ttyGS0) [s]);
+MSH_CMD_EXPORT(usb_echo, test043: echo the host on the USB device (ttyGS0) [s]);

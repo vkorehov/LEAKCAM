@@ -22,9 +22,12 @@
  *                 WIFI                start Wi-Fi for this session; nothing else starts it. ACK:
  *                                     the radio is up and the BL616 joins with the stored
  *                                     credentials. NAK codes: NO_CREDENTIALS, RADIO
+ *                 USB,<line>          the USB setup (WAKE setup): a line from the phone, for the BL616's provisioning
+ * BL616 -> K230   USB,<line>          the USB setup: a line for the phone
  * BL616 -> K230   WAKE,<reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>,<bat_mv>
  *                                     reply to READY: the reasons, every one that applies,
- *                                     joined by '+' (cold, leak, rtc, usb, humid: "rtc+leak"); the
+ *                                     joined by '+' (cold, leak, rtc, usb, humid: "rtc+leak"; setup alone: the K230
+ *                                     runs the USB setup relay, DESIGN.md 5.3.8); the
  *                                     BL616 wall clock, 0 when it is not valid (after a power
  *                                     loss, until the K230 has sent TIME once); the AHT20 sample
  *                                     (rh -1 = the read failed, t then 0); the leak probe node voltage
@@ -68,7 +71,7 @@ static inline uint8_t link_crc8(const char *p, const char *end)
 
 #define LINK_BAUD           2000000 /* tests/test039: 4 Mbaud lost ~0.5 % of short writes after idle, 2 Mbaud 0;
                                      * K230 side from here (k230_board/install.sh), U-Boot / dts / RT-Smart configs too */
-#define LINK_MAX_LINE       64
+#define LINK_MAX_LINE       160     /* a USB,<line> of the USB setup (DESIGN.md 5.3.8): PSK <63 hex-encoded> fits */
 #define LINK_ACK_TIMEOUT_MS 300     /* a 64-byte frame takes 0.16 ms; the rest is the peer's loop */
 #define LINK_TRIES          5
 /* NAK codes; 0 is ACK */
@@ -76,15 +79,18 @@ static inline uint8_t link_crc8(const char *p, const char *end)
 #define LINK_ERR_NO_CREDENTIALS 2   /* WIFI: no SSID stored, pair over BLE on USB power first */
 #define LINK_ERR_RADIO          3   /* WIFI: RF or storage failed to come up */
 
+/* ---- the BL616 side (bl616_setup/k230_link.c); the K230 program has its own (k230_app/leakcam.c) ---- */
+
 struct link_msg {
     char cmd[16];
     uint32_t arg;                   /* first argument as a number, 0 if none */
     bool has_arg;
-    char args[40];                  /* everything after the command, as sent */
+    char args[LINK_MAX_LINE];       /* everything after the command, as sent */
     uint8_t seq;
 };
 
 enum link_end { LINK_ACKED, LINK_NAKED, LINK_TIMED_OUT };
+
 struct link_result {                /* how a BL616 command ended: ACKED or TIMED_OUT */
     enum link_end end;
     char cmd[16];
@@ -92,17 +98,21 @@ struct link_result {                /* how a BL616 command ended: ACKED or TIMED
 };
 
 void link_reset(void);
-/* Decides the answer to each new command, once, before it is delivered: 0 = ACK, else the
- * LINK_ERR_* code sent with NAK. This is where a refusable command is carried out. NULL = ACK
- * everything. */
+/* Decides the answer to each new command, once, before it is delivered: 0 = ACK, else the LINK_ERR_* code sent with
+ * NAK. NULL = ACK everything. */
 void link_set_reply(uint8_t (*reply)(const struct link_msg *m));
-/* Non-blocking. True when a new command arrived; it has already been answered. ACK/NAK frames
- * and duplicates are consumed here and never returned. */
-bool link_poll(struct link_msg *out);
+/* Bytes from the wire: K230 console text goes to link_text(), valid frames are answered, ACK/NAK end the
+ * command in flight, a new command is handed to on_cmd (accepted ones only, once). Frames are never logged: USB
+ * lines carry the Wi-Fi credentials. */
+void link_rx(const char *p, unsigned n, void (*on_cmd)(const struct link_msg *m));
 /* Send a command that must be answered. False while the previous one is still in flight. */
 bool link_send_cmd(const char *cmd, const char *arg);
 /* Drive (re)sends; call from every wait loop. Returns how the command in flight ended (answered,
  * or LINK_TRIES sends without an answer) once it has, else NULL. */
 const struct link_result *link_service(uint64_t now_ms);
+/* bytes to the wire: the frames, and the host's keystrokes for the K230 console; given by the transport */
+void link_tx(const char *p, unsigned n);
+/* the K230's console text (everything that is not a frame); given by the transport */
+void link_text(const char *p, unsigned n);
 
 #endif

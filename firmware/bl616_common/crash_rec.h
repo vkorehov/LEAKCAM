@@ -24,8 +24,14 @@ struct crash_rec_info {
     const char *image, *version, *task;
     uint32_t count, kind, uptime_ms, mcause, mepc, mtval, ra, sp, stage, n_bt;
     const uint32_t *bt;
+    const char *msg;                 /* a fatal error's words, "" for the others (not NUL-terminated past 40 bytes) */
 };
 bool crash_rec_get(struct crash_rec_info *i);   /* false: no record kept */
 void crash_rec_sent(uint32_t count);            /* the server has record #count: cleared, unless a newer one came */
+
+/* fail fast: this firmware's fatal error, recorded with its words, then the reset (never returns) */
+void crash_rec_fatal(const char *msg) __attribute__((noreturn));
+/* a K230 failure the BL616 saw (session ended badly, the K230's FATAL line): recorded, no reset */
+void crash_rec_k230(const char *msg);
 
 #endif

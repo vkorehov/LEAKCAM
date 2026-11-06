@@ -270,15 +270,24 @@ class BleOp {
             /* UiAutomator's own wait for the enabled button: the scrolling find() lost it for 40 s while the list
              * redrew (test106, 2026-11-01) */
             /* the setup itself, never Wake (a present board out of range: test119 taps that one itself) */
-            val button = safe(null) { ui.wait(Until.findObject(By.res(pkg, "setup_open").enabled(true)
-                .text(java.util.regex.Pattern.compile("(?!Wake).*"))), 40000) }
-            out.put("ms_status", ms())
-            safe(Unit) { button?.click() }
-            ui.wait(Until.findObject(By.res(pkg, "send")), 5000)
+            /* tapped again until the setup screen opens: a tap while the list was still picking the board opened
+             * nothing (test111, 2026-11-04: 3 runs left on the status screen) */
+            for (attempt in 1..3) {
+                val button = safe(null) { ui.wait(Until.findObject(By.res(pkg, "setup_open").enabled(true)
+                    .text(java.util.regex.Pattern.compile("(?!Wake).*"))), 40000) }
+                out.put("ms_status", ms())
+                safe(Unit) { button?.click() }
+                if (ui.wait(Until.findObject(By.res(pkg, "send")), 5000) != null)
+                    break
+                out.put("setup_open_taps", attempt + 1)
+            }
         }
         /* from the status screen the board is picked already: no second Find, as a user would not tap it (a second
          * scan right after a setup missed the board once, test106 2026-11-01) */
-        if (!out.optBoolean("status_screen"))
+        /* the cable screen (a LEAKCAM on the USB cable, test113) has no Find: the board is found by the plug */
+        val usb = safe(false) { ui.findObject(By.res(pkg, "usb_header"))?.let { it.text.isNotEmpty() } == true }
+        out.put("usb_screen", usb)
+        if (!out.optBoolean("status_screen") && !usb)
             safe(Unit) { ui.wait(Until.findObject(By.res(pkg, "scan")), 10000)?.click() }
         val found = SystemClock.elapsedRealtime() + 15000
         /* Send turns on at the first board (Find goes on behind it since test106's timing work) */
@@ -287,8 +296,17 @@ class BleOp {
         out.put("found", safe(0) { ui.findObject(By.res(pkg, "devices"))?.childCount ?: 0 })
         out.put("ms_found", ms())
         fun hex(k: String) = arg(k, "").chunked(2).map { it.toInt(16).toByte() }.toByteArray().toString(Charsets.UTF_8)
-        find("ssid")!!.text = hex("ssid")
-        find("password")!!.text = hex("psk")
+        /* no setup screen: say what was on the screen instead of a NullPointerException (test111, 2026-11-04) */
+        val ssidField = find("ssid")
+        val pskField = find("password")
+        if (ssidField == null || pskField == null) {
+            val shown = safe("") { ui.findObjects(By.pkg(pkg)).mapNotNull { it.text?.takeIf { t -> t.isNotBlank() } }
+                .take(12).joinToString(" | ") }
+            out.put("error", "no setup screen; on screen: $shown")
+            return
+        }
+        ssidField.text = hex("ssid")
+        pskField.text = hex("psk")
         /* no pressBack: setting the text opens no keyboard, and Back closed the app (2026-10-30) */
         val pressed = mutableListOf<String>()
         fun press(button: String) {

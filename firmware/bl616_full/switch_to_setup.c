@@ -20,9 +20,9 @@ void switch_to_setup(const char *why)
 /* as the triggers do (tests/test117, test119 without stopping the server or a phone's wake) */
 static void cmd_switch_to_setup(int argc, char **argv)
 {
-    if (argc > 1 && (!strcmp(argv[1], "lost") || !strcmp(argv[1], "wake")))
+    if (argc > 1 && (!strcmp(argv[1], "lost") || !strcmp(argv[1], "wake") || !strcmp(argv[1], "unused")))
         switch_to_setup(argv[1]);
     else
-        printf("switch_to_setup: lost | wake\r\n");
+        printf("switch_to_setup: lost | wake | unused\r\n");
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_switch_to_setup, switch_to_setup, to the setup firmware as on a lost presence or a phone wake [lost | wake]);
+SHELL_CMD_EXPORT_ALIAS(cmd_switch_to_setup, switch_to_setup, to the setup firmware as on a lost presence / a phone wake / no user left [lost | wake | unused]);

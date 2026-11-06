@@ -21,7 +21,7 @@ k230_linesplit.h).
 | crash_rec.c | the crash recorder (skill firmware-crash-recorder) |
 | mem_stat.c | `mem`: heap free / lowest / blocks |
 | device_id.c | the device ID (factory MAC) |
-| provision.c | `provision`: the stored network (length + CRC), erase, the pairing PIN stored at flash time |
+| provision_cmd.c | `provision`: the stored network (length + CRC), erase, the pairing PIN stored at flash time |
 | board_pins.h, wifi_ctrl_proto.h | the board's pins; the Wi-Fi control protocol with the K230 (wifi_link.c, wifi_setup.c, the K230 driver) |
 | bl616_leakcam.ld.in | the linker script (.hbn_noinit in HBN RAM) |
 | host.mk, sdk_patch.py | the build; `make flash` writes both partition-table copies, `SLOT1_BIN=` an image into slot 1 (same version and commit), keeps the flashed ELFs in the K230 container and LEAKCAM's SDK changes, for every BL616 build |

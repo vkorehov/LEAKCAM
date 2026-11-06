@@ -506,5 +506,40 @@ PY
 grep -q 'LEAKCAM: ov5647 1280x960 only' "$ISPMK" || { echo "ISP files patch not applied"; exit 1; }
 rm -f "$SDK"/output/*/images/bin/ov5647-*                  # earlier builds' sets: the rule only adds files
 
+# The product program (firmware/k230_app): src/applications/leakcam, sources in ./src (the Docker build only sees the
+# SDK tree), with the link protocol it shares with the BL616. tests/firmware/test_install.sh replaces it with the test
+# programs.
+A=$SDK/src/applications
+rm -rf "$A/leakcam"; mkdir -p "$A/leakcam/src"
+cp "$HERE/../k230_app/rtsmart/Makefile" "$A/leakcam/Makefile"
+cp "$HERE/../k230_app/rtsmart/Kconfig.app" "$A/leakcam/Kconfig"
+cp "$HERE/../k230_app/leakcam.c" "$HERE/k230_link.h" "$A/leakcam/src/"
+grep -q 'CONFIG_APP_ENABLE_LEAKCAM' "$A/apps.mk" || echo 'subdirs-$(CONFIG_APP_ENABLE_LEAKCAM) += leakcam' >> "$A/apps.mk"
+# test programs a test install left in this SDK tree (tests/firmware/test_install.sh) stay out of the product image
+for t in memtest venctest; do
+    sed -i "/^subdirs-y += $t\$/d" "$A/apps.mk"; rm -rf "$A/$t"
+done
+rm -rf "$SDK"/output/k230d_rtos_leakcam_defconfig/images/sdcard/app/*
+
+# The USB device on USB-C 1 for the phone's USB setup (DESIGN.md 5.3.8; CherryUSB CDC ACM ttyGS0, 1209:ABD1, tests/
+# test043): the SDK's glue calls rt_ioremap without its header: undeclared, the 64-bit address came back as an int
+G=$RTT/components/CherryUSB/port/dwc2/usb_glue_kendryte.c
+grep -q '<ioremap.h>' "$G" || sed -i 's|#include <rthw.h>|#include <rthw.h>\n#include <ioremap.h>|' "$G"
+# Its product string is "CanMV": Android's "open the app for this USB device" dialog showed it (user 2026-11-05:
+# LeakCam). String 2 of the CDC descriptor becomes "LeakCam" (bLength 2 + 2 x 7)
+D=$RTT/components/canmv_usb/usbd_desc_cdc.h
+grep -q 'LEAKCAM: product' "$D" || python3 - "$D" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = ("    0x0C, /* bLength */\n    USB_DESCRIPTOR_TYPE_STRING, /* bDescriptorType */\n"
+     "    'C',\n    0x00, /* wcChar0 */\n    'a',\n    0x00, /* wcChar1 */\n    'n',\n    0x00, /* wcChar2 */\n"
+     "    'M',\n    0x00, /* wcChar3 */\n    'V',\n    0x00, /* wcChar4 */\n")
+b = ("    0x10, /* bLength */   /* LEAKCAM: product \"LeakCam\" */\n    USB_DESCRIPTOR_TYPE_STRING, /* bDescriptorType */\n" +
+     "".join(f"    '{c}',\n    0x00, /* wcChar{i} */\n" for i, c in enumerate("LeakCam")))
+assert s.count(a) == 1, 'usbd_desc_cdc.h changed, cannot rename the USB product'
+open(p, 'w').write(s.replace(a, b))
+PY
+grep -q 'LEAKCAM: product' "$D" || { echo "USB product name patch not applied"; exit 1; }
+
 echo "LEAKCAM board installed into $SDK"
-echo "next: cd $SDK && make k230d_rtos_leakcam_defconfig && make"
+echo "next: cd $SDK && ./leakcam_docker_build.sh k230d_rtos_leakcam_defconfig && ./leakcam_docker_build.sh log   (the defconfig step every time: the build keeps an old .config otherwise)"

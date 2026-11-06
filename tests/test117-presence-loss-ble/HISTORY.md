@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-04 (run.py, 239 s): pass
+
+20/20 checks pass.
+
+
 ### Earlier results (README Result before 2026-11-03)
 
 - 2026-11-02 17:55 UTC, the product pair (full + setup, 0.6+g1d2b375-dirty-202611021742; the full firmware without BLE),

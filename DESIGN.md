@@ -374,6 +374,9 @@ RTC wake (poll interval) -> radio up -> join the stored network at the remembere
   profile for our controller library needs `sdk_patch.py` for Secure Connections at all;
   `CONFIG_BT_FIXED_PASSKEY=y` for the PIN.
   Threats, findings and open items: [SECURITY.txt](SECURITY.txt).
+- **A phone that does not pair is dropped (user, 2026-11-04):** any phone in range can open a link to a connectable
+  board, so one that has not paired with the PIN 10 s after it connected is disconnected, and one whose pairing fails
+  at once; a neighbour cannot hold the board's one connection (ble_pairing.c auth_task_fn; tests/test040 step 2).
 - **Stored in easyflash** (`wifi_ssid`, `wifi_psk`), and nothing else.
 - **No pairings kept (user, 2026-10-29).** No bond keys in flash (`CONFIG_BT_SETTINGS` off): every
   setup pairs anew; after a reset or sleep the board has forgotten the phone. Nothing to
@@ -575,6 +578,102 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
   /v1/devices/{id}/crashes for the bench and later the app; the host decodes with the kept ELF of that build
   (crash_decode.py, ~/.cache/leakcam-elf). The record holds no secrets (no credentials, no PIN).
 - **Cost:** one extra HTTP request per crash, nothing when there is none.
+- **The K230 too** (user, 2026-11-05; skill leakcam-product-firmware section 0): the K230 product programs get the
+  same recorder (kind, thread, registers, backtrace, build) in memory that survives its reset, sent to the same
+  endpoint the next time the K230 runs a session with Wi-Fi up. To build; until then a K230 fault shows only on its
+  console.
+- **Fail fast:** a fatal error on either chip ends the program or resets the chip at once, with one log line naming
+  it and the record written; no silent retries (product application standard). A K230 failure ends in power off: its
+  heartbeat stops and the BL616 cuts the rails 2 s later and logs it (user, 2026-11-05: battery).
+
+### 5.3.4 The setup channel and the app's link icons (user, 2026-11-04)
+
+- **The most reliable channel that is there:** a USB link between the app and the board (the phone's USB-C to the
+  board's USB-C 1 by cable, the phone the USB host; user 2026-11-04: the phone app, not a computer) -> the setup goes
+  over USB; else over BLE; over Wi-Fi (5.3.2, through the server) only for a board
+  that is already set up and moves to another network.
+- **The app shows the link and the board's power** next to each board:
+  - a USB icon (as the BLE icon) only while the app holds a USB link to the board - not for USB power alone;
+  - a plug icon when the board has USB power but no USB link with the app;
+  - a battery icon otherwise.
+- **Signal strength as bars** (BLE and Wi-Fi), never the dB value on the screen; the dB value on a long press (the
+  phone's "hover").
+- Open, before the USB setup is built: the protocol over the USB link (a CDC port of its own, not the shell: no
+  credentials on the console), the phone side (Android USB host, OTG; the permission dialog to keep to one,
+  the fewest system dialogs).
+- The board's USB power reaches the app in the BLE advertisement: the flags byte's bit 1 (bit 0: a network stored),
+  read when advertising starts (an unplug restarts it; a plug-in switches to the full firmware).
+- Tests: one case per rule (the channel picked with a USB link, without it, for a set-up board; each icon; bars and
+  the long-press value).
+
+### 5.3.5 A board nobody uses: setup mode and a daily leak check (user, 2026-11-04)
+
+- **The server is the one source of truth; clients are views (user, 2026-11-04):** the app is only one way in, a web
+  interface may follow. Users, their boards and every state live on the server; a client reads and changes them only
+  through the server's API and keeps nothing of its own. The registered user is the client device (today the phone by
+  its Android ID); a web client registers through the same API.
+- **The server holds the list, the app none (user, 2026-11-04):** the app keeps no list of its own; it always asks the
+  server for the boards registered to its phone (`GET /v1/phones/<phone id>/devices`) and shows them with their
+  presence. A setup registers the phone (below); nothing about the boards is stored on the phone.
+- **Deleting a board removes this phone only:** someone else may still use it. The delete goes to the server; the app
+  shows the server's list again, without the board. It does not come back by itself; only a new setup brings it back.
+- **No user left:** when no phone has the board any more (nobody else set it up, nobody receives its leak reports),
+  the server answers the board's check-in `410 Gone`. The full firmware then switches to the setup firmware (reason
+  "unused"): ready to be set up again, and checks for leaks only rarely, every 24 h. With a single user (the bench,
+  tests/test111) the delete alone sends the board back to setup.
+- The parts, in build order:
+  1. App: no stored list (devices.xml goes): the list is the server's `GET /v1/phones/<phone id>/devices`; a delete is
+     `DELETE /v1/devices/<id>/phones/<phone id>`, then the list read again (no server: nothing changes, the app says
+     why). The phone id is the phone's Android ID (`Settings.Secure.ANDROID_ID`: one per phone and signing key, the
+     same after a reinstall). The app's "rediscover" (a deleted board put back by itself) goes.
+  2. Server: the registered phones (the users) of each board. A phone is registered when the server issues it the
+     board's pairing PIN (`GET /v1/devices/<id>/pin?phone=<phone id>`: every setup asks for it), removed by its
+     delete; none left -> `410 Gone` to the check-in. `GET /v1/devices/<id>` tells the number of phones ("phones").
+  3. Full firmware: `410` -> switch_to_setup("unused").
+  4. tests/test111 step 7: delete -> the board in the setup firmware within one check-in interval.
+  5. Later (needs the K230 in the setup firmware): the 24 h leak check, and what a leak found then does with no one to
+     tell.
+
+### 5.3.6 A leak without presence: one record kept until it can be sent (user, 2026-11-04)
+
+- **Leak detection runs in the full firmware whatever the presence:** the periodic leak check goes on while the
+  server is out of reach (and in the "unused" setup mode, 5.3.5, every 24 h).
+- **A leak found without presence is stored in flash, one record** (the newest; one data point is enough):
+  - the trigger type (probe comparator, humidity, picture change, ...);
+  - the humidity and the temperature (AHT20);
+  - the probe voltage;
+  - a picture reference id: the picture stays on the K230's storage, uploaded from there later.
+- **Presence back -> the record goes out** with the first check-in (then the picture from the K230 by its id) and is
+  deleted from flash only once the server confirmed it.
+- **Presence does not flap:** it is lost only after several missed check-ins in a row (today three), not on one
+  failed request; a short outage never starts the setup firmware or the offline path.
+- Open, before it is built: the record's flash key and format (easyflash, fixed size), the K230's picture store and
+  its id, the server field for the record.
+
+### 5.3.7 Firmware upgrades over the air, from the server (user, 2026-11-05; tests/test130)
+
+- **What:** the K230 image and the BL616 full firmware. The BL616 setup firmware is not upgradeable over the air: it
+  changes only by wire (`make flash`).
+- **Who starts it: the server, automatically.** The check-in answer names the newest version. A board on an older
+  one downloads and installs it by itself: no prompt, no app, no user action.
+- **Checksum verified:** the server gives each image's checksum. The board checks the written image against it before
+  switching. A mismatch, a broken download or a power cut mid-write keeps the old firmware running, and the next
+  check-in retries.
+- **After the switch:** the board reports its new versions at its next check-in.
+
+### 5.3.8 One K230 product image; the BL616 picks the program at the start (user, 2026-11-05; tests/test113)
+
+- **One image, no image switching.** The K230 boots the same product image every time; its product program starts at
+  boot (`RTT_AUTO_EXEC_CMD`) and asks the BL616 what to do.
+- **The parameter is the WAKE reason**, the answer to the program's READY (5.4, k230_link.h): `setup` = the USB setup
+  relay (USB-C 1 CDC ACM <-> the link to the BL616's provisioning; no camera, no Wi-Fi on the K230); the other
+  reasons (cold, leak, rtc, usb, humid) = the normal session. No extra pin, boot argument or flash flag: the question
+  is asked over the link the session needs anyway, and the BL616 owns the decision (it knows VBUS, the stored
+  network and why it powered the K230).
+- **Who sends `setup`:** the setup firmware, when USB-C 1 has VBUS and no network is stored (the phone plugged in to
+  set the board up). The full firmware never does.
+- **The product kernel carries the USB device** (CherryUSB, CDC ACM on USB0) for this; the phone lists it 1.41 s
+  after the K230 starts (tests/test044).
 
 ### 5.4 K230-BL616 link and time
 
@@ -602,6 +701,11 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
   The hook prints `wifi` when it needs the network; the agent sends `WIFI` and, once it is
   accepted, probes MMC0 through `/dev/bl616`. Nothing probes MMC0 at boot: the SDU is off until
   `WIFI`, so a boot-time probe would only cost time and power.
+- **The program reads frames from `/dev/link`** (the kernel's link_mux splits UART1 into the console and the frames,
+  firmware/CONSOLE.md 4): `poll()` then `read()`. A driver's own `dfs_file_ops` must be attached after
+  `rt_device_register()`, which clears them: before 2026-11-05 they were set first, devfs's generic `poll()` never
+  reported data and no K230 program had ever received a frame (the old agent's READY went unanswered as well) -
+  tests/test045 proves the path end to end, and `link_stat` shows `/dev/link fops attached`.
 - **GPIO2 heartbeat.** Every 500 ms while the agent runs; its stop ends the session. It is
   edges, not a level, because IO2 is JTAG_TCK with a pull-down at reset.
 - **Time.** The BL616 is the clock of record. Its HBN RTC is a 40-bit counter on the Y3 crystal
@@ -766,8 +870,8 @@ back to U13's GND pad beside MICPL; 1 µF 0402 fits better than the 0805 (footpr
 - **The real server.** Replace the mock; same two requests. Add authentication and TLS.
 - **Run on hardware.** The agent, `leakcam_wake` and the push mode are built and tested on the
   host only.
-- **OTA writer.** Download into the inactive slot and write `ota_meta`. The SPL side already
-  exists.
+- **OTA writer** (5.3.7: from the server, automatic, checksum verified). K230: download into the inactive slot and
+  write `ota_meta`; the SPL side already exists. BL616 full firmware: its writer and switch, not designed yet.
 - **LEAKCAM dataset.**
   - Fisheye captures from both cameras, white and IR, at several LED levels.
   - Re-measure every threshold; retrain the change net as in [firmware/NN.txt](firmware/NN.txt).

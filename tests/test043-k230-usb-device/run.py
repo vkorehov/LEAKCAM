@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""test115 automated (K230 test image with the USB device, tests/firmware/test_install.sh): the K230 boots with USB-C 1
+"""test043 automated (K230 test image with the USB device, tests/firmware/test_install.sh): the K230 boots with USB-C 1
 cabled to the bench (this VM sees it); its CherryUSB CDC ACM (1209:ABD1, /dev/leakcam-k230usb by udev) enumerates;
 `usb_echo` echoes it back: 200 round trips of 16 bytes (latency) and 1 MB checked byte for byte (throughput). The
 bench stands in for the phone: nothing to recable (user, 2026-11-01).
-    tests/test115-k230-usb-device/run.py
+    tests/test043-k230-usb-device/run.py
 """
 import os
 import select
@@ -35,8 +35,8 @@ def read_exact(fd, n, deadline):
 
 
 r = Run(__file__)
-t_boot = time.time()
 r.boot()
+t_boot = r.t_run          # from the K230's start (pt_run); from before the power cycle it read 11.3 s, 5 s too long
 t0 = time.time()
 while time.time() - t0 < 20 and not os.path.exists(PORT):
     time.sleep(0.2)

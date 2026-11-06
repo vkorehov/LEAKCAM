@@ -1,6 +1,8 @@
 #!/bin/sh
 # Flash the LEAKCAM K230 image to the SPI NAND over USB-C 1: erase, then write.
-#   firmware/k230_board/flash_nand.sh [SDK_DIR]        (K230 in USB boot mode, 29f1:0230)
+#   firmware/k230_board/flash_nand.sh [SDK_DIR]
+# The K230 is put into its ROM's USB boot (29f1:0230) and switched off afterwards by the BL616, product or test
+# firmware alike (tools/power-bringup/k230_usb_boot.py; the product's `k230 usbboot`, 2026-11-05).
 # The burn loader does not erase what an image does not cover, and UFFS rejects a partition with
 # leftover blocks (rev 1, 2026-10-18): always erase the whole image range (0 .. 248M) first.
 # k230_flash_cli is x86-64 only: it runs in the K230 build container. --network host and /run/udev
@@ -21,6 +23,9 @@ run() {
     rm -f "$log"
 }
 python3 "$(dirname "$0")/check_pad_voltage.py" "$O/uboot/spl/u-boot-spl.bin" "$O/uboot/u-boot.bin"
+PB=$(dirname "$0")/../../tools/power-bringup
+python3 "$PB/k230_usb_boot.py" on
 run --erase-medium --erase-address 0 --erase-size 0xF800000
 run -f "$IMG"
-echo "flashed $IMG; boot it with BOOT1 low (BL616: pt_boot1 low, pt_hold, pt_run)"
+python3 "$PB/k230_usb_boot.py" off
+echo "flashed $IMG; the K230 is off (it boots from NAND at the next session)"

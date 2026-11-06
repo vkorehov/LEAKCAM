@@ -79,6 +79,9 @@ Leak tests, one per operation the product repeats:
 | [test040 BLE provisioning on the BL616: Wi-Fi credentials into flash](test040-ble-wifi-credentials/README.md) | 2026-11-03 | **pass**: run.py 37/37 on the setup firmware's test bed, the phone 8 m away: PIN gate, write limits, persistence, checked store to the API, 8 store cycles without a leak; step 8 gone with the firmware split |
 | [test041 humidity alarm (AHT20 threshold wakes the K230)](test041-humidity-alarm/README.md) | 2026-10-30 | **planned**: the BL616 test firmware needs the humidity slice and alarm decision of |
 | [test042 RF performance against the bench phone (RSSI side by side)](test042-rf-rssi-vs-phone/README.md) | 2026-10-31 | **position 1 done**: Wi-Fi receive board - phone -3..+1 dB, BLE -32..-43 dBm at the phone; one unexplained BL616 watchdog reset (recorder armed since); orientations, distance open |
+| [test043 the K230's USB device on USB-C 1](test043-k230-usb-device/README.md) | 2026-11-05 | **pass**: CherryUSB CDC ACM (1209:ABD1) up 0.73 s after the K230 start, seen by the VM at 4.1-4.4 s (~3.3 s VMware passthrough); 200/200 16-byte round trips; 1 MB echoed, 0 wrong, 3317 KB/s (test image only) |
+| [test044 the phone sees the board over a USB-C cable](test044-phone-usb-link/README.md) | 2026-11-05 | **steps 1-6 pass**: phone as USB host lists the K230 device 1.41 s after its start (median of 5, max 1.58 s), gone 0.28 s after power-off; step 7 (app icon) waits for the app |
+| [test045 link frames reach a K230 program through /dev/link](test045-k230-link-frames/README.md) | 2026-11-05 | **pass**: 5/5 starts the K230 program gets ACK + WAKE (READY 0.43 s after pt_run, READY -> WAKE 8 ms) after the fix: link_mux set `/dev/link`'s file ops before `rt_device_register()`, which clears them; devfs's poll never reported data, no K230 program had ever got a frame |
 | **High level (100+): the product's whole flow** | | |
 | [test100 Wi-Fi throughput, K230 -> SDIO -> BL616 -> AP](test100-wifi-throughput/README.md) | 2026-10-25 | **steps 1-4 pass**: K230 address 0.33-0.59 s after the card binds; TCP up 27.5 / down 22.1 Mbit/s, UDP up 35.4. |
 | [test101 session length (wake to power-off)](test101-boot-and-session-time/README.md) | 2026-10-30 | **pass, steps 1-2**: 10/10 sessions, power-on -> READY 0.87 s, rails off 27.68 s |
@@ -92,9 +95,8 @@ Leak tests, one per operation the product repeats:
 | [test109 secure server (TLS, device identity, pinned certificate, signed change net)](test109-secure-server/README.md) | 2026-10-30 | **planned**: the real server is not built (DESIGN 7, SECURITY.txt 4); it will run on the Windows PC for the test. |
 | [test110 setup app recovery from loss at every step](test110-ble-loss-recovery/README.md) | 2026-11-03, run.py 30/30 | **pass** on the setup firmware's test bed (pt_fault), the phone 8 m away: lost notifications, a link lost after the save, Bluetooth off during the check -> Done 9.4-15.2 s; failures named in 6.4-8.9 s; app and board agree |
 | [test111 more than one LEAKCAM: one device ID, presence, status screen](test111-multi-device/README.md) | 2026-11-01, run.py 18/18 | **pass**: one ID on board, USB and BLE; the app's status screen (online / offline / delete), the short change-Wi-Fi flow, no stored network |
-| [test113 the whole setup over USB alone (no BLE)](test113-usb-setup-from-phone/README.md) | 2026-11-01 | **planned**: USB-C 1 is the K230's USB0: K230 CDC ACM + relay to the BL616, or rev 2 routes the BL616's USB there |
+| [test113 full setup from the phone app over a USB-C cable (product firmware)](test113-usb-setup-from-phone/README.md) | 2026-11-05 | **board side pass, app open**: with the PC in the phone's role, full provisioning over the K230 USB on product firmware, SAVED 4.9 s after COMMIT, K230 off 2.3 s later, full firmware online; the app's USB code not written |
 | [test114 the lowest BLE energy at which the phone finds the board](test114-ble-discovery-energy/README.md) | 2026-11-01 | **part A run**: found every time up to 2 s advertising (median 0.2-2.2 s), misses from 5 s; currents and parts B, C open |
-| [test115 the K230's USB device on USB-C 1](test115-k230-usb-device/README.md) | 2026-11-01 | **planned, built**: CherryUSB CDC ACM in the test image, usb_echo, run.py; to run after the image rebuild |
 | [test116 the whole setup over BLE alone (no USB)](test116-ble-only-setup/README.md) | 2026-11-01 | **planned**: on battery, USB-C 1 out (hand): found in an advertising window, set up from the app |
 | [test117 presence lost brings BLE back](test117-presence-loss-ble/README.md) | 2026-11-03 | **pass** 19/19 on the product pair, the phone 8 m away: server down / network gone -> the setup firmware in 9 / 13 s, found at once (RSSI -70), set up in 8.7-9.1 s, back in the full firmware 4 s after |
 | [test118 the app's icons follow the board](test118-app-presence-icons/README.md) | 2026-11-01, 7/7 | **pass**: BLE icon goes 51 s after advertising stops (45 s unseen + scan), Wi-Fi icon and red 29 s after presence stops, both back in 11-20 s |
@@ -108,6 +110,8 @@ Leak tests, one per operation the product repeats:
 | [test126 the slot switch between the full and the setup firmware](test126-firmware-slot-switch/README.md) | 2026-11-02 | **pass** steps 1-7: 20 switches both ways, 4.3 s each, settings shared, re-flash after switches boots the flashed image; the crash record now names its image |
 | [test127 the setup firmware hands over on a USB plug, checked to the API](test127-usb-handover-to-full/README.md) | 2026-11-02 | **pass** 1-6: a real plug from BLE sleep hands over; server down 0x19, wrong password 0x11, no network: setup stays; BLE setup hands over after SAVED |
 | [test128 crash records reach the server over Wi-Fi](test128-crash-record-to-server/README.md) | 2026-11-02 | **pass** 1 2 3 5 7: exception and hang at the server 4.1 s after the reset, kept while the server is down, sent by the setup firmware too, count 2 for two; records on disk at the server |
+| [test129 app power and signal icons](test129-app-power-signal-icons/README.md) | 2026-11-04 | **pass** 6/6: plug icon on USB power, battery icon on battery, signal bars match the RSSI, long press shows the dB |
+| [test130 OTA upgrade of the K230 image and the BL616 full firmware](test130-ota-upgrade/README.md) | 2026-11-05 | **planned**: the setup firmware stays wire-only (user) |
 
 ## Re-test audit after the two-firmware design (2026-11-02)
 
@@ -185,7 +189,7 @@ for it. Hands: USB-C 1 out at the start, in at the end.
 | Change-net update from the server (`GET /v1/nn`, bad downloads, power cut while saving, unloadable net) | test107 (planned) |
 | Session protocol end to end (READY / WAKE / ACK / TIME / SLEEP) with the product agent; NTP time back to the BL616 | test101, test037 steps 1-6 |
 | Live stream: both cameras + Opus audio over RTMP to MediaMTX (`leakcam_stream -p`) | test100 step 5 (cameras) |
-| OTA: the writer (inactive slot + `ota_meta`) is not built; the SPL's A/B choice never ran on the board | new test, when the writer exists |
+| OTA: the writer (inactive slot + `ota_meta`) is not built; the SPL's A/B choice never ran on the board | test130 (planned), with the BL616 full firmware too |
 | Production server check (time schedule, DHCP lease reuse, server interval, `SERVER` from the agent, back-off) | test108 (planned; the code is not built, test100 `pt_poll` proved the cycle) |
 | Cameras: CSI/I2C, capture at 2592x1944, LED brightness at 2-3 m, auto-exposure against the LED back-off | test020, test030, test009 |
 | The closed enclosure: temperature, Wi-Fi at the install distance | test026, test100 |

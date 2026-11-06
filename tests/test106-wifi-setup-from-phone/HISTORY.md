@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-04 (run.py, 293 s): pass
+
+12/12 checks pass (on battery).
+
+
+### Automated run 2026-11-04 (run.py, 3 s): **FAIL**
+
+not run: not the full firmware with the network.
+
+
 ### Automated run 2026-11-02 (run.py, 356 s): **FAIL** (false: memory verdict)
 
 29/29 checks pass. First setup (app opened -> Done) 8.5 s; repeats 8.4-9.5 s. Final firmware pair (2 s advertising
@@ -162,6 +172,8 @@ idempotent handler, the timeout counts from a state change). First setup (app op
 No run yet. Status before the step 6 rewrite: **planned** (2026-10-27).
 
 ## Obstacles
+
+- --battery needs the product pair in the full firmware with the real network stored (2026-11-04, automated run)
 
 - memory leak (mem_leak.py verdict in the Memory row): a leak fails the test (2026-11-02, automated run)
 

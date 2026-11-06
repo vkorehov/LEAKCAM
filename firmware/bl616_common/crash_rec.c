@@ -14,9 +14,10 @@
 /* the hang detector fires this long after the last feed, before the hardware watchdog resets at WDG_GUARD_MS */
 #define HANG_MS     (WDG_GUARD_MS - 2000u)
 
-enum { K_EXCEPTION = 1, K_HANG, K_ASSERT, K_STACK, K_MALLOC };
+enum { K_EXCEPTION = 1, K_HANG, K_ASSERT, K_STACK, K_MALLOC, K_FATAL, K_K230 };
 static const char *const kind_name[] = { "?", "exception", "watchdog hang", "assert", "stack overflow",
-                                         "malloc failed" };
+                                         "malloc failed", "fatal", "k230 fatal" };
+#define KINDS ((uint32_t)(sizeof(kind_name) / sizeof(kind_name[0])))
 
 static struct {
     uint32_t magic, stage, kind, count, uptime_ms, scanned;
@@ -26,6 +27,7 @@ static struct {
      * address (DESIGN.md 5.3.1), and addresses decoded with another build's ELF name wrong but plausible code
      * (tests/test126: cmd_crash in one image, cmd_ble in the other) */
     char image[12], version[36];
+    char msg[40];                           /* a fatal error's own words (crash_rec_fatal, crash_rec_k230) */
     uint32_t n_bt, bt[BT_N];
 } rec __attribute__((section(".hbn_noinit")));
 
@@ -164,6 +166,35 @@ static void record_here(uint32_t kind)
 
 extern void abort(void);
 
+/* fail fast (product application standard): a fatal error of this firmware, recorded with its words, then the reset */
+void crash_rec_fatal(const char *msg)
+{
+    record_here(K_FATAL);
+    strncpy(rec.msg, msg, sizeof(rec.msg) - 1);
+    printf("FATAL: %s\r\n", msg);
+    abort();
+    for (;;) {
+    }
+}
+
+/* a K230 failure the BL616 saw (its session ended badly, or the K230 printed FATAL): recorded here, as the K230 has no
+ * recorder of its own yet (DESIGN.md 5.3.3); no reset, the BL616 is fine. A kept BL616 record is not overwritten: its
+ * backtrace matters more, the console has the K230's line */
+void crash_rec_k230(const char *msg)
+{
+    if (recording)
+        return;
+    if (rec.magic == CRASH_MAGIC && rec.kind != K_K230) {
+        printf("crash: K230 failure not recorded (a BL616 record is kept): %s\r\n", msg);
+        return;
+    }
+    begin(K_K230);
+    strncpy(rec.task, "k230", sizeof(rec.task) - 1);
+    strncpy(rec.msg, msg, sizeof(rec.msg) - 1);
+    end();
+    printf("crash: K230 failure recorded: %s\r\n", msg);
+}
+
 void vAssertCalled(void)
 {
     record_here(K_ASSERT);
@@ -225,7 +256,7 @@ static void print_rec(void)
         printf("crash: recorded by another build (this is %s %s): decode with that build's ELF\r\n", LEAKCAM_IMAGE,
                LEAKCAM_VERSION);
     printf("crash #%lu (%s %s): %s in task '%s' at %lu ms; mcause 0x%08lx mepc 0x%08lx mtval 0x%08lx ra 0x%08lx sp 0x%08lx\r\n",
-           (unsigned long)rec.count, rec.image, rec.version, kind_name[rec.kind < 6 ? rec.kind : 0], rec.task,
+           (unsigned long)rec.count, rec.image, rec.version, kind_name[rec.kind < KINDS ? rec.kind : 0], rec.task,
            (unsigned long)rec.uptime_ms,
            (unsigned long)rec.mcause, (unsigned long)rec.mepc, (unsigned long)rec.mtval, (unsigned long)rec.ra,
            (unsigned long)rec.sp);
@@ -234,6 +265,8 @@ static void print_rec(void)
                (unsigned long)rec.stage);
     if (rec.stage != 9)
         printf("crash record: stage 4 = registers read; stack words scanned %lu\r\n", (unsigned long)rec.scanned);
+    if (rec.msg[0])
+        printf("crash message: %.*s\r\n", (int)sizeof(rec.msg), rec.msg);
     printf("crash backtrace:");
     for (uint32_t i = 0; i < rec.n_bt && i < BT_N; i++)
         printf(" 0x%08lx", (unsigned long)rec.bt[i]);
@@ -259,7 +292,7 @@ bool crash_rec_get(struct crash_rec_info *i)
         return false;
     *i = (struct crash_rec_info){ rec.image, rec.version, rec.task, rec.count, rec.kind, rec.uptime_ms, rec.mcause,
                                   rec.mepc, rec.mtval, rec.ra, rec.sp, rec.stage, rec.n_bt < BT_N ? rec.n_bt : BT_N,
-                                  rec.bt };
+                                  rec.bt, rec.msg };
     return true;
 }
 

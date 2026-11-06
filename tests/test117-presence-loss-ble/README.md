@@ -7,8 +7,8 @@ full firmware's own BLE and the `provision battery` rule, both gone).
 
 A LEAKCAM with a network stored runs the full firmware, which has no BLE (DESIGN.md 5.3.1). When a check-in does not
 reach the server, for whatever reason (the network gone, a wrong password saved without checking, no internet, the
-server down), the presence is lost and the full firmware switches to the setup firmware at once (presence.c:
-switch_to_setup("lost")), which advertises (100 ms awake, 2 s asleep on battery), so a phone nearby finds it and sets
+server down), the presence is lost after three failed check-ins in a row (presence.c MISSED_MAX: no flapping, user
+2026-11-04; before, at once) and the full firmware switches to the setup firmware (switch_to_setup("lost")), which advertises (100 ms awake, 2 s asleep on battery), so a phone nearby finds it and sets
 the Wi-Fi; the stored network switches it back to the full firmware, which checks in at once. The setup firmware stays
 with the cause gone (the server back): only a setup or its 6 h retry (test125) ends it.
 

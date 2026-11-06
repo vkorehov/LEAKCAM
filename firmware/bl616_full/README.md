@@ -14,7 +14,7 @@ first product firmware is in attic/firmware (reference only, not built).
 
 | # | Use case | Proven by | Files |
 |---|---|---|---|
-| 1 | Wi-Fi provisioning from the phone: moved to the setup firmware (firmware/bl616_setup, 2026-11-02); here only `provision` (the stored network as length + CRC, erase, the pairing PIN stored at flash time: firmware/bl616_common/provision.c) and the switch to setup without a network. | tests/test040, tests/test106 (to re-prove on the setup firmware) | full_boot.c, ../bl616_common/provision.c |
+| 1 | Wi-Fi provisioning from the phone: moved to the setup firmware (firmware/bl616_setup, 2026-11-02); here only `provision` (the stored network as length + CRC, erase, the pairing PIN stored at flash time: firmware/bl616_common/provision_cmd.c) and the switch to setup without a network. | tests/test040, tests/test106 (to re-prove on the setup firmware) | full_boot.c, ../bl616_common/provision_cmd.c |
 
 | 2 | More than one LEAKCAM: one device ID (the factory MAC) as USB serial number, in the setup firmware's BLE scan response and in every server check-in; from boot, on USB and on battery, the board checks in at the presence server every poll interval (the server's, 60 s by default) whenever a network is stored. The app opens on a status screen (its LEAKCAMs online/offline from the server, deletable), sets up only a board on USB power, gives a known one the short "change Wi-Fi" flow, and stores no Wi-Fi network. On battery the board stays awake between check-ins until the HBN scheduler (test108). | tests/test111 | device_id.c, presence.c, wifi_check.c (target + one run at a time); a failed check-in or "ble":1 -> the setup firmware (tests/test117, test119) |
 
@@ -51,6 +51,6 @@ whole SDK (about 10 min); other changes build incrementally.
 - Only what is used: no unused function, variable, file, build option or script line in product files.
 - Product only: test tools, test commands and test build steps live with the tests (tests/, tools/test-runner,
   tools/power-bringup), never here.
-- Shared modules (firmware/bl616_common, only what both firmwares use: wifi_check.c, api.c, slot.c, provision.c, crash_rec.c, wdg_guard.c, mem_stat.c, usb_console2.c,
+- Shared modules (firmware/bl616_common, only what both firmwares use: wifi_check.c, api.c, slot.c, provision_cmd.c, crash_rec.c, wdg_guard.c, mem_stat.c, usb_console2.c,
   device_id.c, the headers, bl616_leakcam.ld.in, host.mk, sdk_patch.py) are also built into the setup firmware and the
   test firmwares; wifi_link.c (here) into the power test firmware. A change to them is re-proved by each.

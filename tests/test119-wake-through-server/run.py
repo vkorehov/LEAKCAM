@@ -23,7 +23,7 @@ import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import adb, board_id, firmware, hand, online, op, product, ready, seen, to_firmware   # noqa: E402
+from phone import adb, board_id, firmware, hand, online, only_boards, op, product, ready, seen, to_firmware   # noqa: E402
 
 SERVER = "http://192.168.1.159:8090"
 PI = "pi@192.168.1.159"
@@ -122,11 +122,9 @@ def wake():
 
 
 def add_only(dev):
+    """the app's list (the server's for this phone, DESIGN.md 5.3.5) holds just this board, as a setup leaves it"""
     adb("shell", "am", "force-stop", PKG)
-    body = json.dumps({dev: {}}).replace('"', "&quot;")
-    new = f"<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n    <string name=\"devices\">{body}</string>\n</map>\n"
-    subprocess.run(["adb", "shell", f"run-as {PKG} sh -c 'cat > shared_prefs/devices.xml'"], input=new, text=True,
-                   check=True, timeout=30)
+    only_boards(dev)
 
 
 ssid, psk = wifi_credentials()

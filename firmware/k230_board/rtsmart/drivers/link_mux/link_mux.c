@@ -45,6 +45,8 @@ static volatile rt_uint32_t st_rx, st_text, st_text_drop, st_frames, st_frame_dr
 static struct rt_ringbuffer hold_rb;
 static rt_uint8_t hold_pool[HOLD_SIZE];
 static volatile rt_uint32_t st_held, st_hold_drop, st_link_drop;
+/* /dev/link from programs: opens, poll calls (with data waiting), reads, bytes read (test045: link_fops attached) */
+static volatile rt_uint32_t st_lopen, st_lpoll, st_lpoll_in, st_lread, st_lread_n;
 
 /* ---------------- the console's I/O device ---------------- */
 
@@ -153,6 +155,7 @@ static const struct rt_device_ops link_ops = { RT_NULL, RT_NULL, RT_NULL, link_r
 static int link_fops_open(struct dfs_fd *fd)
 {
     (void)fd;
+    st_lopen++;
     return 0;
 }
 
@@ -165,12 +168,14 @@ static int link_fops_close(struct dfs_fd *fd)
 static int link_fops_read(struct dfs_fd *fd, void *buf, size_t count)
 {
     int size;
+    st_lread++;
     while ((size = (int)link_read(&link, 0, buf, count)) <= 0) {
         if (fd->flags & O_NONBLOCK)
             return 0;
         if (rt_wqueue_wait_interruptible(&link.wait_queue, 0, RT_WAITING_FOREVER) != RT_EOK)
             return 0;
     }
+    st_lread_n += size > 0 ? size : 0;
     return size;
 }
 
@@ -188,6 +193,9 @@ static int link_fops_poll(struct dfs_fd *fd, struct rt_pollreq *req)
     if (rt_ringbuffer_data_len(&link_rb))
         mask |= POLLIN;
     rt_hw_interrupt_enable(level);
+    st_lpoll++;
+    if (mask)
+        st_lpoll_in++;
     (void)fd;
     return mask;
 }
@@ -283,15 +291,16 @@ static int link_mux_init(void)
     link.read = link_read;
     link.write = link_write;
 #endif
-    rt_wqueue_init(&link.wait_queue);
-#ifdef RT_USING_POSIX
-    link.fops = &link_fops;
-#endif
     if (rt_device_register(&kcon, "kcon", RT_DEVICE_FLAG_RDWR) != RT_EOK ||
         rt_device_register(&link, "link", RT_DEVICE_FLAG_RDWR) != RT_EOK) {
         rt_kprintf("link_mux: cannot register kcon / link\n");
         return -1;
     }
+#ifdef RT_USING_POSIX
+    /* after rt_device_register(): it clears fops and re-inits the wait queue. Set before it, the program's poll()
+     * went to devfs's own, which never reports data: no frame was ever read (2026-11-05) */
+    link.fops = &link_fops;
+#endif
 
     rt_device_t u = rt_device_find(LINK_MUX_UART);
     if (!u) {
@@ -326,6 +335,9 @@ static int link_stat(void)
     rt_kprintf("link_stat: uart1 resets %u, irqs %u (rx data %u, char timeout %u, line status %u, other %u)\n",
                (unsigned)uart_rx_err[6], (unsigned)uart_rx_err[7], (unsigned)uart_rx_err[8], (unsigned)uart_rx_err[9],
                (unsigned)uart_rx_err[10], (unsigned)uart_rx_err[11]);
+    rt_kprintf("link_stat: /dev/link fops %s, waiting %u B, opens %u, polls %u (data %u), reads %u (%u B)\n",
+               link.fops ? "attached" : "MISSING", (unsigned)rt_ringbuffer_data_len(&link_rb), (unsigned)st_lopen,
+               (unsigned)st_lpoll, (unsigned)st_lpoll_in, (unsigned)st_lread, (unsigned)st_lread_n);
     return 0;
 }
 MSH_CMD_EXPORT(link_stat, test039: uart1 bytes in / console text / dropped / frames);

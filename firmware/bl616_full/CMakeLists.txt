@@ -14,7 +14,7 @@ sdk_add_include_directories(.)
 sdk_add_include_directories(${S})
 
 target_sources(app PRIVATE
-               k230_power.c
+               ${S}/k230_power.c
                usb_power.c
                full_boot.c
                presence.c
@@ -25,7 +25,7 @@ target_sources(app PRIVATE
                ${S}/crash_rec.c
                ${S}/mem_stat.c
                ${S}/device_id.c
-               ${S}/provision.c
+               ${S}/provision_cmd.c
                ${S}/wifi_check.c
                ${S}/slot.c
                ${S}/api.c)

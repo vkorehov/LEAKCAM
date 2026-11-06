@@ -102,6 +102,9 @@ static void cmd_ble(int argc, char **argv)
             ble_pairing_adv_interval((unsigned int)ms);
             printf("pt_ble: advertising every %d ms\r\n", ms);
         }
+    } else if (!strcmp(op, "pin") && argc > 2 && !strcmp(argv[2], "none")) {
+        /* bugs/bug-006 case 2: a board without a PIN (provision_pin.py --force stores it again) */
+        printf("pt_ble: %s\r\n", ef_del_env("pair_pin") == EF_NO_ERR ? "pairing PIN erased" : "pin erase failed");
     } else if (!strcmp(op, "pin") && argc > 2) {
         if (strlen(argv[2]) != 6 || strspn(argv[2], "0123456789") != 6)
             printf("pt_ble: pin: 6 digits\r\n");
@@ -122,7 +125,7 @@ static void cmd_ble(int argc, char **argv)
         print_key("wifi_psk");
         printf("pt_ble: pairing PIN %s\r\n", ble_pairing_pin() < 0 ? "none (pt_ble pin)" : "stored");
     } else
-        printf("usage: pt_ble [on | creds | erase | decoy | pin <6 digits> | adv <ms> | adv off | adv on]\r\n");
+        printf("usage: pt_ble [on | creds | erase | decoy | pin <6 digits> | pin none | adv <ms> | adv off | adv on]\r\n");
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_ble, pt_ble, test040 BLE provisioning: on | creds | erase | decoy | pin <6 digits> | adv <ms>);
 #endif

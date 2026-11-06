@@ -44,8 +44,9 @@ littlefs (PSM partition, `CONFIG_LITTLEFS_KV_EASYFLASH`), Wi-Fi fhost + lwIP + D
 
 1. **Advertising:** the serial (= the USB serial number) advertised with the service UUID, time from boot to the first advertisement. (The
    USB power gate is gone since 2026-11-01; the battery windows of the product are test106 step 7.)
-2. **Authentication gate:** connect without pairing, write SSID: refused; pair without the PIN (a phone without the
-   app): no bond, every write refused, nothing stored; pair with the PIN (as the app): accepted.
+2. **Authentication gate:** connect without pairing, write SSID: refused; pair with the PIN (as the app): accepted.
+   A stranger's phone is dropped (user, 2026-11-04: no neighbour holds the board): one that never pairs 10 s after it
+   connected, one whose pairing fails (no PIN) at once; the owner's app connects right after.
 3. **Characteristic limits** (MTU 247 first, as the app): SSID 1 and 32 bytes accepted, 33 refused; passphrase 8 and
    63 accepted, 7 and 64 refused, empty accepted (open network); a write at offset > 0 refused; commit without SSID,
    with a value other than 0x01 / 0x02 or longer than 1 byte refused.

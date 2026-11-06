@@ -57,21 +57,22 @@ did not wedge it.
 A board that starts on its cell can never be set up: a new board out of the box, the setup firmware after a lost
 presence or a wake on battery (test117, test119 on battery), its 6 h retry (test125).
 
-## Follow-up (2026-11-03, user: add the cases)
+## Follow-up (2026-11-03, user: add the cases; done 2026-11-04)
 
-The veto reads ble_pairing.c's own flags (adv_on, active_conn), not the host's state. Where BLE can be idle after its
-start, and what to do:
+- The veto reads the host's own state: `never || bt_dev.flags BT_DEV_ADVERTISING` (a stale module flag can no longer
+  say "advertising" while BLE is idle); a connection keeps the chip awake anyway (bug-007's fix).
+- No pairing PIN stored: BLE is not started at all (setup_boot.c, ble_pairing_never()) and the chip sleeps; before,
+  the veto kept it awake (~50 mA) until the cell was flat. "Never started" is safe: the SDK only asks a controller
+  that runs.
 
-- No pairing PIN stored: on_bt_ready() never advertises -> vetoed forever -> awake on battery (~50 mA) until the cell
-  is flat. Change: no PIN -> the BLE controller not started at all, the sleep allowed ("never started" is safe, "not
-  started yet" was the wedge) - one experiment first: a sleep window with BLE never started, then `lp_boot`.
-- A stale adv_on (on_connected() returning early, the controller stopping advertising unseen): the veto says
-  "advertising" while BLE is idle -> the wedge, and no advertising again. Change: the veto from the host's own state
-  (bt_dev.flags BT_DEV_ADVERTISING, an LE connection looked up), not the module's flags.
+The cases, `bugs/bug-006/cases.py [gone] [connects] [nopin]` (setup test bed, USB-C 1 in, `wakeup_timer <ms> usb`,
+no hands; each ends in a reboot + `lp_boot` with BLE found: no wedge left). 2026-11-04 17:05-17:10 UTC, 20/20:
 
-Cases to add (setup test bed, the `wakeup_timer <ms> usb` sleep window, no hands), each ending in a reset + `lp_boot`
-(BLE up = no wedge left):
-1. The phone gone while asleep: a session, the phone's Bluetooth off mid-connection -> advertising again, sleeps go
-   on, found again. Then on battery (test110 `--battery`).
-2. No PIN: sleeps (after the change) and BLE stays healthy.
-3. Many connects / disconnects in one sleep window: vetoes vs sleeps counted, no wedge accumulated.
+| Case | Result |
+|---|---|
+| `gone`: the phone's Bluetooth off mid-session in a 60 s window | found again after the phone came back; 439 sleeps, none failed to exit |
+| `connects`: 6 sessions in one 150 s window | 6/6; 1150 sleeps |
+| `nopin`: PIN erased (`pt_ble pin none`), 20 s window | no BLE, 19968 of 20000 ms in PDS, 0 vetoes; PIN back (provision_pin.py --force): BLE ready, found |
+
+`gone` and `connects` first failed: bug-007 (no advertising after a disconnect in the sleep). Still to run on battery with
+the product pair: test106/117/119 `--battery` (hands: USB-C 1 out, in).

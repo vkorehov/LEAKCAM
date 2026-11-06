@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- the LEAKCAM K230's USB device in its setup relay (k230_app/leakcam.c; CherryUSB CDC ACM 1209:ABD1 = 4617:43985) -->
+<resources>
+    <usb-device vendor-id="4617" product-id="43985" />
+</resources>

@@ -8,3 +8,4 @@ bug-003  2026-10-17  solved (R45 bridged)      K230 PMU block hangs on any acces
 bug-004  2026-10-20  closed 2026-11-01 (accepted) No battery measurement on the BL616: the cell's protection board cuts at ~2.4 V and the BL616's brown-out resets it cleanly; no divider (user decision); the K230's reading keeps the 3.10 V cutoff in sessions
 bug-005  2026-10-24  open, fix in rev 2        J4/J5 bottom-contact (05B20L22P), BPI/Pi Zero top: cable lands camera 3V3 on GND; rev 1 top-contact rework
 bug-006  2026-11-03  fixed (veto + PDS reset)  Setup firmware BLE start with USB-C 1 out spins in rwip_time_get, only EN clears it; a board started on its cell cannot be set up (test116)
+bug-007  2026-11-04  fixed (sleep back 1 s)   After a phone connection ends in the setup firmware's sleep the board never advertises again (host says it does) until a reboot; one failed setup on battery and nobody can set it up

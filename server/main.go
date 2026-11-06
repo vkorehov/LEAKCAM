@@ -4,7 +4,11 @@
 // /v1/devices/{id}/crash, sent at a board's first API contact after a crash, DESIGN.md 5.3.3, tests/test128; listed by GET
 // /v1/devices/{id}/crashes). Presence is in memory (after a restart the devices check in again); crash records are kept
 // on disk (LEAKCAM_CRASHES, one JSON line each): the board clears its own copy once the server answered, so a restart
-// must not lose one.
+// must not lose one. The server is the one source of truth for who uses which board (DESIGN.md 5.3.5): a phone is
+// registered as a board's user when it is issued the board's pairing PIN (GET /v1/devices/{id}/pin?phone=), removed by
+// DELETE /v1/devices/{id}/phones/{phone}; clients list a phone's boards with GET /v1/phones/{phone}/devices and keep no
+// list of their own. A board whose last phone left gets 410 Gone at its check-in: it goes back to the setup firmware.
+// The users are kept on disk (LEAKCAM_PHONES, one JSON object).
 package main
 
 import (
@@ -18,6 +22,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -29,6 +34,7 @@ const (
 	Addr    = ":8090"
 	Crashes = "/home/pi/leakcam-server/crashes.jsonl" // LEAKCAM_CRASHES
 	WakeGap = 2 * time.Minute                         // at most one BLE wake per device this often: a wake costs its battery 2 minutes awake
+	Phones  = "/home/pi/leakcam-server/phones.json"   // LEAKCAM_PHONES
 )
 
 type Device struct {
@@ -37,6 +43,7 @@ type Device struct {
 	LastSeen int64  `json:"last_seen_s"` // seconds since the last check-in, -1 if never seen
 	SSID     string `json:"ssid"`        // the network it checked in from (not secret; the passphrase never comes)
 	Wake     bool   `json:"wake"`        // a BLE wake waits for its next check-in
+	Phones   int    `json:"phones"`      // its registered users (phones)
 }
 
 // Crash is one board crash record, as the board's `crash` prints it (tools/power-bringup/crash_decode.py reads it)
@@ -64,10 +71,15 @@ var (
 	crashes   = map[string][]Crash{} // per device; a resend (the same record text) is kept once
 	crashFile = Crashes
 	hexRe     = regexp.MustCompile(`^[0-9a-f]{1,8}$`)
+	phoneRe   = regexp.MustCompile(`^[0-9a-f]{16}$`) // a phone: its Android ID (Settings.Secure.ANDROID_ID)
+	// per device its users; a device whose last phone left stays with an empty list (410 at its check-in), one never
+	// registered is absent (boards set up before the users were kept: no 410)
+	phones    = map[string][]string{}
+	phoneFile = Phones
 )
 
 // CrashKinds as the firmware names them (crash_rec.c kind_name)
-var CrashKinds = []string{"?", "exception", "watchdog hang", "assert", "stack overflow", "malloc failed"}
+var CrashKinds = []string{"?", "exception", "watchdog hang", "assert", "stack overflow", "malloc failed", "fatal", "k230 fatal"}
 
 func reply(w http.ResponseWriter, v any) {
 	w.Header().Set("Content-Type", "application/json")
@@ -84,6 +96,11 @@ func poll(w http.ResponseWriter, r *http.Request) {
 	}
 	mu.Lock()
 	seen[id] = CheckIn{time.Now(), r.URL.Query().Get("ssid")}
+	if p, ok := phones[id]; ok && len(p) == 0 {
+		mu.Unlock()
+		http.Error(w, "no user: back to setup", http.StatusGone)
+		return
+	}
 	ble := 0
 	if wake[id] {
 		ble = 1
@@ -138,6 +155,9 @@ func crash(w http.ResponseWriter, r *http.Request) {
 		n, build, CrashKinds[kind], q.Get("t"), up, hx["c"], hx["pc"], hx["v"], hx["ra"], hx["sp"])
 	if st != 9 {
 		rec += fmt.Sprintf("crash record incomplete: the recorder stopped at stage %d\n", st)
+	}
+	if m := q.Get("m"); m != "" { // a fatal error's own words (crash_rec_fatal, crash_rec_k230)
+		rec += fmt.Sprintf("crash message: %s\n", m)
 	}
 	rec += "crash backtrace:" + bt + "\n"
 	mu.Lock()
@@ -212,6 +232,18 @@ func deviceCrashes(w http.ResponseWriter, r *http.Request) {
 	reply(w, c)
 }
 
+// deviceInfo: a device's state for a client; mu held
+func deviceInfo(id string) Device {
+	c, ok := seen[id]
+	d := Device{ID: id, LastSeen: -1, Wake: wake[id], Phones: len(phones[id])}
+	if ok {
+		d.LastSeen = int64(time.Since(c.At).Seconds())
+		d.SSID = c.SSID
+		d.Online = d.LastSeen < int64(3*pollS) // three check-ins missed: offline
+	}
+	return d
+}
+
 func device(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	if !idRe.MatchString(id) {
@@ -219,15 +251,112 @@ func device(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mu.Lock()
-	c, ok := seen[id]
-	d := Device{ID: id, LastSeen: -1, Wake: wake[id]}
+	d := deviceInfo(id)
 	mu.Unlock()
-	if ok {
-		d.LastSeen = int64(time.Since(c.At).Seconds())
-		d.SSID = c.SSID
-		d.Online = d.LastSeen < int64(3*pollS) // three check-ins missed: offline
-	}
 	reply(w, d)
+}
+
+// savePhones writes the users to the file (a temporary file renamed over it, synced); mu held
+func savePhones() error {
+	b, err := json.Marshal(phones)
+	if err != nil {
+		return err
+	}
+	tmp := phoneFile + ".tmp"
+	f, err := os.OpenFile(tmp, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
+	if err != nil {
+		return err
+	}
+	_, err = f.Write(b)
+	if err == nil {
+		err = f.Sync()
+	}
+	if cerr := f.Close(); err == nil {
+		err = cerr
+	}
+	if err == nil {
+		err = os.Rename(tmp, phoneFile)
+	}
+	return err
+}
+
+func loadPhones() {
+	b, err := os.ReadFile(phoneFile)
+	if os.IsNotExist(err) {
+		return
+	}
+	if err == nil {
+		err = json.Unmarshal(b, &phones)
+	}
+	if err != nil {
+		log.Fatalf("users %s: %v", phoneFile, err)
+	}
+}
+
+// register: the phone becomes a user of the device (the PIN was issued to it); mu held
+func register(id, phone string) error {
+	for _, p := range phones[id] {
+		if p == phone {
+			return nil
+		}
+	}
+	phones[id] = append(phones[id], phone)
+	if err := savePhones(); err != nil {
+		phones[id] = phones[id][:len(phones[id])-1]
+		return err
+	}
+	return nil
+}
+
+// unregister: DELETE /v1/devices/{id}/phones/{phone}, the phone no longer a user (the app's delete); the board's next
+// check-in gets 410 when no phone is left
+func unregister(w http.ResponseWriter, r *http.Request) {
+	id, phone := r.PathValue("id"), r.PathValue("phone")
+	if !idRe.MatchString(id) || !phoneRe.MatchString(phone) {
+		http.Error(w, "id: 12 upper-case hex digits, phone: 16 hex digits", http.StatusBadRequest)
+		return
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	old, kept := phones[id], []string{}
+	for _, p := range old {
+		if p != phone {
+			kept = append(kept, p)
+		}
+	}
+	if len(kept) == len(old) {
+		http.Error(w, "not a user of this device", http.StatusNotFound)
+		return
+	}
+	phones[id] = kept
+	if err := savePhones(); err != nil {
+		phones[id] = old
+		log.Printf("users not stored: %v", err)
+		http.Error(w, "not stored", http.StatusInternalServerError)
+		return
+	}
+	reply(w, map[string]int{"phones": len(kept)})
+}
+
+// phoneDevices: GET /v1/phones/{phone}/devices, the boards of a phone with their state: the client's list
+func phoneDevices(w http.ResponseWriter, r *http.Request) {
+	phone := r.PathValue("phone")
+	if !phoneRe.MatchString(phone) {
+		http.Error(w, "phone: 16 hex digits", http.StatusBadRequest)
+		return
+	}
+	mu.Lock()
+	list := []Device{}
+	for id, ps := range phones {
+		for _, p := range ps {
+			if p == phone {
+				list = append(list, deviceInfo(id))
+			}
+		}
+	}
+	mu.Unlock()
+	sort.Slice(list, func(i, j int) bool { return list[i].ID < list[j].ID })
+	reply(w, list)
 }
 
 // wakeUp: the board advertises over BLE after its next check-in, for a phone nearby that wants to set its Wi-Fi while it
@@ -267,6 +396,21 @@ func pin(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "id", http.StatusBadRequest)
 		return
 	}
+	// the phone it is issued to becomes a user of the board (every setup asks for the PIN)
+	if phone := r.URL.Query().Get("phone"); phone != "" {
+		if !phoneRe.MatchString(phone) {
+			http.Error(w, "phone: 16 hex digits", http.StatusBadRequest)
+			return
+		}
+		mu.Lock()
+		err := register(id, phone)
+		mu.Unlock()
+		if err != nil {
+			log.Printf("user %s of %s not stored: %v", phone, id, err)
+			http.Error(w, "not stored", http.StatusInternalServerError)
+			return
+		}
+	}
 	m := hmac.New(sha256.New, pinKey)
 	m.Write(b)
 	reply(w, map[string]string{"pin": fmt.Sprintf("%06d", binary.BigEndian.Uint32(m.Sum(nil)[:4])%1000000)})
@@ -281,6 +425,10 @@ func main() {
 		crashFile = f
 	}
 	loadCrashes()
+	if f := os.Getenv("LEAKCAM_PHONES"); f != "" {
+		phoneFile = f
+	}
+	loadPhones()
 	if p, err := strconv.Atoi(os.Getenv("LEAKCAM_POLL_S")); err == nil && p > 0 {
 		pollS = p
 	}
@@ -296,6 +444,8 @@ func main() {
 	http.HandleFunc("POST /v1/devices/{id}/crash", crash)
 	http.HandleFunc("GET /v1/devices/{id}/crashes", deviceCrashes)
 	http.HandleFunc("POST /v1/devices/{id}/wake", wakeUp)
+	http.HandleFunc("DELETE /v1/devices/{id}/phones/{phone}", unregister)
+	http.HandleFunc("GET /v1/phones/{phone}/devices", phoneDevices)
 	log.Printf("listening on %s", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }

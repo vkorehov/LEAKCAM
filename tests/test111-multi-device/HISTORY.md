@@ -4,6 +4,21 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-04 (run.py, 324 s): **FAIL**
+
+24/25 checks pass. Failed: app: the deleted board back in the list by itself (USB, server online) (75 s, ).
+
+
+### Automated run 2026-11-04 (run.py, 203 s): **FAIL**
+
+18/25 checks pass. Failed: setup Done (0.0 s); pairing: the app entered the PIN, no PIN prompt on the phone (dialog started 0x); known board: the short 'change its Wi-Fi' flow; board: last check-in reached the server (0x03) (no answer); app: the board online throughout (7C3E8262B149: offline, last seen 57 s ago, Wi-Fi "<network>"); app: the board still listed after the delete (7C3E8262B149: offline, last seen 1 min ago, Wi-Fi "<network>"); app: the deleted board back in the list by itself (USB, server online) (75 s, ).
+
+
+### Automated run 2026-11-04 (run.py, 354 s): **FAIL**
+
+20/25 checks pass. Failed: setup Done (0.0 s); pairing: the app entered the PIN, no PIN prompt on the phone (dialog started 0x); known board: the short 'change its Wi-Fi' flow; board: last check-in reached the server (0x03) ([0m[36mbouffalolab />[0m); app: the deleted board back in the list by itself (USB, server online) (75 s, ).
+
+
 ### Automated run 2026-11-01 (run.py, 187 s): pass
 
 25/25 checks pass.

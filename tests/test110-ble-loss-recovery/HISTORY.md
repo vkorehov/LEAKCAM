@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-04 (run.py, 518 s): pass
+
+33/33 checks pass.
+
+
 ### Earlier result (README Result before 2026-11-03)
 
 run.py, 2026-11-01 08:25 (run 3), BL616 test firmware with pt_fault + the setup app with reconciliation, bench phone

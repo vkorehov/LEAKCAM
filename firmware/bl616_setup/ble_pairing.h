@@ -48,10 +48,20 @@ void ble_pairing_advertise(bool on);
 void ble_pairing_adv_interval(unsigned int ms);
 /* the stored pairing PIN, 0..999999; -1 when none (`provision pin` stores it) */
 int ble_pairing_pin(void);
+/* the board has USB power (the advertisement's flags byte, bit 1) */
+bool ble_pairing_usb_power(void);
 /* a phone is connected (presence.c waits: setup first) */
 bool ble_pairing_connected(void);
-/* the low-power sleep path is safe for BLE now: advertising or connected, never before BLE runs (the setup firmware's idle hook) */
+/* the low-power sleep path is safe for BLE now: the host advertising, never before BLE runs unless it never will (the
+ * setup firmware's idle hook) */
 bool ble_pairing_sleep_ok(void);
+/* BLE will not start in this boot (no pairing PIN): the sleep is safe without it (setup_boot.c) */
+void ble_pairing_never(void);
+/* cb(true) when a phone connects, cb(false) when it has left and advertising was restarted (setup_sleep.c: awake for
+ * a session, the sleep back 1 s later) */
+void ble_pairing_link_cb(void (*cb)(bool up));
+/* the BLE state the sleep veto reads, printed (the test bed's lp_sleepstat; not in the product) */
+void ble_pairing_print_state(void);
 /* Called after new credentials are stored, from the BLE host or the check's task (must not block). The product
  * (provision.c) drops the remembered AP; the test firmware (pt_wifi.c) also restarts its bridge. */
 void ble_credentials_stored(void);

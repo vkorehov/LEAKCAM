@@ -14,6 +14,7 @@ target_include_directories(app PRIVATE ${BL_SDK_BASE}/bsp/common/usb_app)
 set(S ${CMAKE_CURRENT_SOURCE_DIR}/../bl616_common)
 sdk_add_include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 sdk_add_include_directories(${S})
+sdk_add_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../k230_board)   # k230_link.h, k230_linesplit.h: shared with the K230
 
 target_sources(app PRIVATE
                ${CMAKE_CURRENT_SOURCE_DIR}/setup_boot.c
@@ -26,7 +27,12 @@ target_sources(app PRIVATE
                ${S}/mem_stat.c
                ${S}/device_id.c
                ${CMAKE_CURRENT_SOURCE_DIR}/ble_pairing.c
-               ${S}/provision.c
+               ${CMAKE_CURRENT_SOURCE_DIR}/provision.c
+               ${CMAKE_CURRENT_SOURCE_DIR}/k230_link.c
+               ${CMAKE_CURRENT_SOURCE_DIR}/k230_session.c
+               ${CMAKE_CURRENT_SOURCE_DIR}/usb_setup.c
+               ${S}/k230_power.c
+               ${S}/provision_cmd.c
                ${S}/wifi_check.c
                ${S}/slot.c
                ${S}/api.c)

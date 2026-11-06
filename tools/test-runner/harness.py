@@ -108,7 +108,7 @@ class Run:
         if self.fd is None:
             self.fd = k230()
         cmd(self.fd, None, 0.3)
-        t0 = time.time()
+        t0 = self.t_run = time.time()             # the K230's start: tests time from here, not from the power cycle
         bl("pt_run", 0.1)
         buf, marks = b"", {}
         while time.time() - t0 < secs:

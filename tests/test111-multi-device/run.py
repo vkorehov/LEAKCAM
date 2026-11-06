@@ -17,7 +17,7 @@ import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import adb, op, product, ready   # noqa: E402
+from phone import adb, firmware, only_boards, op, phone_boards, product, ready, register, to_firmware   # noqa: E402
 
 SERVER = "http://192.168.1.159:8090"
 PI = "pi@192.168.1.159"
@@ -36,6 +36,7 @@ checks = []
 
 
 def check(name, ok, detail=""):
+    detail = str(detail).replace(f'"{ssid}"', '"<network>"') if ssid else detail   # the network name never in a log
     checks.append((name, bool(ok), detail))
     log("CHECK", "pass" if ok else "FAIL", name, detail)
 
@@ -55,9 +56,8 @@ def poll_interval(s):
 
 def app_mine():
     """the app reopened: its presence lines from logcat ("mine <id>: <line>"), per ID, polled until every LEAKCAM in
-    its list has one (a fixed 6 s missed a slow first refresh, 2026-11-01)"""
-    xml = adb("shell", "run-as", PKG, "cat", "shared_prefs/devices.xml")
-    listed = set(re.findall(r"&quot;([0-9A-F]{12})&quot;", xml))
+    its list (the server's for this phone) has one (a fixed 6 s missed a slow first refresh, 2026-11-01)"""
+    listed = set(phone_boards())
     adb("logcat", "-c")
     adb("shell", "am", "force-stop", PKG)
     adb("shell", "am", "start", "-n", f"{PKG}/.MainActivity")
@@ -71,17 +71,13 @@ def app_mine():
 
 
 def add_to_app(dev_id, only=False):
-    """an entry in the app's list as a setup would leave it (debug build: run-as writes its prefs); only: the list
-    holds just this one (the run's starting state, whatever a stopped run left)"""
+    """a board in this phone's list as a setup leaves it: registered at the server (DESIGN.md 5.3.5: the app keeps no
+    list); only: the list holds just this one (the run's starting state, whatever a stopped run left)"""
     adb("shell", "am", "force-stop", PKG)
-    xml = adb("shell", "run-as", PKG, "cat", "shared_prefs/devices.xml")
-    m = re.search(r'<string name="devices">(.*)</string>', xml, re.S)
-    devices = {} if only or not m else json.loads(m.group(1).replace("&quot;", '"'))
-    devices[dev_id] = {}                       # the ID is its name: nothing else stored
-    body = json.dumps(devices).replace('"', "&quot;")
-    new = f"<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n    <string name=\"devices\">{body}</string>\n</map>\n"
-    subprocess.run(["adb", "shell", f"run-as {PKG} sh -c 'cat > shared_prefs/devices.xml'"], input=new, text=True,
-                   check=True, timeout=30)
+    if only:
+        only_boards(dev_id)
+    else:
+        register(dev_id)
 
 
 ssid, psk = wifi_credentials()
@@ -128,10 +124,9 @@ try:
                                                                       for h in helps), helps[0]["help"][:50] if helps else "")
     check("advertisement: a stored network flagged", re.search(rf"found \S+ id {dev} creds 1", logcat) is not None,
           (re.findall(rf"found \S+ id {dev} creds (\d)", logcat) or ["?"])[-1])
-    prefs = adb("shell", "run-as", PKG, "cat", "shared_prefs/devices.xml")
-    check("the app stores no Wi-Fi network", "ssid" not in prefs and ssid not in prefs, "devices.xml: ids only")
-    check("the app names the board by its serial", "LEAKCAM-" not in prefs and "name" not in prefs.split("devices", 1)[-1],
-          "devices.xml: no name, no prefix")
+    prefs = adb("shell", "run-as", PKG, "ls", "shared_prefs")
+    check("the app stores no list (the server's)", "devices.xml" not in prefs, prefs.strip() or "no prefs")
+    check("the server lists the board for this phone, by its serial", dev in phone_boards(), str(phone_boards()))
 
     # 2. the board checks in at the server: online within two intervals after the setup (the phone left)
     t0, online = time.time(), False
@@ -142,8 +137,10 @@ try:
     check("server: the board online after the setup", online, f"{time.time() - t0:.0f} s")
     r.set("speed", f"setup Done -> online at the server {time.time() - t0:.0f} s (poll {POLL_S} s, the board's first "
           f"interval {60} s until told)")
-    st = bl("presence", 2)
-    check("board: last check-in reached the server (0x03)", "state 0x03" in st, st.strip().splitlines()[-1] if st else "")
+    # its own answer, asked again when the Wi-Fi logs drown it (2026-11-04: the prompt was read instead)
+    st = next((o for o in (bl("presence", 3, r"last check-in state 0x[0-9a-f]{2}") for _ in range(3)) if re.search(r"last check-in state 0x", o)), "")
+    m = re.search(r"state 0x[0-9a-f]{2}", st)
+    check("board: last check-in reached the server (0x03)", "state 0x03" in st, m.group(0) if m else "no answer")
 
     # 3. the app remembers it and shows it online
     lines = app_mine()
@@ -171,25 +168,34 @@ try:
     check("app: second LEAKCAM deleted", res.get("confirmed") and SECOND not in lines, str(sorted(lines)))
     check("app: the board still listed after the delete", ": online" in lines.get(dev, ""), lines.get(dev))
 
-    # 6. the board itself deleted, then found on USB power with its network stored: back in the list by itself (the
-    #    server sees it online), no setup
+    # 6. the board itself deleted: it stays out, also after the app is reopened - someone else may still use it, a
+    #    deleted board comes back only through a new setup (user 2026-11-04; DESIGN.md 5.3.5)
+    def phones():
+        """the server's registered phones (users) of the board: GET /v1/devices/<id> "phones" (DESIGN.md 5.3.5)"""
+        try:
+            with urllib.request.urlopen(f"{SERVER}/v1/devices/{dev}", timeout=5) as f:
+                return json.loads(f.read()).get("phones")
+        except OSError:
+            return None
+    n = phones()
+    check("server: this phone registered as a user (when it was issued the PIN)", isinstance(n, int) and n >= 1, str(n))
     adb("logcat", "-c")
     res = op("delete", id=dev, secs=30)
-    time.sleep(5)
-    log_ = adb("logcat", "-d", "-s", "LeakcamSetup:I")
-    check("app: a deleted board stays out while the app runs", f"rediscovered {dev}" not in log_, "5 s in range")
-    adb("shell", "am", "force-stop", PKG)    # reopened: found again, server online -> back by itself
+    check("server: the delete reached it first, no user left", phones() == 0, str(phones()))
+    adb("shell", "am", "force-stop", PKG)
     adb("shell", "am", "start", "-n", f"{PKG}/.MainActivity")
-    t0, back, line = time.time(), False, ""
-    while time.time() - t0 < 75 and not (back and ": online" in line):   # one rescan (30 s) if Android throttled
-        time.sleep(1)
-        log_ = adb("logcat", "-d", "-s", "LeakcamSetup:I")
-        d, b_ = log_.find(f"deleted {dev}"), log_.find(f"rediscovered {dev}")
-        back = 0 <= d < b_
-        line = (re.findall(rf"mine {dev}: (.*)", log_[max(b_, 0):]) or [""])[-1] if back else ""
+    time.sleep(15)
+    log_ = adb("logcat", "-d", "-s", "LeakcamSetup:I")
     check("app: the board deleted", bool(res.get("confirmed")) and f"deleted {dev}" in log_, str(res))
-    check("app: the deleted board back in the list by itself (USB, server online)", back and ": online" in line,
-          f"{time.time() - t0:.0f} s, {line}")
+    check("app: a deleted board stays out, also after a reopen", f"rediscovered {dev}" not in log_, "15 s after the reopen")
+    # the only user gone (the bench is the board's one phone): the server answers its check-in 410 Gone and the board
+    # goes back to the setup firmware within one check-in interval (DESIGN.md 5.3.5)
+    t = to_firmware("setup", secs=POLL_S + 60)
+    check("no user left: the board back in the setup firmware by itself", t is not None,
+          f"{t:.0f} s after the delete" if t else str(firmware()))
+    if t is not None:                          # set up again from the app: the bench as it was (the full firmware)
+        op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=150)
+        check("set up again after it: the full firmware", to_firmware("full", secs=90) is not None, str(firmware()))
     r.sample("after the checks")
 finally:
     poll_interval(60)

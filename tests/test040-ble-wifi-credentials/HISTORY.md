@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-04 (run.py, 379 s): pass
+
+39 of 39 checks passed. Not automated: advertising stops on unplug, pairing refused on battery, power cut (README Steps 1, 2, 5).
+
+
+### Automated run 2026-11-04 (run.py, 376 s): **FAIL**
+
+38 of 39 checks passed; failed: no write succeeds after a cancelled pairing ([]) Not automated: advertising stops on unplug, pairing refused on battery, power cut (README Steps 1, 2, 5).
+
+
 ### Earlier status and result (README before 2026-11-03)
 
 Status: **pass** (2026-11-01): run.py 46/46 in 338 s on the test firmware with STATUS reconciliation (attempt id, kept
@@ -226,6 +236,8 @@ the board was never seen advertising.
 - Optimised build note (2026-10-29): "-O3 + LTO adopted in the product and test defconfigs".
 
 ## Obstacles
+
+- store cycle 1: no write left the phone (connect None ms, pair None, bond None, error 'no connection'), retried (2026-11-04, automated run)
 
 - store cycle 3: no write left the phone (pairing dialog not answered in time), retried (2026-11-03, automated run)
 - store cycle 4: no write left the phone (pairing dialog not answered in time), retried (2026-11-03, automated run)

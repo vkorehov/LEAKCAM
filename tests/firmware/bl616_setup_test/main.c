@@ -30,6 +30,7 @@
 #include "pm_manager.h"
 #include "shell.h"
 
+#include "ble_pairing.h"
 #include "crash_rec.h"
 #include "switch_to_full.h"
 #include "setup_boot.h"
@@ -208,6 +209,7 @@ static void cmd_lp_sleepstat(int argc, char **argv)
            (unsigned long)s.max_idle, (unsigned long)s.entered, (unsigned long)s.vetoed, (int)bl_pm_event_get());
     printf("sleeps exited %lu, watchdog counter at sleep max %lu, after wake max %lu\r\n", (unsigned long)s.exited,
            (unsigned long)s.wdg_enter_max, (unsigned long)s.wdg_exit_max);
+    ble_pairing_print_state();
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_lp_sleepstat, lp_sleepstat, test120: tickless sleep attempts and entries);
 

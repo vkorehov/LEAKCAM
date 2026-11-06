@@ -24,6 +24,7 @@ from phone import board_id, firmware, hand, online, op, product, ready, seen, to
 
 SERVER = "http://192.168.1.159:8090"
 PI = "pi@192.168.1.159"
+MISSED = 3                       # presence lost after 3 failed check-ins in a row (presence.c MISSED_MAX)
 POLL_S = 10                      # for the run; the server's default is 60
 GONE = "t117-gone"               # a network that is not there
 BATTERY = "--battery" in sys.argv
@@ -154,7 +155,7 @@ try:
     #    phone sets the network -> the full firmware, present
     pi("sudo systemctl stop leakcam-server")
     try:
-        t = lost("server down: the setup firmware (presence lost)", POLL_S + 60)
+        t = lost("server down: the setup firmware (presence lost)", MISSED * (POLL_S + 60))
         if t is not None:
             t_lost.append(t)
     finally:
@@ -174,7 +175,7 @@ try:
     to_setup()
     last, secs = setup(GONE, psk, anyway=True)
     check("network gone: saved without checking", last.startswith("Saved without checking."), last[:70])
-    t = lost("network gone: the setup firmware (presence lost)", 90)
+    t = lost("network gone: the setup firmware (presence lost)", MISSED * (POLL_S + 60))
     if t is not None:
         t_lost.append(t)
     t0 = time.time()

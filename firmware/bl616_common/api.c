@@ -37,20 +37,22 @@ void api_poll_target(struct wifi_check_target *t, char *path, const char *ssid, 
     *t = (struct wifi_check_target){ API_HOST, API_PORT, path, 200, body, body_cap, true };
 }
 
-/* at most 16 backtrace words: the request stays inside wifi_check.c's 640 bytes */
+/* at most 16 backtrace words: the request stays inside wifi_check.c's 768 bytes */
 bool api_crash_target(struct wifi_check_target *t, char *path, char *form, uint32_t *count)
 {
     struct crash_rec_info i;
-    char img[3 * 12 + 1], ver[3 * 36 + 1], task[3 * 16 + 1];
+    char img[3 * 12 + 1], ver[3 * 36 + 1], task[3 * 16 + 1], msg[3 * 40 + 1];
 
     if (!crash_rec_get(&i))
         return false;
     url_encode(img, sizeof(img), i.image, strnlen(i.image, 11));
     url_encode(ver, sizeof(ver), i.version, strnlen(i.version, 35));
     url_encode(task, sizeof(task), i.task, strnlen(i.task, 15));
+    url_encode(msg, sizeof(msg), i.msg, strnlen(i.msg, 39));
     snprintf(path, API_PATH_CAP, "/v1/devices/%s/crash", device_id());
     int n = snprintf(form, API_CRASH_FORM_CAP,
-                     "image=%s&ver=%s&n=%lu&k=%lu&t=%s&up=%lu&c=%lx&pc=%lx&v=%lx&ra=%lx&sp=%lx&st=%lu&bt=", img, ver, (unsigned long)i.count, (unsigned long)i.kind, task,
+                     "image=%s&ver=%s&n=%lu&k=%lu&t=%s&m=%s&up=%lu&c=%lx&pc=%lx&v=%lx&ra=%lx&sp=%lx&st=%lu&bt=", img, ver,
+                     (unsigned long)i.count, (unsigned long)i.kind, task, msg,
                      (unsigned long)i.uptime_ms, (unsigned long)i.mcause, (unsigned long)i.mepc, (unsigned long)i.mtval,
                      (unsigned long)i.ra, (unsigned long)i.sp, (unsigned long)i.stage);
     for (uint32_t k = 0; k < i.n_bt && k < 16 && n > 0 && n + 10 < API_CRASH_FORM_CAP; k++)

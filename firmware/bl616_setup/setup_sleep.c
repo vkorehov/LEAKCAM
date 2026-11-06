@@ -6,6 +6,7 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
+#include "timers.h"
 
 #include "bflb_clock.h"
 #include "bflb_gpio.h"
@@ -14,15 +15,13 @@
 #include "bl616_glb.h"
 #include "pm_manager.h"
 
-#include "bluetooth.h"
-#include "conn.h"
-#include "conn_internal.h"   /* conn->type */
 
 #include "ble_pairing.h"
 #include "setup_boot.h"   /* SETUP_ADV_SLEEP_MS */
 #include "bflb_wdg.h"
 #include "board_pins.h"
 #include "usb_console2.h"
+#include "usb_setup.h"
 #include "wdg_guard.h"
 
 static volatile struct setup_sleep_stats st;
@@ -71,6 +70,11 @@ bool setup_usb_present(void)
     struct bflb_device_s *gpio = bflb_device_get_by_name("gpio");
     bflb_gpio_init(gpio, PIN_USB_PGOOD, GPIO_INPUT | GPIO_FLOAT | GPIO_SMT_EN | GPIO_DRV_0);
     return !bflb_gpio_read(gpio, PIN_USB_PGOOD);
+}
+
+bool ble_pairing_usb_power(void)
+{
+    return setup_usb_present();
 }
 
 /* The watchdog's feeding holds for the sleep: its 1 s task woke the chip twice per 2 s advertising interval (180 wakes
@@ -140,6 +144,7 @@ static void usb_plug_task(void *arg)
             continue;
         bool now = setup_usb_present();
         if (usb && !now) {
+            usb_setup_end("USB unplugged");      /* the cable setup's K230 off at once (battery) */
             if (ble_pairing_connected())
                 continue;                 /* under a phone: read again once it has left */
             printf("setup: USB power gone: advertising every %d ms, sleep\r\n", SETUP_ADV_SLEEP_MS);
@@ -271,28 +276,32 @@ void setup_sleep_init(void)
     usb_wake_init();
 }
 
-static void on_connected(struct bt_conn *conn, u8_t err)
-{
-    if (err || conn->type != BT_CONN_TYPE_LE)
-        return;
-    setup_sleep_pause(true);
-}
+/* The sleep back 1 s after a phone left, not at once: with the sleep path asking the controller for its deadline
+ * right after the advertising restart, the controller never advertised again (no deadline, every time), though the
+ * host said it did - after any disconnect in a sleep window no phone found or reached the board again, whether the
+ * phone was gone or had disconnected cleanly (bug-006 follow-up, 2026-11-04: 1 session of 6). 1 s later: 6/6, and the
+ * sleep goes on between advertisements. */
+static TimerHandle_t back_timer;
 
-static void on_disconnected(struct bt_conn *conn, u8_t reason)
+static void sleep_back(TimerHandle_t t)
 {
-    (void)reason;
-    if (conn->type != BT_CONN_TYPE_LE)
-        return;
+    (void)t;
     setup_sleep_pause(false);
 }
 
-static struct bt_conn_cb conn_cb = {
-    .connected = on_connected,
-    .disconnected = on_disconnected,
-};
+static void on_link(bool up)
+{
+    if (up) {
+        (void)xTimerStop(back_timer, 0);
+        setup_sleep_pause(true);
+    } else if (xTimerReset(back_timer, 0) != pdPASS)
+        vAssertCalled();
+}
 
-/* beside ble_pairing.c's own callbacks */
 void setup_sleep_ble_register(void)
 {
-    bt_conn_cb_register(&conn_cb);
+    back_timer = xTimerCreate("slp_back", pdMS_TO_TICKS(1000), pdFALSE, NULL, sleep_back);
+    if (back_timer == NULL)
+        vAssertCalled();
+    ble_pairing_link_cb(on_link);
 }

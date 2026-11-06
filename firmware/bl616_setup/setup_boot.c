@@ -70,6 +70,10 @@ void setup_boot(void)
     size_t len = 0;
     (void)ef_get_env_blob("setup_why", why, sizeof(why) - 1, &len);   /* read, not deleted: switch_to_full_start() */
     uintptr_t adv_ms = setup_usb_present() || !strcmp(why, "wake") ? SETUP_ADV_FAST_MS : SETUP_ADV_SLEEP_MS;
-    if (xTaskCreate(ble_start_task, "ble_start", 1024, (void *)adv_ms, 15, NULL) != pdPASS)
+    /* no PIN (a board not yet provisioned): no advertising, so no BLE at all; the chip sleeps instead of staying
+     * awake on the cell (bugs/bug-006 follow-up). The PIN is stored over USB, then a reboot */
+    if (ble_pairing_pin() < 0)
+        ble_pairing_never();
+    else if (xTaskCreate(ble_start_task, "ble_start", 1024, (void *)adv_ms, 15, NULL) != pdPASS)
         vAssertCalled();
 }

@@ -61,18 +61,28 @@ import java.util.UUID
  * The screen walks through four steps (plug in, find, Wi-Fi, pair and save); the box under them
  * says what to do now, and for pairing what the phone will show.
  *
- * More than one LEAKCAM (use case 2, tests/test111): the app opens on a status screen, the LEAKCAMs set up from this
- * phone online or offline as the presence server sees them (BuildConfig.SERVER, GET /v1/devices/<id>, every 10 s),
- * each deletable from the list. Setup opens for a LEAKCAM found nearby (a new one advertises a minute every 5 minutes
+ * More than one LEAKCAM (use case 2, tests/test111): the app opens on a status screen, this phone's LEAKCAMs online or
+ * offline as the server sees them (BuildConfig.SERVER, GET /v1/phones/<Android ID>/devices, every 10 s). The server is
+ * the one source of truth (DESIGN.md 5.3.5): the app stores no list; the server registers the phone as a board's user
+ * when it issues the PIN, and a delete goes to the server (the board back in setup when no user is left). Setup opens for a LEAKCAM found nearby (a new one advertises a minute every 5 minutes
  * on its battery, one set up only on USB power) or when the list is empty. Each LEAKCAM advertises its device ID and a flags byte (scan response, manufacturer data,
  * company 0xFFFF: the BL616's factory MAC, bit 0 a stored network): a known one gets the short "change its Wi-Fi"
  * flow. Pairing is LE Secure Connections passkey entry: the app gets the board's PIN from the server right before it
  * pairs and enters it itself; the app holds no secret, a phone without it cannot pair. The app never stores Wi-Fi
  * credentials. The SSID is not secret: each LEAKCAM reports its network with every
  * check-in and the server passes it on, so the list shows it and the change flow starts from it; the passphrase is
- * never shown (hidden when the board has one), typing replaces it. A LEAKCAM deleted from the list (or set up from
- * another phone) found on USB power with a network stored comes back by itself when the server sees it online: its
- * network and the server work, nothing to set up.
+ * never shown (hidden when the board has one), typing replaces it. A deleted LEAKCAM never comes back by itself: only a
+ * new setup brings it back.
+ *
+ * The USB cable first (DESIGN.md 5.3.4: the most reliable channel; tests/test113): a LEAKCAM plugged into the phone
+ * (phone = USB host) on its setup firmware runs the K230's USB setup relay, and the app talks to it in lines
+ * (UsbLink.kt; firmware/bl616_setup/usb_setup.c): ID, then PIN (the server's, as for BLE), SSID and PSK in hex, COMMIT,
+ * and STATUS lines with the same states as the BLE characteristic. No pairing. That board shows with a USB icon, only
+ * while the link is up (a plug alone stays the plug icon), and is set up over the cable, not over Bluetooth.
+ * The cable flow (user 2026-11-05): the plug launches the app (default handler); it starts on a spinning logo while
+ * the USB device enumerates and answers ID, then opens the cable screen: the board already found (no list, no steps),
+ * the Wi-Fi fields open at once when it has no network. No LEAKCAM on the cable by then: the Bluetooth flow. In the
+ * list the board on the cable is always the selected one, "connected by USB cable".
  */
 @SuppressLint("MissingPermission") // every Bluetooth call runs after permissionsGranted()
 class MainActivity : Activity() {
@@ -118,6 +128,9 @@ class MainActivity : Activity() {
         const val STEP_SAVE = 4
         const val STEP_DONE = 5
         const val UNPAIR_MS = 5_000L          // the phone removes an old bond
+        const val USB_TAG = "usb"             // the board on the USB cable, in the lists where a BLE address would be
+        const val USB_ID_TRIES = 10           // ID asked once a second until the K230's relay answers
+        const val START_USB_MS = 2_000L       // the start's wait for a LEAKCAM on the cable before the Bluetooth flow
     }
 
     private lateinit var steps: List<TextView>
@@ -144,12 +157,18 @@ class MainActivity : Activity() {
     private val seen = HashMap<String, Long>()       // address -> last advertisement (elapsedRealtime ms)
     private val ids = HashMap<String, String>()   // address -> device ID from the advertisement
     private val stored = HashMap<String, Boolean>()   // address -> the board has a Wi-Fi network (flags bit 0)
+    private val usbPower = HashMap<String, Boolean>()   // address -> the board has USB power (flags bit 1)
+    private val rssi = HashMap<String, Int>()   // address -> the last advertisement's signal (dBm)
     private val ticker = Handler(Looper.getMainLooper())   // the status screen's refresh; main's callbacks get cleared
     private var onStatus = false
     private var changeOnly = false       // setup of a known LEAKCAM: only its Wi-Fi
     private val ssids = HashMap<String, String>()   // device ID -> the network it checked in from (server; not kept)
-    private val asking = HashSet<String>()          // device IDs being looked up for a rediscovery
-    private val deleted = HashSet<String>()         // deleted while the app runs: not rediscovered until it reopens
+    /* the server is the one source of truth (DESIGN.md 5.3.5): this phone's boards are the server's list, held here
+     * only in memory, never stored on the phone */
+    private var mine = JSONObject()
+    private val phoneId by lazy {                     // the phone as the server knows its user: its Android ID
+        android.provider.Settings.Secure.getString(contentResolver, android.provider.Settings.Secure.ANDROID_ID).orEmpty()
+    }
     private var selected = ""                        // the LEAKCAM picked on the status screen (radio)
     private var rows = listOf<Triple<String, String, String>>()   // the remembered ones: ID, name, presence line
     private val online = HashMap<String, Boolean>()
@@ -182,12 +201,30 @@ class MainActivity : Activity() {
     private var discovered = false       // services discovered on this connection
     private var bonded = false           // and encrypted: the writes can start
 
+    // the USB cable (UsbLink.kt)
+    private lateinit var usbLink: UsbLink
+    private val usbTimer = Handler(Looper.getMainLooper())   // main's callbacks get cleared by every scan stop
+    private var usbId = ""               // the board on the cable (its ID answer), "" when none
+    private var usbStored = false        // it has a network stored
+    private var viaUsb = false           // this send goes over the cable
+    private var usbSteps = ArrayDeque<String>()   // the lines still to send; never logged (credentials)
+    private var usbAwait: String? = null // the command whose answer is awaited
+    private var usbFlow = false          // the cable screen is open
+    private var usbIdTries = 0           // IDs asked on this link
+    private var starting = true          // the start's spinner: waiting for the cable, the server's list
+    private var startWaitOver = false
+    private var mineLoaded = false
+    private lateinit var startPanel: View
+    private lateinit var usbHeader: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         steps = listOf(R.id.step1, R.id.step2, R.id.step3, R.id.step4).map { findViewById(it) }
         stepTexts = steps.map { it.text.toString() }
         help = findViewById(R.id.help)
+        startPanel = findViewById(R.id.start_panel)
+        usbHeader = findViewById(R.id.usb_header)
         statusPanel = findViewById(R.id.status_panel)
         setupPanel = findViewById(R.id.setup_panel)
         mineList = findViewById(R.id.mine_list)
@@ -215,16 +252,46 @@ class MainActivity : Activity() {
                 if (show) InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD else InputType.TYPE_TEXT_VARIATION_PASSWORD
             passwordField.setSelection(passwordField.text.length)
         }
-        devices.setOnCheckedChangeListener { _, _ -> if (!scanning && gatt == null) show(STEP_WIFI, R.string.help_wifi) }
+        devices.setOnCheckedChangeListener { _, _ -> if (!scanning && gatt == null && !sending) wifiHelp() }
         scanButton.setOnClickListener { if (ready()) startScan() }
         sendButton.setOnClickListener { if (ready()) send(true) }
         saveAnywayButton.setOnClickListener { if (ready()) send(false) }
         setupOpen.setOnClickListener { addressOf(selected)?.let { openSetup(it) } ?: wake(selected) }
         toStatus.setOnClickListener { if (!sending) showStatus() }
+        deleteSharedPreferences("devices")    // the list an older version kept: the server holds it now (DESIGN.md 5.3.5)
+        Log.i(TAG, "phone $phoneId")      // the tests register this phone at the server by it
+        // the cable first (the spinner), the list from the server meanwhile: then the cable screen, else the list, or the
+        // Bluetooth setup when it is empty (or no server)
+        usbLink = UsbLink(this, ::onUsbLine, ::onUsbUp)
+        usbLink.start()
+        loadMine { mineLoaded = true; startDecide() }
+        usbTimer.postDelayed({ startWaitOver = true; startDecide() }, START_USB_MS)
+    }
+
+    /** the start's end: a LEAKCAM answered on the cable -> its screen; else, once the wait is over (and an enumerated
+     *  one stopped being asked) and the list is in, the list or the Bluetooth setup */
+    private fun startDecide() {
+        if (!starting)
+            return
+        if (usbId.isNotEmpty()) {
+            starting = false
+            return openUsb()
+        }
+        if (!startWaitOver || !mineLoaded || (usbLink.up && usbIdTries < USB_ID_TRIES))
+            return
+        starting = false
+        Log.i(TAG, "start: no LEAKCAM on the cable")   // test113
         if (known().length() == 0) openSetup(null) else showStatus()
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        usbLink.find()                   // opened again by a LEAKCAM plugged in (singleTop)
+    }
+
     override fun onDestroy() {
+        usbTimer.removeCallbacksAndMessages(null)
+        usbLink.stop()
         ticker.removeCallbacksAndMessages(null)
         stopScan()
         finishSend(null)
@@ -322,6 +389,8 @@ class MainActivity : Activity() {
         } else {
             found.clear()
             devices.removeAllViews()
+            if (usbId.isNotEmpty())
+                addUsbRadio()
         }
         val filter = ScanFilter.Builder().setServiceUuid(ParcelUuid(SERVICE)).build()
         val settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
@@ -358,28 +427,54 @@ class MainActivity : Activity() {
         sendButton.isEnabled = true
     }
 
+    /* the signal as 1-4 bars, never the dB value on the screen; the value on a long press (user 2026-11-04) */
+    private fun barCount(dbm: Int) = when {
+        dbm >= -60 -> 4
+        dbm >= -70 -> 3
+        dbm >= -80 -> 2
+        else -> 1
+    }
+
+    private fun bars(dbm: Int) = when (barCount(dbm)) {
+        4 -> R.drawable.ic_signal_4
+        3 -> R.drawable.ic_signal_3
+        2 -> R.drawable.ic_signal_2
+        else -> R.drawable.ic_signal_1
+    }
+
+    private fun showDbm(address: String) {
+        val dbm = rssi[address] ?: return
+        Log.i(TAG, "dbm $dbm")   // test118: the long press
+        android.widget.Toast.makeText(this, getString(R.string.signal_dbm, dbm), android.widget.Toast.LENGTH_SHORT).show()
+    }
+
     private fun addDevice(r: ScanResult) {
         val d = r.device
         seen[d.address] = SystemClock.elapsedRealtime()
+        val mfg = r.scanRecord?.getManufacturerSpecificData(0xFFFF)
+        // every advertisement: the signal and the board's power change while it is listed (DESIGN.md 5.3.4); the
+        // status screen shows them at its next refresh (every 10 s): a redraw per advertisement lost test111's taps
+        rssi[d.address] = r.rssi
+        usbPower[d.address] = mfg != null && mfg.size >= 7 && (mfg[6].toInt() and 2) != 0
         if (found.containsKey(d.address))
             return
-        val mfg = r.scanRecord?.getManufacturerSpecificData(0xFFFF)
         val devId = mfg?.takeIf { it.size >= 6 }?.copyOfRange(0, 6)?.joinToString("") { "%02X".format(it) }
         // a LEAKCAM is named by its serial everywhere (the device ID: USB serial number, BLE name, server; user
         // 2026-11-01: no "LEAKCAM-" prefix)
         val name = devId ?: r.scanRecord?.deviceName ?: d.name ?: d.address
         if (devId != null)
             ids[d.address] = devId
+        if (devId != null && devId == usbId)
+            return                          // on the cable: set up over USB, not listed twice
         stored[d.address] = mfg != null && mfg.size >= 7 && (mfg[6].toInt() and 1) != 0
         Log.i(TAG, "found $name id ${devId ?: "none"} creds ${if (stored[d.address] == true) 1 else 0}")   // test111
-        if (devId != null && stored[d.address] == true)
-            rediscover(devId)
         found[d.address] = d to name
         devices.addView(RadioButton(this).apply {
             id = View.generateViewId()
             tag = d.address
-            text = getString(if (devId != null && known().has(devId)) R.string.device_entry_known else R.string.device_entry,
-                name, r.rssi)
+            text = getString(R.string.device_entry, name)   // no "set up before" label (user 2026-11-04)
+            setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, bars(r.rssi), 0)
+            setOnLongClickListener { showDbm(d.address); true }
         })
         // the first board leads on at once, Find goes on behind (another board nearby joins the list) until Send:
         // waiting for the whole Find took 10 s of the setup, then 1.7 s (test106)
@@ -395,15 +490,23 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun wifiHelp() = if (changeOnly) show(STEP_WIFI, R.string.help_change, boardLabel()) else show(STEP_WIFI, R.string.help_wifi)
+    private fun wifiHelp() = when {
+        changeOnly -> show(STEP_WIFI, R.string.help_change, boardLabel())
+        pickedTag() == USB_TAG -> show(STEP_WIFI, R.string.help_usb_wifi, usbId)
+        else -> show(STEP_WIFI, R.string.help_wifi)
+    }
 
-    private fun boardLabel() = found.values.firstOrNull()?.second.orEmpty()
+    private fun pickedTag() = devices.findViewById<RadioButton>(devices.checkedRadioButtonId)?.tag as String?
+
+    private fun boardLabel() = if (pickedTag() == USB_TAG) usbId else found.values.firstOrNull()?.second.orEmpty()
 
     // ---------------- the status screen ----------------
 
     /** the LEAKCAMs set up from this phone and their presence, refreshed every 10 s; a scan for one on USB power */
     private fun showStatus() {
         onStatus = true
+        usbFlow = false
+        startPanel.visibility = View.GONE
         scannedOnStatus = false
         setupPanel.visibility = View.GONE
         statusPanel.visibility = View.VISIBLE
@@ -425,20 +528,28 @@ class MainActivity : Activity() {
     }
 
     /** the address of a LEAKCAM found nearby now, by its device ID; null when it is not */
-    private fun addressOf(id: String) = ids.entries.firstOrNull { it.value == id && found.containsKey(it.key) }?.key
+    private fun addressOf(id: String) = if (id.isNotEmpty() && id == usbId) USB_TAG
+        else ids.entries.firstOrNull { it.value == id && found.containsKey(it.key) }?.key
 
     /** the status list: the remembered LEAKCAMs (presence, network, Delete: in range or not) and new ones found
      *  nearby, one radio each; the setup button acts on the picked one and is off while it is out of BLE range */
     private fun render() {
         val k = known()
+        if (usbId.isNotEmpty())
+            selected = usbId                 // the board on the cable is always the one picked (user 2026-11-05)
         val all = rows.filter { k.has(it.first) }.toMutableList()
         for ((address, d) in found)
             ids[address]?.takeIf { !k.has(it) }?.let { all.add(Triple(it, d.second, getString(R.string.mine_new))) }
+        if (usbId.isNotEmpty() && all.none { it.first == usbId })
+            all.add(Triple(usbId, usbId, getString(R.string.mine_new)))
         if (all.none { it.first == selected })
             selected = (all.firstOrNull { addressOf(it.first) != null } ?: all.firstOrNull())?.first.orEmpty()
         // every scan result and presence refresh lands here: the views are rebuilt only for a change, a rebuild under
         // a finger lost the tap (test111's Delete, 2026-11-01)
-        val now = all.joinToString("|") { "${it.first},${it.third},${addressOf(it.first) != null},${online[it.first]}" } +
+        val now = all.joinToString("|") {
+            val a = addressOf(it.first)
+            "${it.first},${it.third},${a != null},${online[it.first]},${a?.let { x -> usbPower[x] }},${a?.let { x -> barCount(rssi[x] ?: -100) }},${a?.let { x -> stored[x] }}"
+        } +
             "|$selected|${k.length()}|${wakeWaiting(selected)}|$scannedOnStatus"
         if (now == shown)
             return
@@ -465,15 +576,31 @@ class MainActivity : Activity() {
                 val icons = mutableListOf<Pair<Int, String>>()
                 if (k.has(id) && up)
                     icons.add(Pair(R.drawable.ic_wifi, line))
-                if (reachable)
+                // in BLE range: its signal as bars (the dB value on a long press) and its power from the advertisement,
+                // a plug on USB power, else a battery (DESIGN.md 5.3.4); out of range its power is not known: none
+                val address = addressOf(id)
+                if (address == USB_TAG) {
+                    icons.add(Pair(R.drawable.ic_usb, getString(R.string.icon_usb)))   // the link implies its power
+                } else if (address != null) {
                     icons.add(Pair(R.drawable.ic_bluetooth, getString(R.string.icon_bluetooth)))
-                Log.i(TAG, "row $id wifi ${if (k.has(id) && up) 1 else 0} ble ${if (reachable) 1 else 0} red ${if (red) 1 else 0}")   // test118
+                    icons.add(Pair(bars(rssi[address] ?: -100), getString(R.string.icon_signal)))
+                    icons.add(if (usbPower[address] == true) Pair(R.drawable.ic_plug, getString(R.string.icon_plug))
+                              else Pair(R.drawable.ic_battery, getString(R.string.icon_battery)))
+                }
+                Log.i(TAG, "row $id wifi ${if (k.has(id) && up) 1 else 0} ble ${if (reachable) 1 else 0} red ${if (red) 1 else 0}" +
+                      " power ${if (address == null) "-" else if (address == USB_TAG) "usb" else if (usbPower[address] == true) "plug" else "battery"}" +
+                      " bars ${address?.takeIf { it != USB_TAG }?.let { barCount(rssi[it] ?: -100) } ?: 0}" +
+                      " rssi ${address?.takeIf { it != USB_TAG }?.let { rssi[it] } ?: 0}")   // test118, test113
                 for ((icon, what) in icons)
                     addView(android.widget.ImageView(context).apply {
                         setImageResource(icon)
                         contentDescription = what
+                        if (address != null && what == getString(R.string.icon_signal))
+                            setOnLongClickListener { showDbm(address); true }
                     })
-                if (k.has(id))
+                // no Delete for a board without a network (user 2026-11-05): known by its own word, the cable's ID
+                // answer or the advertisement's flag; nothing to remove from a board that is not set up
+                if (k.has(id) && address?.let { stored[it] } != false)
                     addView(Button(context).apply {
                         setText(R.string.delete)
                         contentDescription = "delete $id"
@@ -489,6 +616,7 @@ class MainActivity : Activity() {
         val waiting = wakeWaiting(selected)
         nearby.text = when {
             name.isEmpty() -> getString(R.string.nearby_none)
+            addressOf(selected) == USB_TAG -> getString(R.string.nearby_usb, name)
             here && k.has(selected) -> getString(R.string.nearby_known, name)
             here -> getString(R.string.nearby_new, name)
             waiting -> getString(R.string.nearby_waking, name, waking[selected]?.second ?: 60)
@@ -546,7 +674,16 @@ class MainActivity : Activity() {
 
     /** setup: the full four steps (address null: Find first), or a known LEAKCAM's Wi-Fi only */
     private fun openSetup(address: String?) {
+        if (address == USB_TAG || (address == null && usbId.isNotEmpty()))
+            return openUsb()                // a board on the cable: its own screen, over USB
         onStatus = false
+        usbFlow = false
+        startPanel.visibility = View.GONE
+        usbHeader.visibility = View.GONE
+        scanButton.visibility = View.VISIBLE
+        devices.visibility = View.VISIBLE
+        sendButton.setText(R.string.send)
+        devices.findViewWithTag<View>(USB_TAG)?.let { devices.removeView(it) }
         ticker.removeCallbacksAndMessages(null)
         if (address != null)
             stopScan()                  // the board is found; Send stops it anyway
@@ -572,6 +709,8 @@ class MainActivity : Activity() {
                 startScan()
         } else {
             // the board the status screen found, picked: Send needs no second Find
+            if (address == USB_TAG)
+                addUsbRadio()
             for (i in 0 until devices.childCount)
                 if (devices.getChildAt(i).tag == address)
                     devices.check(devices.getChildAt(i).id)
@@ -583,14 +722,18 @@ class MainActivity : Activity() {
     // ---------------- steps 3 and 4: Wi-Fi, pair and save ----------------
 
     private fun send(check: Boolean) {
-        val address = devices.findViewById<RadioButton>(devices.checkedRadioButtonId)?.tag as String?
-        val (device, name) = address?.let { found[it] } ?: return problem(STEP_FIND, R.string.err_pick)
+        val address = pickedTag()
         val ssid = ssidField.text.toString().toByteArray(Charsets.UTF_8)
         val psk = passwordField.text.toString().toByteArray(Charsets.UTF_8)
+        if (address == null || (address != USB_TAG && !found.containsKey(address)))
+            return problem(STEP_FIND, R.string.err_pick)
         if (ssid.isEmpty() || ssid.size > 32)
             return problem(STEP_WIFI, R.string.err_ssid)
         if (psk.isNotEmpty() && psk.size !in 8..63)
             return problem(STEP_WIFI, R.string.err_password)
+        if (address == USB_TAG)
+            return sendUsb(check, ssid, psk)
+        val (device, name) = found.getValue(address)
         stopScan()
         /* the board keeps no pairings (DESIGN.md 5.3): a bond from an earlier setup is stale, every send pairs anew */
         if (device.bondState != BluetoothDevice.BOND_NONE && !removeBond(device))
@@ -618,17 +761,20 @@ class MainActivity : Activity() {
         saveAnywayButton.visibility = View.GONE
         show(STEP_SAVE, R.string.help_connecting, name)
         armTimeout()
-        fetchPin(device)
+        fetchPin {
+            watchPairingRequest()
+            connectWhenUnpaired(device, SystemClock.elapsedRealtime() + UNPAIR_MS)
+        }
     }
 
-    /** the board's pairing PIN from the server (GET /v1/devices/<id>/pin): the app holds no secret; then the connect.
-     *  No server, no setup: the board refuses a pairing without its PIN */
-    private fun fetchPin(device: BluetoothDevice) {
+    /** the board's pairing PIN from the server (GET /v1/devices/<id>/pin): the app holds no secret; then [then] (the
+     *  BLE connect, or the USB lines). No server, no setup: the board refuses a pairing or a cable setup without it */
+    private fun fetchPin(then: () -> Unit) {
         val id = boardId
         Thread {
             val got = try {
                 if (id.isEmpty()) throw IllegalStateException("no device ID advertised")
-                val c = URL("${BuildConfig.SERVER}/v1/devices/$id/pin").openConnection() as HttpURLConnection
+                val c = URL("${BuildConfig.SERVER}/v1/devices/$id/pin?phone=$phoneId").openConnection() as HttpURLConnection
                 c.connectTimeout = 3000
                 c.readTimeout = 3000
                 val j = JSONObject(c.inputStream.bufferedReader().use { it.readText() })
@@ -643,8 +789,7 @@ class MainActivity : Activity() {
                 if (got.isEmpty())
                     return@runOnUiThread fail(R.string.err_no_pin, boardName)
                 pin = got
-                watchPairingRequest()
-                connectWhenUnpaired(device, SystemClock.elapsedRealtime() + UNPAIR_MS)
+                then()
             }
         }.start()
     }
@@ -729,6 +874,9 @@ class MainActivity : Activity() {
         val wasSending = sending
         sending = false
         reconciling = false
+        viaUsb = false
+        usbAwait = null
+        usbSteps.clear()
         sendButton.isEnabled = true
         scanButton.isEnabled = true
         if (wasSending)
@@ -1037,61 +1185,248 @@ class MainActivity : Activity() {
             fail(R.string.err_write, what(uuid))
     }
 
-    // ---------------- the LEAKCAMs set up from this phone ----------------
+    // ---------------- the USB cable ----------------
 
-    private fun known(): JSONObject {
-        val k = JSONObject(getSharedPreferences("devices", MODE_PRIVATE).getString("devices", null) ?: "{}")
-        var old = false                  // entries from before 2026-11-01 kept the SSID and a name: dropped, the app
-        for (id in k.keys()) {           // stores neither (the ID is the name)
-            val e = k.getJSONObject(id)
-            old = (e.remove("ssid") != null) or (e.remove("name") != null) or old
+    /** the cable screen: the board found by the plug, no list, no steps; the Wi-Fi fields open at once without a
+     *  stored network, else what it has and how to change it */
+    private fun openUsb() {
+        onStatus = false
+        usbFlow = true
+        ticker.removeCallbacksAndMessages(null)
+        stopScan()
+        startPanel.visibility = View.GONE
+        statusPanel.visibility = View.GONE
+        setupPanel.visibility = View.VISIBLE
+        for (v in listOf<View>(findViewById(R.id.intro), steps[0], steps[1], steps[2], steps[3], scanButton, devices))
+            v.visibility = View.GONE
+        usbHeader.visibility = View.VISIBLE
+        usbHeader.text = getString(R.string.usb_header, usbId)
+        toStatus.visibility = if (known().length() > 0) View.VISIBLE else View.GONE
+        changeOnly = known().has(usbId)
+        addUsbRadio()                        // hidden: send() takes the picked one
+        val current = ssids[usbId].orEmpty()
+        ssidField.setText(current)
+        passwordField.text.clear()
+        ssidField.hint = getString(if (usbStored && current.isEmpty()) R.string.hidden_ssid else R.string.ssid)
+        passwordField.hint = getString(if (usbStored) R.string.hidden_password else R.string.password)
+        sendButton.setText(R.string.usb_send)
+        sendButton.isEnabled = true
+        saveAnywayButton.visibility = View.GONE
+        if (usbStored)
+            show(STEP_WIFI, R.string.help_usb_stored, usbId, if (current.isEmpty()) "" else " (\"$current\")")
+        else {
+            show(STEP_WIFI, R.string.help_usb_wifi, usbId)
+            ssidField.requestFocus()         // no network: the fields are the screen
         }
-        if (old)
-            save(k)
-        return k
+        Log.i(TAG, "usb screen $usbId creds ${if (usbStored) 1 else 0}")   // test113
     }
 
-    /** a LEAKCAM on USB power with a network stored, not in the list: back in it, no action, when the server sees it
-     *  online (tests/test111) */
-    private fun rediscover(id: String) {
-        if (known().has(id) || id in deleted || !asking.add(id))
-            return
+    /** the board on the cable as the one picked in the setup list (once) */
+    private fun addUsbRadio() {
+        if (devices.findViewWithTag<View>(USB_TAG) == null)
+            devices.addView(RadioButton(this).apply {
+                id = View.generateViewId()
+                tag = USB_TAG
+                text = getString(R.string.usb_entry, usbId)
+                setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_usb, 0)
+            }, 0)
+        devices.check(devices.findViewWithTag<View>(USB_TAG).id)
+    }
+
+    private fun onUsbUp(up: Boolean) {
+        usbTimer.removeCallbacksAndMessages(null)
+        if (up) {
+            usbIdTries = 0
+            return askId(0)
+        }
+        if (sending && viaUsb)
+            fail(if (committed) R.string.err_usb_unconfirmed else R.string.err_usb_gone, boardName)
+        val leave = usbFlow && !sending && step != STEP_DONE   // Done stays: the board ends the link itself after it
+        Log.i(TAG, "usb board ${usbId.ifEmpty { "-" }} gone")
+        usbId = ""
+        ids.remove(USB_TAG)
+        stored.remove(USB_TAG)
+        devices.findViewWithTag<View>(USB_TAG)?.let { devices.removeView(it) }
+        if (onStatus) {
+            shown = ""
+            render()
+        }
+        if (leave) {
+            if (known().length() > 0) showStatus() else openSetup(null)
+            if (!onStatus)
+                show(STEP_PLUG, R.string.help_usb_unplugged)
+        }
+        startDecide()
+    }
+
+    /** the K230's relay starts with its program (~0.6 s after its boot), maybe after the USB device: ask until answered */
+    private fun askId(n: Int) {
+        usbIdTries = n
+        if (usbId.isNotEmpty() || !usbLink.up || n >= USB_ID_TRIES)
+            return startDecide()             // answered, gone, or never answering: the start goes on
+        usbLink.write("ID")
+        usbTimer.postDelayed({ askId(n + 1) }, 1_000L)
+    }
+
+    /** a line from the board: the ID answer, a STATUS (pushed on every change, also before a command's OK), or the
+     *  answer to the command sent last */
+    private fun onUsbLine(line: String) {
+        val p = line.split(' ')
+        when {
+            p[0] == "ID" && p.size >= 3 -> {
+                if (usbId == p[1])
+                    return
+                usbId = p[1]
+                usbStored = p[2] == "1"
+                ids[USB_TAG] = usbId
+                stored[USB_TAG] = usbStored
+                Log.i(TAG, "usb board $usbId creds ${if (usbStored) 1 else 0}")   // test113
+                if (starting)
+                    startDecide()
+                else if (!sending)
+                    openUsb()                // plugged in while the app runs: the cable screen at once
+            }
+            p[0] == "STATUS" && p.size >= 4 -> {
+                if (!sending || !viaUsb)
+                    return
+                val st = p[1].toIntOrNull() ?: return
+                val d = p[2].toIntOrNull() ?: 0
+                val a = p[3].toLongOrNull()?.toInt() ?: 0
+                onStatus(byteArrayOf(st.toByte(), d.toByte(), (d shr 8).toByte(),
+                    a.toByte(), (a shr 8).toByte(), (a shr 16).toByte(), (a shr 24).toByte()))
+            }
+            sending && viaUsb && usbAwait != null -> {
+                val cmd = usbAwait!!
+                usbAwait = null
+                when (line) {
+                    "OK" -> usbNext()
+                    "ERR PIN" -> fail(R.string.err_usb_pin, boardName)
+                    "ERR LOCKED" -> fail(R.string.err_usb_locked, boardName)
+                    else -> fail(R.string.err_usb_refused, boardName, getString(when (cmd) {
+                        "SSID" -> R.string.what_ssid
+                        "PSK" -> R.string.what_psk
+                        else -> R.string.what_commit
+                    }), line)
+                }
+            }
+        }
+    }
+
+    /** the same check as over BLE, in lines: PIN, SSID, PSK (none for an open network), COMMIT; then STATUS reports */
+    private fun sendUsb(check: Boolean, ssid: ByteArray, psk: ByteArray) {
+        if (!usbLink.up || usbId.isEmpty())
+            return problem(STEP_FIND, R.string.err_usb_gone, usbId)
+        stopScan()
+        boardName = usbId
+        boardId = usbId
+        ssidText = ssidField.text.toString()
+        checked = check
+        committed = false
+        attempt = (1..Int.MAX_VALUE).random()
+        viaUsb = true
+        sending = true
+        sendButton.isEnabled = false
+        scanButton.isEnabled = false
+        saveAnywayButton.visibility = View.GONE
+        show(STEP_SAVE, R.string.help_usb_sending, boardName)
+        armTimeout()
+        val hex = { b: ByteArray -> b.joinToString("") { "%02x".format(it) } }
+        val lines = listOfNotNull("SSID ${hex(ssid)}", if (psk.isNotEmpty()) "PSK ${hex(psk)}" else null,
+            "COMMIT ${if (check) 1 else 2} $attempt")
+        fetchPin {
+            usbSteps = ArrayDeque(listOf("PIN $pin") + lines)
+            usbNext()
+        }
+    }
+
+    private fun usbNext() {
+        val l = usbSteps.removeFirstOrNull() ?: return
+        val cmd = l.substringBefore(' ')
+        if (cmd == "COMMIT") {
+            committed = true             // its first STATUS comes before its OK
+            lastState = -1
+        }
+        usbAwait = cmd
+        if (!usbLink.write(l))
+            fail(R.string.err_usb_gone, boardName)
+    }
+
+    // ---------------- the LEAKCAMs set up from this phone ----------------
+
+    private fun known() = mine
+
+    /** this phone's boards from the server (GET /v1/phones/<phone>/devices): the list and each one's presence and
+     *  network; then done(). No server: the list unchanged, said so per row */
+    private fun loadMine(done: () -> Unit = {}) {
         Thread {
-            val online = try {
-                val c = URL("${BuildConfig.SERVER}/v1/devices/$id").openConnection() as HttpURLConnection
+            val list = try {
+                val c = URL("${BuildConfig.SERVER}/v1/phones/$phoneId/devices").openConnection() as HttpURLConnection
                 c.connectTimeout = 3000
                 c.readTimeout = 3000
-                val j = JSONObject(c.inputStream.bufferedReader().use { it.readText() })
+                val a = org.json.JSONArray(c.inputStream.bufferedReader().use { it.readText() })
                 c.disconnect()
-                j.getBoolean("online")
-            } catch (e: Exception) {          // no server: not rediscovered, the setup stays offered
-                false
+                (0 until a.length()).map { a.getJSONObject(it) }
+            } catch (e: Exception) {
+                null
             }
             runOnUiThread {
-                asking.remove(id)
-                if (!online || known().has(id))
-                    return@runOnUiThread
-                save(known().put(id, JSONObject()))
-                Log.i(TAG, "rediscovered $id")
-                when {
-                    onStatus -> refreshPresence()
-                    !sending && toStatus.visibility == View.GONE -> showStatus()   // the list was empty: show it
+                if (list != null) {
+                    mine = JSONObject().apply { for (j in list) put(j.getString("id"), JSONObject()) }
+                    for (j in list) {
+                        online[j.getString("id")] = j.getBoolean("online")
+                        j.optString("ssid").takeIf { it.isNotEmpty() }?.let { ssids[j.getString("id")] = it }
+                    }
                 }
+                rows = (list?.map { j -> Triple(j.getString("id"), j.getString("id"), line(j)) }
+                        ?: mine.keys().asSequence().map { Triple(it, it, getString(R.string.mine_unknown, it)) }.toList())
+                for (r in rows)
+                    Log.i(TAG, "mine ${r.first}: ${r.third}")
+                if (onStatus)
+                    render()
+                done()
             }
         }.start()
     }
 
-    private fun save(k: JSONObject) =
-        getSharedPreferences("devices", MODE_PRIVATE).edit().putString("devices", k.toString()).apply()
+    private fun line(j: JSONObject): String {
+        val name = j.getString("id")
+        val seen = j.getLong("last_seen_s")
+        val ssid = j.optString("ssid")
+        val state = when {
+            j.getBoolean("online") -> getString(R.string.mine_online, name)
+            seen < 0 -> getString(R.string.mine_never, name)
+            seen < 60 -> getString(R.string.mine_offline_s, name, seen.toInt())
+            else -> getString(R.string.mine_offline, name, (seen / 60).toInt())
+        }
+        return getString(R.string.mine_ssid, state, ssid.ifEmpty { getString(R.string.mine_ssid_unknown) })
+    }
 
+    /** the delete goes to the server (DELETE /v1/devices/<id>/phones/<phone>): this phone no longer a user; then the
+     *  server's list again. No server: nothing changes, said so */
     private fun forget(id: String) {
         AlertDialog.Builder(this)
             .setMessage(getString(R.string.delete_ask, id))
             .setPositiveButton(R.string.delete) { _, _ ->
-                save(known().apply { remove(id) })
-                deleted.add(id)                 // stays out while the app runs, even in range: the user deleted it
-                Log.i(TAG, "deleted $id")
-                if (known().length() == 0) openSetup(null) else refreshPresence()
+                Thread {
+                    val ok = try {
+                        val c = URL("${BuildConfig.SERVER}/v1/devices/$id/phones/$phoneId").openConnection() as HttpURLConnection
+                        c.requestMethod = "DELETE"
+                        c.connectTimeout = 3000
+                        c.readTimeout = 3000
+                        val code = c.responseCode
+                        c.disconnect()
+                        code == 200 || code == 404     // 404: not a user any more (deleted elsewhere)
+                    } catch (e: Exception) {
+                        false
+                    }
+                    runOnUiThread {
+                        if (!ok)
+                            return@runOnUiThread android.widget.Toast.makeText(this, getString(R.string.err_delete, id),
+                                android.widget.Toast.LENGTH_LONG).show()
+                        Log.i(TAG, "deleted $id")
+                        loadMine { if (known().length() == 0) openSetup(null) }
+                    }
+                }.start()
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
@@ -1101,58 +1436,13 @@ class MainActivity : Activity() {
     private fun remember() {
         if (boardId.isEmpty())
             return
-        val k = known().put(boardId, JSONObject())   // never the network: the board has it
-        save(k)
+        mine.put(boardId, JSONObject())  // registered at the server when it issued the PIN; its list confirms it
         toStatus.visibility = View.VISIBLE
     }
 
 
-    /** each remembered LEAKCAM's presence from the server, off the main thread; logged for tests/test111 */
-    private fun refreshPresence() {
-        val k = known()
-        val list = k.keys().asSequence().toList()
-        if (rows.map { it.first } != list) {    // a LEAKCAM added or deleted: its row at once, presence follows
-            rows = list.map { Triple(it, it, it) }
-            if (onStatus)
-                render()
-        }
-        if (list.isEmpty())
-            return
-        Thread {
-            val rows = list.map { id ->
-                val name = id
-                val line = try {
-                    val c = URL("${BuildConfig.SERVER}/v1/devices/$id").openConnection() as HttpURLConnection
-                    c.connectTimeout = 3000
-                    c.readTimeout = 3000
-                    val j = JSONObject(c.inputStream.bufferedReader().use { it.readText() })
-                    c.disconnect()
-                    val seen = j.getLong("last_seen_s")
-                    val ssid = j.optString("ssid")
-                    val up = j.getBoolean("online")
-                    runOnUiThread { online[id] = up }
-                    if (ssid.isNotEmpty())
-                        runOnUiThread { ssids[id] = ssid }
-                    val state = when {
-                        j.getBoolean("online") -> getString(R.string.mine_online, name)
-                        seen < 0 -> getString(R.string.mine_never, name)
-                        seen < 60 -> getString(R.string.mine_offline_s, name, seen.toInt())
-                        else -> getString(R.string.mine_offline, name, (seen / 60).toInt())
-                    }
-                    getString(R.string.mine_ssid, state, ssid.ifEmpty { getString(R.string.mine_ssid_unknown) })
-                } catch (e: Exception) {          // no server, no network, a broken answer: said so, never a guess
-                    getString(R.string.mine_unknown, name)
-                }
-                Log.i(TAG, "mine $id: $line")
-                Triple(id, name, line)
-            }
-            runOnUiThread {
-                this.rows = rows
-                if (onStatus)
-                    render()
-            }
-        }.start()
-    }
+    /** the list and each board's presence, from the server; logged for tests/test111 */
+    private fun refreshPresence() = loadMine()
 
     private fun what(uuid: UUID) = getString(when (uuid) {
         SSID -> R.string.what_ssid

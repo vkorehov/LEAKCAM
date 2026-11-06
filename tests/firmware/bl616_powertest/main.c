@@ -14,7 +14,7 @@
  *        What the BL616 sees of the rails: the switched 3V3 through the 10 k pull-ups on the SDIO
  *        lines, read as inputs only. 0V8 is implied (U8 is enabled by U6's power-good); 1V8 and
  *        1V1 are not visible: measure them (power_check.py) or use pt_run.
- * UART   pt_uart on|off|send <text>   UART0 = the K230 link (IO21 TX, IO22 RX, LINK_BAUD 8N1): one
+ * UART   pt_uart on|off|send <text>|frame <body>  UART0 = the K230 link (IO21 TX, IO22 RX, LINK_BAUD 8N1): one
  *                          message per second, anything received is echoed here. Only while 3V3 is
  *                          up (the link pins are pulled up to it); pt_off stops it first.
  * I2C    pt_i2c [scan]     AHT20 reading (0x38), or a scan of the whole bus (IO28/IO29, 3V3_SLEEP)
@@ -879,6 +879,16 @@ static int cmd_uart(int argc, char **argv)
         }
         LOCKED(for (int i = 2; i < argc; i++) { uart_send(argv[i]); uart_send(i + 1 < argc ? " " : "\r\n"); });
         printf("sent\r\n");
+    } else if (!strcmp(a, "frame") && argc > 2) {
+        /* test045: one link frame "$<body>*XX\n" (CRC added, no '\r'), the BL616's side of k230_link.h */
+        if (!uart_on) {
+            printf("UART0 is off: pt_uart on\r\n");
+            return 0;
+        }
+        char f[LINK_MAX_LINE + 8];
+        snprintf(f, sizeof(f), "$%s*%02X\n", argv[2], link_crc8(argv[2], argv[2] + strlen(argv[2])));
+        LOCKED(uart_send(f));
+        printf("sent frame\r\n");
     } else if (!strcmp(a, "baud") && argc > 2) {
         LOCKED(uart_stop(); link_baud = (uint32_t)atoi(argv[2]); uart_start());
         printf("UART0 at %lu baud\r\n", (unsigned long)link_baud);
@@ -931,7 +941,7 @@ static int cmd_uart(int argc, char **argv)
     }
     return 0;
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_uart, pt_uart, UART0 link: on (K230 console bridge) | off | send <text> | echo [k230 command]);
+SHELL_CMD_EXPORT_ALIAS(cmd_uart, pt_uart, UART0 link: on (K230 console bridge) | off | send <text> | frame <body> | echo [k230 command]);
 #endif
 
 #if PT_TEST_I2C

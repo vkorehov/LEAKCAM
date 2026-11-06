@@ -15,8 +15,7 @@
     <string name="show_password">Show password</string>
     <string name="send">Pair, check and save</string>
     <string name="save_anyway">Save without checking</string>
-    <string name="device_entry">%1$s   (%2$d dBm)</string>
-    <string name="device_entry_known">%1$s   (%2$d dBm, set up before)</string>
+    <string name="device_entry">%1$s</string>
     <string name="mine_title">Your LEAKCAMs</string>
     <string name="nearby_none">To set up a LEAKCAM or change its Wi-Fi, bring it near the phone. A new one shows up within 5 minutes (at once on USB power); one already set up shows up while it is on USB power.</string>
     <string name="nearby_new">%1$s is nearby and not set up from this phone.</string>
@@ -38,6 +37,11 @@
     <string name="mine_ssid">%1$s, Wi-Fi \"%2$s\"</string>
     <string name="mine_ssid_unknown">not reported yet</string>
     <string name="icon_bluetooth">in Bluetooth range</string>
+    <string name="icon_signal">signal strength (long press: dBm)</string>
+    <string name="icon_plug">on USB power</string>
+    <string name="icon_battery">on its battery</string>
+    <string name="signal_dbm">Signal %1$d dBm</string>
+    <string name="err_delete">%1$s was not deleted: the LEAKCAM server did not answer. Try again with internet.</string>
     <string name="mine_new">new</string>
     <string name="setup_wake">Wake %1$s to change its Wi-Fi</string>
     <string name="nearby_wake">%1$s is online but not in Bluetooth range. Standing near it? Tap Wake: it opens Bluetooth at its next check-in.</string>
@@ -98,4 +102,21 @@
     <string name="what_ssid">Wi-Fi name</string>
     <string name="what_psk">Wi-Fi password</string>
     <string name="what_commit">save command</string>
+
+    <!-- setup over the USB cable (DESIGN.md 5.3.4: the most reliable channel first, USB > Bluetooth) -->
+    <string name="usb_entry">%1$s (USB cable)</string>
+    <string name="start_usb">Looking for a LEAKCAM on the USB cable…</string>
+    <string name="usb_header">%1$s, connected by USB cable</string>
+    <string name="nearby_usb">%1$s is connected by USB cable: you can set its Wi-Fi.</string>
+    <string name="usb_send">Check and save</string>
+    <string name="help_usb_stored">%1$s has a Wi-Fi network stored%2$s. To change it, enter the new network and tap Check and save: it replaces the stored one only after the LEAKCAM has joined it and reached the internet.</string>
+    <string name="help_usb_unplugged">The USB cable was unplugged.</string>
+    <string name="icon_usb">connected by USB cable</string>
+    <string name="help_usb_wifi">Enter the Wi-Fi network %1$s should use (2.4 GHz; leave the password empty for an open network), then tap Check and save: it tries the network before it keeps it.</string>
+    <string name="help_usb_sending">Sending the Wi-Fi settings to %1$s over the USB cable…</string>
+    <string name="err_usb_pin">%1$s did not accept its setup code from the server. Unplug the cable, plug it in again and retry.</string>
+    <string name="err_usb_locked">%1$s refused too many wrong setup codes. Unplug the cable and plug it in again, then retry.</string>
+    <string name="err_usb_refused">%1$s refused the %2$s over the USB cable (%3$s). Try again.</string>
+    <string name="err_usb_gone">The USB cable to %1$s was unplugged. Plug it in again and retry.</string>
+    <string name="err_usb_unconfirmed">The USB cable to %1$s was unplugged before it confirmed the network, so the app cannot tell whether it was stored. Plug it in again and send again.</string>
 </resources>

@@ -11,10 +11,12 @@
 #include "api.h"
 #include "ble_pairing.h"
 #include "slot.h"
+#include "usb_setup.h"
 #include "wifi_check.h"
 
 #define SWITCH_TO_FULL_PHONE_MS 15000   /* the phone reads SAVED, then leaves; a reset under it looked like a failure */
 #define SWITCH_TO_FULL_WAKE_S   120     /* a phone's wake: time to find the board and tap Change (tests/test119) */
+#define SWITCH_TO_FULL_USB_MS   2000    /* the cable setup: the K230 relays STATUS SAVED, then goes off */
 #define SWITCH_TO_FULL_RETRY_S  (6 * 3600)   /* presence lost: the stored network tried again (DESIGN.md 5.3.1) */
 
 static volatile bool running;
@@ -43,15 +45,18 @@ static void usb_task(void *arg)
     size_t pl = ef_get_env_blob("wifi_psk", psk, sizeof(psk) - 1, &ps);
     if (ss == 0) {
         printf("switch_to_full: USB power, no network stored: setup stays\r\n");
+        usb_setup_begin();
     } else {
         api_poll_target(&api, path, ssid, sl, NULL, 0);
         enum wifi_check_state st = wifi_check_run(ssid, sl, psk, ps ? pl : 0, &wifi_check_probe, &api, no_progress,
                                                   &detail);
         if (st == WCHK_INTERNET)
             switch_now();                   /* never returns on success */
-        else
+        else {
             printf("switch_to_full: USB power, the stored network failed its check (state 0x%02x detail %u): setup stays\r\n",
                    st, detail);
+            usb_setup_begin();
+        }
     }
     running = false;
     vTaskDelete(NULL);
@@ -62,6 +67,12 @@ static void credentials_task(void *arg)
     (void)arg;
     for (uint32_t ms = 0; ble_pairing_connected() && ms < SWITCH_TO_FULL_PHONE_MS; ms += 100)
         vTaskDelay(pdMS_TO_TICKS(100));
+    if (usb_setup_active()) {
+        vTaskDelay(pdMS_TO_TICKS(SWITCH_TO_FULL_USB_MS));   /* the SAVED line reaches the phone */
+        usb_setup_end("network saved");
+        while (usb_setup_active())
+            vTaskDelay(pdMS_TO_TICKS(50));
+    }
     switch_now();
     running = false;
     vTaskDelete(NULL);

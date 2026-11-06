@@ -7,7 +7,7 @@
 # leakcam_stream, leakcam_hist, the change kmodel; a copy of the first product code, the attic is never read) plus
 # every test tool, one image so no test needs a reflash of its own (2026-10-25). Adds to the SDK tree (none of it is
 # in the product image):
-#   kernel  CherryUSB device, CDC ACM on USB0 (test115); tests/test017-nand-raw-speed/leakcam_bench.c -> board/
+#   kernel  (the USB device, CDC ACM on USB0, comes with install.sh: the product has it) tests/test017-nand-raw-speed/leakcam_bench.c -> board/
 #           (ddr_bench, nand_bench, uart_bench, usb_echo, boot_times,
 #           plt_write/plt_check, rtc_ppm/rtc_raw, pad_read, bat_watch); tests/test015 k230_bench.patch on the
 #           bl616_nethub driver (bl616_bench, bl616_clk, bl616_dump)
@@ -18,19 +18,9 @@ SDK=${1:-$HOME/k230_rtos_sdk}
 L=$(cd "$(dirname "$0")/../.." && pwd)
 A=$SDK/src/applications
 "$L/firmware/k230_board/install.sh" "$SDK"
-# test115: the K230's USB device on USB-C 1 (CherryUSB, CDC ACM ttyGS0, 1209:ABD1), in the test image only: appended
-# to the SDK copy of the RT-Smart defconfig that install.sh just wrote (the product's stays without it)
-cat >> "$SDK/src/rtsmart/rtsmart/kernel/bsp/maix3/configs/k230d_leakcam_defconfig" <<'CFG'
-CONFIG_ENABLE_CHERRY_USB=y
-CONFIG_ENABLE_CHERRY_USB_DEVICE=y
-CONFIG_CHERRY_USB_DEVICE_USING_DEV0=y
-CONFIG_ENABLE_CHERRY_USB_DEVICE_CLASS_DRV=y
-CONFIG_CHERRY_USB_DEVICE_ENABLE_CLASS_CDC_ACM=y
-CONFIG_CHERRY_USB_DEVICE_FUNC_CDC=y
-CFG
-# the SDK's CherryUSB glue calls rt_ioremap without its header: undeclared, the 64-bit address came back as an int
-G=$SDK/src/rtsmart/rtsmart/kernel/bsp/maix3/components/CherryUSB/port/dwc2/usb_glue_kendryte.c
-grep -q '<ioremap.h>' "$G" || sed -i 's|#include <rthw.h>|#include <rthw.h>\n#include <ioremap.h>|' "$G"
+# the test programs' agent is leakcam_agent, not the product's leakcam (install.sh sets that); the USB device and its
+# glue fix come with install.sh (product: DESIGN.md 5.3.8)
+sed -i 's|^CONFIG_RTT_AUTO_EXEC_CMD=.*|CONFIG_RTT_AUTO_EXEC_CMD="/sdcard/app/leakcam_agent \&"|' "$SDK/configs/k230d_rtos_leakcam_defconfig"
 cp "$L/tests/test017-nand-raw-speed/leakcam_bench.c" "$SDK/src/rtsmart/rtsmart/kernel/bsp/maix3/board/"
 patch -d "$SDK/src/rtsmart/rtsmart/kernel/bsp/maix3/drivers/extdrv/bl616_nethub" -p1 --forward \
     < "$L/tests/test015-sdio-speed/k230_bench.patch"
@@ -52,6 +42,7 @@ for t in "test027-video-encoder/venctest" "test025-ddr-stress/memtest"; do
     grep -q "subdirs-y += $n" "$A/apps.mk" || echo "subdirs-y += $n" >> "$A/apps.mk"
 done
 cd "$SDK"
+./leakcam_docker_build.sh k230d_rtos_leakcam_defconfig   # .config from the defconfig again: without it the old one stays (2026-11-05)
 ./leakcam_docker_build.sh log LEAKCAM_BENCH=1
 O=$SDK/output/k230d_rtos_leakcam_defconfig
 ls -l "$O"/*.kdimg "$O/images/sdcard/app"

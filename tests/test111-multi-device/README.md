@@ -40,6 +40,14 @@ app's INTERNET permission, ssh to the Pi for the poll interval.
    network; the app's storage holds IDs and names only, no network. **Delete:** the second LEAKCAM removed from the
    list, the board still listed.
 
+7. **Delete, the only user (user, 2026-11-04; DESIGN.md 5.3.5):** before it the server lists this phone as the board's
+   user (registered when it issued the PIN, by Android ID; GET /v1/devices/<id> "phones"), after it none (the delete
+   goes to the server first, the app's list only after it confirmed); the board deleted in the app stays out of the list,
+   also after the app is reopened (no "rediscover"); with no phone left the server answers its check-in `410 Gone`
+   and the board is back in the setup firmware within one check-in interval; set up again from the app afterwards.
+   **Not built yet** (the app's delete to the server first, the server's phones per board, the full firmware's 410): fails until
+   then.
+
 ## Setup mode (DESIGN.md 5.3.1, planned)
 
 - In setup mode (once test120 passed): a board without presence shows red in the app and is reachable over BLE from

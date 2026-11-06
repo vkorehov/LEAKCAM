@@ -18,11 +18,13 @@
 #define POLL_S      60                       /* until the server says otherwise */
 #define POLL_MIN_S  5
 #define POLL_MAX_S  3600
+#define MISSED_MAX  3                        /* presence lost after this many failed check-ins in a row */
 
 static uint32_t poll_s = POLL_S;
 static enum wifi_check_state last = WCHK_IDLE;
 static uint16_t last_detail;
 static uint32_t last_ms;
+static unsigned missed;                      /* failed check-ins in a row */
 
 static void no_progress(enum wifi_check_state st, uint16_t detail)
 {
@@ -51,9 +53,19 @@ static void check_in(void)
         if (v >= POLL_MIN_S && v <= POLL_MAX_S)
             poll_s = (uint32_t)v;
     }
-    if (last != WCHK_INTERNET)
-        switch_to_setup("lost");          /* presence lost, for whatever reason (tests/test117) */
-    else if (strstr(body, "\"ble\":1"))
+    if (last == WCHK_CAPTIVE && last_detail == 410) {
+        switch_to_setup("unused");        /* no user left: back to setup (DESIGN.md 5.3.5, tests/test111) */
+        return;
+    }
+    if (last != WCHK_INTERNET) {
+        /* presence does not flap: lost only after MISSED_MAX failed check-ins in a row, a short outage never starts
+         * the setup firmware (DESIGN.md 5.3.6) */
+        if (++missed >= MISSED_MAX)
+            switch_to_setup("lost");      /* presence lost, for whatever reason (tests/test117) */
+        return;
+    }
+    missed = 0;
+    if (strstr(body, "\"ble\":1"))
         switch_to_setup("wake");          /* a phone out of range asked through the server (tests/test119) */
 }
 
@@ -80,8 +92,8 @@ static void cmd_presence(int argc, char **argv)
     printf("presence: id %s, server %s:%s, poll %lu s\r\n", device_id(), API_HOST, API_PORT,
            (unsigned long)poll_s);
     if (last_ms)
-        printf("presence: last check-in state 0x%02x detail %u, %lu s ago\r\n", last, last_detail,
-               (unsigned long)(((uint32_t)bflb_mtimer_get_time_ms() - last_ms) / 1000));
+        printf("presence: last check-in state 0x%02x detail %u, %lu s ago, missed %u of %u\r\n", last, last_detail,
+               (unsigned long)(((uint32_t)bflb_mtimer_get_time_ms() - last_ms) / 1000), missed, MISSED_MAX);
     else
         printf("presence: no check-in yet\r\n");
 }

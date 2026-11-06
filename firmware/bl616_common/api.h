@@ -27,7 +27,7 @@ void api_poll_target(struct wifi_check_target *t, char *path, const char *ssid, 
 /* the kept crash record for the server: POST /v1/devices/<id>/crash, the form image=..&ver=..&n=..&k=..&t=..&up=..&c=..
  * &pc=..&v=..&ra=..&sp=..&st=..&bt=<hex,...>; 200 expected; false with no record. path >= API_PATH_CAP, form >=
  * API_CRASH_FORM_CAP; *count: the record's count, for crash_rec_sent() (DESIGN.md 5.3.3) */
-#define API_CRASH_FORM_CAP 384
+#define API_CRASH_FORM_CAP 512   /* with a fatal error's message (m=, up to 120 encoded) */
 bool api_crash_target(struct wifi_check_target *t, char *path, char *form, uint32_t *count);
 
 #endif

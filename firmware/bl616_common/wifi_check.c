@@ -148,7 +148,7 @@ static int probe_connect(const struct addrinfo *ai)
 static enum wifi_check_state internet(const struct wifi_check_target *t, uint16_t *detail)
 {
     struct addrinfo hints, *ai = NULL;
-    static char req[640];                /* the headers + a crash record's form (api.h); static: one run at a time */
+    static char req[768];                /* the headers + a crash record's form (api.h); static: one run at a time */
     char buf[320];
     int n = 0, want = t->body ? (int)sizeof(buf) - 1 : 12;   /* the status line, or the whole short answer */
     int rl;

@@ -95,6 +95,10 @@ the bl616_nethub line (asserted). `extdrv/SConscript` builds every subfolder.
     and `RT_DEVICE_CTRL_NOTIFY_SET` (the tty console's receive callback); writes go to uart1 with `\n` -> `\r\n`.
   - **`link`** (`/dev/link`): the agent's frames, with DFS file operations like the serial driver's (non-blocking
     read returns 0, `poll()` reports POLLIN through the device wait queue). Writes go to uart1 unchanged.
+    **The file ops are attached after `rt_device_register()`**: register sets `dev->fops = RT_NULL` and re-inits the
+    wait queue. Attached before it (until 2026-11-05), `/dev/link` fell back to devfs's generic ops, whose `poll()`
+    always returns 0: no program ever read a frame (READY never answered; tests/test045). `link_stat` prints
+    `/dev/link fops attached|MISSING` with the ring, poll and read counters.
 - It then opens `uart1` itself (`RT_DEVICE_FLAG_INT_RX`) and sets its `rx_indicate`: in the receive interrupt the
   bytes go through the splitter, text into the `kcon` ring (2 KB) + the console's notify, frames into the `link` ring
   (1 KB) + a POLLIN wake-up. Whole frames only: one that does not fit is dropped (the sender resends).

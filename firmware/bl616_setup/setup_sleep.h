@@ -10,7 +10,7 @@
 
 /* the low-power callbacks, the USB plug wake and the unplug (back to the sleep); after bl_lp_init() (setup_boot.c) */
 void setup_sleep_init(void);
-/* the phone connection callbacks (a connection keeps the chip awake); after ble_pairing_start() */
+/* a phone connection keeps the chip awake (ble_pairing_link_cb); before advertising starts */
 void setup_sleep_ble_register(void);
 
 /* sleep between advertisements until setup_sleep_end(); refused while USB power is present (the full firmware's
