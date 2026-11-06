@@ -1,6 +1,12 @@
 # test048: every metric in every check-in (low level: the BL616's sensors, the K230's STATUS, the server)
 
-Status: **planned** (2026-11-06): built (BL616 pair, K230 image, server), not run.
+Status: **pass, automated part** (2026-11-06, run.py 33/33, BL616 pair 0.6+ga4a09a9, K230 0.6+ga2c63b0, 538 s).
+Steps 1, 5, 6 (reboot), 8, 9 (without the AP off), 10, 11, 13 (without a battery change), 14, 15 pass; steps 2-4
+(room meter, finger, wet probe), 6's EN / watchdog / battery change, 7 and 12 need a hand or a test firmware: open.
+Found: the AHT20 reads the board, not the room, on USB power: 38-44 C, 24-26 %RH on the bench (25.8 C, 53.9 %RH on
+2026-10-17, test002): the BL616 die 37-38 C, the K230 die 52-56 C during a session; step 2 decides whether the
+check-in's `t` and `rh` can stand for the room at all. Fixed on the way: a timed return to the full firmware cut a
+running relay without recording it (`ks 0` after a relay, a4a09a9; HISTORY.md).
 
 Every check-in is `POST /v1/poll?id=<id>` with a form of all the board's metrics (DESIGN.md 5.3.10): the AHT20 over
 I2C, the probe node, the BL616's die and supply, the battery, uptime, boots, the reset cause, crashes, the heap, this
@@ -52,16 +58,23 @@ BL616: aht20.c, metrics.c (both firmwares), wifi_check.c's link figures and form
 the STATUS frame's fields, `/dev/ts`, `/dev/sysstat` (CONFIG_RT_USING_SYS_STAT). Server: the POST check-in,
 LEAKCAM_METRICS.
 
-## Metrics (**MISSING**: not run; skill leakcam-test-metrics)
+## Metrics (2026-11-06 run; skill leakcam-test-metrics)
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, reset release -> app init | **MISSING** | test022 | |
-| This part's boot share | **MISSING** | - | metrics_boot() at main() |
-| Test run time | **MISSING** | - | |
-| Sensor read before a check-in | **MISSING** | <= 80 ms | AHT20 + 3 ADC reads |
-| Form size | **MISSING** | <= 512 B | wifi_check.c's form buffer |
-| Current idle / during | **MISSING** | floor (test031) | |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak | over >= 8 check-ins |
-| Image (sizes) | **MISSING** | minimal image (rule) | |
-| Speed / rate against the top | **MISSING** | SPEEDS.txt | |
+| Boot, reset release -> app init | console back 6.2 s after `reboot` (USB re-enumeration included); K230 READY 794 ms after the run | test022 | |
+| This part's boot share | two register accesses and a counter (metrics_boot), not measurable | - | metrics_boot() at main() |
+| Test run time | 538 s automated (run.py, 2026-11-06), no setup | - | |
+| Sensor read before a check-in | <= 97 ms (the whole `metrics` command over the console, sampling and printing) | <= 80 ms | AHT20 + 3 ADC reads |
+| Form size | 319 B metrics + ssid/version (399 B with ~80 B prefix) of 512 | <= 512 B | wifi_check.c's form buffer |
+| Current idle / during | n/a: on USB power, not metered | floor (test031) | |
+| Memory BL616 / K230 (start / min / end), leak | free 193972..194104 B, minfree 188044 B over 7 check-ins; K230 heap 7002240 B, min 6992384 B, pages 46583808 B | no leak | over >= 8 check-ins |
+| Image (sizes) | BL616 test firmware 1326272 B (2026-11-06, on the board at the run) | minimal image (rule) | |
+| Speed / rate against the top | check-in Wi-Fi scan 629 + join 251 + DHCP 50 ms (test100: join 0.24-0.47 s); cable setup COMMIT -> SAVED 1.39 s | SPEEDS.txt | |
+| Voltage under load (min) | n/a: on USB power | cutoff 3.10 V (bug-004) | |
+| Power, energy per operation | n/a: on USB power, not metered | - | the sensor read ~70 ms awake per check-in (metrics.h) |
+| Per day | n/a: not metered | ENERGY.txt line | |
+| Temperature die / board (start / peak / end) | BL616 die 37.0 / 38.5 / 38.3 C; board (AHT20) 37.9 / 43.9 / 41.4 C; K230 die 45.1 / 55.7 / 55.7 C in the relay | K230 limit (datasheet) | |
+| Compile flags | BL616 product -Os -g (SDK Kconfig default), no LTO; K230 program -Os -march=rv64imafdcv, sections + --gc-sections, strip (as test113) | smallest code (rule) | |
+| Features over the minimal image | metrics.c, aht20.c (BL616 both firmwares); /dev/sysstat, /dev/ts reads (K230) | test008 floor | |
+| Optimised build (-O3, LTO, -march) | n/a: not an optimisation test | the faster one stays | |

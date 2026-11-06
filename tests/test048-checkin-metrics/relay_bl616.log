@@ -1,0 +1,154 @@
+rc32k_coarse_trim: mtimer_us:50000, rtc_us:49957
+
+rc32k_coarse_trim: retry_cnt:2, ppm:-860, finish!
+
+rc32k coarse trim success!, total time:124ms
+
+rc32k_coarse_trim: set lp_32k ready!
+
+Read slot:0
+
+ACL LE buffers: pkts 4 mtu 251,CONFIG_BT_L2CAP_TX_BUF_COUNT=4, le_read_buffer_size_complete
+
+[0m[I][] ble: ready as 7C3E8262B149
+[CHIP] fhost_config_prepare: Fixing chan5G_cnt from 28 to 0 (2.4G-only chip)
+----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
+Read slot:0
+get sta mac: 7c:3e:82:62:b1:49
+Read slot:0
+get ap mac: 7c:3e:82:62:b1:49
+wifi_mgmr: code = CN
+  2.4G channels: 1-13 (total: 13)
+  5G channels: none
+SIGTERM is NOT supported yet!
+SIGHUP is NOT supported yet!
+k230: first heartbeat edge 793 ms after the run
+k230: READY 794 ms after the run
+k230: WAKE setup taken 795 ms after the run
+k230: STATUS setup,0,0.6+ga2c63b0,451,7002240,6992384,46583808, battery -1 mV kept
+[0mr[0m[0mc[0m[0m3[0m[0m2[0m[0mk[0m[0m_[0m[0mc[0m[0mo[0m[0ma[0m[0mr[0m[0ms[0m[0me[0m[0m_[0m[0mt[0m[0mr[0m[0mi[0m[0mm[0m[0m:[0m[0m [0m[0mm[0m[0mt[0m[0mi[0m[0mm[0m[0me[0m[0mr[0m[0m_[0m[0mT[0m[0mX[0m[0m_[0m[0mB[0m[0mU[0m[0mF[0m[0m_[0m[0mC[0m[0mO[0m[0mU[0m[0mN[0m[0mT[0m[0m=[0m[0m4[0m[0m,[0m[0m [0m[0ml[0m[0me[0m[0m_[0m[0mr[0m[0me[0m[0ma[0m[0md[0m[0m_[0m[0mb[0m[0mu[0m[0mf[0m[0mf[0m[0me[0m[0mr[0m[0m_[0m[0ms[0m[0mi[0m[0mz[0m[0me[0m[0m_[0m[0mc[0m[0mo[0m[0mm[0m[0mp[0m[0ml[0m[0me[0m[0mt[0m[0me[0m[0m
+[0m[31mrc32k_coarse_trim:: command not found.
+[0m[36mbouffalolab />[0m[0m
+[0m[36mbouffalolab />[0mk230: STATUS setup,60,0.6+ga2c63b0,548,7002240,6992384,46583808, battery -1 mV kept
+k230: STATUS setup,120,0.6+ga2c63b0,542,7002240,6992384,46583808, battery -1 mV kept
+k230: STATUS setup,180,0.6+ga2c63b0,557,7002240,6992384,46583808, battery -1 mV kept
+usb_setup: phone authenticated
+Disable Auto Reconnect
+Not connected
+start connecting ... 
+----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] CTRL-EVENT-NETWORK-ADDED 0
+WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
+Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c 
+�[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
+�[WPA] CTRL-EVENT-SCAN-RESULTS 
+�[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+sm_connect_req_handler sm_env.auth_retry_gap = 0
+--- OPT rxu_mgmt_ind is detected
+[802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
+rc_init: station_id=0 format_mod=2 pre_type=0 short_gi=1 max_bw=0
+rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
+��No handler found for msg:1d from tsk:0 to tsk:6
+[FU]Set timer,state is 5,ongoing++, timeout:512000
+[FU]Tx cfm ongoing--, value is 0
+[FL]RECV AUTH,sn:1403
+[FU]RECV AUTH,sn:1403
+[FU]Rx handler,state:5,fctl:0xb0
+[FU]Clear timer in auth handler
+[FU]Set timer,state is 8,ongoing++, timeout:1024000
+[FU]Tx cfm ongoing--, value is 0
+[FL]RECV ASSOCRSP,sn:1404
+[FU]RECV ASSOCRSP,sn:1404
+[FU]Rx handler,state:8,fctl:0x10
+[FU]Clear timer in assoc rsp handler
+sm_connect_ind sm_env.auth_retry_gap = 0
+[lwip] netif status callback
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] Associated with 84:D8:1B:24:0A:3C
+�[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
+�[WPA] STA-RX-EAPOL1
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] STA-TX-EAPOL2
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] STA-RX-EAPOL3
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] STA-TX-EAPOL4
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
+�[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+=================================================================
+[AT][RX] Connection Status
+[AT][RX]   status_code 0
+[AT][RX]   reason_code 0
+[AT][RX]   status detail: sm connect ind ok
+[AT][RX]   MAC 84:D8:1B:24:0A:3C
+[AT][RX]   vif_idx 1
+[AT][RX]   ap_idx 0
+[AT][RX]   ch_idx 0
+[AT][RX]   qos 1
+[AT][RX]   aid 8
+[AT][RX]   band 2.4G
+[AT][RX]   channel 11
+=================================================================
+start dhcping on vif 0 ... 
+[32mLwIP DHCP ack (wl 1): [0m
+  IP:192.168.1.222
+  MASK: 255.255.255.0
+  Gateway: 192.168.1.1
+[lwip] netif status callback
+[quick_connect] dhcp bind ip callback
+  IP: 192.168.1.222
+  MK: 255.255.255.0
+  GW: 192.168.1.1
+{FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
+[0m[I][WCHK] check of "VK": state 0x03 detail 0
+Disable Auto Reconnect
+��==========================  Keyram Config ========================
+��  start 08 -->> end 11; nVAP 02; max 31
+==========================  Keyram Dump =========================
+[id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
+==========================  MAC Address =========================
+    MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
+  BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
+[FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 33
+=================================================================
+[AT][RX] Connection Status
+[AT][RX]   status_code 19
+[AT][RX]   reason_code 0
+[AT][RX]   status detail: user disconnect and send deauth
+[AT][RX]   state detail: 0x0
+[AT][RX]   vif_idx 0
+=================================================================
+[lwip] default netif cleared
+[lwip] netif status callback
+�[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] CTRL-EVENT-DSCP-POLICY clear_all
+�[WPA] CTRL-EVENT-DSCP-POLICY clear_all
+�[WPA] CTRL-EVENT-NETWORK-REMOVED 0
+�[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
+�[WPA] CTRL-EVENT-DSCP-POLICY clear_all
+WiFi disconnect
+[0m[I][] provision: Wi-Fi credentials stored
+k230: off (network saved) 198426 ms after power-on: READY at 794 ms, 396 heartbeat edges, 3V3 fall 10077 us, rx dropped 0, fifo overflows 0, tx 327 B, tx failed 0
+k230: session end: mem free 127780 min 110896 blocks 108 tasks 18 deleted 0
+Active Partition[1] consumed 596 Bytes
+======= PtTable_Config @0x62fd4a0c=======
+magicCode 0x54504642; version 0x0000; entryCnt 8; age 3; crc32 0xF13C871D
+idx  type device active_index     name   Address[0]  Address[1]  Length[0]   Length[1]   age
+[00]  16     0         0        Boot2  0x00000000  0x00000000  0x0000e000  0x00000000  0
+[01]  00     0         1           FW  0x00010000  0x00210000  0x00200000  0x00168000  3
+[02]  10     0         0          mfg  0x00210000  0x00000000  0x00168000  0x00000000  0
+[03]  02     0         0        media  0x00378000  0x00000000  0x00071000  0x00000000  0
+[04]  03     0         0          PSM  0x003e9000  0x00000000  0x00008000  0x00000000  0
+[05]  04     0         0          KEY  0x003f1000  0x00000000  0x00002000  0x00000000  0
+[06]  05     0         0         DATA  0x003f3000  0x00000000  0x00005000  0x00000000  0
+[07]  06     0         0      factory  0x003f8000  0x00000000  0x00008000  0x00000000  0
+slot: 1 -> 0, reset in 0.5 s

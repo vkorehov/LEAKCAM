@@ -1,6 +1,9 @@
 # test046: the K230's battery reading on every link frame, kept by the BL616 (low level: the link, both firmwares)
 
-Status: **planned** (2026-11-06): built (K230 image, BL616 pair), not run.
+Status: **partly run** (2026-11-06, from test048's relay: test048-checkin-metrics/relay_*.log): step 1 on USB power
+pass (the K230 read 3737 mV, the BL616 kept nothing: `battery -1 mV kept`), step 6 pass (start t 584 ms -> battery
+t 585 ms: 1 ms), step 7 pass (STATUS at K230 uptime 0, 60, 120, 180 s with every field). Steps 2-5 need the board
+on battery (USB-C 1 out by hand): open.
 
 The K230 is the only one that can read the battery (VBAT/3 on ADC_1, tests/test023). The product program reads it at
 its start and attaches it to every frame it sends as `;b=<mV>` (k230_link.h). The BL616 takes it from every frame and
