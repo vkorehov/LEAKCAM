@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-06 (run.py, 154 s): pass
+
+28/28 checks pass.
+
+
 ### Automated run 2026-11-04 (run.py, 324 s): **FAIL**
 
 24/25 checks pass. Failed: app: the deleted board back in the list by itself (USB, server online) (75 s, ).

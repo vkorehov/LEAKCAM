@@ -1,6 +1,6 @@
 # test111: more than one LEAKCAM: one device ID everywhere, presence through the server
 
-Status: **pass, 18/18** (2026-11-01 11:24, run.py): one device ID (7C3E8262B149) on the board, USB and BLE; the app
+Status: **pass, 28/28** (2026-11-06 09:20, run.py, 150 s; product firmware with the cable setup): one device ID (7C3E8262B149) on the board, USB and BLE; the app
 opens on its status screen, sets up a known board through it with the short "change Wi-Fi" flow, shows a stored network
 as hidden and stores none; the board online at the server after a setup; a second LEAKCAM online, offline, deleted.
 

@@ -107,7 +107,7 @@ try:
     check("USB serial number = the device ID", usb_id == dev, f"USB {usb_id}")
     add_to_app(dev, only=True)   # starting state: the app knows this board, nothing else
     adb("logcat", "-c")
-    res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=150)
+    res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=30)
     helps = res.get("help", [])
     last = helps[-1]["help"] if helps else res.get("error", "no help text")
     check("setup Done", last.startswith("Done."), f"{res.get('ms_end', 0) / 1000:.1f} s")
@@ -194,8 +194,8 @@ try:
     check("no user left: the board back in the setup firmware by itself", t is not None,
           f"{t:.0f} s after the delete" if t else str(firmware()))
     if t is not None:                          # set up again from the app: the bench as it was (the full firmware)
-        op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=150)
-        check("set up again after it: the full firmware", to_firmware("full", secs=90) is not None, str(firmware()))
+        op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=30)
+        check("set up again after it: the full firmware", to_firmware("full", secs=30) is not None, str(firmware()))
     r.sample("after the checks")
 finally:
     poll_interval(60)
