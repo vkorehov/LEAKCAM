@@ -6,7 +6,8 @@ battery not measured yet" (`row ... bat -1 chg 1`). First look: no icon at all, 
 in BLE range though the server said `charging`; fixed (the server's power alone shows the outline). Steps 1 and 5 pass
 (22:40-22:42, full firmware 0.6+ga2fa289): USB-C 1 out -> the K230's reading at the unplug (3815 mV) at the server 3 s
 later (the check-in at once), the app's row grey, half filled, "Battery 50 %"; USB-C 1 in -> `charging` at the server
-27 s later (the next 60 s check-in), the row green, half filled, "Charging (USB power) · 50 % when last on battery".
+27 s later (the next 60 s check-in; since 98b2118/98ca601 the plug checks in at once: unplug -> server 2 s, plug ->
+server at once, the K230's relay device back 3 s later, 22:48-22:49), the row green, half filled, "Charging (USB power) · 50 % when last on battery".
 Steps 3-4 (BLE only, the USB cable's ID line) open.
 
 The app shows one battery icon per LEAKCAM: filled to the charge, green while it is on USB power (charging), red at
