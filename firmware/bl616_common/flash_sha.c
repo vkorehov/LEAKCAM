@@ -10,7 +10,7 @@ void flash_sha256(uint32_t addr, uint32_t len, char out[65])
     static uint8_t buf[512];
     static struct bflb_sha256_ctx_s ctx;
     uint8_t h[32];
-    struct bflb_device_s *sha = bflb_device_get_by_name("sha");
+    struct bflb_device_s *sha = bflb_device_get_by_name(BFLB_NAME_SEC_SHA);   /* "sha" asserted (test130) */
 
     bflb_sha_init(sha, SHA_MODE_SHA256);
     bflb_sha256_start(sha, &ctx);
