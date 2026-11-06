@@ -27,6 +27,7 @@
 #include "../../../firmware/k230_board/k230_link.h"   /* LINK_BAUD: the link's one rate */
 #include "../../../firmware/k230_board/k230_linesplit.h"   /* frames vs K230 console text on the link */
 #include "../../../firmware/bl616_common/usb_console2.h"     /* the second USB port: the K230 console */
+#include "../../../firmware/bl616_common/battery.h"        /* battery_usb_power(), below */
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -2027,4 +2028,11 @@ int main(void)
     vTaskStartScheduler();
     while (1) {
     }
+}
+
+/* the product's provisioning (pt_ble, provision.c) reports USB power with the battery (battery.h); here the console's
+ * pt_* commands drive the power, there is no PGOOD reader: none (as ble_pairing_usb_power()) */
+bool battery_usb_power(void)
+{
+    return false;
 }

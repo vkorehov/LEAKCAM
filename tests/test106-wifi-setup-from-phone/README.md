@@ -58,6 +58,8 @@ Android 8.0+, the app's BLE permissions.
 7. **On battery:** the whole setup over BLE alone, no USB: tests/test116-ble-only-setup (its own test since
    2026-11-01).
 8. **Repeats:** 8 setups in a row (the leak verdict's minimum) (alternating two networks): every one Done, BL616 memory steady (mem_leak.py).
+9. **Battery in the advertisement (DESIGN.md 5.3.9):** byte 10 of the manufacturer data is the battery in 20 mV
+   steps (0xFF none); the scan response still fits (26 of 31 bytes) and the setup is as fast as before.
 
 ## Setup mode (DESIGN.md 5.3.1, planned)
 

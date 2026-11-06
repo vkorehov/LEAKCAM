@@ -3,6 +3,7 @@
  * resends, the K230 console text passed to the second USB port. Fed with the wire's bytes by k230_session.c.
  * Never logs a frame's contents: the USB setup lines carry the Wi-Fi credentials.
  */
+#include "battery.h"
 #include "k230_link.h"
 #include "k230_linesplit.h"
 
@@ -90,6 +91,12 @@ static bool parse(struct link_msg *out)
     if (strtoul(star + 1, NULL, 16) != link_crc8(line, star))
         return false;
     *star = 0;
+    /* the attributes after the last ';': the battery the K230 measured, on every frame (k230_link.h) */
+    char *attr = strrchr(line, ';');
+    if (attr && attr[1] == 'b' && attr[2] == '=') {
+        *attr = 0;
+        battery_seen((int)strtol(attr + 3, NULL, 10));
+    }
     char *end;
     unsigned long seq = strtoul(line, &end, 10);
     if (end == line || *end != ',' || seq > 255)

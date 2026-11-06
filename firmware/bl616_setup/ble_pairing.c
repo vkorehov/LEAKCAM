@@ -4,6 +4,7 @@
  * no shell on UART0 (UART0 is the K230 link on LEAKCAM), and SMP pairing is gated on USB power.
  */
 #include "ble_pairing.h"
+#include "battery.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -250,14 +251,17 @@ static void adv_start(void)
 {
     /* local, as in the SDK example: BT_DATA_BYTES builds compound literals, and bt_le_adv_start()
      * copies the payload into the controller before returning */
-    /* manufacturer data, company 0xFFFF (none): the device ID (device_id.c) and a flags byte (bit 0: a Wi-Fi network
-     * is stored, bit 1: USB power). The app tells a LEAKCAM it set up before from a new one and shows a stored network as hidden,
-     * without connecting. In the scan response with the name (11 + 14 bytes): the advertisement is full (21 + 10) */
-    uint8_t mfg[9] = { 0xFF, 0xFF };
+    /* manufacturer data, company 0xFFFF (none): the device ID (device_id.c), a flags byte (bit 0: a Wi-Fi network
+     * is stored, bit 1: USB power) and the battery in 20 mV steps (the last reading on battery, 0xFF none; DESIGN.md
+     * 5.3.9). The app tells a LEAKCAM it set up before from a new one, shows a stored network as hidden and the battery,
+     * without connecting. In the scan response with the name (12 + 14 of 31 bytes): the advertisement is full (21 + 10) */
+    uint8_t mfg[10] = { 0xFF, 0xFF };
+    int mv = battery_mv();
     size_t saved = 0;
     device_id_bytes(&mfg[2]);
     (void)ef_get_env_blob("wifi_ssid", NULL, 0, &saved);   /* only the length: 0 when none is stored */
     mfg[8] = (saved ? 0x01 : 0x00) | (ble_pairing_usb_power() ? 0x02 : 0x00);
+    mfg[9] = mv < 0 ? 0xFF : (uint8_t)(mv / 20 > 254 ? 254 : mv / 20);
     struct bt_data ad[] = {
         BT_DATA_BYTES(BT_DATA_FLAGS, BT_LE_AD_NO_BREDR | BT_LE_AD_GENERAL),
         BT_DATA_BYTES(BT_DATA_UUID128_ALL, LEAKCAM_UUID_BYTES(0x000000000001)),

@@ -40,6 +40,10 @@
     <string name="icon_signal">signal strength (long press: dBm)</string>
     <string name="icon_plug">on USB power</string>
     <string name="icon_battery">on its battery</string>
+    <string name="battery_tip">Battery %1$d %%</string>
+    <string name="battery_tip_charging">Charging (USB power) · %1$d %% when last on battery</string>
+    <string name="battery_tip_unknown">Battery: not measured yet</string>
+    <string name="battery_tip_charging_unknown">Charging (USB power) · battery not measured yet</string>
     <string name="signal_dbm">Signal %1$d dBm</string>
     <string name="err_delete">%1$s was not deleted: the LEAKCAM server did not answer. Try again with internet.</string>
     <string name="mine_new">new</string>

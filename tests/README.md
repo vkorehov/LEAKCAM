@@ -82,6 +82,7 @@ Leak tests, one per operation the product repeats:
 | [test043 the K230's USB device on USB-C 1](test043-k230-usb-device/README.md) | 2026-11-05 | **pass**: CherryUSB CDC ACM (1209:ABD1) up 0.73 s after the K230 start, seen by the VM at 4.1-4.4 s (~3.3 s VMware passthrough); 200/200 16-byte round trips; 1 MB echoed, 0 wrong, 3317 KB/s (test image only) |
 | [test044 the phone sees the board over a USB-C cable](test044-phone-usb-link/README.md) | 2026-11-05 | **steps 1-6 pass**: phone as USB host lists the K230 device 1.41 s after its start (median of 5, max 1.58 s), gone 0.28 s after power-off; step 7 (app icon) waits for the app |
 | [test045 link frames reach a K230 program through /dev/link](test045-k230-link-frames/README.md) | 2026-11-05 | **pass**: 5/5 starts the K230 program gets ACK + WAKE (READY 0.43 s after pt_run, READY -> WAKE 8 ms) after the fix: link_mux set `/dev/link`'s file ops before `rt_device_register()`, which clears them; devfs's poll never reported data, no K230 program had ever got a frame |
+| [test046 the K230's battery reading on every link frame, kept by the BL616](test046-battery-attribute/README.md) | 2026-11-06 | **planned**: built (K230 image, BL616 pair), not run |
 | **High level (100+): the product's whole flow** | | |
 | [test100 Wi-Fi throughput, K230 -> SDIO -> BL616 -> AP](test100-wifi-throughput/README.md) | 2026-10-25 | **steps 1-4 pass**: K230 address 0.33-0.59 s after the card binds; TCP up 27.5 / down 22.1 Mbit/s, UDP up 35.4. |
 | [test101 session length (wake to power-off)](test101-boot-and-session-time/README.md) | 2026-10-30 | **pass, steps 1-2**: 10/10 sessions, power-on -> READY 0.87 s, rails off 27.68 s |
@@ -111,7 +112,8 @@ Leak tests, one per operation the product repeats:
 | [test127 the setup firmware hands over on a USB plug, checked to the API](test127-usb-handover-to-full/README.md) | 2026-11-02 | **pass** 1-6: a real plug from BLE sleep hands over; server down 0x19, wrong password 0x11, no network: setup stays; BLE setup hands over after SAVED |
 | [test128 crash records reach the server over Wi-Fi](test128-crash-record-to-server/README.md) | 2026-11-02 | **pass** 1 2 3 5 7: exception and hang at the server 4.1 s after the reset, kept while the server is down, sent by the setup firmware too, count 2 for two; records on disk at the server |
 | [test129 app power and signal icons](test129-app-power-signal-icons/README.md) | 2026-11-04 | **pass** 6/6: plug icon on USB power, battery icon on battery, signal bars match the RSSI, long press shows the dB |
-| [test130 OTA upgrade of the K230 image and the BL616 full firmware](test130-ota-upgrade/README.md) | 2026-11-05 | **planned**: the setup firmware stays wire-only (user) |
+| [test130 OTA upgrade of the BL616 full firmware and the K230 image](test130-ota-upgrade/README.md) | 2026-11-06 | **BL616 part built, not run**: the full firmware stages the .xz in slot 0's free end, the setup firmware unpacks it with no network; K230 part planned |
+| [test131 the app's battery icon from every channel](test131-app-battery-level/README.md) | 2026-11-06 | **planned**: built (app, server, BL616 pair, K230 image), not run |
 
 ## Re-test audit after the two-firmware design (2026-11-02)
 

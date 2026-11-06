@@ -24,6 +24,9 @@ target_sources(app PRIVATE
                ${P}/setup_boot.c
                ${P}/setup_sleep.c
                ${P}/switch_to_full.c
+               ${P}/ota.c
+               ${S}/flash_sha.c
+               ${S}/battery.c
                ${P}/wifi_setup.c
                ${S}/usb_console2.c
                ${S}/wdg_guard.c

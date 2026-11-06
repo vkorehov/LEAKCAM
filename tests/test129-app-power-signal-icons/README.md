@@ -28,6 +28,9 @@ the plug / battery icons, the long press, the "row" log line).
 3. A long press on the bars: the dB value (logged "dbm <n>").
 4. `--battery`: USB-C 1 out -> the battery icon (the unplug restarts advertising with bit 1 clear); back in.
 5. The real network set from the app again: the full firmware (the bench as it was).
+6. **The battery icon (2026-11-06, DESIGN.md 5.3.9) replaces the plug/battery pair:** one icon filled to the
+   charge from the advertisement's battery byte, green on USB power (flags bit 1), grey/red on battery; the row log's
+   `power plug|battery` stays and gains `bat <percent> chg <0|1>` (test131 checks the level).
 
 ## Pass
 

@@ -1,9 +1,15 @@
 /*
  * BL616 <-> K230 line protocol on UART0 (BL616) / UART1 (K230), LINK_BAUD 8N1.
  *
- *   $<seq>,<CMD>[,<arg>...]*<XX>\n     seq = 0..255, counted by each sender on its own
+ *   $<seq>,<CMD>[,<arg>...][;b=<mV>]*<XX>\n
+ *                                      seq = 0..255, counted by each sender on its own
  *                                      XX  = CRC-8 of the bytes between '$' and '*' (link_crc8),
  *                                            two hex digits
+ *                                      ;b=<mV>: the K230 attaches the battery it measured (VBAT on
+ *                                            ADC_1, -1 = its ADC failed) to every frame it sends, ACKs
+ *                                            too; the BL616 takes it from after the last ';' and keeps
+ *                                            it (battery.c) for the phone and the server (DESIGN.md
+ *                                            5.3.9, tests/test046). The BL616's frames carry none
  *
  * Every frame except ACK/NAK is a command and is answered. The BL616 answers ACK,<seq>
  * (accepted) or NAK,<seq>,<code> (received but refused, code = LINK_ERR_*); the agent accepts

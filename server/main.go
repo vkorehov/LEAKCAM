@@ -49,6 +49,10 @@ type Device struct {
 	SSID     string `json:"ssid"`        // the network it checked in from (not secret; the passphrase never comes)
 	Wake     bool   `json:"wake"`        // a BLE wake waits for its next check-in
 	Phones   int    `json:"phones"`      // its registered users (phones)
+	// the battery as its last check-in said (DESIGN.md 5.3.9): the K230's last reading on battery, -1 none; charging =
+	// on USB power then (the reading is not refreshed on USB: the K230 reads the charger's rail there)
+	BatteryMV int  `json:"battery_mv"`
+	Charging  bool `json:"charging"`
 }
 
 // Crash is one board crash record, as the board's `crash` prints it (tools/power-bringup/crash_decode.py reads it)
@@ -65,6 +69,8 @@ type CheckIn struct {
 	SSID    string
 	Image   string // the running firmware: "full" or "setup"
 	Version string
+	Bat     int // mV, -1 none
+	Chg     bool
 }
 
 // Image is an upgrade on offer: its version read from its own build tag, so the file is all there is to update
@@ -154,7 +160,10 @@ func poll(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "id: 12 upper-case hex digits", http.StatusBadRequest)
 		return
 	}
-	in := CheckIn{At: time.Now(), SSID: q.Get("ssid")}
+	in := CheckIn{At: time.Now(), SSID: q.Get("ssid"), Bat: -1, Chg: q.Get("chg") == "1"}
+	if b, err := strconv.Atoi(q.Get("bat")); err == nil && b >= 0 && b < 10000 {
+		in.Bat = b
+	}
 	for _, img := range []string{"full", "setup"} {
 		if v := q.Get(img); verRe.MatchString(v) {
 			in.Image, in.Version = img, v
@@ -324,10 +333,11 @@ func deviceCrashes(w http.ResponseWriter, r *http.Request) {
 // deviceInfo: a device's state for a client; mu held
 func deviceInfo(id string) Device {
 	c, ok := seen[id]
-	d := Device{ID: id, LastSeen: -1, Wake: wake[id], Phones: len(phones[id])}
+	d := Device{ID: id, LastSeen: -1, Wake: wake[id], Phones: len(phones[id]), BatteryMV: -1}
 	if ok {
 		d.LastSeen = int64(time.Since(c.At).Seconds())
 		d.SSID = c.SSID
+		d.BatteryMV, d.Charging = c.Bat, c.Chg
 		d.Online = d.LastSeen < int64(3*pollS) // three check-ins missed: offline
 	}
 	return d

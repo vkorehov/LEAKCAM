@@ -4,6 +4,7 @@
 #include "bflb_gpio.h"
 #include "bflb_mtimer.h"
 #include "bl616_common.h"   /* ENABLE */
+#include "battery.h"
 #include "board_pins.h"
 
 void usb_sense_init(void)
@@ -29,4 +30,9 @@ void usb_sense_init(void)
 bool usb_present(void)
 {
     return bflb_acomp_get_result(AON_ACOMP0_ID) == 0;
+}
+
+bool battery_usb_power(void)
+{
+    return usb_present();
 }

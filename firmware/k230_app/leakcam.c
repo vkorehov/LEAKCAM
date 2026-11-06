@@ -10,6 +10,10 @@
  *  - the link: /dev/link (UART1, LINK_BAUD; the kernel's link_mux passes only valid frames here, the console text that
  *    shares the wire goes to the console), protocol in k230_link.h: every command answered ACK/NAK, resent after
  *    LINK_ACK_TIMEOUT_MS, LINK_TRIES sends;
+ *  - the battery: VBAT through R59/R61 (VBAT/3) on ADC_1, readable only while the K230 runs (tests/test023), read at the
+ *    start and sent with every frame as the attribute ;b=<mV> (k230_link.h): the BL616 keeps it for the phone and the
+ *    server (DESIGN.md 5.3.9). On USB power it reads the charger's output rail, not the cell: the BL616 knows the power
+ *    (PGOOD) and does not keep that one;
  *  - the USB setup relay: USB-C 1 is the K230's USB0, the CDC ACM device /dev/ttyGS0 (CherryUSB). Every line the phone
  *    sends goes to the BL616 as the command USB,<line>; every USB,<line> from the BL616 goes back to the phone as a line.
  *    The provisioning itself is the BL616's (the K230 only carries bytes): the lines carry the Wi-Fi credentials, so
@@ -43,9 +47,16 @@
 #define READY_TRIES              3       /* the BL616 is up before it powers us: no answer in ~5 s = fail fast, power off (battery) */
 #define ALIVE_PIN                2           /* K230 IO2 */
 #define USB_DEV                  "/dev/ttyGS0"
-#define USB_LINE                 (LINK_MAX_LINE - 16)   /* the line inside $<seq>,USB,<line>*XX */
+#define USB_LINE                 (LINK_MAX_LINE - 24)   /* the line inside $<seq>,USB,<line>;b=<mV>*XX */
+/* the battery (tests/test023): 12-bit ADC on VBAT/3, 1.8 V reference: 5400 mV full scale nominal, 5329 mV calibrated
+ * against a meter on C15 (4.07-4.37 V); a mean of 64 conversions (one: sd 52 mV, 64: ~6 mV) */
+#define BAT_ADC_CHANNEL          1
+#define BAT_FULL_SCALE_MV        5329u
+#define BAT_SAMPLES              64u
+#define ADC_IOCTL_ENABLE         0
 
 static int link_fd = -1, gpio_fd = -1;
+static int bat_mv = -1;                 /* the battery read at the start, -1 = the ADC failed */
 static volatile sig_atomic_t heartbeat_run = 1;
 
 static void logmsg(const char *fmt, ...)
@@ -148,13 +159,33 @@ static int rx_last = -1;                /* last seq accepted from the BL616 */
 static struct frame inbox[LINK_INBOX];  /* commands that arrived while we waited for an answer */
 static unsigned in_head, in_count;
 
+static int battery_read_mv(void)
+{
+    uint32_t raw, sum = 0;
+    int fd = open("/dev/adc", O_RDWR);
+    bool ok = fd >= 0 && ioctl(fd, ADC_IOCTL_ENABLE, BAT_ADC_CHANNEL) == 0;
+    for (unsigned i = 0; ok && i < BAT_SAMPLES; i++) {
+        ok = lseek(fd, BAT_ADC_CHANNEL, SEEK_SET) == BAT_ADC_CHANNEL &&
+             read(fd, &raw, sizeof(raw)) == (ssize_t)sizeof(raw) && raw <= 4095;
+        sum += raw;
+    }
+    if (fd >= 0)
+        close(fd);
+    if (!ok) {
+        logmsg("battery: ADC channel %d: %s", BAT_ADC_CHANNEL, strerror(errno));
+        return -1;
+    }
+    return (int)(((uint64_t)sum * BAT_FULL_SCALE_MV + 4095u * BAT_SAMPLES / 2) / (4095u * BAT_SAMPLES));
+}
+
+/* every frame carries the battery as its attribute (k230_link.h), ACKs too */
 static void send_frame(unsigned seq, const char *cmd, const char *arg)
 {
     char body[LINK_MAX_LINE], frame[LINK_MAX_LINE + 8];
     if (arg && *arg)
-        snprintf(body, sizeof(body), "%u,%s,%s", seq, cmd, arg);
+        snprintf(body, sizeof(body), "%u,%s,%s;b=%d", seq, cmd, arg, bat_mv);
     else
-        snprintf(body, sizeof(body), "%u,%s", seq, cmd);
+        snprintf(body, sizeof(body), "%u,%s;b=%d", seq, cmd, bat_mv);
     int n = snprintf(frame, sizeof(frame), "$%s*%02X\n", body, link_crc8(body, body + strlen(body)));
     if (write(link_fd, frame, n) != n)
         fatal("link write: %s", strerror(errno));
@@ -340,6 +371,10 @@ int main(void)
     pthread_t hb;
     pthread_create(&hb, NULL, heartbeat_thread, NULL);
     step("start");
+    bat_mv = battery_read_mv();
+    char bat[32];
+    snprintf(bat, sizeof(bat), "battery %d mV", bat_mv);
+    step(bat);
 
     struct frame f;
     bool woken = false;

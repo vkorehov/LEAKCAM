@@ -11,6 +11,7 @@
 #include "shell.h"
 
 #include "api.h"
+#include "battery.h"
 #include "device_id.h"
 #include "ota_fetch.h"
 #include "switch_to_setup.h"
@@ -45,7 +46,7 @@ static void check_in(void)
     }
     /* the network it is on, for the app (an SSID is not secret; the passphrase never leaves the board) */
     struct wifi_check_target t;
-    api_poll_target(&t, path, ssid, sl, body, sizeof(body));
+    api_poll_target(&t, path, ssid, sl, battery_mv(), battery_usb_power(), body, sizeof(body));
     last = wifi_check_run(ssid, sl, psk, ps ? pl : 0, &t, NULL, no_progress, &last_detail);
     last_ms = (uint32_t)bflb_mtimer_get_time_ms();
     const char *p = last == WCHK_INTERNET ? strstr(body, "\"poll\":") : NULL;

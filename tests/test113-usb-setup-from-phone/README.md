@@ -33,6 +33,8 @@ cable into USB-C 1, BLE not used: on the **product firmware** pair (BL616 setup 
 7. Failures as over BLE: a wrong password named, a network not seen named, the old state kept.
 8. The cable pulled during the check: plugged back, STATUS read for the attempt (test110's rule).
 9. Hand: USB-C 1 back to the bench.
+10. **Battery over the cable (DESIGN.md 5.3.9, test131):** the `ID` answer carries the battery and USB power
+    (`ID <id> <stored> <mV> 1`); the cable screen's row shows the battery icon green, filled to the board's `battery`.
 
 ## Needs (build features and dependencies)
 

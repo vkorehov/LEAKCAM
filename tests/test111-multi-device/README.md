@@ -47,6 +47,8 @@ app's INTERNET permission, ssh to the Pi for the poll interval.
    and the board is back in the setup firmware within one check-in interval; set up again from the app afterwards.
    **Not built yet** (the app's delete to the server first, the server's phones per board, the full firmware's 410): fails until
    then.
+8. **Battery at the server (DESIGN.md 5.3.9):** each check-in carries `bat`/`chg`; `GET /v1/devices/{id}` answers
+   `battery_mv` (the board's `battery`, -1 none) and `charging`; the app's row shows it out of BLE range (test131).
 
 ## Setup mode (DESIGN.md 5.3.1, planned)
 

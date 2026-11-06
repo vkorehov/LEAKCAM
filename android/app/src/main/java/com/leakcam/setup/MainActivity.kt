@@ -66,7 +66,8 @@ import java.util.UUID
  * the one source of truth (DESIGN.md 5.3.5): the app stores no list; the server registers the phone as a board's user
  * when it issues the PIN, and a delete goes to the server (the board back in setup when no user is left). Setup opens for a LEAKCAM found nearby (a new one advertises a minute every 5 minutes
  * on its battery, one set up only on USB power) or when the list is empty. Each LEAKCAM advertises its device ID and a flags byte (scan response, manufacturer data,
- * company 0xFFFF: the BL616's factory MAC, bit 0 a stored network): a known one gets the short "change its Wi-Fi"
+ * company 0xFFFF: the BL616's factory MAC, bit 0 a stored network, bit 1 USB power, then the battery in 20 mV steps,
+ * DESIGN.md 5.3.9): a known one gets the short "change its Wi-Fi"
  * flow. Pairing is LE Secure Connections passkey entry: the app gets the board's PIN from the server right before it
  * pairs and enters it itself; the app holds no secret, a phone without it cannot pair. The app never stores Wi-Fi
  * credentials. The SSID is not secret: each LEAKCAM reports its network with every
@@ -158,6 +159,10 @@ class MainActivity : Activity() {
     private val ids = HashMap<String, String>()   // address -> device ID from the advertisement
     private val stored = HashMap<String, Boolean>()   // address -> the board has a Wi-Fi network (flags bit 0)
     private val usbPower = HashMap<String, Boolean>()   // address -> the board has USB power (flags bit 1)
+    // device ID -> its battery (DESIGN.md 5.3.9): the K230's last reading on battery (mV) and USB power (charging), from
+    // whichever channel told last: the server (check-in), the BLE advertisement, the USB cable's ID
+    private val batteryMv = HashMap<String, Int>()
+    private val charging = HashMap<String, Boolean>()
     private val rssi = HashMap<String, Int>()   // address -> the last advertisement's signal (dBm)
     private val ticker = Handler(Looper.getMainLooper())   // the status screen's refresh; main's callbacks get cleared
     private var onStatus = false
@@ -456,9 +461,15 @@ class MainActivity : Activity() {
         // status screen shows them at its next refresh (every 10 s): a redraw per advertisement lost test111's taps
         rssi[d.address] = r.rssi
         usbPower[d.address] = mfg != null && mfg.size >= 7 && (mfg[6].toInt() and 2) != 0
+        val devId = mfg?.takeIf { it.size >= 6 }?.copyOfRange(0, 6)?.joinToString("") { "%02X".format(it) }
+        if (devId != null && mfg != null && mfg.size >= 8) {   // the battery in 20 mV steps, 0xFF none
+            val b = mfg[7].toInt() and 0xFF
+            if (b != 0xFF)
+                batteryMv[devId] = b * 20
+            charging[devId] = usbPower[d.address] == true
+        }
         if (found.containsKey(d.address))
             return
-        val devId = mfg?.takeIf { it.size >= 6 }?.copyOfRange(0, 6)?.joinToString("") { "%02X".format(it) }
         // a LEAKCAM is named by its serial everywhere (the device ID: USB serial number, BLE name, server; user
         // 2026-11-01: no "LEAKCAM-" prefix)
         val name = devId ?: r.scanRecord?.deviceName ?: d.name ?: d.address
@@ -584,19 +595,35 @@ class MainActivity : Activity() {
                 } else if (address != null) {
                     icons.add(Pair(R.drawable.ic_bluetooth, getString(R.string.icon_bluetooth)))
                     icons.add(Pair(bars(rssi[address] ?: -100), getString(R.string.icon_signal)))
-                    icons.add(if (usbPower[address] == true) Pair(R.drawable.ic_plug, getString(R.string.icon_plug))
-                              else Pair(R.drawable.ic_battery, getString(R.string.icon_battery)))
                 }
+                // the battery: filled to its charge, green on USB power (DESIGN.md 5.3.9); shown once anything is known
+                // (in range, or a level from any channel); the percent on its tooltip
+                val chg = address == USB_TAG || (address != null && usbPower[address] == true) ||
+                          (address == null && charging[id] == true)
+                val pct = batteryMv[id]?.let { BatteryIcon.percent(it) }
                 Log.i(TAG, "row $id wifi ${if (k.has(id) && up) 1 else 0} ble ${if (reachable) 1 else 0} red ${if (red) 1 else 0}" +
                       " power ${if (address == null) "-" else if (address == USB_TAG) "usb" else if (usbPower[address] == true) "plug" else "battery"}" +
                       " bars ${address?.takeIf { it != USB_TAG }?.let { barCount(rssi[it] ?: -100) } ?: 0}" +
-                      " rssi ${address?.takeIf { it != USB_TAG }?.let { rssi[it] } ?: 0}")   // test118, test113
+                      " rssi ${address?.takeIf { it != USB_TAG }?.let { rssi[it] } ?: 0}" +
+                      " bat ${pct ?: -1} chg ${if (chg) 1 else 0}")   // test118, test113, test131
                 for ((icon, what) in icons)
                     addView(android.widget.ImageView(context).apply {
                         setImageResource(icon)
                         contentDescription = what
                         if (address != null && what == getString(R.string.icon_signal))
                             setOnLongClickListener { showDbm(address); true }
+                    })
+                if (pct != null || address != null)
+                    addView(android.widget.ImageView(context).apply {
+                        setImageDrawable(BatteryIcon(pct, chg, resources.displayMetrics.density))
+                        contentDescription = getString(if (chg) R.string.icon_plug else R.string.icon_battery)
+                        // on USB power the K230 reads the charger's rail: the level is the last one on battery
+                        tooltipText = when {
+                            pct == null && chg -> getString(R.string.battery_tip_charging_unknown)
+                            pct == null -> getString(R.string.battery_tip_unknown)
+                            chg -> getString(R.string.battery_tip_charging, pct)
+                            else -> getString(R.string.battery_tip, pct)
+                        }
                     })
                 // no Delete for a board without a network (user 2026-11-05): known by its own word, the cable's ID
                 // answer or the advertisement's flag; nothing to remove from a board that is not set up
@@ -1280,6 +1307,10 @@ class MainActivity : Activity() {
                 usbStored = p[2] == "1"
                 ids[USB_TAG] = usbId
                 stored[USB_TAG] = usbStored
+                if (p.size >= 5) {                   // ID <id> <stored> <battery mV, -1 none> <USB power>
+                    p[3].toIntOrNull()?.takeIf { it >= 0 }?.let { batteryMv[p[1]] = it }
+                    charging[p[1]] = p[4] == "1"
+                }
                 Log.i(TAG, "usb board $usbId creds ${if (usbStored) 1 else 0}")   // test113
                 if (starting)
                     startDecide()
@@ -1374,6 +1405,9 @@ class MainActivity : Activity() {
                     mine = JSONObject().apply { for (j in list) put(j.getString("id"), JSONObject()) }
                     for (j in list) {
                         online[j.getString("id")] = j.getBoolean("online")
+                        j.optInt("battery_mv", -1).takeIf { it >= 0 }?.let { batteryMv[j.getString("id")] = it }
+                        if (j.has("charging"))
+                            charging[j.getString("id")] = j.getBoolean("charging")
                         j.optString("ssid").takeIf { it.isNotEmpty() }?.let { ssids[j.getString("id")] = it }
                     }
                 }

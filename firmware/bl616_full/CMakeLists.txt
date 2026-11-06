@@ -25,6 +25,7 @@ target_sources(app PRIVATE
                ${S}/wdg_guard.c
                ${S}/crash_rec.c
                ${S}/flash_sha.c
+               ${S}/battery.c
                ${S}/mem_stat.c
                ${S}/device_id.c
                ${S}/provision_cmd.c

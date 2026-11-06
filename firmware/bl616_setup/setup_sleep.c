@@ -16,6 +16,7 @@
 #include "pm_manager.h"
 
 
+#include "battery.h"
 #include "ble_pairing.h"
 #include "setup_boot.h"   /* SETUP_ADV_SLEEP_MS */
 #include "bflb_wdg.h"
@@ -70,6 +71,11 @@ bool setup_usb_present(void)
     struct bflb_device_s *gpio = bflb_device_get_by_name("gpio");
     bflb_gpio_init(gpio, PIN_USB_PGOOD, GPIO_INPUT | GPIO_FLOAT | GPIO_SMT_EN | GPIO_DRV_0);
     return !bflb_gpio_read(gpio, PIN_USB_PGOOD);
+}
+
+bool battery_usb_power(void)
+{
+    return setup_usb_present();
 }
 
 bool ble_pairing_usb_power(void)

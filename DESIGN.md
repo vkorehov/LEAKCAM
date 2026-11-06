@@ -660,11 +660,16 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
   switching. A mismatch, a broken download or a power cut mid-write keeps the old firmware running, and the next
   check-in retries.
 - **After the switch:** the board reports its new versions at its next check-in.
-- **The BL616 full firmware is written by the setup firmware** (user, 2026-11-06): the 4 MB flash has no room for a
-  second full copy (slot 0 2 MB = full 1.09 MB, slot 1 1.44 MB = setup 1.29 MB). The full firmware switches to the
-  setup firmware with reason `ota`; the setup firmware downloads the new full image straight into slot 0, checks its
-  SHA-256 and switches back. A broken download or a power cut leaves the board on the setup firmware (Wi-Fi and the
-  server check-in work there), which retries; the old full image is gone by then.
+- **The BL616 full firmware: staged compressed, unpacked by the setup firmware** (user, 2026-11-06). The 4 MB flash has
+  no room for a second full image (slot 0 2 MB = full 1.06 MB, slot 1 1.44 MB = setup 1.26 MB), and the old image must
+  never be erased before the whole new one is on the board (a Wi-Fi loss mid-download would leave no full firmware: no
+  leak detection). So: the full firmware, while it runs on, downloads the SDK build's `.xz` (0.58 MB, LZMA2 dict 32 KiB)
+  into the free end of its own slot 0 and checks its SHA-256 by read-back; a failure changes nothing (the next check-in
+  retries). Then it switches to the setup firmware with reason `ota`; the setup firmware checks the copy again, unpacks
+  it over the old image (no network), checks the result's SHA-256 and switches back. A power cut restarts the unpack
+  from the intact copy (`full_broken` blocks every other way back to slot 0 meanwhile). Image + copy = 1.6 MB of 2 MB:
+  the full image can grow by ~260 kB (24 %) before an offer stops fitting; the board refuses one that does not fit and
+  touches nothing. Server: `bl616_full.bin` (its version from its build tag) + `bl616_full.xz` in LEAKCAM_IMAGES.
 
 ### 5.3.8 One K230 product image; the BL616 picks the program at the start (user, 2026-11-05; tests/test113)
 
@@ -679,6 +684,30 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
   set the board up). The full firmware never does.
 - **The product kernel carries the USB device** (CherryUSB, CDC ACM on USB0) for this; the phone lists it 1.41 s
   after the K230 starts (tests/test044).
+
+### 5.3.9 The battery level on every channel to the phone (user, 2026-11-06; tests/test046, test131)
+
+- **Measured by the K230** (the only battery input: VBAT/3 through R59/R61 on ADC_1, switched by the K230's 3V3;
+  tests/test023: a mean of 64 conversions, calibrated full scale 5329 mV, within +-10 mV of a meter). The product
+  program reads it at its start and **attaches it to every frame it sends** as `;b=<mV>` (k230_link.h), ACKs too.
+- **Kept by the BL616** (bl616_common/battery.c) in HBN RAM (`.hbn_noinit.battery`; the sections are sorted by name
+  so both firmwares put it at the same address): survives sleep, resets and the switch between the firmwares; lost
+  only with the battery. `battery` on the console prints it.
+- **On USB power the ADC reads the charger's output rail (~4.4 V), not the cell** (test023): such a reading is not
+  kept; the last one on battery stays, and the board reports "charging" (USB power, PGOOD) instead. The BL616 has no
+  CHG input from the BQ24072: charging = on USB power (the charger charges until the cell is full).
+- **Reported on every channel** (the last reading on battery in mV, -1 none; USB power 0/1):
+  - Wi-Fi: every check-in, `&bat=<mV>&chg=<0|1>`; the server keeps it with the check-in, `GET /v1/devices/{id}`
+    answers `battery_mv` and `charging`.
+  - BLE: the advertisement's manufacturer data, byte 10: the battery in 20 mV steps (0xFF none); USB power is the
+    flags byte's bit 1 (as before).
+  - USB cable: `ID <id> <stored> <battery mV> <usb power>`.
+- **The app** (BatteryIcon.kt) shows one battery icon per board, filled to the charge, **green while charging** (on
+  USB power), red at 15 % and below, grey otherwise; only the outline while no level is known. The percent is on the
+  icon's tooltip (mouse hover, long press): "Battery 73 %", or on USB power "Charging (USB power) · 73 % when last on
+  battery". The charge comes from the voltage by a 1-cell Li-ion curve (4.20 V = 100 %, 3.10 V = 0 %: the K230's
+  cut-off under load; the reading is under the K230's own ~200 mA load, a little below rest). The freshest channel
+  wins: whichever told last (BLE and the cable live, the server as of the last check-in).
 
 ### 5.4 K230-BL616 link and time
 

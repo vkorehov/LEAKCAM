@@ -48,6 +48,8 @@ advertisement (ble_pairing.c). Server: the flag kept per device and shown in GET
    and in the app at the next check-in.
 6. Without Wi-Fi (network gone): the notice falls back to the BLE flag alone; the server marks the board offline as
    before, and the app shows the last known battery state.
+7. **The reading is the shared one (2026-11-06, DESIGN.md 5.3.9):** the K230's `;b=` attribute on every frame, kept by
+   battery.c in HBN RAM; the low flag uses the same value, and the app's battery icon shows it red at <= 15 %.
 
 ## Pass
 

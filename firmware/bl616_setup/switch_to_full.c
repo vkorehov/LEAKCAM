@@ -9,6 +9,7 @@
 #include "easyflash.h"
 
 #include "api.h"
+#include "battery.h"
 #include "ble_pairing.h"
 #include "ota.h"
 #include "slot.h"
@@ -52,7 +53,7 @@ static void usb_task(void *arg)
         printf("switch_to_full: USB power, no network stored: setup stays\r\n");
         usb_setup_begin();
     } else {
-        api_poll_target(&api, path, ssid, sl, NULL, 0);
+        api_poll_target(&api, path, ssid, sl, battery_mv(), battery_usb_power(), NULL, 0);
         enum wifi_check_state st = wifi_check_run(ssid, sl, psk, ps ? pl : 0, &wifi_check_probe, &api, no_progress,
                                                   &detail);
         if (st == WCHK_INTERNET)

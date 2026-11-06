@@ -463,7 +463,7 @@ SECTIONS
      * corrupted (tests/test021, 2026-10-22). */
     .hbn_noinit (ORIGIN(hbn_memory) + LENGTH(hbn_memory) - 0x400) (NOLOAD) :
     {
-        KEEP(*(.hbn_noinit*))
+        KEEP(*(SORT_BY_NAME(.hbn_noinit*)))   /* by name: the same addresses in both firmwares (battery.c) */
     } > hbn_memory
     ASSERT(SIZEOF(.hbn_noinit) <= 0x400, "LEAKCAM .hbn_noinit is over its 1 KB")
     ASSERT(ADDR(hbn_ram) + SIZEOF(hbn_ram) <= 0x20010300, "hbn_ram reaches the SDK's fixed HBN RAM blocks")

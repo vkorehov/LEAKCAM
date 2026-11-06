@@ -65,6 +65,8 @@ littlefs (PSM partition, `CONFIG_LITTLEFS_KV_EASYFLASH`), Wi-Fi fhost + lwIP + D
 9. **Repeats (leak test):** 8 connect / pair / write / commit 0x02 / disconnect cycles (the leak verdict's minimum; a cycle
    that never left the phone is retried once and noted) and 8 checked commits: BL616
    `mem` before and after each (mem_leak.py), easyflash still writes (its garbage collection runs), no reset.
+10. **Advertisement size (2026-11-06):** the manufacturer data grew by one byte (the battery, DESIGN.md 5.3.9): the
+    scan response is 26 of 31 bytes, the board is still found and paired as before.
 
 ## Pass
 
