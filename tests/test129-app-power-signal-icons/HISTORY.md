@@ -4,6 +4,21 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-07 (run.py, 55 s): pass
+
+5/5 checks pass.
+
+
+### Automated run 2026-11-07 (run.py, 118 s): **FAIL**
+
+4/5 checks pass. Failed: long press on the bars: the dB value (None dBm).
+
+
+### Automated run 2026-11-07 (run.py, 165 s): **FAIL**
+
+2/3 checks pass. Failed: USB power: the plug icon (not within 60 s, row None).
+
+
 ### Automated run 2026-11-07 (run.py, 140 s): pass
 
 5/5 checks pass.

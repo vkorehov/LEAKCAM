@@ -19,7 +19,7 @@ import time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import board_checkin, board_id, firmware, hand, intervals, online, op, product, ready, seen, to_firmware   # noqa: E402
+from phone import board_checkin, board_id, firmware, hand, intervals, online, only_boards, op, product, ready, seen, to_firmware   # noqa: E402
 
 SERVER = "http://192.168.1.159:8090"
 PI = "pi@192.168.1.159"
@@ -101,7 +101,9 @@ def to_setup():
 
 def setup(s, k, anyway=False):
     """one setup through the app; a stored network (Done, Saved without checking) switches the board back to the full
-    firmware: waited for here"""
+    firmware: waited for here. The person deletes the board in the app first: Setup lists new devices only and a set-up
+    board's Wi-Fi changes over BLE only after a delete (user 2026-11-07, DESIGN.md 5.3.4)"""
+    only_boards()
     res = op("app", ssid=s.encode().hex(), psk=k.encode().hex(), anyway="1" if anyway else "", secs=45)
     helps = res.get("help", [])
     last = helps[-1]["help"] if helps else res.get("error", "no help text")

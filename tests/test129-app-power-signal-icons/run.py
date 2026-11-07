@@ -68,6 +68,10 @@ def wait_power(dev, name, power, secs):
 def long_press_signal(dev):
     """a long press on the board's setup row (its icons are one drawable after the serial); the dB value it logged"""
     for attempt in (1, 2):
+        # the found boards sit under the status block, below the fold on a phone: scrolled to (a dump has only
+        # what is on the screen)
+        adb("shell", "input", "swipe", "540", "1800", "540", "500", "300", secs=15)
+        time.sleep(0.8)
         xml = adb("exec-out", "uiautomator", "dump", "/dev/tty", secs=30)
         m = re.search(rf'text="{dev}"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml)
         if not m:

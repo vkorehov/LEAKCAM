@@ -116,6 +116,9 @@ Leak tests, one per operation the product repeats:
 | [test130 OTA upgrade of the BL616 full firmware and the K230 image](test130-ota-upgrade/README.md) | 2026-11-06 | **BL616 part pass** (1-4, 6, 13; 27 s offer to running); step 5 by hand, K230 steps not built |
 | [test131 the app's battery icon from every channel](test131-app-battery-level/README.md) | 2026-11-06 | **partly run**: 1, 2, 5, 6 pass (the level at the unplug in 3 s); 3, 4 open |
 | [test132 the leak checks on battery (RTC check, wet probe, K230 off after DONE)](test132-battery-leak-cycle/README.md) | 2026-11-07 | **not run**: run.py ready, needs the hands (USB-C 1 out/in, probe wet/dry); the HBN sleep not built |
+| [test133 the leak alert: full screen, through silent mode and Do Not Disturb](test133-leak-alert/README.md) | 2026-11-07 | **pass** 3 cases (locked, silent, DND), quiet channel on the bench (`--loud` checks the sound) |
+| [test134 a Wi-Fi change through the server](test134-wifi-change-via-server/README.md) | 2026-11-07 | **pass** 8/8: a wrong passphrase refused, the old network kept; the right one stored 2.2 s after the check-in |
+| [test135 the app's screens, status block, pending list and leak flow](test135-app-screens/README.md) | 2026-11-07 | **pass** 35/35: LEAKCAMs / Setup / Change Wi-Fi, menus, Setup new devices only, next check-in, pending order, alert + picture, Not a leak, links |
 
 ## Re-test audit after the two-firmware design (2026-11-02)
 

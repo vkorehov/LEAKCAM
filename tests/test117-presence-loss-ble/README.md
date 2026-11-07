@@ -14,6 +14,10 @@ server down), the presence is lost after three failed check-ins in a row (presen
 the Wi-Fi; the stored network switches it back to the full firmware, which checks in at once. The setup firmware stays
 with the cause gone (the server back): only a setup or its 6 h retry (test125) ends it.
 
+Since 2026-11-07 (user: Wi-Fi changes through the server only, "too complex for user" otherwise) the person fixes
+such a board over BLE by deleting it in the app first: the setup screen lists new devices only. Each setup here starts
+with the board deleted (no boards on the phone), as the person would.
+
 ## Setup
 
 - The product pair (firmware/bl616_full in slot 0, bl616_setup in slot 1: `make flash SLOT1_BIN=...`), the PIN
