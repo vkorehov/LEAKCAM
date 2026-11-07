@@ -4,7 +4,7 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
-### Automated run 2026-11-07 07:48 (run.py): pass
+### Automated run 2026-11-07 07:48 (run.py, 269 s with the hand steps): pass
 
 18/18 checks pass (step 12 with the driver's 12 s hold after Done).
 
