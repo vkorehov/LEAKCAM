@@ -21,8 +21,8 @@
     <string name="nearby_new">%1$s is nearby and not set up from this phone.</string>
     <string name="nearby_known">%1$s is nearby: you can change its Wi-Fi.</string>
     <string name="setup_new">Set up a LEAKCAM</string>
-    <string name="setup_new_named">Set up %1$s</string>
-    <string name="setup_change">Change the Wi-Fi of %1$s</string>
+    <string name="setup_new_named">Set up this LEAKCAM</string>
+    <string name="setup_change">Change Wi-Fi</string>
     <string name="to_status">Back to your LEAKCAMs</string>
     <string name="delete">Delete</string>
     <string name="delete_ask">Remove %1$s from this phone? The LEAKCAM keeps its Wi-Fi network and goes on working; it comes back into the list when it is found nearby on USB power again.</string>
@@ -47,7 +47,7 @@
     <string name="signal_dbm">Signal %1$d dBm</string>
     <string name="err_delete">%1$s was not deleted: the LEAKCAM server did not answer. Try again with internet.</string>
     <string name="mine_new">new</string>
-    <string name="setup_wake">Wake %1$s to change its Wi-Fi</string>
+    <string name="setup_wake">Wake to change Wi-Fi</string>
     <string name="nearby_wake">%1$s is online but not in Bluetooth range. Standing near it? Tap Wake: it opens Bluetooth at its next check-in.</string>
     <string name="nearby_waking">Waiting for %1$s to open Bluetooth at its next check-in (up to %2$d s). Keep the phone near it.</string>
     <string name="nearby_lost">%1$s is not reachable. If it lost its Wi-Fi, it opens Bluetooth by itself: bring the phone near it.</string>
@@ -138,4 +138,5 @@
     <string name="wifi_channel">Wi-Fi changes</string>
     <string name="wifi_failed_title">LEAKCAM %1$s kept its old Wi-Fi</string>
     <string name="wifi_failed_text">It could not join "%1$s". Open the app to try again.</string>
+    <string name="more">more actions</string>
 </resources>

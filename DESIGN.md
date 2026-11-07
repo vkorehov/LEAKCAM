@@ -594,6 +594,8 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
 
 ### 5.3.4 The setup channel and the app's link icons (user, 2026-11-04)
 
+- **Rows show only the board and its icons (user, 2026-11-07):** rare actions (Delete) sit in a three-dots menu at the
+  row's end, never as buttons in a list row.
 - **Every user-facing step well under 15 s, with a spinner (user, 2026-11-07):** a person closes the app after 15 s of
   waiting. Find, wake, pair, save, the switch to the setup firmware, change Wi-Fi and delete each end well under 15 s
   (target 10 s) and show a spinning icon and a line saying what happens while they run; a test measuring one above

@@ -69,21 +69,44 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
 
+            <!-- the action for the picked board, its rare actions (Delete) behind the three dots at the right -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/setup_open"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:enabled="false"
+                    android:maxLines="1"
+                    android:text="@string/setup_new" />
+
+                <ImageButton
+                    android:id="@+id/more"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@null"
+                    android:contentDescription="@string/more"
+                    android:src="@drawable/ic_more"
+                    android:visibility="invisible" />
+            </LinearLayout>
+
+            <!-- under the action row: a longer or shorter message never moves the button (user 2026-11-07: no jumps in
+                 the action area) -->
             <TextView
                 android:id="@+id/nearby"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:background="@color/help_background"
                 android:padding="12dp"
                 android:text="@string/nearby_none" />
-
-            <Button
-                android:id="@+id/setup_open"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:enabled="false"
-                android:text="@string/setup_new" />
         </LinearLayout>
 
         <!-- setup: a new LEAKCAM in four steps, or a known one's Wi-Fi changed -->

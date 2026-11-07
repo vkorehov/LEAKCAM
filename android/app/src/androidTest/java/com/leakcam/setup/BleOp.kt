@@ -50,7 +50,7 @@ import java.util.regex.Pattern
  *               shows the SSID, never the passphrase) until the buttons are back or secs; anyway=1: then Save
  *               without checking, where the app offers it. On the status screen (LEAKCAMs remembered) it waits for
  *               the LEAKCAM on USB power and opens its setup (setup_open) first
- *   op delete   id: on the status screen, that LEAKCAM's Delete and the confirmation (test111)
+ *   op delete   id: on the status screen, pick that LEAKCAM, the three-dots menu, Delete, the confirmation (test111)
  *
  * Values are hex so any length and byte reaches the board unchanged; the passphrase is never logged or returned.
  */
@@ -226,9 +226,17 @@ class BleOp {
         val pkg = ctx.packageName
         ctx.startActivity(ctx.packageManager.getLaunchIntentForPackage(pkg)!!.addFlags(
             android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK))
-        val button = ui.wait(Until.findObject(By.desc("delete ${arg("id", "")}")), 10000)
-        out.put("found", button != null)
-        button?.click() ?: return
+        // Delete is a rare action: pick the board, then the three-dots menu next to the action button (2026-11-07)
+        val pick = ui.wait(Until.findObject(By.desc("pick ${arg("id", "")}")), 10000)
+        out.put("found", pick != null)
+        pick?.click() ?: return
+        SystemClock.sleep(300)
+        val more = ui.wait(Until.findObject(By.desc(ctx.getString(R.string.more))), 5000)
+        out.put("more", more != null)
+        more?.click() ?: return
+        val item = ui.wait(Until.findObject(By.text(ctx.getString(R.string.delete))), 5000)
+        out.put("menu", item != null)
+        item?.click() ?: return
         val ok = ui.wait(Until.findObject(By.res("android", "button1")), 5000)
         out.put("confirmed", ok != null)
         ok?.click()

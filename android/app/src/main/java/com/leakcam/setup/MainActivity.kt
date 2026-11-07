@@ -155,6 +155,7 @@ class MainActivity : Activity() {
     private lateinit var mineList: LinearLayout
     private lateinit var nearby: TextView
     private lateinit var setupOpen: Button
+    private lateinit var more: android.widget.ImageButton
     private lateinit var toStatus: Button
 
     private val main = Handler(Looper.getMainLooper())
@@ -251,6 +252,16 @@ class MainActivity : Activity() {
         mineList = findViewById(R.id.mine_list)
         nearby = findViewById(R.id.nearby)
         setupOpen = findViewById(R.id.setup_open)
+        more = findViewById(R.id.more)
+        // the picked board's rare actions, one menu next to its action button (user 2026-11-07: no button or menu
+        // in the rows)
+        more.setOnClickListener { v ->
+            val id = selected
+            android.widget.PopupMenu(this, v).apply {
+                menu.add(R.string.delete).setOnMenuItemClickListener { forget(id); true }
+                show()
+            }
+        }
         toStatus = findViewById(R.id.to_status)
         scanButton = findViewById(R.id.scan)
         sendButton = findViewById(R.id.send)
@@ -621,6 +632,7 @@ class MainActivity : Activity() {
         for ((id, _, line) in all)
             mineList.addView(LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
+                gravity = android.view.Gravity.CENTER_VERTICAL    // the name, the icons and the menu on one line
                 val reachable = addressOf(id) != null
                 val up = online[id] == true
                 val red = k.has(id) && !up      // one of mine with no presence (offline, never seen, no server)
@@ -633,7 +645,7 @@ class MainActivity : Activity() {
                     isChecked = id == selected
                     contentDescription = "pick $id"
                     setOnClickListener { selected = id; render() }
-                }, LinearLayout.LayoutParams(0, -2, 1f))
+                }, LinearLayout.LayoutParams(-2, -2))     // the icons right after the name, not at the far end
                 // Wi-Fi: present at the server (its full state as the description), gone when not; Bluetooth: in range
                 // (its Wi-Fi can be set)
                 val icons = mutableListOf<Pair<Int, String>>()
@@ -659,8 +671,10 @@ class MainActivity : Activity() {
                       " bars ${address?.takeIf { it != USB_TAG }?.let { barCount(rssi[it] ?: -100) } ?: 0}" +
                       " rssi ${address?.takeIf { it != USB_TAG }?.let { rssi[it] } ?: 0}" +
                       " bat ${pct ?: -1} chg ${if (chg) 1 else 0}")   // test118, test113, test131
+                val gap = (6 * resources.displayMetrics.density).toInt()   // the icons a little apart from the name
                 for ((icon, what) in icons)
                     addView(android.widget.ImageView(context).apply {
+                        setPaddingRelative(gap, 0, 0, 0)
                         setImageResource(icon)
                         contentDescription = what
                         if (address != null && what == getString(R.string.icon_signal))
@@ -668,6 +682,7 @@ class MainActivity : Activity() {
                     })
                 if (pct != null || address != null || charging.containsKey(id))
                     addView(android.widget.ImageView(context).apply {
+                        setPaddingRelative(gap, 0, 0, 0)
                         setImageDrawable(BatteryIcon(pct, chg, resources.displayMetrics.density))
                         contentDescription = getString(if (chg) R.string.icon_plug else R.string.icon_battery)
                         // on USB power the K230 reads the charger's rail: the level is the last one on battery
@@ -677,14 +692,6 @@ class MainActivity : Activity() {
                             chg -> getString(R.string.battery_tip_charging, pct)
                             else -> getString(R.string.battery_tip, pct)
                         }
-                    })
-                // no Delete for a board without a network (user 2026-11-05): known by its own word, the cable's ID
-                // answer or the advertisement's flag; nothing to remove from a board that is not set up
-                if (k.has(id) && address?.let { stored[it] } != false)
-                    addView(Button(context).apply {
-                        setText(R.string.delete)
-                        contentDescription = "delete $id"
-                        setOnClickListener { forget(id) }
                     })
             })
         val name = all.firstOrNull { it.first == selected }?.second.orEmpty()
@@ -704,13 +711,17 @@ class MainActivity : Activity() {
             k.has(selected) -> getString(R.string.nearby_lost, name)
             else -> getString(R.string.nearby_away, name)
         }
+        // the action alone: the board is the one picked in the list above (its serial repeated here was cut off)
         setupOpen.text = when {
             name.isEmpty() -> getString(R.string.setup_new)
-            wakeable -> getString(R.string.setup_wake, name)
-            k.has(selected) -> getString(R.string.setup_change, name)
-            else -> getString(R.string.setup_new_named, name)
+            wakeable -> getString(R.string.setup_wake)
+            k.has(selected) -> getString(R.string.setup_change)
+            else -> getString(R.string.setup_new_named)
         }
         setupOpen.isEnabled = here || (wakeable && !waiting)
+        // Delete only for a board set up (user 2026-11-05): known by its own word, the cable's ID answer or the
+        // advertisement's flag; nothing to remove from a board not set up
+        more.visibility = if (k.has(selected) && addressOf(selected)?.let { stored[it] } != false) View.VISIBLE else View.INVISIBLE   // keeps its place: the button never changes width
         Log.i(TAG, "button ${setupOpen.text} enabled ${if (setupOpen.isEnabled) 1 else 0}")   // test119
     }
 
