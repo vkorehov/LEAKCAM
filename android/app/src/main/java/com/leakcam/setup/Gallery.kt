@@ -57,10 +57,20 @@ class Gallery(private val activity: Activity) {
                 contentDescription = id
             }, FrameLayout.LayoutParams(-1, -1))
         } else {
-            val v = VideoView(activity).apply { setVideoURI(Uri.parse(url)) }
+            // its first frame with a play sign on it (a bare VideoView is black until it plays); the sign goes on play
+            val v = VideoView(activity).apply {
+                setVideoURI(Uri.parse(url))
+                setOnPreparedListener { seekTo(1) }
+            }
+            val play = ImageView(activity).apply { setImageResource(android.R.drawable.ic_media_play) }
             tile.addView(v, FrameLayout.LayoutParams(-1, -1, android.view.Gravity.CENTER))
+            tile.addView(play, FrameLayout.LayoutParams(-2, -2, android.view.Gravity.CENTER))
             tile.contentDescription = activity.getString(R.string.play_video)
-            tile.setOnClickListener { if (v.isPlaying) v.pause() else v.start() }
+            tile.setOnClickListener {
+                if (v.isPlaying) v.pause() else v.start()
+                play.visibility = if (v.isPlaying) android.view.View.GONE else android.view.View.VISIBLE
+            }
+            v.setOnCompletionListener { play.visibility = android.view.View.VISIBLE }
         }
         Log.i(TAG, "media $id shown")
     }
