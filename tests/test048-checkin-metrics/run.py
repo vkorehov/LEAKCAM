@@ -149,13 +149,13 @@ t = utc()
 to_firmware("setup", "switch_to_setup wake", 60)
 back = to_firmware("full", None, 240)     # a phone's wake: the setup firmware goes back after 120 s
 check("switch_to_setup wake and back on USB power", back is not None, f"{back:.0f} s" if back else "not back")
-# on USB power the wake's setup firmware offers the cable setup (the K230 relay) and checks in nowhere: both switches
-# and the relay session reach the full firmware's first check-in
+# on USB power the K230 runs in both firmwares (DESIGN.md 5.3.11): the full firmware's session ended by the switch and
+# the setup firmware's relay ended by the switch back both reach the full firmware's first check-in, with both switches
 check("no check-in from the wake's setup firmware", not next_checkin(dev, t, "setup", 5))
 sf = next_checkin(dev, t, "full")
 fm = sf["metrics"] if sf else {}
-check("the full firmware's first check-in: sw 2, ks 1, klast 1 (the relay ended by the switch)",
-      fm.get("sw") == 2 and fm.get("ks") == 1 and fm.get("klast") == 1,
+check("the full firmware's first check-in: sw 2, ks 2, klast 1 (both sessions ended by the switches)",
+      fm.get("sw") == 2 and fm.get("ks") == 2 and fm.get("klast") == 1,
       " ".join(f"{k} {fm.get(k)}" for k in ("sw", "ks", "klast", "kms", "kon", "kfail")))
 sn = next_checkin(dev, sf["at"] if sf else utc(), "full")
 check("the one after: sw 0, ks 0", sn and sn["metrics"]["sw"] == 0 and sn["metrics"]["ks"] == 0,
@@ -207,21 +207,29 @@ check("the full firmware's first check-in: ks 1, klast 1, kms > 0, sw 1",
       " ".join(f"{k} {fm.get(k)}" for k in ("ks", "klast", "kms", "kon", "kfail", "sw")))
 check("... every K230 key, kver = the K230 log's version", all(k in fm for k in K230) and fm.get("kver") == ver,
       f"kver {fm.get('kver')}, log {ver}")
-check("... K230 values plausible", fm.get("kup", 0) > 0 and 200 <= fm.get("ktdie", 0) <= 900 and fm.get("kheap", 0) > 0
+check("... K230 values plausible", fm.get("kup", -1) >= 0 and 200 <= fm.get("ktdie", 0) <= 900 and fm.get("kheap", 0) > 0
       and fm.get("kheapmin", 0) > 0 and fm.get("kpages", 0) > 0,
       " ".join(f"{k} {fm.get(k)}" for k in ("kup", "ktdie", "kheap", "kheapmin", "kpages", "ksago", "kago")))
-check("... ages -1 after the switch (another BL616 boot)", fm.get("ksago") == -1 and fm.get("kago") == -1,
-      f"ksago {fm.get('ksago')}, kago {fm.get('kago')}")
+# on USB the full firmware's own K230 session sends its first STATUS before the first check-in (DESIGN.md 5.3.11):
+# ksago is that one's age in this boot; the relay session ended in the other boot: kago -1
+check("... kago -1 (the session ended in another boot), ksago the full firmware's own STATUS (0-30 s)",
+      fm.get("kago") == -1 and 0 <= fm.get("ksago", -1) <= 30, f"ksago {fm.get('ksago')}, kago {fm.get('kago')}")
 
-# 13. survival: a reset keeps the K230 fields and boots counts on
+# 13. survival: a reset keeps the K230 fields and boots counts on (on USB the K230 starts again with the full
+# firmware: its STATUS may refresh kup before the first check-in, DESIGN.md 5.3.11)
 t = utc()
 bl("reboot", 1)
 sr = next_checkin(dev, t, "full")
 rm = sr["metrics"] if sr else {}
-check("after a reset: kver, kup, kpages kept, boots +1, ks 0",
-      rm.get("kver") == fm.get("kver") and rm.get("kup") == fm.get("kup") and rm.get("kpages") == fm.get("kpages")
-      and rm.get("boots") == fm.get("boots", -9) + 1 and rm.get("ks") == 0,
+check("after a reset: kver kept, boots +1, ks 0",
+      rm.get("kver") == fm.get("kver") and rm.get("boots") == fm.get("boots", -9) + 1 and rm.get("ks") == 0,
       f"kver {rm.get('kver')}, boots {fm.get('boots')} -> {rm.get('boots')}, ks {rm.get('ks')}")
+# the leak check's result (DESIGN.md 5.3.12): the K230's job checks at its start, its DONE in the check-ins after it
+sj = next_checkin(dev, sr["at"] if sr else utc(), "full")
+jm = sj["metrics"] if sj else {}
+check("the leak check's result in the check-in: job <cam0>,<cam1>, jago >= 0",
+      re.fullmatch(r"(same|light|changed|new),(same|light|changed|new)", str(jm.get("job"))) is not None
+      and isinstance(jm.get("jago"), int) and jm["jago"] >= 0, f"job {jm.get('job')}, jago {jm.get('jago')}")
 
 # 14. the server
 req = urllib.request.Request(f"{SERVER}/v1/poll?id=000000000048", data=b"ssid=t048&zz=1&t=215", method="POST")
@@ -253,5 +261,5 @@ failed = [c for c in checks if not c[1]]
 summary = f"{len(checks) - len(failed)}/{len(checks)} checks pass."
 if failed:
     summary += " Failed: " + "; ".join(f"{n} ({d})" for n, _, d in failed) + "."
-r.finish(summary, not failed)
+r.finish(summary, not failed, switch_off=False)
 sys.exit(1 if failed else 0)

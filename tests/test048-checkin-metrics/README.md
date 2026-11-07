@@ -1,6 +1,7 @@
 # test048: every metric in every check-in (low level: the BL616's sensors, the K230's STATUS, the server)
 
-Status: **pass, automated part** (2026-11-06, run.py 33/33, BL616 pair 0.6+ga4a09a9, K230 0.6+ga2c63b0, 538 s).
+Status: **pass, automated part** (2026-11-07 09:24, run.py 34/34 on the DESIGN 5.3.11/5.3.12 firmware: the K230 on
+with USB in both firmwares, `ks 2` across a wake's switch and back, the leak check's `job`/`jago`; 2026-11-06 33/33).
 Steps 1, 5, 6 (reboot), 8, 9 (without the AP off), 10, 11, 13 (without a battery change), 14, 15 pass; steps 2-4
 (room meter, finger, wet probe), 6's EN / watchdog / battery change, 7 and 12 need a hand or a test firmware: open.
 Found: the AHT20 reads the board, not the room, on USB power: 38-44 C, 24-26 %RH on the bench (25.8 C, 53.9 %RH on
@@ -31,7 +32,7 @@ BL616 console on PR1, a stored network. A room thermometer/hygrometer next to th
 3. **Sensors move:** a warm finger on U17 raises `t` within two check-ins; breath raises `rh`.
 4. **Probe:** dry 1600-1700 mV; a wet probe (water across S1) below 1100 mV in the next check-in.
 5. **BL616 die and supply:** `tdie` 25-60 C, `vdd` 3200-3400 mV (3V3_SLEEP).
-6. **Uptime, boots, reset cause:** `up` grows by the poll interval; `reboot` -> `boots` +1, `up` small, `rst` the
+6. **Uptime, boots, reset cause:** `up` grows by the check-in interval; `reboot` -> `boots` +1, `up` small, `rst` the
    software reset's bits; a watchdog reset (`crash hang` in a test firmware) -> the watchdog bit; EN tap -> the
    external reset bit; a battery change -> `boots` 1.
 7. **Crash:** after a recorded crash, `crash` = the record's count until the server took it.
@@ -39,14 +40,18 @@ BL616 console on PR1, a stored network. A room thermometer/hygrometer next to th
 9. **Wi-Fi:** `rssi` within +-5 dB of the phone's reading for the same AP, `ch` the AP's channel, `scan`+`join`+`dhcp`
    within the check-in's own time (test100: join 0.24-0.47 s, DHCP ~0.6 s); the AP off for 3 check-ins (fewer than the
    presence loss): `fails` 1, 2 in the server history, then 0 after the AP is back.
-10. **Counters:** `switch_to_setup wake` and back: `sw` 2 in the next good check-in, 0 in the one after; a USB plug
-    wake in setup: `usbw` 1; a K230 session (setup relay): `ks` 1, `kon` ~ its rails-on time, `klast` 1, `kms`.
+10. **Counters:** `switch_to_setup wake` and back on USB power: `sw` 2 and `ks` 2 in the next good check-in (the full
+    firmware's session and the setup firmware's relay, each ended by a switch: the K230 is on with USB in both
+    firmwares, DESIGN.md 5.3.11), 0 in the one after; a USB plug wake in setup: `usbw` 1; a session's `kon` ~ its
+    rails-on time, `klast` 1, `kms`.
 11. **K230 STATUS:** in a session, `kver` = the K230 log's `version` line, `kup` its uptime, `ktdie` within +-2 C of
     msh `chip_temp`, `kheap` within 1 % of msh `free`'s available sum, `kpages` > 0; `ksago` grows between check-ins
-    in the same boot and is -1 after a reset.
+    in the same boot; after a switch on USB it is the new boot's own session's first STATUS (0-30 s), `kago` -1.
 12. **A failed session:** the K230 program killed (no heartbeat): `klast` 0, `kfail` 1.
 13. **Survival:** `boots`, the counters and the K230 fields the same across a BL616 reset and the switch between the
     firmwares (HBN RAM); all reset after a battery change.
+13b. **The leak check (DESIGN.md 5.3.12):** the K230's job checks at its start; the check-ins after it carry
+    `job=<cam0>,<cam1>` and `jago` (s since its DONE in this boot, -1 after a reset).
 14. **The server:** an unknown key is dropped; an old GET check-in is refused (405); every check-in is one line in
     LEAKCAM_METRICS.
 15. **Cost:** the sensor read adds <= 80 ms before the radio starts (console timestamps), the form <= 512 B.
