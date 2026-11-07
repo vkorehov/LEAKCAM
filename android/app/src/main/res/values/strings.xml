@@ -106,6 +106,7 @@
     <string name="what_ssid">Wi-Fi name</string>
     <string name="what_psk">Wi-Fi password</string>
     <string name="what_commit">save command</string>
+    <string name="what_setup">switch to setup</string>
 
     <!-- setup over the USB cable (DESIGN.md 5.3.4: the most reliable channel first, USB > Bluetooth) -->
     <string name="usb_entry">%1$s (USB cable)</string>

@@ -20,7 +20,8 @@
  * The cable's commands in the full firmware (the setup firmware's usb_setup.c has the provisioning): uppercase, one
  * line each, answered on the cable:
  *
- *   ID              -> ID <device id> 1 <battery mV, -1 none> <USB power 0|1>   (as the setup firmware: 1 = stored)
+ *   ID              -> ID <device id> 1 <battery mV, -1 none> <USB power 0|1> full   (as the setup firmware: 1 =
+ *                      stored; the last field tells the app to send SETUP before the setup firmware's commands)
  *   PIN <6 digits>  -> OK | ERR PIN | ERR LOCKED                  (the stored pairing PIN; 5 wrong = locked until the
  *                                                                  cable is pulled)
  *   SETUP           -> OK, then the switch to the setup firmware ("wake": the relay there, back in 2 min without a
@@ -67,7 +68,7 @@ static void on_line(const struct link_msg *m)
 
     if (!strcmp(line, "ID")) {
         char s[40];
-        snprintf(s, sizeof(s), "ID %s 1 %d %d", device_id(), battery_mv(), battery_usb_power() ? 1 : 0);
+        snprintf(s, sizeof(s), "ID %s 1 %d %d full", device_id(), battery_mv(), battery_usb_power() ? 1 : 0);
         answer(s);
     } else if (!strcmp(line, "PIN")) {
         int pin = stored_pin();

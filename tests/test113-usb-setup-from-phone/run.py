@@ -163,9 +163,11 @@ check("the app used the cable (no Bluetooth pairing)", any("Check and save" in h
       not any("pair with" in h for h in helps), f"{len(helps)} screens")
 check("the app says Done", last.startswith("Done"), last[:60].replace(ssid, "<network>"))
 secs = res.get("ms_end", 0) / 1000
+speed = ""
 if secs:
-    r.set("speed", (f"plug -> the phone lists the board {seen:.2f} s; " if seen is not None else "") +
-          f"app start -> Done {secs:.1f} s over the cable")
+    speed = ((f"plug -> the phone lists the board {seen:.2f} s; " if seen is not None else "") +
+             f"app start -> Done {secs:.1f} s over the cable")
+    r.set("speed", speed)
 r.set("boot", "n/a in this run: the K230 boot is timed by test045 (READY 0.43 s after pt_run)")
 r.set("share", "n/a: the setup session's K230 boot, see test045")
 r.set("current", "n/a: on the phone's USB power, not metered")
@@ -201,6 +203,28 @@ while (firmware() != "full" or not online(dev)) and time.time() - t < 30:
     time.sleep(2)
 check("the board finished the check alone: network stored, online", creds() == want(ssid, psk) and online(dev),
       f"{firmware() or '?'}, {time.time() - t:.0f} s")
+
+# 12. Change Wi-Fi on the set-up board (DESIGN.md 5.3.4): the full firmware's relay answers ID ... full; the app
+# sends PIN + SETUP, rides out the switch and sends the setup firmware's lines; one Send for the user
+adb("shell", "am", "force-stop", "com.leakcam.setup")
+adb("logcat", "-c")
+res, helps, last = setup(psk, secs=45)
+applog = adb("logcat", "-d", "-s", "LeakcamSetup:I", secs=15)
+check("change Wi-Fi on the full firmware: the cable screen of the set-up board",
+      res.get("usb_screen") is True and f"usb screen {dev} creds 1" in applog)
+check("change Wi-Fi: the app switched the board to its setup firmware over the cable",
+      "switching to its setup firmware" in applog and "on its setup firmware" in applog)
+check("change Wi-Fi: the app says Done", last.startswith("Done"), last[:60].replace(ssid, "<network>"))
+if res.get("ms_end"):
+    r.set("speed", speed + f"; change Wi-Fi on the full firmware: app start -> Done {res['ms_end'] / 1000:.1f} s")
+t = time.time()
+while (firmware() != "full" or not online(dev)) and time.time() - t < 30:
+    time.sleep(2)
+check("change Wi-Fi: network stored, back on the full firmware, online",
+      creds() == want(ssid, psk) and firmware() == "full" and online(dev), f"{firmware() or '?'}, {time.time() - t:.0f} s")
+time.sleep(8)                                # the full firmware's relay back on the cable: Done stays, no cable screen
+after = adb("logcat", "-d", "-s", "LeakcamSetup:I", secs=15).split("on its setup firmware")[-1]
+check("change Wi-Fi: Done stays when the board's relay comes back", "usb screen" not in after)
 
 hand("USB-C 1: take the phone off, plug the bench cable back in", "bench")
 r.sample("after the setup")

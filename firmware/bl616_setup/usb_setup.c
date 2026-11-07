@@ -3,9 +3,10 @@
  * lines (WAKE setup, k230_app/leakcam.c), the provisioning the same as over BLE (provision.c). One line per command,
  * commands and answer keywords uppercase, values hex or decimal:
  *
- *   ID                       -> ID <device id> <network stored 0|1> <battery mV, -1 none> <USB power 0|1>
+ *   ID                       -> ID <device id> <network stored 0|1> <battery mV, -1 none> <USB power 0|1> setup
  *                                                                       (no PIN needed: the ID is on the label;
- *                                                                       the battery: DESIGN.md 5.3.9)
+ *                                                                       the battery: DESIGN.md 5.3.9; the last
+ *                                                                       field the firmware: usb_full.c says full)
  *   PIN <6 digits>           -> OK | ERR PIN | ERR LOCKED                  (the server's PIN; 5 wrong = locked until
  *                                                                           the cable is pulled)
  *   SSID <hex>               -> OK | ERR SSID                              (after PIN; hex: any byte, nothing escaped)
@@ -97,7 +98,8 @@ static void on_line(const struct link_msg *m)
         char s[40];
         (void)ef_get_env_blob("wifi_ssid", NULL, 0, &saved);
         /* + the battery (the last reading on battery, -1 none) and USB power: the app's battery icon (DESIGN.md 5.3.9) */
-        snprintf(s, sizeof(s), "ID %s %d %d %d", device_id(), saved ? 1 : 0, battery_mv(), battery_usb_power() ? 1 : 0);
+        snprintf(s, sizeof(s), "ID %s %d %d %d setup", device_id(), saved ? 1 : 0, battery_mv(),
+                 battery_usb_power() ? 1 : 0);
         answer(s);
         return;
     }

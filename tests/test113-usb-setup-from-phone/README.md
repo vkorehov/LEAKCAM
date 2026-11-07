@@ -37,13 +37,19 @@ cable into USB-C 1, BLE not used: on the **product firmware** pair (BL616 setup 
 8. The cable pulled during the check: plugged back, STATUS read for the attempt (test110's rule).
 9. Hand: USB-C 1 back to the bench.
 10. **Battery over the cable (DESIGN.md 5.3.9, test131):** the `ID` answer carries the battery and USB power
-    (`ID <id> <stored> <mV> 1`); the cable screen's row shows the battery icon green, filled to the board's `battery`.
+    (`ID <id> <stored> <mV> 1 <setup|full>`); the cable screen's row shows the battery icon green, filled to the board's `battery`.
 11. **The setup in the metrics (DESIGN.md 5.3.10, tests/test048):** the credential check of step 5 is itself a
     check-in (the setup firmware's, the K230 still relaying): `chg=1`, `usbw=1` (the plug woke the setup firmware),
     `ks` = the relays that ended before it (the bench cable's when it was pulled: 1), not the running one; it starts the
     counters again. The full firmware's first check-in after step 6: `ks=1`, `klast=1`, `kms` ~
     the relay's rails-on time, `kver` (the K230 program that relayed), `sw=1`, `usbw=0`. The wrong password of step 7
     never reaches the server (no sample, `fails` +1 in the next one); `t`/`rh`/`probe` in every sample.
+12. **Change Wi-Fi on a set-up board over the cable (DESIGN.md 5.3.4):** the board on the full firmware, the phone in
+    USB-C 1: the app opens on the cable screen (`creds 1`); one Send: the app reads `ID ... full`, sends `PIN`,
+    `SETUP`, rides out the switch (the relay gone and back with the setup firmware, `ID ... setup`), then `PIN`,
+    `SSID`, `PSK`, `COMMIT`; Done; the board back on the full firmware, online; when its relay comes back on the cable
+    the Done screen stays. Bench run (the PC as the phone, tools/test-runner/cable.py): the relay gone 0.9 s after
+    SETUP's OK, back 6.6 s, SAVED 1.2 s later, 8.0 s in all (2026-11-07).
 
 ## Needs (build features and dependencies)
 

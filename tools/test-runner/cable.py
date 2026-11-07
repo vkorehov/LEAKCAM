@@ -1,6 +1,7 @@
 """The bench as the phone on USB-C 1: the setup over the cable (firmware/bl616_setup/usb_setup.c) through the K230's
 relay, /dev/leakcam-k230usb (1209:abd1). The network from ~/.leakcam_wifi, the PIN from the server: neither printed.
-    setup() -> (state, seconds from the first line to SAVED) or (None, reason)"""
+    setup() -> (state, seconds from the first line to SAVED) or (None, reason); on the full firmware (ID ends in
+    `full`) first PIN + SETUP and the switch, as the app does (DESIGN.md 5.3.4); then switch_s holds its seconds"""
 import os
 import re
 import select
@@ -29,7 +30,9 @@ class Cable:
         self.buf = b""
 
     def close(self):
-        os.close(self.fd)
+        if self.fd is not None:
+            os.close(self.fd)
+            self.fd = None
 
     def line(self, secs):
         end = time.time() + secs
@@ -59,6 +62,32 @@ class Cable:
         return None
 
 
+switch_s = None
+
+
+def to_setup(c, secs=30):
+    """PIN + SETUP on the full firmware, then the relay gone and back: the new Cable on the setup firmware, or a
+    reason (str)"""
+    global switch_s
+    a = c.ask(f"PIN {board_pin()}", "OK")
+    if a != "OK":
+        return f"PIN answered {a!r}"
+    a = c.ask("SETUP", "OK")
+    if a != "OK":
+        return f"SETUP answered {a!r}"
+    t0 = time.time()
+    c.close()
+    while os.path.exists(PORT) and time.time() - t0 < secs:
+        time.sleep(0.05)
+    gone = time.time() - t0
+    if relay(secs) is None:
+        return f"no relay {secs} s after SETUP"
+    time.sleep(0.3)                      # udev's permissions on the new node
+    switch_s = time.time() - t0
+    log(f"cable: SETUP -> relay gone {gone:.1f} s, back {switch_s:.1f} s")
+    return Cable()
+
+
 def setup(secs=60):
     ssid, psk = wifi_credentials()
     c = Cable()
@@ -68,6 +97,20 @@ def setup(secs=60):
         if not idl or not idl.startswith("ID "):
             return None, f"ID answered {idl!r}"
         log("cable:", idl)
+        if idl.split(" ")[-1] == "full":
+            n = to_setup(c)
+            if isinstance(n, str):
+                return None, n
+            c = n
+            c.status = []
+            idl = None
+            for _ in range(10):          # the relay answers ~0.6 s after its device is listed
+                idl = c.ask("ID", "ID", 1)
+                if idl:
+                    break
+            log("cable:", idl)
+            if not idl or idl.split(" ")[-1] != "setup":
+                return None, f"ID after the switch {idl!r}"
         for cmd, word in ((f"PIN {board_pin()}", "OK"), ("SSID " + ssid.encode().hex(), "OK"),
                           ("PSK " + psk.encode().hex(), "OK"), ("COMMIT 1 1", "OK")):
             a = c.ask(cmd, word)

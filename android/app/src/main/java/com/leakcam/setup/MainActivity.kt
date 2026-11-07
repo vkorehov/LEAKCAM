@@ -211,6 +211,9 @@ class MainActivity : Activity() {
     private val usbTimer = Handler(Looper.getMainLooper())   // main's callbacks get cleared by every scan stop
     private var usbId = ""               // the board on the cable (its ID answer), "" when none
     private var usbStored = false        // it has a network stored
+    private var usbFull = false          // the full firmware answers (ID's last field): SETUP first, then the setup's lines
+    private var usbSwitching = false     // SETUP answered OK: the link goes and comes back with the setup firmware
+    private var usbLater = ArrayDeque<String>()   // the setup firmware's lines, sent after the switch; never logged
     private var viaUsb = false           // this send goes over the cable
     private var usbSteps = ArrayDeque<String>()   // the lines still to send; never logged (credentials)
     private var usbAwait: String? = null // the command whose answer is awaited
@@ -905,6 +908,8 @@ class MainActivity : Activity() {
         viaUsb = false
         usbAwait = null
         usbSteps.clear()
+        usbLater.clear()
+        usbSwitching = false
         sendButton.isEnabled = true
         scanButton.isEnabled = true
         if (wasSending)
@@ -1267,6 +1272,11 @@ class MainActivity : Activity() {
             usbIdTries = 0
             return askId(0)
         }
+        if (sending && viaUsb && usbSwitching) {
+            Log.i(TAG, "usb board $usbId switching to its setup firmware")   // test113
+            usbId = ""                   // its ID answered again on the way back
+            return
+        }
         if (sending && viaUsb)
             fail(if (committed) R.string.err_usb_unconfirmed else R.string.err_usb_gone, boardName)
         val leave = usbFlow && !sending && step != STEP_DONE   // Done stays: the board ends the link itself after it
@@ -1302,10 +1312,23 @@ class MainActivity : Activity() {
         val p = line.split(' ')
         when {
             p[0] == "ID" && p.size >= 3 -> {
+                if (usbSwitching && sending && viaUsb) {   // back from the switch: the setup firmware's lines now
+                    usbId = p[1]
+                    if (p.getOrNull(5) == "full")
+                        return                       // the switch failed, the full firmware back: the timeout says so
+                    usbSwitching = false
+                    usbFull = false
+                    Log.i(TAG, "usb board $usbId on its setup firmware")   // test113
+                    armTimeout()
+                    usbSteps = ArrayDeque(listOf("PIN $pin") + usbLater)
+                    usbLater.clear()
+                    return usbNext()
+                }
                 if (usbId == p[1])
                     return
                 usbId = p[1]
                 usbStored = p[2] == "1"
+                usbFull = p.getOrNull(5) == "full"   // ID <id> <stored> <mV> <USB power> <firmware>; older: setup
                 ids[USB_TAG] = usbId
                 stored[USB_TAG] = usbStored
                 if (p.size >= 5) {                   // ID <id> <stored> <battery mV, -1 none> <USB power>
@@ -1315,8 +1338,9 @@ class MainActivity : Activity() {
                 Log.i(TAG, "usb board $usbId creds ${if (usbStored) 1 else 0}")   // test113
                 if (starting)
                     startDecide()
-                else if (!sending)
-                    openUsb()                // plugged in while the app runs: the cable screen at once
+                else if (!sending && !(step == STEP_DONE && boardId == usbId))
+                    openUsb()                // plugged in while the app runs: the cable screen at once; Done stays
+                                             // when the board just set up is back on its full firmware's relay
             }
             p[0] == "STATUS" && p.size >= 4 -> {
                 if (!sending || !viaUsb)
@@ -1337,6 +1361,7 @@ class MainActivity : Activity() {
                     else -> fail(R.string.err_usb_refused, boardName, getString(when (cmd) {
                         "SSID" -> R.string.what_ssid
                         "PSK" -> R.string.what_psk
+                        "SETUP" -> R.string.what_setup
                         else -> R.string.what_commit
                     }), line)
                 }
@@ -1344,7 +1369,8 @@ class MainActivity : Activity() {
         }
     }
 
-    /** the same check as over BLE, in lines: PIN, SSID, PSK (none for an open network), COMMIT; then STATUS reports */
+    /** the same check as over BLE, in lines: PIN, SSID, PSK (none for an open network), COMMIT; then STATUS reports.
+     *  On the full firmware (a set-up board, DESIGN.md 5.3.4): PIN, SETUP, the switch, then those lines */
     private fun sendUsb(check: Boolean, ssid: ByteArray, psk: ByteArray) {
         if (!usbLink.up || usbId.isEmpty())
             return problem(STEP_FIND, R.string.err_usb_gone, usbId)
@@ -1366,7 +1392,8 @@ class MainActivity : Activity() {
         val lines = listOfNotNull("SSID ${hex(ssid)}", if (psk.isNotEmpty()) "PSK ${hex(psk)}" else null,
             "COMMIT ${if (check) 1 else 2} $attempt")
         fetchPin {
-            usbSteps = ArrayDeque(listOf("PIN $pin") + lines)
+            usbSteps = ArrayDeque(listOf("PIN $pin") + if (usbFull) listOf("SETUP") else lines)
+            usbLater = ArrayDeque(if (usbFull) lines else listOf())
             usbNext()
         }
     }
@@ -1377,6 +1404,10 @@ class MainActivity : Activity() {
         if (cmd == "COMMIT") {
             committed = true             // its first STATUS comes before its OK
             lastState = -1
+        }
+        if (cmd == "SETUP") {
+            usbSwitching = true          // its OK, then the link goes: not a pull
+            armTimeout()
         }
         usbAwait = cmd
         if (!usbLink.write(l))

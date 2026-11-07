@@ -602,6 +602,11 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
 - Open, before the USB setup is built: the protocol over the USB link (a CDC port of its own, not the shell: no
   credentials on the console), the phone side (Android USB host, OTG; the permission dialog to keep to one,
   the fewest system dialogs).
+- **A set-up board's Wi-Fi changed over the cable** (2026-11-07): the full firmware answers the cable too (5.3.11)
+  but has no provisioning. Its `ID` answer ends in `full` (the setup firmware's in `setup`); the app then sends
+  `PIN`, `SETUP` and waits through the switch (the K230's USB device goes and comes back with the setup firmware's
+  relay), asks `ID` again and, on `setup`, sends the setup firmware's `PIN`, `SSID`, `PSK`, `COMMIT` as for a new
+  board. One press of Send for the user; the switch is the app's, not a screen.
 - The board's USB power reaches the app in the BLE advertisement: the flags byte's bit 1 (bit 0: a network stored),
   read when advertising starts (an unplug restarts it; a plug-in switches to the full firmware).
 - Tests: one case per rule (the channel picked with a USB link, without it, for a set-up board; each icon; bars and
@@ -737,7 +742,7 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
     answers `battery_mv` and `charging`.
   - BLE: the advertisement's manufacturer data, byte 10: the battery in 20 mV steps (0xFF none); USB power is the
     flags byte's bit 1 (as before).
-  - USB cable: `ID <id> <stored> <battery mV> <usb power>`.
+  - USB cable: `ID <id> <stored> <battery mV> <usb power> <firmware>`.
 - **The app** (BatteryIcon.kt) shows one battery icon per board, filled to the charge, **green while charging** (on
   USB power), red at 15 % and below, grey otherwise; only the outline while no level is known. The percent is on the
   icon's tooltip (mouse hover, long press): "Battery 73 %", or on USB power "Charging (USB power) · 73 % when last on
