@@ -21,10 +21,14 @@ func testServer(t *testing.T) *httptest.Server {
 	checkinS, leakCheckS = CheckinS, LeakCheckS
 	intervals, seen, phones = map[string]Intervals{}, map[string]CheckIn{}, map[string][]string{}
 	leaks, wifiChanges, tokens, tokenFile = map[string]Leak{}, map[string]*WifiChange{}, map[string]string{}, dir+"/tokens.json"
+	captures = map[string]string{}
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /v1/poll", poll)
 	mux.HandleFunc("GET /v1/devices/{id}", device)
 	mux.HandleFunc("PUT /v1/devices/{id}/intervals", setIntervals)
+	mux.HandleFunc("POST /v1/devices/{id}/capture", capture)
+	mux.HandleFunc("POST /v1/devices/{id}/clear", clearLeak)
+	mux.HandleFunc("PUT /v1/devices/{id}/wifi", putWifi)
 	s := httptest.NewServer(withTime(mux))
 	t.Cleanup(s.Close)
 	return s
@@ -172,5 +176,51 @@ func TestOnlineByToldInterval(t *testing.T) {
 	mu.Unlock()
 	if online() {
 		t.Error("online 40 s after a check-in told 10 s")
+	}
+}
+
+// a photo or video asked for is handed over once, at the next check-in (DESIGN.md 5.3.14); a video 15 s
+func TestCaptureAtNextCheckin(t *testing.T) {
+	s := testServer(t)
+	r := must(http.Post(s.URL+"/v1/devices/"+TestID+"/capture", "application/json", strings.NewReader(`{"kind":"video"}`)))
+	if r.StatusCode != http.StatusOK {
+		t.Fatal(r.Status)
+	}
+	ans, _ := checkIn(t, s, url.Values{"full": {"0.6+g1234567"}})
+	c, _ := ans["capture"].(map[string]any)
+	if c["kind"] != "video" || c["secs"] != float64(VideoS) {
+		t.Errorf("capture in the answer: %v", ans["capture"])
+	}
+	if ans, _ = checkIn(t, s, url.Values{"full": {"0.6+g1234567"}}); ans["capture"] != nil {
+		t.Errorf("handed over twice: %v", ans["capture"])
+	}
+}
+
+// a wet probe opens a leak (the 5-min mode in the answer), the all-clear ends it; a pending network is delivered once
+// and its passphrase forgotten; a failed change puts the board in the 5-min mode
+func TestLeakAndWifiChange(t *testing.T) {
+	s := testServer(t)
+	ans, _ := checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "probe": {"800"}})
+	if ans["mode"] != float64(1) || ans["checkin"] != float64(WakeModeS) {
+		t.Errorf("leak: mode %v checkin %v", ans["mode"], ans["checkin"])
+	}
+	must(http.Post(s.URL+"/v1/devices/"+TestID+"/clear", "", nil))
+	if ans, _ = checkIn(t, s, url.Values{"full": {"0.6+g1234567"}}); ans["mode"] != float64(0) {
+		t.Errorf("after the all-clear: mode %v", ans["mode"])
+	}
+	req, _ := http.NewRequest(http.MethodPut, s.URL+"/v1/devices/"+TestID+"/wifi", strings.NewReader(`{"ssid":"new","psk":"secret123"}`))
+	must(http.DefaultClient.Do(req))
+	ans, _ = checkIn(t, s, url.Values{"full": {"0.6+g1234567"}})
+	if w, _ := ans["wifi"].(map[string]any); w["ssid"] != "new" || w["psk"] != "secret123" {
+		t.Errorf("pending network: %v", ans["wifi"])
+	}
+	mu.Lock()
+	psk := wifiChanges[TestID].PSK
+	mu.Unlock()
+	if psk != "" {
+		t.Error("the passphrase kept after delivery")
+	}
+	if ans, _ = checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "wchg": {"17"}}); ans["mode"] != float64(1) {
+		t.Errorf("a failed change: mode %v", ans["mode"])
 	}
 }

@@ -16,6 +16,7 @@ from board import BL_PORT, k230, log, openp   # noqa: E402
 
 RUNS = 10
 r = Run(__file__)
+r.needs("pt_boot", "pt_uart")
 rows, fails = [], []
 
 

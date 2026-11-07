@@ -69,7 +69,8 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
 
-            <!-- the action for the picked board, its rare actions (Delete) behind the three dots at the right -->
+            <!-- the picked board's actions: Set up (a new board) or Take photo / Take video (one of mine); the rare ones
+                 (Change Wi-Fi, Delete) behind the three dots at the right -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -86,6 +87,27 @@
                     android:enabled="false"
                     android:maxLines="1"
                     android:text="@string/setup_new" />
+
+                <!-- one of the person's boards: its common actions (DESIGN.md 5.3.14); in place of setup_open -->
+                <Button
+                    android:id="@+id/take_photo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="@string/take_photo"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/take_video"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="@string/take_video"
+                    android:visibility="gone" />
 
                 <ImageButton
                     android:id="@+id/more"
@@ -157,22 +179,13 @@
             style="@style/Step"
             android:text="@string/step4" />
 
-        <!-- what to do now -->
-        <TextView
-            android:id="@+id/help"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@color/help_background"
-            android:lineSpacingExtra="2dp"
-            android:padding="12dp"
-            android:textAppearance="@android:style/TextAppearance.Material.Body1" />
-
         <Button
             android:id="@+id/scan"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:text="@string/scan" />
 
         <RadioGroup
@@ -205,28 +218,45 @@
             android:layout_height="wrap_content"
             android:text="@string/show_password" />
 
-        <Button
-            android:id="@+id/send"
+        <!-- the action row as on the status screen: Send, and its rare actions behind the three dots (Save without
+             checking after a check that may have failed only because of where the LEAKCAM is now; back to your
+             LEAKCAMs); nothing here comes and goes (user 2026-11-07: no jumps in the action area) -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="@string/send" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-        <!-- after a check that may have failed only because of where the LEAKCAM is now -->
-        <Button
-            android:id="@+id/save_anyway"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/save_anyway"
-            android:visibility="gone" />
+            <Button
+                android:id="@+id/send"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="@string/send" />
 
-        <Button
-            android:id="@+id/to_status"
+            <ImageButton
+                android:id="@+id/setup_more"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@null"
+                android:contentDescription="@string/more"
+                android:src="@drawable/ic_more"
+                android:visibility="invisible" />
+        </LinearLayout>
+
+        <!-- what to do now: under the action row, so a long message never moves the controls -->
+        <TextView
+            android:id="@+id/help"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="@string/to_status"
-            android:visibility="gone" />
+            android:background="@color/help_background"
+            android:lineSpacingExtra="2dp"
+            android:padding="12dp"
+            android:textAppearance="@android:style/TextAppearance.Material.Body1" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

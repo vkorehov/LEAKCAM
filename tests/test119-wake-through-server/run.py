@@ -91,11 +91,19 @@ def tap_setup_button():
     for attempt in (1, 2):
         adb("shell", "uiautomator", "dump", "/sdcard/t119.xml")
         xml = adb("shell", "cat", "/sdcard/t119.xml")
-        m = re.search(r'resource-id="com.leakcam.setup:id/setup_open"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml)
+        # Wake / Change Wi-Fi is a rare action: the three-dots menu next to Take photo / Take video (2026-11-07)
+        m = re.search(r'resource-id="com.leakcam.setup:id/more"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml)
         if m:
             x1, y1, x2, y2 = map(int, m.groups())
             adb("shell", "input", "tap", str((x1 + x2) // 2), str((y1 + y2) // 2))
-            return True
+            time.sleep(0.8)
+            menu = adb("exec-out", "uiautomator", "dump", "/dev/tty", secs=30)
+            i = re.search(r'text="(Wake to change Wi-Fi|Change Wi-Fi)"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', menu)
+            if i:
+                x1, y1, x2, y2 = map(int, i.groups()[1:])
+                adb("shell", "input", "tap", str((x1 + x2) // 2), str((y1 + y2) // 2))
+                return True
+            adb("shell", "input", "keyevent", "KEYCODE_BACK")
         top = re.search(r'package="([^"]+)"', xml)
         r.obstacle(f"Wake tap {attempt}: the app not on the screen ({top.group(1) if top else 'no dump'} in front)")
         adb("shell", "am", "start", "-n", f"{PKG}/.MainActivity")

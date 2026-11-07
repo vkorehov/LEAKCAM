@@ -238,6 +238,16 @@ class Run:
             self.set("perday", f"{per_day} x {what}: {mah:.2f} mAh/day, {mah * 30 / 2000 * 100:.2f} % of 2000 mAh per month "
                                f"({self.date})")
 
+    def needs(self, *cmds):
+        """the BL616 commands this run drives: one `help`, and a run on a firmware without them ends at once as "not
+        run" (test101 drove the old test firmware's pt_session 10 times against the product pair: 17 min, 2026-11-07)"""
+        have = bl("help", 2)
+        missing = [c for c in cmds if c not in have]
+        if missing:
+            self.obstacle(f"the BL616 firmware has no {', '.join(missing)}: flash the test firmware that has it")
+            self.finish(f"not run: no {', '.join(missing)} on the BL616.", False, switch_off=False)
+            sys.exit(1)
+
     def obstacle(self, text):
         self.obstacles.append(text)
         log("OBSTACLE", text)

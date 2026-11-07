@@ -283,11 +283,34 @@ class BleOp {
             /* the setup itself, never Wake (a present board out of range: test119 taps that one itself) */
             /* tapped again until the setup screen opens: a tap while the list was still picking the board opened
              * nothing (test111, 2026-11-04: 3 runs left on the status screen) */
+            /* a new board: its Set up button; one of mine: the three-dots menu's Change Wi-Fi (2026-11-07: photo and video
+             * are the row's buttons, Change Wi-Fi a rare action), never its Wake */
+            var woken = false
             for (attempt in 1..3) {
-                val button = safe(null) { ui.wait(Until.findObject(By.res(pkg, "setup_open").enabled(true)
-                    .text(java.util.regex.Pattern.compile("(?!Wake).*"))), 40000) }
+                val change = ctx.getString(R.string.setup_change)
+                val wakeLabel = ctx.getString(R.string.setup_wake)
+                val deadline = SystemClock.elapsedRealtime() + 60000   // a wake: the next check-in + the switch
+                var opened = false
+                while (!opened && SystemClock.elapsedRealtime() < deadline) {
+                    val setup = safe(null) { ui.findObject(By.res(pkg, "setup_open").enabled(true)) }
+                    if (setup != null) {
+                        safe(Unit) { setup.click() }
+                        opened = true
+                    } else if (safe(null) { ui.findObject(By.res(pkg, "take_photo")) } != null) {
+                        // out of BLE range the item is Wake: tapped once (the board opens BLE at its next check-in),
+                        // then Change Wi-Fi once the app sees it
+                        safe(Unit) { ui.findObject(By.res(pkg, "more"))?.click() }
+                        val item = ui.wait(Until.findObject(By.text(java.util.regex.Pattern.compile(
+                            java.util.regex.Pattern.quote(change) + "|" + java.util.regex.Pattern.quote(wakeLabel))).enabled(true)), 2000)
+                        val isChange = safe(false) { item?.text == change }
+                        if (item == null) ui.pressBack()
+                        else if (isChange) { safe(Unit) { item.click() }; opened = true }
+                        else if (!woken) { safe(Unit) { item.click() }; woken = true; out.put("ms_wake", ms()) }
+                        else ui.pressBack()
+                    }
+                    if (!opened) SystemClock.sleep(500)
+                }
                 out.put("ms_status", ms())
-                safe(Unit) { button?.click() }
                 if (ui.wait(Until.findObject(By.res(pkg, "send")), 5000) != null)
                     break
                 out.put("setup_open_taps", attempt + 1)
@@ -356,12 +379,22 @@ class BleOp {
             note()
         }
         press("send")
-        val offered = find("save_anyway") != null
+        // Save without checking is a rare action: the setup screen's three-dots menu (2026-11-07)
+        var item: androidx.test.uiautomator.UiObject2? = null
+        // not find(): an invisible menu is not in the tree, and find() would scroll the whole screen looking for it
+        val menuButton = safe(null) { ui.findObject(By.res(pkg, "setup_more")) }
+        if (menuButton != null) {
+            safe(Unit) { menuButton.click() }
+            item = ui.wait(Until.findObject(By.text(ctx.getString(R.string.save_anyway))), 2000)
+        }
+        val offered = item != null
         out.put("save_anyway", offered)
         if (offered && arg("anyway", "") == "1") {
             out.put("ms_anyway", ms())
-            press("save_anyway")
-        }
+            safe(Unit) { item?.click() }
+        } else if (item != null || ui.findObject(By.text(ctx.getString(R.string.to_status))) != null)
+            ui.pressBack()   // the menu closed again
+
         /* hold: the screen watched this long after the send (the board's relay back on the cable after Done, test113
          * step 12): the op's end ends the app's process, and a plug then starts a new one */
         val held = SystemClock.elapsedRealtime() + arg("hold", "0").toLong() * 1000

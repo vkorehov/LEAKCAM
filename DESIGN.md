@@ -875,6 +875,20 @@ person watched: 5.3.4's 15 s rule).
   for full-screen notifications and Do Not Disturb access once at setup. Acknowledging stops the sound and offers the
   requests (all clear, record a video). An SMS backup through the SMS gateway comes later.
 
+### 5.3.14 Take photo, take video: the app's common actions (user, 2026-11-07)
+
+- The status screen's action row for one of the person's boards: **Take photo** and **Take video**, the most common
+  actions; Change Wi-Fi and Delete are rare, behind the three dots. A board not set up shows only "Set up this
+  LEAKCAM" in the same place.
+- **When it runs:** at once over BLE when the board is in range (awake), else at its next check-in (the server keeps
+  the request and hands it over in the check-in answer). The app never waits for it: the request is sent, the screen
+  says when it will happen, and the person gets a notification when it is ready (5.3.4's 15 s rule).
+- **A video is 15 s.** The board captures it (both cameras), uploads it to the media server (MediaMTX, memory
+  leakcam-server-mediamtx) and reports it; a photo the same way as one frame per camera.
+- **Played in the app** once taken: the notification opens it; the board's row lists its latest photo and video.
+- Built so far: the app's buttons and the server's request queue (`POST /v1/devices/{id}/capture`, the answer's
+  `capture`). Capture, upload and playback come with the real cameras.
+
 ### 5.4 K230-BL616 link and time
 
 - **The UART carries session control.** UART1 at 2 Mbaud 8N1 (stable; 4 Mbaud lost short writes, tests/test039), frames `$<seq>,<CMD>[,args]*XX`

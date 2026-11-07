@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from harness import Run, bl   # noqa: E402
 
 r = Run(__file__)
+r.needs("pt_boot", "pt_session")
 # recorded states (A at 5 V on USB-C 1), with their source
 KNOWN = [("rails off, BL616 awake", 0.061, "test006"), ("K230 rails on, held in reset", 0.087, "test021"),
          ("K230 at msh idle (agent running)", 0.220, "test006"), ("KPU loop", 0.220, "test013"),

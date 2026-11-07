@@ -146,7 +146,11 @@ class MainActivity : Activity() {
     private lateinit var help: TextView
     private lateinit var scanButton: Button
     private lateinit var sendButton: Button
-    private lateinit var saveAnywayButton: Button
+    private lateinit var setupMore: android.widget.ImageButton
+    // the setup screen's rare actions (its three-dots menu): Save without checking after a check that may have failed
+    // only where the board is now; back to the status list when this phone has boards
+    private var anywayOffered = false
+    private var backOffered = false
     private lateinit var devices: RadioGroup
     private lateinit var ssidField: EditText
     private lateinit var passwordField: EditText
@@ -156,7 +160,8 @@ class MainActivity : Activity() {
     private lateinit var nearby: TextView
     private lateinit var setupOpen: Button
     private lateinit var more: android.widget.ImageButton
-    private lateinit var toStatus: Button
+    private lateinit var takePhoto: Button
+    private lateinit var takeVideo: Button
 
     private val main = Handler(Looper.getMainLooper())
     private val adapter: BluetoothAdapter? by lazy {
@@ -253,19 +258,26 @@ class MainActivity : Activity() {
         nearby = findViewById(R.id.nearby)
         setupOpen = findViewById(R.id.setup_open)
         more = findViewById(R.id.more)
-        // the picked board's rare actions, one menu next to its action button (user 2026-11-07: no button or menu
-        // in the rows)
+        takePhoto = findViewById(R.id.take_photo)
+        takeVideo = findViewById(R.id.take_video)
+        takePhoto.setOnClickListener { capture(selected, "photo") }
+        takeVideo.setOnClickListener { capture(selected, "video") }
+        // the picked board's rare actions, one menu next to its action buttons (user 2026-11-07: no button or menu
+        // in the rows; Change Wi-Fi is rare too, photo and video are the common actions)
         more.setOnClickListener { v ->
             val id = selected
             android.widget.PopupMenu(this, v).apply {
-                menu.add(R.string.delete).setOnMenuItemClickListener { forget(id); true }
+                menu.add(changeLabel).apply { isEnabled = changeEnabled }.setOnMenuItemClickListener {
+                    addressOf(id)?.let { openSetup(it) } ?: wake(id); true
+                }
+                if (deletable)
+                    menu.add(R.string.delete).setOnMenuItemClickListener { forget(id); true }
                 show()
             }
         }
-        toStatus = findViewById(R.id.to_status)
         scanButton = findViewById(R.id.scan)
         sendButton = findViewById(R.id.send)
-        saveAnywayButton = findViewById(R.id.save_anyway)
+        setupMore = findViewById(R.id.setup_more)
         devices = findViewById(R.id.devices)
         ssidField = findViewById(R.id.ssid)
         passwordField = findViewById(R.id.password)
@@ -287,9 +299,16 @@ class MainActivity : Activity() {
         devices.setOnCheckedChangeListener { _, _ -> if (!scanning && gatt == null && !sending) wifiHelp() }
         scanButton.setOnClickListener { if (ready()) startScan() }
         sendButton.setOnClickListener { if (ready()) send(true) }
-        saveAnywayButton.setOnClickListener { if (ready()) send(false) }
-        setupOpen.setOnClickListener { addressOf(selected)?.let { openSetup(it) } ?: wake(selected) }
-        toStatus.setOnClickListener { if (!sending) showStatus() }
+        setupMore.setOnClickListener { v ->
+            android.widget.PopupMenu(this, v).apply {
+                if (anywayOffered)
+                    menu.add(R.string.save_anyway).setOnMenuItemClickListener { if (ready()) send(false); true }
+                if (backOffered)
+                    menu.add(R.string.to_status).setOnMenuItemClickListener { if (!sending) showStatus(); true }
+                show()
+            }
+        }
+        setupOpen.setOnClickListener { addressOf(selected)?.let { openSetup(it) } }
         deleteSharedPreferences("devices")    // the list an older version kept: the server holds it now (DESIGN.md 5.3.5)
         Log.i(TAG, "phone $phoneId")      // the tests register this phone at the server by it
         PushService.register(this)        // the server can push the leak alert to this phone (DESIGN.md 5.3.13)
@@ -393,6 +412,47 @@ class MainActivity : Activity() {
 
     /** the first missing one asked for: notifications, then full screen (Android 14+), then Do Not Disturb access;
      *  again from onResume after each settings screen until all are there */
+    private var note: Triple<String, String, Long>? = null   // the last action's answer for a board, until its time
+    private var changeLabel = ""          // the menu's Change Wi-Fi item for the picked board, as render() left it
+    private var changeEnabled = false
+    private var deletable = false
+
+    /** Take photo / Take video (DESIGN.md 5.3.14): the request to the server, handed over at the board's next check-in;
+     *  the app is done at once and says when it happens (the 15 s rule); a push comes when it is ready to play */
+    private fun capture(id: String, kind: String) {
+        val what = getString(if (kind == "video") R.string.kind_video else R.string.kind_photo)
+        Thread {
+            val within = try {
+                val c = URL("${BuildConfig.SERVER}/v1/devices/$id/capture").openConnection() as HttpURLConnection
+                c.requestMethod = "POST"
+                c.doOutput = true
+                c.connectTimeout = 5000
+                c.readTimeout = 5000
+                c.setRequestProperty("Content-Type", "application/json")
+                c.outputStream.use { it.write(JSONObject().put("kind", kind).toString().toByteArray()) }
+                val s = if (c.responseCode == 200) JSONObject(c.inputStream.bufferedReader().readText()).optInt("within_s", -1) else -1
+                c.disconnect()
+                s
+            } catch (e: Exception) {
+                -1
+            }
+            Log.i(TAG, "capture $kind $id within $within")   // test: the request reached the server
+            runOnUiThread {
+                // kept over the status screen's refreshes for a minute (the presence redraw replaced it at once)
+                note = Triple(id, if (within < 0) getString(R.string.capture_failed)
+                                  else getString(R.string.capture_later, id, what,
+                                                 if (within >= 120) "${within / 60} min" else "$within s"),
+                              SystemClock.elapsedRealtime() + 60_000L)
+                nearby.text = note?.second
+            }
+        }.start()
+    }
+
+    /** the setup screen's three dots: there (keeping its place when empty) only when it has an item */
+    private fun setupMenu() {
+        setupMore.visibility = if (anywayOffered || backOffered) View.VISIBLE else View.INVISIBLE
+    }
+
     private fun alertPermissions() {
         LeakAlert.channel(this)
         askingAlert = true
@@ -702,6 +762,7 @@ class MainActivity : Activity() {
         val wakeable = !here && scannedOnStatus && k.has(selected) && online[selected] == true
         val waiting = wakeWaiting(selected)
         nearby.text = when {
+            note?.let { it.first == selected && SystemClock.elapsedRealtime() < it.third } == true -> note?.second
             name.isEmpty() -> getString(R.string.nearby_none)
             addressOf(selected) == USB_TAG -> getString(R.string.nearby_usb, name)
             here && k.has(selected) -> getString(R.string.nearby_known, name)
@@ -711,18 +772,21 @@ class MainActivity : Activity() {
             k.has(selected) -> getString(R.string.nearby_lost, name)
             else -> getString(R.string.nearby_away, name)
         }
-        // the action alone: the board is the one picked in the list above (its serial repeated here was cut off)
-        setupOpen.text = when {
-            name.isEmpty() -> getString(R.string.setup_new)
-            wakeable -> getString(R.string.setup_wake)
-            k.has(selected) -> getString(R.string.setup_change)
-            else -> getString(R.string.setup_new_named)
-        }
-        setupOpen.isEnabled = here || (wakeable && !waiting)
+        // one of mine: Take photo / Take video, the rest in the menu; else Set up in the same place (one row height:
+        // nothing jumps). The labels are the action alone: the board is the one picked in the list above
+        val isMine = k.has(selected)
+        setupOpen.visibility = if (isMine) View.GONE else View.VISIBLE
+        takePhoto.visibility = if (isMine) View.VISIBLE else View.GONE
+        takeVideo.visibility = if (isMine) View.VISIBLE else View.GONE
+        setupOpen.text = getString(if (name.isEmpty()) R.string.setup_new else R.string.setup_new_named)
+        setupOpen.isEnabled = here
+        changeLabel = getString(if (wakeable) R.string.setup_wake else R.string.setup_change)
+        changeEnabled = here || (wakeable && !waiting)
         // Delete only for a board set up (user 2026-11-05): known by its own word, the cable's ID answer or the
         // advertisement's flag; nothing to remove from a board not set up
-        more.visibility = if (k.has(selected) && addressOf(selected)?.let { stored[it] } != false) View.VISIBLE else View.INVISIBLE   // keeps its place: the button never changes width
-        Log.i(TAG, "button ${setupOpen.text} enabled ${if (setupOpen.isEnabled) 1 else 0}")   // test119
+        deletable = isMine && addressOf(selected)?.let { stored[it] } != false
+        more.visibility = if (isMine) View.VISIBLE else View.INVISIBLE   // keeps its place: the buttons never change width
+        Log.i(TAG, "button ${if (isMine) changeLabel else setupOpen.text} enabled ${if (if (isMine) changeEnabled else here) 1 else 0}")   // test119
     }
 
     /** a wake asked for this board and not yet answered: its check-in interval plus the 2 minutes it advertises */
@@ -780,7 +844,8 @@ class MainActivity : Activity() {
             stopScan()                  // the board is found; Send stops it anyway
         statusPanel.visibility = View.GONE
         setupPanel.visibility = View.VISIBLE
-        toStatus.visibility = if (known().length() > 0) View.VISIBLE else View.GONE
+        backOffered = known().length() > 0
+        setupMenu()
         changeOnly = address != null && ids[address]?.let { known().has(it) } == true
         val hidden = address != null && stored[address] == true
         for (v in listOf<View>(findViewById(R.id.intro), steps[0], steps[1], steps[2]))
@@ -849,7 +914,8 @@ class MainActivity : Activity() {
         watchAdapter()
         sendButton.isEnabled = false
         scanButton.isEnabled = false
-        saveAnywayButton.visibility = View.GONE
+        anywayOffered = false
+        setupMenu()
         show(STEP_SAVE, R.string.help_connecting, name)
         armTimeout()
         fetchPin {
@@ -1245,7 +1311,9 @@ class MainActivity : Activity() {
                         WCHK_NO_API -> problem(STEP_SAVE, R.string.chk_no_api, detail)
                         else -> problem(STEP_SAVE, R.string.chk_unknown, state)
                     }
-                    saveAnywayButton.visibility = if (placeOnly) View.VISIBLE else View.GONE
+                    anywayOffered = placeOnly
+                    setupMenu()
+                    Log.i(TAG, "anyway offered ${if (placeOnly) 1 else 0}")   // BleOp: the menu item to press
                 }
             }
         }
@@ -1295,7 +1363,8 @@ class MainActivity : Activity() {
             v.visibility = View.GONE
         usbHeader.visibility = View.VISIBLE
         usbHeader.text = getString(R.string.usb_header, usbId)
-        toStatus.visibility = if (known().length() > 0) View.VISIBLE else View.GONE
+        backOffered = known().length() > 0
+        setupMenu()
         changeOnly = known().has(usbId)
         addUsbRadio()                        // hidden: send() takes the picked one
         val current = ssids[usbId].orEmpty()
@@ -1305,7 +1374,8 @@ class MainActivity : Activity() {
         passwordField.hint = getString(if (usbStored) R.string.hidden_password else R.string.password)
         sendButton.setText(R.string.usb_send)
         sendButton.isEnabled = true
-        saveAnywayButton.visibility = View.GONE
+        anywayOffered = false
+        setupMenu()
         if (usbStored)
             show(STEP_WIFI, R.string.help_usb_stored, usbId, if (current.isEmpty()) "" else " (\"$current\")")
         else {
@@ -1446,7 +1516,8 @@ class MainActivity : Activity() {
         sending = true
         sendButton.isEnabled = false
         scanButton.isEnabled = false
-        saveAnywayButton.visibility = View.GONE
+        anywayOffered = false
+        setupMenu()
         show(STEP_SAVE, R.string.help_usb_sending, boardName)
         armTimeout()
         val hex = { b: ByteArray -> b.joinToString("") { "%02x".format(it) } }
@@ -1564,7 +1635,8 @@ class MainActivity : Activity() {
         if (boardId.isEmpty())
             return
         mine.put(boardId, JSONObject())  // registered at the server when it issued the PIN; its list confirms it
-        toStatus.visibility = View.VISIBLE
+        backOffered = true
+        setupMenu()
     }
 
 

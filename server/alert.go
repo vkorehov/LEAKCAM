@@ -17,6 +17,7 @@ const (
 	WakeModeMax = 24 * time.Hour                        // the mode ends after this at the latest: it costs the battery ~13 mAh a day
 	Tokens      = "/home/pi/leakcam-server/tokens.json" // LEAKCAM_TOKENS: per phone its FCM token
 	WifiSaved   = 0x04                                  // wifi_check's state for a network joined, checked and stored
+	VideoS      = 15                                    // a video's length (user, 2026-11-07; DESIGN.md 5.3.14)
 )
 
 // Leak: a device's open leak, until a phone's all-clear
@@ -37,6 +38,7 @@ var (
 	leaks       = map[string]Leak{}
 	wifiChanges = map[string]*WifiChange{}
 	tokens      = map[string]string{} // phone -> FCM token
+	captures    = map[string]string{} // per device a photo or video asked for, handed over at its next check-in
 	tokenFile   = Tokens
 )
 
@@ -82,6 +84,15 @@ func checkInAlerts(id string, in CheckIn, ans map[string]any) (msgs []map[string
 	if c := wifiChanges[id]; c != nil && c.Delivered.IsZero() {
 		ans["wifi"] = map[string]string{"ssid": c.SSID, "psk": c.PSK}
 		c.Delivered, c.PSK = time.Now(), ""
+	}
+	if k := captures[id]; k != "" {
+		c := map[string]any{"kind": k}
+		if k == "video" {
+			c["secs"] = VideoS
+		}
+		ans["capture"] = c
+		delete(captures, id)
+		log.Printf("%s: %s handed over", id, k)
 	}
 	if wakeMode(id) {
 		ans["checkin"] = WakeModeS
@@ -198,4 +209,27 @@ func wifiState(id string) string {
 		return "saved"
 	}
 	return "failed"
+}
+
+// capture: POST /v1/devices/{id}/capture {"kind":"photo"|"video"}: the app's Take photo / Take video for a board not in
+// its BLE range, handed over at the board's next check-in (DESIGN.md 5.3.14); a second ask replaces the first
+func capture(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	var b struct {
+		Kind string `json:"kind"`
+	}
+	if !idRe.MatchString(id) || json.NewDecoder(http.MaxBytesReader(w, r.Body, 128)).Decode(&b) != nil ||
+		(b.Kind != "photo" && b.Kind != "video") {
+		http.Error(w, "body {\"kind\": \"photo\" or \"video\"}", http.StatusBadRequest)
+		return
+	}
+	mu.Lock()
+	captures[id] = b.Kind
+	within := deviceIntervalsLocked(id).Checkin
+	if wakeMode(id) {
+		within = WakeModeS
+	}
+	mu.Unlock()
+	log.Printf("%s: %s asked, at its next check-in", id, b.Kind)
+	reply(w, map[string]int{"within_s": within})
 }

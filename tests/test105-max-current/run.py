@@ -17,6 +17,7 @@ from board import log, wifi_credentials   # noqa: E402
 PC, PC_PORT = "192.168.1.131", 5001
 FULL_S = 600
 r = Run(__file__)
+r.needs("pt_wifi")
 
 
 def pc_sink():

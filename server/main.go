@@ -781,6 +781,7 @@ func main() {
 	http.HandleFunc("PUT /v1/phones/{phone}/token", putToken)
 	http.HandleFunc("POST /v1/devices/{id}/clear", clearLeak)
 	http.HandleFunc("PUT /v1/devices/{id}/wifi", putWifi)
+	http.HandleFunc("POST /v1/devices/{id}/capture", capture)
 	http.HandleFunc("GET /v1/images/k230_rtt", k230Image)
 	http.HandleFunc("GET /v1/images/{name}", images)
 	http.HandleFunc("GET /v1/devices/{id}/model", model)
