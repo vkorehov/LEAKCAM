@@ -392,7 +392,8 @@ class BleOp {
         // Save without checking is a rare action: the setup screen's three-dots menu (2026-11-07)
         var item: androidx.test.uiautomator.UiObject2? = null
         // not find(): an invisible menu is not in the tree, and find() would scroll the whole screen looking for it
-        val menuButton = safe(null) { ui.findObject(By.res(pkg, "setup_more")) }
+        // only after a check that did not end in Done (it is offered then); a Back on the Done screen left it (test111)
+        val menuButton = if (help().startsWith("Done")) null else safe(null) { ui.findObject(By.res(pkg, "setup_more")) }
         if (menuButton != null) {
             safe(Unit) { menuButton.click() }
             item = ui.wait(Until.findObject(By.text(ctx.getString(R.string.save_anyway))), 2000)
@@ -402,8 +403,8 @@ class BleOp {
         if (offered && arg("anyway", "") == "1") {
             out.put("ms_anyway", ms())
             safe(Unit) { item?.click() }
-        } else if (item != null || ui.findObject(By.text(ctx.getString(R.string.to_status))) != null)
-            ui.pressBack()   // the menu closed again
+        } else if (item != null || safe(null) { ui.findObject(By.text(ctx.getString(R.string.to_status))) } != null)
+            ui.pressBack()   // the open menu closed again (only a menu that is open)
 
         /* hold: the screen watched this long after the send (the board's relay back on the cable after Done, test113
          * step 12): the op's end ends the app's process, and a plug then starts a new one */
