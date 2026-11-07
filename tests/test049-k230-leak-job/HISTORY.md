@@ -1,0 +1,23 @@
+# test049-k230-leak-job: history
+
+Earlier runs, superseded findings and obstacles, newest first. Current state: README.md.
+
+## Runs
+
+### Automated run 2026-11-07 (run.py, 18 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-07 (run.py, 11 s): **FAIL**
+
+10/11 checks pass. Failed: 8 checks: the K230 program's heap does not grow (heap + none B).
+
+
+## Obstacles
+
+- **2026-11-07, the job's console lines lost:** `r.k("")` (board.cmd) drains the port for 0.3 s before it writes, so
+  the job's lines that came meanwhile were thrown away and the heap check found none (FAIL without a fault). Read
+  passively instead: `cmd(fd, None, secs)` sends nothing and keeps what arrives.
+- **2026-11-07, the scene file:** the K230 shell's `echo text file` appends and cannot create a file ("open file
+  failed"); the job creates /sdcard/leakcam/sim empty and takes the last `cam<N>=` token.

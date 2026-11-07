@@ -11,9 +11,9 @@
  * The history is /sdcard/leakcam/cam<N>.hist, the raw frame.
  *
  * The simulated cameras: a fixed synthetic room per camera (gradient, furniture, sensor noise). /sdcard/leakcam/sim
- * picks each camera's scene, one token, e.g. `cam0=object,cam1=light` (written on the K230 console with
- * `echo cam0=object,cam1=same /sdcard/leakcam/sim`): same (default), light (the room 40 % darker) or object (a dark
- * puddle on the floor).
+ * picks each camera's scene: the last `cam<N>=<scene>` in it counts, so the K230 console's `echo` (which appends and
+ * cannot create a file) sets it: `echo cam0=object /sdcard/leakcam/sim`; `rm` it to go back to same (the job creates
+ * it empty again). Scenes: same (default), light (the room 40 % darker) or object (a dark puddle on the floor).
  */
 #include "job.h"
 
@@ -46,14 +46,25 @@ static uint8_t raw[FRAME], cur[FRAME], hist[FRAME];
 
 static enum scene sim_scene(int cam)
 {
-    char buf[64] = { 0 }, key[8];
+    char buf[256] = { 0 }, key[8];
     int fd = open(SIM_FILE, O_RDONLY);
-    if (fd >= 0) {
-        (void)!read(fd, buf, sizeof(buf) - 1);
-        close(fd);
+    if (fd < 0) {
+        fd = open(SIM_FILE, O_WRONLY | O_CREAT, 0644);   /* empty: same; echo appends to it */
+        if (fd >= 0)
+            close(fd);
+        return SCENE_SAME;
     }
+    off_t end = lseek(fd, 0, SEEK_END);
+    if (end > (off_t)sizeof(buf) - 1)
+        lseek(fd, end - (off_t)sizeof(buf) + 1, SEEK_SET);   /* the newest tokens */
+    else
+        lseek(fd, 0, SEEK_SET);
+    (void)!read(fd, buf, sizeof(buf) - 1);
+    close(fd);
     snprintf(key, sizeof(key), "cam%d=", cam);
-    const char *p = strstr(buf, key);
+    const char *p = NULL;
+    for (const char *q = buf; (q = strstr(q, key)) != NULL; q++)
+        p = q;                                            /* the last one */
     if (!p)
         return SCENE_SAME;
     p += strlen(key);
