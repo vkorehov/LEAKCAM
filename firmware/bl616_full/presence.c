@@ -13,6 +13,7 @@
 #include "api.h"
 #include "device_id.h"
 #include "leak_check.h"
+#include "metrics.h"
 #include "ota_fetch.h"
 #include "switch_to_setup.h"
 #include "wifi_check.h"
@@ -62,8 +63,10 @@ static void check_in(void)
     /* the server drives both intervals (DESIGN.md 5.3.12): "checkin", "leakcheck"; the clock comes with every answer's
      * X-Time header (wifi_check.c) */
     long v = last == WCHK_INTERNET ? answer_value(body, "checkin") : -1;
-    if (v >= CHECKIN_MIN_S && v <= CHECKIN_MAX_S)
+    if (v >= CHECKIN_MIN_S && v <= CHECKIN_MAX_S) {
         checkin_s = (uint32_t)v;
+        metrics_intervals_set(checkin_s, 0);   /* kept across a reset */
+    }
     if ((v = last == WCHK_INTERNET ? answer_value(body, "leakcheck") : -1) > 0)
         leak_check_every((uint32_t)v);
 
@@ -90,6 +93,10 @@ static void check_in(void)
 static void presence_task(void *arg)
 {
     (void)arg;
+    uint32_t kept, unused;
+    metrics_intervals(&kept, &unused);
+    if (kept >= CHECKIN_MIN_S && kept <= CHECKIN_MAX_S)
+        checkin_s = kept;                    /* the server's, from before the reset */
     vTaskDelay(pdMS_TO_TICKS(5000));         /* online within seconds of the start */
     for (;;) {
         check_in();                        /* on USB and on battery; it needs a stored network */

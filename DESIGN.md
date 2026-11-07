@@ -830,7 +830,9 @@ ready at once.
   /sdcard picks same, light or a new object).
 - **The server drives both intervals** (user, 2026-11-07: adjusted at runtime): every check-in's answer carries
   `"checkin":<s>` (5 s - 1 h, default 3600) and `"leakcheck":<s>` (60 s - 7 days, default 86400); per device through
-  `PUT /v1/devices/<id>/intervals` (server/README.md), the board takes them with its next check-in.
+  `PUT /v1/devices/<id>/intervals` (server/README.md), the board takes them with its next check-in and keeps them
+  across resets and firmware switches (HBN RAM, metrics.c): a reset with the server out of reach must not fall back to
+  the 60 min default (test128, 2026-11-07).
 - **Time without NTP** (user, 2026-11-07; TLS needs the date): every answer of the server carries `X-Time: <unix s>`,
   and the BL616 sets its wall clock from whatever exchange came last (wifi_check.c); every frame the BL616 sends the
   K230 carries it on (`;t=<unix s>`, k230_link.h), and the K230 sets its clock from it. **Either clock changes only when it

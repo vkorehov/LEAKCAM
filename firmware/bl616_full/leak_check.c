@@ -98,6 +98,7 @@ void leak_check_every(uint32_t s)
         return;
     printf("leak: check every %lu s (server)\r\n", (unsigned long)s);
     check_s = s;
+    metrics_intervals_set(0, s);             /* kept across a reset */
     next_at = bflb_mtimer_get_time_ms() + (uint64_t)s * 1000;
 }
 
@@ -140,6 +141,10 @@ static void watch_task(void *arg)
 
 void leak_check_start(void)
 {
+    uint32_t unused, kept;
+    metrics_intervals(&unused, &kept);
+    if (kept >= CHECK_MIN_S && kept <= CHECK_MAX_S)
+        check_s = kept;                      /* the server's, from before the reset */
     probe_init();
     if (xTaskCreate(watch_task, "leak", 1024, NULL, 4, NULL) != pdPASS)
         vAssertCalled();

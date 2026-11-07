@@ -7,6 +7,7 @@ CHECK lines.
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 import urllib.request
@@ -88,6 +89,25 @@ check("PUT checkin 20: the board on it within one old interval (60 s)", took is 
 check("PUT checkin 20: check-ins ~20 s apart", len(gaps) == 2 and all(15 <= g <= 30 for g in gaps), f"gaps {gaps} s")
 if took is not None:
     r.set("Interval taken", f"check-in 20 s taken {took:.0f} s after the PUT; check-ins then {gaps} s apart")
+
+# 2b. kept across a reset (HBN RAM): the server down meanwhile, the board still on 20 s, not the 3600 s default
+pi = ["ssh", "-o", "BatchMode=yes", "pi@192.168.1.159"]
+subprocess.run(pi + ["sudo systemctl stop leakcam-server"], timeout=30)
+try:
+    bl("reboot", 1)
+    time.sleep(8)
+    kept = 0
+    t = time.time()
+    while not kept and time.time() - t < 30:    # the console back after the reset (its first answer can be lost)
+        kept = board_checkin()
+finally:
+    subprocess.run(pi + ["sudo systemctl start leakcam-server"], timeout=30)
+    time.sleep(1)
+    intervals(dev, checkin=20)               # the server keeps per-device intervals in memory only
+r.fd = openp(K230_PORT)                      # the BL616's ports came back with the reset: the old one is dead
+check("a reset with the server down: the board keeps the server's 20 s (not the 3600 s default)", kept == 20,
+      f"check-in every {kept} s after the reset")
+wait(lambda: board_checkin() == 20, 40)
 
 # 3. the leak check interval per device: a check by itself within ~60 s
 intervals(dev, checkin=20, leakcheck=60)

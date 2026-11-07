@@ -1,8 +1,9 @@
 # test108: the server drives the check-in and leak check intervals (whole product flow, product firmware)
 
-Status: **pass** (2026-11-07 09:02, run.py 9/9): both intervals follow the server per device within one check-in (check-in 20 s
-taken 54 s after the PUT, then 21 s apart; leak check 60 s taken 22 s after), the RTC leak check runs by itself on its
-interval (58 s apart, CHECK to the running K230 on USB), back on the defaults with PUT 0.
+Status: **pass** (2026-11-07 10:15, run.py 10/10): both intervals follow the server per device within one check-in
+(check-in 20 s taken in 41-54 s, then 21 s apart; leak check 60 s taken in 14-22 s), kept across a reset with the
+server down (HBN RAM, step 2b: added after test128 found the 60 min default after a crash), the RTC leak check on its
+interval (57-61 s at 60, CHECK to the running K230 on USB), back on the defaults with PUT 0.
 
 DESIGN.md 5.3.12 (user, 2026-11-07: "make check-in time driven by the server and the leak check also, so we can adjust
 it dynamically"): every check-in's answer carries `"checkin":<s>` (5 s - 1 h, default 3600; the bench server 60) and
@@ -21,6 +22,8 @@ Product BL616 pair + product K230 image, USB-C 1 on the bench (USB power: the K2
    `every 86400 s`.
 2. **The check-in interval per device:** `PUT {"checkin":20}`: within one old interval the board says `check-in every
    20 s`, and its check-ins come ~20 s apart (the server's `last_seen_s`).
+2b. **Kept across a reset:** the server down, the board reset: it still checks in every 20 s (the intervals are kept in
+    HBN RAM: a reset with the server out of reach must not fall back to the 60 min default; test128 2026-11-07).
 3. **The leak check interval per device:** `PUT {"leakcheck":60}`: after the next check-in `leak` says `every 60 s`;
    within ~60 s a leak check runs by itself (`leak`: checks +1; the K230 console `job: CHECK rtc`), DONE back, the
    K230 still on (USB).

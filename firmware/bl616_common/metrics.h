@@ -26,6 +26,11 @@ void metrics_k230_session(uint32_t on_ms, bool ok);
 /* a leak check's result, DONE's "<cam0>,<cam1>" (full firmware, leak_check.c): in every check-in from then on as
  * job=<cam0>,<cam1>&jago=<s since> */
 void metrics_job(const char *result);
+/* the server's intervals (full firmware, DESIGN.md 5.3.12), kept here across resets and firmware switches: a reset
+ * with the server unreachable must not fall back to the 60 min default (test128 2026-11-07: the next check-in an hour
+ * away); 0 leaves one as it is / means none yet */
+void metrics_intervals_set(uint32_t checkin_s, uint32_t leakcheck_s);
+void metrics_intervals(uint32_t *checkin_s, uint32_t *leakcheck_s);
 
 /* before a check-in: AHT20, probe node, BL616 die temperature and supply read now (~70 ms, ADC calibration once per
  * boot ~29 ms) */

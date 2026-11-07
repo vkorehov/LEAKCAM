@@ -1,6 +1,8 @@
 # test128: crash records reach the server over Wi-Fi as soon as Wi-Fi is available
 
-Status: **pass, steps 1 2 3 5 7** (2026-11-02; steps 4, 6, 8 open; user: "add test case to always send crash records", then "send it over wifi only",
+Status: **steps 1 2 3 7 pass** (2026-11-07 08:05 UTC on the DESIGN 5.3.12 firmware, after the interval fix: HISTORY);
+step 5 to rewrite for the product setup firmware (its runner still uses the old test bed's commands); 2026-11-02 steps
+1 2 3 5 7 passed (steps 4, 6, 8 open; user: "add test case to always send crash records", then "send it over wifi only",
 "once available"). Design: DESIGN.md 5.3.3.
 
 A crash record (any kind: exception, watchdog hang, assert, stack overflow, malloc failure) is sent to the server by

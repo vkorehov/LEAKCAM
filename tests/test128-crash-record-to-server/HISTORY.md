@@ -12,6 +12,13 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Obstacles
 
+- **2026-11-07, step 3 FAIL: the record stayed on the board after the server came back.** The firmware's default
+  check-in interval became 60 min (DESIGN.md 5.3.12) and the server's interval lived in RAM only: after the crash's
+  reset the first check-in failed (server down) and the next one was an hour away. Fixed in the firmware: the server's
+  intervals are kept in HBN RAM across resets (metrics.c); then steps 1, 2, 3, 7 pass (the record sent 34 s after the
+  server was back). Step 5 (the setup firmware sends it) still uses the old test bed's `lp_boot` / `switch_to_full`
+  commands: to rewrite for the product setup firmware.
+
 - 2026-11-02 07:06:38 UTC, the VM's USB controller hung (`hub_ext_port_status failed (err = -32)` without end, 3 s
   after the board's disconnect for a crash reset): the BL616 console vanished, step 5's switch got no port and the
   runner stopped. Rebinding the VM's xHCI (0000:0a:00.0) brought it back (memory vmware-usb-connect-prompt); the

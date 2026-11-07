@@ -18,7 +18,7 @@
 #include "mem_stat.h"
 #include "wifi_check.h"
 
-#define MAGIC 0x4d455432u                    /* "MET2": the record is set (2: the leak check added) */
+#define MAGIC 0x4d455433u                    /* "MET3": the record is set (2: the leak check, 3: the intervals) */
 #define JOB_CAP 24                           /* "changed,changed" and room */
 #define K230_VER_CAP 40                      /* "0.6+g4ec6b02-dirty-202611061530" and room */
 
@@ -38,6 +38,7 @@ static struct {
     char job[JOB_CAP];                       /* the last leak check's DONE (k230_link.h), "" none */
     uint32_t job_boot;
     int32_t job_at_s;
+    uint32_t checkin_s, leakcheck_s;         /* the server's intervals (DESIGN.md 5.3.12), 0 = none yet */
 } rec __attribute__((section(".hbn_noinit.metrics")));
 
 static uint8_t rst;                          /* GLB reset recorder bits of this boot (bl616_glb.h) */
@@ -101,6 +102,20 @@ void metrics_job(const char *result)
     snprintf(rec.job, sizeof(rec.job), "%s", result);
     rec.job_boot = rec.boots;
     rec.job_at_s = (int32_t)up_s();
+}
+
+void metrics_intervals_set(uint32_t checkin_s, uint32_t leakcheck_s)
+{
+    if (checkin_s)
+        rec.checkin_s = checkin_s;
+    if (leakcheck_s)
+        rec.leakcheck_s = leakcheck_s;
+}
+
+void metrics_intervals(uint32_t *checkin_s, uint32_t *leakcheck_s)
+{
+    *checkin_s = rec.checkin_s;
+    *leakcheck_s = rec.leakcheck_s;
 }
 
 void metrics_k230_session(uint32_t on_ms, bool ok)

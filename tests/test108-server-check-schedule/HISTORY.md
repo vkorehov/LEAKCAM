@@ -96,6 +96,16 @@ AP and the back-off come with the HBN sleep step (test132). The old README, whol
 
 ## Runs
 
+### Automated run 2026-11-07 (run.py, 278 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-07 (run.py, 279 s): **FAIL**
+
+8/10 checks pass. Failed: a reset with the server down: the board keeps the server's 20 s (not the 3600 s default) (check-in every 0 s after the reset); its CHECK reached the running K230 (job: CHECK rtc), the K230 still on (no CHECK line).
+
+
 ### Automated run 2026-11-07 (run.py, 272 s): pass
 
 9/9 checks pass.

@@ -99,7 +99,7 @@ def crash_and_send(cmd, kind, step):
 def main():
     steps = sys.argv[1].split() if len(sys.argv) > 1 else ["1", "2", "3", "5", "7"]
     if which() == "setup":
-        switch()
+        switch("full")
     if which() != "full":
         sys.exit("not in the full firmware")
     if rec():
@@ -134,7 +134,7 @@ def main():
         pi("sudo systemctl stop leakcam-server")
         try:
             reset_by("crash test")
-            log("step 5: crashed in the full firmware; switch:", f"{switch():.1f} s", which())
+            log("step 5: crashed in the full firmware; switch:", f"{switch('setup'):.1f} s", which())
             ask("lp_boot", 15, r"lp: boot done")
             kept = rec()
             log("step 5: the setup firmware holds", kept)
@@ -153,7 +153,7 @@ def main():
         log("step 5: then (the hand-over passed too)", which())
     if "7" in steps:
         if which() == "setup":
-            switch()
+            switch("full")
         n0 = len(crashes())
         pi("sudo systemctl stop leakcam-server")
         try:
