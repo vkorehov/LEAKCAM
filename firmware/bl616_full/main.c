@@ -2,8 +2,8 @@
  * LEAKCAM BL616 product firmware.
  *
  * No BLE (DESIGN.md 5.3, user 2026-11-02): each time BLE is needed it switches to the setup firmware (slot.c): no
- * network stored, a check-in that did not reach the server, or a phone asking through the server ("ble":1). The setup
- * firmware sets the Wi-Fi and comes back (firmware/bl616_setup/switch_to_full.c).
+ * network stored, a check-in that did not reach the server, or the person's delete in the app (no user left). The
+ * setup firmware sets the Wi-Fi and comes back (firmware/bl616_setup/switch_to_full.c).
  *
  * Use case 2, presence (tests/test111): the BL616 boots with the K230 held off and checks in at the server every
  * poll interval (presence.c). Built only from code the tests proved (skill leakcam-product-firmware); the next use

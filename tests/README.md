@@ -103,7 +103,6 @@ Leak tests, one per operation the product repeats:
 | [test116 the whole setup over BLE alone (no USB)](test116-ble-only-setup/README.md) | 2026-11-01 | **planned**: on battery, USB-C 1 out (hand): found in an advertising window, set up from the app |
 | [test117 presence lost brings BLE back](test117-presence-loss-ble/README.md) | 2026-11-03 | **pass** 19/19 on the product pair, the phone 8 m away: server down / network gone -> the setup firmware in 9 / 13 s, found at once (RSSI -70), set up in 8.7-9.1 s, back in the full firmware 4 s after |
 | [test118 the app's icons follow the board](test118-app-presence-icons/README.md) | 2026-11-01, 7/7 | **pass**: BLE icon goes 51 s after advertising stops (45 s unseen + scan), Wi-Fi icon and red 29 s after presence stops, both back in 11-20 s |
-| [test119 the phone wakes a board through the server](test119-wake-through-server/README.md) | 2026-11-03 | **pass** 16/16 on the product pair, the phone 8 m away: Wake tap -> the setup firmware at the next check-in (11 s) -> Wi-Fi changed 8.8 s -> full 4 s after; second wake 429; an unanswered wake back to full after 120 s |
 | [test120 the BLE low-power setup mode alone](test120-ble-low-power-setup-mode/README.md) | 2026-11-01 | **in progress**: product BLE asleep in PDS at 2 s advertising, phone finds it 10/10 (median 1.1 s); the BLE core wedge found and fixed; connection wake next |
 | [test121 USB plug wakes the board from BLE sleep](test121-usb-plug-wake-ble-sleep/README.md) | 2026-11-01 | **pass** 2/2: PGOOD (IO3) wakes PDS, no sleep while USB is in, sleeps again after unplug |
 | [test122 battery low: the K230 stops, the BL616 tells the user to charge](test122-low-battery-notify/README.md) | 2026-11-01 | **planned**: quick K230 stop below 3.10 V, one Wi-Fi check-in with the battery-low flag, the BLE flag, lockout until USB |
@@ -137,7 +136,6 @@ for it. Hands: USB-C 1 out at the start, in at the end.
 | test106 | 8 setups in a row from the full firmware: found asleep, Done, back in the full firmware |
 | test116 | already on battery: pass 16/16 (2026-11-03) |
 | test117 | server down and network gone: the setup firmware found asleep, set up, present again |
-| test119 | wake, change and the unanswered wake's 2 minutes, asleep |
 | test125 | the 6 h retry is a battery path by nature: plan it on battery from the start |
 
 **Re-prove: the pass is on the old design (the full firmware's own BLE, the check ending at the internet):**
@@ -156,7 +154,7 @@ for it. Hands: USB-C 1 out at the start, in at the end.
 | Test | What changes |
 |---|---|
 | test113 | Done: the cable setup runs in the setup firmware (K230 session WAKE setup, USB line protocol), pass 2026-11-06. |
-| test114 | Part A holds. Part B (wake beacon) is replaced by the server wake (test119). Part C is test120. The choice (2 s) lives in the setup firmware, not provision.c. Close it. |
+| test114 | Part A holds. Part B (wake beacon) was replaced by the server wake (test119, retired 2026-11-07: no wake, Wi-Fi changes through the server only). Part C is test120. The choice (2 s) lives in the setup firmware, not provision.c. Close it. |
 | test120 | Step 7 (USB wake) is done by test121 + test127. Step 5 (full setup from low power) is the test040/106 re-proof. Steps 4 and 6, the battery-side current and the crash-recorder start deadline are still open. |
 | test121 | Step 5: with USB in and no network, the setup firmware stays awake (it no longer hands over regardless); the hand-over is test127. README text only; the result holds. |
 | test122 | The BLE flag goes in the setup firmware's advertisement. The USB notice (3a) goes through the setup firmware's cable path. The lockout and the flag must survive a slot switch (HBN RAM at a fixed address, like the crash record). Step 6 becomes the switch to setup with the flag. |

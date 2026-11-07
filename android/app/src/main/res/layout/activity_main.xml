@@ -11,11 +11,31 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- the app's menu (the screens: LEAKCAMs, Setup) and the screen's name: "LEAKCAMs" on the status screen,
+             "LEAKCAM setup" on the setup screen (user 2026-11-07) -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/app_name"
-            android:textAppearance="@android:style/TextAppearance.Material.Headline" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/nav_menu"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="-12dp"
+                android:background="@null"
+                android:contentDescription="@string/nav_menu"
+                android:src="@drawable/ic_menu" />
+
+            <TextView
+                android:id="@+id/screen_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="@string/mine_title"
+                android:textAppearance="@android:style/TextAppearance.Material.Headline" />
+        </LinearLayout>
 
 
         <!-- the status screen (use case 2): the LEAKCAMs set up from this phone, online or offline as the presence
@@ -81,14 +101,15 @@
                         android:textColor="#FFFFFFFF"
                         android:visibility="gone" />
                 </FrameLayout>
-            </LinearLayout>
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="@string/mine_title"
-                android:textAppearance="@android:style/TextAppearance.Material.Title" />
+                <!-- a false alarm: the check re-armed (DESIGN.md 5.3.13, user 2026-11-07) -->
+                <Button
+                    android:id="@+id/leak_not"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/not_leak" />
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/mine_list"
@@ -96,30 +117,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
 
-            <!-- the list keeps looking (no Find button, user 2026-11-07): always here, so nothing moves -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
 
-                <ProgressBar
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:layout_marginStart="8dp"
-                    android:indeterminate="true" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:text="@string/looking"
-                    android:textColor="#FF757575" />
-            </LinearLayout>
-
-            <!-- the picked board's actions: Set up (a new board) or Take photo / Take video (one of mine); the rare ones
-                 (Change Wi-Fi, Delete) behind the three dots at the right -->
+            <!-- the picked board's actions: Take photo / Take video; the rare ones (Change Wi-Fi, Delete, Set up a new
+                 LEAKCAM) behind the three dots at the right -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -127,17 +127,7 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <Button
-                    android:id="@+id/setup_open"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:enabled="false"
-                    android:maxLines="1"
-                    android:text="@string/setup_new" />
-
-                <!-- one of the person's boards: its common actions (DESIGN.md 5.3.14); in place of setup_open -->
+                <!-- the common actions (DESIGN.md 5.3.14) -->
                 <Button
                     android:id="@+id/take_photo"
                     android:layout_width="0dp"
@@ -145,8 +135,7 @@
                     android:layout_weight="1"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:text="@string/take_photo"
-                    android:visibility="gone" />
+                    android:text="@string/take_photo" />
 
                 <Button
                     android:id="@+id/take_video"
@@ -155,8 +144,7 @@
                     android:layout_weight="1"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:text="@string/take_video"
-                    android:visibility="gone" />
+                    android:text="@string/take_video" />
 
                 <ImageButton
                     android:id="@+id/more"
@@ -164,41 +152,46 @@
                     android:layout_height="48dp"
                     android:background="@null"
                     android:contentDescription="@string/more"
-                    android:src="@drawable/ic_more"
-                    android:visibility="invisible" />
+                    android:src="@drawable/ic_more" />
             </LinearLayout>
 
-            <!-- under the action row: a longer or shorter message never moves the button (user 2026-11-07: no jumps in
-                 the action area) -->
+            <!-- the status block under the action row (status_block.xml): a longer or shorter message never moves the
+                 buttons (user 2026-11-07: no jumps in the action area) -->
+            <include
+                android:id="@+id/main_status"
+                layout="@layout/status_block" />
+
+            <!-- what waits for the picked board's check-ins, from the server (user 2026-11-07): under everything, so it
+                 moves nothing when it comes and goes -->
             <TextView
-                android:id="@+id/nearby"
+                android:id="@+id/pending_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:background="@color/help_background"
-                android:padding="12dp"
-                android:text="@string/nearby_none" />
+                android:layout_marginTop="12dp"
+                android:lineSpacingExtra="4dp"
+                android:paddingHorizontal="12dp"
+                android:visibility="gone" />
+
+            <!-- the picked board's photos and videos on the server, newest first, each a link that opens it alone in
+                 the phone's viewer or player (user 2026-11-07) -->
+            <LinearLayout
+                android:id="@+id/media_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical"
+                android:paddingHorizontal="12dp"
+                android:visibility="gone" />
         </LinearLayout>
 
-        <!-- setup: a new LEAKCAM in four steps, or a known one's Wi-Fi changed -->
+        <!-- setup: a new LEAKCAM in four steps, or a known one's Wi-Fi changed; it keeps looking over Bluetooth and on
+             the cable at once (user 2026-11-07) -->
         <LinearLayout
             android:id="@+id/setup_panel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:visibility="gone">
-
-        <!-- the cable flow's own header: the board is found by the plug, no list (user 2026-11-05) -->
-        <TextView
-            android:id="@+id/usb_header"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:drawablePadding="8dp"
-            android:drawableStart="@drawable/ic_usb"
-            android:gravity="center_vertical"
-            android:textAppearance="@android:style/TextAppearance.Material.Title"
-            android:visibility="gone" />
 
         <TextView
             android:id="@+id/intro"
@@ -228,10 +221,6 @@
             style="@style/Step"
             android:text="@string/step4" />
 
-        <RadioGroup
-            android:id="@+id/devices"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
 
         <EditText
             android:id="@+id/ssid"
@@ -258,9 +247,9 @@
             android:layout_height="wrap_content"
             android:text="@string/show_password" />
 
-        <!-- the action row as on the status screen: Send, and its rare actions behind the three dots (Save without
-             checking after a check that may have failed only because of where the LEAKCAM is now; back to your
-             LEAKCAMs); nothing here comes and goes (user 2026-11-07: no jumps in the action area) -->
+        <!-- the action row as on the status screen: Send, and its rare action behind the three dots (Save without
+             checking after a check that may have failed only because of where the LEAKCAM is now); nothing here comes
+             and goes (user 2026-11-07: no jumps in the action area) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -287,16 +276,19 @@
                 android:visibility="invisible" />
         </LinearLayout>
 
-        <!-- what to do now: under the action row, so a long message never moves the controls -->
-        <TextView
-            android:id="@+id/help"
+        <!-- the status block under the action row (status_block.xml): looking, sending and what to do now -->
+        <include
+            android:id="@+id/setup_status"
+            layout="@layout/status_block" />
+
+        <!-- the boards found: under the status block, so a board found or gone moves nothing above it (user
+             2026-11-07: no jumping buttons) -->
+        <RadioGroup
+            android:id="@+id/devices"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@color/help_background"
-            android:lineSpacingExtra="2dp"
-            android:padding="12dp"
-            android:textAppearance="@android:style/TextAppearance.Material.Body1" />
+            android:layout_marginTop="12dp" />
+
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

@@ -1,3 +1,4 @@
-19:08:57 test102-session-current: 3 metric rows MISSING: Boot, power-on -> READY (median of 5), Speed / rate (none for this test), Features over the minimal image
-19:09:04 sample after the sessions {'board': 36.2, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0)}
-19:09:06 test102-session-current: PASS; filled 0: -; still MISSING 3: Boot, power-on -> READY (median of 5), Speed / rate (none for this test), Features over the minimal image; run in HISTORY.md - README Status/Result by hand
+18:15:36 test102-session-current: 6 metric rows MISSING: Boot, power-on -> READY (median of 5), Speed / rate (none for this test), Current idle / during (min / avg / peak), Power, energy per operation, Per day, Features over the minimal image
+18:15:40 meter K230 session, the agent working (no camera, no server): not asked (LEAKCAM_METER=ask to be prompted)
+18:15:44 sample after the sessions {'board': None, 'bl_mem': (184100, 147452, 165212, 67, 75060, 14, 0)}
+18:15:46 test102-session-current: FAIL; filled 0: -; still MISSING 6: Boot, power-on -> READY (median of 5), Speed / rate (none for this test), Current idle / during (min / avg / peak), Power, energy per operation, Per day, Features over the minimal image; run in HISTORY.md - README Status/Result by hand

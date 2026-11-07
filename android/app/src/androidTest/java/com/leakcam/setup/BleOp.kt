@@ -253,7 +253,7 @@ class BleOp {
         /* the app redraws while it is read: a stale object is retried on the next poll, never fatal (three setups
          * ended on one, test106 2026-10-30) */
         fun <T> safe(d: T, f: () -> T): T = try { f() } catch (e: androidx.test.uiautomator.StaleObjectException) { d }
-        fun help() = safe("") { ui.findObject(By.res(pkg, "help"))?.text ?: "" }
+        fun help() = safe("") { ui.findObject(By.res(pkg, "status_text"))?.text ?: "" }
         fun note() { val h = help(); if (h != last && h.isNotEmpty()) { last = h; texts.put(JSONObject().put("ms", ms()).put("help", h)) } }
         /* the screen scrolls: a view off it (Save without checking under a long message) is not in the UI tree until
          * scrolled to, and a tap during the scroll got lost (test106, 2026-10-30) */
@@ -266,76 +266,29 @@ class BleOp {
             }
         }
         fun enabled(id: String) = safe(false) { find(id)?.isEnabled == true }
-        var usb = false
-        /* the cable screen has no Find: looking for it scrolled the screen up and down until the 150 s timeout, the
-         * setup long Done (test113, 2026-11-06) */
-        fun busy() = !enabled("send") || (!usb && !enabled("scan"))
-        /* the status screen first when the app remembers LEAKCAMs: its button opens the setup once the board on USB
-         * power is found (test111, 2026-11-01) */
+        /* the send runs while its button is off (finishSend turns it on again) */
+        fun busy() = !enabled("send")
+        /* two screens (2026-11-07): LEAKCAMs (status, no search) and LEAKCAM setup (new devices only, it keeps looking);
+         * with boards the app opens on the status screen: the three-lines menu's Setup opens the setup screen */
         val shown = SystemClock.elapsedRealtime() + 5000
-        while (SystemClock.elapsedRealtime() < shown && ui.findObject(By.res(pkg, "status_panel")) == null &&
-               ui.findObject(By.res(pkg, "send")) == null)
+        while (SystemClock.elapsedRealtime() < shown && safe(null) { ui.findObject(By.res(pkg, "take_photo")) } == null &&
+               safe(null) { ui.findObject(By.res(pkg, "send")) } == null)
             SystemClock.sleep(100)
-        if (ui.findObject(By.res(pkg, "status_panel")) != null) {
+        if (safe(null) { ui.findObject(By.res(pkg, "take_photo")) } != null) {
             out.put("status_screen", true)
-            /* UiAutomator's own wait for the enabled button: the scrolling find() lost it for 40 s while the list
-             * redrew (test106, 2026-11-01) */
-            /* the setup itself, never Wake (a present board out of range: test119 taps that one itself) */
-            /* tapped again until the setup screen opens: a tap while the list was still picking the board opened
-             * nothing (test111, 2026-11-04: 3 runs left on the status screen) */
-            /* a new board: its Set up button; one of mine: the three-dots menu's Change Wi-Fi (2026-11-07: photo and video
-             * are the row's buttons, Change Wi-Fi a rare action), never its Wake */
-            var woken = false
-            val menuSeen = mutableListOf<String>()
-            val deadline = SystemClock.elapsedRealtime() + (arg("secs", "60").toLong() - 5).coerceAtLeast(10) * 1000
             for (attempt in 1..3) {
-                val change = ctx.getString(R.string.setup_change)
-                val wakeLabel = ctx.getString(R.string.setup_wake)
-                // one deadline for all tries, inside the op's own time (its result is lost past the runner's limit)
-                var opened = false
-                while (!opened && SystemClock.elapsedRealtime() < deadline) {
-                    val setup = safe(null) { ui.findObject(By.res(pkg, "setup_open").enabled(true)) }
-                    if (setup != null) {
-                        safe(Unit) { setup.click() }
-                        opened = true
-                    } else if (safe(null) { ui.findObject(By.res(pkg, "take_photo")) } != null) {
-                        // out of BLE range the item is Wake: tapped once (the board opens BLE at its next check-in),
-                        // then Change Wi-Fi once the app sees it; the menu opened only when the three dots say its
-                        // item works now (a disabled popup item reads as enabled)
-                        val desc = safe("") { ui.findObject(By.res(pkg, "more"))?.contentDescription ?: "" }
-                        menuSeen.add(desc)
-                        if (desc.endsWith(ctx.getString(R.string.not_now)) || (woken && !desc.endsWith(change))) {
-                            SystemClock.sleep(500)
-                            continue
-                        }
-                        safe(Unit) { ui.findObject(By.res(pkg, "more"))?.click() }
-                        val item = ui.wait(Until.findObject(By.text(java.util.regex.Pattern.compile(
-                            java.util.regex.Pattern.quote(change) + "|" + java.util.regex.Pattern.quote(wakeLabel))).enabled(true)), 2000)
-                        val isChange = safe(false) { item?.text == change }
-                        if (item == null) ui.pressBack()
-                        else if (isChange) { safe(Unit) { item.click() }; opened = true }
-                        else if (!woken) { safe(Unit) { item.click() }; woken = true; out.put("ms_wake", ms()) }
-                        else ui.pressBack()
-                    }
-                    if (!opened) SystemClock.sleep(500)
-                }
-                out.put("ms_status", ms())
-                out.put("menu_seen", menuSeen.distinct().joinToString(" | ").take(400))
-                if (ui.wait(Until.findObject(By.res(pkg, "send")), 5000) != null)
+                safe(Unit) { ui.findObject(By.res(pkg, "nav_menu"))?.click() }
+                safe(Unit) { ui.wait(Until.findObject(By.text(ctx.getString(R.string.nav_setup))), 3000)?.click() }
+                if (ui.wait(Until.findObject(By.res(pkg, "send")), 3000) != null)
                     break
-                out.put("setup_open_taps", attempt + 1)
+                out.put("setup_menu_taps", attempt + 1)
             }
+            out.put("ms_status", ms())
         }
-        /* from the status screen the board is picked already: no second Find, as a user would not tap it (a second
-         * scan right after a setup missed the board once, test106 2026-11-01) */
-        /* the cable screen (a LEAKCAM on the USB cable, test113) has no Find: the board is found by the plug */
-        usb = safe(false) { ui.findObject(By.res(pkg, "usb_header"))?.let { it.text.isNotEmpty() } == true }
-        out.put("usb_screen", usb)
-        if (!out.optBoolean("status_screen") && !usb)
-            safe(Unit) { ui.wait(Until.findObject(By.res(pkg, "scan")), 10000)?.click() }
         val found = SystemClock.elapsedRealtime() + 15000
-        /* Send turns on at the first board (Find goes on behind it since test106's timing work) */
-        while (SystemClock.elapsedRealtime() < found && !enabled("send")) { note(); SystemClock.sleep(100) }
+        /* the first board found is picked (the search goes on behind it since test106's timing work) */
+        fun picked() = safe(false) { ui.findObject(By.res(pkg, "devices"))?.children?.any { it.isChecked } == true }
+        while (SystemClock.elapsedRealtime() < found && !picked()) { note(); SystemClock.sleep(100) }
         note()
         out.put("found", safe(0) { ui.findObject(By.res(pkg, "devices"))?.childCount ?: 0 })
         out.put("ms_found", ms())
@@ -353,18 +306,8 @@ class BleOp {
         pskField.text = hex("psk")
         /* no pressBack: setting the text opens no keyboard, and Back closed the app (2026-10-30) */
         val pressed = mutableListOf<String>()
-        fun press(button: String) {
-            /* the app answers a tap at once (buttons off or a new help text): else the tap was lost, tap again */
-            for (attempt in 1..3) {
-                val before = help()
-                safe(Unit) { find(button)?.click() }
-                val seen = SystemClock.elapsedRealtime() + 2000
-                while (SystemClock.elapsedRealtime() < seen && !busy() && help() == before)
-                    SystemClock.sleep(100)
-                if (busy() || help() != before)
-                    break
-                out.put("taps_$button", attempt + 1)
-            }
+        /* the send watched to its end (Send, or the menu's Save without checking) */
+        fun waitSend() {
             val until = SystemClock.elapsedRealtime() + arg("secs", "150").toLong() * 1000
             var lastSeen = SystemClock.elapsedRealtime()
             while (SystemClock.elapsedRealtime() < until) {
@@ -388,6 +331,20 @@ class BleOp {
             }
             note()
         }
+        fun press(button: String) {
+            /* the app answers a tap at once (buttons off or a new help text): else the tap was lost, tap again */
+            for (attempt in 1..3) {
+                val before = help()
+                safe(Unit) { find(button)?.click() }
+                val seen = SystemClock.elapsedRealtime() + 2000
+                while (SystemClock.elapsedRealtime() < seen && !busy() && help() == before)
+                    SystemClock.sleep(100)
+                if (busy() || help() != before)
+                    break
+                out.put("taps_$button", attempt + 1)
+            }
+            waitSend()
+        }
         press("send")
         // Save without checking is a rare action: the setup screen's three-dots menu (2026-11-07)
         var item: androidx.test.uiautomator.UiObject2? = null
@@ -403,7 +360,10 @@ class BleOp {
         if (offered && arg("anyway", "") == "1") {
             out.put("ms_anyway", ms())
             safe(Unit) { item?.click() }
-        } else if (item != null || safe(null) { ui.findObject(By.text(ctx.getString(R.string.to_status))) } != null)
+            val seen = SystemClock.elapsedRealtime() + 2000     // the send starts (Send turns off)
+            while (SystemClock.elapsedRealtime() < seen && !busy()) SystemClock.sleep(100)
+            waitSend()
+        } else if (item != null)
             ui.pressBack()   // the open menu closed again (only a menu that is open)
 
         /* hold: the screen watched this long after the send (the board's relay back on the cable after Done, test113

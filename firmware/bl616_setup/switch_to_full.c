@@ -17,7 +17,6 @@
 #include "wifi_check.h"
 
 #define SWITCH_TO_FULL_PHONE_MS 15000   /* the phone reads SAVED, then leaves; a reset under it looked like a failure */
-#define SWITCH_TO_FULL_WAKE_S   120     /* a phone's wake: time to find the board and tap Change (tests/test119) */
 #define SWITCH_TO_FULL_USB_MS   2000    /* the cable setup: the K230 relays STATUS SAVED, then goes off */
 #define SWITCH_TO_FULL_RETRY_S  (6 * 3600)   /* presence lost: the stored network tried again (DESIGN.md 5.3.1) */
 
@@ -132,11 +131,10 @@ bool switch_to_full_start(void)
     (void)ef_get_env_blob("setup_why", why, sizeof(why) - 1, &sent);
     if (sent && ef_del_env("setup_why") != EF_NO_ERR)
         vAssertCalled();                    /* a flash error: kept, it would decide the next start too */
-    bool wake = sent && !strcmp(why, "wake");
     (void)ef_get_env_blob("wifi_ssid", ssid, sizeof(ssid), &stored);
     if (stored) {
-        uint32_t s = wake ? SWITCH_TO_FULL_WAKE_S : SWITCH_TO_FULL_RETRY_S;
-        printf("switch_to_full: back to the full firmware in %lu s%s\r\n", (unsigned long)s, wake ? " (a phone's wake)" : "");
+        uint32_t s = SWITCH_TO_FULL_RETRY_S;
+        printf("switch_to_full: back to the full firmware in %lu s\r\n", (unsigned long)s);
         if (xTaskCreate(back_task, "hand_back", 1024, (void *)(uintptr_t)s, 3, NULL) != pdPASS)
             vAssertCalled();
     }

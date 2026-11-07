@@ -1,0 +1,13 @@
+17:30:47 test049-k230-leak-job: 0 metric rows MISSING: none
+17:30:53 CHECK pass no history: DONE new,new new,new in 224 ms
+17:30:53 CHECK pass no history: both histories written (76800 B) 
+17:30:53 CHECK pass same scene: same,same same,same in 112 ms
+17:30:53 CHECK pass light only on cam0: same,same (no change for the light alone) same,same in 113 ms
+17:30:54 CHECK pass an object on cam0: changed,same changed,same in 112 ms
+17:30:56 CHECK pass an object on cam0: the server has job=changed,same within 30 s (a check-in at once) 2 s
+17:30:56 CHECK pass an object on cam1: same,changed same,changed in 113 ms
+17:30:56 CHECK pass cam1 same again: same,same (the history was kept on the change) same,same in 113 ms
+17:31:09 CHECK pass 8 checks: all same,same 
+17:31:09 CHECK pass 8 checks: the K230 program's heap does not grow heap + [0, 0, 0, 0, 0, 0, 0, 0] B
+17:31:09 CHECK pass 8 checks: the BL616's free heap does not shrink (183332, 165064) -> (184072, 165064)
+17:31:09 test049-k230-leak-job: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

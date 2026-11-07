@@ -1,49 +1,70 @@
-    5.470 > 'rm /sdcard/leakcam/cam0.hist' (0.06 s)
-    5.470   rm /sdcard/leakcam/cam0.hist
-    5.470   msh />
-    5.470   msh />
-    5.526 > 'rm /sdcard/leakcam/cam1.hist' (0.06 s)
-    5.526   rm /sdcard/leakcam/cam1.hist
-    5.526   msh />
-    5.526   msh />
-    5.581 > 'rm /sdcard/leakcam/sim' (0.06 s)
-    5.581   rm /sdcard/leakcam/sim
-    5.581   msh />
-    5.581   msh />
-    5.636 > 'ls /sdcard/leakcam' (0.06 s)
-    5.636   ls /sdcard/leakcam
-    5.636   Directory /sdcard/leakcam:
-    5.636   msh />
-    5.636   msh />
-    5.965 > 'ls /sdcard/leakcam' (0.06 s)
-    5.965   ls /sdcard/leakcam
-    5.965   Directory /sdcard/leakcam:
-    5.965   sim                                     0                        
-    5.965   cam0.hist                               76800                    
-    5.965   cam1.hist                               76800                    
-    5.965   msh />
-    5.965   msh />
-    6.193 > 'echo cam0=light /sdcard/leakcam/sim' (0.06 s)
-    6.193   echo cam0=light /sdcard/leakcam/sim
-    6.193   msh />
-    6.193   msh />
-    6.420 > 'echo cam0=object /sdcard/leakcam/sim' (0.06 s)
-    6.420   echo cam0=object /sdcard/leakcam/sim
-    6.420   msh />
-    6.420   msh />
-    8.706 > 'echo cam0=same /sdcard/leakcam/sim' (0.06 s)
-    8.706   echo cam0=same /sdcard/leakcam/sim
-    8.706   msh />
-    8.706   msh />
-    8.762 > 'echo cam1=object /sdcard/leakcam/sim' (0.06 s)
-    8.762   echo cam1=object /sdcard/leakcam/sim
-    8.762   msh />
-    8.762   msh />
-    8.992 > 'echo cam1=same /sdcard/leakcam/sim' (0.06 s)
-    8.992   echo cam1=same /sdcard/leakcam/sim
-    8.992   msh />
-    8.992   msh />
-   21.814 > 'rm /sdcard/leakcam/sim' (0.05 s)
-   21.814   rm /sdcard/leakcam/sim
-   21.814   msh />
-   21.814   msh />
+    5.417 > 'rm /sdcard/leakcam/cam0.hist' (0.06 s)
+    5.417   rm /sdcard/leakcam/cam0.hist
+    5.417   \[Irm: command not found.
+    5.417   msh />
+    5.417   msh />
+    5.472 > 'rm /sdcard/leakcam/cam1.hist' (0.06 s)
+    5.472   rm /sdcard/leakcam/cam1.hist
+    5.472   msh />
+    5.472   msh />
+    5.527 > 'rm /sdcard/leakcam/sim' (0.05 s)
+    5.527   rm /sdcard/leakcam/sim
+    5.527   msh />
+    5.527   msh />
+    5.582 > 'ls /sdcard/leakcam' (0.05 s)
+    5.582   ls /sdcard/leakcam
+    5.582   Directory /sdcard/leakcam:
+    5.582   cam0.hist                               76800                    
+    5.582   msh />
+    5.582   msh />
+    5.638 > 'rm /sdcard/leakcam/cam0.hist' (0.06 s)
+    5.638   rm /sdcard/leakcam/cam0.hist
+    5.638   msh />
+    5.638   msh />
+    5.693 > 'rm /sdcard/leakcam/cam1.hist' (0.05 s)
+    5.693   rm /sdcard/leakcam/cam1.hist
+    5.693   cannot remove '/sdcard/leakcam/cam1.hist': No such file or directory
+    5.693   msh />
+    5.693   msh />
+    5.748 > 'rm /sdcard/leakcam/sim' (0.05 s)
+    5.748   rm /sdcard/leakcam/sim
+    5.748   cannot remove '/sdcard/leakcam/sim': No such file or directory
+    5.748   msh />
+    5.748   msh />
+    5.803 > 'ls /sdcard/leakcam' (0.05 s)
+    5.803   ls /sdcard/leakcam
+    5.803   Directory /sdcard/leakcam:
+    5.803   msh />
+    5.803   msh />
+    6.141 > 'ls /sdcard/leakcam' (0.06 s)
+    6.141   ls /sdcard/leakcam
+    6.141   Directory /sdcard/leakcam:
+    6.141   sim                                     0                        
+    6.141   cam0.hist                               76800                    
+    6.141   cam1.hist                               76800                    
+    6.141   msh />
+    6.141   msh />
+    6.368 > 'echo cam0=light /sdcard/leakcam/sim' (0.06 s)
+    6.368   echo cam0=light /sdcard/leakcam/sim
+    6.368   msh />
+    6.368   msh />
+    6.595 > 'echo cam0=object /sdcard/leakcam/sim' (0.06 s)
+    6.595   echo cam0=object /sdcard/leakcam/sim
+    6.595   msh />
+    6.595   msh />
+    8.884 > 'echo cam0=same /sdcard/leakcam/sim' (0.06 s)
+    8.884   echo cam0=same /sdcard/leakcam/sim
+    8.884   msh />
+    8.884   msh />
+    8.939 > 'echo cam1=object /sdcard/leakcam/sim' (0.05 s)
+    8.939   echo cam1=object /sdcard/leakcam/sim
+    8.939   msh />
+    8.939   msh />
+    9.167 > 'echo cam1=same /sdcard/leakcam/sim' (0.06 s)
+    9.167   echo cam1=same /sdcard/leakcam/sim
+    9.167   msh />
+    9.167   msh />
+   21.962 > 'rm /sdcard/leakcam/sim' (0.06 s)
+   21.962   rm /sdcard/leakcam/sim
+   21.962   msh />
+   21.962   msh />

@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-07 (run.py, 422 s): **FAIL**
+
+33/34 checks pass. Failed: link lost while reaching the internet: app recovers, Done (0.0 s, fault fired 0).
+
+
+### Automated run 2026-11-07 (run.py, 0 s): **FAIL**
+
+not run: not the setup test bed.
+
+
 ### Automated run 2026-11-04 (run.py, 518 s): pass
 
 33/33 checks pass.
@@ -85,6 +95,8 @@ stored the network; the phone's Bluetooth off waited out the 60 s timeout ("did 
 connect was not retried; a link lost with the commit write said "refused the save command".
 
 ## Obstacles
+
+- the BL616 runs full: flash tests/firmware/bl616_setup_test (make flash) (2026-11-07, automated run)
 
 - 2026-11-01 13:35, after PR4: "Bluetooth off before the save" came too late: 2 s after the app opened the known board
   was already being checked ("is now joining"), so the app recovered to Done (38.3 s) instead of a named failure. The

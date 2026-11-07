@@ -98,6 +98,11 @@ boot chain; the session numbers after READY and the energy built on them (1.71 m
 
 ## Runs
 
+### Automated run 2026-11-07 (run.py, 1006 s): **FAIL**
+
+0 of 10 sessions complete; session 1: incomplete (first last off); session 2: incomplete (first last off); session 3: incomplete (first last off); session 4: incomplete (first last off); session 5: incomplete (first last off); session 6: incomplete (first last off); session 7: incomplete (first last off); session 8: incomplete (first last off); session 9: incomplete (first last off); session 10: incomplete (first last off)
+
+
 ### Automated run 2026-10-30 (run.py, 422 s): pass
 
 10 of 10 sessions complete: rails off 27.93-27.94 s after power-on.

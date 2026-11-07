@@ -55,7 +55,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 |---|---|---|---|
 | Boot, power-on -> READY (median of 5) | power-on -> READY frame 0.87 / 0.87 s (median / max of 10; SPL 0.22, OpenSBI 0.33, RT-Smart 0.63, mounted 0.84, msh 0.85) (2026-10-30, test image; re-measure with /app/leakcam) | target (test022) | longest step: |
 | This part's boot share | **MISSING**: READY -> DONE -> rails off with /app/leakcam (the 2026-10-30 agent session superseded: HISTORY.md) | - | |
-| Test run time | **MISSING** (419 s on 2026-10-30 for the old session) | - | setup (flashing, plugging, waiting) separately |
+| Test run time | 1006 s automated (run.py, 2026-11-07), no setup | - | setup (flashing, plugging, waiting) separately |
 | session length per step | **MISSING**: wake -> READY -> DONE -> rails off (the old agent session 27.68 s superseded: HISTORY.md) | - | % of the top |
 | Current idle / during (min / avg / peak) | **MISSING** for the job (test102); boot ~87 mA (held in reset, test021); 220 mA at msh idle (test006) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | n/a: no battery measurements (user, 2026-10-30); the K230's own reading is the `;b=` attribute | cutoff 3.10 V (bug-004) | at the probes above |
@@ -63,7 +63,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | Per day | **MISSING**: one leak check a day on battery (the server's `leakcheck`, default 86400 s) plus one per wet probe | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | **MISSING** for the product program (2026-10-30 old session: board 36.3 / 39.2 / 38.9 C, AHT20) | K230 limit (datasheet) | chip_temp, AHT20 |
 | Memory BL616 / K230 (start / min / end), leak | BL616 free 131124 / min 105196 / 131124 B, blocks 106 -> 106, no leak over 10 sessions (2026-10-30, test firmware); K230 **MISSING** (STATUS heap free / min free) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
-| Image (sizes) | **MISSING** for the full firmware and the product image (2026-10-30: BL616 test firmware 1309616 B) | minimal image (rule) | the image this run used |
+| Image (sizes) | BL616 test firmware 1326272 B (2026-11-07, on the board at the run) | minimal image (rule) | the image this run used |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os -march=rv64imafdcv, sections + --gc-sections, strip, no LTO; BL616 -Os -g (SDK Kconfig default), no LTO (2026-10-30) | smallest code (rule) | |
 | Features over the minimal image | **MISSING**: the full firmware's session and leak check; /app/leakcam | test008 floor | bytes, boot ms, RAM, current |
 | Optimised build (-O3, LTO, -march) | n/a: not an optimisation test (test builds use the default flags: user, 2026-10-29) | the faster one stays | |

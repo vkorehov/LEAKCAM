@@ -31,12 +31,19 @@ class AlertActivity : Activity() {
                 gravity = Gravity.CENTER
             })
             addView(TextView(context).apply {
-                text = intent.getStringExtra(LeakAlert.EXTRA_TEXT).orEmpty()
+                text = intent.getCharSequenceExtra(LeakAlert.EXTRA_TEXT) ?: ""
                 textSize = 20f
                 setTextColor(Color.WHITE)
                 gravity = Gravity.CENTER
                 setPadding(0, pad, 0, pad)
             })
+            // the leak's first picture once the board has uploaded it (user 2026-11-07), as in the notification
+            addView(android.widget.ImageView(context).apply {
+                id = R.id.alert_picture
+                adjustViewBounds = true
+                visibility = android.view.View.GONE
+                setPadding(0, 0, 0, pad)
+            }, LinearLayout.LayoutParams(-1, -2))
             addView(Button(context).apply {
                 setText(R.string.alert_ack)
                 textSize = 22f
@@ -45,6 +52,30 @@ class AlertActivity : Activity() {
         })
         Log.i(TAG, "alert screen $id")
         registerReceiver(close, android.content.IntentFilter(LeakAlert.ACTION_CLOSE), RECEIVER_NOT_EXPORTED)
+        registerReceiver(pictureReady, android.content.IntentFilter(LeakAlert.ACTION_PICTURE), RECEIVER_NOT_EXPORTED)
+        showPicture()                      // already there when the screen opens late
+    }
+
+    private val pictureReady = object : android.content.BroadcastReceiver() {
+        override fun onReceive(c: android.content.Context, i: android.content.Intent) {
+            if (i.getStringExtra(LeakAlert.EXTRA_ID) == id) showPicture()
+        }
+    }
+
+    /** the record's first picture from the gallery (the push service saved it): only one already saved, no download */
+    private fun showPicture() {
+        val first = intent.getStringExtra(LeakAlert.EXTRA_MEDIA).orEmpty().split(",").firstOrNull { it.endsWith("-p1") }
+            ?: return
+        Thread {
+            val g = Gallery(this)
+            val thumb = g.saved(first)?.let { g.thumbnail(it) } ?: return@Thread
+            runOnUiThread {
+                findViewById<android.widget.ImageView>(R.id.alert_picture).apply {
+                    setImageBitmap(thumb)
+                    visibility = android.view.View.VISIBLE
+                }
+            }
+        }.start()
     }
 
     private val close = object : android.content.BroadcastReceiver() {
@@ -53,6 +84,7 @@ class AlertActivity : Activity() {
 
     override fun onDestroy() {
         unregisterReceiver(close)
+        unregisterReceiver(pictureReady)
         super.onDestroy()
     }
 
@@ -63,7 +95,7 @@ class AlertActivity : Activity() {
         startActivity(android.content.Intent(this, MainActivity::class.java).apply {
             putExtra(LeakAlert.EXTRA_ID, id)
             putExtra(LeakAlert.EXTRA_TITLE, intent.getStringExtra(LeakAlert.EXTRA_TITLE))
-            putExtra(LeakAlert.EXTRA_TEXT, intent.getStringExtra(LeakAlert.EXTRA_TEXT))
+            putExtra(LeakAlert.EXTRA_TEXT, intent.getCharSequenceExtra(LeakAlert.EXTRA_TEXT))
             putExtra(LeakAlert.EXTRA_MEDIA, intent.getStringExtra(LeakAlert.EXTRA_MEDIA))
             flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
         })

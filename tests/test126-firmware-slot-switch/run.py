@@ -73,11 +73,12 @@ def crash():
 
 
 def switch(want):
-    """to the setup firmware `switch_to_setup wake` (it stays 2 min: a bare `slot switch` with USB power and a network
-    stored hands straight back to the full firmware since test121/test127), to the full one `slot switch`; seconds
+    """to the setup firmware `switch_to_setup lost` (it stays until switched back: a bare `slot switch` with USB power and
+    a network stored hands straight back to the full firmware since test121/test127; the phone's wake is gone,
+    2026-11-07), to the full one `slot switch`; seconds
     until the next firmware answers `slot`, or None"""
     t0 = time.time()
-    bl("switch_to_setup wake" if want == "setup" else "slot switch", 1)
+    bl("switch_to_setup lost" if want == "setup" else "slot switch", 1)
     gone, reset = False, False
     while time.time() - t0 < SWITCH_WAIT_S:
         if not os.path.exists(BL_PORT):

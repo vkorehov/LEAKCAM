@@ -48,8 +48,8 @@ def bars_for(dbm):
 
 
 def row(dev):
-    """the app's last redraw of the board's row: (power, bars, rssi) or None"""
-    m = re.findall(rf"row {dev} wifi \d ble \d red \d power (\S+) bars (\d) rssi (-?\d+)",
+    """the setup list's row for the board as the app last logged it: (power, bars, rssi) or None"""
+    m = re.findall(rf"setup row {dev} power (\S+) bars (\d) rssi (-?\d+)",
                    adb("logcat", "-d", "-s", "LeakcamSetup:I", secs=30))
     return (m[-1][0], int(m[-1][1]), int(m[-1][2])) if m else None
 
@@ -65,19 +65,13 @@ def wait_power(dev, name, power, secs):
     check(name, False, f"not within {secs} s, row {got}", stop=True)
 
 
-def add_only(dev):
-    """the app's list (the server's for this phone, DESIGN.md 5.3.5) holds just this board, as a setup leaves it"""
-    adb("shell", "am", "force-stop", PKG)
-    only_boards(dev)
-
-
-def long_press_signal():
-    """a long press on the signal icon (its description from strings.xml icon_signal); the dB value it logged"""
+def long_press_signal(dev):
+    """a long press on the board's setup row (its icons are one drawable after the serial); the dB value it logged"""
     for attempt in (1, 2):
         xml = adb("exec-out", "uiautomator", "dump", "/dev/tty", secs=30)
-        m = re.search(r'content-desc="signal strength[^"]*"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml)
+        m = re.search(rf'text="{dev}"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml)
         if not m:
-            log("long press", attempt, "no signal icon in the screen dump", f"({len(xml)} B)")
+            log("long press", attempt, "no row for the board in the screen dump", f"({len(xml)} B)")
             time.sleep(2)
             continue
         x1, y1, x2, y2 = map(int, m.groups())
@@ -89,7 +83,7 @@ def long_press_signal():
         got = re.findall(r"dbm (-?\d+)", app)
         if got:
             return int(got[-1])
-        log("long press", attempt, f"at {x},{y}: no dbm line; rows redrawn meanwhile {app.count(' row ')}")
+        log("long press", attempt, f"at {x},{y}: no dbm line")
     return None
 
 
@@ -110,14 +104,17 @@ try:
     bl("provision erase", 2, r"erased|erase failed")
     t = to_firmware("setup", secs=90)   # the full firmware sees the erase at its next check-in (31 s measured, test116)
     check("no network: the setup firmware on USB", t is not None, f"{t:.0f} s" if t else str(firmware()), stop=True)
-    add_only(dev)
+    # a new device for this phone: the app opens on the setup screen, where the board's row shows its power and
+    # signal (the status screen has no Bluetooth since 2026-11-07, DESIGN.md 5.3.4)
+    adb("shell", "am", "force-stop", PKG)
+    only_boards()
     adb("logcat", "-c")
-    adb("shell", "am", "start", "-n", f"{PKG}/.MainActivity")   # the status screen
+    adb("shell", "am", "start", "-n", f"{PKG}/.MainActivity")
     # 2. the plug icon and the bars matching the signal
     got = wait_power(dev, "USB power: the plug icon", "plug", 60)
     check("signal as bars, matching the dB value", got[1] == bars_for(got[2]), f"{got[1]} bars at {got[2]} dBm")
     # 3. the long press shows the dB value
-    dbm = long_press_signal()
+    dbm = long_press_signal(dev)
     check("long press on the bars: the dB value", dbm is not None and -110 < dbm < 0, f"{dbm} dBm")
     # 4. on battery: the battery icon (hand steps)
     if BATTERY:
@@ -132,6 +129,7 @@ except Stop as e:
 finally:
     # the real network back from the app: the full firmware again (as the bench is left)
     adb("shell", "am", "force-stop", PKG)
+    only_boards()
     res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=45)
     t = to_firmware("full", secs=30)
     check("end: the real network set again, the full firmware", t is not None and creds() == want(ssid, psk),

@@ -1,0 +1,21 @@
+    0.140 > 'rm /sdcard/leakcam/cam0.hist' (0.06 s)
+    0.140   rm /sdcard/leakcam/cam0.hist
+    0.140   msh />
+    0.140   msh />
+    0.198 > 'rm /sdcard/leakcam/cam1.hist' (0.06 s)
+    0.198   rm /sdcard/leakcam/cam1.hist
+    0.198   msh />
+    0.198   msh />
+    0.254 > 'rm /sdcard/leakcam/sim' (0.06 s)
+    0.254   rm /sdcard/leakcam/sim
+    0.254   cannot remove '/sdcard/leakcam/sim': No such file or directory
+    0.254   msh />
+    0.254   msh />
+    0.582 > 'echo cam0=object /sdcard/leakcam/sim' (0.06 s)
+    0.582   echo cam0=object /sdcard/leakcam/sim
+    0.582   msh />
+    0.582   msh />
+  265.249 > 'rm /sdcard/leakcam/sim' (0.06 s)
+  265.249   rm /sdcard/leakcam/sim
+  265.249   msh />
+  265.249   msh />

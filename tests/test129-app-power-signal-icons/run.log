@@ -1,0 +1,9 @@
+21:28:02 test129-app-power-signal-icons: 4 metric rows MISSING: each change -> its icon, Current idle / during (min / avg / peak), Power, energy per operation, Temperature die / board (start / peak / end)
+21:29:11 CHECK pass no network: the setup firmware on USB 57 s
+21:29:16 CHECK pass USB power: the plug icon 2 s, row ('plug', 4, -30)
+21:29:16 CHECK pass signal as bars, matching the dB value 4 bars at -30 dBm
+21:29:21 CHECK pass long press on the bars: the dB value -14 dBm
+21:29:25 sample after the checks {'board': None, 'bl_mem': (136220, 122948, 129860, 101, 73604, 17, 0)}
+21:30:19 phone: app 53.8 s
+21:30:22 CHECK pass end: the real network set again, the full firmware full
+21:30:22 test129-app-power-signal-icons: PASS; filled 0: -; still MISSING 4: each change -> its icon, Current idle / during (min / avg / peak), Power, energy per operation, Temperature die / board (start / peak / end); run in HISTORY.md - README Status/Result by hand

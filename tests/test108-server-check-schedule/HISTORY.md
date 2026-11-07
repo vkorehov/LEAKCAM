@@ -96,6 +96,16 @@ AP and the back-off come with the HBN sleep step (test132). The old README, whol
 
 ## Runs
 
+### Automated run 2026-11-07 (run.py, 226 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-07 (run.py, 223 s): pass
+
+10/10 checks pass.
+
+
 ### Automated run 2026-11-07 (run.py, 278 s): pass
 
 10/10 checks pass.

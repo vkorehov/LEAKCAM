@@ -23,3 +23,4 @@ tools/cr10-marlin/*.hex -text
 *.STL filter=lfs diff=lfs merge=lfs -text
 *.h265 filter=lfs diff=lfs merge=lfs -text
 *.jpg filter=lfs diff=lfs merge=lfs -text
+*.mp4 filter=lfs diff=lfs merge=lfs -text

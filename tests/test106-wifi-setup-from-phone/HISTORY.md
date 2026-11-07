@@ -4,6 +4,26 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-07 (run.py, 623 s): pass
+
+29/29 checks pass. First setup (app opened -> Done) 23.3 s; repeats 23.1-26.1 s.
+
+
+### Automated run 2026-11-07 (run.py, 609 s): **FAIL**
+
+26/28 checks pass. First setup (app opened -> Done) 23.5 s; repeats 22.7-26.5 s. Failed: save without checking: said so (26.5 s); save without checking: the new network stored.
+
+
+### Automated run 2026-11-07 (run.py, 363 s): **FAIL**
+
+4/17 checks pass. First setup (app opened -> Done) 20.5 s; repeats 20.1-21.3 s. Failed: first setup: Done (20.5 s, pairing ); first setup: the network stored; wrong password named (21.1 s); wrong password: the old network kept; network not seen named (20.3 s); network not seen: Save without checking offered; network not seen: the old network kept; save without checking: said so (20.3 s); save without checking: the new network stored; change back: Done (20.9 s); change back: the first network stored again; 8 setups in a row: every one Done (0/8); after the reset: Done with no Forget by hand (20.3 s, pairing ).
+
+
+### Automated run 2026-11-07 (run.py, 441 s): pass
+
+29/29 checks pass. First setup (app opened -> Done) 10.0 s; repeats 10.2-13.5 s.
+
+
 ### Automated run 2026-11-04 (run.py, 293 s): pass
 
 12/12 checks pass (on battery).

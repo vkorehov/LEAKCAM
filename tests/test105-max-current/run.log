@@ -1,12 +1,6 @@
-16:33:30 test105-max-current: 13 metric rows MISSING: Boot, power-on -> READY (median / max of 5), This part's boot share, Test run time, Speed / rate against the top, Current idle / during (min / avg / peak), Voltage under load (min), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Image (sizes), Compile flags, Features over the minimal image
-16:34:07 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.26 mounted 0.27 msh 0.29
-16:34:14 sample idle {'board': 36.7, 'bl_mem': (175056, 172292, 172316, 19, 36048, 7, 0), 'die': 45.192, 'k_free': (7607936, 808576), 'vbat': 4370}
-16:34:23 sample K230 at msh idle (agent running) {'board': 36.5, 'bl_mem': (175056, 172292, 172316, 19, 36048, 7, 0), 'die': 45.794, 'k_free': (7607936, 808576), 'vbat': 4359}
-16:34:23 step K230 at msh idle (agent running) 0.22
-16:34:32 sample + memtest (CPU + DDR) {'board': 36.4, 'bl_mem': (175056, 172292, 172316, 19, 36048, 7, 0), 'die': 47.299, 'k_free': (7607936, 808576), 'vbat': 4353}
-16:34:32 step + memtest (CPU + DDR) 0.244
-16:34:37 >>> METER test105-max-current: test105: + KPU change net in a loop - reading in amps to /home/vkorehovs/.leakcam_meter
-16:37:08 meter test105: + KPU change net in a loop: 0.224 A
-16:37:13 sample + KPU change net in a loop {'board': 36.9, 'bl_mem': (175056, 172292, 172316, 19, 36048, 7, 0), 'die': 48.201, 'k_free': (7607936, 808576), 'vbat': 4378}
-16:37:13 step + KPU change net in a loop 0.224
-16:37:18 >>> METER test105-max-current: test105: + encoder 2 x 15 fps - reading in amps to /home/vkorehovs/.leakcam_meter
+18:16:01 test105-max-current: 0 metric rows MISSING: none
+18:16:30 boot NO CONSOLE
+18:16:30 OBSTACLE K230 cold boot did not reach msh within 20 s (milestones {})
+18:16:35 sample idle {'board': None, 'bl_mem': (184104, 146124, 165212, 67, 75064, 14, 0)}
+18:16:40 OBSTACLE K230 at msh idle (agent running): did not start: leakcam:: command not found.
+18:16:42 test105-max-current: FAIL; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

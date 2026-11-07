@@ -71,14 +71,11 @@ def app_mine():
     return lines
 
 
-def add_to_app(dev_id, only=False):
+def add_to_app(dev_id):
     """a board in this phone's list as a setup leaves it: registered at the server (DESIGN.md 5.3.5: the app keeps no
-    list); only: the list holds just this one (the run's starting state, whatever a stopped run left)"""
+    list)"""
     adb("shell", "am", "force-stop", PKG)
-    if only:
-        only_boards(dev_id)
-    else:
-        register(dev_id)
+    register(dev_id)
 
 
 ssid, psk = wifi_credentials()
@@ -104,12 +101,16 @@ try:
     dev = m.group(1) if m else None
     usb = subprocess.run(["udevadm", "info", "-q", "property", BL_PORT], capture_output=True, text=True).stdout
     usb_id = (re.search(r"ID_SERIAL_SHORT=(\S+)", usb) or [None, None])[1]
+    if dev is None:          # the setup firmware has no `presence` (a board with no user left, 2026-11-07)
+        dev = usb_id
+    else:
+        check("USB serial number = the device ID", usb_id == dev, f"USB {usb_id}")
     check("the board has a device ID", dev is not None, str(dev))
-    check("USB serial number = the device ID", usb_id == dev, f"USB {usb_id}")
-    add_to_app(dev, only=True)   # starting state: the app knows this board, nothing else
+    # starting state: no boards - Setup lists new devices only (DESIGN.md 5.3.4, user 2026-11-07); with no user left
+    # the board's next check-in sends it to the setup firmware, which advertises
+    only_boards()
+    to_firmware("setup", secs=CHECKIN_S + 60)
     adb("logcat", "-c")
-    # a known board runs the full firmware: the app wakes it through the server (its next check-in, 10 s) and it switches
-    # to the setup firmware (~25 s) before BLE finds it; up to ~60 s seen (2026-11-07)
     res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=90)
     helps = res.get("help", [])
     last = helps[-1]["help"] if helps else res.get("error", "no help text")
@@ -123,11 +124,7 @@ try:
           f"dialog started {system.count('cmp=com.android.settings/.bluetooth.BluetoothPairingDialog')}x")
     found = re.findall(r"found \S+ id ([0-9A-F]{12}|none)", logcat)
     check("BLE advertisement = the device ID", dev in found, str(found))
-    if res.get("status_screen"):         # the app knew the board already: its short flow, the network shown hidden
-        check("known board: the status screen opened its setup", True, f"{res.get('ms_status', 0) / 1000:.1f} s")
-        # from the app's log: the op records the help texts from its Send on, this one comes before (2026-11-07)
-        check("known board: the short 'change its Wi-Fi' flow", f"Enter the new Wi-Fi network for {dev}" in logcat,
-              "shown" if "Enter the new Wi-Fi network for" in logcat else "not in the app's log")
+    check("no boards: the app opened on the setup screen", not res.get("status_screen"), str(res.get("status_screen")))
     check("advertisement: a stored network flagged", re.search(rf"found \S+ id {dev} creds 1", logcat) is not None,
           (re.findall(rf"found \S+ id {dev} creds (\d)", logcat) or ["?"])[-1])
     prefs = adb("shell", "run-as", PKG, "ls", "shared_prefs")

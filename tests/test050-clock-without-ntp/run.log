@@ -1,0 +1,13 @@
+17:31:24 test050-clock-without-ntp: 0 metric rows MISSING: none
+17:32:19 CHECK pass the server's answer to / (200) carries X-Time within 2 s of UTC X-Time 1794065539, off -0.1 s
+17:32:19 CHECK pass the server's answer to /v1/devices/bad (400) carries X-Time within 2 s of UTC X-Time 1794065539, off -0.1 s
+17:32:19 CHECK pass the BL616's clock: within 5 s of UTC, set from the server off -1.1 s, set 1 times
+17:32:22 CHECK pass the BL616's clock: two check-ins later still set the same number of times (drift <= 5 s: no step) set 1 -> 1, off -0.6 s
+17:32:22 CHECK pass the K230's clock: within 5 s of UTC (from ;t=) off -2 s
+17:32:27 CHECK pass the BL616 3 s ahead: the K230 does not step to its frame (<= 5 s) no clock line
+17:32:33 CHECK pass the BL616 30 s ahead: the K230 steps to its next frame (logged about -30 s off) clock: 1794065579 from the BL616 (was -30 s off)
+17:32:36 CHECK pass the BL616 30 s off: the next check-in's X-Time sets it back (within 2 s of UTC) check-in 1 s later, set 1 -> 2, off -0.5 s
+17:32:39 CHECK pass the K230 follows back (about +30 s off before) clock: 1794065556 from the BL616 (was +29 s off)
+17:32:43 CHECK pass the BL616 3 s off: the next check-in leaves it (<= 5 s: no step) set 2 -> 2, off +1.5 s
+17:32:50 CHECK pass a new session: the K230's clock set before its WAKE step (the time on the first BL616 frame) leakcam: clock: 1794065568 from the BL616 (was -58375968 s off) | leakcam: WAKE rtc: t 635 ms, heap +0 B
+17:32:50 test050-clock-without-ntp: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

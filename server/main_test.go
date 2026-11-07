@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -17,11 +18,11 @@ const TestID = "7C3E8262B149"
 func testServer(t *testing.T) *httptest.Server {
 	t.Helper()
 	dir := t.TempDir()
-	metricFile, imageDir = dir+"/metrics.jsonl", dir
+	metricFile, imageDir, mediaDir = dir+"/metrics.jsonl", dir, dir
 	checkinS, leakCheckS = CheckinS, LeakCheckS
 	intervals, seen, phones = map[string]Intervals{}, map[string]CheckIn{}, map[string][]string{}
 	leaks, wifiChanges, tokens, tokenFile = map[string]Leak{}, map[string]*WifiChange{}, map[string]string{}, dir+"/tokens.json"
-	captures = map[string]string{}
+	captures, notLeak = map[string][]Capture{}, map[string]string{}
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /v1/poll", poll)
 	mux.HandleFunc("GET /v1/devices/{id}", device)
@@ -29,6 +30,8 @@ func testServer(t *testing.T) *httptest.Server {
 	mux.HandleFunc("POST /v1/devices/{id}/capture", capture)
 	mux.HandleFunc("POST /v1/devices/{id}/clear", clearLeak)
 	mux.HandleFunc("PUT /v1/devices/{id}/wifi", putWifi)
+	mux.HandleFunc("POST /v1/media/{id}", putMedia)
+	mux.HandleFunc("GET /v1/media/{id}", media)
 	s := httptest.NewServer(withTime(mux))
 	t.Cleanup(s.Close)
 	return s
@@ -186,22 +189,41 @@ func TestCaptureAtNextCheckin(t *testing.T) {
 	if r.StatusCode != http.StatusOK {
 		t.Fatal(r.Status)
 	}
+	// one of each kind waits: a second video ask adds nothing, a photo joins the queue
+	must(http.Post(s.URL+"/v1/devices/"+TestID+"/capture", "application/json", strings.NewReader(`{"kind":"video"}`)))
+	must(http.Post(s.URL+"/v1/devices/"+TestID+"/capture", "application/json", strings.NewReader(`{"kind":"photo"}`)))
+	mu.Lock()
+	p := pending(TestID)
+	mu.Unlock()
+	if len(p) != 2 || p[0].Kind != "photo" || p[1].Kind != "video" || p[0].State != "waiting" {
+		t.Fatalf("pending: %+v", p)
+	}
+	// a Wi-Fi change first (user 2026-11-07), then the photo, then the video: one per check-in
+	req, _ := http.NewRequest(http.MethodPut, s.URL+"/v1/devices/"+TestID+"/wifi", strings.NewReader(`{"ssid":"new","psk":"secret123"}`))
+	must(http.DefaultClient.Do(req))
 	ans, _ := checkIn(t, s, url.Values{"full": {"0.6+g1234567"}})
+	if ans["wifi"] == nil || ans["capture"] != nil {
+		t.Errorf("the network first, alone: %v %v", ans["wifi"], ans["capture"])
+	}
+	if ans, _ = checkIn(t, s, url.Values{"full": {"0.6+g1234567"}}); ans["capture"].(map[string]any)["kind"] != "photo" {
+		t.Errorf("the photo next: %v", ans["capture"])
+	}
+	ans, _ = checkIn(t, s, url.Values{"full": {"0.6+g1234567"}})
 	c, _ := ans["capture"].(map[string]any)
 	if c["kind"] != "video" || c["secs"] != float64(VideoS) {
-		t.Errorf("capture in the answer: %v", ans["capture"])
+		t.Errorf("then the video: %v", ans["capture"])
 	}
 	if ans, _ = checkIn(t, s, url.Values{"full": {"0.6+g1234567"}}); ans["capture"] != nil {
 		t.Errorf("handed over twice: %v", ans["capture"])
 	}
 }
 
-// a wet probe opens a leak (the 5-min mode in the answer), the all-clear ends it; a pending network is delivered once
+// a wet probe opens a leak (the 1-min leak mode in the answer), the all-clear ends it; a pending network is delivered once
 // and its passphrase forgotten; a failed change puts the board in the 5-min mode
 func TestLeakAndWifiChange(t *testing.T) {
 	s := testServer(t)
 	ans, _ := checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "probe": {"800"}})
-	if ans["mode"] != float64(1) || ans["checkin"] != float64(WakeModeS) {
+	if ans["mode"] != float64(1) || ans["checkin"] != float64(LeakModeS) {
 		t.Errorf("leak: mode %v checkin %v", ans["mode"], ans["checkin"])
 	}
 	if c, _ := ans["capture"].(map[string]any); c["kind"] != "leak" || c["photos"] != float64(LeakPhotos) ||
@@ -229,5 +251,47 @@ func TestLeakAndWifiChange(t *testing.T) {
 	}
 	if ans, _ = checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "wchg": {"17"}}); ans["mode"] != float64(1) {
 		t.Errorf("a failed change: mode %v", ans["mode"])
+	}
+}
+
+// an uploaded picture is served under its ID; a bad ID is refused
+func TestMediaUpload(t *testing.T) {
+	s := testServer(t)
+	id := TestID + "-1794081605-p2"
+	r := must(http.Post(s.URL+"/v1/media/"+id, "image/jpeg", strings.NewReader("JPEGDATA")))
+	if r.StatusCode != http.StatusOK {
+		t.Fatal(r.Status)
+	}
+	r, err := http.Get(s.URL + "/v1/media/" + id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, _ := io.ReadAll(r.Body)
+	r.Body.Close()
+	if string(b) != "JPEGDATA" {
+		t.Errorf("served %q %s", b, r.Status)
+	}
+	if r = must(http.Post(s.URL+"/v1/media/../x", "image/jpeg", strings.NewReader("x"))); r.StatusCode == http.StatusOK {
+		t.Errorf("bad ID stored")
+	}
+}
+
+// Not a leak re-arms the probe only once it has dried; the uploaded files are listed newest first
+func TestNotALeak(t *testing.T) {
+	s := testServer(t)
+	checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "probe": {"800"}})
+	must(http.Post(s.URL+"/v1/devices/"+TestID+"/clear?not_leak=1", "", nil))
+	if ans, _ := checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "probe": {"800"}}); ans["mode"] != float64(0) {
+		t.Errorf("still wet after Not a leak: mode %v", ans["mode"])
+	}
+	checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "probe": {"3000"}})
+	if ans, _ := checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "probe": {"800"}}); ans["mode"] != float64(1) {
+		t.Errorf("wet again after drying: mode %v", ans["mode"])
+	}
+	for _, id := range []string{"-1794081605-p1", "-1794081700-v1"} {
+		must(http.Post(s.URL+"/v1/media/"+TestID+id, "", strings.NewReader("x")))
+	}
+	if m := deviceMedia(TestID); len(m) != 2 || m[0].Kind != "video" || m[1].At != 1794081605 {
+		t.Errorf("media list: %+v", m)
 	}
 }

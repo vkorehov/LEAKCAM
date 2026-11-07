@@ -156,8 +156,6 @@ static void check_in(void)
         switch_to_setup("ota");           /* the copy is in: the setup firmware unpacks it (DESIGN.md 5.3.7) */
         return;
     }
-    if (strstr(body, "\"ble\":1"))
-        switch_to_setup("wake");          /* a phone out of range asked through the server (tests/test119) */
 }
 
 static void presence_task(void *arg)

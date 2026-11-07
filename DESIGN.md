@@ -594,17 +594,35 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
 
 ### 5.3.4 The setup channel and the app's link icons (user, 2026-11-04)
 
-- **One main screen that keeps looking (user, 2026-11-07):** the app opens on the board list at once and looks over
-  BLE and on the USB cable in parallel (no Find button, no start screen, a spinner line under the list); a new board
-  appears as a row to set up; at 5 s a board on the cable is picked (USB first), a later plug adds its row picked:
-  the screen adjusted, never switched. The setup screen only takes the picked board's Wi-Fi.
-- **Rows show only the board and its icons (user, 2026-11-07):** rare actions (Delete) sit in a three-dots menu at the
-  row's end, never as buttons in a list row.
+- **Screens (user, 2026-11-07):**
+  - **LEAKCAMs** (the status screen): this phone's boards as the server sees them, no Bluetooth or cable search;
+    actions Take photo / Take video, the rare ones (Change Wi-Fi, Delete) in the three dots; the status text always
+    says the next check-in, in the phone's time zone; under it the board's pending list (5.3.13).
+  - **LEAKCAM setup, for new devices only:** keeps looking over BLE and on the USB cable at once (no Find button):
+    a board on the cable is added and picked as soon as it answers (USB first), boards over BLE as they advertise,
+    the list adjusted on the fly; the texts offer both ways (plug it in, or bring it near); after Done it goes on for
+    the next board. **A board already set up from this phone is never listed** (user 2026-11-07); the rows show the
+    serial only and the Wi-Fi fields start blank.
+  - **Change Wi-Fi:** only the network for one of mine, sent through the server for its next check-in (5.3.13);
+    no search. It shows the network the board is on (not secret) and the password as dots; the same network sent
+    without its password is refused (the app cannot send the stored one back).
+  - The usual three-lines menu next to the title switches the screens (LEAKCAMs, Setup); with no board yet only
+    Setup. An empty LEAKCAMs list opens the setup at once, so does a LEAKCAM plugged in.
+- **Design principle: the action row and the status block (user, 2026-11-07).** Every screen is built the same
+  way: content (list, fields), then the **action row** (one-line buttons, the rare actions in the three dots at its
+  end), then right under it the **status block** (res/layout/status_block.xml, StatusBlock.kt): a spinner line
+  saying what happens now (looking, sending; gone when nothing runs), then the message (what to do, what happened;
+  red background for a problem). What changes size (the message, a list that fills while looking, the pending list)
+  sits below the action row, so the buttons never move.
 - **Every user-facing step well under 15 s, with a spinner (user, 2026-11-07):** a person closes the app after 15 s of
   waiting. Find, wake, pair, save, the switch to the setup firmware, change Wi-Fi and delete each end well under 15 s
   (target 10 s) and show a spinning icon and a line saying what happens while they run; a test measuring one above
   15 s fails. The board's own periods (check-in, leak check) are not user-facing and keep their values (tests shorten
-  them). Open: the wake of a set-up board through the server waits for its next check-in (up to 60 min).
+  them).
+- **A set-up board's Wi-Fi changes only through the server (user, 2026-11-07):** no wake and no Bluetooth change for
+  the person ("too complex for user"); the server's wake route and the board's switch on request are gone (test119
+  retired). For Bluetooth the person deletes the board in the app: with no user left its next check-in switches it to
+  the setup firmware, which advertises, and the setup screen lists it as a new device (5.3.5).
 - **The most reliable channel that is there:** a USB link between the app and the board (the phone's USB-C to the
   board's USB-C 1 by cable, the phone the USB host; user 2026-11-04: the phone app, not a computer) -> the setup goes
   over USB; else over BLE; over Wi-Fi (5.3.2, through the server) only for a board
@@ -637,6 +655,9 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
 - **The server holds the list, the app none (user, 2026-11-04):** the app keeps no list of its own; it always asks the
   server for the boards registered to its phone (`GET /v1/phones/<phone id>/devices`) and shows them with their
   presence. A setup registers the phone (below); nothing about the boards is stored on the phone.
+- **Deleting a board puts it into the setup firmware (user, 2026-11-07)**, waiting for BLE, when this phone was its
+  last user (below): its next check-in is answered `410 Gone`. A board out of Wi-Fi never hears it; it is in the setup
+  firmware already (presence lost, test117), and after the delete the setup screen lists it.
 - **Deleting a board removes this phone only:** someone else may still use it. The delete goes to the server; the app
   shows the server's list again, without the board. It does not come back by itself; only a new setup brings it back.
 - **No user left:** when no phone has the board any more (nobody else set it up, nobody receives its leak reports),
@@ -867,7 +888,9 @@ person watched: 5.3.4's 15 s rule).
 - **A failed change:** the board tells the server (on the old network) and the phone is notified. The board leaves the
   HBN cycle for the **5-min wake mode**.
 - **A leak** (a wet probe, or a camera change confirmed by the leak job): the phone gets the **leak alert** at once
-  and the board goes into the 5-min wake mode, waiting for the person's request (record a video, all clear).
+  and the board goes into the wake mode **checking in every minute** (user 2026-11-07: near real time; ~60 mAh a
+  day), waiting for the person's requests (photo, video, Wi-Fi); back to its normal pace after 24 h or at once on Not
+  a leak / all clear. All server driven (the check-in answer's `checkin` and `mode`).
 - **Every leak is recorded: 4 pictures and one 15 s video** (user, 2026-11-07: "once leak occurs, we always need to
   record 4 pictures and one 15 second video"). The board starts them by itself right after the leak check that found
   it (the K230 is on already), uploads them to the media server and reports them; the alert opens them in the app.
@@ -886,8 +909,8 @@ person watched: 5.3.4's 15 s rule).
   **one preview** (the first file there, a spinner until then) with **"+N more"**; a tap opens the phone's gallery on
   its newest pictures and videos, this leak's record at the top (no gallery opens one album by a standard intent).
   Built: IDs, push, panel, gallery download, the server's media route; the board's capture and upload with the cameras.
-- **The 5-min wake mode:** BLE sleep (the setup firmware's low-power advertising, ~0.5 mA) instead of HBN, a check-in
-  every 5 min (a request from the server arrives within 5 min; a fix over BLE at any time). It ends on success / the
+- **The wake mode** (every minute during a leak, every 5 min after a failed Wi-Fi change): BLE sleep (the setup firmware's low-power advertising, ~0.5 mA) instead of HBN, a check-in
+  at the mode's interval (a request from the server arrives within it). It ends on success / the
   person's all-clear, or after a time limit, whichever comes first (~13 mAh a day: the limit protects the battery).
 - **To the phone: Firebase push** (FCM, high priority) from our server, at once, with the app closed too; one path for
   the leak alert and the failed change.
@@ -900,16 +923,22 @@ person watched: 5.3.4's 15 s rule).
 ### 5.3.14 Take photo, take video: the app's common actions (user, 2026-11-07)
 
 - The status screen's action row for one of the person's boards: **Take photo** and **Take video**, the most common
-  actions; Change Wi-Fi and Delete are rare, behind the three dots. A board not set up shows only "Set up this
-  LEAKCAM" in the same place.
+  actions; Change Wi-Fi and Delete are rare, behind the three dots. A new board is set up on the setup screen (the
+  three-lines menu, 5.3.4).
 - **When it runs:** at once over BLE when the board is in range (awake), else at its next check-in (the server keeps
   the request and hands it over in the check-in answer). The app never waits for it: the request is sent, the screen
   says when it will happen, and the person gets a notification when it is ready (5.3.4's 15 s rule).
 - **A video is 15 s.** The board captures it (both cameras), uploads it to the media server (MediaMTX, memory
   leakcam-server-mediamtx) and reports it; a photo the same way as one frame per camera.
 - **Played in the app** once taken: the notification opens it; the board's row lists its latest photo and video.
-- Built so far: the app's buttons and the server's request queue (`POST /v1/devices/{id}/capture`, the answer's
-  `capture`). Capture, upload and playback come with the real cameras.
+- **The pending list (user, 2026-11-07), server driven:** what waits for a board's check-ins, one of each at most:
+  one photo, one video, one Wi-Fi change (a new change replaces the waiting one; a photo or video asked again while
+  one waits adds nothing, and its button is off). One thing per check-in, in this order: a leak's record, the Wi-Fi
+  change, the photo, the video (the board checks in again right after a Wi-Fi change). The server lists it per
+  device (`pending`: kind, asked, state waiting / sent) with its next check-in (`next_checkin`, unix s); the status
+  screen shows it under the status block, the times in the phone's time zone.
+- Built so far: the app's buttons, the pending list and the server's request queue (`POST /v1/devices/{id}/capture`,
+  the answer's `capture`). Capture, upload and playback come with the real cameras.
 
 ### 5.4 K230-BL616 link and time
 

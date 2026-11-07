@@ -49,7 +49,7 @@ Every check; run.py prints them.
 | Power, energy per operation | **MISSING** | - | |
 | Per day | n/a: an app test | ENERGY.txt line | |
 | Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak | |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free 136220 / min 129860 / 136220 B, blocks 101 -> 101, deleted 0; leak: n/a, 1 snapshots (mem_leak.py needs >= 8 cycles) (2026-11-07) | no leak | |
 | Image (sizes) | BL616 test firmware 1322032 B (2026-11-04, on the board at the run) | minimal image (rule) | |
 | Compile flags | BL616 product pair (no -O3/LTO) | smallest code (rule) | |
 | Features over the minimal image | BLE only | test008 floor | |

@@ -1,23 +1,36 @@
-14:44:26 test117-presence-loss-ble: 3 metric rows MISSING: Current idle / during (min / avg / peak), Power, energy per operation, Temperature die / board (start / peak / end)
+18:17:05 test117-presence-loss-ble: 0 metric rows MISSING: none
+18:17:32 phone: app 13.6 s
+18:17:32 setup <network> 10.6 s Done. 7C3E8262B149 joined "<network>", reached the internet and stored the ne
+18:17:41 CHECK pass stored: back in the full firmware 9 s
+18:17:41 CHECK pass start: set up from the app 10.6 s
+18:17:41 CHECK pass the board checks in every 5 s check-in every 5 s after 0 s
+18:17:41 CHECK pass present at the server 
+18:17:59 phone: scan 17.6 s
+18:17:59 CHECK pass present: the phone does not find the board (no BLE in the full firmware) None
 Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
-14:44:58 setup <network> 8.8 s Done. 7C3E8262B149 joined "VK", reached the internet and stored the ne
-14:44:58 CHECK pass start: set up from the app 8.8 s
-14:45:01 CHECK pass present: no advertising on battery 2 s: off (configured, present)
-14:45:01 CHECK pass the board checks in every 10 s poll 10 s after 0 s
-14:45:18 CHECK pass present: the phone does not find the board None
+18:18:26 CHECK pass server down: the setup firmware (presence lost) 25 s
+18:18:28 phone: scan 2.6 s
+18:18:28 CHECK pass server down: the phone finds the board at once 7C3E8262B149 rssi -28 after 0.2 s
 Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
-14:45:25 CHECK pass server down: advertising on battery (presence lost) 5 s: on (presence lost)
-14:45:27 CHECK pass server down: the phone finds the board at once 7C3E8262B149 after 0.3 s
-Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
-14:45:37 CHECK pass server back: advertising off again 9 s: off (configured, present)
-14:45:54 setup t117-gone 14.9 s Saved without checking. 7C3E8262B149 stored the Wi-Fi network "t117-go
-14:45:54 CHECK pass network gone: saved without checking Saved without checking. 7C3E8262B149 stored the Wi-Fi network "t117-go
-14:45:58 CHECK pass network gone: advertising on battery (presence lost) 4 s: on (presence lost)
-14:46:09 setup <network> 8.7 s Done. 7C3E8262B149 joined "VK", reached the internet and stored the ne
-14:46:09 CHECK pass network gone: the phone sets the real network at once 8.7 s
-14:46:12 CHECK pass network back: advertising off again 2 s: off (configured, present)
-14:46:12 CHECK pass network back: present at the server 14 s after the setup started
-14:46:31 CHECK pass network back: silent again on battery None
-14:46:34 sample after the checks {'board': None, 'bl_mem': (146028, 133928, 120076, 105, 79444, 16, 0)}
-Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
-14:46:39 test117-presence-loss-ble: PASS; filled 0: -; still MISSING 3: Current idle / during (min / avg / peak), Power, energy per operation, Temperature die / board (start / peak / end); run in HISTORY.md - README Status/Result by hand
+18:18:42 CHECK pass server back: the setup firmware stays (only a setup or its 6 h retry ends it) 
+18:18:56 phone: app 13.7 s
+18:18:56 setup <network> 10.8 s Done. 7C3E8262B149 joined "<network>", reached the internet and stored the ne
+18:19:05 CHECK pass stored: back in the full firmware 9 s
+18:19:05 CHECK pass server back: the phone sets the network 10.8 s
+18:19:05 CHECK pass server back: present at the server 23 s after the setup started
+18:19:33 phone: app 19.7 s
+18:19:33 setup t117-gone 16.9 s Saved without checking. 7C3E8262B149 stored the Wi-Fi network "t117-go
+18:19:39 CHECK pass stored: back in the full firmware 6 s
+18:19:39 CHECK pass network gone: saved without checking Saved without checking. 7C3E8262B149 stored the Wi-Fi network "t117-go
+18:20:10 CHECK pass network gone: the setup firmware (presence lost) 31 s
+18:20:13 phone: scan 2.8 s
+18:20:13 CHECK pass network gone: the phone finds the board at once 7C3E8262B149 rssi -28 after 0.2 s
+18:20:27 phone: app 13.7 s
+18:20:27 setup <network> 10.9 s Done. 7C3E8262B149 joined "<network>", reached the internet and stored the ne
+18:20:33 CHECK pass stored: back in the full firmware 6 s
+18:20:33 CHECK pass network gone: the phone sets the real network at once 10.9 s
+18:20:33 CHECK pass network back: present at the server 20 s after the setup started
+18:20:50 phone: scan 17.5 s
+18:20:50 CHECK pass network back: no BLE again None
+18:20:54 sample after the checks {'board': None, 'bl_mem': (184100, 147596, 165068, 67, 75064, 14, 0)}
+18:20:55 test117-presence-loss-ble: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

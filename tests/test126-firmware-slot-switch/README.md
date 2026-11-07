@@ -3,7 +3,7 @@
 Status: **pass, steps 1-7** (2026-11-07 07:50 UTC, 10 round trips on the product pair: full -> setup 4.7 / 8.0 / 8.1 s,
 setup -> full 4.4 / 7.6 s (min / median / max; one 22.8 s with a VM USB controller reset), the table age +1 per switch,
 the PIN and the stored network the same in both firmwares; 2026-11-02 first pass). The way into the setup firmware is
-`switch_to_setup wake` since 2026-11-07: a bare `slot switch` with USB power and a network stored is handed straight
+`switch_to_setup lost` (`wake` until the phone's wake was removed, 2026-11-07): a bare `slot switch` with USB power and a network stored is handed straight
 back to the full firmware (test121/test127, by design). Design: DESIGN.md 5.3.1 (two firmwares, slot switch).
 
 The low-level proof under every firmware change of DESIGN.md 5.3.1: each firmware can make the other one run, by

@@ -4,6 +4,13 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-07 (run.py, 42 s): **FAIL**
+
+stopped at 'K230 at msh idle (agent running)': the load did not start
+
+- Wi-Fi step skipped: no TCP sink on 192.168.1.131:5001 (pc_tcp_bench.py sink)
+
+
 ### Automated run 2026-10-30 (run.py, 767 s): **FAIL**
 
 7 load steps on USB; then all loads 10 min: 0 K230 resets. Die 48.2-58.7 C over the steps.
@@ -92,6 +99,9 @@ Loads without cameras: both LED chains 100 %, Wi-Fi TCP upload to the LAN PC (ip
   as a background job; the runner asks for `chip_temp` every 5 s so a stall shows within seconds.
 
 ## Obstacles
+
+- K230 cold boot did not reach msh within 20 s (milestones {}) (2026-11-07, automated run)
+- K230 at msh idle (agent running): did not start: leakcam:: command not found. (2026-11-07, automated run)
 
 - memory leak (mem_leak.py verdict in the Memory row): a leak fails the test (2026-10-30, automated run)
 

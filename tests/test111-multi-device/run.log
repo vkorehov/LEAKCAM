@@ -1,30 +1,37 @@
-14:29:49 test111-multi-device: 0 metric rows MISSING: none
-Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
-14:29:56 CHECK pass the board has a device ID 7C3E8262B149
-14:29:56 CHECK pass USB serial number = the device ID USB 7C3E8262B149
-14:30:08 CHECK pass setup Done 9.0 s
-14:30:08 CHECK pass pairing: the app entered the PIN, no PIN prompt on the phone dialog started 0x
-14:30:08 CHECK pass BLE advertisement = the device ID ['7C3E8262B149']
-14:30:08 CHECK pass known board: the status screen opened its setup 1.5 s
-14:30:08 CHECK pass known board: the short 'change its Wi-Fi' flow Enter the new Wi-Fi network for 7C3E8262B149. It r
-14:30:08 CHECK pass advertisement: a stored network flagged 1
-14:30:09 CHECK pass the app stores no Wi-Fi network devices.xml: ids only
-14:30:09 CHECK pass the app names the board by its serial devices.xml: no name, no prefix
-14:31:09 CHECK pass server: the board online after the setup 60 s
-14:31:11 CHECK pass board: last check-in reached the server (0x03) [0m[36mbouffalolab />[0m
-14:31:13 CHECK pass app: the board listed and online 7C3E8262B149: online, Wi-Fi "VK"
-14:31:13 CHECK pass app: the board's network shown (the SSID from its check-in) 7C3E8262B149: online, Wi-Fi "VK"
-14:31:14 CHECK pass app: second LEAKCAM listed, not seen yet 02AB12CD34EF: not seen yet, Wi-Fi "not reported yet"
-14:31:16 CHECK pass app: second LEAKCAM online after its check-in 02AB12CD34EF: online, Wi-Fi "t111-second"
-14:31:16 CHECK pass app: second LEAKCAM's network shown 02AB12CD34EF: online, Wi-Fi "t111-second"
-14:31:16 CHECK pass app: the board still online next to it 7C3E8262B149: online, Wi-Fi "VK"
-14:31:50 CHECK pass app: second LEAKCAM offline when it stopped 02AB12CD34EF: offline, last seen 34 s ago, Wi-Fi "t111-second"
-14:31:50 CHECK pass app: the board online throughout 7C3E8262B149: online, Wi-Fi "VK"
-14:31:57 CHECK pass app: second LEAKCAM deleted ['7C3E8262B149']
-14:31:57 CHECK pass app: the board still listed after the delete 7C3E8262B149: online, Wi-Fi "VK"
-14:32:08 CHECK pass app: a deleted board stays out while the app runs 5 s in range
-14:32:50 CHECK pass app: the board deleted {'found': True, 'confirmed': True, 'ms_total': 3756, 't0_epoch_ms': 1793536319049}
-14:32:50 CHECK pass app: the deleted board back in the list by itself (USB, server online) 42 s, 7C3E8262B149: online, Wi-Fi "VK"
-14:32:54 sample after the checks {'board': None, 'bl_mem': (146024, 133928, 120096, 105, 79444, 16, 0)}
-Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
-14:32:56 test111-multi-device: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+22:47:25 test111-multi-device: 0 metric rows MISSING: none
+22:47:41 CHECK pass USB serial number = the device ID USB 7C3E8262B149
+22:47:41 CHECK pass the board has a device ID 7C3E8262B149
+22:48:23 phone: app 26.5 s
+22:48:23 CHECK pass setup Done 23.3 s
+22:48:24 CHECK pass pairing: the app entered the PIN, no PIN prompt on the phone dialog started 0x
+22:48:24 CHECK pass BLE advertisement = the device ID ['7C3E8262B149']
+22:48:24 CHECK pass no boards: the app opened on the setup screen None
+22:48:24 CHECK pass advertisement: a stored network flagged 1
+22:48:24 CHECK pass the app stores no list (the server's) FirebaseHeartBeatW0RFRkFVTFRd+MTo5NTg5NTc3OTQ4MTM6YW5kcm9pZDo0MzYyYmEyMGYzOTIyYWFmNmM5NTk0.xml
+com.google.android.gms.appid.xml
+com.google.firebase.messaging.xml
+22:48:24 CHECK pass the server lists the board for this phone, by its serial ['7C3E8262B149']
+22:48:24 CHECK pass server: the board online after the setup 0 s
+22:48:37 BL616 port missing: the VM's USB controller reset (xhci unbind/bind)
+22:48:44 CHECK pass board: last check-in reached the server (0x03) state 0x03
+22:48:45 CHECK pass app: the board listed and online 7C3E8262B149: online, Wi-Fi "<network>" · next check-in any moment now
+22:48:45 CHECK pass app: the board's network shown (the SSID from its check-in) 7C3E8262B149: online, Wi-Fi "<network>" · next check-in any moment now
+22:48:47 CHECK pass app: second LEAKCAM listed, not seen yet 024D07E36519: not seen yet, Wi-Fi "not reported yet" · next check-in not known yet
+22:48:49 CHECK pass app: second LEAKCAM online after its check-in 024D07E36519: online, Wi-Fi "t111-second" · next check-in any moment now
+22:48:49 CHECK pass app: second LEAKCAM's network shown 024D07E36519: online, Wi-Fi "t111-second" · next check-in any moment now
+22:48:49 CHECK pass app: the board still online next to it 7C3E8262B149: online, Wi-Fi "<network>" · next check-in any moment now
+22:49:07 CHECK pass app: second LEAKCAM offline when it stopped 024D07E36519: offline, last seen 20 s ago, Wi-Fi "t111-second" · next check-in any moment now
+22:49:07 CHECK pass app: the board online throughout 7C3E8262B149: online, Wi-Fi "<network>" · next check-in any moment now
+22:49:16 phone: delete 8.2 s
+22:49:17 CHECK pass app: second LEAKCAM deleted ['7C3E8262B149']
+22:49:17 CHECK pass app: the board still listed after the delete 7C3E8262B149: online, Wi-Fi "<network>" · next check-in any moment now
+22:49:17 CHECK pass server: this phone registered as a user (when it was issued the PIN) 1
+22:49:26 phone: delete 8.9 s
+22:49:26 CHECK pass server: the delete reached it first, no user left 0
+22:49:42 CHECK pass app: the board deleted {'found': True, 'more': True, 'menu': True, 'confirmed': True, 'ms_total': 5749, 't0_epoch_ms': 1794084559644}
+22:49:42 CHECK pass app: a deleted board stays out, also after a reopen 15 s after the reopen
+22:49:45 CHECK pass no user left: the board back in the setup firmware by itself 3 s after the delete
+22:50:12 phone: app 27.1 s
+22:50:22 CHECK pass set up again after it: the full firmware full
+22:50:25 sample after the checks {'board': None, 'bl_mem': (180012, 141880, 161116, 67, 79152, 14, 0)}
+22:50:30 test111-multi-device: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

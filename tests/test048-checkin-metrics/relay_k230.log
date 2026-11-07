@@ -24,7 +24,7 @@ U-Boot SPL 2022.10-gc096dae6-dirty (Nov 07 2026 - 06:32:04 +0000)
 
 00000000: PMU Major Msg: Firmware run has completed                                    
 
-dbyte0 add =9a040100 value =12
+dbyte0 add =9a040100 value =10
 
 dbyte0 add =9a040500 value =13
 
@@ -38,19 +38,19 @@ dbyte0 add =9a041500 value =13
 
 dbyte0 add =9a041900 value =13
 
-dbyte0 add =9a041d00 value =14
+dbyte0 add =9a041d00 value =15
 
 dbyte1 add =9a044100 value =13
 
-dbyte1 add =9a044500 value =13
+dbyte1 add =9a044500 value =12
 
-dbyte1 add =9a044900 value =14
+dbyte1 add =9a044900 value =13
 
 dbyte1 add =9a044d00 value =12
 
 dbyte1 add =9a045100 value =12
 
-dbyte1 add =9a045500 value =14
+dbyte1 add =9a045500 value =13
 
 dbyte1 add =9a045900 value =13
 
@@ -92,92 +92,112 @@ spi_nand spi-flash@0: Winbond SPI NAND was found.
 
 spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
 
+
+
 OpenSBI v0.9
+
 heap: [0x0050c4c0 - 0x00d0c4c0], size 8192 KB
+
 page: [0x00d0c4c8 - 0x039fec00], size 46025 KB
 
+
+
  \ | /
+
 - RT -     Thread Smart Operating System
+
  / | \     5.0.0 build Nov  6 2026
+
  2006 - 2020 Copyright by rt-thread team
+
 rtc driver register OK
+
 lwIP-2.1.2 initialized!
+
 [I/I2C] I2C bus [i2c0] registered
+
 [I/I2C] I2C bus [i2c4] registered
-[I/board.sdio] boot mode 0 does not use an SD/MMC controller�link_mux: console and /dev/link share uart1
+
+[I/board.sdio] boot mode 0 does not use an SD/MMC controller
+�link_mux: console and /dev/link share uart1
+
 Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+
 [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+
 os  : system memory alloc 320 bytes
+
 flsh: UFFS consume spare data size 9
+
 os  : system memory alloc 84480 bytes
+
 os  : system memory alloc 53200 bytes
+
 os  : system memory alloc 2048 bytes
+
 tree: DIR 0, FILE 5, DATA 4
+
 os  : system memory alloc 320 bytes
+
 flsh: UFFS consume spare data size 9
+
 os  : system memory alloc 84480 bytes
+
 os  : system memory alloc 53200 bytes
+
 os  : system memory alloc 8192 bytes
+
 tree: DIR 1, FILE 4, DATA 0
+
 /dev/shm file system initialization done!
+
 Can't find sensor on csi0
+
 Can't find sensor on csi2
+
 <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+
 <gnne> gnne_device_init done.
 
 
+
+
+
+
 #############SDK VERSION######################################
+
 SDK   : unknown-20261107-063215--e23af7bd3b96-4162ec7
+
 nncase: 2.11.0
+
 ##############################################################
-msh />leakcam: start: t 613 ms, heap +0 B
+
+msh />leakcam: start: t 611 ms, heap +0 B
+
 leakcam: version 0.6+g2961d6c-dirty-202611070631
-leakcam: battery 4367 mV: t 615 ms, heap +0 B
-leakcam: WAKE setup: t 616 ms, heap +0 B
-leakcam: relay: USB relay on /dev/ttyGS0: t 616 ms, heap +0 B
-leakcam: job: check: t 621 ms, heap +0 B
-leakcam: job: cam0 same (simulated same): 0 blocks, max 0.7, gain 1.00: t 652 ms, heap +0 B
-leakcam: job: cam1 same (simulated same): 0 blocks, max 0.6, gain 1.00: t 680 ms, heap +0 B
-leakcam: job: done: t 681 ms, heap +0 B
+
+leakcam: battery 4365 mV: t 612 ms, heap +0 B
+
+leakcam: WAKE setup: t 613 ms, heap +0 B
+
+leakcam: relay: USB relay on /dev/ttyGS0: t 613 ms, heap +0 B
+
+leakcam: job: check: t 618 ms, heap +0 B
+
+leakcam: job: cam0 same (simulated same): 0 blocks, max 0.7, gain 1.00: t 650 ms, heap +0 B
+
+leakcam: job: cam1 same (simulated same): 0 blocks, max 0.7, gain 1.00: t 677 ms, heap +0 B
+leakcam: job: done: t 678 ms, heap +0 B
 usb disconnect
 usb disconnect
 
 msh />
 msh />
 msh />
-msh />U-Boot SPL 2022.10-gc096dae6-dirty (Nov 07 2026 - 06:32:04 +0000)
+msh />U-Boot SPL 2022.100000000: PMU Major Ms
 U-Boot: command not found.
 msh />
+msh />00ay center optia0d =9a0D/M]:4######ree): 0 blocks, max 0.7, gain 1.00: t 650 ms, heap +0 B
+00ay: command not found.
 msh />
-msh />
-msh />00000000: PMU Major Msg: End of CA training                                            
-00000000:: command not found.
-msh />
-msh />
-msh />
-msh />00000000: PMU Major Msg: End of initialization                                         
-00000000:: command not found.
-msh />
-msh />
-msh />
-msh />00000000: PMU Major Msg: End of read enable training                                   
-00000000:: command not found.
-msh />
-msh />
-msh />
-msh />00000000: PMU Major Msg: End of fine write leveling                                    
-00000000:: command not found.
-msh />
-msh />
-msh />
-msh />00000000: PMU Major Msg: End of read dq deskew training                                
-00000000:: command not found.
-msh />
-msh />
-msh />
-msh />00000000: PMU Major Msg: End of MPR read delay center optimization                     
-00000000:: command not found.
-msh />
-msh />
-msh />
-msh />00000000: PMU Major M                500 vleakcam: clock: 1794040121 from the BL616 (was -58350326 s off)
+msh />leakcam: job: cam1 same (simulated same): 0 blockleakcam: clock: 1794075645 from the BL616 (was -58385983 s off)

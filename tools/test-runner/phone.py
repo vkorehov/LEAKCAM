@@ -66,7 +66,8 @@ def board_id():
 def ack_alerts():
     """every leak alert on the phone acknowledged at once (the debug build's TEST_ACK): a test alert never rings longer
     than its checks need (user, 2026-11-07: "acknowledge yourself faster, it is annoying")"""
-    adb("shell", "am", "broadcast", "-a", "com.leakcam.setup.TEST_ACK", "-p", "com.leakcam.setup", secs=15)
+    # -f 32: also when the app was force-stopped (Android drops broadcasts to stopped apps otherwise)
+    adb("shell", "am", "broadcast", "-f", "32", "-a", "com.leakcam.setup.TEST_ACK", "-p", "com.leakcam.setup", secs=15)
 
 
 def board_pin():
@@ -370,6 +371,9 @@ def ready(notes):
             install(apk, notes)
     adb("shell", "svc", "power", "stayon", "true")  # the screen stays on (no cable): the pairing dialog shows
     adb("shell", "settings", "put", "global", "leakcam_fast_timing", "1")   # the app's periods 3x faster (debug build)
+    # a test alert posts without sound or vibration (debug build; user 2026-11-07: "i want quiet night"); test133
+    # turns it off for its sound checks only when asked (--loud)
+    adb("shell", "settings", "put", "global", "leakcam_quiet", "1")
     # the leak alert's permissions granted here: the app asks for them after a Done, and a settings screen would stop
     # the run (DESIGN.md 5.3.13)
     adb("shell", "pm", "grant", "com.leakcam.setup", "android.permission.POST_NOTIFICATIONS")

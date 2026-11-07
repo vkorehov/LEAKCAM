@@ -11,6 +11,11 @@ The server's global `poll` interval is gone: the runner sets the board's check-i
 
 ## Runs
 
+### Automated run 2026-11-07 (run.py, 2 s): **FAIL**
+
+not run: no pt_ble.
+
+
 ### Automated run 2026-11-01 (run.py, 217 s): pass
 
 7/7 checks pass.
@@ -19,3 +24,5 @@ The server's global `poll` interval is gone: the runner sets the board's check-i
 
 
 ## Obstacles
+
+- the BL616 test firmware with pt_ble is needed (tests/firmware/bl616_powertest) (2026-11-07, automated run)

@@ -20,6 +20,9 @@ import android.util.Log
 object LeakAlert {
     // a channel's sound is fixed once it exists: a new sound needs a new channel ID (the old one deleted)
     const val CHANNEL = "leak_alarm"
+    // the bench's quiet nights (user 2026-11-07: "i want quiet night"): debug builds with `settings put global
+    // leakcam_quiet 1` post the alert on a channel without sound or vibration; everything else the same
+    const val QUIET_CHANNEL = "leak_alarm_quiet"
     private val OLD_CHANNELS = listOf("leak", "leak_alert")
     const val EXTRA_ID = "id"
     const val EXTRA_TEXT = "text"
@@ -27,14 +30,25 @@ object LeakAlert {
     const val EXTRA_MEDIA = "media"       // the new pictures and video by ID ("<device>-<s>-p1,..."): one tile each
     const val ACTION_TEST_ACK = "com.leakcam.setup.TEST_ACK"
     const val ACTION_CLOSE = "com.leakcam.setup.ALERT_CLOSE"   // the open alert screens close
+    const val ACTION_PICTURE = "com.leakcam.setup.ALERT_PICTURE"   // the leak's first picture is in the gallery
     private const val TAG = "LeakcamAlert"
 
     /** one notification per board: its ID's hash, so a second leak of the same board replaces the first */
     private fun notificationId(id: String) = id.hashCode()
 
+    fun quiet(context: Context) = BuildConfig.DEBUG &&
+        android.provider.Settings.Global.getInt(context.contentResolver, "leakcam_quiet", 0) == 1
+
     fun channel(context: Context) {
         val nm = context.getSystemService(NotificationManager::class.java)
         OLD_CHANNELS.forEach { nm.deleteNotificationChannel(it) }
+        if (quiet(context) && nm.getNotificationChannel(QUIET_CHANNEL) == null)
+            nm.createNotificationChannel(NotificationChannel(QUIET_CHANNEL, "Leak alerts (bench, quiet)",
+                                                             NotificationManager.IMPORTANCE_HIGH).apply {
+                setSound(null, null)
+                enableVibration(false)
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            })
         if (nm.getNotificationChannel(CHANNEL) != null)
             return
         nm.createNotificationChannel(NotificationChannel(CHANNEL, context.getString(R.string.alert_channel),
@@ -54,29 +68,46 @@ object LeakAlert {
         })
     }
 
-    /** the alert for one board from the server's message (DESIGN.md 5.3.13): which LEAKCAM (its ID), what found the
-     *  water, its Wi-Fi network and signal (bars, as everywhere in the app), when */
+    /** the alert for one board from the server's message (DESIGN.md 5.3.13): which LEAKCAM (its network, its ID),
+     *  what found the water - the probe or the camera's inference, each its own words with that word in bold (user
+     *  2026-11-07) - and when; no signal strength (user 2026-11-07) */
     fun show(context: Context, data: Map<String, String>) {
         val id = data["id"] ?: "?"
-        val why = when (data["why"]) {
-            "probe wet" -> context.getString(R.string.alert_why_probe)
-            "camera change" -> context.getString(R.string.alert_why_camera)
+        val camera = data["why"] == "camera change"
+        val why: CharSequence = when (data["why"]) {
+            "probe wet" -> context.getText(R.string.alert_why_probe)
+            "camera change" -> context.getText(R.string.alert_why_camera)
             else -> data["why"].orEmpty()
         }
-        val bars = data["rssi"]?.toIntOrNull()?.let { barCount(it) }
         val ssid = data["ssid"].orEmpty()
         // which LEAKCAM: its network says where it is (the home, the office) better than its serial (user, 2026-11-07)
-        val title = if (ssid.isNotEmpty()) context.getString(R.string.alert_title_ssid, ssid)
-                    else context.getString(R.string.alert_title, id)
-        val serial = context.getString(R.string.alert_serial, id) +
-            (bars?.let { " · " + context.getString(R.string.alert_signal, it) } ?: "")
+        val title = when {
+            ssid.isEmpty() -> context.getString(R.string.alert_title, id)
+            camera -> context.getString(R.string.alert_title_camera_ssid, ssid)
+            else -> context.getString(R.string.alert_title_ssid, ssid)
+        }
         val at = (data["at"]?.toLongOrNull()?.let { it * 1000 } ?: System.currentTimeMillis())
         val time = android.text.format.DateFormat.getTimeFormat(context).format(java.util.Date(at))
-        show(context, id, title, listOf(why, time, serial).filter { it.isNotEmpty() }.joinToString("\n"),
-             data["media"].orEmpty())
+        val text = android.text.SpannableStringBuilder(why).append("\n").append(time).append("\n")
+            .append(context.getString(R.string.alert_serial, id))
+        show(context, id, title, text, data["media"].orEmpty(), null)
     }
 
-    private fun show(context: Context, id: String, title: String, text: String, media: String) {
+    /** the leak's first picture arrived (the server's `media` push): the alert still ringing drawn again with it
+     *  (user 2026-11-07: "one picture downloaded and embedded"); nothing once acknowledged. The update starts the
+     *  sound over: keeping it quiet would stop the ringing alarm */
+    fun picture(context: Context, id: String, picture: android.graphics.Bitmap) {
+        val sbn = context.getSystemService(NotificationManager::class.java).activeNotifications
+            .firstOrNull { it.id == notificationId(id) && it.notification.channelId in listOf(CHANNEL, QUIET_CHANNEL) }
+            ?: return
+        val x = sbn.notification.extras
+        context.sendBroadcast(Intent(ACTION_PICTURE).setPackage(context.packageName).putExtra(EXTRA_ID, id))
+        show(context, id, x.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty(),
+             x.getCharSequence(EXTRA_TEXT) ?: "", x.getString(EXTRA_MEDIA).orEmpty(), picture)
+    }
+
+    private fun show(context: Context, id: String, title: String, text: CharSequence, media: String,
+                     picture: android.graphics.Bitmap?) {
         channel(context)
         val open = Intent(context, AlertActivity::class.java).apply {
             putExtra(EXTRA_ID, id)
@@ -87,11 +118,17 @@ object LeakAlert {
         }
         val pi = PendingIntent.getActivity(context, notificationId(id), open,
                                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        val n = Notification.Builder(context, CHANNEL)
+        val n = Notification.Builder(context, if (quiet(context)) QUIET_CHANNEL else CHANNEL)
             .setSmallIcon(R.drawable.ic_alert)
             .setContentTitle(title)
             .setContentText(text)
-            .setStyle(Notification.BigTextStyle().bigText(text))
+            .setStyle(if (picture == null) Notification.BigTextStyle().bigText(text)
+                      else Notification.BigPictureStyle().bigPicture(picture).setSummaryText(text))
+            .apply { if (picture != null) setLargeIcon(picture) }
+            .addExtras(android.os.Bundle().apply {    // for the update with the picture
+                putCharSequence(EXTRA_TEXT, text)
+                putString(EXTRA_MEDIA, media)
+            })
             .setCategory(Notification.CATEGORY_ALARM)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setOngoing(true)                       // only acknowledging ends it
@@ -100,7 +137,7 @@ object LeakAlert {
             .build()
         n.flags = n.flags or Notification.FLAG_INSISTENT   // the sound repeats until acknowledged
         context.getSystemService(NotificationManager::class.java).notify(notificationId(id), n)
-        Log.i(TAG, "alert $id shown, full screen allowed ${fullScreenAllowed(context)}, dnd access ${dndAccess(context)}")
+        Log.i(TAG, "alert $id shown${if (picture != null) " with its picture" else ""}, full screen allowed ${fullScreenAllowed(context)}, dnd access ${dndAccess(context)}")
     }
 
     fun acknowledge(context: Context, id: String) = acknowledge(context, notificationId(id))
@@ -125,7 +162,8 @@ object LeakAlert {
                 return
             if (intent.action == ACTION_TEST_ACK) {         // the bench silences it the moment its checks are done
                 context.getSystemService(NotificationManager::class.java).activeNotifications
-                    .filter { it.notification.channelId == CHANNEL }.forEach { acknowledge(context, it.id) }
+                    .filter { it.notification.channelId in listOf(CHANNEL, QUIET_CHANNEL) }
+                    .forEach { acknowledge(context, it.id) }
                 context.sendBroadcast(Intent(ACTION_CLOSE).setPackage(context.packageName))
                 return
             }

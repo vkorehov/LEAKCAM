@@ -19,33 +19,15 @@ wifi_mgmr: code = CN
   5G channels: none
 SIGTERM is NOT supported yet!
 SIGHUP is NOT supported yet!
-k230: first heartbeat edge 809 ms after the run
-k230: READY 811 ms after the run
-k230: WAKE setup taken 811 ms after the run
-k230: STATUS 0,0.6+g2961d6c-dirty-202611070631,479,6717376,6717376,46059520, battery 3772 mV kept
-[0m^[0m[0m[[0m[0m[[0m[0m0[0m[0mm[0m[0m[[0m[0mI[0m[0m][0m[0m[[0m[0m][0m[0m [0m[0mb[0m[0ml[0m[0me[0m[0m:[0m[0m [0m[0mr[0m[0me[0m[0ma[0m[0md[0m[0my[0m[0m [0m[0ma[0m[0ms[0m[0m [0m[0m7[0m[0mC[0m[0m3[0m[0mE[0m[0m8[0m[0m[[0m[0mC[0m[0mH[0m[0mI[0m[0mP[0m[0m][0m[0m [0m[0mf[0m[0mh[0m[0mo[0m[0ms[0m[0mt[0m[0m_[0m[0mc[0m[0mo[0m[0mn[0m[0mf[0m[0mi[0m[0mg[0m[0m_[0m[0mp[0m[0mr[0m[0me[0m[0mp[0m[0ma[0m[0mr[0m[0me[0m[0m:[0m[0m [0m[0mF[0m[0mi[0m[0mx[0m[0mi[0m[0mn[0m[0mg[0m[0m [0m[0mc[0m[0mh[0m[0ma[0m[0mn[0m[0m5[0m[0mG[0m[0m_[0m[0mc[0m[0mn[0m[0mt[0m[0m [0m[0mf[0m[0mr[0m[0mo[0m[0mm[0m[0m [0m[0m2[0m[0m8[0m[0m [0m[0mt[0m[0mo[0m[0m [0m[0m0[0m[0m [0m[0m([0m[0m2[0m[0m.[0m[0m4[0m[0mG[0m[0m-[0m[0mo[0m[0mn[0m[0ml[0m[0my[0m[0m [0m[0mc[0m[0mh[0m[0mi[0m[0mp[0m[0m)[0m[0m
+k230: first heartbeat edge 808 ms after the run
+k230: READY 810 ms after the run
+k230: WAKE setup taken 810 ms after the run
+k230: STATUS 0,0.6+g2961d6c-dirty-202611070631,485,6717376,6717376,46059520, battery 4110 mV kept
+[0m^[0m[0m[[0m[0m[[0m[0m0[0m[0mm[0m[0m[[0m[0mI[0m[0m][0m[0m[[0m[0m][0m[0m [0m[0mb[0m[0ml[0m[0me[0m[0m:[0m[0m [0m[0mr[0m[0me[0m[0ma[0m[0md[0m[0my[0m[0m [0m[0ma[0m[0ms[0m[0m [0m[0m7[0m[0mC[0m[0m3[0m[0mE[0m[0m:[0m[0m [0m[0m7[0m[0mc[0m[0m:[0m[0m3[0m[0me[0m[0m:[0m[0m8[0m[0m2[0m[0m:[0m[0m6[0m[0m2[0m[0m:[0m[0mb[0m[0m1[0m[0m:[0m[0m4[0m[0m9[0m[0m
 [0m[31m^[[0m[I][]: command not found.
 [0m[36mbouffalolab />[0m[0m
-[0m[36mbouffalolab />[0m[0m-[0m[0m-[0m[0m-[0m[0m-[0m[0m-[0m[0m-[0m[0m-[0m[0m-[0m[0m-[0m[0m-[0m[0m-[0m[0m-[0m[0m-[0m[0m-[0m[0m-[0m[0m-[0m[0m>[0m[0m [0m[0ml[0m[0md[0m[0mp[0m[0mc[0m[0m_[0m[0mr[0m[0mx[0m[0m:[0m[0m1[0m[0m,[0m[0m [0m[0mh[0m[0mt[0m[0m4[0m[0m0[0m[0m:[0m[0m0[0m[0m,[0m[0m [0m[0mv[0m[0mh[0m[0mt[0m[0m8[0m[0m0[0m[0m:[0m[0m0[0m[0m,[0m[0m [0m[0mh[0m[0me[0m[0m_[0m[0mm[0m[0mc[0m[0ms[0m[0m:[0m[0m1[0m[0m
-[0m[31m---------------->: command not found.
 [0m[36mbouffalolab />[0m[0m
-[0m[36mbouffalolab />[0m[0mR[0m[0me[0m[0ma[0m[0md[0m[0m [0m[0ms[0m[0ml[0m[0mo[0m[0mt[0m[0m:[0m[0m0[0m[0m
-[0m[31mRead: command not found.
-[0m[36mbouffalolab />[0m[0m
-[0m[36mbouffalolab />[0m[0mg[0m[0me[0m[0mt[0m[0m [0m[0ms[0m[0mt[0m[0ma[0m[0m [0m[0mm[0m[0ma[0m[0mc[0m[0m:[0m[0m [0m[0m7[0m[0mc[0m[0m:[0m[0m3[0m[0me[0m[0m:[0m[0m8[0m[0m2[0m[0m:[0m[0m6[0m[0m2[0m[0m:[0m[0mb[0m[0m1[0m[0m:[0m[0m4[0m[0m9[0m[0m
-[0m[31mget: command not found.
-[0m[36mbouffalolab />[0m[0m
-[0m[36mbouffalolab />[0m[0m
-[0m[36mbouffalolab />[0m[0mR[0m[0me[0m[0ma[0m[0md[0m[0m [0m[0ms[0m[0ml[0m[0mo[0m[0mt[0m[0m:[0m[0m0[0m[0m
-[0m[31mRead: command not found.
-[0m[36mbouffalolab />[0m[0m
-[0m[36mbouffalolab />[0m[0mg[0m[0me[0m[0mt[0m[0m [0m[0ma[0m[0mp[0m[0m [0m[0mm[0m[0ma[0m[0mc[0m[0m:[0m[0m [0m[0m7[0m[0mc[0m[0m:[0m[0m3[0m[0me[0m[0m:[0m[0m8[0m[0m2[0m[0m:[0m[0m6[0m[0m2[0m[0m:[0m[0mb[0m[0m1[0m[0m:[0m[0m4[0m[0m9[0m[0m
-[0m[31mget: command not found.
-[0m[36mbouffalolab />[0m[0m
-[0m[36mbouffalolab />[0m[0m
-[0m[36mbouffalolab />[0mk230: STATUS 60,0.6+g2961d6c-dirty-202611070631,479,6716160,6639424,46059520, battery 3772 mV kept
-k230: STATUS 120,0.6+g2961d6c-dirty-202611070631,479,6716160,6639424,46059520, battery 3772 mV kept
-k230: STATUS 180,0.6+g2961d6c-dirty-202611070631,482,6716160,6639424,46059520, battery 3772 mV kept
+[0m[36mbouffalolab />[0mk230: STATUS 60,0.6+g2961d6c-dirty-202611070631,482,6716160,6639424,46059520, battery 4110 mV kept
 usb_setup: phone authenticated
 Disable Auto Reconnect
 Not connected
@@ -68,14 +50,14 @@ rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
 ��No handler found for msg:1d from tsk:0 to tsk:6
 [FU]Set timer,state is 5,ongoing++, timeout:512000
 [FU]Tx cfm ongoing--, value is 0
-[FL]RECV AUTH,sn:3179
-[FU]RECV AUTH,sn:3179
+[FL]RECV AUTH,sn:897,Retry
+[FU]RECV AUTH,sn:897,Retry
 [FU]Rx handler,state:5,fctl:0xb0
 [FU]Clear timer in auth handler
 [FU]Set timer,state is 8,ongoing++, timeout:1024000
 [FU]Tx cfm ongoing--, value is 0
-[FL]RECV ASSOCRSP,sn:3180
-[FU]RECV ASSOCRSP,sn:3180
+[FL]RECV ASSOCRSP,sn:898
+[FU]RECV ASSOCRSP,sn:898
 [FU]Rx handler,state:8,fctl:0x10
 [FU]Clear timer in assoc rsp handler
 sm_connect_ind sm_env.auth_retry_gap = 0
@@ -107,7 +89,7 @@ wpa_supplicant_ctrl_iface_msg_cb: status event sent
 [AT][RX]   ap_idx 0
 [AT][RX]   ch_idx 0
 [AT][RX]   qos 1
-[AT][RX]   aid 8
+[AT][RX]   aid 6
 [AT][RX]   band 2.4G
 [AT][RX]   channel 11
 =================================================================
@@ -122,7 +104,7 @@ start dhcping on vif 0 ...
   MK: 255.255.255.0
   GW: 192.168.1.1
 {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
-clock: 1794040121 from the server (was 0 s off)
+clock: 1794075645 from the server (was 0 s off)
 [0m[I][WCHK] check of "VK": state 0x03 detail 0
 Disable Auto Reconnect
 ��==========================  Keyram Config ========================
@@ -152,8 +134,8 @@ wpa_supplicant_ctrl_iface_msg_cb: status event sent
 �[WPA] CTRL-EVENT-DSCP-POLICY clear_all
 WiFi disconnect
 [0m[I][] provision: Wi-Fi credentials stored
-k230: off (network saved) 198223 ms after power-on: READY at 811 ms, 396 heartbeat edges, 3V3 fall 9859 us, rx dropped 0, fifo overflows 0, tx 362 B, tx failed 0
-k230: session end: mem free 127620 min 110736 blocks 108 tasks 18 deleted 0
+k230: off (network saved) 65224 ms after power-on: READY at 810 ms, 130 heartbeat edges, 3V3 fall 9681 us, rx dropped 0, fifo overflows 0, tx 336 B, tx failed 0
+k230: session end: mem free 127592 min 110744 blocks 109 tasks 18 deleted 0
 Active Partition[1] consumed 596 Bytes
 ======= PtTable_Config @0x62fd4a0c=======
 magicCode 0x54504642; version 0x0000; entryCnt 8; age 3; crc32 0xF13C871D

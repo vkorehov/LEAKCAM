@@ -1,0 +1,12 @@
+22:36:25 test133-leak-alert: 0 metric rows MISSING: none
+22:36:35 CHECK pass locked: the alert posted 2.18 s after the trigger
+22:36:35 CHECK pass locked: its full screen opened over the lock screen within 15 s 2.73 s
+22:36:36 CHECK pass locked: acknowledged within 1.25 s, nothing left rang 0.97 s
+22:36:37 CHECK pass the channel: importance high, bypasses Do Not Disturb, alarm sound NotificationChannel{mId='leak_alarm', mName=Leak a..., mDescription=hasDescription , mImportance=4, mBypassDnd=true, mLockscreenVisibility=-1000, mSound=android
+22:36:41 CHECK pass silent mode: the alert posted 0.32 s after the trigger
+22:36:41 CHECK pass silent mode: its full screen opened over the lock screen within 15 s 0.68 s
+22:36:41 CHECK pass silent mode: acknowledged within 1.25 s, nothing left rang 1.05 s
+22:36:45 CHECK pass Do Not Disturb: the alert posted 0.21 s after the trigger
+22:36:45 CHECK pass Do Not Disturb: its full screen opened over the lock screen within 15 s 0.55 s
+22:36:46 CHECK pass Do Not Disturb: acknowledged within 1.25 s, nothing left rang 1.05 s
+22:36:46 test133-leak-alert: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

@@ -1,6 +1,5 @@
 // LEAKCAM server, presence only (use case 2): each device checks in with its chip ID (POST /v1/poll?id=), the app asks
-// whether a device is online (GET /v1/devices/{id}) and can wake its BLE (POST /v1/devices/{id}/wake: the next check-in
-// answers "ble":1, the board advertises for 2 minutes, tests/test119), and keeps the boards' crash records (POST
+// whether a device is online (GET /v1/devices/{id}), and keeps the boards' crash records (POST
 // /v1/devices/{id}/crash, sent at a board's first API contact after a crash, DESIGN.md 5.3.3, tests/test128; listed by GET
 // /v1/devices/{id}/crashes). Presence is in memory (after a restart the devices check in again); crash records are kept
 // on disk (LEAKCAM_CRASHES, one JSON line each): the board clears its own copy once the server answered, so a restart
@@ -42,7 +41,6 @@ const (
 	LeakCheckS = 86400 // the leak check interval it gives them (LEAKCAM_LEAKCHECK_S); both per device too: PUT .../intervals
 	Addr       = ":8090"
 	Crashes    = "/home/pi/leakcam-server/crashes.jsonl" // LEAKCAM_CRASHES
-	WakeGap    = 2 * time.Minute                         // at most one BLE wake per device this often: a wake costs its battery 2 minutes awake
 	Phones     = "/home/pi/leakcam-server/phones.json"   // LEAKCAM_PHONES
 	Images     = "/home/pi/leakcam-server/images"        // LEAKCAM_IMAGES: bl616_full.bin + .xz, k230_rtt.bin
 	Models     = "/home/pi/leakcam-server/models"        // LEAKCAM_MODELS: <device id>.kmodel, default.kmodel
@@ -53,9 +51,10 @@ type Device struct {
 	ID       string `json:"id"`
 	Online   bool   `json:"online"`
 	LastSeen int64  `json:"last_seen_s"` // seconds since the last check-in, -1 if never seen
-	SSID     string `json:"ssid"`        // the network it checked in from (not secret; the passphrase never comes)
-	Wake     bool   `json:"wake"`        // a BLE wake waits for its next check-in
-	Phones   int    `json:"phones"`      // its registered users (phones)
+	// when its next check-in is due (unix s; the app shows it in the phone's time zone), 0 if never seen
+	NextCheckin int64  `json:"next_checkin"`
+	SSID        string `json:"ssid"`   // the network it checked in from (not secret; the passphrase never comes)
+	Phones      int    `json:"phones"` // its registered users (phones)
 	// the battery as its last check-in said (DESIGN.md 5.3.9): the K230's last reading on battery, -1 none; charging =
 	// on USB power then (the reading is not refreshed on USB: the K230 reads the charger's rail there)
 	BatteryMV int  `json:"battery_mv"`
@@ -67,6 +66,10 @@ type Device struct {
 	// an open leak until a phone's all-clear, the last Wi-Fi change through the server (DESIGN.md 5.3.13)
 	Leak       *Leak  `json:"leak,omitempty"`
 	WifiChange string `json:"wifi_change,omitempty"`
+	// what waits for its check-ins: one photo, one video, one Wi-Fi change at most, a leak's record (user 2026-11-07)
+	Pending []Pending `json:"pending"`
+	// its pictures and videos on the server, newest first (the app lists them as links)
+	Media []MediaItem `json:"media"`
 }
 
 // MetricKeys: the check-in's metrics (firmware/bl616_common/metrics.c, DESIGN.md 5.3.10); kept only these, by type
@@ -133,8 +136,6 @@ var (
 	idRe       = regexp.MustCompile(`^[0-9A-F]{12}$`) // the BL616 chip ID: its factory MAC, 12 upper-case hex digits
 	mu         sync.Mutex
 	seen       = map[string]CheckIn{}
-	wake       = map[string]bool{}      // asked, not yet delivered
-	woken      = map[string]time.Time{} // the last wake delivered
 	checkinS   = CheckinS
 	leakCheckS = LeakCheckS
 	intervals  = map[string]Intervals{} // per device, set at runtime (PUT /v1/devices/{id}/intervals); 0 = the default
@@ -262,17 +263,13 @@ func poll(w http.ResponseWriter, r *http.Request) {
 	in.Told = iv.Checkin
 	seen[id] = in
 	if p, ok := phones[id]; ok && len(p) == 0 {
+		in.Told = 0 // back to the setup firmware: no check-ins until it is set up again (no next check-in time)
+		seen[id] = in
 		mu.Unlock()
 		http.Error(w, "no user: back to setup", http.StatusGone)
 		return
 	}
-	ble := 0
-	if wake[id] {
-		ble = 1
-		delete(wake, id)
-		woken[id] = time.Now()
-	}
-	ans := map[string]any{"stream": 0, "checkin": iv.Checkin, "leakcheck": iv.LeakCheck, "ble": ble}
+	ans := map[string]any{"stream": 0, "checkin": iv.Checkin, "leakcheck": iv.LeakCheck}
 	msgs := checkInAlerts(id, in, ans)
 	in.Told = ans["checkin"].(int) // the 5-min wake mode's own interval, when in it
 	seen[id] = in
@@ -475,8 +472,9 @@ func deviceCrashes(w http.ResponseWriter, r *http.Request) {
 // deviceInfo: a device's state for a client; mu held
 func deviceInfo(id string) Device {
 	c, ok := seen[id]
-	d := Device{ID: id, LastSeen: -1, Wake: wake[id], Phones: len(phones[id]), BatteryMV: -1,
-		Intervals: deviceIntervalsLocked(id), WifiChange: wifiState(id)}
+	d := Device{ID: id, LastSeen: -1, Phones: len(phones[id]), BatteryMV: -1,
+		Intervals: deviceIntervalsLocked(id), WifiChange: wifiState(id), Pending: pending(id),
+		Media: deviceMedia(id)}
 	if l, open := leaks[id]; open {
 		d.Leak = &l
 	}
@@ -488,8 +486,19 @@ func deviceInfo(id string) Device {
 		// three check-ins missed: offline, by the interval the device was told (a new one is taken at its next check-in:
 		// a shortened one judged at once made a board on the old 60 s "offline" for a minute, test111 2026-11-07)
 		d.Online = d.LastSeen < int64(3*c.Told)
+		d.NextCheckin = nextCheckin(id)
 	}
 	return d
+}
+
+// nextCheckin: when the device's next check-in is due (unix s) by the interval its last one was told, now when it is
+// overdue, 0 if never seen or sent back to setup (no user); mu held
+func nextCheckin(id string) int64 {
+	c, ok := seen[id]
+	if !ok || c.Told == 0 {
+		return 0
+	}
+	return max(c.At.Add(time.Duration(c.Told)*time.Second).Unix(), time.Now().Unix())
 }
 
 // withTime: every answer carries the server's time, X-Time: <unix s> (DESIGN.md 5.3.12): the boards set their wall clock
@@ -663,25 +672,6 @@ func phoneDevices(w http.ResponseWriter, r *http.Request) {
 	reply(w, list)
 }
 
-// wakeUp: the board advertises over BLE after its next check-in, for a phone nearby that wants to set its Wi-Fi while it
-// is out of range (a configured board on battery advertises only when its presence is lost); refused (429) within
-// WakeGap of the last one delivered. It only makes the board advertise: pairing still needs the PIN
-func wakeUp(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-	if !idRe.MatchString(id) {
-		http.Error(w, "id: 12 upper-case hex digits", http.StatusBadRequest)
-		return
-	}
-	mu.Lock()
-	defer mu.Unlock()
-	if t, ok := woken[id]; ok && time.Since(t) < WakeGap {
-		http.Error(w, "woken less than 2 minutes ago", http.StatusTooManyRequests)
-		return
-	}
-	wake[id] = true
-	reply(w, map[string]int{"within_s": deviceIntervalsLocked(id).Checkin})
-}
-
 // pin: the board's BLE pairing passkey, HMAC-SHA256(key, the 6 ID bytes), first 4 bytes big-endian mod 10^6, as
 // firmware/bl616_setup/ble_pairing.c derives it; the app asks for it right before pairing. Open on the LAN until the
 // server authenticates the app (test109)
@@ -778,7 +768,6 @@ func main() {
 	http.HandleFunc("GET /v1/devices/{id}/pin", pin)
 	http.HandleFunc("POST /v1/devices/{id}/crash", crash)
 	http.HandleFunc("GET /v1/devices/{id}/crashes", deviceCrashes)
-	http.HandleFunc("POST /v1/devices/{id}/wake", wakeUp)
 	http.HandleFunc("DELETE /v1/devices/{id}/phones/{phone}", unregister)
 	http.HandleFunc("GET /v1/phones/{phone}/devices", phoneDevices)
 	http.HandleFunc("PUT /v1/phones/{phone}/token", putToken)
@@ -786,6 +775,7 @@ func main() {
 	http.HandleFunc("PUT /v1/devices/{id}/wifi", putWifi)
 	http.HandleFunc("POST /v1/devices/{id}/capture", capture)
 	http.HandleFunc("GET /v1/media/{id}", media)
+	http.HandleFunc("POST /v1/media/{id}", putMedia)
 	http.HandleFunc("GET /v1/images/k230_rtt", k230Image)
 	http.HandleFunc("GET /v1/images/{name}", images)
 	http.HandleFunc("GET /v1/devices/{id}/model", model)

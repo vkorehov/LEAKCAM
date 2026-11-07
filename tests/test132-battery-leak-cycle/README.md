@@ -44,8 +44,8 @@ edge, no cut while a check runs). K230: job.c. Server: intervals, job/jago. Late
 |---|---|---|---|
 | Boot, reset release -> app init | **MISSING** | test022 | the K230's boot inside each check |
 | This part's boot share | **MISSING** | - | |
-| Test run time | **MISSING** | - | |
-| Battery leak check: rails on | **MISSING** | - | power-on -> off after DONE |
+| Test run time | 542 s automated (run.py, 2026-11-07), no setup | - | |
+| Battery leak check: rails on | 1305 ms rails on per check (power-on -> off after DONE), DONE 997 ms after the ask | - | power-on -> off after DONE |
 | Current idle / during | **MISSING** | floor (test031) | the cell lead meter, if available (no scope, bench limits) |
 | Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak | |
 | Image (sizes) | n/a: see test049 | minimal image (rule) | |

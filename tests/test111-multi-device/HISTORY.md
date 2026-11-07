@@ -17,6 +17,78 @@ lines:
 
 ## Runs
 
+### Automated run 2026-11-07 (run.py, 184 s): pass
+
+27/27 checks pass.
+
+
+### Automated run 2026-11-07 (run.py, 161 s): pass
+
+28/28 checks pass.
+
+
+### Automated run 2026-11-07 (run.py, 159 s): **FAIL**
+
+27/28 checks pass. Failed: setup Done (30.3 s).
+
+
+### Automated run 2026-11-07 (run.py, 151 s): pass
+
+28/28 checks pass.
+
+
+### Automated run 2026-11-07 (run.py, 252 s): **FAIL**
+
+18/27 checks pass. Failed: setup Done (0.0 s); pairing: the app entered the PIN, no PIN prompt on the phone (dialog started 0x); BLE advertisement = the device ID ([]); known board: the short 'change its Wi-Fi' flow (not in the app's log); advertisement: a stored network flagged (?); app: second LEAKCAM deleted (['02CBDF3FD38A', '7C3E8262B149']); server: the delete reached it first, no user left (1); app: the board deleted ({'found': True, 'more': False, 'ms_total': 8630, 't0_epoch_ms': 1794070474393}); no user left: the board back in the setup firmware by itself (full).
+
+
+### Automated run 2026-11-07 (run.py, 206 s): **FAIL**
+
+23/28 checks pass. Failed: setup Done (0.0 s); pairing: the app entered the PIN, no PIN prompt on the phone (dialog started 0x); BLE advertisement = the device ID ([]); known board: the short 'change its Wi-Fi' flow (not in the app's log); advertisement: a stored network flagged (?).
+
+
+### Automated run 2026-11-07 (run.py, 223 s): **FAIL**
+
+22/26 checks pass. Failed: setup Done (0.0 s); pairing: the app entered the PIN, no PIN prompt on the phone (dialog started 0x); BLE advertisement = the device ID ([]); advertisement: a stored network flagged (?).
+
+
+### Automated run 2026-11-07 (run.py, 238 s): **FAIL**
+
+23/28 checks pass. Failed: setup Done (0.0 s); pairing: the app entered the PIN, no PIN prompt on the phone (dialog started 0x); BLE advertisement = the device ID ([]); known board: the short 'change its Wi-Fi' flow (not in the app's log); advertisement: a stored network flagged (?).
+
+
+### Automated run 2026-11-07 (run.py, 240 s): pass
+
+28/28 checks pass.
+
+
+### Automated run 2026-11-07 (run.py, 243 s): **FAIL**
+
+27/28 checks pass. Failed: known board: the short 'change its Wi-Fi' flow (Your phone now asks to pair with 7C3E826 | The LEAKCAM is now joining "<network>" to check | Done. 7C3E8262B149 joined "<network>", reached ).
+
+
+### Automated run 2026-11-07 (run.py, 291 s): **FAIL**
+
+23/26 checks pass. Failed: setup Done (0.0 s); pairing: the app entered the PIN, no PIN prompt on the phone (dialog started 0x); app: second LEAKCAM offline when it stopped (02A1DB719ADD: online, Wi-Fi "t111-second").
+
+
+### Automated run 2026-11-07 (run.py, 304 s): **FAIL**
+
+24/26 checks pass. Failed: setup Done (0.0 s); pairing: the app entered the PIN, no PIN prompt on the phone (dialog started 0x).
+
+
+### Automated run 2026-11-07 (run.py, 216 s): **FAIL**
+
+23/26 checks pass. Failed: setup Done (0.0 s); board: last check-in reached the server (0x03) (no answer); app: second LEAKCAM listed, not seen yet (02AB12CD34EF: offline, last seen 4 min ago, Wi-Fi "t111-second").
+
+
+### Automated run 2026-11-07 (run.py, 184 s): **FAIL**
+
+26/28 checks pass. Failed: known board: the short 'change its Wi-Fi' flow (Your phone now asks to pair with 7C3E8262B149.
+
+• ); app: second LEAKCAM offline when it stopped (02AB12CD34EF: online, Wi-Fi "t111-second").
+
+
 ### Automated run 2026-11-06 (run.py, 154 s): pass
 
 28/28 checks pass.

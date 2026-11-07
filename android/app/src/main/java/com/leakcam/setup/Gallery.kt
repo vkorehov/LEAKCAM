@@ -1,7 +1,7 @@
 package com.leakcam.setup
 
-import android.app.Activity
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -21,10 +21,11 @@ import java.net.URL
  * The leak panel's pictures and video (DESIGN.md 5.3.13): each by the ID the push announced, downloaded from the server
  * (GET /v1/media/<id>) into the phone's gallery (Pictures/LEAKCAM, Movies/LEAKCAM, the ID as its name: saved once) - the
  * phone's own viewer and player show them, zoom, share and back them up (user 2026-11-07: "why not store in gallery?").
- * The leak panel shows one preview (the first file there) with "+N more"; a tap opens the album (open()). A file not on
- * the server yet is asked for again every 5 s while the panel is on the screen.
+ * The leak panel shows one preview (the first file there) with "+N more": a tap on the preview opens that file alone
+ * (view()), on "+N more" the gallery (open()). A file not on the server yet is asked for again every 5 s while the
+ * panel is on the screen. The push service saves the leak's first picture for the alert (save()).
  */
-class Gallery(private val activity: Activity) {
+class Gallery(private val context: Context) {
     private val main = Handler(Looper.getMainLooper())
 
     /** one picture or video into the gallery; ready(uri, thumbnail) once it is there. `on` is the view that needs it:
@@ -32,7 +33,7 @@ class Gallery(private val activity: Activity) {
     fun fetch(id: String, on: android.view.View, ready: (Uri, Bitmap?) -> Unit) {
         val video = id.substringAfterLast('-').startsWith("v")
         Thread {
-            val uri = saved(id, video) ?: download(id, video)
+            val uri = save(id)
             if (uri != null) {
                 val thumb = thumbnail(uri)
                 main.post { ready(uri, thumb) }
@@ -41,14 +42,24 @@ class Gallery(private val activity: Activity) {
         }.start()
     }
 
+    /** the gallery's copy of this ID, downloaded first when it is not there yet; null while the server has none.
+     *  Blocking: not on the main thread */
+    fun save(id: String): Uri? {
+        val video = id.substringAfterLast('-').startsWith("v")
+        return saved(id, video) ?: download(id, video)
+    }
+
     private fun collection(video: Boolean): Uri =
         if (video) MediaStore.Video.Media.EXTERNAL_CONTENT_URI else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
     private fun name(id: String, video: Boolean) = id + if (video) ".mp4" else ".jpg"
 
+    /** the gallery's copy of this ID if it was saved before, no download */
+    fun saved(id: String): Uri? = saved(id, id.substringAfterLast('-').startsWith("v"))
+
     /** the gallery's copy of this ID, if it was saved before (one copy per ID) */
     private fun saved(id: String, video: Boolean): Uri? =
-        activity.contentResolver.query(collection(video), arrayOf(MediaStore.MediaColumns._ID),
+        context.contentResolver.query(collection(video), arrayOf(MediaStore.MediaColumns._ID),
                                        "${MediaStore.MediaColumns.DISPLAY_NAME} = ?", arrayOf(name(id, video)), null)
             ?.use { c -> if (c.moveToFirst()) android.content.ContentUris.withAppendedId(collection(video), c.getLong(0)) else null }
 
@@ -71,7 +82,7 @@ class Gallery(private val activity: Activity) {
                     (if (video) Environment.DIRECTORY_MOVIES else Environment.DIRECTORY_PICTURES) + "/LEAKCAM")
                 put(MediaStore.MediaColumns.IS_PENDING, 1)
             }
-            val r = activity.contentResolver
+            val r = context.contentResolver
             val uri = r.insert(collection(video), values) ?: return null
             r.openOutputStream(uri)?.use { out -> c.inputStream.use { it.copyTo(out) } }
             c.disconnect()
@@ -84,8 +95,8 @@ class Gallery(private val activity: Activity) {
         }
     }
 
-    private fun thumbnail(uri: Uri): Bitmap? = try {
-        activity.contentResolver.loadThumbnail(uri, Size(640, 480), null)   // big enough for the large picture
+    fun thumbnail(uri: Uri): Bitmap? = try {
+        context.contentResolver.loadThumbnail(uri, Size(640, 480), null)   // big enough for the large picture
     } catch (e: Exception) {
         null
     }
@@ -94,19 +105,24 @@ class Gallery(private val activity: Activity) {
     fun show(preview: FrameLayout, video: Boolean, thumb: Bitmap?) {
         val badge = preview.findViewById<android.view.View>(R.id.leak_more)
         preview.removeAllViews()
-        preview.addView(ImageView(activity).apply {
+        preview.addView(ImageView(context).apply {
             scaleType = ImageView.ScaleType.CENTER_CROP
             setImageBitmap(thumb)
         }, FrameLayout.LayoutParams(-1, -1))
         if (video)
-            preview.addView(ImageView(activity).apply { setImageResource(android.R.drawable.ic_media_play) },
+            preview.addView(ImageView(context).apply { setImageResource(android.R.drawable.ic_media_play) },
                             FrameLayout.LayoutParams(-2, -2, android.view.Gravity.CENTER))
         preview.addView(badge)
     }
 
+    /** one picture or video alone in the phone's viewer or player (user 2026-11-07: "better open file alone") */
+    fun view(uri: Uri, video: Boolean) = context.startActivity(
+        Intent(Intent.ACTION_VIEW).setDataAndType(uri, if (video) "video/mp4" else "image/jpeg")
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION))
+
     /** the phone's gallery on its newest pictures and videos: this leak's record at the top. No gallery opens one
      *  album by a standard intent, and a single file opens alone (Samsung: no swipe to the others, 2026-11-07) */
-    fun open() = activity.startActivity(
+    fun open() = context.startActivity(
         Intent(Intent.ACTION_VIEW).setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "vnd.android.cursor.dir/image"))
 
     companion object {

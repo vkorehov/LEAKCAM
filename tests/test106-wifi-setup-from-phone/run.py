@@ -18,7 +18,7 @@ import time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import board_id, creds, firmware, hand, op, product, ready, seen, to_firmware, want   # noqa: E402
+from phone import board_id, creds, firmware, hand, only_boards, op, product, ready, seen, to_firmware, want   # noqa: E402
 
 REPEATS = 8                                     # the leak verdict's minimum (mem_leak.py)
 BATTERY = "--battery" in sys.argv
@@ -40,6 +40,9 @@ def check(name, ok, detail=""):
 
 def setup(ssid, psk, anyway=False):
     """one setup through the app; (last help text, seconds from opening the app to it, the op's result)"""
+    # Setup lists new devices only (DESIGN.md 5.3.4, user 2026-11-07): the phone starts each setup with no boards (the
+    # last setup registered it when the app asked for the PIN)
+    only_boards()
     res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="1" if anyway else "", secs=45)
     helps = res.get("help", [])
     last = helps[-1]["help"] if helps else res.get("error", "no help text")

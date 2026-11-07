@@ -18,6 +18,11 @@ budget is 24 check-ins + 1 leak check a day (~2.85 mAh/day estimate). The old li
 
 ## Runs
 
+### Automated run 2026-11-07 (run.py, 10 s): **FAIL**
+
+no meter reading given.
+
+
 ### Automated run 2026-10-30 (run.py, 9 s): pass
 
 session current read on USB: 228 mA while the agent works

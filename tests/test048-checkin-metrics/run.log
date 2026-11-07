@@ -1,0 +1,43 @@
+20:17:06 test048-checkin-metrics: 0 metric rows MISSING: none
+20:17:06 CHECK pass metrics on the console: every BL616 key 37 keys
+20:17:06 CHECK pass form size within the 512 B buffer (with ssid and version) 360 B + ~80
+20:17:13 CHECK pass a check-in reaches the server with the metrics 
+20:17:13 CHECK pass the server keeps every BL616 key, integers as numbers 
+20:17:13 CHECK pass GET /v1/devices/{id} gives the last check-in's metrics 
+20:17:13 CHECK pass tdie 25-60 C 31.4 C
+20:17:13 CHECK pass vdd 3200-3400 mV 3334 mV
+20:17:13 CHECK pass AHT20 read (rh != -1), plausible t 36.9 C, rh 25.0 %
+20:17:13 CHECK pass probe dry 1600-1700 mV 1652 mV
+20:17:13 CHECK pass rssi -90..-20, ch 1-13, scan+join+dhcp > 0 rssi -55, ch 11, scan 625 join 229 dhcp 50 ms, fails 0
+20:17:16 CHECK pass up grows between check-ins 85 -> 90 s
+20:17:24 CHECK pass reboot: boots +1, up small, rst set boots 2 -> 3, up 6 s, rst 80
+20:19:31 CHECK pass switch_to_setup wake and back on USB power 118 s
+20:19:37 CHECK pass no check-in from the wake's setup firmware 
+20:19:37 CHECK pass the full firmware's first check-in: sw 2, ks 2, klast 1 (both sessions ended by the switches) sw 2 ks 2 klast 1 kms 120004 kon 127436 kfail 0
+20:19:41 CHECK pass the one after: sw 0, ks 0 sw 0, ks 0
+20:19:41 board: network erased: the setup firmware starts the K230 relay
+20:19:47 CHECK pass the relay's CDC device on USB-C 1 4.6 s
+20:20:44 BL616 STATUS lines: 0,0.6+g2961d6c-dirty-202611070631,485,6717376,6717376,46059520, battery 4110 mV kept | 60,0.6+g2961d6c-dirty-202611070631,482,6716160,6639424,46059520, battery 4110 mV kept
+20:20:44 CHECK pass STATUS every 60 s in the relay (two lines 60 +- 2 s apart by their uptimes) 2 lines, gaps [60] s
+20:20:44 CHECK pass STATUS carries version, die, heap, pages 60,0.6+g2961d6c-dirty-202611070631,482,6716160,6639424,46059520, battery 4110 mV kept
+20:20:44 CHECK pass the K230 log names its version 0.6+g2961d6c-dirty-202611070631
+20:20:44 cable: ID 7C3E8262B149 0 4110 1 setup
+20:20:44 cable: STATUS 1 0 1
+20:20:45 cable: STATUS 2 0 1
+20:20:45 cable: STATUS 3 0 1
+20:20:45 cable: STATUS 4 0 1
+20:20:45 CHECK pass the setup over the cable: SAVED state 4, 1.233356237411499
+20:20:56 CHECK pass the board on the full firmware with the network 
+20:20:56 CHECK pass the relay ends with the K230 off network saved
+20:20:57 CHECK pass the credential check-in (setup): ks 0 (the session still on) ks 0
+20:20:58 CHECK pass the full firmware's first check-in: ks 1, klast 1, kms > 0, sw 1 ks 1 klast 1 kms 64915 kon 64915 kfail 0 sw 1
+20:20:58 CHECK pass ... every K230 key, kver = the K230 log's version kver 0.6+g2961d6c-dirty-202611070631, log 0.6+g2961d6c-dirty-202611070631
+20:20:58 CHECK pass ... K230 values plausible kup 0 ktdie 482 kheap 6717376 kheapmin 6717376 kpages 46059520 ksago 6 kago -1
+20:20:58 CHECK pass ... kago -1 (the session ended in another boot), ksago the full firmware's own STATUS (0-30 s) ksago 6, kago -1
+20:21:06 CHECK pass after a reset: kver kept, boots +1, ks 0 kver 0.6+g2961d6c-dirty-202611070631, boots 8 -> 9, ks 0
+20:21:09 CHECK pass the leak check's result in the check-in: job <cam0>,<cam1>, jago >= 0 job same,same, jago 8
+20:21:09 CHECK pass an unknown key is dropped, a known one kept {"t": 215}
+20:21:09 CHECK pass a GET check-in is refused (405) 405
+20:21:10 CHECK pass every check-in is a history line 9 lines in this run
+20:21:10 CHECK pass BL616 heap steady over the run (free within 4 KB after the first) free 166896..169072, minfree 160956..161116 over 8 check-ins
+20:21:10 test048-checkin-metrics: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
