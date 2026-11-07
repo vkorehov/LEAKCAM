@@ -15,11 +15,11 @@ cable into USB-C 1, BLE not used: on the **product firmware** pair (BL616 setup 
 
   phone app (USB host) --USB-C 1--> K230 USB0, CDC ACM --link UART--> BL616 setup firmware: provisioning
 
-- One K230 product image; the BL616 picks what it runs at the start: the K230 program asks READY, the BL616's WAKE
-  answer names the reason, `setup` = the USB setup relay (no camera, no Wi-Fi on the K230). Any other reason: the
-  normal session (later use cases).
-- The setup firmware powers the K230 for this when USB-C 1 gets VBUS with no network stored, and off again when the
-  cable is pulled or the network is saved.
+- One K230 product program, the same on every power-up (DESIGN.md 5.3.8): READY, the WAKE (the reason only logged),
+  then the USB relay and the leak job in parallel; the BL616 gives the cable's lines their meaning.
+- On USB power both BL616 firmwares keep the K230 on (DESIGN.md 5.3.11): the setup firmware's relay carries the
+  provisioning; after SAVED the K230 goes off with the switch to the full firmware, whose session brings the relay
+  back (ID ... full: step 12's Change Wi-Fi). A pull switches it off.
 - The provisioning is the BLE one (ble_pairing.c's operations without the GATT): the same PIN from the server, SSID,
   passphrase, commit with an attempt id, STATUS (joining, address, internet, saved). Credentials never on a console.
 
@@ -31,7 +31,8 @@ cable into USB-C 1, BLE not used: on the **product firmware** pair (BL616 setup 
 3. The app: the board's row shows the USB link icon (not the plug); its device ID read over the cable.
 4. The app gets the PIN from the server (registers the phone) and proves it over the cable; a wrong PIN is refused.
 5. Wi-Fi setup over USB: SSID, passphrase, commit; STATUS joining -> address -> internet -> saved; the app shows Done.
-6. The board: K230 off, the switch to the full firmware, it checks in at the server; the app lists it online.
+6. The board: the switch to the full firmware (the K230 off and on again with it), it checks in at the server; the
+   app lists it online.
 7. Failures as over BLE: a wrong password named, a network not seen named, the old state kept.
 8. The cable pulled during the check: plugged back, STATUS read for the attempt (test110's rule).
 9. Hand: USB-C 1 back to the bench.
@@ -54,9 +55,10 @@ cable into USB-C 1, BLE not used: on the **product firmware** pair (BL616 setup 
 ## Needs (build features and dependencies)
 
 - K230 product image: CherryUSB device + CDC ACM in the product kernel config; the product program (started at boot)
-  with the start mode from WAKE and the USB setup relay.
-- BL616 setup firmware: the K230 power (k230_power.c, now full firmware only), the link UART, WAKE setup, the
-  provisioning split from BLE into a transport-free part used by BLE and the link.
+  with the USB relay and the leak job (the same on every power-up).
+- BL616 setup firmware: the K230 power on USB (k230_session.c, shared), the link UART, the cable commands
+  (usb_setup.c), the provisioning split from BLE into a transport-free part used by BLE and the link. Full firmware:
+  the cable's ID/PIN/SETUP (usb_full.c).
 - The app: USB host (UsbManager, the one permission dialog, remembered), the USB channel first (USB > BLE > Wi-Fi),
   the USB link icon.
 - Hands: the cable bench <-> phone (adb over Wi-Fi meanwhile).

@@ -270,7 +270,10 @@ def online(dev):
 def creds():
     """(ssid len, crc), (psk len, crc) as stored on the BL616 (`provision` / `pt_ble creds`, never the passphrase); None
     for a missing key"""
-    out = bl("provision" if product() else "pt_ble creds", 2, r"wifi_psk[^\n]*\n")
+    for _ in range(3):                          # a first command after the port opened can go unanswered (test048)
+        out = bl("provision" if product() else "pt_ble creds", 2, r"wifi_psk[^\n]*\n")
+        if "wifi_psk" in out:
+            break
     got = []
     for key in ("wifi_ssid", "wifi_psk"):
         m = re.search(key + r" len (\d+) crc ([0-9a-f]{8})", out)

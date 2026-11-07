@@ -1,49 +1,46 @@
-# test047: the K230 from the USB relay to the normal product job (low level: the K230 program's job per power-up)
+# test047: the one K230 program on every power-up: the relay always, the leak job beside it (low level)
 
-Status: **partly run** (2026-11-06, test048's relay, the bench as the phone: test048-checkin-metrics/relay_*.log):
-step 1 pass (`WAKE setup taken` 795 ms after the run, STATUS setup,0, the CDC device 4.6 s after the erase), step 2
-pass (STATUS at 60, 120, 180 s), step 3 pass (`k230: off (network saved)`, the CDC device gone 2.4 s after SAVED,
-then the full firmware), step 6 pass (no relay device in any full-firmware run on USB power), step 7 pass (ks 1,
-klast 1, kms 198116, kver = the log's, sw 1; the next ks 0, sw 0). Step 4 (a pull) needs a hand. Since 2026-11-06 (user, DESIGN.md 5.3.8/5.3.11) the K230 runs the same program on
-every power-up (the relay always, the leak detection in parallel) and the full firmware holds it on USB power: step 5
-seen (WAKE `usb` 784-800 ms after the run, the relay device 1209:abd1 on USB-C 1, STATUS every 60 s); step 6 is
-reversed by that design (the relay is there in the full firmware too: ID/PIN/SETUP, usb_full.c).
+Status: **partly seen** (2026-11-07, in other tests' runs; no run.py of its own yet): step 1 in the full firmware
+(WAKE `usb`, the relay, the job's first check 0.64 s after the K230's start: test049, test050), step 2 (STATUS every
+60 s, no mode field: test048), step 3 (the setup firmware's relay ends on SAVED, the full firmware's relay back:
+test113 step 12 bench run), step 6 (a session ended by `k230 off` on USB started again ~36 s later: test050 step 9).
+Open: steps 1 and 3 in the setup firmware with this program, step 4 (a pull, by hand), step 5's battery reasons
+(test132).
 
-One K230 image; the BL616's WAKE answer picks the job at each power-up (DESIGN.md 5.3.8): `setup` = the USB relay,
-any other reason = the normal product job. There is no switch inside a running program: the relay ends with the K230's
-power, the setup firmware switches to the full firmware, and the next power-up gets another reason. The periodic
-`STATUS,<mode>,<uptime s>` (every 60 s and at the job's start, k230_link.h) names the job the K230 runs.
+DESIGN.md 5.3.8 (user, 2026-11-06): the K230 boots the same product program every time and knows nothing of the
+BL616's firmwares or why it was powered: READY, the WAKE's data (the reasons only logged), then the **USB relay** (a
+service that always runs) and the **leak job** (job.c, cameras simulated) in parallel. DESIGN.md 5.3.11: on USB power
+both BL616 firmwares keep it on the whole time; on battery the full firmware powers it per leak check (5.3.12).
 
 ## Setup
 
-Product K230 image and BL616 product pair; the BL616 console on PR1; USB-C 1 on the bench PC (the PC as the phone,
-`/dev/leakcam-k230usb`) or on the phone (test113).
+Product K230 image and BL616 product pair; the BL616 console and the K230 console on the bench; USB-C 1 on the bench
+(the PC as the phone, `/dev/leakcam-k230usb`).
 
 ## Steps
 
-1. **Relay starts:** no network stored, USB-C 1 in: `k230: WAKE setup taken`, the K230's first `STATUS setup,<s>`
-   at the relay's start, the CDC device on USB-C 1 (1209:abd1, "LeakCam").
-2. **STATUS every 60 s:** a relay held open 3 min: three more `STATUS setup` lines, 60 +- 2 s apart, each with a fresh
-   battery (`battery` on the console; on USB power the reading is not kept, test046).
-3. **Relay ends on SAVED:** a setup over the cable (test113's flow or the bench script): `k230: off (network saved)`
-   2-3 s after SAVED, the CDC device gone from USB within 1 s of it, then the switch to the full firmware.
-4. **Relay ends on a pull:** USB-C 1 pulled during the relay: `k230: off (USB unplugged)` at once, no crash record.
-5. **The normal job after it:** the full firmware's next K230 session (cold or rtc): WAKE with that reason,
-   `STATUS session,<s>` from the same image, no CDC relay device on USB-C 1. Needs the full firmware's K230 session.
-6. **No relay with a network stored:** the phone or PC plugged into USB-C 1 on the full firmware: no K230 relay session
-   starts (the full firmware never sends `setup`), no LeakCam CDC device appears.
-7. **The job in the check-in (DESIGN.md 5.3.10):** after the relay ended on SAVED, the full firmware's first check-in
-   carries `ks=1`, `klast=1` (ended as asked), `kms` ~ the relay's rails-on time, `kver` = the K230 log's `version`
-   line, `sw=1` (the switch to the full firmware); the one after it `ks=0`, `sw=0`. A relay ended by a pull: `klast=1`
-   too (an end asked for), no crash record.
+1. **The same start under every firmware:** setup firmware (no network, USB in) and full firmware (USB in): READY, the
+   WAKE (`setup` / `usb`), the relay's CDC device on USB-C 1, the job's first check (`job: check` ... `DONE`) beside
+   it; the same lines and the same version in both.
+2. **STATUS every 60 s:** `STATUS,<uptime s>,<version>,<die x10>,<heap free>,<heap min free>,<pages free B>` with a
+   fresh `;b=`, 60 +- 2 s apart (DESIGN.md 5.3.9).
+3. **The setup ends on SAVED:** the setup firmware's relay ends with the K230 off 2-3 s after SAVED, the switch to the
+   full firmware, whose session (WAKE `usb`) brings the relay back (`ID ... full`).
+4. **A pull:** USB-C 1 pulled during the relay: the battery read by the running K230 at once, then `k230: off (USB
+   unplugged)`, no crash record (a leak check running: off after its DONE instead).
+5. **Every reason runs the same:** WAKE `rtc` and `leak` (test132, on battery) give the same relay + job start as
+   `usb` and `setup`.
+6. **A failed session on USB:** `k230 off` (or a K230 that stops its heartbeat) on USB power: the full firmware
+   starts it again 30 s after the end.
+7. **The sessions in the check-in (DESIGN.md 5.3.10):** each ended session counted (`ks`, `klast` 1 for an end
+   asked for), `kver` = the K230 log's version.
 
 ## Pass
 
-The relay runs only under WAKE `setup`, ends cleanly with the K230's power (saved or pulled, no crash record); the
-next power-up runs the normal job from the same image; STATUS names the job every 60 s with a fresh battery; a board
-with a network never offers the relay.
+One program, the same start every time, the relay and the job together; the K230 on with USB power in both firmwares
+and off only by the BL616.
 
 ## Needs (build features and dependencies)
 
-K230: the product program's STATUS (k230_app/leakcam.c). BL616: STATUS taken in k230_session.c (logged), the full
-firmware's K230 session for step 5 (not built). Tools: the bench script answering the relay (test113's bench run).
+K230: the product program (k230_app/leakcam.c, job.c). BL616: k230_session.c (both firmwares), usb_full.c,
+usb_setup.c, leak_check.c. Tools: the bench as the phone (tools/test-runner/cable.py).

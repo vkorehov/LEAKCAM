@@ -77,14 +77,15 @@ Leak tests, one per operation the product repeats:
 | [test038 battery brown-out below 3.10 V (cutoff, lockout, recovery)](test038-battery-brownout/README.md) | 2026-10-23 | **partial**: with a raised threshold on the cell the chain works - K230 `bat_watch` cut, |
 | [test039 K230 console over the BL616 link (no CH340)](test039-k230-console-over-link/README.md) | 2026-10-31 | **pass**: 1000 of 1000 commands answered in each of 4 boots at 2 Mbaud, every drop counter 0; 226 mA answering back to back |
 | [test040 BLE provisioning on the BL616: Wi-Fi credentials into flash](test040-ble-wifi-credentials/README.md) | 2026-11-03 | **pass**: run.py 37/37 on the setup firmware's test bed, the phone 8 m away: PIN gate, write limits, persistence, checked store to the API, 8 store cycles without a leak; step 8 gone with the firmware split |
-| [test041 humidity alarm (AHT20 threshold wakes the K230)](test041-humidity-alarm/README.md) | 2026-10-30 | **dropped** (user, 2026-11-06): no humidity rule in the product |
 | [test042 RF performance against the bench phone (RSSI side by side)](test042-rf-rssi-vs-phone/README.md) | 2026-10-31 | **position 1 done**: Wi-Fi receive board - phone -3..+1 dB, BLE -32..-43 dBm at the phone; one unexplained BL616 watchdog reset (recorder armed since); orientations, distance open |
 | [test043 the K230's USB device on USB-C 1](test043-k230-usb-device/README.md) | 2026-11-05 | **pass**: CherryUSB CDC ACM (1209:ABD1) up 0.73 s after the K230 start, seen by the VM at 4.1-4.4 s (~3.3 s VMware passthrough); 200/200 16-byte round trips; 1 MB echoed, 0 wrong, 3317 KB/s (test image only) |
 | [test044 the phone sees the board over a USB-C cable](test044-phone-usb-link/README.md) | 2026-11-05 | **steps 1-6 pass**: phone as USB host lists the K230 device 1.41 s after its start (median of 5, max 1.58 s), gone 0.28 s after power-off; step 7 (app icon) waits for the app |
 | [test045 link frames reach a K230 program through /dev/link](test045-k230-link-frames/README.md) | 2026-11-05 | **pass**: 5/5 starts the K230 program gets ACK + WAKE (READY 0.43 s after pt_run, READY -> WAKE 8 ms) after the fix: link_mux set `/dev/link`'s file ops before `rt_device_register()`, which clears them; devfs's poll never reported data, no K230 program had ever got a frame |
 | [test046 the K230's battery reading on every link frame, kept by the BL616](test046-battery-attribute/README.md) | 2026-11-06 | **partly run**: 1 (USB), 6, 7 pass; battery steps 2-5 by hand open |
-| [test047 the K230 from the USB relay to the normal product job](test047-k230-relay-to-session/README.md) | 2026-11-06 | **partly run**: 1, 2, 3, 6, 7 pass; 4 by hand, 5 not built |
+| [test047 the one K230 program on every power-up: the relay always, the leak job beside it](test047-k230-relay-to-session/README.md) | 2026-11-07 | **partly seen** in test048/049/050/113 runs (steps 1-3, 6 in the full firmware); rewritten for DESIGN 5.3.8/5.3.11; the setup firmware's start, the pull and the battery reasons open |
 | [test048 every metric in every check-in](test048-checkin-metrics/README.md) | 2026-11-06 | **pass, automated part** (33/33); hand steps 2-4, 6, 7, 12 open; AHT20 reads the warm board on USB |
+| [test049 the K230 leak job with simulated cameras](test049-k230-leak-job/README.md) | 2026-11-07, run.py 11/11 | **pass**: new / same / light = same / object = changed on both cameras, CHECK -> DONE 111 ms, the change at the server in 2 s |
+| [test050 time without NTP (server X-Time -> BL616 -> K230)](test050-clock-without-ntp/README.md) | 2026-11-07, run.py 11/11 | **pass**: both clocks within 2 s of UTC, no step within 5 s, a step beyond it on both chips |
 | **High level (100+): the product's whole flow** | | |
 | [test100 Wi-Fi throughput, K230 -> SDIO -> BL616 -> AP](test100-wifi-throughput/README.md) | 2026-10-25 | **steps 1-4 pass**: K230 address 0.33-0.59 s after the card binds; TCP up 27.5 / down 22.1 Mbit/s, UDP up 35.4. |
 | [test101 session length (wake to power-off)](test101-boot-and-session-time/README.md) | 2026-10-30 | **pass, steps 1-2**: 10/10 sessions, power-on -> READY 0.87 s, rails off 27.68 s |
@@ -93,8 +94,7 @@ Leak tests, one per operation the product repeats:
 | [test104 battery energy audit](test104-battery-energy-audit/README.md) | 2026-10-30 | **planned**: when the BL616 test firmware runs the whole wake cycle for days (hibernate, sessions, Wi-Fi). |
 | [test105 maximum current - can the battery carry everything at once?](test105-max-current/README.md) | 2026-10-30 | **pass on USB**: per-load currents recorded, all camera-free loads 10 min with 0 K230 resets |
 | [test106 Wi-Fi setup from the phone, end to end](test106-wifi-setup-from-phone/README.md) | 2026-10-31, run.py 18/18 + hand_step7.py 5/5 | **pass, steps 1 3 4 5 6 7 8**: setup 7.3-8.0 s from opening the app to Done; on battery no board listed, no connection; step 2 open |
-| [test107 change-net update from the server (GET /v1/nn)](test107-change-net-update/README.md) | 2026-10-30 | **planned**: K230 test image with `leakcam_wake`, sessions and the Wi-Fi bridge from the BL616 test |
-| [test108 production server check by the BL616 (schedule, lease reuse, server address, back-off)](test108-server-check-schedule/README.md) | 2026-10-30 | **planned**: the scheduler, lease reuse and server address are not written yet (DESIGN 5.1 |
+| [test108 the server drives the check-in and leak check intervals](test108-server-check-schedule/README.md) | 2026-11-07, run.py 9/9 | **pass**: per device within one check-in (check-in 20 s taken in 54 s), the RTC leak check on its interval (58 s at 60) |
 | [test109 secure server (TLS, device identity, pinned certificate, signed change net)](test109-secure-server/README.md) | 2026-10-30 | **planned**: the real server is not built (DESIGN 7, SECURITY.txt 4); it will run on the Windows PC for the test. |
 | [test110 setup app recovery from loss at every step](test110-ble-loss-recovery/README.md) | 2026-11-03, run.py 30/30 | **pass** on the setup firmware's test bed (pt_fault), the phone 8 m away: lost notifications, a link lost after the save, Bluetooth off during the check -> Done 9.4-15.2 s; failures named in 6.4-8.9 s; app and board agree |
 | [test111 more than one LEAKCAM: one device ID, presence, status screen](test111-multi-device/README.md) | 2026-11-01, run.py 18/18 | **pass**: one ID on board, USB and BLE; the app's status screen (online / offline / delete), the short change-Wi-Fi flow, no stored network |
@@ -116,6 +116,7 @@ Leak tests, one per operation the product repeats:
 | [test129 app power and signal icons](test129-app-power-signal-icons/README.md) | 2026-11-04 | **pass** 6/6: plug icon on USB power, battery icon on battery, signal bars match the RSSI, long press shows the dB |
 | [test130 OTA upgrade of the BL616 full firmware and the K230 image](test130-ota-upgrade/README.md) | 2026-11-06 | **BL616 part pass** (1-4, 6, 13; 27 s offer to running); step 5 by hand, K230 steps not built |
 | [test131 the app's battery icon from every channel](test131-app-battery-level/README.md) | 2026-11-06 | **partly run**: 1, 2, 5, 6 pass (the level at the unplug in 3 s); 3, 4 open |
+| [test132 the leak checks on battery (RTC check, wet probe, K230 off after DONE)](test132-battery-leak-cycle/README.md) | 2026-11-07 | **not run**: run.py ready, needs the hands (USB-C 1 out/in, probe wet/dry); the HBN sleep not built |
 
 ## Re-test audit after the two-firmware design (2026-11-02)
 
@@ -162,7 +163,7 @@ for it. Hands: USB-C 1 out at the start, in at the end.
 | test123 | The failure list adds "API not reachable" (0x19). Otherwise unchanged: full firmware, over the server. |
 | test124 | Steps 1-2 done today (record per reset kind). Step 1 needs a read in the full firmware too. Step 5 adds a partition-table write in flight (a slot switch during the drop): the board must boot one slot or the other. |
 | test125 | Step 5: a USB plug with presence still lost keeps the setup firmware (test127: the check fails at the API), not "the full firmware takes over". |
-| test108 | Adds an at-once check-in at boot when a crash record is kept, 60 s / 24 h intervals, and a failed check-in -> setup. |
+| test108 | Rewritten 2026-11-07 for DESIGN.md 5.3.12: the server's checkin/leakcheck intervals per device; pass 9/9. |
 | test104 | Adds the setup mode's day (PDS + 2 s advertising) and the 6 h retries. |
 | test008 | The image feature set changes: the full firmware loses BLE. Re-size both images. |
 
@@ -188,13 +189,13 @@ for it. Hands: USB-C 1 out at the start, in at the end.
 | Behaviour | Where it belongs |
 |---|---|
 | What the BL616 does after each wake (the wake sources themselves pass on the test firmware: RTC test032, leak probe test034, USB plug test035, timing test021): doing what is due (humidity, report, server check with / without a stream request) and overlaps (a leak during a check, a check with a report due, a check while on USB; no AP, no server, no credentials) | new test, on the test firmware with the wake handling from attic/firmware/bl616 (DESIGN 5.1 asks for it) |
-| Humidity alarm (AHT20 threshold -> report) | dropped 2026-11-06 (test041): the AHT20 is reported only |
+| Humidity alarm (AHT20 threshold -> report) | dropped 2026-11-06 (test041 removed): the AHT20 is reported only |
 | `leakcam_wake` on the board: capture -> history compare (imgdiff + change net) -> `/v1/check` to the mock server -> the sleep it chooses | test103 |
-| Change-net update from the server (`GET /v1/nn`, bad downloads, power cut while saving, unloadable net) | test107 (planned) |
+| The model update from the server (per device `GET /v1/devices/{id}/model`, `.new`/`.old`, a bad model) | test130 steps 9-11 (the K230 OTA writer not built; test107 removed 2026-11-07) |
 | Session protocol end to end (READY / WAKE / ACK / TIME / SLEEP) with the product agent; NTP time back to the BL616 | test101, test037 steps 1-6 |
 | Live stream: both cameras + Opus audio over RTMP to MediaMTX (`leakcam_stream -p`) | test100 step 5 (cameras) |
 | OTA: the writer (inactive slot + `ota_meta`) is not built; the SPL's A/B choice never ran on the board | test130 (planned), with the BL616 full firmware too |
-| Production server check (time schedule, DHCP lease reuse, server interval, `SERVER` from the agent, back-off) | test108 (planned; the code is not built, test100 `pt_poll` proved the cycle) |
+| The battery cycle: HBN sleep between the events, DHCP lease reuse, the remembered AP, back-off | test132 (planned: the HBN sleep is not built; the events and intervals pass in test108) |
 | Cameras: CSI/I2C, capture at 2592x1944, LED brightness at 2-3 m, auto-exposure against the LED back-off | test020, test030, test009 |
 | The closed enclosure: temperature, Wi-Fi at the install distance | test026, test100 |
 | The real server (TLS, device identity, pinned certificate, signed change net, RTMPS) | test109 (planned; the server is not built, it runs on the Windows PC) |
