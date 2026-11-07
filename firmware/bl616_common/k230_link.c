@@ -5,6 +5,7 @@
  */
 #include "battery.h"
 #include "k230_link.h"
+#include "wall_clock.h"
 #include "k230_linesplit.h"
 
 #include <stdio.h>
@@ -53,12 +54,13 @@ void link_set_reply(uint8_t (*reply)(const struct link_msg *m))
 
 static void send_frame(uint8_t seq, const char *cmd, const char *arg)
 {
-    char body[LINK_MAX_LINE], frame[LINK_MAX_LINE + 8];
-    if (arg && *arg)
-        snprintf(body, sizeof(body), "%u,%s,%s", seq, cmd, arg);
-    else
-        snprintf(body, sizeof(body), "%u,%s", seq, cmd);
-    int n = snprintf(frame, sizeof(frame), "$%s*%02X\n", body, link_crc8(body, body + strlen(body)));
+    char body[LINK_MAX_LINE + 16], frame[LINK_MAX_LINE + 24];
+    int n = arg && *arg ? snprintf(body, sizeof(body), "%u,%s,%s", seq, cmd, arg)
+                        : snprintf(body, sizeof(body), "%u,%s", seq, cmd);
+    uint32_t t = wall_clock_now();
+    if (t && n > 0 && (size_t)n < sizeof(body))
+        snprintf(body + n, sizeof(body) - (size_t)n, ";t=%lu", (unsigned long)t);   /* the K230's clock (k230_link.h) */
+    n = snprintf(frame, sizeof(frame), "$%s*%02X\n", body, link_crc8(body, body + strlen(body)));
     link_tx(frame, (unsigned)n);
 }
 

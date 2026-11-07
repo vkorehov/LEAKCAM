@@ -1,6 +1,7 @@
 /*
- * Use case 2: presence (tests/test111). From boot, on USB and on battery, every poll interval (the server's "poll",
- * 60 s until it says otherwise) the BL616 joins the stored network and checks in at the server with its device ID
+ * Use case 2: presence (tests/test111). From boot, on USB and on battery, every check-in interval (the server's
+ * "checkin", 60 min until it says otherwise; its answer also gives the leak check interval "leakcheck" and the wall
+ * clock "time", DESIGN.md 5.3.12) the BL616 joins the stored network and checks in at the server with its device ID
  * and the stored network's SSID (GET /v1/poll?id=<id>&ssid=<ssid>, for the app; never the passphrase), the same run
  * as the setup firmware's credential check with the server as its target (wifi_check.c). The app asks the server
  * which of its LEAKCAMs are online. On battery it stays awake meanwhile: the HBN scheduler that sleeps between

@@ -18,11 +18,12 @@
 #include "mem_stat.h"
 #include "metrics.h"
 #include "usb_console2.h"
+#include "wall_clock.h"
 
 #define BOOT_TOGGLE_MS   400u    /* K230_ALIVE is JTAG_TCK during the K230's boot: edges before this are not ours */
 #define FIRST_EDGE_MS    5000u   /* the program starts ~0.36 s after the run (test113): no heartbeat by then = failed */
 #define HEARTBEAT_STOP_MS 2000u  /* the program toggles every 500 ms */
-#define WAKE_FIELDS      ",0,-1,0,-1,-1"   /* no wall clock in setup, no AHT20/probe/battery reading: "none" */
+#define WAKE_FIELDS      ",-1,0,-1,-1"    /* after the clock: no AHT20/probe/battery reading yet: "none" */
 #define QUEUE            6
 
 /* the K230 console and the frames arrive by interrupt (the powertest's rule, 2026-10-24: polled, the 32-byte RX FIFO
@@ -49,6 +50,8 @@ static unsigned q_head, q_count;
 static bool q_sending;
 static volatile bool battery_ask;          /* k230_session_battery(): a STATUS to ask for */
 static volatile uint32_t statuses;        /* STATUS frames taken: k230_session_battery() waits for the next */
+static char check_reason[16];
+static volatile bool check_ask;            /* k230_session_check(): a CHECK to send */
 
 static void uart_rx_isr(int irq, void *arg)
 {
@@ -181,8 +184,8 @@ static void on_cmd(const struct link_msg *m)
     if (!strcmp(m->cmd, "READY")) {
         t_ready = bflb_mtimer_get_time_ms();
         printf("k230: READY %lu ms after the run\r\n", (unsigned long)(t_ready - t_run));
-        char arg[32];
-        snprintf(arg, sizeof(arg), "%s%s", reason, WAKE_FIELDS);
+        char arg[48];
+        snprintf(arg, sizeof(arg), "%s,%lu%s", reason, (unsigned long)wall_clock_now(), WAKE_FIELDS);   /* 0: no clock */
         q_sending = false;                       /* a restarted program: what was in flight was for the old one */
         if (!link_send_cmd("WAKE", arg))
             printf("k230: WAKE not sent: a command in flight\r\n");
@@ -254,7 +257,9 @@ static void session_task(void *arg)
             taskEXIT_CRITICAL();
         }
         if (state == RUN && battery_ask && link_send_cmd("STATUS", NULL))
-            battery_ask = false;                 /* its STATUS frame answers it; a USB line waits for the link meanwhile */
+            battery_ask = false;
+        if (state == RUN && check_ask && link_send_cmd("CHECK", check_reason))
+            check_ask = false;                   /* answered by the job's DONE */                 /* its STATUS frame answers it; a USB line waits for the link meanwhile */
         if (state == RUN && !q_sending && q_count) {
             char line[LINK_MAX_LINE];
             taskENTER_CRITICAL();
@@ -305,6 +310,7 @@ void k230_session_start(const char *why, void (*fn)(const struct link_msg *m))
     t_ready = 0;
     q_head = q_count = 0;
     q_sending = false;
+    check_ask = false;                      /* the program's job checks once at its start anyway */
     log_mem("session start");
     t_on = bflb_mtimer_get_time_ms();
     uint32_t ramp = k230_power_on();
@@ -330,6 +336,13 @@ void k230_session_stop(const char *why)
         stop_why = why;
         xTaskNotifyGive(task);
     }
+}
+
+void k230_session_check(const char *why)
+{
+    snprintf(check_reason, sizeof(check_reason), "%s", why);
+    check_ask = true;
+    xTaskNotifyGive(task);
 }
 
 bool k230_session_active(void)

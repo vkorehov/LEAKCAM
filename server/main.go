@@ -38,14 +38,15 @@ import (
 )
 
 const (
-	PollS   = 60 // the check-in interval the server gives the devices (LEAKCAM_POLL_S: shorter for tests)
-	Addr    = ":8090"
-	Crashes = "/home/pi/leakcam-server/crashes.jsonl" // LEAKCAM_CRASHES
-	WakeGap = 2 * time.Minute                         // at most one BLE wake per device this often: a wake costs its battery 2 minutes awake
-	Phones  = "/home/pi/leakcam-server/phones.json"   // LEAKCAM_PHONES
-	Images  = "/home/pi/leakcam-server/images"        // LEAKCAM_IMAGES: bl616_full.bin + .xz, k230_rtt.bin
-	Models  = "/home/pi/leakcam-server/models"        // LEAKCAM_MODELS: <device id>.kmodel, default.kmodel
-	Metrics = "/home/pi/leakcam-server/metrics.jsonl" // LEAKCAM_METRICS: every check-in's metrics
+	CheckinS   = 3600  // the check-in interval the server gives the devices (LEAKCAM_CHECKIN_S: shorter for tests; DESIGN.md 5.3.12)
+	LeakCheckS = 86400 // the leak check interval it gives them (LEAKCAM_LEAKCHECK_S); both per device too: PUT .../intervals
+	Addr       = ":8090"
+	Crashes    = "/home/pi/leakcam-server/crashes.jsonl" // LEAKCAM_CRASHES
+	WakeGap    = 2 * time.Minute                         // at most one BLE wake per device this often: a wake costs its battery 2 minutes awake
+	Phones     = "/home/pi/leakcam-server/phones.json"   // LEAKCAM_PHONES
+	Images     = "/home/pi/leakcam-server/images"        // LEAKCAM_IMAGES: bl616_full.bin + .xz, k230_rtt.bin
+	Models     = "/home/pi/leakcam-server/models"        // LEAKCAM_MODELS: <device id>.kmodel, default.kmodel
+	Metrics    = "/home/pi/leakcam-server/metrics.jsonl" // LEAKCAM_METRICS: every check-in's metrics
 )
 
 type Device struct {
@@ -61,6 +62,8 @@ type Device struct {
 	Charging  bool `json:"charging"`
 	// everything else its last check-in measured (MetricKeys), by the board's keys
 	Metrics map[string]any `json:"metrics"`
+	// the intervals its next check-in's answer gives it (DESIGN.md 5.3.12)
+	Intervals Intervals `json:"intervals"`
 }
 
 // MetricKeys: the check-in's metrics (firmware/bl616_common/metrics.c, DESIGN.md 5.3.10); kept only these, by type
@@ -72,6 +75,7 @@ var MetricKeys = map[string]bool{ // true: an integer, false: text
 	"sw": true, "usbw": true, "ks": true, "kfail": true, "kon": true, // since the last good check-in
 	"klast": true, "kms": true, "kago": true, // the last K230 session: ok 1 / failed 0 / none -1, ms, s ago
 	"kver": false, "kup": true, "ktdie": true, "kheap": true, "kheapmin": true, "kpages": true, "ksago": true, // last STATUS
+	"job": false, "jago": true, // the last leak check (DESIGN.md 5.3.12): "<cam0>,<cam1>", s ago
 }
 
 // Sample is one check-in's metrics in the history file
@@ -104,6 +108,12 @@ type CheckIn struct {
 	Metrics map[string]any
 }
 
+// Intervals: a device's check-in and leak check intervals in seconds, the server's defaults where 0
+type Intervals struct {
+	Checkin   int `json:"checkin"`
+	LeakCheck int `json:"leakcheck"`
+}
+
 // Image is an upgrade on offer: its version read from its own build tag, so the file is all there is to update
 type Image struct {
 	Version string
@@ -120,9 +130,11 @@ var (
 	seen       = map[string]CheckIn{}
 	wake       = map[string]bool{}      // asked, not yet delivered
 	woken      = map[string]time.Time{} // the last wake delivered
-	pollS      = PollS
-	pinKey     []byte                 // the BLE pairing PIN's key, shared with the firmware (LEAKCAM_PIN_KEY); never in the app
-	crashes    = map[string][]Crash{} // per device; a resend (the same record text) is kept once
+	checkinS   = CheckinS
+	leakCheckS = LeakCheckS
+	intervals  = map[string]Intervals{} // per device, set at runtime (PUT /v1/devices/{id}/intervals); 0 = the default
+	pinKey     []byte                   // the BLE pairing PIN's key, shared with the firmware (LEAKCAM_PIN_KEY); never in the app
+	crashes    = map[string][]Crash{}   // per device; a resend (the same record text) is kept once
 	crashFile  = Crashes
 	metricFile = Metrics
 	hexRe      = regexp.MustCompile(`^[0-9a-f]{1,8}$`)
@@ -254,7 +266,8 @@ func poll(w http.ResponseWriter, r *http.Request) {
 		woken[id] = time.Now()
 	}
 	mu.Unlock()
-	ans := map[string]any{"stream": 0, "poll": pollS, "ble": ble}
+	iv := deviceIntervals(id)
+	ans := map[string]any{"stream": 0, "checkin": iv.Checkin, "leakcheck": iv.LeakCheck, "ble": ble}
 	// an upgrade only to a full firmware that said its version: the setup firmware is changed by wire only
 	if in.Image == "full" {
 		if im, ok := image("bl616_full", "full"); ok && im.Version != in.Version {
@@ -452,15 +465,69 @@ func deviceCrashes(w http.ResponseWriter, r *http.Request) {
 // deviceInfo: a device's state for a client; mu held
 func deviceInfo(id string) Device {
 	c, ok := seen[id]
-	d := Device{ID: id, LastSeen: -1, Wake: wake[id], Phones: len(phones[id]), BatteryMV: -1}
+	d := Device{ID: id, LastSeen: -1, Wake: wake[id], Phones: len(phones[id]), BatteryMV: -1,
+		Intervals: deviceIntervalsLocked(id)}
 	if ok {
 		d.LastSeen = int64(time.Since(c.At).Seconds())
 		d.SSID = c.SSID
 		d.BatteryMV, d.Charging = c.Bat, c.Chg
 		d.Metrics = c.Metrics
-		d.Online = d.LastSeen < int64(3*pollS) // three check-ins missed: offline
+		d.Online = d.LastSeen < int64(3*d.Intervals.Checkin) // three check-ins missed: offline
 	}
 	return d
+}
+
+// withTime: every answer carries the server's time, X-Time: <unix s> (DESIGN.md 5.3.12): the boards set their wall clock
+// from whatever exchange came last, no NTP
+func withTime(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Time", strconv.FormatInt(time.Now().Unix(), 10))
+		h.ServeHTTP(w, r)
+	})
+}
+
+// deviceIntervalsLocked: a device's intervals, the defaults filled in; mu held
+func deviceIntervalsLocked(id string) Intervals {
+	iv := intervals[id]
+	if iv.Checkin == 0 {
+		iv.Checkin = checkinS
+	}
+	if iv.LeakCheck == 0 {
+		iv.LeakCheck = leakCheckS
+	}
+	return iv
+}
+
+func deviceIntervals(id string) Intervals {
+	mu.Lock()
+	defer mu.Unlock()
+	return deviceIntervalsLocked(id)
+}
+
+// setIntervals: PUT /v1/devices/{id}/intervals {"checkin":<s>,"leakcheck":<s>}, 0 = back to the default; the device takes them
+// with its next check-in's answer. Kept in memory (a restart goes back to the defaults)
+func setIntervals(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if !idRe.MatchString(id) {
+		http.Error(w, "id: 12 upper-case hex digits", http.StatusBadRequest)
+		return
+	}
+	var iv Intervals
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 256)).Decode(&iv); err != nil {
+		http.Error(w, "body: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	// the firmware's limits (presence.c, leak_check.c): check-in 5 s - 1 h, leak check 60 s - 7 days
+	if iv.Checkin != 0 && (iv.Checkin < 5 || iv.Checkin > 3600) || iv.LeakCheck != 0 && (iv.LeakCheck < 60 || iv.LeakCheck > 7*86400) {
+		http.Error(w, "checkin: 5-3600 s, leakcheck: 60-604800 s, 0 = default", http.StatusBadRequest)
+		return
+	}
+	mu.Lock()
+	intervals[id] = iv
+	got := deviceIntervalsLocked(id)
+	mu.Unlock()
+	log.Printf("%s: intervals check-in %d s, leak check %d s", id, got.Checkin, got.LeakCheck)
+	reply(w, got)
 }
 
 func device(w http.ResponseWriter, r *http.Request) {
@@ -594,7 +661,7 @@ func wakeUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	wake[id] = true
-	reply(w, map[string]int{"within_s": pollS})
+	reply(w, map[string]int{"within_s": deviceIntervalsLocked(id).Checkin})
 }
 
 // pin: the board's BLE pairing passkey, HMAC-SHA256(key, the 6 ID bytes), first 4 bytes big-endian mod 10^6, as
@@ -657,8 +724,11 @@ func main() {
 	if f := os.Getenv("LEAKCAM_METRICS"); f != "" {
 		metricFile = f
 	}
-	if p, err := strconv.Atoi(os.Getenv("LEAKCAM_POLL_S")); err == nil && p > 0 {
-		pollS = p
+	if c, err := strconv.Atoi(os.Getenv("LEAKCAM_CHECKIN_S")); err == nil && c > 0 {
+		checkinS = c
+	}
+	if c, err := strconv.Atoi(os.Getenv("LEAKCAM_LEAKCHECK_S")); err == nil && c > 0 {
+		leakCheckS = c
 	}
 	if k, err := hex.DecodeString(os.Getenv("LEAKCAM_PIN_KEY")); err == nil && len(k) == 32 {
 		pinKey = k
@@ -668,6 +738,7 @@ func main() {
 	http.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) { reply(w, "ok") })
 	http.HandleFunc("POST /v1/poll", poll)
 	http.HandleFunc("GET /v1/devices/{id}", device)
+	http.HandleFunc("PUT /v1/devices/{id}/intervals", setIntervals)
 	http.HandleFunc("GET /v1/devices/{id}/pin", pin)
 	http.HandleFunc("POST /v1/devices/{id}/crash", crash)
 	http.HandleFunc("GET /v1/devices/{id}/crashes", deviceCrashes)
@@ -678,5 +749,5 @@ func main() {
 	http.HandleFunc("GET /v1/images/{name}", images)
 	http.HandleFunc("GET /v1/devices/{id}/model", model)
 	log.Printf("listening on %s", addr)
-	log.Fatal(http.ListenAndServe(addr, nil))
+	log.Fatal(http.ListenAndServe(addr, withTime(http.DefaultServeMux)))
 }

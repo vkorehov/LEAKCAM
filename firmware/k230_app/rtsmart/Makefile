@@ -10,6 +10,7 @@ SRC_ROOT ?= $(if $(wildcard $(CURDIR)/src/leakcam.c),$(CURDIR)/src,$(realpath $(
 BUILD    := $(SDK_APPS_BUILD_DIR)/leakcam
 PROG     := $(BUILD)/leakcam
 ROM_C    := $(SDK_RTSMART_SRC_DIR)/rtsmart/kernel/bsp/maix3/app_canmv/leakcam_rom.c
+OBJS     := $(patsubst $(SRC_ROOT)/%.c,$(BUILD)/%.o,$(wildcard $(SRC_ROOT)/*.c))
 
 CFLAGS   := -march=rv64imafdcv -mabi=lp64d -mcmodel=medany -Os -std=gnu11 -I$(SRC_ROOT)
 CFLAGS   += -Wall -Wextra -ffunction-sections -fdata-sections
@@ -22,10 +23,10 @@ all: $(ROM_C)
 $(ROM_C): $(PROG) $(CURDIR)/rom_c.py
 	$(Q)python3 $(CURDIR)/rom_c.py $(PROG) $@
 
-$(PROG): $(BUILD)/leakcam.o
+$(PROG): $(OBJS)
 	@echo "[LD] $@"
 	@mkdir -p $(dir $@)
-	$(Q)$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
+	$(Q)$(CC) $(CFLAGS) $^ $(LDFLAGS) -lm -o $@
 	$(Q)$(STRIP) $@
 
 $(BUILD)/%.o: $(SRC_ROOT)/%.c

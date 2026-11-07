@@ -12,10 +12,8 @@ setup firmware" (bugs/bug-006: tests on USB never began its sleep).
     tests/test119-wake-through-server/run.py [--battery]
 """
 import fcntl
-import json
 import os
 import re
-import subprocess
 import sys
 import time
 import urllib.error
@@ -23,11 +21,10 @@ import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import adb, board_id, firmware, hand, online, only_boards, op, product, ready, seen, to_firmware   # noqa: E402
+from phone import adb, board_checkin, board_id, firmware, hand, intervals, online, only_boards, op, product, ready, seen   # noqa: E402
 
 SERVER = "http://192.168.1.159:8090"
-PI = "pi@192.168.1.159"
-POLL_S = 20                      # for the run: the wake waits for the next check-in
+CHECKIN_S = 20                      # for the run: the wake waits for the next check-in
 PKG = "com.leakcam.setup"
 BATTERY = "--battery" in sys.argv
 
@@ -46,26 +43,20 @@ def check(name, ok, detail=""):
     log("CHECK", "pass" if ok else "FAIL", name, detail)
 
 
-def poll_interval(s):
-    # only the poll line: the env file also holds the pairing PIN key (server/deploy.sh)
-    subprocess.run(["ssh", "-o", "BatchMode=yes", PI, f"sed -i 's/^LEAKCAM_POLL_S=.*/LEAKCAM_POLL_S={s}/' "
-                    "~/leakcam-server/env && sudo systemctl restart leakcam-server"], check=True, timeout=30)
-    time.sleep(1)
+def checkin_interval(s):
+    """the board's check-in interval, per device at the server (DESIGN.md 5.3.12): taken at its next check-in"""
+    intervals(board_id(), checkin=s)
 
 
-def board_poll():
-    """the board's check-in interval as it took it from the server's last answer"""
-    m = re.search(r"poll (\d+) s", bl("presence", 2, r"poll \d+ s"))
-    return int(m.group(1)) if m else 0
 
 
 def on_run_interval():
     """the board on the run's interval (it takes it from a check-in answer, up to one old interval later)"""
     t0 = time.time()
-    while time.time() - t0 < 75 and board_poll() != POLL_S:
+    while time.time() - t0 < 75 and board_checkin() != CHECKIN_S:
         time.sleep(2)
-    check(f"the board checks in every {POLL_S} s", board_poll() == POLL_S,
-          f"poll {board_poll()} s after {time.time() - t0:.0f} s")
+    check(f"the board checks in every {CHECKIN_S} s", board_checkin() == CHECKIN_S,
+          f"check-in every {board_checkin()} s after {time.time() - t0:.0f} s")
 
 
 class Stop(Exception):
@@ -142,7 +133,7 @@ if why:
     r.finish(f"not run: {why.split(' (')[0]}.", False, switch_off=False)
     sys.exit(1)
 dev = board_id()
-poll_interval(POLL_S)
+checkin_interval(CHECKIN_S)
 try:
     # 0. present in the full firmware (no BLE); the app knows the board and shows it out of range with a Wake button
     if firmware() != "full":
@@ -170,7 +161,7 @@ try:
     wait_for("app: the server took the wake", lambda: ((g := last(rf"wake {dev} answer (-?\d+)")) == "200", g), 10)
     if not BATTERY:                             # on battery asleep without a console: the app's icon below shows it
         wait_for("board: woken at its next check-in (the setup firmware)", lambda: ((g := firmware()) == "setup", g),
-                 POLL_S + 40)
+                 CHECKIN_S + 40)
     t_delivered = time.time()                   # the server's 2 minutes count from the check-in that took the wake
     wait_for("app: the board in range (Bluetooth icon)",
              lambda: ((g := last(rf"row {dev} (wifi \d ble \d red \d)")) == "wifi 1 ble 1 red 0", g), 40)
@@ -196,13 +187,13 @@ try:
     code = wake()
     check("server: a wake after the 2 minutes taken", code == 200, str(code))
     if BATTERY:
-        t_in = seen(dev, POLL_S + 40)
+        t_in = seen(dev, CHECKIN_S + 40)
         check("unanswered wake: the setup firmware (found by the phone)", t_in is not None,
               f"{t_in:.0f} s" if t_in is not None else "not found")
         if t_in is None:
             raise Stop("unanswered wake: the setup firmware")
     else:
-        t_in = wait_for("unanswered wake: the setup firmware", lambda: ((g := firmware()) == "setup", g), POLL_S + 40)
+        t_in = wait_for("unanswered wake: the setup firmware", lambda: ((g := firmware()) == "setup", g), CHECKIN_S + 40)
     t1 = time.time()
     wait_for("unanswered wake: back in the full firmware by itself", lambda: ((g := firmware()) == "full", g), 180)
     t_window = time.time() - t1
@@ -211,13 +202,13 @@ try:
           f"{t_window:.0f} s")
     if BATTERY:
         check("USB-C 1 back in (hand)", hand("plug USB-C 1 back in", "plugged") is not None)
-    r.set("speed", f"Wake tap -> the button changes the Wi-Fi {t_ready:.0f} s (poll {POLL_S} s: up to one interval); "
+    r.set("speed", f"Wake tap -> the button changes the Wi-Fi {t_ready:.0f} s (check-in every {CHECKIN_S} s: up to one interval); "
                    f"an unanswered wake back in the full firmware after {t_window:.0f} s" + (" (on battery)" if BATTERY else ""))
     r.sample("after the checks")
 except Stop as e:
     log("stopped at:", e)
 finally:
-    poll_interval(60)
+    checkin_interval(60)
 
 failed = [c for c in checks if not c[1]]
 summary = f"{len(checks) - len(failed)}/{len(checks)} checks pass."

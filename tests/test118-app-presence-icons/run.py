@@ -8,10 +8,8 @@ unlocked; nothing by hand.
     tests/test118-app-presence-icons/run.py
 """
 import fcntl
-import json
 import os
 import re
-import subprocess
 import sys
 import threading
 import time
@@ -19,11 +17,10 @@ import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log   # noqa: E402
-from phone import adb, board_id, only_boards, ready   # noqa: E402
+from phone import adb, board_id, intervals, only_boards, ready   # noqa: E402
 
 SERVER = "http://192.168.1.159:8090"
-PI = "pi@192.168.1.159"
-POLL_S = 10                      # for the run; the server's default is 60 (offline after three missed)
+CHECKIN_S = 10                      # for the run; the bench server's default is 60 (offline after three missed)
 PKG = "com.leakcam.setup"
 
 _lock = open(__file__)
@@ -41,14 +38,12 @@ def check(name, ok, detail=""):
     log("CHECK", "pass" if ok else "FAIL", name, detail)
 
 
-def poll_interval(s):
-    # only the poll line: the env file also holds the pairing PIN key (server/deploy.sh)
-    subprocess.run(["ssh", "-o", "BatchMode=yes", PI, f"sed -i 's/^LEAKCAM_POLL_S=.*/LEAKCAM_POLL_S={s}/' "
-                    "~/leakcam-server/env && sudo systemctl restart leakcam-server"], check=True, timeout=30)
-    time.sleep(1)
+def checkin_interval(s):
+    """the board's check-in interval, per device at the server (DESIGN.md 5.3.12): taken at its next check-in"""
+    intervals(board_id(), checkin=s)
 
 
-present = threading.Event()      # set: the bench checks in for the board every POLL_S
+present = threading.Event()      # set: the bench checks in for the board every CHECKIN_S
 
 
 def checker(dev):
@@ -58,7 +53,7 @@ def checker(dev):
                 urllib.request.urlopen(f"{SERVER}/v1/poll?id={dev}", data=b"ssid=t118", timeout=5).read()   # POST, as the board
             except OSError as e:
                 log("check-in failed", repr(e))
-        time.sleep(POLL_S)
+        time.sleep(CHECKIN_S)
 
 
 def row(dev):
@@ -98,7 +93,7 @@ if why:
 dev = board_id()
 bl("pt_ble on", 5, r"ble: ready as|already on")
 bl("pt_ble adv on", 2, r"advertising on")
-poll_interval(POLL_S)
+checkin_interval(CHECKIN_S)
 threading.Thread(target=checker, args=(dev,), daemon=True).start()
 try:
     present.set()
@@ -114,22 +109,22 @@ try:
     check("BLE gone: the Wi-Fi icon stays, not red", row(dev) == (1, 0, 0), str(row(dev)))
     # presence lost (no check-in for three intervals): the Wi-Fi icon goes, the row red
     present.clear()
-    wait_row(dev, "presence gone: the Wi-Fi icon goes, the row red", (0, 0, 1), 3 * POLL_S + 40)
+    wait_row(dev, "presence gone: the Wi-Fi icon goes, the row red", (0, 0, 1), 3 * CHECKIN_S + 40)
     # presence back: the Wi-Fi icon again, not red
     present.set()
-    wait_row(dev, "presence back: the Wi-Fi icon again, not red", (1, 0, 0), POLL_S + 30)
+    wait_row(dev, "presence back: the Wi-Fi icon again, not red", (1, 0, 0), CHECKIN_S + 30)
     # BLE back: the Bluetooth icon again (the next scan, every 30 s)
     bl("pt_ble adv on", 2, r"advertising on")
     wait_row(dev, "BLE back: the Bluetooth icon again", (1, 1, 0), 60)
     # both gone at once: no icon, red
     bl("pt_ble adv off", 2, r"advertising off")
     present.clear()
-    wait_row(dev, "both gone: no icon, the row red", (0, 0, 1), 3 * POLL_S + 90)
+    wait_row(dev, "both gone: no icon, the row red", (0, 0, 1), 3 * CHECKIN_S + 90)
     r.sample("after the checks")
 finally:
     present.clear()
     bl("pt_ble adv on", 2)
-    poll_interval(60)
+    checkin_interval(60)
 
 failed = [c for c in checks if not c[1]]
 summary = f"{len(checks) - len(failed)}/{len(checks)} checks pass."

@@ -13,19 +13,18 @@ never began its sleep).
 """
 import fcntl
 import os
-import re
 import subprocess
 import sys
 import time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import board_id, firmware, hand, online, op, product, ready, seen, to_firmware   # noqa: E402
+from phone import board_checkin, board_id, firmware, hand, intervals, online, op, product, ready, seen, to_firmware   # noqa: E402
 
 SERVER = "http://192.168.1.159:8090"
 PI = "pi@192.168.1.159"
 MISSED = 3                       # presence lost after 3 failed check-ins in a row (presence.c MISSED_MAX)
-POLL_S = 10                      # for the run; the server's default is 60
+CHECKIN_S = 10                      # for the run; the bench server's default is 60
 GONE = "t117-gone"               # a network that is not there
 BATTERY = "--battery" in sys.argv
 
@@ -48,26 +47,20 @@ def pi(cmd):
     subprocess.run(["ssh", "-o", "BatchMode=yes", PI, cmd], check=True, timeout=30)
 
 
-def poll_interval(s):
-    # only the poll line: the env file also holds the pairing PIN key (server/deploy.sh)
-    pi(f"sed -i 's/^LEAKCAM_POLL_S=.*/LEAKCAM_POLL_S={s}/' ~/leakcam-server/env && "
-       "sudo systemctl restart leakcam-server")
-    time.sleep(1)
+def checkin_interval(s):
+    """the board's check-in interval, per device at the server (DESIGN.md 5.3.12): taken at its next check-in"""
+    intervals(board_id(), checkin=s)
 
 
-def board_poll():
-    """the board's check-in interval as it took it from the server's last answer"""
-    m = re.search(r"poll (\d+) s", bl("presence", 2, r"poll \d+ s"))
-    return int(m.group(1)) if m else 0
 
 
 def on_run_interval():
     """the board on the run's interval (it takes it from a check-in answer, up to one old interval later)"""
     t0 = time.time()
-    while time.time() - t0 < 75 and board_poll() != POLL_S:
+    while time.time() - t0 < 75 and board_checkin() != CHECKIN_S:
         time.sleep(2)
-    check(f"the board checks in every {POLL_S} s", board_poll() == POLL_S,
-          f"poll {board_poll()} s after {time.time() - t0:.0f} s")
+    check(f"the board checks in every {CHECKIN_S} s", board_checkin() == CHECKIN_S,
+          f"check-in every {board_checkin()} s after {time.time() - t0:.0f} s")
 
 
 def wait_fw(name, want, secs):
@@ -134,7 +127,7 @@ if why:
     r.finish(f"not run: {why.split(' (')[0]}.", False, switch_off=False)
     sys.exit(1)
 dev = board_id()
-poll_interval(POLL_S)
+checkin_interval(CHECKIN_S)
 t_lost = []
 try:
     # 0. set up and present: the full firmware, no BLE
@@ -155,12 +148,14 @@ try:
     #    phone sets the network -> the full firmware, present
     pi("sudo systemctl stop leakcam-server")
     try:
-        t = lost("server down: the setup firmware (presence lost)", MISSED * (POLL_S + 60))
+        t = lost("server down: the setup firmware (presence lost)", MISSED * (CHECKIN_S + 60))
         if t is not None:
             t_lost.append(t)
     finally:
         pi("sudo systemctl start leakcam-server")
-    time.sleep(2 * POLL_S)
+        time.sleep(1)
+        checkin_interval(CHECKIN_S)          # the server keeps per-device intervals in memory: set again after a restart
+    time.sleep(2 * CHECKIN_S)
     check("server back: the setup firmware stays (only a setup or its 6 h retry ends it)",
           seen(dev, 30) is not None if BATTERY else firmware() == "setup")
     t0 = time.time()
@@ -175,7 +170,7 @@ try:
     to_setup()
     last, secs = setup(GONE, psk, anyway=True)
     check("network gone: saved without checking", last.startswith("Saved without checking."), last[:70])
-    t = lost("network gone: the setup firmware (presence lost)", MISSED * (POLL_S + 60))
+    t = lost("network gone: the setup firmware (presence lost)", MISSED * (CHECKIN_S + 60))
     if t is not None:
         t_lost.append(t)
     t0 = time.time()
@@ -189,10 +184,10 @@ try:
     if BATTERY:
         check("USB-C 1 back in (hand)", hand("plug USB-C 1 back in", "plugged") is not None)
     r.set("speed", "presence lost -> setup firmware " + ", ".join(f"{t:.0f} s" for t in t_lost)
-          + f" (poll {POLL_S} s); set up again from the app {secs:.1f} s" + (" (on battery)" if BATTERY else ""))
+          + f" (check-in every {CHECKIN_S} s); set up again from the app {secs:.1f} s" + (" (on battery)" if BATTERY else ""))
     r.sample("after the checks")
 finally:
-    poll_interval(60)
+    checkin_interval(60)
 
 failed = [c for c in checks if not c[1]]
 summary = f"{len(checks) - len(failed)}/{len(checks)} checks pass."

@@ -198,6 +198,11 @@ the kernel NAND glue is patched to report 64.
 
 ### 5.1 A wake, end to end
 
+> The first product (attic/firmware: `leakcam_agent`, `leakcam_wake`, `SLEEP`/`TIME`/`WIFI` frames, NTP). The rewrite
+> keeps its ideas (history compare, sensors count as much as the cameras, Wi-Fi only for news) but its flow is 5.3.8
+> (one K230 program: relay + leak job), 5.3.11 (K230 on with USB power) and 5.3.12 (battery: HBN between events, the
+> server's intervals, time from X-Time).
+
 1. The BL616 wakes on the RTC (the K230's requested interval), a
    leak comparator, or USB plug-in. It powers the K230 and releases reset. Wi-Fi stays off.
 2. RT-Smart boots from NAND and starts `leakcam_agent`. The agent sends `READY` on UART1; the
@@ -417,7 +422,7 @@ app can always reach a board that is not online.
 | Runs while | setup: no network stored, the last check-in failed, or the app asked for setup | the normal run: presence works (on battery or USB power) |
 | BLE | advertising every 2 s while the chip sleeps in PDS (100 ms while awake); a phone sets the Wi-Fi | **none** (user, 2026-11-02): every BLE need switches to the setup firmware |
 | Wi-Fi | only the credential check after a phone sends a network (BLE or cable) | check-ins, the K230's bridge (NetHub), the remote network change (5.3.2: over the server, needs presence) |
-| K230 | only as the USB cable relay while a phone is plugged in (below), never a session | sessions as before |
+| K230 | on the whole time while USB power is in (the cable relay + the leak job, 5.3.11), never on battery | on with USB power (5.3.11); on battery for each leak check (5.3.12) |
 
 **Switching (slot switch: mark the other slot active and reset, ~1 s):**
 - Full -> setup, **each time BLE is needed** (user, 2026-11-02):
@@ -443,19 +448,19 @@ app can always reach a board that is not online.
 - Partition-table writes: two per 6 h retry, 8 a day, ~3000 a year, far inside the flash's endurance.
 
 **Setup over the USB cable is the setup firmware's too** (user, 2026-11-02; tests/test113). On rev 1, USB-C 1 is the
-K230's USB0, so the setup firmware powers the K230 with a small relay image while the phone is plugged in and no
-network is stored: phone (OTG) -> K230 USB0 (CDC ACM) -> link UART -> the setup firmware's provisioning (the same
-operations and STATUS as over BLE, the same PIN). No session, no NetHub, no camera: the K230 is off again when the
-cable is pulled or the credentials are saved. The setup firmware gains k230_power.c and the link UART framing
+K230's USB0, so the setup firmware powers the K230 (the one product program, 5.3.8: its relay) whenever USB power is
+in (5.3.11): phone (OTG) -> K230 USB0 (CDC ACM) -> link UART -> the setup firmware's provisioning (the same
+operations and STATUS as over BLE, the same PIN). No NetHub: the K230 goes off with the cable's pull or the switch to
+the full firmware after the credentials are saved (the full firmware then powers it again on USB). The setup firmware gains k230_power.c and the link UART framing
 (k230_link.h); its RAM has room (no NetHub). Rev 2 option (bugs/v2.txt): the BL616's own USB on USB-C 1, no K230.
-A configured board set up again over the cable: the app asks the full firmware (through the server, or over the
-cable to the K230 in its session) and it switches to the setup firmware.
+A configured board set up again over the cable: the app sends `PIN` + `SETUP` to the full firmware over the cable
+(5.3.4: `ID` ends in `full`), it switches to the setup firmware, and the app goes on there.
 
-**Check-in intervals (full firmware):** the server gives the interval in each check-in's answer, by the power the
-check-in reports (`usb=1|0`): **60 s on USB power, 24 h on battery** (~0.036 mAh per check-in). The server judges a
-board offline after three of its own intervals missed: 3 min on USB, 3 days on battery. Plugging or unplugging USB
-checks in at once, so the new interval applies right away. On battery, what rides on the check-in waits for it, up to
-24 h: a phone's wake through the server (test119) and a remote Wi-Fi change (5.3.2). A leak alarm and the battery-low
+**Check-in intervals (full firmware, 5.3.12):** the server gives the check-in interval (`"checkin"`, default 60 min)
+and the leak check interval (`"leakcheck"`, default 24 h) in each check-in's answer, per device adjustable at runtime
+(~0.036 mAh per check-in). The server judges a board offline after three of its intervals missed. Plugging or
+unplugging USB checks in at once. What rides on the check-in waits for it, up to one interval: a phone's wake through
+the server (test119) and a remote Wi-Fi change (5.3.2). A leak (a camera changed, a wet probe) and the battery-low
 notice (test122) check in at once.
 
 **Setup firmware: only what setup mode needs** (firmware/bl616_setup/README.md):
@@ -728,9 +733,10 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
 - **Measured by the K230** (the only battery input: VBAT/3 through R59/R61 on ADC_1, switched by the K230's 3V3;
   tests/test023: a mean of 64 conversions, calibrated full scale 5329 mV, within +-10 mV of a meter). The product
   program reads it at its start and **attaches it to every frame it sends** as `;b=<mV>` (k230_link.h), ACKs too.
-- **A periodic `STATUS,<mode>,<uptime s>`** every 60 s (and at a job's start): the battery read again and carried as
-  the attribute, so a long or quiet session stays current; `mode` is the K230's job (`setup` = the USB relay,
-  `session` = the normal product job), which the BL616 logs (`k230: STATUS ...`) and the switchover test reads.
+- **A periodic `STATUS,<uptime s>,<version>,<die x10>,<heap free>,<heap min free>,<pages free B>`** every 60 s, at
+  the relay's start and when the BL616 asks (`STATUS`, the unplug): the battery read again and carried as the
+  attribute, so a long or quiet session stays current; the BL616 logs it (`k230: STATUS ...`) and keeps it for the
+  check-in (5.3.10). No mode field: the K230 runs the same program every time (5.3.8).
 - **Kept by the BL616** (bl616_common/battery.c) in HBN RAM (`.hbn_noinit.battery`; the sections are sorted by name
   so both firmwares put it at the same address): survives sleep, resets and the switch between the firmwares; lost
   only with the battery. `battery` on the console prints it.
@@ -779,8 +785,9 @@ check-in is `POST /v1/poll?id=<id>` with a form (the earlier GET's query had no 
 - **The K230's STATUS** (every 60 s, 5.3.9) now also carries the program's version (firmware/VERSION + the commit, as
   the BL616's), the die temperature (`/dev/ts`) and the kernel's memory (`/dev/sysstat`, a small LEAKCAM driver:
   the SDK's canmv_misc device has the same numbers but brings NTP, soft I2C and touch along).
-- **No clock across a reset yet:** ages (`kago`, `ksago`) are known only within the boot that saw the event; with the
-  BL616 RTC (the sleep's wake source, not built) they become ages across resets.
+- **Ages within a boot:** ages (`kago`, `ksago`, `jago`) are known only within the boot that saw the event; the wall
+  clock comes from the server's `X-Time` (5.3.12) but is kept against the timer until the HBN RTC keeps it (the sleep
+  step): then they become ages across resets. `job` is the last leak check's DONE (5.3.12).
 - **Wake counters for wakes not built yet** (RTC, leak) join the form with those wakes; there is no field for
   an event that cannot happen.
 - **The server** keeps the last check-in's metrics in `GET /v1/devices/{id}` (`metrics`, by these keys, integers as
@@ -807,6 +814,33 @@ ready at once.
   in at once too (charging at the server and the app within seconds, not at the next 60 s check-in).
 - **Tests.** test046 (the battery at the unplug, within one STATUS), test047 step 5 (the normal job on USB), test131
   (the app's level right after the unplug).
+### 5.3.12 The full firmware on battery: HBN between events (user, 2026-11-07)
+
+- **Asleep in HBN between events** (36 uA, tests/test031), not in the setup firmware (BLE advertising 428-540 uA,
+  ~6x the drain). The setup firmware stays for a board with no network, no presence or no user (5.3.1, 5.3.5).
+- **Three events wake it:** the **leak check** once a day (RTC), a **presence check-in** every 60 min (RTC; the server
+  may set another interval; user: within an hour is quick enough to answer a user's request, a video to record for
+  example), a **wet probe** at once (ACOMP1 below 1.10 V, tests/test034). USB power (ACOMP0) keeps it
+  awake with the K230 on (5.3.11).
+- **The leak check** is a K230 session with the WAKE reason `rtc` or `leak`: the K230's job (5.3.8) captures both
+  cameras and compares each with its history; it reports `DONE,<cam0>,<cam1>` (each `same`, `light`, `changed` or
+  `new`). The BL616 keeps the result for the check-in, checks in at once when a camera changed or the probe is wet,
+  and on battery cuts the K230's power. A K230 already running (on USB) gets `CHECK,<reason>` instead of a new
+  session. Until the cameras arrive the K230 simulates them (a synthetic scene per camera; a scene file on
+  /sdcard picks same, light or a new object).
+- **The server drives both intervals** (user, 2026-11-07: adjusted at runtime): every check-in's answer carries
+  `"checkin":<s>` (5 s - 1 h, default 3600) and `"leakcheck":<s>` (60 s - 7 days, default 86400); per device through
+  `PUT /v1/devices/<id>/intervals` (server/README.md), the board takes them with its next check-in.
+- **Time without NTP** (user, 2026-11-07; TLS needs the date): every answer of the server carries `X-Time: <unix s>`,
+  and the BL616 sets its wall clock from whatever exchange came last (wifi_check.c); every frame the BL616 sends the
+  K230 carries it on (`;t=<unix s>`, k230_link.h), and the K230 sets its clock from it. **Either clock changes only when it
+  is more than 5 s off** (user, 2026-11-07), so it is checked on every exchange but not stepped for small drift. The BL616's HBN RTC keeps it through the sleep (with the sleep step); after a
+  battery loss the first TLS connection trusts the pinned server key (test109), not the certificate's dates.
+- **Budget (estimate):** sleep 0.86 + 24 check-ins x 0.036 + one leak check ~0.3 + self-discharge ~0.8 = ~2.85 mAh a
+  day: ~0.9 years on one cell, ~1.8 on two.
+- Build order: the K230 job with simulated cameras + `DONE`/`CHECK` (on USB first); the probe and RTC triggers and the
+  power cut after `DONE` in the full firmware; then HBN sleep between the events.
+
 ### 5.4 K230-BL616 link and time
 
 - **The UART carries session control.** UART1 at 2 Mbaud 8N1 (stable; 4 Mbaud lost short writes, tests/test039), frames `$<seq>,<CMD>[,args]*XX`
@@ -822,17 +856,16 @@ ready at once.
   A `READY` restarts both sequence states, unless it repeats the one just accepted. The timeout,
   retry count, result names and NAK codes are defined once in `bl616/k230_link.h`, which the agent
   includes too.
-  - K230 → BL616: `READY`, `SLEEP,<s>` (the next wake only, not a power-off), `TIME,<unix s>`,
-    `WIFI`.
+  - K230 → BL616: `READY`, `USB,<line>` (the relay), `STATUS,...` (5.3.9), `DONE,<cam0>,<cam1>` (a leak check
+    finished, 5.3.12). (The first product's `SLEEP`, `TIME`, `WIFI` are not in the rewrite.)
   - BL616 → K230: `WAKE,<reasons>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>,<bat_mv>`, reasons being
     every cause that applies joined by `+` (`cold`, `leak`, `rtc`, `usb`, `setup`; e.g. `rtc+leak`)
     (rh -1 = the AHT20 read failed, probe -1 = no reading, bat -1 = no reading since the power loss),
-    once per `READY`, answered `ACK,<seq>,<bat_mv>` with the K230's ADC_1 reading; `ACK`.
-- **K230 side: `leakcam_agent`**, an RT-Smart program started at boot (`RTT_AUTO_EXEC_CMD`). It
-  talks to `/dev/uart1` and `/dev/gpio` directly and runs the capture hook for the wake reason.
-  The hook prints `wifi` when it needs the network; the agent sends `WIFI` and, once it is
-  accepted, probes MMC0 through `/dev/bl616`. Nothing probes MMC0 at boot: the SDU is off until
-  `WIFI`, so a boot-time probe would only cost time and power.
+    once per `READY`, answered `ACK,<seq>`; `USB,<line>`, `STATUS` (send it now), `CHECK,<reason>` (a leak check
+    now); `ACK`. Every K230 frame carries `;b=<mV>` (5.3.9), every BL616 frame `;t=<unix s>` once it has the time.
+- **K230 side: the product program `/app/leakcam`** (firmware/k230_app, in the slot's ROMFS), started at boot
+  (`RTT_AUTO_EXEC_CMD`): READY, the WAKE, then the USB relay and the leak job in parallel (5.3.8). (The first
+  product's `leakcam_agent` with its capture hook and `WIFI` is in attic/firmware.) Nothing probes MMC0 at boot.
 - **The program reads frames from `/dev/link`** (the kernel's link_mux splits UART1 into the console and the frames,
   firmware/CONSOLE.md 4): `poll()` then `read()`. A driver's own `dfs_file_ops` must be attached after
   `rt_device_register()`, which clears them: before 2026-11-05 they were set first, devfs's generic `poll()` never
@@ -840,18 +873,16 @@ ready at once.
   tests/test045 proves the path end to end, and `link_stat` shows `/dev/link fops attached`.
 - **GPIO2 heartbeat.** Every 500 ms while the agent runs; its stop ends the session. It is
   edges, not a level, because IO2 is JTAG_TCK with a pull-down at reset.
-- **Time.** The BL616 is the clock of record. Its HBN RTC is a 40-bit counter on the Y3 crystal
-  plus a (Unix seconds, count) reference, re-based at every boot. It drifts about 1.7 s/day.
-  - The time rides in the `WAKE` reply (`0` = not valid), so the K230 has it in the first frame
-    it receives, and sets its PMU RTC from it.
-  - When the K230 has NTP time over Wi-Fi, it sends `TIME,<unix s>` back.
-  - The clock is lost only with the battery. `WAKE` then carries 0 until NTP time arrives
-    again.
+- **Time (5.3.12, no NTP).** The server is the clock of record: every answer carries `X-Time: <unix s>`, the BL616
+  sets its clock from it, and every BL616 frame carries it on to the K230 (`;t=`; `WAKE`'s unix field too, 0 = not
+  known). Either clock changes only when it is more than 5 s off. The BL616's HBN RTC (a 40-bit counter on the Y3
+  crystal, drifting about 1.7 s/day) will keep it through the sleep; until then a reset loses it until the next
+  server answer.
 
 ### 5.5 Wi-Fi ([attic/firmware/bl616/WIFI.md](attic/firmware/bl616/WIFI.md))
 
 - **Split.** The BL616 is only the radio and the WPA supplicant. The K230's lwIP owns the IP
-  address: DHCP, DNS, NTP and every socket, with the BL616's station MAC.
+  address: DHCP, DNS and every socket, with the BL616's station MAC (no NTP: the time comes from the server, 5.3.12).
 - **Why this split.**
   - It is the split Bouffalo's own host driver uses.
   - It keeps one IP stack.

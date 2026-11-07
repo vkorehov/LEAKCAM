@@ -20,6 +20,8 @@ void k230_session_start(const char *reason, void (*on_cmd)(const struct link_msg
 /* end it (from any task): the rails off, `why` logged */
 void k230_session_stop(const char *why);
 bool k230_session_active(void);
+/* a leak check by the running K230 (CHECK,<why>, k230_link.h; full firmware): sent once the K230 has its WAKE */
+void k230_session_check(const char *why);
 /* the battery now (the unplug, DESIGN.md 5.3.11): STATUS asked of the K230, which reads its ADC and sends its STATUS
  * frame at once, the reading on it (kept by battery.c); true once that STATUS came within ms */
 bool k230_session_battery(uint32_t ms);

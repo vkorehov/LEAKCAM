@@ -17,11 +17,10 @@ import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import adb, firmware, only_boards, op, phone_boards, product, ready, register, to_firmware   # noqa: E402
+from phone import adb, board_id, firmware, intervals, only_boards, op, phone_boards, product, ready, register, to_firmware   # noqa: E402
 
 SERVER = "http://192.168.1.159:8090"
-PI = "pi@192.168.1.159"
-POLL_S = 10                      # for the run; the server's default is 60
+CHECKIN_S = 10                      # for the run; the bench server's default is 60
 SECOND = "02AB12CD34EF"          # the second LEAKCAM: an ID no board has (locally administered MAC)
 PKG = "com.leakcam.setup"
 
@@ -47,12 +46,9 @@ def server(path, form=None):
         return json.loads(f.read())
 
 
-def poll_interval(s):
-    # only the poll line: the env file also holds the pairing PIN key (server/deploy.sh); overwriting it whole left the
-    # server without the key (2026-11-01)
-    subprocess.run(["ssh", "-o", "BatchMode=yes", PI, f"sed -i 's/^LEAKCAM_POLL_S=.*/LEAKCAM_POLL_S={s}/' "
-                    "~/leakcam-server/env && sudo systemctl restart leakcam-server"], check=True, timeout=30)
-    time.sleep(1)
+def checkin_interval(s):
+    """the board's check-in interval, per device at the server (DESIGN.md 5.3.12): taken at its next check-in"""
+    intervals(board_id(), checkin=s)
 
 
 def app_mine():
@@ -95,7 +91,7 @@ if why:
     r.obstacle(why)
     r.finish(f"not run: {why.split(' (')[0]}.", False, switch_off=False)
     sys.exit(1)
-poll_interval(POLL_S)
+checkin_interval(CHECKIN_S)
 try:
     # 1. one device ID: the board, its USB serial number, the BLE advertisement (read by the app during a setup)
     # a command typed while the Wi-Fi stack logs can come back "not found" (2026-11-01): one retry
@@ -136,7 +132,7 @@ try:
         if not online:
             time.sleep(3)
     check("server: the board online after the setup", online, f"{time.time() - t0:.0f} s")
-    r.set("speed", f"setup Done -> online at the server {time.time() - t0:.0f} s (poll {POLL_S} s, the board's first "
+    r.set("speed", f"setup Done -> online at the server {time.time() - t0:.0f} s (check-in every {CHECKIN_S} s, the board's first "
           f"interval {60} s until told)")
     # its own answer, asked again when the Wi-Fi logs drown it (2026-11-04: the prompt was read instead)
     st = next((o for o in (bl("presence", 3, r"last check-in state 0x[0-9a-f]{2}") for _ in range(3)) if re.search(r"last check-in state 0x", o)), "")
@@ -158,7 +154,7 @@ try:
     check("app: second LEAKCAM online after its check-in", ": online" in lines.get(SECOND, ""), lines.get(SECOND))
     check("app: second LEAKCAM's network shown", 'Wi-Fi "t111-second"' in lines.get(SECOND, ""), lines.get(SECOND))
     check("app: the board still online next to it", ": online" in lines.get(dev, ""), lines.get(dev))
-    time.sleep(3 * POLL_S + 2)                               # three check-ins missed
+    time.sleep(3 * CHECKIN_S + 2)                               # three check-ins missed
     lines = app_mine()
     check("app: second LEAKCAM offline when it stopped", "offline" in lines.get(SECOND, ""), lines.get(SECOND))
     check("app: the board online throughout", ": online" in lines.get(dev, ""), lines.get(dev))
@@ -191,7 +187,7 @@ try:
     check("app: a deleted board stays out, also after a reopen", f"rediscovered {dev}" not in log_, "15 s after the reopen")
     # the only user gone (the bench is the board's one phone): the server answers its check-in 410 Gone and the board
     # goes back to the setup firmware within one check-in interval (DESIGN.md 5.3.5)
-    t = to_firmware("setup", secs=POLL_S + 60)
+    t = to_firmware("setup", secs=CHECKIN_S + 60)
     check("no user left: the board back in the setup firmware by itself", t is not None,
           f"{t:.0f} s after the delete" if t else str(firmware()))
     if t is not None:                          # set up again from the app: the bench as it was (the full firmware)
@@ -199,7 +195,7 @@ try:
         check("set up again after it: the full firmware", to_firmware("full", secs=30) is not None, str(firmware()))
     r.sample("after the checks")
 finally:
-    poll_interval(60)
+    checkin_interval(60)
 
 failed = [c for c in checks if not c[1]]
 summary = f"{len(checks) - len(failed)}/{len(checks)} checks pass."

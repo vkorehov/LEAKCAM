@@ -11,6 +11,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <FreeRTOS.h>
@@ -29,6 +30,7 @@
 #include "api.h"
 #include "crash_rec.h"
 #include "metrics.h"
+#include "wall_clock.h"
 #include "wifi_link.h"
 
 #define DBG_TAG "WCHK"
@@ -152,12 +154,22 @@ const struct wifi_check_link *wifi_check_last_link(void)
     return &run_link;
 }
 
+/* every answer of the LEAKCAM server carries its time, X-Time: <unix s> (DESIGN.md 5.3.12: no NTP): the wall clock set
+ * from whatever exchange came last */
+static void take_time(const char *headers)
+{
+    const char *p = strstr(headers, "\r\nX-Time: ");
+    long v = p ? strtol(p + 10, NULL, 10) : 0;
+    if (v > 1700000000L)
+        wall_clock_set((uint32_t)v);
+}
+
 static enum wifi_check_state internet(const struct wifi_check_target *t, uint16_t *detail)
 {
     struct addrinfo hints, *ai = NULL;
     static char req[768];                /* the headers + a crash record's form (api.h); static: one run at a time */
     static char buf[640];                /* the headers + an upgrade offer's body (~190 B, tests/test130) */
-    int n = 0, want = t->body ? (int)sizeof(buf) - 1 : 12;   /* the status line, or the whole short answer */
+    int n = 0, want = (int)sizeof(buf) - 1;   /* the headers (X-Time) and a short answer's body */
     int rl;
 
     static char form[512];               /* the check-in's form (metrics.h: ~420 B with the K230's) */
@@ -185,8 +197,6 @@ static enum wifi_check_state internet(const struct wifi_check_target *t, uint16_
     lwip_freeaddrinfo(ai);
     if (fd < 0)
         return WCHK_NO_INTERNET;
-    if (t->sink)
-        want = (int)sizeof(buf) - 1;     /* the headers first, then the body streamed */
     int sink_status = -1;
     bool streamed = false;
     if (lwip_send(fd, req, (size_t)rl, 0) == rl) {
@@ -194,9 +204,11 @@ static enum wifi_check_state internet(const struct wifi_check_target *t, uint16_
         while (n < want && (k = lwip_recv(fd, buf + n, (size_t)want - (size_t)n, 0)) > 0) {
             n += k;
             buf[n] = 0;
-            if (t->sink && strstr(buf, "\r\n\r\n"))
-                break;                   /* the headers are in: the rest goes to the sink */
+            if ((t->sink || !t->body) && strstr(buf, "\r\n\r\n"))
+                break;                   /* the headers are in: the rest goes to the sink, or nobody wants it */
         }
+        if (n > 0)
+            take_time(buf);              /* buf is static: only this answer's headers */
         const char *b = t->sink && n > 0 ? strstr(buf, "\r\n\r\n") : NULL;
         if (b) {
             sink_status = wchk_http_status(buf, (size_t)n);

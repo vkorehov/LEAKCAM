@@ -1,7 +1,7 @@
 /*
  * BL616 <-> K230 line protocol on UART0 (BL616) / UART1 (K230), LINK_BAUD 8N1.
  *
- *   $<seq>,<CMD>[,<arg>...][;b=<mV>]*<XX>\n
+ *   $<seq>,<CMD>[,<arg>...][;b=<mV>|;t=<unix s>]*<XX>\n
  *                                      seq = 0..255, counted by each sender on its own
  *                                      XX  = CRC-8 of the bytes between '$' and '*' (link_crc8),
  *                                            two hex digits
@@ -9,7 +9,11 @@
  *                                            ADC_1, -1 = its ADC failed) to every frame it sends, ACKs
  *                                            too; the BL616 takes it from after the last ';' and keeps
  *                                            it (battery.c) for the phone and the server (DESIGN.md
- *                                            5.3.9, tests/test046). The BL616's frames carry none
+ *                                            5.3.9, tests/test046)
+ *                                      ;t=<unix s>: the BL616 attaches its wall clock to every frame it
+ *                                            sends, ACKs too, once it has one (the server's X-Time,
+ *                                            DESIGN.md 5.3.12: no NTP); the K230 takes it from after the
+ *                                            last ';' and sets its clock when it is more than 5 s off
  *
  * Every frame except ACK/NAK is a command and is answered. The BL616 answers ACK,<seq>
  * (accepted) or NAK,<seq>,<code> (received but refused, code = LINK_ERR_*); the agent accepts
@@ -36,7 +40,12 @@
  *                                     the program's version, the die temperature (-1000 = none) and the kernel's
  *                                     memory (/dev/sysstat, 0 = none): the BL616 keeps them for its check-in
  *                                     (DESIGN.md 5.3.10, tests/test048)
+ *                 DONE,<cam0>,<cam1>  a leak check finished (k230_app/job.c, DESIGN.md 5.3.12): each camera same, light,
+ *                                     changed or new; the BL616 keeps it for the check-in, checks in at once on a
+ *                                     change and cuts the power on battery
  * BL616 -> K230   USB,<line>          the USB relay: a line for the phone
+ * BL616 -> K230   CHECK,<reason>      a leak check now (leak = a wet probe, rtc = the daily check) while the K230 runs
+ *                                     already (on USB); answered by a DONE when it is finished
  * BL616 -> K230   STATUS              send your STATUS now (the unplug: DESIGN.md 5.3.11): the K230 reads its battery
  *                                     and sends its STATUS frame at once, the fresh reading as its ;b=
  * BL616 -> K230   WAKE,<reason>,<unix s>,<rh_x10>,<t_x10>,<probe_mv>,<bat_mv>

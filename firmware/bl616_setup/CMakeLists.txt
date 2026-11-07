@@ -35,6 +35,7 @@ target_sources(app PRIVATE
                ${CMAKE_CURRENT_SOURCE_DIR}/provision.c
                ${S}/k230_link.c
                ${S}/k230_session.c
+               ${S}/wall_clock.c
                ${CMAKE_CURRENT_SOURCE_DIR}/usb_setup.c
                ${S}/k230_power.c
                ${S}/provision_cmd.c

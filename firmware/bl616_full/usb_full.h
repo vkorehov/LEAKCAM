@@ -6,7 +6,12 @@
 #ifndef LEAKCAM_USB_FULL_H
 #define LEAKCAM_USB_FULL_H
 
+#include "k230_link.h"
+
 /* once at boot, after the radio (easyflash): the USB watch task */
 void usb_full_start(void);
+
+/* every K230 session's commands in the full firmware (usb, leak, rtc): the cable's lines and the leak check's DONE */
+void usb_full_cmd(const struct link_msg *m);
 
 #endif

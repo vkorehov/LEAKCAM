@@ -18,8 +18,10 @@ target_sources(app PRIVATE
                ${S}/k230_power.c
                ${S}/k230_link.c
                ${S}/k230_session.c
+               ${S}/wall_clock.c
                usb_power.c
                usb_full.c
+               leak_check.c
                full_boot.c
                ota_fetch.c
                presence.c

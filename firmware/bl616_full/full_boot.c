@@ -7,6 +7,7 @@
 #include "rfparam_adapter.h"
 
 #include "k230_session.h"
+#include "leak_check.h"
 #include "presence.h"
 #include "switch_to_setup.h"
 #include "usb_full.h"
@@ -30,6 +31,7 @@ static void boot_task(void *arg)
     presence_start();                       /* checks in whenever a network is stored (use case 2) */
     k230_session_init();
     usb_full_start();                       /* on USB power the K230 on the whole time (DESIGN.md 5.3.11) */
+    leak_check_start();                     /* the probe and the RTC check (DESIGN.md 5.3.12) */
     vTaskDelete(NULL);
 }
 

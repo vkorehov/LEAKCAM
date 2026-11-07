@@ -18,7 +18,8 @@
 #include "mem_stat.h"
 #include "wifi_check.h"
 
-#define MAGIC 0x4d455431u                    /* "MET1": the record is set */
+#define MAGIC 0x4d455432u                    /* "MET2": the record is set (2: the leak check added) */
+#define JOB_CAP 24                           /* "changed,changed" and room */
 #define K230_VER_CAP 40                      /* "0.6+g4ec6b02-dirty-202611061530" and room */
 
 /* at a fixed place in both firmwares: .hbn_noinit sections are sorted by name (bl616_leakcam.ld.in); lost only with
@@ -34,6 +35,9 @@ static struct {
     uint32_t k_up_s, k_heap, k_heap_min, k_pages, k_boot;   /* the last STATUS; k_boot: the BL616 boot it came in */
     int32_t k_tdie_x10, k_at_s;
     char k_ver[K230_VER_CAP];
+    char job[JOB_CAP];                       /* the last leak check's DONE (k230_link.h), "" none */
+    uint32_t job_boot;
+    int32_t job_at_s;
 } rec __attribute__((section(".hbn_noinit.metrics")));
 
 static uint8_t rst;                          /* GLB reset recorder bits of this boot (bl616_glb.h) */
@@ -90,6 +94,13 @@ void metrics_k230_status(const char *args)
     rec.k_heap = *q == ',' ? (uint32_t)strtoul(q + 1, &q, 10) : 0;
     rec.k_heap_min = *q == ',' ? (uint32_t)strtoul(q + 1, &q, 10) : 0;
     rec.k_pages = *q == ',' ? (uint32_t)strtoul(q + 1, &q, 10) : 0;
+}
+
+void metrics_job(const char *result)
+{
+    snprintf(rec.job, sizeof(rec.job), "%s", result);
+    rec.job_boot = rec.boots;
+    rec.job_at_s = (int32_t)up_s();
 }
 
 void metrics_k230_session(uint32_t on_ms, bool ok)
@@ -220,6 +231,8 @@ size_t metrics_form(char *form, size_t len, size_t cap)
             (long)rec.k_tdie_x10, (unsigned long)rec.k_heap, (unsigned long)rec.k_heap_min, (unsigned long)rec.k_pages,
             sago);
     }
+    if (rec.job[0])
+        ADD("&job=%s&jago=%ld", rec.job, rec.job_boot == rec.boots ? (long)(now - (uint32_t)rec.job_at_s) : -1L);
     return len;
 }
 

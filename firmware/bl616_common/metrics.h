@@ -23,6 +23,9 @@ void metrics_usb_wake(void);          /* the USB plug woke the setup firmware fr
 /* the K230: its STATUS frame's arguments (k230_link.h), and a session's end */
 void metrics_k230_status(const char *args);
 void metrics_k230_session(uint32_t on_ms, bool ok);
+/* a leak check's result, DONE's "<cam0>,<cam1>" (full firmware, leak_check.c): in every check-in from then on as
+ * job=<cam0>,<cam1>&jago=<s since> */
+void metrics_job(const char *result);
 
 /* before a check-in: AHT20, probe node, BL616 die temperature and supply read now (~70 ms, ADC calibration once per
  * boot ~29 ms) */

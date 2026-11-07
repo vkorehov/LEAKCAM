@@ -27,6 +27,22 @@ PHONE_IPS = ("192.168.1.141", "192.168.1.163")
 SERVER = "http://192.168.1.159:8090"   # the presence server (server/, the Pi): the board's pairing PIN comes from it
 
 
+def intervals(dev, checkin=0, leakcheck=0):
+    """the board's check-in and leak check intervals at the server (PUT /v1/devices/<id>/intervals, DESIGN.md 5.3.12),
+    seconds, 0 = the server's default (the bench's LEAKCAM_CHECKIN_S 60, leak check 86400); the board takes them with
+    its next check-in. The server's answer: the intervals now"""
+    req = urllib.request.Request(f"{SERVER}/v1/devices/{dev}/intervals", method="PUT",
+                                 data=json.dumps({"checkin": checkin, "leakcheck": leakcheck}).encode())
+    with urllib.request.urlopen(req, timeout=10) as f:
+        return json.loads(f.read())
+
+
+def board_checkin():
+    """the board's check-in interval as it took it from the server's last answer (`presence`), 0 = no answer"""
+    m = re.search(r"check-in every (\d+) s", bl("presence", 2, r"check-in every \d+ s"))
+    return int(m.group(1)) if m else 0
+
+
 def board_id():
     """the board's serial (device ID) from its USB serial number; "" when the console is not there"""
     from board import BL_PORT

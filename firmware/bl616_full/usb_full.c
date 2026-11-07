@@ -12,6 +12,7 @@
 #include "device_id.h"
 #include "k230_power.h"
 #include "k230_session.h"
+#include "leak_check.h"
 #include "presence.h"
 #include "switch_to_setup.h"
 #include "usb_power.h"
@@ -53,9 +54,14 @@ static int stored_pin(void)
     return n == 6 && strspn(pin, "0123456789") == 6 ? atoi(pin) : -1;
 }
 
-/* in the session's task: the switch waits for the session's end, so it is the watch task's (setup_asked) */
-static void on_line(const struct link_msg *m)
+/* every session's K230 commands (usb, leak, rtc), in the session's task: the leak check's DONE, the cable's lines. The
+ * switch waits for the session's end, so it is the watch task's (setup_asked) */
+void usb_full_cmd(const struct link_msg *m)
 {
+    if (!strcmp(m->cmd, "DONE")) {
+        leak_check_done(m);
+        return;
+    }
     if (strcmp(m->cmd, "USB"))
         return;
     char line[LINK_MAX_LINE];
@@ -103,6 +109,7 @@ static void watch_task(void *arg)
     bool was_on = false, was_usb = usb_present();          /* at boot presence checks in within 5 s anyway */
     for (;;) {
         bool usb = usb_present(), on = k230_session_active();
+        bool unplugged = !usb && was_usb;                    /* once: on battery a session is a leak check's */
         if (usb && !was_usb)
             presence_now();                                  /* the plug: charging at the server and the app at once */
         was_usb = usb;
@@ -119,13 +126,17 @@ static void watch_task(void *arg)
             authed = false;
             wrong = 0;
             printf("usb_full: USB power: K230 on\r\n");
-            k230_session_start("usb", on_line);
-        } else if (!usb && k230_session_active()) {
-            bool got = k230_session_battery(BATTERY_MS);    /* the cell, read by the K230 already up */
+            k230_session_start("usb", usb_full_cmd);
+        } else if (!usb && unplugged) {
+            bool got = k230_session_active() && k230_session_battery(BATTERY_MS);   /* the cell, read by the K230 up */
             printf("usb_full: USB unplugged: battery %d mV %s\r\n", battery_mv(), got ? "read now" : "not read");
-            k230_session_stop("USB unplugged");
-            while (k230_session_active())                    /* the stop is the session task's: asked once */
-                vTaskDelay(pdMS_TO_TICKS(50));
+            if (leak_check_busy()) {
+                printf("usb_full: a leak check runs: the K230 off after its DONE\r\n");
+            } else {
+                k230_session_stop("USB unplugged");
+                while (k230_session_active())                /* the stop is the session task's: asked once */
+                    vTaskDelay(pdMS_TO_TICKS(50));
+            }
             was_on = false;                                  /* an end asked for: no retry hold, on at the next plug */
             retry_at = 0;
             presence_now();                                  /* the new level at the server and the app at once */
