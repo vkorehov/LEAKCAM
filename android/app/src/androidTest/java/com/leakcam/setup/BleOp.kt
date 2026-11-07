@@ -354,6 +354,10 @@ class BleOp {
             out.put("ms_anyway", ms())
             press("save_anyway")
         }
+        /* hold: the screen watched this long after the send (the board's relay back on the cable after Done, test113
+         * step 12): the op's end ends the app's process, and a plug then starts a new one */
+        val held = SystemClock.elapsedRealtime() + arg("hold", "0").toLong() * 1000
+        while (SystemClock.elapsedRealtime() < held) { note(); SystemClock.sleep(200) }
         out.put("pairing", pressed.joinToString("+"))
         out.put("help", texts)
         out.put("ms_end", ms())

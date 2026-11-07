@@ -262,6 +262,17 @@ def creds():
     return tuple(got)
 
 
+def erase(tries=3):
+    """`provision erase`, checked by its answer: once (test113 2026-11-07, the full firmware just back from a cable
+    setup) the command never ran and the board kept its network; each retry is logged. True when erased"""
+    from board import log
+    for i in range(tries):
+        if "credentials and remembered AP erased" in bl("provision erase", 2, r"erased|erase failed"):
+            return True
+        log(f"board: provision erase not answered (try {i + 1} of {tries})")
+    return False
+
+
 def want(ssid, psk):
     return tuple((len(v.encode()), zlib.crc32(v.encode())) if v is not None else None for v in (ssid, psk))
 

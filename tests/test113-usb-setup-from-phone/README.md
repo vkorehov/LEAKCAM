@@ -1,9 +1,8 @@
 # test113: full setup from the phone app over a USB-C cable (high level, product firmware)
 
-Status: **pass** (2026-11-06, again 21:53-21:55 on BL616 0.6+g3f9077b/84a2007 and K230 0.6+ga2c63b0: 13/13, the
-cable screen 5.08 s after the plug; step 11 seen in the server history: credential check-in `usbw 1`, `fails 1` (the
-wrong password), `ks 1` (the bench cable's relay), then the full firmware's `ks 1`, `klast 1`, `kver`, `sw 1`,
-`usbw 0`). The phone's plug opens LEAKCAM Setup on the cable screen of the board (4.3 s), the
+Status: **pass** (2026-11-07 07:48-07:51, BL616 pair 0.6+g5fc1138-dirty (the code of 58bf10c), K230 0.6+g98e16d7: 18/18, the cable screen
+5.18 s after the plug; step 12, Change Wi-Fi on the set-up board over the cable: SETUP -> the setup firmware's relay
+back 2.6 s, Done 1.2 s later, the full firmware's relay back 4.6 s after Done with the Done screen kept). The phone's plug opens LEAKCAM Setup on the cable screen of the board (4.3 s), the
 app sets the network up over the cable (no Bluetooth) to Done, the board saves it, goes back to the full firmware and is
 online at the server; product BL616 pair + product K230 image. Low level: test043 (K230 USB device), test044 (the
 phone as host), test045 (link frames reach the K230 program).
@@ -48,8 +47,9 @@ cable into USB-C 1, BLE not used: on the **product firmware** pair (BL616 setup 
     USB-C 1: the app opens on the cable screen (`creds 1`); one Send: the app reads `ID ... full`, sends `PIN`,
     `SETUP`, rides out the switch (the relay gone and back with the setup firmware, `ID ... setup`), then `PIN`,
     `SSID`, `PSK`, `COMMIT`; Done; the board back on the full firmware, online; when its relay comes back on the cable
-    the Done screen stays. Bench run (the PC as the phone, tools/test-runner/cable.py): the relay gone 0.9 s after
-    SETUP's OK, back 6.6 s, SAVED 1.2 s later, 8.0 s in all (2026-11-07).
+    the Done screen stays. Phone (2026-11-07): the link back on the setup firmware 2.6 s after it went, Done 1.2 s later.
+    Bench run (the PC as the phone, tools/test-runner/cable.py): the relay gone 0.9 s after SETUP's OK, back 6.6 s
+    (the PC's enumeration + udev), SAVED 1.2 s later, 8.0 s in all.
 
 ## Needs (build features and dependencies)
 

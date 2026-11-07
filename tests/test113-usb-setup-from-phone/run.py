@@ -16,7 +16,7 @@ import json
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import log, wifi_credentials   # noqa: E402
-from phone import SERVER, adb, board_id, creds, firmware, hand, op, ready, want   # noqa: E402
+from phone import SERVER, adb, board_id, creds, erase, firmware, hand, op, ready, want   # noqa: E402
 
 checks = []
 
@@ -77,7 +77,7 @@ dev = board_id()
 
 # 1. a board with no network: erased, back to the setup firmware
 log("board: network erased")
-bl("provision erase", 2)
+erase()
 bl("reboot", 1)
 t = time.time()
 while firmware() != "setup" and time.time() - t < 30:
@@ -100,6 +100,12 @@ while not phone_host():                      # the plug: the phone becomes USB h
         sys.exit(1)
     time.sleep(0.5)
 t_plug = time.time()
+time.sleep(1)                                # the PC side of the move: USB-C 1 gone from the bench, the consoles stay
+if os.path.exists("/dev/leakcam-k230usb") or not os.path.exists("/dev/leakcam-bl616"):
+    log("ACTION: wrong cable: the phone is on the BL616 console (USB-C 2); it belongs in USB-C 1 (the K230, "
+        "/dev/leakcam-k230usb on the bench)")
+    r.finish("not run: the phone on the wrong cable (the BL616 console, not USB-C 1)", False)
+    sys.exit(1)
 seen = None
 dialogs = 0
 screen = None
@@ -119,7 +125,7 @@ check("the plug opens the app on the cable screen of this board, no network", sc
 if dialogs:
     notes.append(f"Android's USB dialog answered {dialogs} time(s) ('always' ticked: not again on this phone)")
 
-def setup(psk_text, pull=False, secs=30):
+def setup(psk_text, pull=False, secs=30, hold=0):
     """the app's setup on the cable screen; pull: the phone's port switched to sink/device (VBUS and the USB link gone,
     as a pulled cable) once the app shows the join check, back to source/host 3 s later"""
     stop = []
@@ -138,7 +144,7 @@ def setup(psk_text, pull=False, secs=30):
         th = threading.Thread(target=puller)
         adb("logcat", "-c")
         th.start()
-    res = op("app", ssid=ssid.encode().hex(), psk=psk_text.encode().hex(), secs=secs)
+    res = op("app", ssid=ssid.encode().hex(), psk=psk_text.encode().hex(), secs=secs + hold, hold=hold)
     if pull:
         stop.append(1)
         th.join()
@@ -186,7 +192,7 @@ check("the server sees the board online", online(dev), f"{time.time() - t:.0f} s
 # 8. the cable pulled during the join check: the app claims nothing, the board finishes the check by itself
 log("board: network erased again, the phone stays plugged")
 adb("logcat", "-c")
-bl("provision erase", 2)
+erase()
 bl("reboot", 1)
 t = time.time()
 while usb_screen() is None and time.time() - t < 30:     # the K230 back on the cable: the plug opens the app
@@ -208,7 +214,7 @@ check("the board finished the check alone: network stored, online", creds() == w
 # sends PIN + SETUP, rides out the switch and sends the setup firmware's lines; one Send for the user
 adb("shell", "am", "force-stop", "com.leakcam.setup")
 adb("logcat", "-c")
-res, helps, last = setup(psk, secs=45)
+res, helps, last = setup(psk, secs=45, hold=12)    # the screen watched while the full firmware's relay comes back
 applog = adb("logcat", "-d", "-s", "LeakcamSetup:I", secs=15)
 check("change Wi-Fi on the full firmware: the cable screen of the set-up board",
       res.get("usb_screen") is True and f"usb screen {dev} creds 1" in applog)
@@ -222,9 +228,10 @@ while (firmware() != "full" or not online(dev)) and time.time() - t < 30:
     time.sleep(2)
 check("change Wi-Fi: network stored, back on the full firmware, online",
       creds() == want(ssid, psk) and firmware() == "full" and online(dev), f"{firmware() or '?'}, {time.time() - t:.0f} s")
-time.sleep(8)                                # the full firmware's relay back on the cable: Done stays, no cable screen
-after = adb("logcat", "-d", "-s", "LeakcamSetup:I", secs=15).split("on its setup firmware")[-1]
-check("change Wi-Fi: Done stays when the board's relay comes back", "usb screen" not in after)
+after = applog.split("Done.")[-1]            # the relay back (its ID) within the hold, the screen still Done
+check("change Wi-Fi: Done stays when the board's relay comes back",
+      f"usb board {dev} creds 1" in after and "usb screen" not in after and last.startswith("Done"),
+      "relay back, Done kept" if f"usb board {dev} creds 1" in after else "the relay not back within the hold")
 
 hand("USB-C 1: take the phone off, plug the bench cable back in", "bench")
 r.sample("after the setup")

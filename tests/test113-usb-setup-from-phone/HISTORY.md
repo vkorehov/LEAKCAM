@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-07 07:48 (run.py): pass
+
+18/18 checks pass (step 12 with the driver's 12 s hold after Done).
+
+### Automated run 2026-11-07 07:44 (run.py, 201 s): **FAIL**
+
+17/18 checks pass. Failed: change Wi-Fi: Done stays when the board's relay comes back (). The test's fault, not the
+app's (Obstacles: the driver's end ends the app).
+
+
 ### Automated run 2026-11-06 (run.py, 141 s): pass
 
 13/13 checks pass.
@@ -45,6 +55,22 @@ not run: the phone was never unplugged
 
 
 ## Obstacles
+
+- **2026-11-07, `provision erase` not run (3 times today):** the first command on the BL616 console right after the run
+  started got no answer and the board kept its network (step 1 FAIL `full`); by hand the same erase + reboot worked
+  every time. phone.erase() now checks the answer and retries (logged: `provision erase not answered (try 1 of 3)`,
+  the 2nd try worked each time). Cause open: the first write on a freshly opened CDC port of the BL616 after its
+  re-enumeration (board.bl() already sends an empty line first after a reconnect of 10 s or more; this one was
+  shorter).
+- **2026-11-07, the driver's end ends the app:** step 12's "Done stays" read the app's log after BleOp `app` returned;
+  `am instrument` ends the app's process with the op, the board's relay came back after that and the plug launched a
+  new app process on the cable screen: FAIL without an app fault. BleOp `app` got `hold` (seconds the screen is still
+  watched after the send); step 12 holds 12 s, the relay comes back 4.6 s after Done inside it.
+- **2026-11-07, hand mix-up, the wrong cable twice:** the phone went onto the BL616's console cable (USB-C 2, the
+  multi-CDC "LEAKCAM BL616 console") instead of USB-C 1: the app found no LEAKCAM on the cable and set the board up
+  over Bluetooth, the runner lost the console. Seen from the PC: the right move leaves /dev/leakcam-bl616 and
+  /dev/leakcam-k230 and removes /dev/leakcam-k230usb. run.py now checks that 1 s after the plug and stops with an
+  ACTION line naming the right port.
 
 - **2026-11-06, the VM's USB controller stopped again at firmware switches** (3 times today, `hub_ext_port_status
   failed`, err -32): the BL616 re-enumerates at every switch (a reboot into the other slot) and VMware's passthrough

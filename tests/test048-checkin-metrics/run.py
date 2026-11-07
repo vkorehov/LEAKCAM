@@ -18,7 +18,7 @@ import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, K230_PORT, log, openp, wifi_credentials   # noqa: E402
-from phone import SERVER, board_id, creds, firmware, to_firmware, want   # noqa: E402
+from phone import SERVER, board_id, creds, erase, firmware, to_firmware, want   # noqa: E402
 import cable   # noqa: E402
 
 PI = "pi@192.168.1.159"
@@ -164,7 +164,7 @@ check("the one after: sw 0, ks 0", sn and sn["metrics"]["sw"] == 0 and sn["metri
 # 11. the K230: a relay session (network erased, the bench on USB-C 1), held 3 min, then the setup over the cable
 log("board: network erased: the setup firmware starts the K230 relay")
 bl_con, k_con = Console(BL_PORT), Console(K230_PORT)
-bl("provision erase", 2)
+erase()
 bl("reboot", 1)
 k_con.start()
 up = cable.relay(90)
