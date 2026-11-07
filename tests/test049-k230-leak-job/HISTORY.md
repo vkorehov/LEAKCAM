@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-07 (run.py, 22 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-07 (run.py, 18 s): **FAIL**
+
+10/11 checks pass. Failed: no history: DONE new,new (same,new in 112 ms).
+
+
 ### Automated run 2026-11-07 (run.py, 18 s): pass
 
 11/11 checks pass.

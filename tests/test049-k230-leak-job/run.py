@@ -58,10 +58,12 @@ t = time.time()
 while "one running" in bl("leak", 2) and time.time() - t < 20:   # the K230's own first check at its start
     time.sleep(1)
 
-# 1. no history
-r.k(f"rm {DIR}/cam0.hist", 2)
-r.k(f"rm {DIR}/cam1.hist", 2)
-r.k(f"rm {DIR}/sim", 2)
+# 1. no history (removed and checked: the first command on a fresh console can go unanswered, 2026-11-07)
+for _ in range(3):
+    for f in ("cam0.hist", "cam1.hist", "sim"):
+        r.k(f"rm {DIR}/{f}", 2)
+    if not re.search(r"cam[01]\.hist|\bsim\b", r.k(f"ls {DIR}", 2).split("Directory", 1)[-1]):
+        break
 res, ms = leak_check()
 ls = r.k(f"ls {DIR}", 2)
 check("no history: DONE new,new", res == "new,new", f"{res} in {ms} ms")

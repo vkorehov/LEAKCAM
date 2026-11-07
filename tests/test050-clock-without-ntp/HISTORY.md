@@ -9,6 +9,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 11/11 checks pass.
 
 
+### Automated run 2026-11-07 (run.py, 271 s): pass
+
+11/11 checks pass.
+
+
 ### Automated run 2026-11-07 (run.py, 321 s): **FAIL**
 
 8/11 checks pass. Failed: the BL616 30 s ahead: the K230 steps to its next frame (logged about -30 s off) (no clock line); the BL616 30 s off: the next check-in's X-Time sets it back (within 2 s of UTC) (check-in 58 s later, set 2 -> 2, off -1.6 s); the K230 follows back (about +30 s off before) (no clock line).

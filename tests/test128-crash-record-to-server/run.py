@@ -128,29 +128,34 @@ def main():
         check("step 3: sent at the next check-in once the server is back, one copy", rec() is None and len(got) == 1,
               f"{time.time() - t0:.1f} s after the server was back; {len(got)} new on the server")
     if "5" in steps:
-        # the server down across the crash and the switch: the full firmware's check-in (5 s after its start) cannot
-        # take it, so the setup firmware's API step is the first contact
+        # the server down across the crash and the switch: neither the full firmware's check-in nor the setup
+        # firmware's first check (it checks the stored network at its start on USB power, test127) can take it; with
+        # the server back the setup firmware's next start reaches the API first: its check sends the full firmware's
+        # record, then it hands over to the full firmware
         n0 = len(crashes())
         pi("sudo systemctl stop leakcam-server")
         try:
             reset_by("crash test")
-            log("step 5: crashed in the full firmware; switch:", f"{switch('setup'):.1f} s", which())
-            ask("lp_boot", 15, r"lp: boot done")
-            kept = rec()
+            t0 = time.time()
+            ask("switch_to_setup lost", 1)
+            while time.time() - t0 < 60 and which() != "setup":
+                time.sleep(1)
+            log("step 5: crashed in the full firmware; in the setup firmware after", f"{time.time() - t0:.1f} s")
+            time.sleep(15)                       # its check fails at the API (server down): it stays
+            kept = rec() if which() == "setup" else None
             log("step 5: the setup firmware holds", kept)
         finally:
             pi("sudo systemctl start leakcam-server")
-        ask("switch_to_full on", 2)
-        ask("switch_to_full usb", 1)
-        secs = wait_sent(n0)
+        reset_by("reboot")                       # the setup firmware starts again: its check reaches the API now
+        secs = wait_sent(n0, 90)
         c = crashes()[-1] if len(crashes()) > n0 else None
-        check("step 5: the setup firmware's API step sent the full firmware's record", kept is not None and
+        check("step 5: the setup firmware's check sent the full firmware's record", kept is not None and
               c is not None and c["build"].startswith("full "),
               f"{secs:.1f} s; {c['build']} #{c['count']}, decoded mepc: {decode(c)}" if c and secs else f"board {rec()}")
         t0 = time.time()
-        while time.time() - t0 < 30 and not t126.slot():
-            time.sleep(0.5)
-        log("step 5: then (the hand-over passed too)", which())
+        while time.time() - t0 < 60 and which() != "full":
+            time.sleep(1)
+        check("step 5: then the hand-over to the full firmware", which() == "full", f"{time.time() - t0:.0f} s")
     if "7" in steps:
         if which() == "setup":
             switch("full")
