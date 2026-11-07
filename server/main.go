@@ -733,6 +733,9 @@ func main() {
 		phoneFile = f
 	}
 	loadPhones()
+	if d := os.Getenv("LEAKCAM_MEDIA"); d != "" {
+		mediaDir = d
+	}
 	if f := os.Getenv("LEAKCAM_TOKENS"); f != "" {
 		tokenFile = f
 	}
@@ -782,6 +785,7 @@ func main() {
 	http.HandleFunc("POST /v1/devices/{id}/clear", clearLeak)
 	http.HandleFunc("PUT /v1/devices/{id}/wifi", putWifi)
 	http.HandleFunc("POST /v1/devices/{id}/capture", capture)
+	http.HandleFunc("GET /v1/media/{id}", media)
 	http.HandleFunc("GET /v1/images/k230_rtt", k230Image)
 	http.HandleFunc("GET /v1/images/{name}", images)
 	http.HandleFunc("GET /v1/devices/{id}/model", model)

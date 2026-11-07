@@ -24,6 +24,7 @@ object LeakAlert {
     const val EXTRA_ID = "id"
     const val EXTRA_TEXT = "text"
     const val EXTRA_TITLE = "title"
+    const val EXTRA_MEDIA = "media"       // the new pictures and video by ID ("<device>-<s>-p1,..."): one tile each
     const val ACTION_TEST_ACK = "com.leakcam.setup.TEST_ACK"
     const val ACTION_CLOSE = "com.leakcam.setup.ALERT_CLOSE"   // the open alert screens close
     private const val TAG = "LeakcamAlert"
@@ -62,7 +63,7 @@ object LeakAlert {
             "camera change" -> context.getString(R.string.alert_why_camera)
             else -> data["why"].orEmpty()
         }
-        val bars = data["rssi"]?.toIntOrNull()?.let { r -> if (r >= -60) 4 else if (r >= -70) 3 else if (r >= -80) 2 else 1 }
+        val bars = data["rssi"]?.toIntOrNull()?.let { barCount(it) }
         val ssid = data["ssid"].orEmpty()
         // which LEAKCAM: its network says where it is (the home, the office) better than its serial (user, 2026-11-07)
         val title = if (ssid.isNotEmpty()) context.getString(R.string.alert_title_ssid, ssid)
@@ -71,15 +72,17 @@ object LeakAlert {
             (bars?.let { " · " + context.getString(R.string.alert_signal, it) } ?: "")
         val at = (data["at"]?.toLongOrNull()?.let { it * 1000 } ?: System.currentTimeMillis())
         val time = android.text.format.DateFormat.getTimeFormat(context).format(java.util.Date(at))
-        show(context, id, title, listOf(why, time, serial).filter { it.isNotEmpty() }.joinToString("\n"))
+        show(context, id, title, listOf(why, time, serial).filter { it.isNotEmpty() }.joinToString("\n"),
+             data["media"].orEmpty())
     }
 
-    private fun show(context: Context, id: String, title: String, text: String) {
+    private fun show(context: Context, id: String, title: String, text: String, media: String) {
         channel(context)
         val open = Intent(context, AlertActivity::class.java).apply {
             putExtra(EXTRA_ID, id)
             putExtra(EXTRA_TITLE, title)
             putExtra(EXTRA_TEXT, text)
+            putExtra(EXTRA_MEDIA, media)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         val pi = PendingIntent.getActivity(context, notificationId(id), open,
@@ -126,7 +129,7 @@ object LeakAlert {
                 context.sendBroadcast(Intent(ACTION_CLOSE).setPackage(context.packageName))
                 return
             }
-            show(context, listOf("id", "why", "ssid", "rssi", "at").mapNotNull { k -> intent.getStringExtra(k)?.let { k to it } }
+            show(context, listOf("id", "why", "ssid", "rssi", "at", "media").mapNotNull { k -> intent.getStringExtra(k)?.let { k to it } }
                 .toMap())
         }
     }

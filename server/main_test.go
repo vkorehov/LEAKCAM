@@ -204,6 +204,13 @@ func TestLeakAndWifiChange(t *testing.T) {
 	if ans["mode"] != float64(1) || ans["checkin"] != float64(WakeModeS) {
 		t.Errorf("leak: mode %v checkin %v", ans["mode"], ans["checkin"])
 	}
+	if c, _ := ans["capture"].(map[string]any); c["kind"] != "leak" || c["photos"] != float64(LeakPhotos) ||
+		c["secs"] != float64(VideoS) {
+		t.Errorf("a leak's record: %v", ans["capture"])
+	}
+	if c, _ := ans["capture"].(map[string]any); len(c["ids"].([]any)) != LeakPhotos+1 {
+		t.Errorf("a leak's record IDs: %v", c["ids"])
+	}
 	must(http.Post(s.URL+"/v1/devices/"+TestID+"/clear", "", nil))
 	if ans, _ = checkIn(t, s, url.Values{"full": {"0.6+g1234567"}}); ans["mode"] != float64(0) {
 		t.Errorf("after the all-clear: mode %v", ans["mode"])

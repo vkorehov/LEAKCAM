@@ -86,6 +86,14 @@ import java.util.UUID
  * list the board on the cable is always the selected one, "connected by USB cable".
  */
 @SuppressLint("MissingPermission") // every Bluetooth call runs after permissionsGranted()
+/** the signal as 1-4 bars, everywhere the app shows it (the rows, the leak alert) */
+fun barCount(dbm: Int) = when {
+    dbm >= -60 -> 4
+    dbm >= -70 -> 3
+    dbm >= -80 -> 2
+    else -> 1
+}
+
 class MainActivity : Activity() {
 
     private companion object {
@@ -318,6 +326,9 @@ class MainActivity : Activity() {
         usbLink.start()
         loadMine { mineLoaded = true; startDecide() }
         usbTimer.postDelayed({ startWaitOver = true; startDecide() }, START_USB_MS)
+        // started by a leak alert: its leak panel once the start has decided (the start shows the status screen)
+        if (intent.hasExtra(LeakAlert.EXTRA_ID))
+            usbTimer.postDelayed({ showLeak(intent) }, START_USB_MS + 200)
     }
 
     /** the start's end: a LEAKCAM answered on the cable -> its screen; else, once the wait is over (and an enumerated
@@ -338,7 +349,49 @@ class MainActivity : Activity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        if (intent.hasExtra(LeakAlert.EXTRA_ID)) {
+            showLeak(intent)
+            return
+        }
         usbLink.find()                   // opened again by a LEAKCAM plugged in (singleTop)
+    }
+
+    /** opened from a leak alert ("I see it"): that board picked on the status screen with its leak panel on top:
+     *  which board, when, what found it, and its record (4 pictures, a 15 s video) as the board uploads it */
+    private fun showLeak(i: Intent) {
+        val id = i.getStringExtra(LeakAlert.EXTRA_ID) ?: return
+        selected = id
+        showStatus()
+        findViewById<View>(R.id.leak_panel).visibility = View.VISIBLE
+        findViewById<TextView>(R.id.leak_title).text = i.getStringExtra(LeakAlert.EXTRA_TITLE) ?: getString(R.string.alert_title, id)
+        findViewById<TextView>(R.id.leak_text).text = i.getStringExtra(LeakAlert.EXTRA_TEXT).orEmpty()
+        // one tile per picture and video ID the push announced (pictures in a row, the video under them), a spinner each
+        // until the gallery has downloaded it by its ID (DESIGN.md 5.3.13)
+        val ids = i.getStringExtra(LeakAlert.EXTRA_MEDIA).orEmpty().split(",").filter { it.isNotBlank() }
+        val photoIds = ids.filter { it.substringAfterLast('-').startsWith("p") }
+        val videoId = ids.firstOrNull { it.substringAfterLast('-').startsWith("v") }
+        val photos = findViewById<LinearLayout>(R.id.leak_photos)
+        val video = findViewById<android.widget.FrameLayout>(R.id.leak_video)
+        photos.visibility = if (photoIds.isNotEmpty()) View.VISIBLE else View.GONE
+        video.visibility = if (videoId != null) View.VISIBLE else View.GONE
+        findViewById<TextView>(R.id.leak_media).text =
+            resources.getString(R.string.leak_media_waiting, photoIds.size, if (videoId != null) 1 else 0)
+        photos.removeAllViews()
+        val gap = (6 * resources.displayMetrics.density).toInt()
+        photoIds.forEachIndexed { n, mid ->
+            val tile = android.widget.FrameLayout(this).apply {
+                setBackgroundColor(getColor(R.color.tile_background))
+                contentDescription = mid
+                addView(spinner(28), android.widget.FrameLayout.LayoutParams(-2, -2, android.view.Gravity.CENTER))
+            }
+            photos.addView(tile, LinearLayout.LayoutParams(0, -1, 1f).apply { if (n > 0) marginStart = gap })
+            gallery.fetch(mid, tile)
+        }
+        if (videoId != null) {
+            video.contentDescription = videoId
+            gallery.fetch(videoId, video)
+        }
+        Log.i(TAG, "leak panel $id")
     }
 
     override fun onDestroy() {
@@ -412,6 +465,15 @@ class MainActivity : Activity() {
 
     /** the first missing one asked for: notifications, then full screen (Android 14+), then Do Not Disturb access;
      *  again from onResume after each settings screen until all are there */
+    private val gallery by lazy { Gallery(this) }
+
+    private fun spinner(dp: Int) = android.widget.ProgressBar(this).apply {
+        isIndeterminate = true
+        layoutParams = android.widget.FrameLayout.LayoutParams((dp * resources.displayMetrics.density).toInt(),
+                                                               (dp * resources.displayMetrics.density).toInt(),
+                                                               android.view.Gravity.CENTER)
+    }
+
     private var note: Triple<String, String, Long>? = null   // the last action's answer for a board, until its time
     private var changeLabel = ""          // the menu's Change Wi-Fi item for the picked board, as render() left it
     private var changeEnabled = false
@@ -556,12 +618,6 @@ class MainActivity : Activity() {
     }
 
     /* the signal as 1-4 bars, never the dB value on the screen; the value on a long press (user 2026-11-04) */
-    private fun barCount(dbm: Int) = when {
-        dbm >= -60 -> 4
-        dbm >= -70 -> 3
-        dbm >= -80 -> 2
-        else -> 1
-    }
 
     private fun bars(dbm: Int) = when (barCount(dbm)) {
         4 -> R.drawable.ic_signal_4
@@ -575,6 +631,65 @@ class MainActivity : Activity() {
         Log.i(TAG, "dbm $dbm")   // test118: the long press
         android.widget.Toast.makeText(this, getString(R.string.signal_dbm, dbm), android.widget.Toast.LENGTH_SHORT).show()
     }
+
+    /** one icon of a board's row: its picture, its description (screen readers, tests), its tooltip */
+    private class RowIcon(val drawable: android.graphics.drawable.Drawable, val what: String, val tip: String? = null)
+
+    /** a board's status icons, the same in every list (user 2026-11-07: "always same look and feel for radios"):
+     *  Wi-Fi = present at the server (one of mine); the cable, or Bluetooth + its signal bars when in range; the
+     *  battery filled to its charge, green on USB power, once anything about it is known (DESIGN.md 5.3.4, 5.3.9) */
+    private fun rowIcons(id: String, address: String?): List<RowIcon> {
+        val icons = mutableListOf<RowIcon>()
+        if (known().has(id) && online[id] == true)
+            icons.add(RowIcon(getDrawable(R.drawable.ic_wifi)!!, getString(R.string.icon_wifi)))
+        if (address == USB_TAG)
+            icons.add(RowIcon(getDrawable(R.drawable.ic_usb)!!, getString(R.string.icon_usb)))   // the link implies its power
+        else if (address != null) {
+            icons.add(RowIcon(getDrawable(R.drawable.ic_bluetooth)!!, getString(R.string.icon_bluetooth)))
+            icons.add(RowIcon(getDrawable(bars(rssi[address] ?: -100))!!, getString(R.string.icon_signal)))
+        }
+        val chg = onUsbPower(id, address)
+        val pct = batteryMv[id]?.let { BatteryIcon.percent(it) }
+        // the battery once anything about it is known (in range, a level, or the server's `charging` alone: the
+        // outline, test131 step 6)
+        if (pct != null || address != null || charging.containsKey(id))
+            // on USB power the K230 reads the charger's rail: the level is the last one on battery
+            icons.add(RowIcon(BatteryIcon(pct, chg, resources.displayMetrics.density),
+                              getString(if (chg) R.string.icon_plug else R.string.icon_battery),
+                              when {
+                                  pct == null && chg -> getString(R.string.battery_tip_charging_unknown)
+                                  pct == null -> getString(R.string.battery_tip_unknown)
+                                  chg -> getString(R.string.battery_tip_charging, pct)
+                                  else -> getString(R.string.battery_tip, pct)
+                              }))
+        return icons
+    }
+
+    /** on USB power: the cable link, the advertisement's flag in range, else the server's `charging` */
+    private fun onUsbPower(id: String, address: String?) = address == USB_TAG ||
+        (address != null && usbPower[address] == true) || (address == null && charging[id] == true)
+
+    /** the row's icons as one drawable after a radio's text (the setup list's RadioGroup takes only RadioButtons):
+     *  the same icons and the same gaps as the status list's row */
+    private fun iconStrip(id: String, address: String?): android.graphics.drawable.Drawable? {
+        val icons = rowIcons(id, address).map { it.drawable }
+        if (icons.isEmpty())
+            return null
+        // drawn side by side onto one bitmap: a layered drawable overlapped the battery (it has no width of its own)
+        val px = (24 * resources.displayMetrics.density).toInt()
+        val gap = (6 * resources.displayMetrics.density).toInt()
+        val bmp = android.graphics.Bitmap.createBitmap(icons.size * (gap + px), px, android.graphics.Bitmap.Config.ARGB_8888)
+        val canvas = android.graphics.Canvas(bmp)
+        icons.forEachIndexed { n, d ->
+            val x = gap + n * (gap + px)
+            d.setBounds(x, 0, x + px, px)
+            d.draw(canvas)
+        }
+        return android.graphics.drawable.BitmapDrawable(resources, bmp).apply { setBounds(0, 0, bmp.width, bmp.height) }
+    }
+
+    /** a setup list radio: "serial · SSID" and its icons, as the status list shows the board */
+    private fun deviceText(id: String) = listOfNotNull(id, ssids[id]?.takeIf { it.isNotEmpty() }).joinToString(" · ")
 
     private fun addDevice(r: ScanResult) {
         val d = r.device
@@ -591,8 +706,13 @@ class MainActivity : Activity() {
                 batteryMv[devId] = b * 20
             charging[devId] = usbPower[d.address] == true
         }
-        if (found.containsKey(d.address))
+        if (found.containsKey(d.address)) {
+            // the same row refreshed (its bars, power, battery) without a redraw of the list
+            devices.findViewWithTag<RadioButton>(d.address)?.let { rb ->
+                rb.setCompoundDrawablesRelative(null, null, iconStrip(ids[d.address] ?: "", d.address), null)
+            }
             return
+        }
         // a LEAKCAM is named by its serial everywhere (the device ID: USB serial number, BLE name, server; user
         // 2026-11-01: no "LEAKCAM-" prefix)
         val name = devId ?: r.scanRecord?.deviceName ?: d.name ?: d.address
@@ -606,8 +726,8 @@ class MainActivity : Activity() {
         devices.addView(RadioButton(this).apply {
             id = View.generateViewId()
             tag = d.address
-            text = getString(R.string.device_entry, name)   // no "set up before" label (user 2026-11-04)
-            setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, bars(r.rssi), 0)
+            text = deviceText(name)   // no "set up before" label (user 2026-11-04)
+            setCompoundDrawablesRelative(null, null, iconStrip(name, d.address), null)
             setOnLongClickListener { showDbm(d.address); true }
         })
         // the first board leads on at once, Find goes on behind (another board nearby joins the list) until Send:
@@ -699,32 +819,15 @@ class MainActivity : Activity() {
                 addView(RadioButton(context).apply {
                     // its serial (the device ID, as on the USB serial number and the server) and its network (user:
                     // minimum text, no shared "LEAKCAM-" prefix); the state is in the icons, no presence in red
-                    text = if (k.has(id)) listOfNotNull(id, ssids[id]).joinToString(" · ") else "$id · $line"
+                    text = if (k.has(id)) deviceText(id) else "$id · $line"
                     if (red)
                         setTextColor(0xFFC62828.toInt())
                     isChecked = id == selected
                     contentDescription = "pick $id"
                     setOnClickListener { selected = id; render() }
                 }, LinearLayout.LayoutParams(-2, -2))     // the icons right after the name, not at the far end
-                // Wi-Fi: present at the server (its full state as the description), gone when not; Bluetooth: in range
-                // (its Wi-Fi can be set)
-                val icons = mutableListOf<Pair<Int, String>>()
-                if (k.has(id) && up)
-                    icons.add(Pair(R.drawable.ic_wifi, line))
-                // in BLE range: its signal as bars (the dB value on a long press) and its power from the advertisement,
-                // a plug on USB power, else a battery (DESIGN.md 5.3.4); out of range its power is not known: none
                 val address = addressOf(id)
-                if (address == USB_TAG) {
-                    icons.add(Pair(R.drawable.ic_usb, getString(R.string.icon_usb)))   // the link implies its power
-                } else if (address != null) {
-                    icons.add(Pair(R.drawable.ic_bluetooth, getString(R.string.icon_bluetooth)))
-                    icons.add(Pair(bars(rssi[address] ?: -100), getString(R.string.icon_signal)))
-                }
-                // the battery: filled to its charge, green on USB power (DESIGN.md 5.3.9); shown once anything is known
-                // (in range, a level, or the power from any channel: the server's `charging` alone gives the outline,
-                // test131 step 6); the percent on its tooltip
-                val chg = address == USB_TAG || (address != null && usbPower[address] == true) ||
-                          (address == null && charging[id] == true)
+                val chg = onUsbPower(id, address)
                 val pct = batteryMv[id]?.let { BatteryIcon.percent(it) }
                 Log.i(TAG, "row $id wifi ${if (k.has(id) && up) 1 else 0} ble ${if (reachable) 1 else 0} red ${if (red) 1 else 0}" +
                       " power ${if (address == null) "-" else if (address == USB_TAG) "usb" else if (usbPower[address] == true) "plug" else "battery"}" +
@@ -732,26 +835,14 @@ class MainActivity : Activity() {
                       " rssi ${address?.takeIf { it != USB_TAG }?.let { rssi[it] } ?: 0}" +
                       " bat ${pct ?: -1} chg ${if (chg) 1 else 0}")   // test118, test113, test131
                 val gap = (6 * resources.displayMetrics.density).toInt()   // the icons a little apart from the name
-                for ((icon, what) in icons)
+                for (icon in rowIcons(id, address))
                     addView(android.widget.ImageView(context).apply {
                         setPaddingRelative(gap, 0, 0, 0)
-                        setImageResource(icon)
-                        contentDescription = what
-                        if (address != null && what == getString(R.string.icon_signal))
+                        setImageDrawable(icon.drawable)
+                        contentDescription = icon.what
+                        tooltipText = icon.tip
+                        if (address != null && icon.what == getString(R.string.icon_signal))
                             setOnLongClickListener { showDbm(address); true }
-                    })
-                if (pct != null || address != null || charging.containsKey(id))
-                    addView(android.widget.ImageView(context).apply {
-                        setPaddingRelative(gap, 0, 0, 0)
-                        setImageDrawable(BatteryIcon(pct, chg, resources.displayMetrics.density))
-                        contentDescription = getString(if (chg) R.string.icon_plug else R.string.icon_battery)
-                        // on USB power the K230 reads the charger's rail: the level is the last one on battery
-                        tooltipText = when {
-                            pct == null && chg -> getString(R.string.battery_tip_charging_unknown)
-                            pct == null -> getString(R.string.battery_tip_unknown)
-                            chg -> getString(R.string.battery_tip_charging, pct)
-                            else -> getString(R.string.battery_tip, pct)
-                        }
                     })
             })
         val name = all.firstOrNull { it.first == selected }?.second.orEmpty()
@@ -786,6 +877,9 @@ class MainActivity : Activity() {
         // advertisement's flag; nothing to remove from a board not set up
         deletable = isMine && addressOf(selected)?.let { stored[it] } != false
         more.visibility = if (isMine) View.VISIBLE else View.INVISIBLE   // keeps its place: the buttons never change width
+        // what its menu offers now, for screen readers (and the test driver: a disabled popup item still reads as
+        // enabled to UI Automator, 2026-11-07)
+        more.contentDescription = getString(R.string.more) + ": " + changeLabel + if (changeEnabled) "" else " " + getString(R.string.not_now)
         Log.i(TAG, "button ${if (isMine) changeLabel else setupOpen.text} enabled ${if (if (isMine) changeEnabled else here) 1 else 0}")   // test119
     }
 
@@ -1391,8 +1485,8 @@ class MainActivity : Activity() {
             devices.addView(RadioButton(this).apply {
                 id = View.generateViewId()
                 tag = USB_TAG
-                text = getString(R.string.usb_entry, usbId)
-                setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_usb, 0)
+                text = deviceText(usbId)
+                setCompoundDrawablesRelative(null, null, iconStrip(usbId, USB_TAG), null)
             }, 0)
         devices.check(devices.findViewWithTag<View>(USB_TAG).id)
     }

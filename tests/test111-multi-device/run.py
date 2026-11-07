@@ -109,8 +109,8 @@ try:
     add_to_app(dev, only=True)   # starting state: the app knows this board, nothing else
     adb("logcat", "-c")
     # a known board runs the full firmware: the app wakes it through the server (its next check-in, 10 s) and it switches
-    # to the setup firmware (~25 s) before BLE finds it
-    res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=60)
+    # to the setup firmware (~25 s) before BLE finds it; up to ~60 s seen (2026-11-07)
+    res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=90)
     helps = res.get("help", [])
     last = helps[-1]["help"] if helps else res.get("error", "no help text")
     check("setup Done", last.startswith("Done."), f"{res.get('ms_end', 0) / 1000:.1f} s")

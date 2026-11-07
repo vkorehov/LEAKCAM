@@ -56,6 +56,64 @@
             android:orientation="vertical"
             android:visibility="gone">
 
+            <!-- a leak, opened from its alert (DESIGN.md 5.3.13): which board, when, what found it, and its record (4
+                 pictures, a 15 s video) as the board uploads it -->
+            <LinearLayout
+                android:id="@+id/leak_panel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@color/leak_background"
+                android:orientation="vertical"
+                android:padding="12dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/leak_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@android:style/TextAppearance.Material.Title"
+                    android:textColor="@color/leak_text" />
+
+                <TextView
+                    android:id="@+id/leak_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/leak_text" />
+
+                <!-- the record in its own places: 4 picture tiles and the video, each a spinner until its file is
+                     downloaded (user 2026-11-07); fixed sizes, so nothing moves when a picture arrives -->
+                <LinearLayout
+                    android:id="@+id/leak_photos"
+                    android:layout_width="match_parent"
+                    android:layout_height="72dp"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal" />
+
+                <FrameLayout
+                    android:id="@+id/leak_video"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:layout_marginTop="6dp"
+                    android:background="@color/tile_background">
+
+                    <ProgressBar
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_gravity="center"
+                        android:indeterminate="true" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/leak_media"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text=""
+                    android:textColor="@color/leak_text" />
+            </LinearLayout>
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

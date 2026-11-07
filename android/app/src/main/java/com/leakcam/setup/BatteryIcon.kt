@@ -32,6 +32,9 @@ class BatteryIcon(private val percent: Int?, private val charging: Boolean, dens
     }
 
     override fun draw(canvas: Canvas) {
+        // where it is placed (an icon strip draws several side by side: it drew over the first, 2026-11-07)
+        canvas.save()
+        canvas.translate(bounds.left.toFloat(), bounds.top.toFloat())
         // a horizontal cell: body 18 x 10 dp at the middle, a 2 dp terminal on the right
         val d = w / 24f
         val body = RectF(2 * d, 7 * d, 20 * d, 17 * d)
@@ -42,6 +45,7 @@ class BatteryIcon(private val percent: Int?, private val charging: Boolean, dens
             inner.right = inner.left + inner.width() * percent.coerceIn(0, 100) / 100f
             canvas.drawRect(inner, fill)
         }
+        canvas.restore()
     }
 
     override fun getIntrinsicWidth() = w

@@ -15,7 +15,6 @@
     <string name="show_password">Show password</string>
     <string name="send">Pair, check and save</string>
     <string name="save_anyway">Save without checking</string>
-    <string name="device_entry">%1$s</string>
     <string name="mine_title">Your LEAKCAMs</string>
     <string name="nearby_none">To set up a LEAKCAM or change its Wi-Fi, bring it near the phone. A new one shows up within 5 minutes (at once on USB power); one already set up shows up while it is on USB power.</string>
     <string name="nearby_new">%1$s is nearby and not set up from this phone.</string>
@@ -109,7 +108,6 @@
     <string name="what_setup">switch to setup</string>
 
     <!-- setup over the USB cable (DESIGN.md 5.3.4: the most reliable channel first, USB > Bluetooth) -->
-    <string name="usb_entry">%1$s (USB cable)</string>
     <string name="start_usb">Looking for a LEAKCAM on the USB cable…</string>
     <string name="usb_header">%1$s, connected by USB cable</string>
     <string name="nearby_usb">%1$s is connected by USB cable: you can set its Wi-Fi.</string>
@@ -139,6 +137,8 @@
     <string name="wifi_failed_title">LEAKCAM %1$s kept its old Wi-Fi</string>
     <string name="wifi_failed_text">It could not join "%1$s". Open the app to try again.</string>
     <string name="more">more actions</string>
+    <string name="icon_wifi">present at the server over Wi-Fi</string>
+    <string name="not_now">(not now)</string>
     <!-- the common actions (DESIGN.md 5.3.14) -->
     <string name="take_photo">Take photo</string>
     <string name="take_video">Take video</string>
@@ -146,4 +146,7 @@
     <string name="capture_failed">The request did not reach the LEAKCAM server. Check the phone\'s internet and try again.</string>
     <string name="kind_photo">photo</string>
     <string name="kind_video">15 s video</string>
+    <!-- the leak panel, opened from the alert -->
+    <string name="leak_media_waiting">%1$d new pictures, %2$d video: each appears in its place once downloaded.</string>
+    <string name="play_video">play the video</string>
 </resources>

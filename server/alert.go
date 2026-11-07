@@ -6,18 +6,28 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 )
 
+var (
+	mediaDir = Media
+	mediaRe  = regexp.MustCompile(`^[0-9A-F]{12}-[0-9]{10}-[pv][0-9]{1,2}$`)
+)
+
 const (
+	Media       = "/home/pi/leakcam-server/media"       // LEAKCAM_MEDIA: the boards' pictures and videos, by ID
 	LeakProbeMV = 1100                                  // a probe below this is wet: the firmware's comparator reference (leak_check.c VIO_LEAK)
 	WakeModeS   = 300                                   // the check-in interval in the 5-min wake mode
 	WakeModeMax = 24 * time.Hour                        // the mode ends after this at the latest: it costs the battery ~13 mAh a day
 	Tokens      = "/home/pi/leakcam-server/tokens.json" // LEAKCAM_TOKENS: per phone its FCM token
 	WifiSaved   = 0x04                                  // wifi_check's state for a network joined, checked and stored
 	VideoS      = 15                                    // a video's length (user, 2026-11-07; DESIGN.md 5.3.14)
+	LeakPhotos  = 4                                     // every leak is recorded: 4 pictures and one 15 s video (user, 2026-11-07)
 )
 
 // Leak: a device's open leak, until a phone's all-clear
@@ -63,13 +73,17 @@ func checkInAlerts(id string, in CheckIn, ans map[string]any) (msgs []map[string
 		if _, open := leaks[id]; !open {
 			leaks[id] = Leak{Since: time.Now(), Why: why}
 			log.Printf("%s: leak (%s)", id, why)
+			captures[id] = "leak" // the record of every leak, should the board not have started it itself
 			// what the alert shows: which LEAKCAM (its ID, its network), what found it, when
 			rssi := ""
 			if v, ok := m["rssi"].(int64); ok {
 				rssi = strconv.FormatInt(v, 10)
 			}
 			msgs = append(msgs, map[string]string{"type": "leak", "id": id, "why": why, "ssid": in.SSID,
-				"rssi": rssi, "at": strconv.FormatInt(in.At.Unix(), 10)})
+				"rssi": rssi, "at": strconv.FormatInt(in.At.Unix(), 10),
+				// the new pictures and video coming with it, each by its ID: the app shows one tile per ID, a spinner
+				// until it is downloaded (user, 2026-11-07); the board uploads them under the same IDs
+				"media": strings.Join(mediaIDs(id, "leak", in.At), ",")})
 		}
 	}
 	if c := wifiChanges[id]; c != nil && !c.Delivered.IsZero() && c.Result == 0 {
@@ -86,9 +100,12 @@ func checkInAlerts(id string, in CheckIn, ans map[string]any) (msgs []map[string
 		c.Delivered, c.PSK = time.Now(), ""
 	}
 	if k := captures[id]; k != "" {
-		c := map[string]any{"kind": k}
-		if k == "video" {
+		c := map[string]any{"kind": k, "ids": mediaIDs(id, k, in.At)}
+		switch k {
+		case "video":
 			c["secs"] = VideoS
+		case "leak":
+			c["photos"], c["secs"] = LeakPhotos, VideoS
 		}
 		ans["capture"] = c
 		delete(captures, id)
@@ -232,4 +249,41 @@ func capture(w http.ResponseWriter, r *http.Request) {
 	mu.Unlock()
 	log.Printf("%s: %s asked, at its next check-in", id, b.Kind)
 	reply(w, map[string]int{"within_s": within})
+}
+
+// mediaIDs: the IDs of the pictures (p1..) and videos (v1) one capture makes: "<device>-<unix s>-p1"; the board
+// uploads each under its ID and the app fetches it by it (DESIGN.md 5.3.13, 5.3.14)
+func mediaIDs(id, kind string, at time.Time) []string {
+	pre := id + "-" + strconv.FormatInt(at.Unix(), 10) + "-"
+	switch kind {
+	case "photo":
+		return []string{pre + "p1"}
+	case "video":
+		return []string{pre + "v1"}
+	}
+	ids := make([]string, 0, LeakPhotos+1)
+	for n := 1; n <= LeakPhotos; n++ {
+		ids = append(ids, pre+"p"+strconv.Itoa(n))
+	}
+	return append(ids, pre+"v1")
+}
+
+// media: GET /v1/media/{id}: a picture (<id>.jpg) or video (<id>.mp4) the board uploaded, by the ID the capture gave it
+// (mediaIDs); 404 until it is there: the app's tile keeps its spinner and asks again
+func media(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if !mediaRe.MatchString(id) {
+		http.Error(w, "id: <device>-<unix s>-p<n>|v<n>", http.StatusBadRequest)
+		return
+	}
+	ext := ".jpg"
+	if strings.Contains(id[len(id)-3:], "v") {
+		ext = ".mp4"
+	}
+	path := filepath.Join(mediaDir, id+ext)
+	if _, err := os.Stat(path); err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	http.ServeFile(w, r, path)
 }

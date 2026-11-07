@@ -864,6 +864,21 @@ person watched: 5.3.4's 15 s rule).
   HBN cycle for the **5-min wake mode**.
 - **A leak** (a wet probe, or a camera change confirmed by the leak job): the phone gets the **leak alert** at once
   and the board goes into the 5-min wake mode, waiting for the person's request (record a video, all clear).
+- **Every leak is recorded: 4 pictures and one 15 s video** (user, 2026-11-07: "once leak occurs, we always need to
+  record 4 pictures and one 15 second video"). The board starts them by itself right after the leak check that found
+  it (the K230 is on already), uploads them to the media server and reports them; the alert opens them in the app.
+  The server also asks for the set (`capture` kind `leak`: 4 photos, 15 s video) in its answer to the check-in that
+  reported the leak, for a board that did not start them. Built: the server's part; the board's comes with the cameras.
+- **After the alert, the app shows the leak** (user, 2026-11-07: "after notification, open app and point to those
+  pics"): "I see it" stops the alarm and opens the app on that board with its leak panel on top: which LEAKCAM, when,
+  what found it, and its record (4 pictures, the 15 s video) to look at and play as the board uploads it; until then
+  a spinner says it is being taken.
+- **Every picture and video has its ID** (user, 2026-11-07): `<device>-<unix s>-p1..p4` / `-v1`, made by the server
+  for each capture. The check-in answer's `capture` gives the board the IDs to upload under; the push (`media`, the
+  IDs) tells the app how many new pictures and videos there are; the app shows one tile per ID, a spinner until its
+  **gallery** has downloaded it by that ID (`GET /v1/media/<id>`, 404 until uploaded, asked again every 5 s while the
+  panel is open). A picture fills its tile, a video plays in its tile on a tap.
+  Built: IDs, push, tiles, gallery, the server's media route; the board's capture and upload with the cameras.
 - **The 5-min wake mode:** BLE sleep (the setup firmware's low-power advertising, ~0.5 mA) instead of HBN, a check-in
   every 5 min (a request from the server arrives within 5 min; a fix over BLE at any time). It ends on success / the
   person's all-clear, or after a time limit, whichever comes first (~13 mAh a day: the limit protects the battery).

@@ -56,8 +56,17 @@ class AlertActivity : Activity() {
         super.onDestroy()
     }
 
+    /** the alarm off, then the app on this leak: the board picked, its pictures and video (user 2026-11-07: "after
+     *  notification, open app and point to those pics") */
     private fun acknowledge() {
         LeakAlert.acknowledge(this, id)
+        startActivity(android.content.Intent(this, MainActivity::class.java).apply {
+            putExtra(LeakAlert.EXTRA_ID, id)
+            putExtra(LeakAlert.EXTRA_TITLE, intent.getStringExtra(LeakAlert.EXTRA_TITLE))
+            putExtra(LeakAlert.EXTRA_TEXT, intent.getStringExtra(LeakAlert.EXTRA_TEXT))
+            putExtra(LeakAlert.EXTRA_MEDIA, intent.getStringExtra(LeakAlert.EXTRA_MEDIA))
+            flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
+        })
         finish()
     }
 

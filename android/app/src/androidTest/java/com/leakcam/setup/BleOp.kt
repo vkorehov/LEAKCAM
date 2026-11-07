@@ -231,7 +231,7 @@ class BleOp {
         out.put("found", pick != null)
         pick?.click() ?: return
         SystemClock.sleep(300)
-        val more = ui.wait(Until.findObject(By.desc(ctx.getString(R.string.more))), 5000)
+        val more = ui.wait(Until.findObject(By.descStartsWith(ctx.getString(R.string.more))), 5000)   // its state after it
         out.put("more", more != null)
         more?.click() ?: return
         val item = ui.wait(Until.findObject(By.text(ctx.getString(R.string.delete))), 5000)
@@ -286,10 +286,12 @@ class BleOp {
             /* a new board: its Set up button; one of mine: the three-dots menu's Change Wi-Fi (2026-11-07: photo and video
              * are the row's buttons, Change Wi-Fi a rare action), never its Wake */
             var woken = false
+            val menuSeen = mutableListOf<String>()
+            val deadline = SystemClock.elapsedRealtime() + (arg("secs", "60").toLong() - 5).coerceAtLeast(10) * 1000
             for (attempt in 1..3) {
                 val change = ctx.getString(R.string.setup_change)
                 val wakeLabel = ctx.getString(R.string.setup_wake)
-                val deadline = SystemClock.elapsedRealtime() + 60000   // a wake: the next check-in + the switch
+                // one deadline for all tries, inside the op's own time (its result is lost past the runner's limit)
                 var opened = false
                 while (!opened && SystemClock.elapsedRealtime() < deadline) {
                     val setup = safe(null) { ui.findObject(By.res(pkg, "setup_open").enabled(true)) }
@@ -298,7 +300,14 @@ class BleOp {
                         opened = true
                     } else if (safe(null) { ui.findObject(By.res(pkg, "take_photo")) } != null) {
                         // out of BLE range the item is Wake: tapped once (the board opens BLE at its next check-in),
-                        // then Change Wi-Fi once the app sees it
+                        // then Change Wi-Fi once the app sees it; the menu opened only when the three dots say its
+                        // item works now (a disabled popup item reads as enabled)
+                        val desc = safe("") { ui.findObject(By.res(pkg, "more"))?.contentDescription ?: "" }
+                        menuSeen.add(desc)
+                        if (desc.endsWith(ctx.getString(R.string.not_now)) || (woken && !desc.endsWith(change))) {
+                            SystemClock.sleep(500)
+                            continue
+                        }
                         safe(Unit) { ui.findObject(By.res(pkg, "more"))?.click() }
                         val item = ui.wait(Until.findObject(By.text(java.util.regex.Pattern.compile(
                             java.util.regex.Pattern.quote(change) + "|" + java.util.regex.Pattern.quote(wakeLabel))).enabled(true)), 2000)
@@ -311,6 +320,7 @@ class BleOp {
                     if (!opened) SystemClock.sleep(500)
                 }
                 out.put("ms_status", ms())
+                out.put("menu_seen", menuSeen.distinct().joinToString(" | ").take(400))
                 if (ui.wait(Until.findObject(By.res(pkg, "send")), 5000) != null)
                     break
                 out.put("setup_open_taps", attempt + 1)
