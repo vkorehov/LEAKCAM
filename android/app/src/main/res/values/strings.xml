@@ -9,7 +9,6 @@
     <string name="step3">3. Enter your Wi-Fi network</string>
     <string name="step4">4. Pair, check and save</string>
 
-    <string name="scan">Find LEAKCAM</string>
     <string name="ssid">Wi-Fi name (SSID)</string>
     <string name="password">Wi-Fi password</string>
     <string name="show_password">Show password</string>
@@ -54,10 +53,10 @@
     <string name="nearby_away">%1$s is not in Bluetooth range: bring it within a few metres to change its Wi-Fi (a configured one on its battery shows up on USB power).</string>
 
     <!-- what to do now, in the box under the steps -->
-    <string name="help_plug">Bring the LEAKCAM within a few metres of the phone. A new one looks for the app for a minute every 5 minutes on its battery; plugged into a USB charger it can be found at once. Then tap Find LEAKCAM.</string>
+    <string name="help_plug">Bring the LEAKCAM within a few metres of the phone. A new one looks for the app for a minute every 5 minutes on its battery; plugged into a USB charger it is found at once. The list fills by itself.</string>
     <string name="help_scanning">Looking for LEAKCAM boards nearby…</string>
-    <string name="help_none_found">No LEAKCAM found. Keep it within a few metres; a new one on its battery shows up within 5 minutes (at once on USB power). Then tap Find LEAKCAM again.</string>
-    <string name="help_none_found_location">No LEAKCAM found. Keep it within a few metres (a new one on its battery shows up within 5 minutes, at once on USB power), and turn Location on (this Android version needs it for Bluetooth scanning), then tap Find LEAKCAM again.</string>
+    <string name="help_none_found">No LEAKCAM found. Keep it within a few metres; a new one on its battery shows up within 5 minutes (at once on USB power). The app keeps looking.</string>
+    <string name="help_none_found_location">No LEAKCAM found. Keep it within a few metres (a new one on its battery shows up within 5 minutes, at once on USB power), and turn Location on (this Android version needs it for Bluetooth scanning). The app keeps looking.</string>
     <string name="help_pick">Pick your LEAKCAM (the one with the strongest signal is usually the nearest), then enter the Wi-Fi network it should use.</string>
     <string name="help_wifi">Enter the name and password of the Wi-Fi network the LEAKCAM should use. It must be a 2.4 GHz network: the LEAKCAM does not see 5 GHz. If your router shows separate names for the two bands, pick the 2.4 GHz one. Leave the password empty for an open network. Then tap Pair, check and save: the LEAKCAM tries the network before it keeps it.</string>
     <string name="help_connecting">Connecting to %1$s…</string>
@@ -74,8 +73,8 @@
     <string name="err_permission">Allow Bluetooth access (Nearby devices) so the app can find the LEAKCAM, then tap again.</string>
     <string name="err_permission_granted">Bluetooth access allowed. Tap again to continue.</string>
     <string name="err_bluetooth_off">Bluetooth is off. Turn it on, then tap again.</string>
-    <string name="err_scan">Scanning failed (error %1$d). Turn Bluetooth off and on, then tap Find LEAKCAM again.</string>
-    <string name="err_pick">Tap Find LEAKCAM and pick your board first.</string>
+    <string name="err_scan">Scanning failed (error %1$d). Turn Bluetooth off and on: the app looks again by itself.</string>
+    <string name="err_pick">Pick your board in the list first.</string>
     <string name="err_ssid">The Wi-Fi name must be 1 to 32 characters long.</string>
     <string name="err_password">The Wi-Fi password must be 8 to 63 characters long, or empty for an open network.</string>
     <string name="err_timeout">The LEAKCAM did not answer. Keep it nearby, then try again. If a pairing request is still open on the phone, accept it first.</string>
@@ -108,7 +107,6 @@
     <string name="what_setup">switch to setup</string>
 
     <!-- setup over the USB cable (DESIGN.md 5.3.4: the most reliable channel first, USB > Bluetooth) -->
-    <string name="start_usb">Looking for a LEAKCAM on the USB cable…</string>
     <string name="usb_header">%1$s, connected by USB cable</string>
     <string name="nearby_usb">%1$s is connected by USB cable: you can set its Wi-Fi.</string>
     <string name="usb_send">Check and save</string>
@@ -149,4 +147,5 @@
     <!-- the leak panel, opened from the alert -->
     <string name="play_video">play the video</string>
     <string name="leak_more">+%1$d more</string>
+    <string name="looking">Looking for LEAKCAMs nearby…</string>
 </resources>

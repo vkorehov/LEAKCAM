@@ -141,7 +141,8 @@ class MainActivity : Activity() {
         const val UNPAIR_MS = 5_000L          // the phone removes an old bond
         const val USB_TAG = "usb"             // the board on the USB cable, in the lists where a BLE address would be
         const val USB_ID_TRIES = 10           // ID asked once a second until the K230's relay answers
-        const val START_USB_MS = 2_000L       // the start's wait for a LEAKCAM on the cable before the Bluetooth flow
+        const val DECIDE_MS = 5_000L          // the start looks on the cable and over Bluetooth this long, then the
+                                              // cable wins (DESIGN.md 5.3.4: USB > BLE; user 2026-11-07)
         // the status screen's periods; a debug build on the bench runs them 3x faster (`adb shell settings put global
         // leakcam_fast_timing 1`): the tests wait for the app's refreshes, not real-time (2026-11-07). Android drops
         // scans started more than 5 in 30 s: the fast scan stays at one per 9 s
@@ -153,7 +154,6 @@ class MainActivity : Activity() {
     private lateinit var steps: List<TextView>
     private lateinit var stepTexts: List<String>
     private lateinit var help: TextView
-    private lateinit var scanButton: Button
     private lateinit var sendButton: Button
     private lateinit var setupMore: android.widget.ImageButton
     // the setup screen's rare actions (its three-dots menu): Save without checking after a check that may have failed
@@ -242,9 +242,6 @@ class MainActivity : Activity() {
     private var usbFlow = false          // the cable screen is open
     private var usbIdTries = 0           // IDs asked on this link
     private var starting = true          // the start's spinner: waiting for the cable, the server's list
-    private var startWaitOver = false
-    private var mineLoaded = false
-    private lateinit var startPanel: View
     private lateinit var usbHeader: TextView
 
     private var timeScale = 1L                // 3: fast timing for the bench tests (debug builds only)
@@ -259,7 +256,6 @@ class MainActivity : Activity() {
         steps = listOf(R.id.step1, R.id.step2, R.id.step3, R.id.step4).map { findViewById(it) }
         stepTexts = steps.map { it.text.toString() }
         help = findViewById(R.id.help)
-        startPanel = findViewById(R.id.start_panel)
         usbHeader = findViewById(R.id.usb_header)
         statusPanel = findViewById(R.id.status_panel)
         setupPanel = findViewById(R.id.setup_panel)
@@ -277,14 +273,13 @@ class MainActivity : Activity() {
             val id = selected
             android.widget.PopupMenu(this, v).apply {
                 menu.add(changeLabel).apply { isEnabled = changeEnabled }.setOnMenuItemClickListener {
-                    addressOf(id)?.let { openSetup(it) } ?: wake(id); true
+                    addressOf(id)?.let { openBoard(it) } ?: wake(id); true
                 }
                 if (deletable)
                     menu.add(R.string.delete).setOnMenuItemClickListener { forget(id); true }
                 show()
             }
         }
-        scanButton = findViewById(R.id.scan)
         sendButton = findViewById(R.id.send)
         setupMore = findViewById(R.id.setup_more)
         devices = findViewById(R.id.devices)
@@ -306,7 +301,6 @@ class MainActivity : Activity() {
             passwordField.setSelection(passwordField.text.length)
         }
         devices.setOnCheckedChangeListener { _, _ -> if (!scanning && gatt == null && !sending) wifiHelp() }
-        scanButton.setOnClickListener { if (ready()) startScan() }
         sendButton.setOnClickListener { if (ready()) send(true) }
         setupMore.setOnClickListener { v ->
             android.widget.PopupMenu(this, v).apply {
@@ -317,35 +311,33 @@ class MainActivity : Activity() {
                 show()
             }
         }
-        setupOpen.setOnClickListener { addressOf(selected)?.let { openSetup(it) } }
+        setupOpen.setOnClickListener { addressOf(selected)?.let { openBoard(it) } }
         deleteSharedPreferences("devices")    // the list an older version kept: the server holds it now (DESIGN.md 5.3.5)
         Log.i(TAG, "phone $phoneId")      // the tests register this phone at the server by it
         PushService.register(this)        // the server can push the leak alert to this phone (DESIGN.md 5.3.13)
-        // the cable first (the spinner), the list from the server meanwhile: then the cable screen, else the list, or the
-        // Bluetooth setup when it is empty (or no server)
+        // the list at once, looking over Bluetooth, the cable in parallel (user 2026-11-07: no USB wait at every start):
+        // a LEAKCAM answering on the cable takes the screen (onUsbLine); the server's list fills in when it comes
         usbLink = UsbLink(this, ::onUsbLine, ::onUsbUp)
         usbLink.start()
-        loadMine { mineLoaded = true; startDecide() }
-        usbTimer.postDelayed({ startWaitOver = true; startDecide() }, START_USB_MS)
-        // started by a leak alert: its leak panel once the start has decided (the start shows the status screen)
+        loadMine { if (onStatus) render() }
+        showStatus()                       // looking over Bluetooth at once; the cable's answer decides at DECIDE_MS
+        usbTimer.postDelayed({ startDecide() }, DECIDE_MS)
         if (intent.hasExtra(LeakAlert.EXTRA_ID))
-            usbTimer.postDelayed({ showLeak(intent) }, START_USB_MS + 200)
+            showLeak(intent)               // started by a leak alert: its leak panel
     }
 
-    /** the start's end: a LEAKCAM answered on the cable -> its screen; else, once the wait is over (and an enumerated
-     *  one stopped being asked) and the list is in, the list or the Bluetooth setup */
+    /** the start's decision after DECIDE_MS of looking both ways: a LEAKCAM on the cable is picked in the list (the
+     *  cable first, DESIGN.md 5.3.4), the screen only adjusted, never switched (user 2026-11-07) */
     private fun startDecide() {
         if (!starting)
             return
-        if (usbId.isNotEmpty()) {
-            starting = false
-            return openUsb()
-        }
-        if (!startWaitOver || !mineLoaded || (usbLink.up && usbIdTries < USB_ID_TRIES))
-            return
         starting = false
-        Log.i(TAG, "start: no LEAKCAM on the cable")   // test113
-        if (known().length() == 0) openSetup(null) else showStatus()
+        if (usbId.isEmpty()) {
+            Log.i(TAG, "start: no LEAKCAM on the cable")   // test113
+            return
+        }
+        selected = usbId
+        if (onStatus) render()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -498,6 +490,9 @@ class MainActivity : Activity() {
         }.start()
     }
 
+    /** the setup of a board in reach: over the cable when it is on it, else over Bluetooth */
+    private fun openBoard(address: String) = if (address == USB_TAG) openUsb() else openSetup(address)
+
     /** the setup screen's three dots: there (keeping its place when empty) only when it has an item */
     private fun setupMenu() {
         setupMore.visibility = if (anywayOffered || backOffered) View.VISIBLE else View.INVISIBLE
@@ -574,7 +569,6 @@ class MainActivity : Activity() {
         val settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
         scanner.startScan(listOf(filter), settings, scanCallback)
         scanning = true
-        scanButton.isEnabled = false
         sendButton.isEnabled = false
         show(STEP_FIND, R.string.help_scanning)
         main.postDelayed({ scanDone() }, SCAN_MS)
@@ -601,7 +595,6 @@ class MainActivity : Activity() {
         if (scanning && permissionsGranted())
             adapter?.bluetoothLeScanner?.stopScan(scanCallback)
         scanning = false
-        scanButton.isEnabled = true
         sendButton.isEnabled = true
     }
 
@@ -748,7 +741,6 @@ class MainActivity : Activity() {
     private fun showStatus() {
         onStatus = true
         usbFlow = false
-        startPanel.visibility = View.GONE
         scannedOnStatus = false
         setupPanel.visibility = View.GONE
         statusPanel.visibility = View.VISIBLE
@@ -915,9 +907,7 @@ class MainActivity : Activity() {
             return openUsb()                // a board on the cable: its own screen, over USB
         onStatus = false
         usbFlow = false
-        startPanel.visibility = View.GONE
         usbHeader.visibility = View.GONE
-        scanButton.visibility = View.VISIBLE
         devices.visibility = View.VISIBLE
         sendButton.setText(R.string.send)
         devices.findViewWithTag<View>(USB_TAG)?.let { devices.removeView(it) }
@@ -941,9 +931,10 @@ class MainActivity : Activity() {
             show(STEP_PLUG, R.string.help_plug)
             // no tap for Find when nothing has to be asked first: the full Find took 10 s of the setup (test106). A
             // running scan goes on: Android ignores an app that starts more than 5 scans in 30 s (test111)
+            // no Find button: the list fills by itself (user 2026-11-07); ready() asks for what is missing first
             if (scanning)
                 show(STEP_FIND, R.string.help_scanning)
-            else if (permissionsGranted() && adapter?.isEnabled == true)
+            else if (ready())
                 startScan()
         } else {
             // the board the status screen found, picked: Send needs no second Find
@@ -995,7 +986,6 @@ class MainActivity : Activity() {
         reconciling = false
         watchAdapter()
         sendButton.isEnabled = false
-        scanButton.isEnabled = false
         anywayOffered = false
         setupMenu()
         show(STEP_SAVE, R.string.help_connecting, name)
@@ -1119,7 +1109,6 @@ class MainActivity : Activity() {
         usbLater.clear()
         usbSwitching = false
         sendButton.isEnabled = true
-        scanButton.isEnabled = true
         if (wasSending)
             done?.invoke()
     }
@@ -1438,10 +1427,9 @@ class MainActivity : Activity() {
         usbFlow = true
         ticker.removeCallbacksAndMessages(null)
         stopScan()
-        startPanel.visibility = View.GONE
         statusPanel.visibility = View.GONE
         setupPanel.visibility = View.VISIBLE
-        for (v in listOf<View>(findViewById(R.id.intro), steps[0], steps[1], steps[2], steps[3], scanButton, devices))
+        for (v in listOf<View>(findViewById(R.id.intro), steps[0], steps[1], steps[2], steps[3], devices))
             v.visibility = View.GONE
         usbHeader.visibility = View.VISIBLE
         usbHeader.text = getString(R.string.usb_header, usbId)
@@ -1549,11 +1537,12 @@ class MainActivity : Activity() {
                     charging[p[1]] = p[4] == "1"
                 }
                 Log.i(TAG, "usb board $usbId creds ${if (usbStored) 1 else 0}")   // test113
-                if (starting)
-                    startDecide()
-                else if (!sending && !(step == STEP_DONE && boardId == usbId))
-                    openUsb()                // plugged in while the app runs: the cable screen at once; Done stays
-                                             // when the board just set up is back on its full firmware's relay
+                // the start decides at DECIDE_MS; later a plug just adds the row, picked (the screen adjusted on the
+                // fly), never over a setup that runs or its Done (the board just set up back on its relay)
+                if (!starting && onStatus) {
+                    selected = usbId
+                    render()
+                }
             }
             p[0] == "STATUS" && p.size >= 4 -> {
                 if (!sending || !viaUsb)
@@ -1597,7 +1586,6 @@ class MainActivity : Activity() {
         viaUsb = true
         sending = true
         sendButton.isEnabled = false
-        scanButton.isEnabled = false
         anywayOffered = false
         setupMenu()
         show(STEP_SAVE, R.string.help_usb_sending, boardName)

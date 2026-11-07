@@ -594,6 +594,10 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
 
 ### 5.3.4 The setup channel and the app's link icons (user, 2026-11-04)
 
+- **One main screen that keeps looking (user, 2026-11-07):** the app opens on the board list at once and looks over
+  BLE and on the USB cable in parallel (no Find button, no start screen, a spinner line under the list); a new board
+  appears as a row to set up; at 5 s a board on the cable is picked (USB first), a later plug adds its row picked:
+  the screen adjusted, never switched. The setup screen only takes the picked board's Wi-Fi.
 - **Rows show only the board and its icons (user, 2026-11-07):** rare actions (Delete) sit in a three-dots menu at the
   row's end, never as buttons in a list row.
 - **Every user-facing step well under 15 s, with a spinner (user, 2026-11-07):** a person closes the app after 15 s of
