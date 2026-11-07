@@ -17,11 +17,12 @@ import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import adb, board_id, firmware, intervals, only_boards, op, phone_boards, product, ready, register, to_firmware   # noqa: E402
+from phone import adb, board_checkin, board_id, firmware, intervals, only_boards, op, phone_boards, product, ready, register, to_firmware   # noqa: E402
 
 SERVER = "http://192.168.1.159:8090"
 CHECKIN_S = 10                      # for the run; the bench server's default is 60
-SECOND = "02AB12CD34EF"          # the second LEAKCAM: an ID no board has (locally administered MAC)
+# the second LEAKCAM: an ID no board has (locally administered MAC), new each run: the server keeps the last run's
+SECOND = "02" + os.urandom(5).hex().upper()
 PKG = "com.leakcam.setup"
 
 _lock = open(__file__)
@@ -49,6 +50,9 @@ def server(path, form=None):
 def checkin_interval(s):
     """the board's check-in interval, per device at the server (DESIGN.md 5.3.12): taken at its next check-in"""
     intervals(board_id(), checkin=s)
+    t0 = time.time()
+    while board_checkin() != s and time.time() - t0 < 75:    # taken at its next check-in: up to one old interval
+        time.sleep(3)
 
 
 def app_mine():
@@ -104,11 +108,15 @@ try:
     check("USB serial number = the device ID", usb_id == dev, f"USB {usb_id}")
     add_to_app(dev, only=True)   # starting state: the app knows this board, nothing else
     adb("logcat", "-c")
-    res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=30)
+    # a known board runs the full firmware: the app wakes it through the server (its next check-in, 10 s) and it switches
+    # to the setup firmware (~25 s) before BLE finds it
+    res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=60)
     helps = res.get("help", [])
     last = helps[-1]["help"] if helps else res.get("error", "no help text")
     check("setup Done", last.startswith("Done."), f"{res.get('ms_end', 0) / 1000:.1f} s")
     logcat = adb("logcat", "-d", "-s", "LeakcamSetup:I")
+    if not last.startswith("Done."):
+        r.clog.write(f"--- the app's log, setup not Done ({last[:60]})\n{logcat[-6000:]}\n")
     system = adb("logcat", "-d")
     check("pairing: the app entered the PIN, no PIN prompt on the phone", "pairing PIN entered by the app" in logcat
           and "bluetooth.BluetoothPairingDialog" not in system,
@@ -117,8 +125,9 @@ try:
     check("BLE advertisement = the device ID", dev in found, str(found))
     if res.get("status_screen"):         # the app knew the board already: its short flow, the network shown hidden
         check("known board: the status screen opened its setup", True, f"{res.get('ms_status', 0) / 1000:.1f} s")
-        check("known board: the short 'change its Wi-Fi' flow", any("Enter the new Wi-Fi network for" in h["help"]
-                                                                      for h in helps), helps[0]["help"][:50] if helps else "")
+        # from the app's log: the op records the help texts from its Send on, this one comes before (2026-11-07)
+        check("known board: the short 'change its Wi-Fi' flow", f"Enter the new Wi-Fi network for {dev}" in logcat,
+              "shown" if "Enter the new Wi-Fi network for" in logcat else "not in the app's log")
     check("advertisement: a stored network flagged", re.search(rf"found \S+ id {dev} creds 1", logcat) is not None,
           (re.findall(rf"found \S+ id {dev} creds (\d)", logcat) or ["?"])[-1])
     prefs = adb("shell", "run-as", PKG, "ls", "shared_prefs")
@@ -149,6 +158,7 @@ try:
     add_to_app(SECOND)
     lines = app_mine()
     check("app: second LEAKCAM listed, not seen yet", "not seen yet" in lines.get(SECOND, ""), lines.get(SECOND))
+    intervals(SECOND, checkin=CHECKIN_S)   # per device (DESIGN.md 5.3.12), before its check-in: the answer tells it
     server(f"/v1/poll?id={SECOND}", b"ssid=t111-second")   # as a board reports its network
     lines = app_mine()
     check("app: second LEAKCAM online after its check-in", ": online" in lines.get(SECOND, ""), lines.get(SECOND))

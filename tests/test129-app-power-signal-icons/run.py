@@ -73,17 +73,24 @@ def add_only(dev):
 
 def long_press_signal():
     """a long press on the signal icon (its description from strings.xml icon_signal); the dB value it logged"""
-    xml = adb("exec-out", "uiautomator", "dump", "/dev/tty", secs=30)
-    m = re.search(r'content-desc="signal strength[^"]*"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml)
-    if not m:
-        return None
-    x1, y1, x2, y2 = map(int, m.groups())
-    x, y = str((x1 + x2) // 2), str((y1 + y2) // 2)
-    adb("logcat", "-c")
-    adb("shell", "input", "swipe", x, y, x, y, "800", secs=15)
-    time.sleep(1)
-    got = re.findall(r"dbm (-?\d+)", adb("logcat", "-d", "-s", "LeakcamSetup:I", secs=30))
-    return int(got[-1]) if got else None
+    for attempt in (1, 2):
+        xml = adb("exec-out", "uiautomator", "dump", "/dev/tty", secs=30)
+        m = re.search(r'content-desc="signal strength[^"]*"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml)
+        if not m:
+            log("long press", attempt, "no signal icon in the screen dump", f"({len(xml)} B)")
+            time.sleep(2)
+            continue
+        x1, y1, x2, y2 = map(int, m.groups())
+        x, y = str((x1 + x2) // 2), str((y1 + y2) // 2)
+        adb("logcat", "-c")
+        adb("shell", "input", "swipe", x, y, x, y, "800", secs=15)
+        time.sleep(1)
+        app = adb("logcat", "-d", "-s", "LeakcamSetup:I", secs=30)
+        got = re.findall(r"dbm (-?\d+)", app)
+        if got:
+            return int(got[-1])
+        log("long press", attempt, f"at {x},{y}: no dbm line; rows redrawn meanwhile {app.count(' row ')}")
+    return None
 
 
 ssid, psk = wifi_credentials()

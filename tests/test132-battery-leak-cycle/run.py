@@ -5,6 +5,7 @@ out (the BL616 console stays on its own port), the probe wet and dry, USB-C 1 ba
 phone). The HBN sleep between the events is not built yet: the firmware stays awake, so no sleep current here.
     tests/test132-battery-leak-cycle/run.py
 """
+import concurrent.futures
 import json
 import os
 import re
@@ -29,9 +30,13 @@ def plain(s):
     return re.sub(r"\x1b\[[0-9;]*m", "", s)
 
 
-def metrics():
+def device():
     with urllib.request.urlopen(f"{SERVER}/v1/devices/{dev}", timeout=5) as f:
-        d = json.loads(f.read())
+        return json.loads(f.read())
+
+
+def metrics():
+    d = device()
     return d.get("metrics", {}), d.get("last_seen_s", -1), d.get("charging")
 
 
@@ -46,7 +51,9 @@ def wait(pred, secs, step=2):
 
 def session(secs, why):
     """the BL616's console from now until the K230 goes off with `why` (a check's whole session); the lines"""
-    return plain(bl("leak", secs, r"k230: off \(" + re.escape(why) + r"\)[^\n]*\n"))
+    out = plain(bl("leak", secs, r"k230: off \(" + re.escape(why) + r"\)[^\n]*\n"))
+    r.clog.write(f"--- BL616 session ({why}) {time.strftime('%H:%M:%S', time.gmtime())} UTC\n{out}\n")
+    return out
 
 
 def session_facts(out):
@@ -79,8 +86,9 @@ if hand("USB-C 1: pull the cable out (the board on its battery; the BL616 consol
     sys.exit(1)
 t = wait(lambda: metrics()[2] is False, 40)
 m, _, _ = metrics()
-check("unplugged: the server sees chg 0 at once, the battery read", t is not None and m.get("bat", 0) > 3000,
-      f"{t:.0f} s, bat {m.get('bat')} mV" if t is not None else "no chg 0 in 40 s")
+bat = device().get("battery_mv", 0)
+check("unplugged: the server sees chg 0 at once, the battery read", t is not None and bat > 3000,
+      f"{t:.0f} s, bat {bat} mV" if t is not None else "no chg 0 in 40 s")
 
 # 2. the RTC's check on battery: a K230 session `rtc`, DONE changed,same, the K230 off after it, at the server at once
 intervals(dev, leakcheck=60)
@@ -103,10 +111,12 @@ if on_ms:
 intervals(dev)                                            # no more RTC checks while the probe is tested
 
 # 3. a wet probe: at once, a session `leak`, DONE, off; the probe low at the server
+# the console read from before the ask: the wet edge and its whole check (~2 s) come before the hand word
+reader = concurrent.futures.ThreadPoolExecutor(1).submit(session, 900, "leak check done")
 if hand("Probe: wet it (a wet towel across the probe pads)", "wet") is None:
     r.finish("stopped: the probe never wet", False, switch_off=False)
-    sys.exit(1)
-out = session(60, "leak check done")
+    os._exit(1)
+out = reader.result()
 res, ask_ms, on_ms2, why = session_facts(out)
 check("wet probe: `leak: probe wet` and a K230 session leak", "leak: probe wet" in out and "k230: session leak" in out)
 check("wet probe: DONE, the K230 off after it", res is not None and why == "leak check done", f"{res}, rails on {on_ms2} ms")

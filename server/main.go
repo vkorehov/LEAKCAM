@@ -106,6 +106,7 @@ type CheckIn struct {
 	Bat     int // mV, -1 none
 	Chg     bool
 	Metrics map[string]any
+	Told    int // the check-in interval in this check-in's answer: the one the device keeps until its next
 }
 
 // Intervals: a device's check-in and leak check intervals in seconds, the server's defaults where 0
@@ -253,6 +254,8 @@ func poll(w http.ResponseWriter, r *http.Request) {
 	}
 	appendSample(Sample{id, in.At.UTC().Format(time.RFC3339), in.Image, in.Version, in.Bat, in.Chg, in.Metrics})
 	mu.Lock()
+	iv := deviceIntervalsLocked(id)
+	in.Told = iv.Checkin
 	seen[id] = in
 	if p, ok := phones[id]; ok && len(p) == 0 {
 		mu.Unlock()
@@ -266,7 +269,6 @@ func poll(w http.ResponseWriter, r *http.Request) {
 		woken[id] = time.Now()
 	}
 	mu.Unlock()
-	iv := deviceIntervals(id)
 	ans := map[string]any{"stream": 0, "checkin": iv.Checkin, "leakcheck": iv.LeakCheck, "ble": ble}
 	// an upgrade only to a full firmware that said its version: the setup firmware is changed by wire only
 	if in.Image == "full" {
@@ -472,7 +474,9 @@ func deviceInfo(id string) Device {
 		d.SSID = c.SSID
 		d.BatteryMV, d.Charging = c.Bat, c.Chg
 		d.Metrics = c.Metrics
-		d.Online = d.LastSeen < int64(3*d.Intervals.Checkin) // three check-ins missed: offline
+		// three check-ins missed: offline, by the interval the device was told (a new one is taken at its next check-in:
+		// a shortened one judged at once made a board on the old 60 s "offline" for a minute, test111 2026-11-07)
+		d.Online = d.LastSeen < int64(3*c.Told)
 	}
 	return d
 }

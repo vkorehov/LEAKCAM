@@ -134,3 +134,42 @@ func TestJobMetrics(t *testing.T) {
 		t.Fatalf("metrics %v", m)
 	}
 }
+
+// online is judged by the interval the device was told at its last check-in: a shortened one is not yet in force
+// (test111 2026-11-07: checkin 10 set on a board on 60 s showed it offline 30 s after its check-in)
+func TestOnlineByToldInterval(t *testing.T) {
+	s := testServer(t)
+	checkIn(t, s, url.Values{"full": {"0.6+g1234567"}})
+	mu.Lock()
+	c := seen[TestID]
+	c.At = time.Now().Add(-40 * time.Second) // 40 s ago, told 3600
+	seen[TestID] = c
+	mu.Unlock()
+	if put(t, s, `{"checkin":10}`) != http.StatusOK {
+		t.Fatal("PUT")
+	}
+	online := func() bool {
+		r, err := http.Get(s.URL + "/v1/devices/" + TestID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer r.Body.Close()
+		var d Device
+		if err := json.NewDecoder(r.Body).Decode(&d); err != nil {
+			t.Fatal(err)
+		}
+		return d.Online
+	}
+	if !online() {
+		t.Error("offline 40 s after a check-in told 3600 s, by the new 10 s not yet sent")
+	}
+	checkIn(t, s, url.Values{"full": {"0.6+g1234567"}}) // now told 10
+	mu.Lock()
+	c = seen[TestID]
+	c.At = time.Now().Add(-40 * time.Second)
+	seen[TestID] = c
+	mu.Unlock()
+	if online() {
+		t.Error("online 40 s after a check-in told 10 s")
+	}
+}

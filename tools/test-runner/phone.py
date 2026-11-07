@@ -67,18 +67,28 @@ def adb(*a, secs=180):
 def awake():
     """the screen on and the lock screen gone: on battery `svc power stayon` does not hold, the phone dozed after its
     timeout and Wi-Fi adb stopped answering (test040, 2026-11-04); the bench phone has a PIN lock (2026-11-05), typed
-    from ~/.leakcam_phone_pin (600, not in git) as key events, never printed"""
+    from ~/.leakcam_phone_pin (600, not in git) as key events, never printed; True once unlocked (the runner unlocks it,
+    never the user: 2026-11-07)"""
+    def locked():
+        return "mIsShowing=true" in adb("shell", "dumpsys", "window", secs=15)   # Samsung: no isKeyguardShowing
+
     try:
         adb("shell", "input", "keyevent", "KEYCODE_WAKEUP", secs=10)
         adb("shell", "wm", "dismiss-keyguard", secs=10)
-        if "mIsShowing=true" not in adb("shell", "dumpsys", "window", secs=15):
-            return
         pin = (Path.home() / ".leakcam_phone_pin").read_text().strip()
-        adb("shell", "input", "swipe", "540", "1800", "540", "600", "300", secs=10)
-        time.sleep(1)
-        adb("shell", "input", "keyevent", *[f"KEYCODE_{d}" for d in pin], "KEYCODE_ENTER", secs=15)
+        for _ in range(3):
+            if not locked():
+                return True
+            adb("shell", "input", "swipe", "540", "1800", "540", "600", "300", secs=10)
+            time.sleep(1)
+            adb("shell", "input", "keyevent", *[f"KEYCODE_{d}" for d in pin], "KEYCODE_ENTER", secs=15)
+            for _ in range(5):                  # right after the PIN it still reads locked for a moment (2026-11-07)
+                time.sleep(1)
+                if not locked():
+                    return True
+        return False
     except subprocess.TimeoutExpired:
-        pass                                    # the op's own call then fails, logged
+        return False                            # the op's own call then fails, logged
 
 
 def keep_awake():
@@ -344,8 +354,7 @@ def ready(notes):
     adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")
     adb("shell", "cmd", "bluetooth_manager", "enable")
     # a locked phone shows the pairing dialog over the lock screen, where UI Automator cannot press it (2026-10-28)
-    awake()
-    if "mIsShowing=true" in adb("shell", "dumpsys", "window", secs=15):   # Samsung: mIsShowing, no isKeyguardShowing
+    if not awake():
         return "the phone is locked and the PIN in ~/.leakcam_phone_pin did not open it"
     keep_awake()
     return None
