@@ -1,5 +1,6 @@
 #include "presence.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,9 +46,76 @@ static long answer_value(const char *body, const char *key)
     return p ? strtol(p + strlen(k), NULL, 10) : -1;
 }
 
+/* a JSON string value "<key>":"..." at or after `from`, unescaped into out (\" \\ \/ and \u00XX; anything else
+ * refused: an SSID is 1-32 bytes, a passphrase 8-63 printable); its length, -1 when absent or refused */
+static int answer_string(const char *from, const char *key, char *out, size_t cap)
+{
+    char k[24];
+    snprintf(k, sizeof(k), "\"%s\":\"", key);
+    const char *p = strstr(from, k);
+    if (!p)
+        return -1;
+    size_t n = 0;
+    for (p += strlen(k); *p && *p != '"'; p++) {
+        char c = *p;
+        if (c == '\\') {
+            c = *++p;
+            if (c == 'u' && p[1] == '0' && p[2] == '0' && isxdigit((unsigned char)p[3]) && isxdigit((unsigned char)p[4])) {
+                char hex[3] = { p[3], p[4], 0 };
+                c = (char)strtol(hex, NULL, 16);
+                p += 4;
+            } else if (c != '"' && c != '\\' && c != '/')
+                return -1;
+        }
+        if (n + 1 >= cap)
+            return -1;
+        out[n++] = c;
+    }
+    if (*p != '"')
+        return -1;
+    out[n] = 0;
+    return (int)n;
+}
+
+/* a new network from the server (DESIGN.md 5.3.13): "wifi":{"ssid":..,"psk":..} in the answer, tested with the whole
+ * check (join, address, internet, the API: a check-in on it), stored only when all pass, else the old one kept; the
+ * result reported at once (`wchg`, the server notifies the phone of a failure). true when one was tried */
+static bool wifi_change(const char *answer)
+{
+    const char *w = strstr(answer, "\"wifi\":{");
+    if (!w)
+        return false;
+    char ssid[33], psk[64], path[API_PATH_CAP], body[256];
+    int sl = answer_string(w, "ssid", ssid, sizeof(ssid));
+    int pl = answer_string(w, "psk", psk, sizeof(psk));
+    if (sl < 1 || pl < 0 || (pl > 0 && pl < 8)) {
+        printf("presence: a Wi-Fi change the board cannot read\r\n");
+        metrics_wifi_change(WCHK_JOIN_FAILED);
+        return true;
+    }
+    printf("presence: trying the new Wi-Fi \"%s\" from the server\r\n", ssid);   /* the SSID is not secret */
+    struct wifi_check_target t;
+    api_poll_target(&t, path, ssid, (size_t)sl, body, sizeof(body));
+    uint16_t detail;
+    enum wifi_check_state st = wifi_check_run(ssid, (size_t)sl, psk, (size_t)pl, &t, NULL, no_progress, &detail);
+    if (st == WCHK_INTERNET && (ef_set_env_blob("wifi_ssid", ssid, (size_t)sl) != EF_NO_ERR ||
+                                ef_set_env_blob("wifi_psk", psk, (size_t)pl) != EF_NO_ERR))
+        st = WCHK_SAVE_FAILED;
+    if (st == WCHK_INTERNET) {
+        (void)ef_del_env("wifi_ap");         /* the old network's access point: the next join scans for the new one */
+        st = WCHK_SAVED;                     /* reported as the app's setup reports it: checked and stored */
+    }
+    memset(psk, 0, sizeof(psk));
+    printf("presence: the new Wi-Fi: state 0x%02x detail %u, %s\r\n", st, detail,
+           st == WCHK_SAVED ? "stored" : "the old one kept");
+    metrics_wifi_change(st);
+    presence_now();                          /* reported now, on the network it is on */
+    return true;
+}
+
 static void check_in(void)
 {
-    char ssid[33], psk[64], path[API_PATH_CAP], body[384];   /* an upgrade offer ~280 B */
+    char ssid[33], psk[64], path[API_PATH_CAP], body[768];   /* an upgrade offer ~280 B, a network, media IDs */
     size_t ss = 0, ps = 0;
     size_t sl = ef_get_env_blob("wifi_ssid", ssid, sizeof(ssid) - 1, &ss);
     size_t pl = ef_get_env_blob("wifi_psk", psk, sizeof(psk) - 1, &ps);
@@ -82,6 +150,8 @@ static void check_in(void)
         return;
     }
     missed = 0;
+    if (wifi_change(body))
+        return;                           /* the rest of this answer waits for the next check-in, on its network */
     if (ota_fetch(body, ssid, sl, psk, ps ? pl : 0)) {
         switch_to_setup("ota");           /* the copy is in: the setup firmware unpacks it (DESIGN.md 5.3.7) */
         return;
@@ -106,7 +176,7 @@ static void presence_task(void *arg)
 
 void presence_start(void)
 {
-    if (xTaskCreate(presence_task, "pres", 2048, NULL, 2, &task) != pdPASS)
+    if (xTaskCreate(presence_task, "pres", 3072, NULL, 2, &task) != pdPASS)   /* the answer and a new network's check */
         vAssertCalled();
 }
 

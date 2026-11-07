@@ -18,7 +18,8 @@
 #include "mem_stat.h"
 #include "wifi_check.h"
 
-#define MAGIC 0x4d455433u                    /* "MET3": the record is set (2: the leak check, 3: the intervals) */
+#define MAGIC 0x4d455434u                    /* "MET4": the record is set (2: the leak check, 3: the intervals,
+                                              * 4: the Wi-Fi change's result) */
 #define JOB_CAP 24                           /* "changed,changed" and room */
 #define K230_VER_CAP 40                      /* "0.6+g4ec6b02-dirty-202611061530" and room */
 
@@ -39,6 +40,8 @@ static struct {
     uint32_t job_boot;
     int32_t job_at_s;
     uint32_t checkin_s, leakcheck_s;         /* the server's intervals (DESIGN.md 5.3.12), 0 = none yet */
+    int32_t wifi_change;                     /* the last Wi-Fi change from the server: its wifi_check state, 0 none
+                                              * (DESIGN.md 5.3.13); until a good check-in reported it */
 } rec __attribute__((section(".hbn_noinit.metrics")));
 
 static uint8_t rst;                          /* GLB reset recorder bits of this boot (bl616_glb.h) */
@@ -248,6 +251,8 @@ size_t metrics_form(char *form, size_t len, size_t cap)
     }
     if (rec.job[0])
         ADD("&job=%s&jago=%ld", rec.job, rec.job_boot == rec.boots ? (long)(now - (uint32_t)rec.job_at_s) : -1L);
+    if (rec.wifi_change)
+        ADD("&wchg=%ld", (long)rec.wifi_change);
     return len;
 }
 
@@ -259,6 +264,12 @@ void metrics_checkin(bool ok)
     }
     rec.fails = rec.switches = rec.usb_wakes = 0;
     rec.k_sessions = rec.k_failed = rec.k_on_ms = 0;
+    rec.wifi_change = 0;
+}
+
+void metrics_wifi_change(int state)
+{
+    rec.wifi_change = state;
 }
 
 static void cmd_metrics(int argc, char **argv)

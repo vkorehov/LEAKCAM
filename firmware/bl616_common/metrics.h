@@ -41,5 +41,7 @@ size_t metrics_form(char *form, size_t len, size_t cap);
 
 /* the check-in's answer: ok resets the counters it reported, a failure counts */
 void metrics_checkin(bool ok);
+/* a Wi-Fi change from the server tried: its wifi_check state (WCHK_SAVED: stored), reported once (DESIGN.md 5.3.13) */
+void metrics_wifi_change(int state);
 
 #endif
