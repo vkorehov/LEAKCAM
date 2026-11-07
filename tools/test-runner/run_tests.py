@@ -78,7 +78,7 @@ def crash_check(when):
 
 
 # names every test folder has: a change of one test's copy says nothing about the others
-GENERIC = {"README.md", "HISTORY.md", "run.py", "run.log", "console.log", "CMakeLists.txt", "Makefile", "SPEEDS.txt",
+GENERIC = {"README.md", "HISTORY.md", "DESIGN.md", "run.py", "run.log", "console.log", "CMakeLists.txt", "Makefile", "SPEEDS.txt",
            "ENERGY.txt"}
 
 
@@ -100,7 +100,8 @@ def changed_tests(runs, ref):
         rel = os.path.relpath(d, repo) + "/"
         if any(n.startswith(rel) and not n.endswith(("README.md", "HISTORY.md", ".log", ".txt")) for n in names) or \
                 any(re.search(rf"(?<![\w.]){re.escape(os.path.basename(n))}(?![\w])", needs) for n in names
-                    if "." in os.path.basename(n) and os.path.basename(n) not in GENERIC and not n.endswith(".log")):
+                    if "." in os.path.basename(n) and os.path.basename(n) not in GENERIC and not n.endswith(".log")
+                    and not n.startswith("tools/")):   # the product's code only: a shared test tool named it everywhere
             picked.append(r)
     return picked
 
