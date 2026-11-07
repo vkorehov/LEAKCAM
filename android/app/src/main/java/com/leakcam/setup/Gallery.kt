@@ -1,79 +1,113 @@
 package com.leakcam.setup
 
 import android.app.Activity
-import android.graphics.BitmapFactory
+import android.content.ContentValues
+import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import android.provider.MediaStore
 import android.util.Log
+import android.util.Size
 import android.widget.FrameLayout
 import android.widget.ImageView
-import android.widget.VideoView
 import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * The leak panel's gallery (DESIGN.md 5.3.13): each picture and video by the ID the push announced, from the server
- * (GET /v1/media/<id>); its tile keeps its spinner until the file is there (the board uploads it after the push), asked
- * again every few seconds while the panel is open. A picture fills its tile; a video plays in its tile on a tap.
+ * The leak panel's pictures and video (DESIGN.md 5.3.13): each by the ID the push announced, downloaded from the server
+ * (GET /v1/media/<id>) into the phone's gallery (Pictures/LEAKCAM, Movies/LEAKCAM, the ID as its name: saved once) - the
+ * phone's own viewer and player show them, zoom, share and back them up (user 2026-11-07: "why not store in gallery?").
+ * The leak panel shows one preview (the first file there) with "+N more"; a tap opens the album (open()). A file not on
+ * the server yet is asked for again every 5 s while the panel is on the screen.
  */
 class Gallery(private val activity: Activity) {
     private val main = Handler(Looper.getMainLooper())
-    private val done = mutableSetOf<String>()
 
-    fun fetch(id: String, tile: FrameLayout) {
-        if (id in done)
-            return
+    /** one picture or video into the gallery; ready(uri, thumbnail) once it is there. `on` is the view that needs it:
+     *  asked again only while it is on the screen (no polling in the background) */
+    fun fetch(id: String, on: android.view.View, ready: (Uri, Bitmap?) -> Unit) {
         val video = id.substringAfterLast('-').startsWith("v")
-        val url = "${BuildConfig.SERVER}/v1/media/$id"
         Thread {
-            try {
-                val c = URL(url).openConnection() as HttpURLConnection
-                c.connectTimeout = 5000
-                c.readTimeout = 15000
-                if (video) c.requestMethod = "HEAD"
-                if (c.responseCode == 200) {
-                    val bmp = if (video) null else c.inputStream.use { BitmapFactory.decodeStream(it) }
-                    c.disconnect()
-                    main.post { show(id, tile, video, url, bmp) }
-                    return@Thread
-                }
-                c.disconnect()
-            } catch (e: Exception) {
-                Log.i(TAG, "media $id: ${e.message}")
-            }
-            // not there yet: asked again while the tile is on the screen
-            main.postDelayed({ if (tile.isAttachedToWindow) fetch(id, tile) }, RETRY_MS)
+            val uri = saved(id, video) ?: download(id, video)
+            if (uri != null) {
+                val thumb = thumbnail(uri)
+                main.post { ready(uri, thumb) }
+            } else
+                main.postDelayed({ if (on.isAttachedToWindow) fetch(id, on, ready) }, RETRY_MS)
         }.start()
     }
 
-    private fun show(id: String, tile: FrameLayout, video: Boolean, url: String, bmp: android.graphics.Bitmap?) {
-        done.add(id)
-        tile.removeAllViews()
-        if (!video) {
-            tile.addView(ImageView(activity).apply {
-                scaleType = ImageView.ScaleType.CENTER_CROP
-                setImageBitmap(bmp)
-                contentDescription = id
-            }, FrameLayout.LayoutParams(-1, -1))
-        } else {
-            // its first frame with a play sign on it (a bare VideoView is black until it plays); the sign goes on play
-            val v = VideoView(activity).apply {
-                setVideoURI(Uri.parse(url))
-                setOnPreparedListener { seekTo(1) }
+    private fun collection(video: Boolean): Uri =
+        if (video) MediaStore.Video.Media.EXTERNAL_CONTENT_URI else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+
+    private fun name(id: String, video: Boolean) = id + if (video) ".mp4" else ".jpg"
+
+    /** the gallery's copy of this ID, if it was saved before (one copy per ID) */
+    private fun saved(id: String, video: Boolean): Uri? =
+        activity.contentResolver.query(collection(video), arrayOf(MediaStore.MediaColumns._ID),
+                                       "${MediaStore.MediaColumns.DISPLAY_NAME} = ?", arrayOf(name(id, video)), null)
+            ?.use { c -> if (c.moveToFirst()) android.content.ContentUris.withAppendedId(collection(video), c.getLong(0)) else null }
+
+    /** the file from the server straight into the gallery's LEAKCAM album; null while the server has none (404) */
+    private fun download(id: String, video: Boolean): Uri? {
+        if (Build.VERSION.SDK_INT < 29)
+            return null                     // the album needs Android 10's MediaStore paths (no storage permission)
+        return try {
+            val c = URL("${BuildConfig.SERVER}/v1/media/$id").openConnection() as HttpURLConnection
+            c.connectTimeout = 5000
+            c.readTimeout = 30000
+            if (c.responseCode != 200) {
+                c.disconnect()
+                return null
             }
-            val play = ImageView(activity).apply { setImageResource(android.R.drawable.ic_media_play) }
-            tile.addView(v, FrameLayout.LayoutParams(-1, -1, android.view.Gravity.CENTER))
-            tile.addView(play, FrameLayout.LayoutParams(-2, -2, android.view.Gravity.CENTER))
-            tile.contentDescription = activity.getString(R.string.play_video)
-            tile.setOnClickListener {
-                if (v.isPlaying) v.pause() else v.start()
-                play.visibility = if (v.isPlaying) android.view.View.GONE else android.view.View.VISIBLE
+            val values = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, name(id, video))
+                put(MediaStore.MediaColumns.MIME_TYPE, if (video) "video/mp4" else "image/jpeg")
+                put(MediaStore.MediaColumns.RELATIVE_PATH,
+                    (if (video) Environment.DIRECTORY_MOVIES else Environment.DIRECTORY_PICTURES) + "/LEAKCAM")
+                put(MediaStore.MediaColumns.IS_PENDING, 1)
             }
-            v.setOnCompletionListener { play.visibility = android.view.View.VISIBLE }
+            val r = activity.contentResolver
+            val uri = r.insert(collection(video), values) ?: return null
+            r.openOutputStream(uri)?.use { out -> c.inputStream.use { it.copyTo(out) } }
+            c.disconnect()
+            r.update(uri, ContentValues().apply { put(MediaStore.MediaColumns.IS_PENDING, 0) }, null, null)
+            Log.i(TAG, "media $id saved to the gallery")
+            uri
+        } catch (e: Exception) {
+            Log.i(TAG, "media $id: ${e.message}")
+            null
         }
-        Log.i(TAG, "media $id shown")
     }
+
+    private fun thumbnail(uri: Uri): Bitmap? = try {
+        activity.contentResolver.loadThumbnail(uri, Size(640, 480), null)   // big enough for the large picture
+    } catch (e: Exception) {
+        null
+    }
+
+    /** a thumbnail (a play sign on a video) as the preview, under its "+N more" badge */
+    fun show(preview: FrameLayout, video: Boolean, thumb: Bitmap?) {
+        val badge = preview.findViewById<android.view.View>(R.id.leak_more)
+        preview.removeAllViews()
+        preview.addView(ImageView(activity).apply {
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            setImageBitmap(thumb)
+        }, FrameLayout.LayoutParams(-1, -1))
+        if (video)
+            preview.addView(ImageView(activity).apply { setImageResource(android.R.drawable.ic_media_play) },
+                            FrameLayout.LayoutParams(-2, -2, android.view.Gravity.CENTER))
+        preview.addView(badge)
+    }
+
+    /** the phone's gallery on its newest pictures and videos: this leak's record at the top. No gallery opens one
+     *  album by a standard intent, and a single file opens alone (Samsung: no swipe to the others, 2026-11-07) */
+    fun open() = activity.startActivity(
+        Intent(Intent.ACTION_VIEW).setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "vnd.android.cursor.dir/image"))
 
     companion object {
         const val TAG = "LeakcamGallery"

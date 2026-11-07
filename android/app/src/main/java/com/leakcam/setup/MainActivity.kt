@@ -23,6 +23,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Typeface
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -368,29 +369,23 @@ class MainActivity : Activity() {
         // one tile per picture and video ID the push announced (pictures in a row, the video under them), a spinner each
         // until the gallery has downloaded it by its ID (DESIGN.md 5.3.13)
         val ids = i.getStringExtra(LeakAlert.EXTRA_MEDIA).orEmpty().split(",").filter { it.isNotBlank() }
-        val photoIds = ids.filter { it.substringAfterLast('-').startsWith("p") }
-        val videoId = ids.firstOrNull { it.substringAfterLast('-').startsWith("v") }
-        val photos = findViewById<LinearLayout>(R.id.leak_photos)
-        val video = findViewById<android.widget.FrameLayout>(R.id.leak_video)
-        photos.visibility = if (photoIds.isNotEmpty()) View.VISIBLE else View.GONE
-        video.visibility = if (videoId != null) View.VISIBLE else View.GONE
-        findViewById<TextView>(R.id.leak_media).text =
-            resources.getString(R.string.leak_media_waiting, photoIds.size, if (videoId != null) 1 else 0)
-        photos.removeAllViews()
-        val gap = (6 * resources.displayMetrics.density).toInt()
-        photoIds.forEachIndexed { n, mid ->
-            val tile = android.widget.FrameLayout(this).apply {
-                setBackgroundColor(getColor(R.color.tile_background))
-                contentDescription = mid
-                addView(spinner(28), android.widget.FrameLayout.LayoutParams(-2, -2, android.view.Gravity.CENTER))
+        // one preview: the first file downloaded (a spinner until then), "+N more" for the others; a tap opens them
+        // all in the phone's gallery (user 2026-11-07)
+        val preview = findViewById<android.widget.FrameLayout>(R.id.leak_preview)
+        val more = findViewById<TextView>(R.id.leak_more)
+        preview.visibility = if (ids.isNotEmpty()) View.VISIBLE else View.GONE
+        more.visibility = if (ids.size > 1) View.VISIBLE else View.GONE
+        more.text = getString(R.string.leak_more, ids.size - 1)
+        var shown = false
+        for (mid in ids)
+            gallery.fetch(mid, preview) { _, thumb ->
+                if (!shown) {
+                    shown = true
+                    val video = mid.substringAfterLast('-').startsWith("v")
+                    gallery.show(preview, video, thumb)
+                    preview.setOnClickListener { gallery.open() }
+                }
             }
-            photos.addView(tile, LinearLayout.LayoutParams(0, -1, 1f).apply { if (n > 0) marginStart = gap })
-            gallery.fetch(mid, tile)
-        }
-        if (videoId != null) {
-            video.contentDescription = videoId
-            gallery.fetch(videoId, video)
-        }
         Log.i(TAG, "leak panel $id")
     }
 
@@ -466,13 +461,6 @@ class MainActivity : Activity() {
     /** the first missing one asked for: notifications, then full screen (Android 14+), then Do Not Disturb access;
      *  again from onResume after each settings screen until all are there */
     private val gallery by lazy { Gallery(this) }
-
-    private fun spinner(dp: Int) = android.widget.ProgressBar(this).apply {
-        isIndeterminate = true
-        layoutParams = android.widget.FrameLayout.LayoutParams((dp * resources.displayMetrics.density).toInt(),
-                                                               (dp * resources.displayMetrics.density).toInt(),
-                                                               android.view.Gravity.CENTER)
-    }
 
     private var note: Triple<String, String, Long>? = null   // the last action's answer for a board, until its time
     private var changeLabel = ""          // the menu's Change Wi-Fi item for the picked board, as render() left it

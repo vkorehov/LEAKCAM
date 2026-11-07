@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- a picture or video thumbnail's place: light grey, rounded (the spinner until it is downloaded) -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/tile_background" />
+    <corners android:radius="6dp" />
+</shape>

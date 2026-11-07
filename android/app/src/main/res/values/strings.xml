@@ -147,6 +147,6 @@
     <string name="kind_photo">photo</string>
     <string name="kind_video">15 s video</string>
     <!-- the leak panel, opened from the alert -->
-    <string name="leak_media_waiting">%1$d new pictures, %2$d video: each appears in its place once downloaded.</string>
     <string name="play_video">play the video</string>
+    <string name="leak_more">+%1$d more</string>
 </resources>

@@ -875,10 +875,13 @@ person watched: 5.3.4's 15 s rule).
   a spinner says it is being taken.
 - **Every picture and video has its ID** (user, 2026-11-07): `<device>-<unix s>-p1..p4` / `-v1`, made by the server
   for each capture. The check-in answer's `capture` gives the board the IDs to upload under; the push (`media`, the
-  IDs) tells the app how many new pictures and videos there are; the app shows one tile per ID, a spinner until its
-  **gallery** has downloaded it by that ID (`GET /v1/media/<id>`, 404 until uploaded, asked again every 5 s while the
-  panel is open). A picture fills its tile, a video plays in its tile on a tap.
-  Built: IDs, push, tiles, gallery, the server's media route; the board's capture and upload with the cameras.
+  IDs) tells the app how many new pictures and videos there are.
+- **Stored in the phone's gallery, not an own viewer** (user, 2026-11-07): the app downloads each ID
+  (`GET /v1/media/<id>`, 404 until uploaded, asked again every 5 s only while the leak panel is open) into the
+  gallery's LEAKCAM album (Pictures/LEAKCAM, Movies/LEAKCAM, the ID as the file name: saved once). The leak panel shows
+  **one preview** (the first file there, a spinner until then) with **"+N more"**; a tap opens the phone's gallery on
+  its newest pictures and videos, this leak's record at the top (no gallery opens one album by a standard intent).
+  Built: IDs, push, panel, gallery download, the server's media route; the board's capture and upload with the cameras.
 - **The 5-min wake mode:** BLE sleep (the setup firmware's low-power advertising, ~0.5 mA) instead of HBN, a check-in
   every 5 min (a request from the server arrives within 5 min; a fix over BLE at any time). It ends on success / the
   person's all-clear, or after a time limit, whichever comes first (~13 mAh a day: the limit protects the battery).

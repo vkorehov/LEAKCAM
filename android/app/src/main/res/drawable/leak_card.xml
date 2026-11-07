@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- the leak panel: a light card with a red edge (the alert's red, quiet) -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#FFFFFFFF" />
+    <stroke android:width="2dp" android:color="@color/leak_text" />
+    <corners android:radius="10dp" />
+</shape>

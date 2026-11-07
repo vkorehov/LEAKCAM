@@ -6,8 +6,7 @@
     <color name="step_todo">#FF9E9E9E</color>
     <color name="help_background">#FFE3F2FD</color>
     <color name="error_background">#FFFFEBEE</color>
-    <!-- the leak panel (DESIGN.md 5.3.13): the alert's red, light -->
-    <color name="leak_background">#FFFDE7E9</color>
+    <!-- the leak panel (DESIGN.md 5.3.13): the alert's red -->
     <color name="leak_text">#FFB00020</color>
     <color name="tile_background">#FFF5F5F5</color>   <!-- a picture or video tile while it downloads -->
 </resources>
