@@ -24,7 +24,7 @@ from board import BL_PORT, log, wifi_credentials   # noqa: E402
 from phone import adb, board_checkin, board_id, firmware, hand, intervals, online, only_boards, op, product, ready, seen   # noqa: E402
 
 SERVER = "http://192.168.1.159:8090"
-CHECKIN_S = 20                      # for the run: the wake waits for the next check-in
+CHECKIN_S = 5                       # for the run (the firmware's minimum): the wake waits for the next check-in
 PKG = "com.leakcam.setup"
 BATTERY = "--battery" in sys.argv
 

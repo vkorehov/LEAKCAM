@@ -5,7 +5,7 @@ of `slot switch` (full -> setup -> full), each timed from the command to the new
 both read (PIN state, the stored network's length and CRC: never the values), the crash record, the heap at start,
 the partition table's ages (the FW entry's top byte is boot2's retry count).
 
-    python3 run.py [rounds]          (default 10; USB-C 1 in, the pair flashed: README Setup)
+    python3 run.py [rounds] [--stress]   (default 2, --stress 10; USB-C 1 in, the pair flashed: README Setup)
 """
 import os
 import re
@@ -108,7 +108,9 @@ def state(tag):
 
 
 def main():
-    rounds = int(sys.argv[1]) if len(sys.argv) > 1 else 10
+    # regular runs: 2 round trips; the repeats are the stress run's (run_tests.py --stress)
+    nums = [a for a in sys.argv[1:] if a.isdigit()]
+    rounds = int(nums[0]) if nums else (10 if "--stress" in sys.argv else 2)
     fails = []
     first = state("start")
     if first["fw"] != "full" or not first["slot"] or first["slot"][0] != 0:

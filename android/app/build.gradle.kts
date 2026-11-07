@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -30,7 +31,10 @@ android {
 }
 
 dependencies {
-    // the BLE test driver (src/androidTest/.../BleOp.kt) only: the app itself has no libraries
+    // the server's push for the leak alert (DESIGN.md 5.3.13): Firebase Cloud Messaging, the app's only library
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-messaging")
+    // the BLE test driver (src/androidTest/.../BleOp.kt) only
     androidTestImplementation("androidx.test:runner:1.6.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")

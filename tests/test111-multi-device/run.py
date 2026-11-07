@@ -20,7 +20,7 @@ from board import BL_PORT, log, wifi_credentials   # noqa: E402
 from phone import adb, board_checkin, board_id, firmware, intervals, only_boards, op, phone_boards, product, ready, register, to_firmware   # noqa: E402
 
 SERVER = "http://192.168.1.159:8090"
-CHECKIN_S = 10                      # for the run; the bench server's default is 60
+CHECKIN_S = 5                       # for the run (the firmware's minimum): no test step waits long; the bench default is 60
 # the second LEAKCAM: an ID no board has (locally administered MAC), new each run: the server keeps the last run's
 SECOND = "02" + os.urandom(5).hex().upper()
 PKG = "com.leakcam.setup"

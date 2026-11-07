@@ -52,14 +52,19 @@ def utc():
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
 
-def next_checkin(dev, since, image=None, secs=150):
-    """the first check-in after since (of that image), None if not in secs"""
-    t0 = time.time()
+def next_checkin(dev, since, image=None, secs=150, now=True):
+    """the first check-in after since (of that image), None if not in secs. now: the full firmware asked for it
+    (`presence now`, every 10 s while none came) instead of waiting out its 60 s interval (2026-11-07: test048 spent
+    most of its time waiting for check-ins); False where the test is about the board's own timing"""
+    t0, asked = time.time(), 0.0
     while time.time() - t0 < secs:
         for s in samples(dev, since):
             if image is None or s.get("image") == image:
                 return s
-        time.sleep(3)
+        if now and image != "setup" and time.time() - asked > 10:
+            bl("presence now", 1)
+            asked = time.time()
+        time.sleep(1)
     return None
 
 
@@ -173,10 +178,15 @@ check("the relay's CDC device on USB-C 1", up is not None, f"{up:.1f} s" if up e
 if up is None:
     r.finish("no relay", False)
     sys.exit(1)
-time.sleep(190)
+t_st = time.time()                # two STATUS lines give the period (their uptimes): no fixed 3 min wait
+while len(re.findall(r"k230: STATUS ", bl_con.text)) < 2 and time.time() - t_st < 135:
+    time.sleep(1)
 statuses = re.findall(r"k230: STATUS ([^\n]*)", bl_con.text)
 log("BL616 STATUS lines:", " | ".join(statuses[-4:]))
-check("STATUS every 60 s in the relay (3 min: >= 3)", len(statuses) >= 3, f"{len(statuses)} lines")
+ups = [int(u) for u in re.findall(r"k230: STATUS (\d+),", bl_con.text)]
+gaps = [b - a for a, b in zip(ups, ups[1:])]
+check("STATUS every 60 s in the relay (two lines 60 +- 2 s apart by their uptimes)",
+      len(gaps) >= 1 and all(58 <= g <= 62 for g in gaps), f"{len(statuses)} lines, gaps {gaps} s")
 check("STATUS carries version, die, heap, pages", any(len(s.split(",")) >= 6 for s in statuses),
       statuses[-1][:90] if statuses else "none")
 ver = re.search(r"version (\S+)", k_con.text)

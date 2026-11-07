@@ -4,6 +4,13 @@
   run_tests.py                 every tests/test*/run.py, in number order
   run_tests.py test016 test017 only these (prefix match), in this order
   run_tests.py --list          which tests have a run.py, and what each still misses
+  run_tests.py --changed REF   only the tests a change touched: a file changed since REF (git, the working tree too)
+                               named in a test's README "## Needs" section, or the test's own folder
+  run_tests.py --stress [...]  the stress runs, separate from the regular ones: each run.py that takes --stress gets
+                               it (its repeats, soak length); STRESS_ONLY tests run only here
+
+Regular runs are one pass each (a repeat loop or a soak belongs to --stress): the whole set has to stay short enough
+to rerun after every change (user, 2026-11-07).
 
 Each run.py runs alone (a fresh process: a hang or crash in one cannot take the others with it), its output goes to
 the terminal and to tests/<test>/run.log (overwritten each run). A run that exceeds its TIMEOUT_S is killed and
@@ -70,9 +77,41 @@ def crash_check(when):
     return False
 
 
+# names every test folder has: a change of one test's copy says nothing about the others
+GENERIC = {"README.md", "HISTORY.md", "run.py", "run.log", "console.log", "CMakeLists.txt", "Makefile", "SPEEDS.txt",
+           "ENERGY.txt"}
+
+
+def changed_tests(runs, ref):
+    """the runs whose README "## Needs" names a file changed since ref (by its base name), or whose folder changed"""
+    repo = os.path.dirname(TESTS)
+    names = subprocess.run(["git", "-C", repo, "diff", "--name-only", ref], capture_output=True, text=True,
+                           check=True).stdout.split()
+    names += subprocess.run(["git", "-C", repo, "ls-files", "--others", "--exclude-standard"], capture_output=True,
+                            text=True).stdout.split()
+    picked = []
+    for r in runs:
+        d = os.path.dirname(r)
+        try:
+            readme = open(os.path.join(d, "README.md")).read()
+        except FileNotFoundError:
+            readme = ""
+        needs = readme.split("## Needs", 1)[1] if "## Needs" in readme else ""
+        rel = os.path.relpath(d, repo) + "/"
+        if any(n.startswith(rel) and not n.endswith(("README.md", "HISTORY.md", ".log", ".txt")) for n in names) or \
+                any(re.search(rf"(?<![\w.]){re.escape(os.path.basename(n))}(?![\w])", needs) for n in names
+                    if "." in os.path.basename(n) and os.path.basename(n) not in GENERIC and not n.endswith(".log")):
+            picked.append(r)
+    return picked
+
+
 def main():
     args = sys.argv[1:]
     runs = sorted(glob.glob(os.path.join(TESTS, "test*", "run.py")))
+    stress = "--stress" in args
+    args = [a for a in args if a != "--stress"]
+    takes_stress = {r: "--stress" in open(r).read() for r in runs}
+    stress_only = {r: "STRESS_ONLY = True" in open(r).read() for r in runs}
     if args and args[0] == "--list":
         for r in runs:
             d = os.path.dirname(r)
@@ -80,9 +119,13 @@ def main():
                                  capture_output=True, text=True).stdout
             print(f"{os.path.basename(d):40s} {len(re.findall(r'^  - ', out, re.M))} MISSING")
         return
-    if args:
+    if args[:1] == ["--changed"]:
+        runs = changed_tests(runs, args[1] if len(args) > 1 else "HEAD")
+    elif args:
         # in the order given: a flash (test019) must run before the tests that need its image
         runs = [r for a in args for r in runs if os.path.basename(os.path.dirname(r)).startswith(a)]
+    runs = [r for r in runs if takes_stress[r] or stress_only[r]] if stress else [r for r in runs if not stress_only[r]]
+    print("tests:", " ".join(os.path.basename(os.path.dirname(r))[:7] for r in runs) or "none", flush=True)
     summary = []
     if not crash_check("before the batch"):
         print("batch not started: see the crash record above")
@@ -95,7 +138,7 @@ def main():
         print(f"\n===== {name} =====", flush=True)
         t0 = time.time()
         with open(os.path.join(d, "run.log"), "w") as logf:
-            p = subprocess.Popen([sys.executable, "-u", r], cwd=d, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            p = subprocess.Popen([sys.executable, "-u", r] + (["--stress"] if stress and takes_stress[r] else []), cwd=d, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                  text=True)
             try:
                 for line in p.stdout:

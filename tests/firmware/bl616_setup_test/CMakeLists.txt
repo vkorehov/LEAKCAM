@@ -27,8 +27,9 @@ target_sources(app PRIVATE
                ${P}/switch_to_full.c
                ${P}/provision.c
                ${P}/usb_setup.c
-               ${P}/k230_link.c
-               ${P}/k230_session.c
+               ${S}/k230_link.c
+               ${S}/k230_session.c
+               ${S}/wall_clock.c
                ${S}/k230_power.c
                ${S}/provision_cmd.c
                ${P}/ota.c

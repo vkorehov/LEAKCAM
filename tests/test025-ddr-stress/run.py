@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """test025 automated, short: memtest 10 passes (24 MB kept free) with die / board temperature and VBAT every 30 s; the
 8 h soak of 2026-10-24 stays the stress result."""
+STRESS_ONLY = True   # run_tests.py: only in the stress runs (--stress), never in a regular run
 import os
 import re
 import subprocess

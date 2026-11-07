@@ -594,6 +594,11 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
 
 ### 5.3.4 The setup channel and the app's link icons (user, 2026-11-04)
 
+- **Every user-facing step well under 15 s, with a spinner (user, 2026-11-07):** a person closes the app after 15 s of
+  waiting. Find, wake, pair, save, the switch to the setup firmware, change Wi-Fi and delete each end well under 15 s
+  (target 10 s) and show a spinning icon and a line saying what happens while they run; a test measuring one above
+  15 s fails. The board's own periods (check-in, leak check) are not user-facing and keep their values (tests shorten
+  them). Open: the wake of a set-up board through the server waits for its next check-in (up to 60 min).
 - **The most reliable channel that is there:** a USB link between the app and the board (the phone's USB-C to the
   board's USB-C 1 by cable, the phone the USB host; user 2026-11-04: the phone app, not a computer) -> the setup goes
   over USB; else over BLE; over Wi-Fi (5.3.2, through the server) only for a board
@@ -842,6 +847,31 @@ ready at once.
   day: ~0.9 years on one cell, ~1.8 on two.
 - Build order: the K230 job with simulated cameras + `DONE`/`CHECK` (on USB first); the probe and RTC triggers and the
   power cut after `DONE` in the full firmware; then HBN sleep between the events.
+
+### 5.3.13 Change Wi-Fi through the server, the 5-min wake mode, the leak alert (user, 2026-11-07)
+
+Replaces the wake of a set-up board through the server for a Wi-Fi change (it waited for the next check-in while the
+person watched: 5.3.4's 15 s rule).
+
+- **Change Wi-Fi:** the person types the new network in the app at once; the app sends it to the server as the
+  board's pending change and is done (no waiting). At the board's next check-in the server hands it over in the
+  answer; the board tests it with wifi_check (join, address, internet, the API) and stores it only when all pass,
+  else keeps the old one. The server forgets the passphrase once delivered. Plain HTTP on the bench, HTTPS (test109)
+  before real use.
+- **A failed change:** the board tells the server (on the old network) and the phone is notified. The board leaves the
+  HBN cycle for the **5-min wake mode**.
+- **A leak** (a wet probe, or a camera change confirmed by the leak job): the phone gets the **leak alert** at once
+  and the board goes into the 5-min wake mode, waiting for the person's request (record a video, all clear).
+- **The 5-min wake mode:** BLE sleep (the setup firmware's low-power advertising, ~0.5 mA) instead of HBN, a check-in
+  every 5 min (a request from the server arrives within 5 min; a fix over BLE at any time). It ends on success / the
+  person's all-clear, or after a time limit, whichever comes first (~13 mAh a day: the limit protects the battery).
+- **To the phone: Firebase push** (FCM, high priority) from our server, at once, with the app closed too; one path for
+  the leak alert and the failed change.
+- **The leak alert is the app's most important use case.** Android's government alerts (cell broadcast) are not open
+  to apps, so the app makes the closest: a full-screen alert over the lock screen (like an alarm clock or an incoming
+  call), an alarm sound repeating until acknowledged, vibration, through silent mode and Do Not Disturb. The app asks
+  for full-screen notifications and Do Not Disturb access once at setup. Acknowledging stops the sound and offers the
+  requests (all clear, record a video). An SMS backup through the SMS gateway comes later.
 
 ### 5.4 K230-BL616 link and time
 

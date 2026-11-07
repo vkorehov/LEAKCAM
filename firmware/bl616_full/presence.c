@@ -116,10 +116,14 @@ void presence_now(void)
         xTaskNotifyGive(task);
 }
 
+/* `presence`: the state; `presence now`: a check-in now (the bench: a new interval taken at once, not after the old) */
 static void cmd_presence(int argc, char **argv)
 {
-    (void)argc;
-    (void)argv;
+    if (argc > 1 && !strcmp(argv[1], "now")) {
+        presence_now();
+        printf("presence: check-in now\r\n");
+        return;
+    }
     printf("presence: id %s, server %s:%s, check-in every %lu s\r\n", device_id(), API_HOST, API_PORT,
            (unsigned long)checkin_s);
     if (last_ms)
@@ -128,4 +132,4 @@ static void cmd_presence(int argc, char **argv)
     else
         printf("presence: no check-in yet\r\n");
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_presence, presence, device ID and the last server check-in);
+SHELL_CMD_EXPORT_ALIAS(cmd_presence, presence, device ID and the last server check-in [now]);

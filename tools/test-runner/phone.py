@@ -31,10 +31,15 @@ def intervals(dev, checkin=0, leakcheck=0):
     """the board's check-in and leak check intervals at the server (PUT /v1/devices/<id>/intervals, DESIGN.md 5.3.12),
     seconds, 0 = the server's default (the bench's LEAKCAM_CHECKIN_S 60, leak check 86400); the board takes them with
     its next check-in. The server's answer: the intervals now"""
+    if not dev:
+        raise ValueError("intervals: no device ID (the board's port gone?)")
     req = urllib.request.Request(f"{SERVER}/v1/devices/{dev}/intervals", method="PUT",
                                  data=json.dumps({"checkin": checkin, "leakcheck": leakcheck}).encode())
     with urllib.request.urlopen(req, timeout=10) as f:
-        return json.loads(f.read())
+        ans = json.loads(f.read())
+    if dev == board_id():
+        bl("presence now", 1)                # the bench board takes them at once, not after its old interval
+    return ans
 
 
 def board_checkin():
@@ -43,12 +48,25 @@ def board_checkin():
     return int(m.group(1)) if m else 0
 
 
+_board_id = ""
+
+
 def board_id():
-    """the board's serial (device ID) from its USB serial number; "" when the console is not there"""
+    """the board's serial (device ID) from its USB serial number; the last one seen while the console is away (a
+    firmware switch: it never changes), "" when never seen"""
+    global _board_id
     from board import BL_PORT
     usb = subprocess.run(["udevadm", "info", "-q", "property", BL_PORT], capture_output=True, text=True).stdout
     m = re.search(r"ID_SERIAL_SHORT=([0-9A-F]{12})\b", usb)
-    return m.group(1) if m else ""
+    if m:
+        _board_id = m.group(1)
+    return _board_id
+
+
+def ack_alerts():
+    """every leak alert on the phone acknowledged at once (the debug build's TEST_ACK): a test alert never rings longer
+    than its checks need (user, 2026-11-07: "acknowledge yourself faster, it is annoying")"""
+    adb("shell", "am", "broadcast", "-a", "com.leakcam.setup.TEST_ACK", "-p", "com.leakcam.setup", secs=15)
 
 
 def board_pin():
@@ -351,6 +369,12 @@ def ready(notes):
         if not on_phone or adb("shell", "sha256sum", on_phone).split()[:1] != [hashlib.sha256(open(apk, "rb").read()).hexdigest()]:
             install(apk, notes)
     adb("shell", "svc", "power", "stayon", "true")  # the screen stays on (no cable): the pairing dialog shows
+    adb("shell", "settings", "put", "global", "leakcam_fast_timing", "1")   # the app's periods 3x faster (debug build)
+    # the leak alert's permissions granted here: the app asks for them after a Done, and a settings screen would stop
+    # the run (DESIGN.md 5.3.13)
+    adb("shell", "pm", "grant", "com.leakcam.setup", "android.permission.POST_NOTIFICATIONS")
+    adb("shell", "appops", "set", "com.leakcam.setup", "USE_FULL_SCREEN_INTENT", "allow")
+    adb("shell", "cmd", "notification", "allow_dnd", "com.leakcam.setup")
     adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")
     adb("shell", "cmd", "bluetooth_manager", "enable")
     # a locked phone shows the pairing dialog over the lock screen, where UI Automator cannot press it (2026-10-28)

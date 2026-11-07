@@ -20,6 +20,7 @@ func testServer(t *testing.T) *httptest.Server {
 	metricFile, imageDir = dir+"/metrics.jsonl", dir
 	checkinS, leakCheckS = CheckinS, LeakCheckS
 	intervals, seen, phones = map[string]Intervals{}, map[string]CheckIn{}, map[string][]string{}
+	leaks, wifiChanges, tokens, tokenFile = map[string]Leak{}, map[string]*WifiChange{}, map[string]string{}, dir+"/tokens.json"
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /v1/poll", poll)
 	mux.HandleFunc("GET /v1/devices/{id}", device)

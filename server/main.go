@@ -64,6 +64,9 @@ type Device struct {
 	Metrics map[string]any `json:"metrics"`
 	// the intervals its next check-in's answer gives it (DESIGN.md 5.3.12)
 	Intervals Intervals `json:"intervals"`
+	// an open leak until a phone's all-clear, the last Wi-Fi change through the server (DESIGN.md 5.3.13)
+	Leak       *Leak  `json:"leak,omitempty"`
+	WifiChange string `json:"wifi_change,omitempty"`
 }
 
 // MetricKeys: the check-in's metrics (firmware/bl616_common/metrics.c, DESIGN.md 5.3.10); kept only these, by type
@@ -76,6 +79,7 @@ var MetricKeys = map[string]bool{ // true: an integer, false: text
 	"klast": true, "kms": true, "kago": true, // the last K230 session: ok 1 / failed 0 / none -1, ms, s ago
 	"kver": false, "kup": true, "ktdie": true, "kheap": true, "kheapmin": true, "kpages": true, "ksago": true, // last STATUS
 	"job": false, "jago": true, // the last leak check (DESIGN.md 5.3.12): "<cam0>,<cam1>", s ago
+	"wchg": true, // the last Wi-Fi change through the server: its wifi_check state (DESIGN.md 5.3.13)
 }
 
 // Sample is one check-in's metrics in the history file
@@ -268,8 +272,12 @@ func poll(w http.ResponseWriter, r *http.Request) {
 		delete(wake, id)
 		woken[id] = time.Now()
 	}
-	mu.Unlock()
 	ans := map[string]any{"stream": 0, "checkin": iv.Checkin, "leakcheck": iv.LeakCheck, "ble": ble}
+	msgs := checkInAlerts(id, in, ans)
+	in.Told = ans["checkin"].(int) // the 5-min wake mode's own interval, when in it
+	seen[id] = in
+	mu.Unlock()
+	go notify(msgs)
 	// an upgrade only to a full firmware that said its version: the setup firmware is changed by wire only
 	if in.Image == "full" {
 		if im, ok := image("bl616_full", "full"); ok && im.Version != in.Version {
@@ -468,7 +476,10 @@ func deviceCrashes(w http.ResponseWriter, r *http.Request) {
 func deviceInfo(id string) Device {
 	c, ok := seen[id]
 	d := Device{ID: id, LastSeen: -1, Wake: wake[id], Phones: len(phones[id]), BatteryMV: -1,
-		Intervals: deviceIntervalsLocked(id)}
+		Intervals: deviceIntervalsLocked(id), WifiChange: wifiState(id)}
+	if l, open := leaks[id]; open {
+		d.Leak = &l
+	}
 	if ok {
 		d.LastSeen = int64(time.Since(c.At).Seconds())
 		d.SSID = c.SSID
@@ -547,12 +558,15 @@ func device(w http.ResponseWriter, r *http.Request) {
 }
 
 // savePhones writes the users to the file (a temporary file renamed over it, synced); mu held
-func savePhones() error {
-	b, err := json.Marshal(phones)
+func savePhones() error { return saveJSON(phoneFile, phones) }
+
+// saveJSON: v to path through a synced temporary file (a crash leaves the old file or the new one, never half)
+func saveJSON(path string, v any) error {
+	b, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
-	tmp := phoneFile + ".tmp"
+	tmp := path + ".tmp"
 	f, err := os.OpenFile(tmp, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
 	if err != nil {
 		return err
@@ -565,7 +579,7 @@ func savePhones() error {
 		err = cerr
 	}
 	if err == nil {
-		err = os.Rename(tmp, phoneFile)
+		err = os.Rename(tmp, path)
 	}
 	return err
 }
@@ -719,6 +733,21 @@ func main() {
 		phoneFile = f
 	}
 	loadPhones()
+	if f := os.Getenv("LEAKCAM_TOKENS"); f != "" {
+		tokenFile = f
+	}
+	if b, err := os.ReadFile(tokenFile); err == nil {
+		if err := json.Unmarshal(b, &tokens); err != nil {
+			log.Fatalf("tokens %s: %v", tokenFile, err)
+		}
+	}
+	fcmFile := FcmKeyFile
+	if f := os.Getenv("LEAKCAM_FCM"); f != "" {
+		fcmFile = f
+	}
+	if err := loadFcm(fcmFile); err != nil {
+		log.Printf("no FCM key %s (%v): alerts are only logged", fcmFile, err)
+	}
 	if d := os.Getenv("LEAKCAM_IMAGES"); d != "" {
 		imageDir = d
 	}
@@ -749,6 +778,9 @@ func main() {
 	http.HandleFunc("POST /v1/devices/{id}/wake", wakeUp)
 	http.HandleFunc("DELETE /v1/devices/{id}/phones/{phone}", unregister)
 	http.HandleFunc("GET /v1/phones/{phone}/devices", phoneDevices)
+	http.HandleFunc("PUT /v1/phones/{phone}/token", putToken)
+	http.HandleFunc("POST /v1/devices/{id}/clear", clearLeak)
+	http.HandleFunc("PUT /v1/devices/{id}/wifi", putWifi)
 	http.HandleFunc("GET /v1/images/k230_rtt", k230Image)
 	http.HandleFunc("GET /v1/images/{name}", images)
 	http.HandleFunc("GET /v1/devices/{id}/model", model)

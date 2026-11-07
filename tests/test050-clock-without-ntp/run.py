@@ -36,16 +36,16 @@ def bl_set(unix_s):
 
 
 def next_checkin(secs=80):
-    """wait for the board's next check-in (the server's history moves: its last_seen_s falls back)"""
+    """the board's next check-in, asked for (`presence now`: no wait for its interval); seconds until the server saw
+    it (its last_seen_s falls back)"""
     t0 = time.time()
-    last = None
+    bl("presence now", 1)
     while time.time() - t0 < secs:
         with urllib.request.urlopen(f"{SERVER}/v1/devices/{dev}", timeout=5) as f:
             seen = json.loads(f.read()).get("last_seen_s", -1)
-        if last is not None and seen < last:
+        if 0 <= seen and seen + 1 <= time.time() - t0:   # its age (whole s, floored) younger than the ask: after it
             return time.time() - t0
-        last = seen
-        time.sleep(1)
+        time.sleep(0.5)
     return None
 
 
@@ -90,9 +90,10 @@ c, sets = bl_clock()
 check("the BL616's clock: within 5 s of UTC, set from the server", c is not None and abs(c - time.time()) <= 5 and sets >= 1,
       f"off {c - time.time():+.1f} s, set {sets} times" if c else "no clock line")
 
-# 3. not stepped for a small drift: two more check-ins (the bench's 60 s) leave the count
+# 3. not stepped for a small drift: two more check-ins leave the count (asked at once: `presence now`, no 2 x 60 s wait)
 t0 = time.time()
-time.sleep(130)
+for _ in range(2):
+    next_checkin(15)
 c2, sets2 = bl_clock()
 check("the BL616's clock: two check-ins later still set the same number of times (drift <= 5 s: no step)",
       sets2 == sets and c2 is not None and abs(c2 - time.time()) <= 5, f"set {sets} -> {sets2}, off {c2 - time.time():+.1f} s")
@@ -143,6 +144,7 @@ bl_set(int(time.time()))                     # back on time for what follows
 # 9. the first frame of a session already carries the time (the WAKE): `k230 off`, the full firmware's restart
 bl("k230 off", 3)
 r.console = ""
+bl("leak check", 1)                          # a session now (its reason rtc), not the USB restart 30 s later
 t1 = time.time()
 while time.time() - t1 < 70 and "WAKE" not in r.console:
     r.console += cmd(r.fd, None, 1)
@@ -151,7 +153,6 @@ first = next((i for i, ln in enumerate(lines) if "clock:" in ln), None)
 wake = next((i for i, ln in enumerate(lines) if "WAKE" in ln), None)
 check("a new session: the K230's clock set before its WAKE step (the time on the first BL616 frame)",
       first is not None and wake is not None and first < wake, " | ".join(lines[:3]) or "nothing")
-time.sleep(2)
 
 r.set("Test run time", f"{time.time() - r.t0:.0f} s automated")
 failed = [c for c in checks if not c[1]]

@@ -124,4 +124,18 @@
     <string name="err_usb_refused">%1$s refused the %2$s over the USB cable (%3$s). Try again.</string>
     <string name="err_usb_gone">The USB cable to %1$s was unplugged. Plug it in again and retry.</string>
     <string name="err_usb_unconfirmed">The USB cable to %1$s was unplugged before it confirmed the network, so the app cannot tell whether it was stored. Plug it in again and send again.</string>
+    <!-- the leak alert (LeakAlert.kt, AlertActivity.kt) -->
+    <string name="alert_channel">Leak alerts</string>
+    <string name="alert_channel_about">A LEAKCAM found water: full screen and alarm sound, also in silent mode</string>
+    <string name="alert_title">Leak — LEAKCAM %1$s</string>
+    <string name="alert_why_probe">Water on the probe</string>
+    <string name="alert_why_camera">The camera saw a change</string>
+    <string name="alert_title_ssid">Leak — LEAKCAM on %1$s</string>
+    <string name="alert_serial">LEAKCAM %1$s</string>
+    <string name="alert_signal">Wi-Fi signal %1$d/4</string>
+    <string name="alert_ack">I see it</string>
+    <!-- a Wi-Fi change through the server failed (PushService.kt) -->
+    <string name="wifi_channel">Wi-Fi changes</string>
+    <string name="wifi_failed_title">LEAKCAM %1$s kept its old Wi-Fi</string>
+    <string name="wifi_failed_text">It could not join "%1$s". Open the app to try again.</string>
 </resources>

@@ -123,6 +123,7 @@ class MainActivity : Activity() {
         const val RECONCILE_MS = 20_000L      // reconnecting after a lost link to read what the board did
         const val REQUEST_PERMISSIONS = 1
         const val REQUEST_ENABLE_BT = 2
+        const val REQUEST_NOTIFY = 3
         const val STEP_PLUG = 1
         const val STEP_FIND = 2
         const val STEP_WIFI = 3
@@ -132,6 +133,12 @@ class MainActivity : Activity() {
         const val USB_TAG = "usb"             // the board on the USB cable, in the lists where a BLE address would be
         const val USB_ID_TRIES = 10           // ID asked once a second until the K230's relay answers
         const val START_USB_MS = 2_000L       // the start's wait for a LEAKCAM on the cable before the Bluetooth flow
+        // the status screen's periods; a debug build on the bench runs them 3x faster (`adb shell settings put global
+        // leakcam_fast_timing 1`): the tests wait for the app's refreshes, not real-time (2026-11-07). Android drops
+        // scans started more than 5 in 30 s: the fast scan stays at one per 9 s
+        const val TICK_MS = 10_000L           // the server's presence read
+        const val RESCAN_MS = 30_000L         // no board found: the next scan
+        const val UNSEEN_MS = 45_000L         // a board not in a scan for this long leaves the status list
     }
 
     private lateinit var steps: List<TextView>
@@ -225,8 +232,14 @@ class MainActivity : Activity() {
     private lateinit var startPanel: View
     private lateinit var usbHeader: TextView
 
+    private var timeScale = 1L                // 3: fast timing for the bench tests (debug builds only)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (BuildConfig.DEBUG && android.provider.Settings.Global.getInt(contentResolver, "leakcam_fast_timing", 0) == 1) {
+            timeScale = 3L
+            Log.i(TAG, "fast timing (bench)")
+        }
         setContentView(R.layout.activity_main)
         steps = listOf(R.id.step1, R.id.step2, R.id.step3, R.id.step4).map { findViewById(it) }
         stepTexts = steps.map { it.text.toString() }
@@ -268,6 +281,7 @@ class MainActivity : Activity() {
         toStatus.setOnClickListener { if (!sending) showStatus() }
         deleteSharedPreferences("devices")    // the list an older version kept: the server holds it now (DESIGN.md 5.3.5)
         Log.i(TAG, "phone $phoneId")      // the tests register this phone at the server by it
+        PushService.register(this)        // the server can push the leak alert to this phone (DESIGN.md 5.3.13)
         // the cable first (the spinner), the list from the server meanwhile: then the cable screen, else the list, or the
         // Bluetooth setup when it is empty (or no server)
         usbLink = UsbLink(this, ::onUsbLine, ::onUsbUp)
@@ -362,7 +376,42 @@ class MainActivity : Activity() {
         return true
     }
 
+    // ---------------- the leak alert's permissions (DESIGN.md 5.3.13), asked once a board is set up ----------------
+
+    private var askingAlert = false
+
+    /** the first missing one asked for: notifications, then full screen (Android 14+), then Do Not Disturb access;
+     *  again from onResume after each settings screen until all are there */
+    private fun alertPermissions() {
+        LeakAlert.channel(this)
+        askingAlert = true
+        when {
+            Build.VERSION.SDK_INT >= 33 &&
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED ->
+                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQUEST_NOTIFY)
+            !LeakAlert.fullScreenAllowed(this) ->
+                startActivity(Intent(android.provider.Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
+                                     android.net.Uri.parse("package:$packageName")))
+            !LeakAlert.dndAccess(this) ->
+                startActivity(Intent(android.provider.Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
+            else -> {
+                askingAlert = false
+                Log.i(TAG, "alert permissions all granted")
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (askingAlert)
+            alertPermissions()
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, results: IntArray) {
+        if (requestCode == REQUEST_NOTIFY) {
+            alertPermissions()
+            return
+        }
         if (requestCode != REQUEST_PERMISSIONS)
             return
         if (permissionsGranted()) show(step, R.string.err_permission_granted) else problem(step, R.string.err_permission)
@@ -390,7 +439,7 @@ class MainActivity : Activity() {
             // the status list keeps a board while it was seen in the last 45 s (scans every 30 s): its Bluetooth icon
             // goes when it is out of range, not at every rescan (test118)
             val now = SystemClock.elapsedRealtime()
-            for (a in found.keys.filter { now - (seen[it] ?: 0L) > 45_000L }) {
+            for (a in found.keys.filter { now - (seen[it] ?: 0L) > UNSEEN_MS / timeScale }) {
                 found.remove(a)
                 devices.findViewWithTag<View>(a)?.let { devices.removeView(it) }
             }
@@ -422,7 +471,7 @@ class MainActivity : Activity() {
                 else R.string.help_none_found)
             // again in 30 s until one shows up: a board on battery advertises only in windows, and Android silently
             // drops a scan when the app started more than 5 in 30 s (test111, "scanning too frequently")
-            main.postDelayed({ if (!onStatus && !sending && !scanning && found.isEmpty()) startScan() }, 30_000L)
+            main.postDelayed({ if (!onStatus && !sending && !scanning && found.isEmpty()) startScan() }, RESCAN_MS / timeScale)
         }
     }
 
@@ -538,7 +587,7 @@ class MainActivity : Activity() {
         if ((n % 3 == 0 || waking.keys.any { wakeWaiting(it) }) && !scanning && permissionsGranted() &&
             adapter?.isEnabled == true)
             startScan()
-        ticker.postDelayed({ tick(n + 1) }, 10_000L)
+        ticker.postDelayed({ tick(n + 1) }, TICK_MS / timeScale)
     }
 
     /** the address of a LEAKCAM found nearby now, by its device ID; null when it is not */
@@ -1166,6 +1215,7 @@ class MainActivity : Activity() {
             WCHK_SAVED -> finishSend {
                 remember()
                 show(STEP_DONE, if (checked) R.string.help_done else R.string.help_done_unchecked, boardName, ssidText)
+                alertPermissions()
             }
             else -> {
                 // where the board is now may be the only problem: offer to store unchecked

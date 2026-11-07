@@ -30,11 +30,17 @@ def log(*parts):
 
 
 def openp(path):
+    """a console port, raw; OSError also when its device is going (a firmware switch: the node is still there but
+    tcgetattr fails with EIO, 2026-11-07 test117), so callers retry it like a missing port"""
     fd = os.open(path, os.O_RDWR | os.O_NOCTTY | os.O_NONBLOCK)
-    a = termios.tcgetattr(fd)
-    a[0] = a[1] = a[3] = 0
-    a[2] = termios.CS8 | termios.CREAD | termios.CLOCAL
-    termios.tcsetattr(fd, termios.TCSANOW, a)
+    try:
+        a = termios.tcgetattr(fd)
+        a[0] = a[1] = a[3] = 0
+        a[2] = termios.CS8 | termios.CREAD | termios.CLOCAL
+        termios.tcsetattr(fd, termios.TCSANOW, a)
+    except termios.error as e:
+        os.close(fd)
+        raise OSError(*e.args) from e
     return fd
 
 
