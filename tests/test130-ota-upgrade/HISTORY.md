@@ -4,6 +4,12 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Regression run 2026-11-07 09:26 (by hand, the server on the Pi): steps 1-2 pass
+
+After the HTTP read changed (wifi_check.c reads every answer's headers for X-Time, DESIGN.md 5.3.12): the full firmware
+0.6+g2961d6c-dirty offered 0.6+g912963b at 07:25:58 UTC, the new version's check-in at 07:26:26 (28 s offer ->
+running, as 27-29 s on 2026-11-06), no offer after it. The image moved back to images.off.
+
 ### By hand 2026-11-06 (bench, server on the Pi): BL616 steps 1-4, 6, 13 pass
 
 | Step | Offer | Result |
