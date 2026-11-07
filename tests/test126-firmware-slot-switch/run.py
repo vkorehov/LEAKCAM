@@ -13,7 +13,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../tools/power-bringup"))
-from board import BL_PORT, bl   # noqa: E402
+from board import BL_PORT, bl, xhci_reset   # noqa: E402
 
 SWITCH_WAIT_S = 40
 
@@ -41,19 +41,21 @@ def which():
     logs drown an answer now and then, and a runner that took None for "not full" switched it away (test128,
     2026-11-02): callers act only on a definite answer"""
     for _ in range(5):
-        m = re.search(r"leakcam-build (\S+)", ask("slot", 3, r"leakcam-build \S+"))
-        if m:
-            return "full" if m.group(1) == "full" else "setup"
+        o = ask("slot", 3, r"slot: active[^\n]*\n")
+        m, a = re.search(r"leakcam-build (full|setup) ", o), re.search(r"slot: active (\d)", o)
+        # one answer names both: the image and the active slot must agree (full in 0, setup in 1), else asked again
+        # (a garbled read once said setup in slot 0, 2026-11-07)
+        if m and a and {"full": "0", "setup": "1"}[m.group(1)] == a.group(1):
+            return m.group(1)
     return None
 
 
 def settings(fw):
     """PIN state and the stored network's (len, crc) pairs: the CRCs compared, never printed"""
-    if fw == "setup":
-        ask("lp_boot", 15, r"lp: boot done")       # the test bed opens easyflash in its start (the product does it itself)
-        o = ask("pt_ble creds", 3, r"pairing PIN \w+")
-    else:
-        o = ask("provision", 3, r"pairing PIN \w+[^\n]*\n[^\n]*\n[^\n]*\n")
+    for _ in range(3):                            # both firmwares are the product's now: `provision`; asked again
+        o = ask("provision", 3, r"wifi_psk[^\n]*\n")   # when the first command after the port opened got no answer
+        if "wifi_psk" in o:
+            break
     pin = re.search(r"pairing PIN (\w+)", o)
     net = tuple(re.findall(r"(wifi_ssid|wifi_psk) len (\d+) crc ([0-9a-f]{8})", o))
     return (pin.group(1) if pin else None), net
@@ -70,18 +72,28 @@ def crash():
     return m.group(1) if m else "?"
 
 
-def switch():
-    """`slot switch`; seconds until the next firmware answers `slot`, or None"""
+def switch(want):
+    """to the setup firmware `switch_to_setup wake` (it stays 2 min: a bare `slot switch` with USB power and a network
+    stored hands straight back to the full firmware since test121/test127), to the full one `slot switch`; seconds
+    until the next firmware answers `slot`, or None"""
     t0 = time.time()
-    bl("slot switch", 1)
-    gone = False
+    bl("switch_to_setup wake" if want == "setup" else "slot switch", 1)
+    gone, reset = False, False
     while time.time() - t0 < SWITCH_WAIT_S:
         if not os.path.exists(BL_PORT):
             gone = True
+            if not reset and time.time() - t0 > 15:   # the VM's USB controller stopped (VMware, not the board)
+                log("the BL616 port missing 15 s: the VM's USB controller reset (counted as a bench event)")
+                resets.append(1)
+                xhci_reset()
+                reset = True
         elif gone and slot() is not None:
             return time.time() - t0
         time.sleep(0.2)
     return None
+
+
+resets = []
 
 
 def state(tag):
@@ -106,7 +118,7 @@ def main():
     for r in range(1, rounds + 1):
         for want in ("setup", "full"):
             d = f"{prev['fw']}->{want}"
-            secs = switch()
+            secs = switch(want)
             if secs is None:
                 fails.append(f"round {r} {d}: no console within {SWITCH_WAIT_S} s")
                 log(f"round {r} {d}: NO CONSOLE")
@@ -128,6 +140,8 @@ def main():
             log(f"{d}: {len(v)} switches, {min(v):.1f} / {sorted(v)[len(v) // 2]:.1f} / {max(v):.1f} s (min / median / max)")
     for f in fails:
         log("FAIL", f)
+    if resets:
+        log(f"VM USB controller resets: {len(resets)} (their switches' times include the reset)")
     log("PASS" if not fails else f"FAIL ({len(fails)})")
 
 

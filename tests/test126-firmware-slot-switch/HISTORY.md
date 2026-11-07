@@ -8,6 +8,14 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Obstacles
 
+- **2026-11-07, three things since the first pass:** (1) a bare `slot switch` to the setup firmware came back to the
+  full firmware at once (table age +2): the setup firmware hands a board with USB power and a network stored to the
+  full firmware (test121/test127), so the runner goes in with `switch_to_setup wake` (2 min hold); (2) the settings
+  read in slot 1 still used the old test bed's `lp_boot` / `pt_ble creds`: both firmwares answer `provision` now,
+  asked again when the first command got no answer; (3) `which()` once said setup in slot 0 (a garbled read): it now
+  takes the image and the active slot from one answer and asks again when they disagree. The VM's USB controller
+  stopped twice in 20 switches (VMware): the runner resets it after 15 s without the port, logged.
+
 - 2026-11-02 17:58-18:00 UTC, before the regression run: the VM's USB controller hung twice in one pair flash (after
   `isp`, then after the flashed firmware's start: `hub_ext_port_status failed (err = -32)` without end), the third and
   fourth time that evening, each right after a board disconnect, all with USB-C 1 (the K230's USB) plugged back in.
