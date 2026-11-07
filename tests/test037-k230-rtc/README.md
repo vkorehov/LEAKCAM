@@ -5,8 +5,9 @@ Status: **partial: step 0 pass** (2026-11-01, again: +28, +28, +27 ppm, 3 boots)
 `date` in UTC; handover from the BL616, roll-overs, absolute ppm and the 10 cold starts open.
 
 The K230's PMU RTC (Y1, 32.768 kHz, AVDD1P8_RTC on the switched 1V8 rail) restarts at every power-up; the BL616
-hands it the time in the `WAKE` reply and the K230 sets the RTC from it (DESIGN.md 5.4); NTP time goes back as
-`TIME,<unix s>`. It needs the PMU awake (bug-003: R45 bridged, INT4 1.8 V); `RT_USING_RTC_PMU`.
+hands it the time in `WAKE` (its unix field, 0 = not known) and on every frame it sends (`;t=<unix s>`, the server's
+`X-Time`), and the K230 sets the RTC from it only when it is more than 5 s off (DESIGN.md 5.3.12, 5.4; tests/test050).
+No NTP, nothing goes back. It needs the PMU awake (bug-003: R45 bridged, INT4 1.8 V); `RT_USING_RTC_PMU`.
 
 ## Setup
 
@@ -34,11 +35,12 @@ K230 PMU RTC (RT_USING_RTC, RT_USING_RTC_PMU), musl time (UTC patch), rtc_raw/rt
    seconds, date fields, the valid / running flags, before and after a set.
 1. Boot: `rtc driver register OK`; the time the RTC starts with before the handover (expect the reset value), and
    the time to the first valid read.
-2. Handover: the `WAKE` time against the host's UTC; the RTC (`date` in msh) right after: offset <= 1 s; with
-   `WAKE` 0 (BL616 clock lost) the RTC stays marked invalid and nothing stamps a clip with it.
+2. Handover: the `WAKE` time and the first `;t=` against the host's UTC; the RTC (`date` in msh) right after: offset
+   <= 1 s; with `WAKE` 0 and no `;t=` (BL616 clock lost, no server answer yet) the RTC stays marked invalid and nothing
+   stamps a clip with it.
 3. Crystal Y1: RTC against the host over a 10 min session (the longest session): ppm; again at 0 and 50 C (test026).
 4. Roll-overs: set 23:59:58 31 Dec and read through; set 2038-01-19 03:14:06 (32-bit overflow).
-5. `TIME,<unix s>` back to the BL616 after NTP: the BL616's clock re-based (test032 drift starts from it).
+5. Later frames: a `;t=` within 5 s of the RTC leaves it alone; one more than 5 s off sets it (tests/test050).
 6. Rails off and on 10 times: every boot starts the RTC (PMU wake), no hang (bug-003 regression).
 
 ## Pass
@@ -56,8 +58,8 @@ RTC within 1 s of the BL616 after every handover, Y1 within +-20 ppm, roll-overs
 
 Open:
 - Absolute ppm: against host NTP the console latency (40 ms) gives +-330 ppm over 120 s; needs >= 20 min (step 3).
-- Steps 1-6 (handover from the BL616, `WAKE` 0, roll-overs, `TIME` back, 10 cold starts): the handover needs the link
-  protocol (WAKE / TIME) in the BL616 test firmware, from firmware/bl616_common.
+- Steps 1-6 (handover from the BL616, `WAKE` 0, roll-overs, the 5 s rule, 10 cold starts): the handover needs the
+  link (`WAKE`, `;t=`) from the full firmware and `/app/leakcam`, not the BL616 test firmware.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 

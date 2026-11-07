@@ -46,7 +46,7 @@ Then: BL616 HBN share = (HBN) - (EN low); compare each part with ENERGY.txt sect
 | K230 at the msh prompt, nothing running | `pt_run`, wait for msh | the idle floor of RT-Smart at boot clocks |
 | Same, CPU at its lowest profile | power manager: CPU 0.2 GHz (profiles in pm_domain_cpu.c) | what a slower CPU saves while waiting |
 | Same, KPU and VPU clock-gated or powered off | power manager domains off | the media blocks' idle share |
-| Agent waiting on the link (READY sent) | the agent running, BL616 not answering | the floor a session sits at while it waits |
+| Product program waiting on the link (READY sent) | `/app/leakcam` running, BL616 not answering the READY | the floor a session sits at while it waits |
 | BL616 awake, idle (test firmware prompt) | K230 rails off | the BL616's own awake floor |
 
 Each state: minimum, average and peak over >= 10 s (meter min/max hold); the
@@ -103,8 +103,8 @@ Probes: current - battery lead (cell + wire), uA/mA range, USB out; voltage - BA
 
 ## Boot time
 
-The BL616's HBN wake to its first instruction and to the console (RTC wake after <s>): part of every humidity slice
-and every K230 session start (with test021).
+The BL616's HBN wake to its first instruction and to the console (RTC wake after <s>): part of every check-in and
+every K230 session start (with test021).
 
 ## Battery energy
 

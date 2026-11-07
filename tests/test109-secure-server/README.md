@@ -3,21 +3,22 @@
 Status: **planned** (2026-10-30): the real server is not built (DESIGN 7, SECURITY.txt 4); it will run on the Windows PC for the test.
 
 Today every request is plain HTTP / RTMP without authentication (SECURITY.txt 4). Needed before real use: TLS for
-`/v1/check`, `/v1/nn`, `/v1/poll` and the clips (RTMPS to MediaMTX); a per-device identity so the server knows who
+the check-in (`POST /v1/poll`), the per-device change net (`GET /v1/devices/{id}/model`), the crash records, the OTA
+images and the clips (RTMPS to MediaMTX); a per-device identity so the server knows who
 posts; the server's certificate pinned on the device; the change net checked against a signed value. This test
 proves each and measures what TLS costs on a battery device.
 
 ## Setup
 
-- The server on the Windows PC (192.168.1.131): HTTPS for the three requests and MediaMTX with RTMPS and publish
+- The server on the Windows PC (192.168.1.131): HTTPS for the API and MediaMTX with RTMPS and publish
   authentication; a test CA, the server certificate, device credentials; switches for a wrong / expired /
   other-host certificate, a revoked device and a replayed request.
 - The board on battery for the energy steps, on USB for the rest; the K230 console and the BL616 console.
 
 ## Needs (build features and dependencies)
 
-K230: TLS client for the three requests and RTMPS (library to choose: mbedTLS in the SDK, or what RT-Smart offers),
-the device key storage, time from NTP for certificate dates; BL616: TLS for `/v1/poll` **if it fits** - Wi-Fi RAM is
+K230: TLS client for its requests and RTMPS (library to choose: mbedTLS in the SDK, or what RT-Smart offers),
+the device key storage, the time from the server's `X-Time` (no NTP; the BL616's `;t=`) and the pinned server key; BL616: TLS for `/v1/poll` **if it fits** - Wi-Fi RAM is
 at 99.6 % (skill leakcam-product-build 7): step 1 decides whether the BL616's own check can use TLS at all.
 
 (What this test uses; the union over all tests is the feature set the minimal image keeps.)
@@ -25,19 +26,21 @@ at 99.6 % (skill leakcam-product-build 7): step 1 decides whether the BL616's ow
 ## Steps
 
 1. Fit: TLS on the BL616 (heap and static RAM for one handshake next to Wi-Fi and BLE) and on the K230 (RAM, image
-   size). If the BL616 cannot, the decision is written down (the poll over TLS through the K230, a signed plain
-   answer, or no BL616 poll).
+   size). If the BL616 cannot, the decision is written down (the check-in over TLS through the K230, a signed plain
+   answer, or no BL616 check-in).
 2. Handshake cost: full handshake and session resumption per request - time, bytes on air, energy (it repeats on every
    wake: resumption or a kept ticket matters).
 3. Pinned certificate: a wrong CA, an expired certificate, another host name, a downgrade to plain HTTP: the device
    refuses each, sends nothing of the owner's, backs off.
 4. Device identity: the server refuses an unknown and a revoked device; the device key never shows on a console or in
    a log and cannot be read back over the debug consoles.
-5. Signed change net: a net with the right CRC but a bad signature is refused (test107's update path).
+5. Signed change net: a net with the right SHA-256 but a bad signature is refused (the per-device model download,
+   `GET /v1/devices/{id}/model`, test130 steps 9-11).
 6. Clips: RTMPS publish with credentials accepted; without, refused; the stream still starts within its budget.
-7. Replay: a recorded `/v1/check` sent again is rejected (nonce or time window).
-8. No clock: the first wake after a total power loss (no RTC time) still validates the certificate or waits for NTP -
-   defined behaviour, no plain fallback.
+7. Replay: a recorded check-in (`POST /v1/poll`) sent again is rejected (nonce or time window).
+8. No clock: after a battery loss the board has no time until a server answer's `X-Time` (no NTP); that first TLS
+   connection trusts the pinned server key, not the certificate's dates, and its `X-Time` sets the clock (DESIGN.md
+   5.3.12) - defined behaviour, no plain fallback; a different key is refused.
 
 ## Pass
 

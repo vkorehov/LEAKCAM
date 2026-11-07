@@ -1,10 +1,11 @@
 # test103: Whole leak pipeline, end to end
 
-Status: **later** (2026-10-21): not run yet; excluded for now (user): needs the cameras, Wi-Fi and the product BL616
-firmware.
+Status: **later** (2026-11-07): not run yet; needs the cameras (until they arrive the K230's job simulates them,
+job.c) and the full firmware's leak check on battery (leak_check.c).
 
-Every part measured on its own (KPU 0.5 ms, SDIO, NAND, encoder): the time from a wake to the server's answer,
-with everything running together.
+Every part measured on its own (KPU 0.5 ms, SDIO, NAND, encoder): the time from a leak-check wake (RTC once a day,
+or a wet probe) to the result at the server and, on a leak, the clip, with everything running together (DESIGN.md
+5.3.12).
 
 ## Setup
 
@@ -17,12 +18,16 @@ tests is what the minimal image keeps).
 
 ## Steps
 
-1. Wake -> K230 READY (test101) -> capture both cameras -> change net -> history -> POST /v1/check -> answer ->
-   (leak) RTMP clip start: timestamps at each step on the K230 console (console_record.py).
-2. Same with the server answering "leak" (the clip path) and "no leak" (back to sleep).
-3. The decisions `leakcam_wake` takes on the board: same / light / new per camera against the history, a sensor alarm
-   without a visible change, no server, server not reached; the sleep it sends each time (6 h / 1 h / 10 min).
-4. Battery cost: with test102's current, the energy per wake for each path.
+1. Wake (`rtc` or `leak`) -> K230 READY (test101) -> WAKE -> the job: capture both cameras -> imgdiff -> change net
+   -> history -> `DONE,<cam0>,<cam1>` -> the BL616 cuts the rails (on battery) -> its check-in with the result (`job=`,
+   `jago=`) -> the server's answer -> (a clip asked) RTMP clip start: timestamps at each step on both consoles
+   (console_record.py).
+2. The results per camera against the history: `same`, `light`, `changed`, `new`; the BL616 checks in at once on
+   `changed` or a wet probe, otherwise the result waits for the next check-in (the server's `checkin`, default 3600 s).
+3. A wet probe (ACOMP1 below 1.10 V) with no visible change; the server not reached (the result kept for the next
+   check-in); a K230 already on (USB) gets `CHECK,<reason>` instead of a session.
+4. Battery cost: with test102's current, the energy per leak check for each path (estimate ~0.3 mAh, DESIGN.md
+   5.3.12).
 
 ## Pass
 
@@ -59,4 +64,4 @@ Boot share of the leak-to-video time (test022).
 
 ## Battery energy
 
-Energy per leak event, wake to clip uploaded and power-off.
+Energy per leak check (wake to `DONE` and power-off) and per leak event (to the clip uploaded and power-off).

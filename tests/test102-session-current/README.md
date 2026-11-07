@@ -1,9 +1,11 @@
 # test102: K230 session current
 
-Status: **planned** (2026-10-21): not run yet.
+Status: **planned** (2026-11-07): the leak check with `/app/leakcam` not measured yet; the 2026-10-30 reading (228 mA)
+was the first product's agent session (HISTORY.md, superseded).
 
-Battery life = sleep current x time + session energy x wakes. The K230 rails' current at idle, during the change
-net, the encoder and Wi-Fi.
+Battery life = sleep current x time + check-in energy x check-ins + leak-check energy x leak checks (DESIGN.md 5.3.12:
+24 check-ins + 1 leak check a day, ~2.85 mAh/day estimate). The K230 rails' current through a leak check (READY, WAKE,
+the job: capture, change net, `DONE`) and, on a leak, the encoder and Wi-Fi.
 
 ## Setup
 
@@ -38,16 +40,19 @@ tests is what the minimal image keeps).
 ## Steps
 
 1. Rails off (BL616 only): sleep-level current (measured in test031: 35 uA on the battery, 2026-10-25).
-2. `pt_on` held in reset, booting, agent idle, KPU loop, encoder (test027), LEDs at 100 % (white, IR).
-3. Integrate over a typical session (test101) for the energy per wake.
+2. `pt_on` held in reset, booting, `/app/leakcam` idle after READY (the USB relay only), the job (cameras simulated
+   until they arrive; then capture with the LEDs at 100 %, white and IR, and the change net on the KPU), the encoder
+   (test027) for a clip.
+3. Integrate over a leak check (test101: READY -> job -> `DONE` -> rails off) for the energy per leak check.
 
 ## Pass
 
-Recorded figures; energy per wake and the number of wakes a 1000 mAh cell allows.
+Recorded figures; energy per leak check against the ~0.3 mAh estimate (DESIGN.md 5.3.12) and the days a 1000 mAh
+cell allows.
 
 ## Result
 
-Not run yet.
+Not run on the product program yet.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics)
 
@@ -59,10 +64,10 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 | This part's boot share | n/a: the whole session is the subject (test101 has the steps) (2026-10-30) | - | |
 | Test run time | 218 s automated (run.py, 2026-10-30), no setup | - | setup (flashing, plugging, waiting) separately |
 | Speed / rate (none for this test) | **MISSING** | - | % of the top |
-| Current idle / during (min / avg / peak) | session, agent working: 228 mA (new reading); rails off, BL616 awake 61 mA (test006); K230 rails on, held in reset 87 mA (test021); K230 at msh idle (agent running) 220 mA (test006); KPU loop 220 mA (test013); encoder 2 x 15 fps 235 mA (test027: +15 mA); both LED chains 100 % 950 mA (test009: +0.73 A) (2026-10-30) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
+| Current idle / during (min / avg / peak) | K230 running with no camera and no server: 228 mA (the first product's agent session, 2026-10-30); the job with /app/leakcam **MISSING**; rails off, BL616 awake 61 mA (test006); K230 rails on, held in reset 87 mA (test021); K230 at msh idle 220 mA (test006); KPU loop 220 mA (test013); encoder 2 x 15 fps 235 mA (test027: +15 mA); both LED chains 100 % 950 mA (test009: +0.73 A) (2026-10-30) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | n/a: on USB power; no battery measurements (user, 2026-10-30) | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | one wake (test101 timeline: boot 0.87 s at ~87 mA, agent 24.5 s at 228 mA, 2.3 s at 220 mA): 6.17 A*s = 1.71 mAh at the board, 30.8 J from USB (2026-10-30) | - | scripts/energy.py |
-| Per day | 4 report sessions a day (6 h, DESIGN 5.1): 6.9 mAh/day at the board (2026-10-30) | ENERGY.txt line | n per day |
+| Power, energy per operation | **MISSING**: one leak check with /app/leakcam (estimate ~0.3 mAh, DESIGN.md 5.3.12; the 2026-10-30 agent-session figure superseded: HISTORY.md) | - | scripts/energy.py |
+| Per day | **MISSING**: one leak check a day (the server's `leakcheck`, default 86400 s) plus one per wet probe; budget 24 check-ins + 1 leak check ~2.85 mAh/day (estimate, DESIGN.md 5.3.12) | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | die n/a: K230 off; board 37.3 / 37.3 / 37.3 C (AHT20) (2026-10-30) | K230 limit (datasheet) | chip_temp, AHT20 |
 | Memory BL616 / K230 (start / min / end), leak | BL616 free 131124 / min 105196 / 131124 B, blocks 106 -> 106, deleted 0; leak: n/a, 1 snapshots (mem_leak.py needs >= 8 cycles) (2026-10-30) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | BL616 test firmware 1309616 B (2026-10-30, on the board at the run) | minimal image (rule) | the image this run used |
@@ -72,8 +77,8 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 
 ## Boot time
 
-Boot energy per wake from test022's timing x its current.
+Boot energy per leak check from test022's timing x its current.
 
 ## Battery energy
 
-This test is the energy measurement of a session; its figures go into ENERGY.txt.
+This test is the energy measurement of a leak check (a K230 session); its figures go into ENERGY.txt.

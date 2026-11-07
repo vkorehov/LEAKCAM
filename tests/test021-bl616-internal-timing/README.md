@@ -90,4 +90,5 @@ The BL616 side of every wake: wake -> decision -> K230_PWR high (adds to every s
 
 ## Battery energy
 
-The BL616's current while awake (humidity slice, wake handling) and how long; energy per humidity slice (144 per day) and per wake decision.
+The BL616's current while awake (wake handling, the sensor reads before a check-in: AHT20 36.5 ms, probe 2.6 ms) and
+how long; energy per wake decision (24 check-ins + 1 leak check a day, DESIGN.md 5.3.12).

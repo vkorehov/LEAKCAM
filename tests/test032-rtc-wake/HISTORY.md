@@ -2,6 +2,25 @@
 
 Earlier runs, superseded findings and obstacles, newest first. Current state: README.md.
 
+## Superseded (2026-11-07, DESIGN.md 5.3.12)
+
+Humidity wakes every 10 min (144 a day), NTP for the wall clock and the 24 h server interval on battery are gone: the
+RTC wakes the full firmware for the check-in (the server's `checkin`, default 3600 s) and the leak check (`leakcheck`,
+default 86400 s), and the clock comes from the server's `X-Time`. The old lines:
+
+    The BL616's hibernate RTC (Y3, 32.768 kHz) wakes it every 10 min for humidity and at the K230's requested interval;
+    it also keeps the wall clock between NTP syncs (aon_state.c: ~20 ppm, 1.7 s/day expected). A wake that comes late,
+    early or never is a missed report or a missed humidity alarm.
+
+    4. Drift over 24 h without NTP: seconds per day against the 1.7 s/day budget.
+
+    | Per day | 144 RTC wakes a day for humidity (every 10 min, DESIGN 5.1), inside the test031 sleep budget; the server check once a day on battery (24 h interval, DESIGN.md 5.3.1) wakes on its own | ENERGY.txt line | n per day |
+
+    HBN wake to the first instruction and to a usable console (part of every humidity slice and session start).
+
+    Energy per RTC wake with nothing to do (the humidity slice without the K230): current over the awake time, x 144 per
+    day (ENERGY.txt section 3).
+
 ## Runs
 
 ### Automated run 2026-11-01 (run.py, 1285 s): pass

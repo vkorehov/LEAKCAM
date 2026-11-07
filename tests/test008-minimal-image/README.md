@@ -10,7 +10,8 @@ BL616 steps open.
 The standing practice (tests/README) keeps every build minimal; this test pushes it to the floor on purpose: remove
 everything no test's `## Needs` names, then keep removing until something breaks, and record where the floor is
 and what each removal saved. Every byte on the NAND is read at each wake (UFFS reads every used page at mount,
-test022); every kernel feature costs boot and RAM; the BL616's image is read at every 10-minute wake.
+test022); every kernel feature costs boot and RAM; the BL616's image is read at every wake (the check-in every 60 min by default, the daily leak check, a wet probe:
+DESIGN.md 5.3.12).
 
 ## Setup
 
@@ -29,7 +30,8 @@ The union of every test's `## Needs`: this test's own list is the result.
    driver, component and linked library not in it: off, one group per build.
 2. Flags: kernel `-O1 -g` -> `-Os` (and `-O2` for comparison), no debug info; programs `-ffunction-sections
    -fdata-sections`, LTO, strip; nncase/MPP only in the programs that use them.
-3. leakcam_wake (5.18 MB static): map file by object/library; drop what the wake path does not call.
+3. `/app/leakcam` (firmware/k230_app, in the slot's ROMFS): map file by object/library; drop what the product program
+   (READY, WAKE, the USB relay, the leak job) does not call.
 4. /bin and /sdcard: only the files the product reads.
 5. Keep going past "needed" until the first failure (boot, a test's function): the floor, and the failing piece
    named.
@@ -37,7 +39,7 @@ The union of every test's `## Needs`: this test's own list is the result.
 **BL616:**
 6. The product and test firmware: every `CONFIG_` and SDK component vs the `## Needs` union (shell and logs off in
    the product, BLE provisioning only, lwIP minimal: the K230 owns IP), flags (`-Os`, sections, LTO already on).
-7. Wake path in TCM, the rest XIP; image size and the humidity slice's awake time.
+7. Wake path in TCM, the rest XIP; image size and a check-in's awake time.
 
 **Then per test, from the floor:** the floor image + that test's `## Needs` only, built, flashed, the test run: the
 difference to the floor is the cost of that test's features (bytes, boot ms, free RAM, current at idle), recorded
@@ -63,16 +65,16 @@ and the product image set to the smallest one that passes every test's `## Needs
 - Kept because the SDK references them: RT_DEBUG, RT_USING_PROC + DFS_PROCFS, RT_USING_USAGE (2026-10-22, build 1).
 - Kernel stays at the SDK's -O1 (user: safe side). The KPU bandwidth fix (install.sh, mapped address) is kept at -O1
   (2026-10-22, Flags A).
-- Programs: flags move leakcam_wake by 0.2 % at most (nncase and MPP are most of it). On the board -O3 LTO is the
+- Programs (the first product's, attic/firmware): flags move leakcam_wake by 0.2 % at most (nncase and MPP are most of it). On the board -O3 LTO is the
   fastest: cpubench sum 314.6 ms vs 344.5 ms at -Os (-9 %), reduce x2 6.26 vs 21.07 ms (vectorised,
   `-march=rv64imafdcv`); +11.7 KB leakcam_wake, +127 KB leakcam_stream. Rule: adopt -O3 -flto; the compress step
   (miniz level 3, ~275 ms) dominates (2026-10-23, Flags B on the board).
-- Open: -O3 -flto not in the product programs yet (rebuilt with the firmware rewrite).
-- Open: kernel -O2 - leakcam_agent faults returning to the signal-return trampoline (0xfffffffffffff000), latent
+- Open: -O3 -flto not in `/app/leakcam` yet.
+- Open: kernel -O2 - the first product's leakcam_agent faulted returning to the signal-return trampoline (0xfffffffffffff000), latent
   LWP signal-path bug; whether -O2 is faster was never measured.
 - Open: MPP_ISP_CONFIG_INSTALL_BIN and _JSON_XML both on (ISP set twice in /bin; test020/030); FAST_BOOT_CONFIGURATION
-  (rtapp.elf.gz) as a speed candidate for leakcam_agent/wake.
-- Open: steps 3-5 (leakcam_wake map file, /bin and /sdcard pruning, the floor) and BL616 steps 6-7.
+  (rtapp.elf.gz) as a speed candidate for `/app/leakcam`.
+- Open: steps 3-5 (`/app/leakcam` map file, /bin and /sdcard pruning, the floor) and BL616 steps 6-7.
 
 ## Metrics (**MISSING** on every run: skill leakcam-test-metrics, every value at its maximum)
 

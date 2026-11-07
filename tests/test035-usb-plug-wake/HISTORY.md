@@ -2,6 +2,24 @@
 
 Earlier runs, superseded findings and obstacles, newest first. Current state: README.md.
 
+## Superseded (2026-11-07, DESIGN.md 5.3.1, 5.3.11)
+
+The first product's "USB mode" (the plug switches the BL616 to BLE pairing, awake) and its humidity slices are gone:
+the setup firmware wakes on the plug, the K230 goes on with USB power and stays on (the USB relay), and the full
+firmware runs when a network is stored. The old lines:
+
+    A USB plug wakes the hibernating BL616 through PGOOD on ACOMP0 (threshold 1.65 V) and switches it to USB mode (BLE
+    pairing, awake). Unplug returns it to the battery path.
+
+    BL616 ACOMP0 (PGOOD), HBN wake on ACOMP, USB mode switch.
+
+    1. HBN (pt_sleep / product), plug USB-C 1: wake within ms, PGOOD low, USB mode; unplug: back to battery mode.
+
+    - Firmware (main.c): `k230_off()` waits up to 300 ms more for PGOOD after the power-off, and `sleep_for()` enters USB
+      mode when USB is present, so a plug during a session is not missed until the next humidity slice (2026-10-22).
+
+    Plug to the BL616 in USB mode (console up).
+
 ## Runs
 
 ### 2026-10-22

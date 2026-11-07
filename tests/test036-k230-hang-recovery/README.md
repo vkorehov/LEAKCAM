@@ -7,6 +7,8 @@ SESSION_MAX_MS 15 min and SESSION_MAX_RESTARTS 2 (2026-10-22).
 The BL616 must end every K230 session, even a hung one: no heartbeat edge for 2 s -> rails off; no READY within the
 boot timeout (BOOT_TIMEOUT_MS 10 s) -> rails off, retry, back off after 3 failures. Without it a hang drains the
 battery in hours.
+The session caps (SESSION_MAX_MS, SESSION_MAX_RESTARTS) apply on battery only (DESIGN.md 5.3.11): on USB power the K230
+runs all the time; the heartbeat watch stays, and a failed session starts again 30 s after its end.
 
 ## Setup
 
@@ -22,7 +24,8 @@ hang looks from outside), `reboot` pulses the reset 50 ms (a restart mid-session
 
 ## Needs (build features and dependencies)
 
-BL616 product power manager (heartbeat watch, READY timeout), K230 GPIO heartbeat, the agent.
+BL616 product power manager (heartbeat watch, READY timeout, the session caps on battery), K230 GPIO heartbeat
+(`/app/leakcam`; the runs so far used the first product's agent in the bench image).
 
 (What this test uses; the union over all tests is the feature set the minimal image keeps.)
 

@@ -2,6 +2,19 @@
 
 Earlier runs, superseded findings and obstacles, newest first. Current state: README.md.
 
+## Superseded (2026-11-07, DESIGN.md 5.3.12)
+
+The interval rule by power (the server's `poll` key: 60 s on USB, 24 h on battery) is gone: the server's answer
+carries `checkin` (product default 3600 s, the bench server 60 s) and `leakcheck`, set per device with `PUT
+/v1/devices/<id>/intervals`; the runner sets the board's interval that way instead of over ssh on the Pi. The old
+lines:
+
+    From boot the board checks in at the interval the server gives by its power (`usb=1|0`:
+    60 s on USB, 24 h on battery; DESIGN.md 5.3.1) whenever a network is stored; sleeping between check-ins on battery is a
+    later use case (the HBN scheduler, test108).
+
+    ... the app's INTERNET permission, ssh to the Pi for the poll interval.
+
 ## Runs
 
 ### Automated run 2026-11-06 (run.py, 154 s): pass

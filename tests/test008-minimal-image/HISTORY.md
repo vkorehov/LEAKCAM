@@ -2,6 +2,22 @@
 
 Earlier runs, superseded findings and obstacles, newest first. Current state: README.md.
 
+## Superseded (2026-11-07, DESIGN.md 5.3.8, 5.3.12, 5.4)
+
+The target program was the first product's `leakcam_wake` (5.18 MB static, /sdcard) next to `leakcam_agent`, and the
+BL616 woke every 10 min for humidity. Now the one K230 program is `/app/leakcam` (firmware/k230_app) in the slot's
+ROMFS, and the full firmware sleeps in HBN between the check-ins (default 60 min), the daily leak check and a wet
+probe; no humidity wakes. The old lines:
+
+    ... every kernel feature costs boot and RAM; the BL616's image is read at every 10-minute wake.
+
+    3. leakcam_wake (5.18 MB static): map file by object/library; drop what the wake path does not call.
+
+    7. Wake path in TCM, the rest XIP; image size and the humidity slice's awake time.
+
+    - Open: FAST_BOOT_CONFIGURATION (rtapp.elf.gz) as a speed candidate for leakcam_agent/wake.
+    - Open: steps 3-5 (leakcam_wake map file, /bin and /sdcard pruning, the floor) and BL616 steps 6-7.
+
 ## Runs
 
 ### Automated run 2026-10-30 (run.py, 72 s): pass

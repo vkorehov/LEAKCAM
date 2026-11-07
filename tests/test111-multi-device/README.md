@@ -7,9 +7,9 @@ as hidden and stores none; the board online at the server after a setup; a secon
 Each LEAKCAM is known by its device ID, the BL616's factory MAC (device_id.c): its USB serial number, its BLE
 advertisement (manufacturer data, company 0xFFFF) and its server check-ins (`POST /v1/poll?id=`) carry the same 12 hex
 digits. The app remembers the LEAKCAMs it set up and shows above the steps whether each is online, from the presence
-server (`GET /v1/devices/<id>`). From boot the board checks in at the interval the server gives by its power (`usb=1|0`:
-60 s on USB, 24 h on battery; DESIGN.md 5.3.1) whenever a network is stored; sleeping between check-ins on battery is a
-later use case (the HBN scheduler, test108).
+server (`GET /v1/devices/<id>`). From boot the board checks in at the interval the server's answer gives (`checkin`: product default 3600 s, the
+bench server 60 s; per device by `PUT /v1/devices/<id>/intervals`, DESIGN.md 5.3.12) whenever a network is stored;
+sleeping in HBN between check-ins on battery is a later step (test132).
 
 ## Setup
 
@@ -18,11 +18,13 @@ later use case (the HBN scheduler, test108).
 - The phone on adb, unlocked; USB-C 1 in; the test network from `~/.leakcam_wifi`.
 - A second LEAKCAM simulated: an ID no board has (02AB12CD34EF) put into the app's list (debug build: run-as), checked
   in at the server from the bench.
+- The runner sets the board's check-in interval for the run (10 s) per device with `PUT /v1/devices/<id>/intervals`
+  (phone.intervals), reads `check-in every N s` from the board's `presence`, and sets 60 s back at the end.
 
 ## Needs (build features and dependencies)
 
 As test106, plus eFuse read (the device ID), the presence task (wifi_check.c run with the server as target), the
-app's INTERNET permission, ssh to the Pi for the poll interval.
+app's INTERNET permission, the server's per-device intervals (`PUT /v1/devices/<id>/intervals`).
 
 (What this test uses; the union over all tests is the feature set the minimal image keeps.)
 
@@ -62,14 +64,14 @@ Every channel shows the same ID; the app shows each of its LEAKCAMs online or of
 ## Result
 
 run.py, 2026-11-01 11:24, product firmware (presence from boot, flags byte in the scan response) + the setup app with
-the status screen + server/ on the Pi (poll 10 s for the run, 60 s after): 18/18; crash record none before and after.
+the status screen + server/ on the Pi (check-in every 10 s for the run, 60 s after): 18/18; crash record none before and after.
 
 - Step 1: `presence` id 7C3E8262B149 = USB serial number = the ID the app read from the scan response; the MAC the router
   lists for the board.
 - Step 5: the app opened on its status screen; it found the board on USB power and opened its setup in 1.2 s; the short
   flow ("Enter the new Wi-Fi network for LEAKCAM-B14A"); setup Done 7.9 s; the scan response flagged a stored network
   (creds 1); the app's storage held IDs and names only.
-- Step 2: online at the server 42 s after the setup (the board on its 60 s default until the first answer gave 10 s);
+- Step 2: online at the server 42 s after the setup (the board on the bench server's 60 s until the first answer gave 10 s);
   last check-in state 0x03.
 - Steps 3-4: the board online in the app; the second LEAKCAM "not seen yet", "online" after one check-in, "offline, last
   seen 34 s ago" after three intervals; deleted from the list with the board still listed and online.
@@ -83,7 +85,7 @@ Probes: none (on USB).
 | Boot, power-on -> READY (median of 5) | n/a: the BL616 alone, K230 off | target (test022) | longest step: |
 | This part's boot share | n/a: no K230 boot | - | |
 | Test run time | 137 s automated (run.py, 2026-11-01), no setup | - | setup (flashing, plugging, waiting) separately |
-| presence: check-in to online in the app | setup Done -> online at the server 39 s (poll 10 s, the board's first interval 60 s until told) | - | % of the top |
+| presence: check-in to online in the app | setup Done -> online at the server 39 s (check-in every 10 s, the board's first interval 60 s until told) | - | % of the top |
 | Current idle / during (min / avg / peak) | n/a: not metered; a check-in is the BLE check's join + HTTP on USB (test040: check peak 86 mA) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | n/a: on USB power only | cutoff 3.10 V (bug-004) | at the probes above |
 | Power, energy per operation | n/a for the cell: on USB | - | scripts/energy.py |

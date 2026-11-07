@@ -1,6 +1,7 @@
 # test104: battery energy audit
 
-Status: **planned** (2026-10-30): when the BL616 test firmware runs the whole wake cycle for days (hibernate, sessions, Wi-Fi).
+Status: **planned** (2026-11-07): when the full firmware runs its battery day for days (HBN sleep between events, the
+check-ins, the leak checks: DESIGN.md 5.3.12; the HBN sleep step is not built yet).
 
 Adds up the per-part figures that every low-level test records (section "Battery energy" in each) in
 [ENERGY.txt](../../ENERGY.txt), and checks the sum against a multi-day run. It finds no bottleneck itself: those
@@ -17,13 +18,15 @@ tests is what the minimal image keeps).
 
 ## Steps
 
-1. Sleep current: from test031 (BL616 HBN with the test firmware, 35 uA).
-2. Energy per humidity slice, calculated: its awake time (test021, ~85 ms) x the BL616 awake current (test031,
-   test040) (no battery measurements (user, 2026-10-30)).
-3. Energy per K230 report session: current over the whole session (test101 timing, test102 current), boot part
-   separate (test022).
-4. Energy per leak session with a clip upload (Wi-Fi).
-5. Budget: sleep + 144 slices + 4 reports per day (+ leaks), self-discharge; battery life for 1 and 2 cells.
+1. Sleep current: from test031 (BL616 HBN with the test firmware, 35 uA: ~0.86 mAh/day).
+2. Energy per check-in, the BL616 alone (HBN wake -> Wi-Fi -> `POST /v1/poll` -> HBN): test100's BL616-only check
+   (~0.036 mAh, 1.71 s awake), x the server's `checkin` (default 3600 s: 24 a day) (no battery measurements (user,
+   2026-10-30)).
+3. Energy per leak check: a K230 session READY -> job -> `DONE` -> rails off (test101 timing, test102 current), boot
+   part separate (test022); once a day by the RTC (the server's `leakcheck`, default 86400 s) plus one per wet probe.
+4. Energy per leak event with a clip upload (Wi-Fi).
+5. Budget: sleep + 24 check-ins + 1 leak check a day (+ leaks), self-discharge (~0.8 mAh/day); estimate ~2.85 mAh/day
+   (DESIGN.md 5.3.12: ~0.9 years on one cell, ~1.8 on two); battery life for 1 and 2 cells from the measured sum.
 
 ## Pass
 

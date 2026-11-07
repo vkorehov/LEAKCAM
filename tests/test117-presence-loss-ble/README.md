@@ -18,7 +18,10 @@ with the cause gone (the server back): only a setup or its 6 h retry (test125) e
 
 - The product pair (firmware/bl616_full in slot 0, bl616_setup in slot 1: `make flash SLOT1_BIN=...`), the PIN
   stored, a network stored; USB-C 1 in; the phone on adb, unlocked.
-- The presence server on the Pi: the runner sets its poll interval to 10 s, stops and starts it, and puts back 60 s.
+- The presence server on the Pi: the runner stops and starts it. It sets the board's check-in interval to 10 s per
+  device with `PUT /v1/devices/<id>/intervals` (phone.intervals; again after a server restart: the server keeps the
+  intervals in memory), reads `check-in every N s` from the board's `presence`, and sets 60 s back at the end (product
+  default 3600 s, the bench server's default 60 s).
 
 The runner reads the firmware from `slot` (leakcam-build full / setup); the phone's scan shows the radio itself (none
 in the full firmware). On battery the setup firmware advertises every 2 s (test120, test106).
@@ -68,7 +71,7 @@ phone finds the board and sets the Wi-Fi in one go, and a present board runs the
 | Boot, power-on -> READY (median of 5) | n/a: the BL616 alone, K230 off | target (test022) | |
 | This part's boot share | n/a: no K230 boot | - | |
 | Test run time | 189 s automated (run.py, 2026-11-03), no setup | - | |
-| presence lost -> the setup firmware; set up again from the app | presence lost -> the setup firmware 9 s (server down) / 13 s (network gone), poll 10 s; set up again from the app 8.7-9.1 s, the full firmware 4 s after Done (2026-11-03) | within one interval | |
+| presence lost -> the setup firmware; set up again from the app | presence lost -> the setup firmware 9 s (server down) / 13 s (network gone), check-in every 10 s; set up again from the app 8.7-9.1 s, the full firmware 4 s after Done (2026-11-03) | within one interval | |
 | Current idle / during (min / avg / peak) | n/a: on USB power, no meter reading (2026-11-02 bench run; the battery case is the setup firmware's, test120) | floor (test031) | USB-C 1 meter (LEAKCAM_METER=ask) |
 | Voltage under load (min) | n/a: on USB power | cutoff 3.10 V (bug-004) | |
 | Power, energy per operation | n/a: on USB power; a switch is one reset and a 4 KB partition-table write (test126) | - | |

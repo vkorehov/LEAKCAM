@@ -21,7 +21,8 @@ console status and the USB setup path's status); then the lockout (only the USB 
 
 ## Needs (build features and dependencies)
 
-K230: ADC_1 VBAT in the agent, the WAKE ACK reading, the quick stop (session end on a low reading). BL616: the
+K230: ADC_1 VBAT in `/app/leakcam`, the `;b=<mV>` attribute on every K230 frame (DESIGN.md 5.3.9), the quick stop
+(session end on a low reading). BL616: the
 battery-low state and the lockout (aon_state in HBN RAM; the level is the K230's), the battery-low flag in the check-in (presence.c, wifi_check.c) and in the BLE
 advertisement (ble_pairing.c). Server: the flag kept per device and shown in GET /v1/devices/{id}. App: the
 "battery low, please charge" state.
@@ -32,8 +33,8 @@ advertisement (ble_pairing.c). Server: the flag kept per device and shown in GET
 
 0. Low level, the state: a cut stores the flag and the last VBAT in HBN RAM (aon_state); it survives a PDS/HBN sleep, a
    software reset and a watchdog reset (read back each time), and clears only at recovery (step 5).
-1. Low level, the K230's quick stop: a session running (capture or upload); the reading below the cutoff -> the agent
-   ends the session (no new capture or upload, a write in flight finished: no NAND damage, test028); time from the
+1. Low level, the K230's quick stop: a session running (capture or upload); the reading below the cutoff -> the product
+   program ends the session (no new capture or upload, a write in flight finished: no NAND damage, test028); time from the
    low reading to the K230's rails off; the current before and after.
 2. The BL616's notice over Wi-Fi: right after the rails go off, one check-in with the battery-low flag and the VBAT
    reading; the server shows it (GET /v1/devices/{id}); the app's list shows the board as "battery low, please

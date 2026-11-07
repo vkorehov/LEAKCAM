@@ -2,8 +2,10 @@
 
 Status: **pass** (2026-10-22): plug / unplug seen awake, HBN wake on both edges, 19 charger plug transitions all reported.
 
-A USB plug wakes the hibernating BL616 through PGOOD on ACOMP0 (threshold 1.65 V) and switches it to USB mode (BLE
-pairing, awake). Unplug returns it to the battery path.
+A USB plug wakes the sleeping BL616 through PGOOD on ACOMP0 (threshold 1.65 V): the setup firmware wakes on the plug
+(provisioning over the cable and BLE), the full firmware runs when a network is stored; in either the K230 goes on
+with USB power and stays on while it lasts (the USB relay, DESIGN.md 5.3.11). Unplug: the K230's battery reading
+(`STATUS`), the K230 off, back to the battery path.
 
 ## Setup
 
@@ -16,20 +18,22 @@ USB-C 1 VBUS meter in the cable that is plugged and unplugged.
 
 ## Needs (build features and dependencies)
 
-BL616 ACOMP0 (PGOOD), HBN wake on ACOMP, USB mode switch.
+BL616 ACOMP0 (PGOOD), HBN wake on ACOMP, the K230 on with USB power and off at the unplug (both firmwares, DESIGN.md
+5.3.11).
 
 (What this test uses; the union over all tests is the feature set the minimal image keeps.)
 
 ## Steps
 
-1. HBN (pt_sleep / product), plug USB-C 1: wake within ms, PGOOD low, USB mode; unplug: back to battery mode.
+1. HBN (pt_sleep / product), plug USB-C 1: wake within ms, PGOOD low, the K230 on; unplug: the K230 off, back to the
+   battery path.
 2. USB-C 2 only (through D2): the same?
 3. With the K230 running (bug-002 back-feed): what the BL616 sees, and when power arrives after the session.
 4. Plug/unplug 100 times: no missed wake, no stuck state.
 
 ## Pass
 
-Every plug wakes and every unplug returns to battery mode; latency recorded.
+Every plug wakes with the K230 on and every unplug returns to the battery path with the K230 off; latency recorded.
 
 ## Result
 
@@ -45,8 +49,8 @@ Every plug wakes and every unplug returns to battery mode; latency recorded.
   PGOOD low 113 ms after the 3V3 rail was gone (bug-002: the CH340's D+ pull-up back-feeds VUSB through D3, a USB-C
   source waits for VBUS below 0.8 V). A plain 5 V charger powers the board even during a session (2026-10-22).
   Solved on the boards by the U2 1-2-3 bridge (2026-10-25).
-- Firmware (main.c): `k230_off()` waits up to 300 ms more for PGOOD after the power-off, and `sleep_for()` enters USB
-  mode when USB is present, so a plug during a session is not missed until the next humidity slice (2026-10-22).
+- First product firmware (attic/firmware/bl616/main.c): `k230_off()` waits up to 300 ms more for PGOOD after the
+  power-off, so a plug during a session is not missed (2026-10-22).
 - Step 2 (USB-C 2 only): not applicable on this board, USB-C 2's VBUS cut by hand (2026-10-21).
 
 Open:
@@ -78,7 +82,7 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 
 ## Boot time
 
-Plug to the BL616 in USB mode (console up).
+Plug to the BL616 awake (console up) and the K230 on.
 
 ## Battery energy
 

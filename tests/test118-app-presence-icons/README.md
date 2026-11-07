@@ -13,7 +13,9 @@ blink at every rescan. Every redraw of a row is logged ("row <id> wifi 0|1 ble 0
 - BL616 test firmware (tests/firmware/bl616_powertest: `pt_ble adv off|on`), the PIN stored; USB-C 1 in; the phone on
   adb, unlocked.
 - The test firmware has no presence of its own: the bench checks in at the server under the board's own ID (as the
-  board would), poll interval 10 s for the run.
+  board would) every 10 s for the run; the runner sets the board's check-in interval to 10 s per device with `PUT
+  /v1/devices/<id>/intervals` (phone.intervals: the server's offline mark is three missed intervals) and sets 60 s
+  back at the end (product default 3600 s, the bench server's default 60 s).
 
 ## Needs (build features and dependencies)
 

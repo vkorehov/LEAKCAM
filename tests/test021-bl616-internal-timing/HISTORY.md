@@ -2,6 +2,13 @@
 
 Earlier runs, superseded findings and obstacles, newest first. Current state: README.md.
 
+## Superseded (2026-11-07, DESIGN.md 5.3.12)
+
+Humidity slices (a BL616 wake every 10 min, 144 a day) are gone: the AHT20 is read before each check-in and reported
+only. The old line (Battery energy):
+
+    The BL616's current while awake (humidity slice, wake handling) and how long; energy per humidity slice (144 per day) and per wake decision.
+
 ## Runs
 
 ### Automated run 2026-10-25 (run.py, 140 s): pass

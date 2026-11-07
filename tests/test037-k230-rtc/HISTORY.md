@@ -2,6 +2,21 @@
 
 Earlier runs, superseded findings and obstacles, newest first. Current state: README.md.
 
+## Superseded (2026-11-07, DESIGN.md 5.3.12, 5.4)
+
+The K230 no longer gets NTP time nor sends `TIME,<unix s>` back (no `TIME` frame in the rewrite): every BL616 frame
+carries `;t=<unix s>` (from the server's `X-Time`) and the K230 sets its clock from it only when more than 5 s off
+(tests/test050). The old lines:
+
+    The K230's PMU RTC (Y1, 32.768 kHz, AVDD1P8_RTC on the switched 1V8 rail) restarts at every power-up; the BL616
+    hands it the time in the `WAKE` reply and the K230 sets the RTC from it (DESIGN.md 5.4); NTP time goes back as
+    `TIME,<unix s>`. It needs the PMU awake (bug-003: R45 bridged, INT4 1.8 V); `RT_USING_RTC_PMU`.
+
+    5. `TIME,<unix s>` back to the BL616 after NTP: the BL616's clock re-based (test032 drift starts from it).
+
+    - Steps 1-6 (handover from the BL616, `WAKE` 0, roll-overs, `TIME` back, 10 cold starts): the handover needs the link
+      protocol (WAKE / TIME) in the BL616 test firmware, from firmware/bl616_common.
+
 ## Runs
 
 ### Automated run 2026-11-01 (run.py, 236 s): pass

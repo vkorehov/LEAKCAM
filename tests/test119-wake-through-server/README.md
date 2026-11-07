@@ -19,7 +19,9 @@ presence cannot hear the server: it switches to the setup firmware by itself whe
 - The product pair (firmware/bl616_full in slot 0, bl616_setup in slot 1), the PIN stored, a network stored; USB-C 1
   in; the phone on adb, unlocked, nobody using it (another app in front hides the Wake button from the runner's UI
   dump). The runner reads the firmware from `slot`.
-- The server with the wake endpoint (server/deploy.sh); the runner sets its poll interval to 20 s and puts back 60 s.
+- The server with the wake endpoint (server/deploy.sh); the runner sets the board's check-in interval to 20 s per
+  device with `PUT /v1/devices/<id>/intervals` (phone.intervals), reads `check-in every N s` from the board's
+  `presence`, and sets 60 s back at the end (product default 3600 s, the bench server's default 60 s).
 
 ## Needs (build features and dependencies)
 
@@ -52,7 +54,7 @@ with nothing by hand on the board.
 ## Result
 
 - 2026-11-03 05:42-05:48 UTC, 16/16, run.py 358 s, the product pair (full 0.6+g1d2b375-dirty-202611021742, setup
-  0.6+g1d2b375-dirty-202611022115), poll 20 s, USB-C 1 in, the phone 8 m away in another room: the tap -> the server
+  0.6+g1d2b375-dirty-202611022115), check-in every 20 s, USB-C 1 in, the phone 8 m away in another room: the tap -> the server
   200 -> the setup firmware 11 s later -> the app showed the Bluetooth icon and "Change the Wi-Fi" at once -> Done 8.8 s
   -> the full firmware 4 s later; a second wake 429; the next wake 2 minutes after the delivered one -> the setup
   firmware 23 s later (one interval), back in the full firmware by itself 120 s after. Three runs before it failed on
@@ -65,7 +67,7 @@ with nothing by hand on the board.
 | Boot, power-on -> READY (median of 5) | n/a: the BL616 alone, K230 off | target (test022) | |
 | This part's boot share | n/a: no K230 boot | - | |
 | Test run time | 358 s automated (run.py, 2026-11-03), no setup | - | |
-| Wake tap -> the button changes the Wi-Fi | Wake tap -> the button changes the Wi-Fi 11 s (poll 20 s: up to one interval); an unanswered wake back in the full firmware after 120 s (2026-11-03) | - | % of the top |
+| Wake tap -> the button changes the Wi-Fi | Wake tap -> the button changes the Wi-Fi 11 s (check-in every 20 s: up to one interval); an unanswered wake back in the full firmware after 120 s (2026-11-03) | - | % of the top |
 | Current idle / during (min / avg / peak) | n/a: on USB power, no meter reading (2026-11-02 bench run; the battery case is the setup firmware's, test120) | floor (test031) | USB-C 1 meter (LEAKCAM_METER=ask) |
 | Voltage under load (min) | n/a: on USB power | cutoff 3.10 V (bug-004) | |
 | Power, energy per operation | n/a: on USB power; a switch is one reset and a 4 KB partition-table write (test126) | - | |

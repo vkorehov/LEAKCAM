@@ -10,7 +10,8 @@ only once the server confirmed it. Nothing over BLE or USB.
 ## Setup
 
 - The pair flashed (full in slot 0, the setup test bed in slot 1), the presence server (server/) on the Pi with the
-  crash endpoints, a network stored; USB-C 1 in (console).
+  crash endpoints (its check-in interval 60 s, the bench default; the product default is 3600 s, set per device by
+  `PUT /v1/devices/<id>/intervals`), a network stored; USB-C 1 in (console).
 - Crashes made by command: `crash test` (exception), `crash hang` (watchdog hang).
 
 ## Needs (build features and dependencies)
@@ -50,8 +51,8 @@ the board clears it only after the server confirmed it; never over BLE or USB.
   - step 1, exception: at the server 4.1 s after the console was back, cleared on the board; decoded from the server's
     copy with the kept ELF: cmd_crash (the test's illegal instruction).
   - step 2, watchdog hang: the same, 4.1 s; decoded cmd_crash (the test spins in it).
-  - step 3, server stopped: kept on the board; sent at the next check-in 36.8 s after the server was back (60 s
-    interval), one copy.
+  - step 3, server stopped: kept on the board; sent at the next check-in 36.8 s after the server was back (the bench
+    server's 60 s check-in interval), one copy.
   - step 5, server stopped across a crash in the full firmware and the switch: the setup firmware held the full
     firmware's record and sent it with its API step (`switch_to_full usb`) 9.1 s later, build "full ...", decoded
     cmd_crash; then the hand-over to the full firmware.
@@ -76,7 +77,7 @@ the board clears it only after the server confirmed it; never over BLE or USB.
 | Boot, power-on -> READY (median of 5) | n/a: the BL616 alone, K230 off | target (test022) | |
 | This part's boot share | n/a: no K230 boot | - | |
 | Test run time | run.py steps 1 2 3 5 7: 6 min; steps 1 2: 21 s | - | no hand step |
-| crash -> record at the server | 4.1 s after the console was back (exception and hang); 36.8 s after the server came back (the next 60 s check-in) | one check-in | console back 11.1-11.3 s after the crash (reset + VMware attach) |
+| crash -> record at the server | 4.1 s after the console was back (exception and hang); 36.8 s after the server came back (the next check-in, the bench server's 60 s interval) | one check-in (the server's `checkin`: product default 3600 s, per device by PUT /v1/devices/<id>/intervals) | console back 11.1-11.3 s after the crash (reset + VMware attach) |
 | Current idle / during (min / avg / peak) | n/a: on USB power, no meter reading | - | |
 | Voltage under load (min) | n/a: on USB power | - | |
 | Power, energy per operation | one extra HTTP POST per crash (a form of ~300 bytes) after the check-in | - | nothing when there is no record |

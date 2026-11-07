@@ -2,6 +2,13 @@
 
 Earlier runs, superseded findings and obstacles, newest first. Current state: README.md.
 
+## Superseded (2026-11-07, DESIGN.md 5.3.12)
+
+The server's global `poll` interval set over ssh is gone: the runner sets the board's check-in interval per device
+with `PUT /v1/devices/<id>/intervals` (product default 3600 s, the bench server 60 s). The old line (Setup):
+
+    - The presence server on the Pi: the runner sets its poll interval to 10 s, stops and starts it, and puts back 60 s.
+
 ## Runs
 
 ### Automated run 2026-11-06 (run.py, 357 s): pass

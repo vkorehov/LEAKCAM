@@ -2,6 +2,13 @@
 
 Earlier runs, superseded findings and obstacles, newest first. Current state: README.md.
 
+## Superseded (2026-11-07, DESIGN.md 5.3.12)
+
+Humidity slices are gone (no humidity wakes; the AHT20 is reported only). The old line (Boot time):
+
+    The BL616's HBN wake to its first instruction and to the console (RTC wake after <s>): part of every humidity slice
+    and every K230 session start (with test021).
+
 ## Runs
 
 ### 2026-10-25: what each wake source and HBN setting costs (same wiring; `pt_sleep 600 <variant>`, own HBN entry)

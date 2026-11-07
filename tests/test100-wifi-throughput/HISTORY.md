@@ -2,6 +2,19 @@
 
 Earlier runs, superseded findings and obstacles, newest first. Current state: README.md.
 
+## Superseded (2026-11-07, DESIGN.md 5.3.12)
+
+NTP and the 24 h battery interval are gone: every server answer carries `X-Time` and the board sets its clock from
+it; the check-in interval comes from the server (`checkin`, default 3600 s: 24 check-ins a day). The old lines:
+
+    1. Join, DHCP, DNS, NTP (time to each step from the WIFI command).
+
+      every 15 min (the battery interval is 24 h since 2026-11-01: ~0.036 mAh/day, DESIGN.md 5.3.1); radio up and DHCP
+
+    | Per day | one check a day on battery (24 h interval, DESIGN.md 5.3.1): ~0.036 mAh/day; every 15 min would be ~3.4 mAh/day | ENERGY.txt line | n per day |
+
+    (BL616 lwIP); the K230 has its address 0.33-0.59 s after `bl616_rescan` (2026-10-25). NTP not measured.
+
 ## Runs
 
 ### Upload limit found and raised (2026-10-25 11:00-11:45, same router and place)
