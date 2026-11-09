@@ -4,8 +4,8 @@ a board with no network sits in the setup firmware on USB power and advertises f
 icon; the signal as 1-4 bars, never the dB value; a long press on the bars shows it ("dbm <n>" in the log). The app
 logs every redraw of a row ("row <id> ... power plug|battery|- bars <n> rssi <dBm>"); the runner reads those. At the
 end the real network is set from the app again (back to the full firmware).
-    tests/test129-app-power-signal-icons/run.py [--battery]   --battery: USB-C 1 out (hand step) -> a battery icon,
-                                                                 then back in (hand step)
+    tests/test129-app-power-signal-icons/run.py [--battery]   --battery: USB-C 1 out (relay box) -> a battery icon,
+                                                                 then back in (relay box)
 """
 import fcntl
 import json
@@ -122,7 +122,7 @@ try:
     # 3. the long press shows the dB value
     dbm = long_press_signal(dev)
     check("long press on the bars: the dB value", dbm is not None and -110 < dbm < 0, f"{dbm} dBm")
-    # 4. on battery: the battery icon (hand steps)
+    # 4. on battery: the battery icon (the relay box unplugs and plugs)
     if BATTERY:
         if hand("unplug USB-C 1 (the cell stays in)", "unplugged") is None:
             raise Stop("no hand step: unplug")

@@ -1,14 +1,14 @@
-09:03:53 test129-app-power-signal-icons: 4 metric rows MISSING: each change -> its icon, Current idle / during (min / avg / peak), Power, energy per operation, Temperature die / board (start / peak / end)
-09:04:05 CHECK pass no network: the setup firmware on USB 8 s
-09:04:12 CHECK pass USB power: the plug icon 2 s, row ('plug', 4, -36)
-09:04:12 CHECK pass signal as bars, matching the dB value 4 bars at -36 dBm
-09:04:17 CHECK pass long press on the bars: the dB value -30 dBm
-09:04:22 phone: relay 4.4 s
-09:04:22 relay box: unplugged (unplug USB-C 1 (the cell stays in))
-09:04:27 CHECK pass on battery: the battery icon 5 s, row ('battery', 4, -38)
-09:04:32 phone: relay 4.3 s
-09:04:32 relay box: plugged (plug USB-C 1 back in)
-09:04:37 sample after the checks {'board': None, 'bl_mem': (136148, 122884, 127048, 101, 73644, 17, 0)}
-09:04:51 phone: app 14.0 s
-09:04:56 CHECK pass end: the real network set again, the full firmware full
-09:04:58 test129-app-power-signal-icons: PASS; filled 0: -; still MISSING 4: each change -> its icon, Current idle / during (min / avg / peak), Power, energy per operation, Temperature die / board (start / peak / end); run in HISTORY.md - README Status/Result by hand
+09:14:58 test129-app-power-signal-icons: 4 metric rows MISSING: each change -> its icon, Current idle / during (min / avg / peak), Power, energy per operation, Temperature die / board (start / peak / end)
+09:15:26 CHECK pass no network: the setup firmware on USB 8 s
+09:15:30 CHECK pass USB power: the plug icon 2 s, row ('plug', 4, -33)
+09:15:30 CHECK pass signal as bars, matching the dB value 4 bars at -33 dBm
+09:15:36 CHECK pass long press on the bars: the dB value -32 dBm
+09:15:36 phone: relay 0.3 s
+09:15:36 relay box: unplugged (unplug USB-C 1 (the cell stays in))
+09:15:37 CHECK pass on battery: the battery icon 1 s, row ('battery', 4, -37)
+09:15:37 phone: relay 0.4 s
+09:15:37 relay box: plugged (plug USB-C 1 back in)
+09:15:41 sample after the checks {'board': None, 'bl_mem': (136184, 122884, 129824, 101, 73604, 17, 0)}
+09:15:58 phone: app 16.2 s
+09:16:00 CHECK pass end: the real network set again, the full firmware full
+09:16:02 test129-app-power-signal-icons: PASS; filled 0: -; still MISSING 4: each change -> its icon, Current idle / during (min / avg / peak), Power, energy per operation, Temperature die / board (start / peak / end); run in HISTORY.md - README Status/Result by hand

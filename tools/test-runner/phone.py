@@ -183,17 +183,6 @@ def op(name, **kw):
     limit = int(kw.get("secs", 10)) + 60
     t0 = time.time()
     awake()
-    if name == "relay":     # no secret in it: on the command line, without the args file's push + rm (~1 s)
-        extra = [x for k, v in kw.items() for x in ("-e", k, str(v))]
-        try:
-            out = adb("shell", "am", "instrument", "-w", "-r", "-e", "op", name, *extra, RUNNER, secs=limit)
-        except subprocess.TimeoutExpired as e:
-            out = ""
-            log(f"phone: {name} no answer in {e.timeout:.0f} s")
-        m = re.search(r"INSTRUMENTATION_STATUS: result=(.*)", out)
-        res = json.loads(m.group(1)) if m else {"error": "no result from the phone"}
-        log(f"phone: {name} {time.time() - t0:.1f} s" + (f", error {res['error']}" if res.get("error") else ""))
-        return res
     fd, local = tempfile.mkstemp(suffix=".json")          # mode 600
     try:
         with os.fdopen(fd, "w") as f:
@@ -302,30 +291,48 @@ def plug_back():
         relay([set()])
 
 
+RELAY_APP = "com.relay"
+RELAY_APK = os.path.join(REPO, "tests/firmware/bench_relays/relay-app/app/build/outputs/apk/debug/app-debug.apk")
+_relay_n = [0]
+
+
 def relay(phases, gaps=None, times=None):
-    """the relay box over BLE from the phone (BleOp op relay): BEFC = the end state (kept after the disconnect), then
-    one AT+MPIO per phase - every relay of a phase switches at once (separate AT+PIOnv writes switched them ~0.5 s
-    apart, 2026-11-08) - gaps[i] ms after phase i's reply (default 1000 each; each command also waits for its reply,
-    ~one BLE connection interval); times: a list that gets each phase's reply time (phone ms); True when every command
-    was answered as asked"""
+    """the relay box over BLE through the bench phone's own relay app (com.relay, tests/firmware/bench_relays/relay-app):
+    it keeps one connection open, so a switch is ~0.5 s from here (~4 s with a connect each), and it never touches the
+    LEAKCAM app (the old way, an instrumentation of the app, force-stopped the app at every switch, 2026-11-09).
+    BEFC = the end state (kept after a disconnect), then one AT+MPIO per phase - every relay of a phase switches at
+    once (separate AT+PIOnv writes switched them ~0.5 s apart, 2026-11-08) - gaps[i] ms after phase i's reply (default
+    1000 each; each command also waits for its reply, ~one BLE connection interval); times: a list that gets each
+    phase's reply time (phone ms); True when every command was answered as asked"""
+    from board import log
     gaps = gaps or [1000] * (len(phases) - 1)
     cmds = ["AT+BEFC" + bits(phases[-1])]
     for i, on in enumerate(phases):
         cmds += ([f"wait:{gaps[i - 1]}"] if i else []) + ["AT+MPIO" + bits(on)]
     want = ["OK+Set:" + c[-3:] for c in cmds if c.startswith("AT+")]
     relay_left[0] = phases[-1]              # what the box holds after this op (BEFC), for the end of the test
-    # the op's end force-stops the app ("finished inst": an instrumentation targets it), so a test watching the app
-    # lost it at every relay switch (test129 --battery: no battery row after the unplug, 2026-11-09): reopened when it
-    # was on screen, as a person's phone keeps it
-    shown = "com.leakcam.setup/" in adb("shell", "dumpsys", "activity", "activities", secs=15).split("topResumedActivity", 1)[-1][:200]
-    res = op("relay", address=RELAY, cmds=",".join(cmds), secs=20 + sum(gaps) // 1000)
-    if shown:
-        adb("shell", "am", "start", "-n", "com.leakcam.setup/.MainActivity", secs=15)
+    if _relay_n[0] == 0 and os.path.exists(RELAY_APK):    # the relay app installed / current, once per process
+        on_phone = adb("shell", "pm", "path", RELAY_APP).strip().replace("package:", "")
+        if not on_phone or adb("shell", "sha256sum", on_phone).split()[:1] != [hashlib.sha256(open(RELAY_APK, "rb").read()).hexdigest()]:
+            install(RELAY_APK, [])
+    _relay_n[0] += 1
+    rid = f"{os.getpid()}-{_relay_n[0]}"
+    t0 = time.time()
+    adb("shell", "am", "start-foreground-service", "-n", f"{RELAY_APP}/.RelayService", "--es", "id", rid,
+        "--es", "address", RELAY, "--es", "cmds", ",".join(cmds), secs=15)
+    res, limit = None, 20 + sum(gaps) / 1000
+    while time.time() - t0 < limit:
+        m = re.search(rf"RESULT {re.escape(rid)} (\{{.*\}})", adb("logcat", "-d", "-s", "LeakcamRelay:I", secs=15))
+        if m:
+            res = json.loads(m.group(1))
+            break
+        time.sleep(0.05)
+    res = res or {"error": "no answer from the relay app"}
+    log(f"phone: relay {time.time() - t0:.1f} s" + (f", error {res['error']}" if res.get("error") else ""))
     replies = res.get("replies", [])
     if times is not None:
         times += [r.get("ms", 0) for r in replies if r.get("cmd", "").startswith("AT+MPIO")]
     return [r.get("reply", "") for r in replies] == want
-
 
 def hand(action, word, secs=900):
     """a hand step (USB-C 1 out / in, bench <-> phone): done by the relay box when it knows the word (RELAY_STEPS),

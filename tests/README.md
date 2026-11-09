@@ -167,7 +167,7 @@ The design changes behind it (DESIGN.md 5.3, 5.3.1, 5.3.3):
 
 **Run on battery too (`run.py --battery`, USB-C 1 out; added 2026-11-03 after bugs/bug-006):** every setup-firmware
 pass so far was on USB, where it never sleeps; on battery it sleeps, its console is off and the phone's scan stands
-for it. Hands: USB-C 1 out at the start, in at the end.
+for it. The bench relay box takes USB-C 1 out at the start and puts it back at the end (no hands).
 
 | Test | On battery |
 |---|---|

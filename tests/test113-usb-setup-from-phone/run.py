@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """test113: full setup of a LEAKCAM with no network stored, by the LEAKCAM Setup app on the bench phone over a USB-C
 cable into USB-C 1 (phone = USB host), product firmware on both chips, BLE not used (DESIGN.md 5.3.4, 5.3.8). The
-network is erased first (`provision erase`); hand steps move USB-C 1 to the phone and back. The app's own screens do
+network is erased first (`provision erase`); the relay box moves USB-C 1 to the phone and back (no hands). The app's own screens do
 the setup (BleOp `app`: the setup screen, the Wi-Fi fields from a pushed file, Send); Android's one-time "open LEAKCAM
 Setup for this USB device" dialog is answered "always" from a UI dump. Setup lists new boards only (DESIGN.md 5.3.4):
 the board comes off the phone's list before each setup, and once set up from this phone the cable no longer lists it.

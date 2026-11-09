@@ -26,7 +26,7 @@ cable into USB-C 1, BLE not used: on the **product firmware** pair (BL616 setup 
 
 ## Steps
 
-1. Hand: USB-C 1 from the bench to the phone; the board has no network stored (setup firmware, asleep).
+1. Relay box: USB-C 1 from the bench to the phone; the board has no network stored (setup firmware, asleep).
 2. The plug: the setup firmware wakes on VBUS, powers the K230, sends WAKE setup; the phone lists the board's USB
    device; time from the plug.
 3. The app: the board's row shows the USB link icon (not the plug); its device ID read over the cable.
@@ -36,7 +36,7 @@ cable into USB-C 1, BLE not used: on the **product firmware** pair (BL616 setup 
    app lists it online.
 7. Failures as over BLE: a wrong password named, a network not seen named, the old state kept.
 8. The cable pulled during the check: plugged back, STATUS read for the attempt (test110's rule).
-9. Hand: USB-C 1 back to the bench.
+9. Relay box: USB-C 1 back to the bench.
 10. **Battery over the cable (DESIGN.md 5.3.9, test131):** the `ID` answer carries the battery and USB power
     (`ID <id> <stored> <mV> 1 <setup|full>`); the cable screen's row shows the battery icon green, filled to the board's `battery`.
 11. **The setup in the metrics (DESIGN.md 5.3.10, tests/test136):** the credential check of step 5 is itself a
@@ -61,7 +61,7 @@ cable into USB-C 1, BLE not used: on the **product firmware** pair (BL616 setup 
   the cable's ID/PIN/SETUP (usb_full.c).
 - The app: USB host (UsbManager, the one permission dialog, remembered), the USB channel first (USB > BLE > Wi-Fi),
   the USB link icon.
-- Hands: the cable bench <-> phone (adb over Wi-Fi meanwhile).
+- No hands: the bench relay box (phone.hand() -> phone.relay(): the relay app com.relay on the bench phone; skill leakcam-bench-relays) moves USB-C 1 bench <-> phone (adb over Wi-Fi meanwhile).
 
 (What this test uses; the union over all tests is the feature set the minimal image keeps.)
 

@@ -14,8 +14,9 @@ server and sets the network; the stored network switches it to the full firmware
 
 - The product pair (firmware/bl616_full + bl616_setup) with its pairing PIN stored, the cell charged.
 - The phone with the app on adb, next to the board for the battery steps.
-- Hands: USB-C 1 unplugged (`echo unplugged > ~/.leakcam_hand`, or `run.py --unplugged` with LEAKCAM_DEV when it is
-  already out) and plugged back at the end; the BL616 console stays up on PR1 except while the setup firmware sleeps.
+- No hands: the bench relay box unplugs USB-C 1 and plugs it back at the end (phone.hand() -> the relay app com.relay;
+  skill leakcam-bench-relays; without the box `echo unplugged > ~/.leakcam_hand`, or `run.py --unplugged` with
+  LEAKCAM_DEV when it is already out); the BL616 console stays up on PR1 except while the setup firmware sleeps.
 
 ## Needs (build features and dependencies)
 

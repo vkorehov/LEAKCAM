@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+
+    <application android:label="LEAKCAM relay box" android:allowBackup="false">
+        <!-- started from the PC: adb shell am start-foreground-service -n com.relay/.RelayService ... -->
+        <service android:name=".RelayService" android:exported="true"
+            android:foregroundServiceType="connectedDevice" />
+    </application>
+</manifest>

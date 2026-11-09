@@ -16,7 +16,7 @@ the bench phone on adb with the test APK, the server on the Pi.
 
 ## Needs
 
-The relay box's timed phases (phone.relay() gaps: BleOp op relay `wait:<ms>` between AT+MPIO writes; each write also
+The relay box's timed phases (phone.relay() gaps: the relay app com.relay, `wait:<ms>` between AT+MPIO writes on one open connection; each write also
 waits for its reply, about one BLE connection interval), phone.wedge() (the precondition of every BLE test),
 run_tests.product_start() (the start state back at the end).
 

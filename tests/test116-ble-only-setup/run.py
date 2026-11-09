@@ -3,9 +3,9 @@
 slot 1): a board with no network on its cell runs the setup firmware asleep in PDS, advertising every 2 s; the phone
 finds it, the app sets it up on battery, the stored network switches it to the full firmware (no BLE); configured, it
 is silent on battery; erased on battery, the full firmware starts the setup firmware without USB (the path that
-wedged the BLE core, 2026-11-03) and it is set up again; with USB-C 1 back in it stays the full firmware, silent. Hands: USB-C 1 out and back in (the cell stays in); the BL616
-console stays up on PR1 except while the setup firmware sleeps. Each hand step waits for HAND_FILE (written by whoever
-watches the bench: `echo unplugged > ~/.leakcam_hand`, phone.hand()).
+wedged the BLE core, 2026-11-03) and it is set up again; with USB-C 1 back in it stays the full firmware, silent. No hands: the bench relay box takes USB-C 1 out and puts
+it back (the cell stays in; phone.hand() -> the relay app com.relay); without the box a hand step waits for HAND_FILE
+(`echo unplugged > ~/.leakcam_hand`).
     tests/test116-ble-only-setup/run.py [--unplugged]   --unplugged: no network stored and USB-C 1 already out (the
                                                          setup firmware asleep: no console), from step 2's scan on;
                                                          the board's ID in LEAKCAM_DEV (no console to read it)

@@ -12,7 +12,7 @@ link icon (the app's own USB link with the board) comes with the USB setup (DESI
 
 - The product pair (firmware/bl616_full + bl616_setup) with the real network stored, USB-C 1 in.
 - The phone on adb, the app and BleOp installed (`ready()`).
-- `--battery`: two hand steps (USB-C 1 out, back in), each answered by `echo <word> > ~/.leakcam_hand`.
+- `--battery`: USB-C 1 out and back in by the bench relay box (phone.hand() -> phone.relay(): the relay app com.relay on the bench phone; skill leakcam-bench-relays); no hands.
 
 ## Needs (build features and dependencies)
 

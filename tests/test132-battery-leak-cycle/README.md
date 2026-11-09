@@ -17,14 +17,14 @@ console on its own port (stays plugged); the server on the Pi (bench check-in 60
 ## Steps
 
 0. On USB: fresh histories, the scene cam0 = object (each battery check reports `changed,same`).
-1. **Hand: USB-C 1 out.** The battery read by the running K230 at once, the K230 off, the server's `chg` 0 at once.
+1. **USB-C 1 out (relay box).** The battery read by the running K230 at once, the K230 off, the server's `chg` 0 at once.
 2. **The RTC's check on battery:** leak check interval 60 s (PUT): a K230 session `rtc`, `DONE changed,same`, the
    K230 off right after DONE (`k230: off (leak check done)`, its rails-on time), the server has `job=changed,same` at
    once, the check-in's `ks` >= 1, `klast` 1.
 3. **Hand: the probe wet:** `leak: probe wet`, a K230 session `leak`, DONE, the K230 off; the server's `probe` below
    1100 mV at once.
 4. **Hand: the probe dry:** `leak` says dry.
-5. **Hand: USB-C 1 back:** the server's `chg` 1 at once, the K230 on again (USB).
+5. **USB-C 1 back (relay box):** the server's `chg` 1 at once, the K230 on again (USB).
 6. (With the HBN step) the sleep between the events: the sleep current, the RTC wake for the check-in and the leak
    check, the probe wake from HBN; the day's energy against DESIGN.md 5.3.12's ~2.85 mAh.
 

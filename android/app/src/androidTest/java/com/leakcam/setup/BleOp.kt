@@ -51,9 +51,6 @@ import java.util.regex.Pattern
  *               without checking, where the app offers it. On the status screen (LEAKCAMs remembered) it waits for
  *               the LEAKCAM on USB power and opens its setup (setup_open) first
  *   op delete   id: on the status screen, pick that LEAKCAM, the three-dots menu, Delete, the confirmation (test111)
- *   op relay    address (the bench relay box's HM-10, LCRELAY), cmds: "AT+PIO40,wait:1000,AT+PIO20,...": each AT
- *               command written to FFE1, its "OK+..." notification as the reply; wait:ms pauses (skill
- *               leakcam-bench-relays: PIO LOW = relay on = phone side)
  *
  * Values are hex so any length and byte reaches the board unchanged; the passphrase is never logged or returned.
  */
@@ -82,7 +79,6 @@ class BleOp {
                 "session" -> session()
                 "app" -> app()
                 "delete" -> delete()
-                "relay" -> relay()
                 else -> out.put("error", "unknown op '$op'")
             }
         } catch (e: Exception) {
@@ -126,69 +122,6 @@ class BleOp {
 
     /* every callback as an event on one queue: the session reads them in order */
     private data class Ev(val kind: String, val status: Int = 0, val value: ByteArray? = null, val uuid: UUID? = null)
-
-    private fun relay() {
-        val d = bt.getRemoteDevice(arg("address", "A4:06:E9:9D:30:7E"))
-        val q = LinkedBlockingQueue<Ev>()
-        val cb = object : BluetoothGattCallback() {
-            override fun onConnectionStateChange(g: BluetoothGatt, status: Int, state: Int) {
-                q.offer(Ev(if (state == BluetoothProfile.STATE_CONNECTED) "connected" else "disconnected", status))
-            }
-            override fun onServicesDiscovered(g: BluetoothGatt, status: Int) { q.offer(Ev("services", status)) }
-            override fun onDescriptorWrite(g: BluetoothGatt, dsc: BluetoothGattDescriptor, status: Int) { q.offer(Ev("ccc", status)) }
-            override fun onCharacteristicChanged(g: BluetoothGatt, c: BluetoothGattCharacteristic, value: ByteArray) {
-                q.offer(Ev("reply", value = value))
-            }
-            @Deprecated("API < 33")
-            override fun onCharacteristicChanged(g: BluetoothGatt, c: BluetoothGattCharacteristic) {
-                if (Build.VERSION.SDK_INT < 33) q.offer(Ev("reply", value = c.value))
-            }
-        }
-        fun next(kind: String, secs: Long): Ev? {
-            val until = SystemClock.elapsedRealtime() + secs * 1000
-            while (true) {
-                val e = q.poll(maxOf(until - SystemClock.elapsedRealtime(), 0), TimeUnit.MILLISECONDS) ?: return null
-                if (e.kind == kind) return e
-                if (e.kind == "disconnected") return null
-            }
-        }
-        val gatt = d.connectGatt(ctx, false, cb, BluetoothDevice.TRANSPORT_LE)
-        try {
-            if (next("connected", 10) == null) { out.put("error", "no connection"); return }
-            out.put("connect_ms", ms())
-            gatt.discoverServices()
-            if (next("services", 10) == null) { out.put("error", "no services"); return }
-            val c = gatt.getService(HM10_SERVICE)?.getCharacteristic(HM10_CHAR)
-                ?: run { out.put("error", "no FFE0/FFE1: not the relay box"); return }
-            gatt.setCharacteristicNotification(c, true)
-            val ccc = c.getDescriptor(CCC)
-            if (Build.VERSION.SDK_INT >= 33)
-                gatt.writeDescriptor(ccc, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
-            else {
-                @Suppress("DEPRECATION") ccc.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                @Suppress("DEPRECATION") gatt.writeDescriptor(ccc)
-            }
-            next("ccc", 5)
-            val replies = JSONArray()
-            for (cmd in arg("cmds", "").split(",").filter { it.isNotBlank() }) {
-                if (cmd.startsWith("wait:")) { SystemClock.sleep(cmd.removePrefix("wait:").toLong()); continue }
-                val v = cmd.toByteArray()
-                if (Build.VERSION.SDK_INT >= 33)
-                    gatt.writeCharacteristic(c, v, BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE)
-                else {
-                    @Suppress("DEPRECATION") c.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
-                    @Suppress("DEPRECATION") c.value = v
-                    @Suppress("DEPRECATION") gatt.writeCharacteristic(c)
-                }
-                val r = next("reply", 3)?.value?.let { String(it) } ?: ""
-                replies.put(JSONObject().put("cmd", cmd).put("reply", r).put("ms", ms()))
-            }
-            out.put("replies", replies)
-        } finally {
-            gatt.disconnect()
-            gatt.close()
-        }
-    }
 
     private fun session() {
         val d = bt.getRemoteDevice(arg("address", ""))
@@ -514,7 +447,5 @@ class BleOp {
         val COMMIT: UUID = UUID.fromString("4c43a000-4c45-4b43-414d-000000000004")
         val STATUS: UUID = UUID.fromString("4c43a000-4c45-4b43-414d-000000000005")
         val CCC: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
-        val HM10_SERVICE: UUID = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb")
-        val HM10_CHAR: UUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb")
     }
 }

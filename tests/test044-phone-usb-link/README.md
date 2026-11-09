@@ -14,8 +14,9 @@ also times it without VMware's ~3.3 s.
 - K230 test image with the USB device (CherryUSB CDC ACM, 1209:ABD1; tests/firmware/test_install.sh), BL616 test
   firmware (K230 power and console over PR1, which stays on the bench).
 - Phone on adb over Wi-Fi (its USB port is the one in use), unlocked by the runner.
-- A USB-C to USB-C cable phone <-> USB-C 1. Hand steps through ~/.leakcam_hand: `phone` once plugged in, `bench`
-  once USB-C 1 is back on the bench cable.
+- A USB-C to USB-C cable phone <-> USB-C 1. The bench relay box moves USB-C 1 to the phone (`phone`)
+  and back (`bench`) through phone.hand() (the relay app com.relay); without the box, the hand steps through
+  ~/.leakcam_hand.
 
 ## Needs (build features and dependencies)
 
@@ -26,12 +27,12 @@ The K230 USB device (test043); nothing over the minimal image beyond it. Later s
 
 ## Steps
 
-1. Hand: USB-C 1 from the bench to the phone.
+1. Relay box: USB-C 1 from the bench to the phone.
 2. K230 off: the phone lists no board device.
 3. 5 K230 starts: the phone lists 1209:ABD1 after each; time from pt_run (median, max).
 4. The phone's port: power role source, data role host (the phone powers the board's USB side).
 5. K230 off: the device leaves the phone's list; time.
-6. Hand: USB-C 1 back to the bench.
+6. Relay box: USB-C 1 back to the bench.
 7. Later (the app's USB code): the app shows the USB link icon for this board, only while the link is up (test129's
    rule); a plug alone stays the plug icon.
 

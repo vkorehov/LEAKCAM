@@ -539,6 +539,17 @@ its start: after a wake it goes back in 2 minutes, otherwise every 6 h while a n
 switch_to_full.c); never while a phone is connected. Coming from the full firmware with USB power in is not a plug: no
 hand-over check then. To prove on the board: tests/test117, test119, test125.
 
+**The BLE core wedge is detected and recorded (user, 2026-11-09):** the BL616's BLE core can be left asleep so that
+it never advertises again - only the EN pin or a power loss clears it (skill bl616-ble-low-power 5; 2026-11-08 a whole
+day of "not found" on the cell, cause still open). The setup firmware watches for both forms and writes them into the
+retained event log (evlog, 5.2) so they are read after the next plug: **parked** - asleep, advertising per the host,
+but no BLE wake for 30 s (every advertisement wakes the chip; each sleep window's end logs how many came);
+**init spin** - the BLE start not done within 5 s. With each it dumps the core's registers (DEEPSLCNTL, 0x28000100
+whose bit 31 sticks, PDS_CTL/4/5) into the evlog, also at boot and at each sleep's start and end; `blecore` shows them
+live. Every test refuses a wedged board and fails a run that leaves one (tools/test-runner phone.wedge()); tests/test139
+plugs and unplugs at every timing the relay box can make: no wedge so far. To add once the trigger is known: the
+recovery (none by software today).
+
 **Tests:** test120 (BLE in low power alone), test121 (USB plug wake), test125 (the 6 h retry and the whole
 full -> setup -> full cycle), test122 (battery low), test124 (BL616 brown-out), test038 step 7 (the real cutoff); in
 setup mode: test116 (BLE only), test113 (USB only, in the full firmware), test117 (presence lost -> setup),
@@ -937,7 +948,10 @@ person watched: 5.3.4's 15 s rule).
 - **The leak alert is the app's most important use case.** Android's government alerts (cell broadcast) are not open
   to apps, so the app makes the closest: a full-screen alert over the lock screen (like an alarm clock or an incoming
   call), an alarm sound repeating until acknowledged, vibration, through silent mode and Do Not Disturb. The app asks
-  for full-screen notifications and Do Not Disturb access once at setup. Acknowledging stops the sound and offers the
+  for full-screen notifications and Do Not Disturb access once at setup. Android fixes a channel's DND bypass when the
+  channel is first made, also against a later setBypassDnd(true) and a delete + remake: the alert channel's ID carries
+  the access (`leak_alarm` without it, `leak_alarm_dnd` made once it is granted), so access given after the first alert
+  still gets through DND (found 2026-11-09: access granted later, the channel stayed mBypassDnd=false). Acknowledging stops the sound and offers the
   requests (all clear, record a video). An SMS backup through the SMS gateway comes later.
 
 ### 5.3.14 Take photo, take video: the app's common actions (user, 2026-11-07)

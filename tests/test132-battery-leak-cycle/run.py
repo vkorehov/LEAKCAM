@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """test132: the full firmware's leak checks on battery (DESIGN.md 5.3.12): the RTC's check and a wet probe each power
-the K230 for its job, DONE, the K230 off; the result at the server at once on a change or a wet probe. Hands: USB-C 1
-out (the BL616 console stays on its own port), the probe wet and dry, USB-C 1 back; everything else automated (no
+the K230 for its job, DONE, the K230 off; the result at the server at once on a change or a wet probe. USB-C 1 out
+and back by the bench relay box (the BL616 console stays on its own port); hands only for the probe wet and dry (no relay
+for it yet); everything else automated (no
 phone). The HBN sleep between the events is not built yet: the firmware stays awake, so no sleep current here.
     tests/test132-battery-leak-cycle/run.py
 """
