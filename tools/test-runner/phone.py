@@ -314,7 +314,13 @@ def relay(phases, gaps=None, times=None):
         cmds += ([f"wait:{gaps[i - 1]}"] if i else []) + ["AT+MPIO" + bits(on)]
     want = ["OK+Set:" + c[-3:] for c in cmds if c.startswith("AT+")]
     relay_left[0] = phases[-1]              # what the box holds after this op (BEFC), for the end of the test
+    # the op's end force-stops the app ("finished inst": an instrumentation targets it), so a test watching the app
+    # lost it at every relay switch (test129 --battery: no battery row after the unplug, 2026-11-09): reopened when it
+    # was on screen, as a person's phone keeps it
+    shown = "com.leakcam.setup/" in adb("shell", "dumpsys", "activity", "activities", secs=15).split("topResumedActivity", 1)[-1][:200]
     res = op("relay", address=RELAY, cmds=",".join(cmds), secs=20 + sum(gaps) // 1000)
+    if shown:
+        adb("shell", "am", "start", "-n", "com.leakcam.setup/.MainActivity", secs=15)
     replies = res.get("replies", [])
     if times is not None:
         times += [r.get("ms", 0) for r in replies if r.get("cmd", "").startswith("AT+MPIO")]

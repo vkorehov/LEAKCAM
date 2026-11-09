@@ -1,14 +1,14 @@
-08:10:06 test108-server-check-schedule: 0 metric rows MISSING: none
-08:10:12 CHECK pass defaults: check-in every 60 s (the bench server's), leak check every 86400 s check-in 60 s, leak 86400 s
-08:11:19 CHECK pass PUT checkin 20: the board on it within one old interval (60 s) 0 s after the PUT
-08:11:19 CHECK pass PUT checkin 20: check-ins ~20 s apart gaps [21, 24] s
+09:05:08 test108-server-check-schedule: 0 metric rows MISSING: none
+09:05:14 CHECK pass defaults: check-in every 60 s (the bench server's), leak check every 86400 s check-in 60 s, leak 86400 s
+09:06:19 CHECK pass PUT checkin 20: the board on it within one old interval (60 s) 0 s after the PUT
+09:06:19 CHECK pass PUT checkin 20: check-ins ~20 s apart gaps [21, 21] s
 Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
 Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
-08:11:28 CHECK pass a reset with the server down: the board keeps the server's 20 s (not the 3600 s default) check-in every 20 s after the reset
-08:11:34 CHECK pass PUT leakcheck 60: the board on it at the next check-in 4 s after the PUT
-08:12:37 CHECK pass a leak check by itself within ~60 s (the RTC check) 57 s after the interval was taken, result same
-08:12:37 CHECK pass its CHECK reached the running K230 (job: CHECK rtc), the K230 still on seen
-08:13:32 CHECK pass the next leak check 60 s +- 5 s later 59 s
-08:13:35 CHECK pass PUT 0: back on 60 s / 86400 s 3 s
-08:13:37 CHECK FAIL the BL616's free heap kept (191460, 191460) -> (179988, 160964)
-08:13:38 test108-server-check-schedule: FAIL; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+09:06:26 CHECK pass a reset with the server down: the board keeps the server's 20 s (not the 3600 s default) check-in every 20 s after the reset
+09:06:30 CHECK pass PUT leakcheck 60: the board on it at the next check-in 2 s after the PUT
+09:07:35 CHECK pass a leak check by itself within ~60 s (the RTC check) 59 s after the interval was taken, result same
+09:07:35 CHECK pass its CHECK reached the running K230 (job: CHECK rtc), the K230 still on seen
+09:08:31 CHECK pass the next leak check 60 s +- 5 s later 61 s
+09:08:37 CHECK pass PUT 0: back on 60 s / 86400 s 5 s
+09:08:39 CHECK pass the BL616's free heap kept (179988, 160980) -> (179988, 160760)
+09:08:40 test108-server-check-schedule: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

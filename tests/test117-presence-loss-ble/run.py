@@ -138,7 +138,7 @@ try:
     check("start: set up from the app", last.startswith("Done."), f"{secs:.1f} s")
     on_run_interval()
     check("present at the server", online(dev))
-    res = op("scan", secs=15)
+    res = op("scan", secs=8)   # silent: 4 advertising intervals (2 s on battery)
     check("present: the phone does not find the board (no BLE in the full firmware)", not res.get("found"),
           str(res.get("name")))
     if BATTERY:
@@ -181,7 +181,7 @@ try:
     while time.time() - t0 < 30 and not online(dev):
         time.sleep(0.3)
     check("network back: present at the server", online(dev), f"{time.time() - t0:.0f} s after the setup started")
-    res = op("scan", secs=15)
+    res = op("scan", secs=8)
     check("network back: no BLE again", not res.get("found"), str(res.get("name")))
     if BATTERY:
         check("USB-C 1 back in (hand)", hand("plug USB-C 1 back in", "plugged") is not None)

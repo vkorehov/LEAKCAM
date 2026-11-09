@@ -1,11 +1,29 @@
-08:39:16 test116-ble-only-setup: 0 metric rows MISSING: none
-08:39:21 CHECK pass no network stored 
-08:40:45 BL616 port missing
-08:41:15 BL616 port missing
-08:41:45 BL616 port missing
-08:42:16 BL616 port missing
-08:42:46 BL616 port missing
-08:43:16 BL616 port missing
-08:43:30 CHECK FAIL no network: the setup firmware setup
-08:43:30 stopped at: no network: the setup firmware
-08:43:31 test116-ble-only-setup: FAIL; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+08:51:02 test116-ble-only-setup: 0 metric rows MISSING: none
+08:51:07 CHECK pass no network stored 
+08:51:07 CHECK pass no network: the setup firmware 0 s
+08:51:11 phone: relay 4.0 s
+08:51:11 relay box: unplugged (unplug USB-C 1 (the cell stays in))
+08:51:16 phone: scan 4.7 s
+08:51:16 CHECK pass unplugged: the phone finds the board asleep rssi -33, 4.7 s
+08:51:33 phone: app 14.7 s
+08:51:33 CHECK pass unplugged: set up from the app on battery (PIN, no dialog) 11.3 s, pairing 
+08:51:36 CHECK pass unplugged: the full firmware 3 s after Done
+08:51:36 CHECK pass unplugged: the network stored 
+08:51:36 CHECK pass unplugged: present at the server 0 s after the switch
+08:52:09 phone: scan 33.2 s
+08:52:09 CHECK pass configured, on battery: silent (30 s scan) None
+08:52:14 phone: scan 4.2 s
+08:52:14 CHECK pass battery start: the phone finds the setup firmware rssi -30, 4.2 s
+08:52:31 phone: app 17.1 s
+08:52:31 CHECK pass battery start: set up from the app on battery (PIN, no dialog) 13.5 s, pairing 
+08:52:37 CHECK pass battery start: the full firmware 6 s after Done
+08:52:37 CHECK pass battery start: the network stored 
+08:52:37 CHECK pass battery start: present at the server 0 s after the switch
+08:52:41 phone: relay 4.1 s
+08:52:41 relay box: plugged (plug USB-C 1 back in)
+08:52:41 CHECK pass USB back in: the full firmware full
+08:53:00 phone: scan 18.8 s
+08:53:00 CHECK pass USB back in: silent None
+08:53:00 CHECK pass USB back in: present at the server 19 s after the plug
+08:53:03 sample after the checks {'board': None, 'bl_mem': (180012, 141880, 160980, 67, 79152, 14, 0)}
+08:53:05 test116-ble-only-setup: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

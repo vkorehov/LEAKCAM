@@ -69,7 +69,7 @@ def product_start():
     stopped halfway (test110, 2026-11-08) left the setup firmware, and every next test found the wrong one. Stored:
     back with `slot switch`; another network or none: set up over the cable, the PC as the phone (cable.py)"""
     from board import wifi_credentials
-    from phone import board_id, clear_leak, creds, firmware, relay, to_firmware, want
+    from phone import board_id, clear_leak, creds, firmware, register, relay, to_firmware, want
     from board import BL_PORT, bl
     # USB-C 1 really on the bench: VBUS too, not only the data lines (a test stopped after its unplug left VBUS off,
     # the console up, and the next test's setup firmware slept on "USB", 2026-11-09)
@@ -89,6 +89,9 @@ def product_start():
             cmd(fd, f"rm /sdcard/leakcam/{f}", 1, r"msh />")
         os.close(fd)
     clear_leak(board_id())
+    # the bench phone a user of the board: a delete test (test111, test117) left it with none, and the server sent the
+    # board back to the setup firmware at every check (410), so no start state could reach the full firmware
+    register(board_id())
     fw = firmware()
     real = creds() == want(*wifi_credentials())   # the bench network, not any: test110's decoy stayed stored (2026-11-08)
     if fw == "full" and real:
@@ -225,7 +228,17 @@ def main():
     print("tests:", " ".join(os.path.basename(os.path.dirname(r))[:7] + "".join(" " + a for a in x) for r, x in jobs)
           or "none", flush=True)
     summary = []
-    from phone import firmware
+    from board import BL_PORT
+    from phone import firmware, relay
+    # USB-C 1 back on the bench first: a test stopped after its unplug left the console gone, and every check below
+    # waited 30 s per read for it while the phone sat idle (2026-11-09)
+    if not os.path.exists(BL_PORT):
+        relay([set()])
+        t0 = time.time()
+        while time.time() - t0 < 20 and not os.path.exists(BL_PORT):
+            time.sleep(0.2)
+        print(f"USB-C 1 plugged back by the relay box: console {'back' if os.path.exists(BL_PORT) else 'STILL MISSING'}",
+              flush=True)
     product = firmware() in ("full", "setup")
     if not wedge_check("before the batch"):
         print("batch not started: the BLE core is wedged (power-cycle the board)")

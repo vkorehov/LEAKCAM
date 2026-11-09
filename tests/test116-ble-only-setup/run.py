@@ -107,8 +107,8 @@ try:
     setup_on_battery("unplugged")
 
     # 3. configured, on battery: no BLE
-    res = op("scan", secs=30)
-    check("configured, on battery: silent (30 s scan)", not res.get("found"), str(res.get("name")))
+    res = op("scan", secs=8)   # silent: 4 battery advertising intervals (2 s) are enough, user 2026-11-09 "phone idle"
+    check("configured, on battery: silent (8 s scan)", not res.get("found"), str(res.get("name")))
 
     # 4. erased on battery: the full firmware starts the setup firmware without USB (BLE started before any sleep:
     #    setup_boot.c), found and set up again
@@ -121,7 +121,7 @@ try:
     t_plug = hand("plug USB-C 1 back in", "plugged")
     usb_seen(True)                      # the board's own plug edge (no fixed 5 s)
     check("USB back in: the full firmware", firmware() == "full", str(firmware()))
-    res = op("scan", secs=15)
+    res = op("scan", secs=8)
     check("USB back in: silent", not res.get("found"), str(res.get("name")))
     check("USB back in: present at the server", online(dev), f"{time.time() - t_plug:.0f} s after the plug")
     r.set("speed", f"on battery: found {times['found_unplug']:.1f} s after the unplug, "

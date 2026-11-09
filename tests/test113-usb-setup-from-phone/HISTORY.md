@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-09 (run.py, 106 s): pass
+
+15/15 checks pass.
+
+
 ### Automated run 2026-11-09 (run.py, 207 s): **FAIL**
 
 7/15 checks pass. Failed: the plug opens the app's setup screen on this board, no network (not within 15 s); a wrong password is named over the cable (The router refused the password for "<network>" (code 33). Check it); the app used the cable (no Bluetooth pairing) (5 screens); erased with the phone in: the setup screen with the board again (30.4 s); the cable pulled during the check: the app does not claim Done (no error); the board finished the check alone: network stored, online (setup, 30 s); a set-up board on the cable: the plug opens Setup, the board answers (no `usb board` line within 15 s); a set-up board on the cable: Setup does not list it ().

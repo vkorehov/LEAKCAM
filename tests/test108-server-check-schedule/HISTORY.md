@@ -96,6 +96,16 @@ AP and the back-off come with the HBN sleep step (test132). The old README, whol
 
 ## Runs
 
+### Automated run 2026-11-09 (run.py, 212 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 1 s): **FAIL**
+
+not run: the board runs setup, not the full firmware
+
+
 ### Automated run 2026-11-09 (run.py, 212 s): **FAIL**
 
 9/10 checks pass. Failed: the BL616's free heap kept ((191460, 191460) -> (179988, 160964)).

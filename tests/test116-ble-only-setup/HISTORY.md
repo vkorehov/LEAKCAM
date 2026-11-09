@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-09 (run.py, 123 s): pass
+
+16/16 checks pass.
+
+
 ### Automated run 2026-11-09 (run.py, 256 s): **FAIL**
 
 1/2 checks pass. Failed: no network: the setup firmware (setup). Stopped at: no network: the setup firmware.
