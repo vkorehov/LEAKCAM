@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""test105 run 3 on the cell (user 2026-10-31: cell-only runs unblocked; measured on the board: VBAT by the K230 ADC,
+"""test051 run 3 on the cell (user 2026-10-31: cell-only runs unblocked; measured on the board: VBAT by the K230 ADC,
 resets, die / board temperature; no meter on the cell side): USB-C 1 out, PR1 (console) stays in. A cold start into
 every camera-free load at once (KPU loop, encoder 2 x 15 fps, NAND writes, Wi-Fi TCP upload, memtest, both LED chains
 100 %), held until VBAT under load reaches STOP_MV or the K230 resets; then all off and the rest voltage after 60 s.
 rev 1 has no hardware discharge cutoff (bug-004): STOP_MV keeps the run well above the 3.10 V cutoff.
-    tests/test105-max-current/run_cell.py
+    tests/test051-max-current/run_cell.py
 """
 import os
 import re
@@ -119,6 +119,6 @@ log("ACTION: plug USB-C 1 back in (the cell charges)")
 r.set("voltage", f"VBAT under every camera-free load on the cell: idle {v_idle} mV, min {vmin} mV over {run_s / 60:.0f} min, "
                  f"rest {rest} mV after 60 s off (K230 ADC ch 1) ({r.date})")
 r.set("share", f"n/a: loads after the boot ({r.date})")
-r.set("energy", f"n/a: no current on the cell side; the board drew ~1.13 A at this load on USB (test105 run 1) ({r.date})")
+r.set("energy", f"n/a: no current on the cell side; the board drew ~1.13 A at this load on USB (test051 run 1) ({r.date})")
 r.finish(f"cell, every camera-free load: {run_s / 60:.1f} min until {why}; VBAT {v_idle} mV idle -> {vmin} mV min under "
          f"load, {rest} mV at rest; {resets} K230 resets.", resets == 0 and (vmin or 0) > 3100)

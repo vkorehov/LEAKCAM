@@ -35,7 +35,7 @@ static void switch_now(void)
         return;
     }
     if (usb_setup_active()) {               /* the relay ends with the K230's power first: counted in the check-in */
-        usb_setup_end("back to the full firmware");   /* (metrics.h); the reset alone cut it unrecorded (test048) */
+        usb_setup_end("back to the full firmware");   /* (metrics.h); the reset alone cut it unrecorded (test136) */
         while (usb_setup_active())
             vTaskDelay(pdMS_TO_TICKS(50));
     }

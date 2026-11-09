@@ -92,7 +92,7 @@ or a measurement yet. Keep this file current when a test or a setting changes it
                                                   80 MHz (adopted 2026-10-21, raw read 20.6 MB/s, boot 0.06 s faster):
                                                   why it did not work: the kernel's first READ ID after reset came back
                                                   one byte late ("unknown raw ID aa220000" instead of ef aa 22) in 2 of
-                                                  32 cold boots (2026-10-30, test105 + test017 runs); the kernel read it
+                                                  32 cold boots (2026-10-30, test051 + test017 runs); the kernel read it
                                                   once, so /bin and /sdcard stayed unmounted and every program was
                                                   "command not found". Data reads and checksums were always right and
                                                   the sample delay sat inside its window (3-8), so it is a marginal

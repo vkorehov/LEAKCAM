@@ -17,10 +17,13 @@ import sys
 import time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
-from board import BL_PORT, log, wifi_credentials   # noqa: E402
+from board import BL_PORT, bl_back, log, wifi_credentials   # noqa: E402
 from phone import board_id, creds, firmware, hand, only_boards, op, product, ready, seen, to_firmware, want   # noqa: E402
 
-REPEATS = 8                                     # the leak verdict's minimum (mem_leak.py)
+STRESS = "--stress" in sys.argv
+# the repeats are the stress run's (run_tests.py --stress): 8 = the leak verdict's minimum (mem_leak.py); a regular
+# run (the essential suite, tests/README.md) does one
+REPEATS = 8 if STRESS else 1
 BATTERY = "--battery" in sys.argv
 
 _lock = open(__file__)
@@ -165,11 +168,7 @@ check(f"{REPEATS} setups in a row: every one Done", done == REPEATS, f"{done}/{R
 if PRODUCT:                                     # a reset in the setup firmware (the full one has no BLE)
     ble_on()
 bl("reboot" if PRODUCT else "pt_hang", 1)
-time.sleep(4 if PRODUCT else 16)                # watchdog recovery 12.9 s (test038)
-t0 = time.time()
-while time.time() - t0 < 40 and not os.path.exists(BL_PORT):
-    time.sleep(0.5)
-time.sleep(2)
+bl_back(60)                                     # the shell answering again (the watchdog's recovery 12.9 s, test038)
 if not PRODUCT:
     bl("pt_off", 2)
 check("BLE started again after a reset", ble_on())

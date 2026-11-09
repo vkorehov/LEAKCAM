@@ -6,7 +6,7 @@ Status: **partial: step 0 pass** (2026-11-01, again: +28, +28, +27 ppm, 3 boots)
 
 The K230's PMU RTC (Y1, 32.768 kHz, AVDD1P8_RTC on the switched 1V8 rail) restarts at every power-up; the BL616
 hands it the time in `WAKE` (its unix field, 0 = not known) and on every frame it sends (`;t=<unix s>`, the server's
-`X-Time`), and the K230 sets the RTC from it only when it is more than 5 s off (DESIGN.md 5.3.12, 5.4; tests/test050).
+`X-Time`), and the K230 sets the RTC from it only when it is more than 5 s off (DESIGN.md 5.3.12, 5.4; tests/test138).
 No NTP, nothing goes back. It needs the PMU awake (bug-003: R45 bridged, INT4 1.8 V); `RT_USING_RTC_PMU`.
 
 ## Setup
@@ -40,7 +40,7 @@ K230 PMU RTC (RT_USING_RTC, RT_USING_RTC_PMU), musl time (UTC patch), rtc_raw/rt
    stamps a clip with it.
 3. Crystal Y1: RTC against the host over a 10 min session (the longest session): ppm; again at 0 and 50 C (test026).
 4. Roll-overs: set 23:59:58 31 Dec and read through; set 2038-01-19 03:14:06 (32-bit overflow).
-5. Later frames: a `;t=` within 5 s of the RTC leaves it alone; one more than 5 s off sets it (tests/test050).
+5. Later frames: a `;t=` within 5 s of the RTC leaves it alone; one more than 5 s off sets it (tests/test138).
 6. Rails off and on 10 times: every boot starts the RTC (PMU wake), no hang (bug-003 regression).
 
 ## Pass

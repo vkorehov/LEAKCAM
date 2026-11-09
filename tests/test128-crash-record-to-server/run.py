@@ -68,7 +68,7 @@ def wait_sent(before, secs=SEND_WAIT_S):
     while time.time() - t0 < secs:
         if len(crashes()) > before and rec() is None:
             return time.time() - t0
-        time.sleep(2)
+        time.sleep(0.5)
     return None
 
 
@@ -114,7 +114,9 @@ def main():
         log("step 3: server stopped")
         try:
             reset_by("crash test")
-            time.sleep(25)                       # its check-in at 5 s fails at the API
+            t0 = time.time()                     # its check-in at 5 s fails at the API: polled, not 25 s fixed
+            while time.time() - t0 < 40 and not re.search(r"missed [1-9]", ask("presence", 3, r"missed \d+")):
+                time.sleep(0.3)
             kept = rec()
             check("step 3: kept on the board while the server is down", kept is not None, kept or "")
         finally:
@@ -123,7 +125,7 @@ def main():
         ask("provision", 2)
         t0 = time.time()
         while time.time() - t0 < 90 and rec() is not None:   # the next check-in: the poll interval (60 s)
-            time.sleep(3)
+            time.sleep(0.5)
         got = [c for c in crashes()[n0:]]
         check("step 3: sent at the next check-in once the server is back, one copy", rec() is None and len(got) == 1,
               f"{time.time() - t0:.1f} s after the server was back; {len(got)} new on the server")
@@ -139,9 +141,10 @@ def main():
             t0 = time.time()
             ask("switch_to_setup lost", 1)
             while time.time() - t0 < 60 and which() != "setup":
-                time.sleep(1)
+                time.sleep(0.3)
             log("step 5: crashed in the full firmware; in the setup firmware after", f"{time.time() - t0:.1f} s")
-            time.sleep(15)                       # its check fails at the API (server down): it stays
+            # its check fails at the API (server down): it stays - its own line, at most 15 s (no fixed 15 s)
+            ask("", 15, r"failed its check|setup stays")
             kept = rec() if which() == "setup" else None
             log("step 5: the setup firmware holds", kept)
         finally:
@@ -154,7 +157,7 @@ def main():
               f"{secs:.1f} s; {c['build']} #{c['count']}, decoded mepc: {decode(c)}" if c and secs else f"board {rec()}")
         t0 = time.time()
         while time.time() - t0 < 60 and which() != "full":
-            time.sleep(1)
+            time.sleep(0.3)
         check("step 5: then the hand-over to the full firmware", which() == "full", f"{time.time() - t0:.0f} s")
     if "7" in steps:
         if which() == "setup":
@@ -170,7 +173,7 @@ def main():
         ask("provision", 2)
         t0 = time.time()
         while time.time() - t0 < 90 and rec() is not None:
-            time.sleep(3)
+            time.sleep(0.5)
         got = crashes()[n0:]
         check("step 7: one record with count 2", len(got) == 1 and got[0]["count"] == 2,
               f"{[(c['build'], c['count']) for c in got]}")

@@ -1,10 +1,10 @@
 # test047: the one K230 program on every power-up: the relay always, the leak job beside it (low level)
 
 Status: **partly seen** (2026-11-07, in other tests' runs; no run.py of its own yet): step 1 in both firmwares (full:
-WAKE `usb`, the relay, the job's first check 0.64 s after the K230's start: test049, test050), step 2 (STATUS every
-60 s, no mode field: test048), step 3 (the setup firmware's relay ends on SAVED, the full firmware's relay back:
-test113 step 12 bench run), step 6 (a session ended by `k230 off` on USB started again ~36 s later: test050 step 9).
-Step 1 in the setup firmware too (test048's relay log, 2026-11-07 09:13 UTC: WAKE `setup` at 616 ms, the job's check
+WAKE `usb`, the relay, the job's first check 0.64 s after the K230's start: test137, test138), step 2 (STATUS every
+60 s, no mode field: test136), step 3 (the setup firmware's relay ends on SAVED, the full firmware's relay back:
+test113 step 12 bench run), step 6 (a session ended by `k230 off` on USB started again ~36 s later: test138 step 9).
+Step 1 in the setup firmware too (test136's relay log, 2026-11-07 09:13 UTC: WAKE `setup` at 616 ms, the job's check
 621-681 ms, the same version; the K230's clock set later from the setup firmware's own server answer, its WAKE had
 none). Open: step 4 (a pull, by hand), step 5's battery reasons (test132).
 

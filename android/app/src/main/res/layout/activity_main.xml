@@ -276,18 +276,19 @@
                 android:visibility="invisible" />
         </LinearLayout>
 
-        <!-- the status block under the action row (status_block.xml): looking, sending and what to do now -->
-        <include
-            android:id="@+id/setup_status"
-            layout="@layout/status_block" />
-
-        <!-- the boards found: under the status block, so a board found or gone moves nothing above it (user
-             2026-11-07: no jumping buttons) -->
+        <!-- the boards found: right under the button (user 2026-11-08), so a board found or gone moves nothing above
+             it (user 2026-11-07: no jumping buttons) -->
         <RadioGroup
             android:id="@+id/devices"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp" />
+
+        <!-- the status block at the very bottom (user 2026-11-08: "device listed still under the status, why not below
+             the button"): the found boards right under the button, then what happens now and the message -->
+        <include
+            android:id="@+id/setup_status"
+            layout="@layout/status_block" />
 
         </LinearLayout>
     </LinearLayout>

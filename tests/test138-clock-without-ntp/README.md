@@ -1,4 +1,4 @@
-# test050: time without NTP (low level: the server -> BL616 -> K230 clock chain)
+# test138: time without NTP (product pair: the server -> BL616 -> K230 clock chain)
 
 Status: **pass** (2026-11-07 08:56, run.py 11/11, BL616 full + K230 0.6+g2961d6c-dirty): both clocks within 2 s of
 UTC from the server alone (BL616 -0.4..-1.9 s, K230 0..-2 s), neither stepped for 3 s of difference, both stepped

@@ -124,7 +124,7 @@ open(p, 'w').write(s[:i] + open(f).read() + s[j + len(tail):])
 PY
 grep -q 'LEAKCAM: wait on real time' "$SPN" || { echo "busy-wait patch not applied"; exit 1; }
 
-# NAND ID: the kernel read it once and gave up, so one bad read lost /bin and /sdcard for the boot (test105,
+# NAND ID: the kernel read it once and gave up, so one bad read lost /bin and /sdcard for the boot (test051,
 # 2026-10-30: "unknown raw ID aa220000", Winbond's ef aa 22 one byte late, SPL had read it fine; 0 in 24 boots
 # since, cause open: tests/test017 HISTORY). Reset and read again up to 3 times; each retry is logged.
 grep -q 'LEAKCAM: ID retry' "$SPN" || python3 - "$SPN" <<'PY'

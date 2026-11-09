@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""test050: time without NTP (DESIGN.md 5.3.12), on USB power at the bench, no hand: the server's X-Time on every
+"""test138: time without NTP (DESIGN.md 5.3.12), on USB power at the bench, no hand: the server's X-Time on every
 answer -> the BL616's clock -> ;t= on every BL616 frame -> the K230's clock; either clock changed only when it is more
 than 5 s off. The host's UTC is the reference (the bench PC runs NTP).
-    tests/test050-clock-without-ntp/run.py
+    tests/test138-clock-without-ntp/run.py
 """
 import calendar
 import json
@@ -73,7 +73,7 @@ r.fd = openp(K230_PORT)
 dev = board_id()
 t = time.time()
 while time.time() - t < 70 and not ((k := k_clock()) and abs(k - time.time()) <= 5):   # the K230's session up
-    time.sleep(2)
+    time.sleep(0.5)
 
 # 1. the server: X-Time on every answer
 for path in ("/", "/v1/devices/bad"):

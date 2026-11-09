@@ -1,4 +1,4 @@
-# test105: history
+# test051: history
 
 Earlier runs, superseded findings and obstacles, newest first. Current state: README.md.
 
@@ -15,12 +15,12 @@ stopped at 'K230 at msh idle (agent running)': the load did not start
 
 7 load steps on USB; then all loads 10 min: 0 K230 resets. Die 48.2-58.7 C over the steps.
 
-- meter test105: + KPU change net in a loop: 0.242 A (read in test105-max-current)
-- meter test105: + encoder 2 x 15 fps: 0.285 A (read in test105-max-current)
-- meter test105: + NAND writes: 0.275 A (read in test105-max-current)
-- meter test105: + Wi-Fi TCP upload: 0.395 A
-- meter test105: + memtest (CPU + DDR, the memory left): 0.400 A
-- meter test105: + both LED chains 100 %: 0.563 A
+- meter test051: + KPU change net in a loop: 0.242 A (read in test051-max-current)
+- meter test051: + encoder 2 x 15 fps: 0.285 A (read in test051-max-current)
+- meter test051: + NAND writes: 0.275 A (read in test051-max-current)
+- meter test051: + Wi-Fi TCP upload: 0.395 A
+- meter test051: + memtest (CPU + DDR, the memory left): 0.400 A
+- meter test051: + both LED chains 100 %: 0.563 A
 
 
 ### Automated run 2026-10-30 (run.py, 34 s): **FAIL**
@@ -42,7 +42,7 @@ stopped at '+ KPU change net in a loop': the load did not start
 4. The Wi-Fi step found no interface (`ifconfig: network interface device list error`): MMC0 is probed only on
    request; run.py now sends `bl616_rescan` (card bound in 43 ms, address in < 1 s).
 5. The harness called the run a memory leak: its verdict ran over every sample, including the loads starting.
-   `Run.leak_from` now marks the repeated phase (test105: the 10 min); over it no leak.
+   `Run.leak_from` now marks the repeated phase (test051: the 10 min); over it no leak.
 
 Side readings (not a step of the final order): KPU + encoder + NAND + memtest without Wi-Fi 305 mA, peak 320.
 

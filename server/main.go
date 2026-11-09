@@ -12,7 +12,7 @@
 // bl616_full.bin of another version (with its bl616_full.xz, the SDK build's), a full firmware's check-in answer names
 // it with the SHA-256 and size of both; the board fetches the .xz from GET /v1/images/bl616_full into the free end of
 // its slot, and the setup firmware unpacks it over the old image (no network needed from there). Every check-in's form
-// carries the board's metrics (DESIGN.md 5.3.10, tests/test048: sensors, battery, uptime, resets, memory, Wi-Fi,
+// carries the board's metrics (DESIGN.md 5.3.10, tests/test136: sensors, battery, uptime, resets, memory, Wi-Fi,
 // counters, the K230's last state): the last ones in GET /v1/devices/{id} ("metrics"), every one appended to
 // LEAKCAM_METRICS (one JSON line per check-in) for the history.
 package main

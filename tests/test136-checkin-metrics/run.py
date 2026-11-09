@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""test048 automated: every metric in every check-in, the steps without a hand (1, 5, 6 reboot, 8, 9 without the AP
+"""test136 automated: every metric in every check-in, the steps without a hand (1, 5, 6 reboot, 8, 9 without the AP
 off, 10, 11, 13 without a battery change, 14, 15). The K230 session is the setup relay (network erased, USB-C 1 on the
 bench: the bench answers as the phone over the cable, tools/test-runner/cable.py), which also gives test046 step 7 and
 test047 steps 1, 2, 3, 7 their console lines. Steps 2-4 (room meter, finger, wet probe), 6's EN tap / watchdog /
 battery change, 7 and 12 need a hand or a test firmware: not here. Never prints the network or the PIN.
-    tests/test048-checkin-metrics/run.py
+    tests/test136-checkin-metrics/run.py
 """
 import json
 import os
@@ -54,7 +54,7 @@ def utc():
 
 def next_checkin(dev, since, image=None, secs=150, now=True):
     """the first check-in after since (of that image), None if not in secs. now: the full firmware asked for it
-    (`presence now`, every 10 s while none came) instead of waiting out its 60 s interval (2026-11-07: test048 spent
+    (`presence now`, every 10 s while none came) instead of waiting out its 60 s interval (2026-11-07: test136 spent
     most of its time waiting for check-ins); False where the test is about the board's own timing"""
     t0, asked = time.time(), 0.0
     while time.time() - t0 < secs:

@@ -1,4 +1,7 @@
 #include "slot.h"
+#include "evlog.h"
+#include "leakcam_version.h"
+#include <string.h>
 
 #include <stdio.h>
 #include "bflb_boot2.h"
@@ -29,6 +32,7 @@ int slot_switch(void)
     if (bflb_boot2_update_ptable(&fw) != 0)
         return -1;
     printf("slot: %d -> %d, reset in 0.5 s\r\n", !to, to);
+    evlog_add(EV_SWITCH, strcmp(LEAKCAM_IMAGE, "setup") != 0, (unsigned)to);   /* to the other one */
     bflb_mtimer_delay_ms(20);
     (void)usbd_deinitialize(0);
     bflb_mtimer_delay_ms(500);

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""test105 runs 1-2 automated, on USB power (no battery measurements, user 2026-10-30): the loads of Steps added one
+"""test051 runs 1-2 automated, on USB power (no battery measurements, user 2026-10-30): the loads of Steps added one
 by one on the K230 (memtest, KPU loop, encoder 2 x 15 fps, NAND writes, Wi-Fi TCP upload to the PC, both LED chains
 100 %), a USB-C 1 meter reading per step (LEAKCAM_METER=ask; a state read before is reused), then all loads for
 10 min: resets (SPL banner, memtest restarting), die / board temperature.
@@ -57,7 +57,7 @@ def step(name, start, known=None, busy=None):
         r.obstacle(f"{name}: did not start: {bad.group(0).strip()[:100]}")
         r.finish(f"stopped at '{name}': the load did not start", False)
         sys.exit(1)
-    a = known if known is not None else r.meter(f"test105: {name}", force=True, busy=busy)
+    a = known if known is not None else r.meter(f"test051: {name}", force=True, busy=busy)
     s = r.sample(name)
     steps.append((name, a, s.get("die")))
     log("step", name, a)

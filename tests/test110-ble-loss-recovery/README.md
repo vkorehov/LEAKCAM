@@ -1,8 +1,6 @@
 # test110: setup app recovery from loss at every step
 
-Status: **pass, 30/30** (2026-11-03, run.py on the setup firmware's test bed, the phone 8 m away in another room): lost
-notifications, a link lost at any step after the save, the phone's Bluetooth off during the check: the app reconnects,
-reads the board's STATUS for its attempt and shows the board's result (Done 9.4-15.2 s); a link lost on every connect,
+Status: **pass on the product pair and app** (2026-11-08, run.py, ~4 min): phone Bluetooth off 4 s before the save / during the check and the board reset during the check each end in a named result within 28 s and the app never contradicts the board (Done = stored; "cannot tell whether the network was stored" when the link was lost after the commit); every case is followed by a clean setup, Done 7.8-9.0 s. The test-bed fault cases of 2026-11-03 are in HISTORY.md.
 Bluetooth off before the save, DNS / HTTP loss: named in 6.4-8.9 s; app and board agree in every case.
 
 Every interaction of a Wi-Fi setup from the phone (test106) with a loss injected into it: the app must either recover

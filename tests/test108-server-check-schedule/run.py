@@ -13,8 +13,8 @@ import time
 import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
-from board import K230_PORT, cmd, log, openp   # noqa: E402
-from phone import SERVER, board_checkin, board_id, firmware, intervals   # noqa: E402
+from board import K230_PORT, bl_back, cmd, log, openp   # noqa: E402
+from phone import SERVER, board_checkin, board_id, clear_leak, firmware, intervals, server_up   # noqa: E402
 
 checks = []
 
@@ -48,7 +48,7 @@ def check_in_times(n, secs):
     return got
 
 
-def wait(pred, secs, step=2):
+def wait(pred, secs, step=0.3):
     t0 = time.time()
     while time.time() - t0 < secs:
         if pred():
@@ -64,14 +64,17 @@ def bl_free():
 
 r = Run(__file__)
 dev = board_id()
+clear_leak(dev)                              # no open leak from an earlier run (its wake mode: 60 s)
 fw = firmware()
 if fw != "full":
     r.finish(f"not run: the board runs {fw or 'nothing'}, not the full firmware", False, switch_off=False)
     sys.exit(1)
 r.fd = openp(K230_PORT)
-mem0 = bl_free()
 intervals(dev)                               # the defaults (a run before may have left an override)
-wait(lambda: board_checkin() == 60, 70)
+wait(lambda: board_checkin() == 60 and "check-in state 0x03" in bl("presence", 2, r"missed \d+"), 70)
+# the first heap sample after a check-in: the Wi-Fi's memory is taken by then (a sample right after the runner's
+# reboot read 11 KB more free and called the end a leak, 2026-11-09)
+mem0 = bl_free()
 
 # 1. the defaults
 every, n0, _ = leak_state()
@@ -95,14 +98,14 @@ pi = ["ssh", "-o", "BatchMode=yes", "pi@192.168.1.159"]
 subprocess.run(pi + ["sudo systemctl stop leakcam-server"], timeout=30)
 try:
     bl("reboot", 1)
-    time.sleep(8)
+    bl_back(30)                              # the console answering again
     kept = 0
     t = time.time()
     while not kept and time.time() - t < 30:    # the console back after the reset (its first answer can be lost)
         kept = board_checkin()
 finally:
     subprocess.run(pi + ["sudo systemctl start leakcam-server"], timeout=30)
-    time.sleep(1)
+    server_up()
     intervals(dev, checkin=20)               # the server keeps per-device intervals in memory only
 r.fd = openp(K230_PORT)                      # the BL616's ports came back with the reset: the old one is dead
 check("a reset with the server down: the board keeps the server's 20 s (not the 3600 s default)", kept == 20,
@@ -117,7 +120,7 @@ check("PUT leakcheck 60: the board on it at the next check-in", took is not None
 _, n1, _ = leak_state()
 r.console = ""
 t1 = time.time()
-first = wait(lambda: (leak_state()[1] or 0) > n1, 75, step=1)
+first = wait(lambda: (leak_state()[1] or 0) > n1, 75)
 t_first = time.time()
 r.console += cmd(r.fd, None, 2)
 every, n2, last = leak_state()
@@ -127,20 +130,22 @@ check("its CHECK reached the running K230 (job: CHECK rtc), the K230 still on", 
       and "job: done" in r.console, "seen" if "job: CHECK rtc" in r.console else "no CHECK line")
 
 # 4. again on its interval
-second = wait(lambda: (leak_state()[1] or 0) > n2, 80, step=1)
+second = wait(lambda: (leak_state()[1] or 0) > n2, 80)
 spacing = time.time() - t_first if second is not None else None
 check("the next leak check 60 s +- 5 s later", spacing is not None and 55 <= spacing <= 65,
       f"{spacing:.0f} s" if spacing is not None else "none in 80 s")
 if spacing is not None:
     r.set("Leak check on its interval", f"{spacing:.0f} s between two RTC checks at leakcheck 60")
 
-# 5. back to the defaults
+# 5. back to the defaults; the leak the checks above may have opened (a changed result: "camera change") cleared at
+#    the server: its 1-min wake mode overrode every interval of the next tests (test134, 2026-11-09)
+clear_leak(dev)
 intervals(dev)
 took = wait(lambda: board_checkin() == 60 and leak_state()[0] == 86400, 40)
 check("PUT 0: back on 60 s / 86400 s", took is not None, f"{took:.0f} s" if took is not None else "not in 40 s")
 mem1 = bl_free()
 check("the BL616's free heap kept", mem0 and mem1 and mem1[0] >= mem0[0] - 1024, f"{mem0} -> {mem1}")
-r.set("Memory BL616", f"BL616 free {mem0} -> {mem1} (free, min); the K230 job's heap: test049")
+r.set("Memory BL616", f"BL616 free {mem0} -> {mem1} (free, min); the K230 job's heap: test137")
 r.set("Test run time", f"{time.time() - r.t0:.0f} s automated")
 failed = [c for c in checks if not c[1]]
 summary = f"{len(checks) - len(failed)}/{len(checks)} checks pass."

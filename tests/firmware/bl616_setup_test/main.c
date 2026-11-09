@@ -183,6 +183,19 @@ static void cmd_wakeup_timer(int argc, char **argv)
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_wakeup_timer, wakeup_timer, a sleep window <ms> [usb]);
 
+/* the unplug path's advertising restart (setup_sleep.c: ble_pairing_adv_interval), replayed on USB with the console
+ * up: `lp_adv 2000` then `wakeup_timer <ms> usb` is the unplug's sequence (test116 2026-11-08: no adverts on the cell) */
+static void cmd_lp_adv(int argc, char **argv)
+{
+    if (argc < 2 || atoi(argv[1]) < 20) {
+        printf("lp_adv <ms>\r\n");
+        return;
+    }
+    ble_pairing_adv_interval((unsigned int)atoi(argv[1]));
+    printf("lp_adv: advertising every %d ms (host advertising %d)\r\n", atoi(argv[1]), (int)ble_pairing_sleep_ok());
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_lp_adv, lp_adv, the advertising interval restart <ms>);
+
 /* the SDK example's estimate from the time split: its fixed figures (PDS 80 uA, lpfw 38 mA, app 57 mA), not our board's */
 static void cmd_lp_pwr(int argc, char **argv)
 {
@@ -217,6 +230,7 @@ static void cmd_lp_sleepstat(int argc, char **argv)
            (unsigned long)s.max_idle, (unsigned long)s.entered, (unsigned long)s.vetoed, (int)bl_pm_event_get());
     printf("sleeps exited %lu, watchdog counter at sleep max %lu, after wake max %lu\r\n", (unsigned long)s.exited,
            (unsigned long)s.wdg_enter_max, (unsigned long)s.wdg_exit_max);
+    printf("BLE wakes %lu, BLE parked detections %lu\r\n", (unsigned long)s.ble_wakes, (unsigned long)s.wedges);
     ble_pairing_print_state();
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_lp_sleepstat, lp_sleepstat, test120: tickless sleep attempts and entries);

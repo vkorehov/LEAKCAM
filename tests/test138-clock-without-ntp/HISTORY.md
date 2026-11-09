@@ -1,8 +1,23 @@
-# test050-clock-without-ntp: history
+# test138-clock-without-ntp: history
 
 Earlier runs, superseded findings and obstacles, newest first. Current state: README.md.
 
 ## Runs
+
+### Automated run 2026-11-09 (run.py, 89 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 88 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-08 (run.py, 86 s): pass
+
+11/11 checks pass.
+
 
 ### Automated run 2026-11-07 (run.py, 87 s): pass
 

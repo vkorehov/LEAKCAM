@@ -28,7 +28,7 @@ uint32_t wall_clock_now(void)
     return base_s ? (uint32_t)(base_s + (bflb_mtimer_get_time_ms() - base_ms) / 1000) : 0;
 }
 
-/* `clock`: the clock and how often it was set; `clock <unix s>`: set it as given, past the 5 s rule (tests/test050
+/* `clock`: the clock and how often it was set; `clock <unix s>`: set it as given, past the 5 s rule (tests/test138
  * moves it to see both chips' rule: the K230 follows a BL616 frame beyond 5 s, the server's next answer sets it back) */
 static void cmd_clock(int argc, char **argv)
 {

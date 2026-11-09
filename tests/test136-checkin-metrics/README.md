@@ -1,4 +1,4 @@
-# test048: every metric in every check-in (low level: the BL616's sensors, the K230's STATUS, the server)
+# test136: every metric in every check-in (product pair: the BL616 full firmware's sensors, the K230's STATUS, the server)
 
 Status: **pass, automated part** (2026-11-07 09:24, run.py 34/34 on the DESIGN 5.3.11/5.3.12 firmware: the K230 on
 with USB in both firmwares, `ks 2` across a wake's switch and back, the leak check's `job`/`jago`; 2026-11-06 33/33).

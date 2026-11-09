@@ -6,7 +6,7 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 The K230 no longer gets NTP time nor sends `TIME,<unix s>` back (no `TIME` frame in the rewrite): every BL616 frame
 carries `;t=<unix s>` (from the server's `X-Time`) and the K230 sets its clock from it only when more than 5 s off
-(tests/test050). The old lines:
+(tests/test138). The old lines:
 
     The K230's PMU RTC (Y1, 32.768 kHz, AVDD1P8_RTC on the switched 1V8 rail) restarts at every power-up; the BL616
     hands it the time in the `WAKE` reply and the K230 sets the RTC from it (DESIGN.md 5.4); NTP time goes back as

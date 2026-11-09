@@ -33,6 +33,7 @@ target_sources(app PRIVATE
                ${S}/flash_sha.c
                ${S}/battery.c
                ${S}/metrics.c
+               ${S}/evlog.c
                ${S}/aht20.c
                ${S}/mem_stat.c
                ${S}/device_id.c

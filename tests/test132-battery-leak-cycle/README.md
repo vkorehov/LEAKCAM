@@ -7,7 +7,7 @@ come with that step.
 DESIGN.md 5.3.12 (user, 2026-11-07): on battery the full firmware powers the K230 only for a leak check: the RTC's
 check on the server's `leakcheck` interval (default a day) and a wet probe at once (ACOMP1 below 1.10 V). The K230's job
 answers `DONE,<cam0>,<cam1>`, the BL616 keeps it for the check-in, checks in at once on a change or a wet probe and
-cuts the K230's power. Cameras simulated (test049).
+cuts the K230's power. Cameras simulated (test137).
 
 ## Setup
 
@@ -48,7 +48,7 @@ edge, no cut while a check runs). K230: job.c. Server: intervals, job/jago. Late
 | Battery leak check: rails on | 1305 ms rails on per check (power-on -> off after DONE), DONE 997 ms after the ask | - | power-on -> off after DONE |
 | Current idle / during | **MISSING** | floor (test031) | the cell lead meter, if available (no scope, bench limits) |
 | Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak | |
-| Image (sizes) | n/a: see test049 | minimal image (rule) | |
+| Image (sizes) | n/a: see test137 | minimal image (rule) | |
 | Speed / rate against the top | **MISSING** | SPEEDS.txt | |
 | Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | the K230's reading in the check |
 | Power, energy per operation | **MISSING** | - | per leak check |

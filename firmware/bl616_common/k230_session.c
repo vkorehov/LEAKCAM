@@ -1,4 +1,5 @@
 #include "k230_session.h"
+#include "evlog.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -296,6 +297,7 @@ void k230_session_start(const char *why, void (*fn)(const struct link_msg *m))
 {
     if (state != OFF)
         return;
+    evlog_add(EV_K230, 1, 0);
     if (k230_power_is_on()) {               /* `k230 usbboot`: the K230 is being flashed */
         printf("k230: on for flashing (k230 usbboot): no %s session\r\n", why);
         return;
@@ -332,6 +334,7 @@ void k230_session_start(const char *why, void (*fn)(const struct link_msg *m))
 void k230_session_stop(const char *why)
 {
     if (state != OFF) {
+        evlog_add(EV_K230, 0, 0);
         stop_asked = true;
         stop_why = why;
         xTaskNotifyGive(task);

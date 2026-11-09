@@ -42,7 +42,7 @@ UFFS on nand1, dfs_posix (open/write/fsync/statfs), plt_write/plt_check (leakcam
 - Writer speed: 2 MB file 1.47 s with fsync (~1.4 MB/s through UFFS) (2026-10-21).
 
 - The run removes its 16 `/sdcard/plt` files at the end (2026-10-30): left behind (~7 MB) with the small /sdcard
-  they let test105's encoder streams fill it and stall the encoder (test027).
+  they let test051's encoder streams fill it and stall the encoder (test027).
 - 2026-10-30 at NAND 50 MHz: 20 cuts, 0 bad files, app init after a cut 0.610-0.630 s, plt_check clean.
 
 Open:

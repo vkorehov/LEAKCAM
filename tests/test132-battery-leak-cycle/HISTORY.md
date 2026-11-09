@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-08 (run.py, 160 s): pass
+
+11/11 checks pass.
+
+
 ### Automated run 2026-11-07 (run.py, 265 s): **FAIL**
 
 9/11 checks pass. Failed: battery, the RTC's check: a K230 session rtc (none); wet probe: `leak: probe wet` and a K230 session leak ().

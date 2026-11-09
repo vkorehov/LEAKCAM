@@ -15,7 +15,7 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ### Kernel NAND ID misread at 80 MHz, 2026-10-30: 50 MHz adopted
 
-One boot in test105 (80 MHz, sample delay 5): `[E/spi_nand_core] unknown raw ID aa220000`, then `/bin` and `/sdcard`
+One boot in test051 (80 MHz, sample delay 5): `[E/spi_nand_core] unknown raw ID aa220000`, then `/bin` and `/sdcard`
 mount failed; SPL had read the ID in the same boot. Winbond's ID is `ef aa 22`: the kernel got it one byte late.
 The kernel's `spinand_flash_init()` resets, waits for busy, reads the ID once (1 dummy byte) and gives up.
 

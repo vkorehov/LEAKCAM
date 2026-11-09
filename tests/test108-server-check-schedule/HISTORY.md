@@ -96,6 +96,51 @@ AP and the back-off come with the HBN sleep step (test132). The old README, whol
 
 ## Runs
 
+### Automated run 2026-11-09 (run.py, 212 s): **FAIL**
+
+9/10 checks pass. Failed: the BL616's free heap kept ((191460, 191460) -> (179988, 160964)).
+
+
+### Automated run 2026-11-09 (run.py, 215 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 335 s): **FAIL**
+
+6/10 checks pass. Failed: PUT checkin 20: the board on it within one old interval (60 s) (not in 70 s); PUT checkin 20: check-ins ~20 s apart (gaps [] s); a reset with the server down: the board keeps the server's 20 s (not the 3600 s default) (check-in every 60 s after the reset); the BL616's free heap kept ((206788, 196316) -> (179988, 160960)).
+
+
+### Automated run 2026-11-09 (run.py, 336 s): **FAIL**
+
+6/10 checks pass. Failed: PUT checkin 20: the board on it within one old interval (60 s) (not in 70 s); PUT checkin 20: check-ins ~20 s apart (gaps [] s); a reset with the server down: the board keeps the server's 20 s (not the 3600 s default) (check-in every 60 s after the reset); the BL616's free heap kept ((206788, 196316) -> (179988, 160964)).
+
+
+### Automated run 2026-11-09 (run.py, 215 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 338 s): **FAIL**
+
+6/10 checks pass. Failed: PUT checkin 20: the board on it within one old interval (60 s) (not in 70 s); PUT checkin 20: check-ins ~20 s apart (gaps [] s); a reset with the server down: the board keeps the server's 20 s (not the 3600 s default) (check-in every 60 s after the reset); the BL616's free heap kept ((191460, 191460) -> (180000, 160976)).
+
+
+### Automated run 2026-11-08 (run.py, 216 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-08 (run.py, 3 s): **FAIL**
+
+not run: the board runs setup, not the full firmware
+
+
+### Automated run 2026-11-08 (run.py, 215 s): pass
+
+10/10 checks pass.
+
+
 ### Automated run 2026-11-07 (run.py, 226 s): pass
 
 10/10 checks pass.

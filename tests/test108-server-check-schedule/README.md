@@ -50,8 +50,8 @@ the job's CHECK.
 | Interval taken: PUT -> the board on it | check-in 20 s taken 54 s after the PUT; check-ins then [21, 21] s apart | <= one old interval | |
 | Leak check on its interval (spacing) | 58 s between two RTC checks at leakcheck 60 | 60 s +- 5 s | |
 | Current idle / during | n/a: on USB power, not metered | floor (test031) | |
-| Memory BL616 / K230 (start / min / end), leak | BL616 free (184056, 164676) -> (184056, 164676) (free, min); the K230 job's heap: test049 | no leak | |
-| Image (sizes) | n/a: see test049 | minimal image (rule) | |
+| Memory BL616 / K230 (start / min / end), leak | BL616 free (184056, 164676) -> (184056, 164676) (free, min); the K230 job's heap: test137 | no leak | |
+| Image (sizes) | n/a: see test137 | minimal image (rule) | |
 | Speed / rate against the top | n/a: intervals, not speed | SPEEDS.txt | |
 | Voltage under load (min) | n/a: on USB power | cutoff 3.10 V (bug-004) | |
 | Power, energy per operation | n/a: on USB power; the budget is DESIGN.md 5.3.12's (24 check-ins + 1 leak check a day) | - | |

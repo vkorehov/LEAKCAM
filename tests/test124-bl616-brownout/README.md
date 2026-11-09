@@ -1,9 +1,6 @@
 # test124: the BL616's own brown-out protection
 
-Status: **steps 1-2 pass; watchdog after PDS sleep fixed** (2026-11-02): BOD on at 2.40 V with reset; the reset record
-per kind read; a hang after a sleep window was never reset (the SDK's wake gates the watchdog's clock and PDS loses its
-setup), fixed in wdg_guard.c and proven; steps 3-6 need a lab supply (next board). (2026-11-01, user: "separate low
-level test for brown out protection on bl616 itself"). Design:
+Status: **step 2 pass on the product pair** (2026-11-08, run.py, 61 s): reset records software `rst=80`, watchdog `88`, exception `88` (it resets through the watchdog; the crash record names it), the last one at the server; step 1 (BOD register) proven on the setup test bed 2026-11-02 (HISTORY.md), no product command for it; steps 3-6 need a lab supply.
 DESIGN.md 5.3.1 (the battery's lowest voltage: the cell's protection board at ~2.4 V; the BL616's brown-out handles
 the collapse; bug-004 accepted).
 

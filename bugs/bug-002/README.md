@@ -82,7 +82,7 @@ BL616 does not see the plug. It is limited by itself: the source turns VBUS on o
 so on battery charging waits for the current session at most; with the low-battery cutoff (bug-004) a low cell
 never starts the K230, so a plugged charger always gets through.
 
-## Seen again under full load (2026-10-25, tests/test105)
+## Seen again under full load (2026-10-25, tests/test051)
 
 Every camera-free load on (both LED chains 100 %, Wi-Fi upload, memtest), USB-C 1 and USB-C 2 unplugged, the cell
 carrying it for minutes, then USB-C 1 plugged back in with the K230 still running: **no charging** until `pt_off`, then

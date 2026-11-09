@@ -19,7 +19,7 @@ import time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import board_checkin, board_id, firmware, hand, intervals, online, only_boards, op, product, ready, seen, to_firmware   # noqa: E402
+from phone import board_checkin, board_id, firmware, hand, intervals, online, only_boards, op, product, ready, seen, server_up, to_firmware, usb_seen   # noqa: E402
 
 SERVER = "http://192.168.1.159:8090"
 PI = "pi@192.168.1.159"
@@ -58,7 +58,7 @@ def on_run_interval():
     """the board on the run's interval (it takes it from a check-in answer, up to one old interval later)"""
     t0 = time.time()
     while time.time() - t0 < 75 and board_checkin() != CHECKIN_S:
-        time.sleep(2)
+        time.sleep(0.3)
     check(f"the board checks in every {CHECKIN_S} s", board_checkin() == CHECKIN_S,
           f"check-in every {board_checkin()} s after {time.time() - t0:.0f} s")
 
@@ -143,7 +143,7 @@ try:
           str(res.get("name")))
     if BATTERY:
         check("USB-C 1 out (hand)", hand("unplug USB-C 1 (the cell stays in)", "unplugged") is not None)
-        time.sleep(5)
+        usb_seen(False)                 # the board's own unplug edge (no fixed 5 s)
         check("on battery: still the full firmware, present", firmware() == "full" and online(dev), str(firmware()))
 
     # 1. the server down: the next check-in fails -> the setup firmware at once; it stays with the server back; the
@@ -155,7 +155,7 @@ try:
             t_lost.append(t)
     finally:
         pi("sudo systemctl start leakcam-server")
-        time.sleep(1)
+        server_up()
         checkin_interval(CHECKIN_S)          # the server keeps per-device intervals in memory: set again after a restart
     time.sleep(2 * CHECKIN_S)
     check("server back: the setup firmware stays (only a setup or its 6 h retry ends it)",
@@ -164,7 +164,7 @@ try:
     last, secs = setup(ssid, psk)
     check("server back: the phone sets the network", last.startswith("Done."), f"{secs:.1f} s")
     while time.time() - t0 < 30 and not online(dev):
-        time.sleep(1)
+        time.sleep(0.3)
     check("server back: present at the server", online(dev), f"{time.time() - t0:.0f} s after the setup started")
 
     # 2. the stored network gone (a missing one saved without checking): the full firmware cannot check in -> the
@@ -179,7 +179,7 @@ try:
     last, secs = setup(ssid, psk)
     check("network gone: the phone sets the real network at once", last.startswith("Done."), f"{secs:.1f} s")
     while time.time() - t0 < 30 and not online(dev):
-        time.sleep(1)
+        time.sleep(0.3)
     check("network back: present at the server", online(dev), f"{time.time() - t0:.0f} s after the setup started")
     res = op("scan", secs=15)
     check("network back: no BLE again", not res.get("found"), str(res.get("name")))

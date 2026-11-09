@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""test105 (2026-10-25): every load available without cameras on, first from USB, then the user unplugs USB and the
+"""test051 (2026-10-25): every load available without cameras on, first from USB, then the user unplugs USB and the
 cell must carry it on with no reset for a minute. Loads: both LED chains 100 %, Wi-Fi TCP upload to the LAN PC (iperf,
 PC: pc_tcp_bench.py sink), DDR + CPU (`memtest 0`). The K230 console is read throughout, reopened when the unplug
 drops the port; a reset shows as an SPL banner or memtest's pass count starting again. memtest keeps RESERVE_MB free

@@ -12,7 +12,7 @@ The old README, whole:
 
     # test047: the K230 from the USB relay to the normal product job (low level: the K230 program's job per power-up)
     
-    Status: **partly run** (2026-11-06, test048's relay, the bench as the phone: test048-checkin-metrics/relay_*.log):
+    Status: **partly run** (2026-11-06, test136's relay, the bench as the phone: test136-checkin-metrics/relay_*.log):
     step 1 pass (`WAKE setup taken` 795 ms after the run, STATUS setup,0, the CDC device 4.6 s after the erase), step 2
     pass (STATUS at 60, 120, 180 s), step 3 pass (`k230: off (network saved)`, the CDC device gone 2.4 s after SAVED,
     then the full firmware), step 6 pass (no relay device in any full-firmware run on USB power), step 7 pass (ks 1,

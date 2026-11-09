@@ -17,7 +17,7 @@ import time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import adb, board_id, creds, firmware, hand, only_boards, op, ready, to_firmware, want   # noqa: E402
+from phone import erase, adb, board_id, creds, firmware, hand, only_boards, op, ready, screen_xml, to_firmware, want   # noqa: E402
 
 PKG = "com.leakcam.setup"
 BARS = ((-60, 4), (-70, 3), (-80, 2))           # the app's barCount(): >= -60 4 bars, >= -70 3, >= -80 2, else 1
@@ -61,7 +61,7 @@ def wait_power(dev, name, power, secs):
         if got and got[0] == power:
             check(name, True, f"{time.time() - t0:.0f} s, row {got}")
             return got
-        time.sleep(1)
+        time.sleep(0.3)
     check(name, False, f"not within {secs} s, row {got}", stop=True)
 
 
@@ -71,19 +71,21 @@ def long_press_signal(dev):
         # the found boards sit under the status block, below the fold on a phone: scrolled to (a dump has only
         # what is on the screen)
         adb("shell", "input", "swipe", "540", "1800", "540", "500", "300", secs=15)
-        time.sleep(0.8)
-        xml = adb("exec-out", "uiautomator", "dump", "/dev/tty", secs=30)
+        time.sleep(0.4)                  # the scroll's fling settles (the dump would read a moving list)
+        xml = screen_xml()           # not uiautomator dump: 10 s per dump on the setup screen (its spinner)
         m = re.search(rf'text="{dev}"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml)
         if not m:
             log("long press", attempt, "no row for the board in the screen dump", f"({len(xml)} B)")
-            time.sleep(2)
+            time.sleep(0.5)
             continue
         x1, y1, x2, y2 = map(int, m.groups())
         x, y = str((x1 + x2) // 2), str((y1 + y2) // 2)
         adb("logcat", "-c")
         adb("shell", "input", "swipe", x, y, x, y, "800", secs=15)
-        time.sleep(1)
-        app = adb("logcat", "-d", "-s", "LeakcamSetup:I", secs=30)
+        t1, app = time.time(), ""
+        while time.time() - t1 < 3 and not re.search(r"dbm -?\d+", app):     # the app's own line, polled
+            app = adb("logcat", "-d", "-s", "LeakcamSetup:I", secs=30)
+            time.sleep(0.1)
         got = re.findall(r"dbm (-?\d+)", app)
         if got:
             return int(got[-1])
@@ -105,7 +107,7 @@ if why:
 dev = board_id()
 try:
     # 1. no network: the setup firmware on USB power, advertising flags bit 1
-    bl("provision erase", 2, r"erased|erase failed")
+    erase()
     t = to_firmware("setup", secs=90)   # the full firmware sees the erase at its next check-in (31 s measured, test116)
     check("no network: the setup firmware on USB", t is not None, f"{t:.0f} s" if t else str(firmware()), stop=True)
     # a new device for this phone: the app opens on the setup screen, where the board's row shows its power and

@@ -602,7 +602,9 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
     a board on the cable is added and picked as soon as it answers (USB first), boards over BLE as they advertise,
     the list adjusted on the fly; the texts offer both ways (plug it in, or bring it near); after Done it goes on for
     the next board. **A board already set up from this phone is never listed** (user 2026-11-07); the rows show the
-    serial only and the Wi-Fi fields start blank.
+    serial only and the Wi-Fi fields start blank. The PIN's fetch makes the phone a user of the board; a setup that
+    fails takes that back (DELETE, as Delete does), so the board stays new and in Setup for the retry after a wrong
+    password (test113, 2026-11-08) - not when the link was lost after the commit (the board may finish by itself).
   - **Change Wi-Fi:** only the network for one of mine, sent through the server for its next check-in (5.3.13);
     no search. It shows the network the board is on (not secret) and the password as dots; the same network sent
     without its password is refused (the app cannot send the stored one back).
@@ -613,12 +615,30 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
   end), then right under it the **status block** (res/layout/status_block.xml, StatusBlock.kt): a spinner line
   saying what happens now (looking, sending; gone when nothing runs), then the message (what to do, what happened;
   red background for a problem). What changes size (the message, a list that fills while looking, the pending list)
-  sits below the action row, so the buttons never move.
+  sits below the action row, so the buttons never move. **The setup screen** (user, 2026-11-08: "device listed still
+  under the status, why not below the button"): the found boards right under the button, the status block at the very
+  bottom. **Done -> the LEAKCAMs screen** at once, the board picked, "Done. ..." in its status (user,
+  2026-11-08). **Notifications off: always said on the LEAKCAMs screen** in red with a "Turn on notifications" link to
+  the app's notification settings until they are allowed (user, 2026-11-08: without them a leak reaches no one).
+  **One setup at a time, the nearest board** (user, 2026-11-08: "once
+  LEAKCAM is found, stop spinner", "take strongest signal"): the list shows one board, the strongest signal among the
+  new ones (a board 6 dB stronger replaces it before a send; the cable's board always wins); "Looking..." stops once
+  it is found (the scan goes on quietly for its live icons) and comes back if it goes. **Status texts are compact and essential** (user, 2026-11-08: "so huge status text"): one or two short
+  sentences, what happened and what to do; no explanations a person does not need right now.
+- **A denied permission comes with a way back (user, 2026-11-08):** the status text says what the permission is for and
+  ends in an "Open settings" link to the app's page in Android's settings (after "don't allow" Android may not ask
+  again); back from the settings the app goes on by itself. Bluetooth (Nearby devices) and the leak alert's
+  notifications both; a denied notification request is not repeated.
+- **Redraw only on change (user, 2026-11-08):** a view is redrawn only when what it shows changes, a live value
+  (signal bars, battery) at most once a second; never per BLE advertisement or timer tick. A screen that never goes
+  idle wastes battery and stalled the UI tests 17 s per lookup (test106).
 - **Every user-facing step well under 15 s, with a spinner (user, 2026-11-07):** a person closes the app after 15 s of
   waiting. Find, wake, pair, save, the switch to the setup firmware, change Wi-Fi and delete each end well under 15 s
   (target 10 s) and show a spinning icon and a line saying what happens while they run; a test measuring one above
   15 s fails. The board's own periods (check-in, leak check) are not user-facing and keep their values (tests shorten
-  them).
+  them). **Exception: the setup of a board on battery** (user, 2026-11-08): the setup firmware sleeps between its 2 s
+  adverts and the phone's first connects may time out (GATT 133, 5 s each), so it may take longer (17-26 s measured,
+  test116); the spinner and the step line stay. On USB power the 15 s rule holds.
 - **A set-up board's Wi-Fi changes only through the server (user, 2026-11-07):** no wake and no Bluetooth change for
   the person ("too complex for user"); the server's wake route and the board's switch on request are gone (test119
   retired). For Bluetooth the person deletes the board in the app: with no user left its next check-in switches it to
@@ -788,7 +808,7 @@ Not over BLE or USB: the console still prints it at boot and with `crash`, as to
   cut-off under load; the reading is under the K230's own ~200 mA load, a little below rest). The freshest channel
   wins: whichever told last (BLE and the cable live, the server as of the last check-in).
 
-### 5.3.10 Every metric in every check-in (user, 2026-11-06; tests/test048)
+### 5.3.10 Every metric in every check-in (user, 2026-11-06; tests/test136)
 
 Every check-in carries **all the metrics the board can give** (user: temperature and humidity over I2C, uptime, the
 firmware versions, the probe voltage, "all metrics possible", and every extra the BL616 and the K230 can give). The

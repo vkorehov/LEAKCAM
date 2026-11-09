@@ -9,6 +9,7 @@
  * (tests/test125). Setup over the USB cable (usb_setup.c, tests/test113): with USB power and setup staying, the
  * K230 is powered with WAKE setup and relays the phone's lines.
  */
+#include "blecore.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -77,6 +78,7 @@ int main(void)
     /* the PDS block reset the BLE controller's own init would do (ble_pairing.c keeps that hook empty: done there it
      * took the running USB device with it): here, before board_init() brings USB up, it clears a BLE core left asleep
      * by the run before (a reset during the battery sleep), which no other reset but EN clears (bugs/bug-006) */
+    blecore_dump(BLECORE_BOOT);     /* the PDS registers the run before left (a wedge's 3459fbb0/03303003/00000300) */
     GLB_AHB_MCU_Software_Reset(GLB_AHB_MCU_SW_PDS);
     board_init();                   /* also the USB console and its shell (defconfig) */
     crash_rec_report();

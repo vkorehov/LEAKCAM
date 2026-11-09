@@ -24,6 +24,7 @@ target_sources(app PRIVATE
                ${CMAKE_CURRENT_SOURCE_DIR}/../bl616_powertest/pt_fault.c
                ${P}/setup_boot.c
                ${P}/setup_sleep.c
+               ${P}/blecore.c
                ${P}/switch_to_full.c
                ${P}/provision.c
                ${P}/usb_setup.c
@@ -36,6 +37,7 @@ target_sources(app PRIVATE
                ${S}/flash_sha.c
                ${S}/battery.c
                ${S}/metrics.c
+               ${S}/evlog.c
                ${S}/aht20.c
                ${P}/wifi_setup.c
                ${S}/usb_console2.c

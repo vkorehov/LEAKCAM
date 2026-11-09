@@ -9,9 +9,9 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 2 x 15 fps: ch0 15.0 fps 511 kbit/s, ch1 14.9 fps 509 kbit/s; 1 channel max: ch0 75.3 fps 2516 kbit/s.
 
 
-### Encoder stall from a full /sdcard, 2026-10-30 (test105)
+### Encoder stall from a full /sdcard, 2026-10-30 (test051)
 
-During test105 the encoder stopped at t~100 s (`ch0: in 16 out 0`, ch1 `in 0`, enqueue failures). Alone, idle board:
+During test051 the encoder stopped at t~100 s (`ch0: in 16 out 0`, ch1 `in 0`, enqueue failures). Alone, idle board:
 the same at t=100 s. `df /sdcard`: 128 KB free; test028's `/sdcard/plt` files had left 12 MB and the two streams
 (~60 KB/s each) filled it. venctest wrote up to 30 MB per channel without checking fwrite. Fixes: venctest 4 MB per
 channel + stop saving on a short write; test028 removes its files at the end; /sdcard cleaned (20.1 MB free).

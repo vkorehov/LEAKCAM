@@ -52,7 +52,7 @@ def checkin_interval(s):
     intervals(board_id(), checkin=s)
     t0 = time.time()
     while board_checkin() != s and time.time() - t0 < 75:    # taken at its next check-in: up to one old interval
-        time.sleep(3)
+        time.sleep(0.5)
 
 
 def app_mine():
@@ -64,10 +64,10 @@ def app_mine():
     adb("shell", "am", "start", "-n", f"{PKG}/.MainActivity")
     t0, lines = time.time(), {}
     while time.time() - t0 < 15:
-        time.sleep(1)
         lines = dict(re.findall(r"mine ([0-9A-F]{12}): (.*)", adb("logcat", "-d", "-s", "LeakcamSetup:I")))
         if listed <= set(lines):
             break
+        time.sleep(0.3)
     return lines
 
 
@@ -136,7 +136,7 @@ try:
     while time.time() - t0 < 2 * 60 + 10 and not online:   # its first interval is the default 60 s until told
         online = server(f"/v1/devices/{dev}").get("online", False)
         if not online:
-            time.sleep(3)
+            time.sleep(0.5)
     check("server: the board online after the setup", online, f"{time.time() - t0:.0f} s")
     r.set("speed", f"setup Done -> online at the server {time.time() - t0:.0f} s (check-in every {CHECKIN_S} s, the board's first "
           f"interval {60} s until told)")
@@ -161,7 +161,9 @@ try:
     check("app: second LEAKCAM online after its check-in", ": online" in lines.get(SECOND, ""), lines.get(SECOND))
     check("app: second LEAKCAM's network shown", 'Wi-Fi "t111-second"' in lines.get(SECOND, ""), lines.get(SECOND))
     check("app: the board still online next to it", ": online" in lines.get(dev, ""), lines.get(dev))
-    time.sleep(3 * CHECKIN_S + 2)                               # three check-ins missed
+    t0 = time.time()                                            # three check-ins missed: the server says offline
+    while time.time() - t0 < 3 * CHECKIN_S + 15 and server(f"/v1/devices/{SECOND}").get("online", True):
+        time.sleep(0.5)
     lines = app_mine()
     check("app: second LEAKCAM offline when it stopped", "offline" in lines.get(SECOND, ""), lines.get(SECOND))
     check("app: the board online throughout", ": online" in lines.get(dev, ""), lines.get(dev))
@@ -186,12 +188,12 @@ try:
     adb("logcat", "-c")
     res = op("delete", id=dev, secs=30)
     check("server: the delete reached it first, no user left", phones() == 0, str(phones()))
-    adb("shell", "am", "force-stop", PKG)
-    adb("shell", "am", "start", "-n", f"{PKG}/.MainActivity")
-    time.sleep(15)
     log_ = adb("logcat", "-d", "-s", "LeakcamSetup:I")
     check("app: the board deleted", bool(res.get("confirmed")) and f"deleted {dev}" in log_, str(res))
-    check("app: a deleted board stays out, also after a reopen", f"rediscovered {dev}" not in log_, "15 s after the reopen")
+    # reopened: the app's list loaded (app_mine() returns once every listed board has its line, no fixed wait)
+    lines = app_mine()
+    check("app: a deleted board stays out, also after a reopen", dev not in lines and dev not in phone_boards(),
+          str(sorted(lines)))
     # the only user gone (the bench is the board's one phone): the server answers its check-in 410 Gone and the board
     # goes back to the setup firmware within one check-in interval (DESIGN.md 5.3.5)
     t = to_firmware("setup", secs=CHECKIN_S + 60)

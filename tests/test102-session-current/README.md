@@ -1,7 +1,6 @@
 # test102: K230 session current
 
-Status: **planned** (2026-11-07): the leak check with `/app/leakcam` not measured yet; the 2026-10-30 reading (228 mA)
-was the first product's agent session (HISTORY.md, superseded).
+Status: **deferred** (2026-11-08, user: "defer to later"): to be rewritten on the product pair (the energy of one leak check; test132 has its timing: the K230 on ~1.6 s) and read with the cell out or full; its run.py is the old test firmware's (`pt_session`); a product version would read the USB-C 1 meter, which also counts the cell's charging current (the cell not full), so no reading is the board's own.
 
 Battery life = sleep current x time + check-in energy x check-ins + leak-check energy x leak checks (DESIGN.md 5.3.12:
 24 check-ins + 1 leak check a day, ~2.85 mAh/day estimate). The K230 rails' current through a leak check (READY, WAKE,
@@ -60,19 +59,19 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median of 5) | **MISSING** | target (test022) | longest step: |
+| Boot, power-on -> READY (median of 5) | **MISSING**: deferred 2026-11-08 (read with the cell out or full: on USB the meter includes the charging current) | target (test022) | longest step: |
 | This part's boot share | n/a: the whole session is the subject (test101 has the steps) (2026-10-30) | - | |
 | Test run time | 218 s automated (run.py, 2026-10-30), no setup | - | setup (flashing, plugging, waiting) separately |
-| Speed / rate (none for this test) | **MISSING** | - | % of the top |
+| Speed / rate (none for this test) | **MISSING**: deferred 2026-11-08 (read with the cell out or full: on USB the meter includes the charging current) | - | % of the top |
 | Current idle / during (min / avg / peak) | K230 running with no camera and no server: 228 mA (the first product's agent session, 2026-10-30); the job with /app/leakcam **MISSING**; rails off, BL616 awake 61 mA (test006); K230 rails on, held in reset 87 mA (test021); K230 at msh idle 220 mA (test006); KPU loop 220 mA (test013); encoder 2 x 15 fps 235 mA (test027: +15 mA); both LED chains 100 % 950 mA (test009: +0.73 A) (2026-10-30) | floor (test031) | USB-C 1 VBUS meter, D1 off; VBAT at C15 |
 | Voltage under load (min) | n/a: on USB power; no battery measurements (user, 2026-10-30) | cutoff 3.10 V (bug-004) | at the probes above |
-| Power, energy per operation | **MISSING**: one leak check with /app/leakcam (estimate ~0.3 mAh, DESIGN.md 5.3.12; the 2026-10-30 agent-session figure superseded: HISTORY.md) | - | scripts/energy.py |
-| Per day | **MISSING**: one leak check a day (the server's `leakcheck`, default 86400 s) plus one per wet probe; budget 24 check-ins + 1 leak check ~2.85 mAh/day (estimate, DESIGN.md 5.3.12) | ENERGY.txt line | n per day |
+| Power, energy per operation | **MISSING**: deferred 2026-11-08 (read with the cell out or full: on USB the meter includes the charging current): one leak check with /app/leakcam (estimate ~0.3 mAh, DESIGN.md 5.3.12; the 2026-10-30 agent-session figure superseded: HISTORY.md) | - | scripts/energy.py |
+| Per day | **MISSING**: deferred 2026-11-08 (read with the cell out or full: on USB the meter includes the charging current): one leak check a day (the server's `leakcheck`, default 86400 s) plus one per wet probe; budget 24 check-ins + 1 leak check ~2.85 mAh/day (estimate, DESIGN.md 5.3.12) | ENERGY.txt line | n per day |
 | Temperature die / board (start / peak / end) | die n/a: K230 off; board 37.3 / 37.3 / 37.3 C (AHT20) (2026-10-30) | K230 limit (datasheet) | chip_temp, AHT20 |
 | Memory BL616 / K230 (start / min / end), leak | BL616 free 131124 / min 105196 / 131124 B, blocks 106 -> 106, deleted 0; leak: n/a, 1 snapshots (mem_leak.py needs >= 8 cycles) (2026-10-30) | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; repeated operations: mem_leak.py over >= 8 cycles (skill leakcam-test-metrics 5b) |
 | Image (sizes) | BL616 test firmware 1309616 B (2026-10-30, on the board at the run) | minimal image (rule) | the image this run used |
 | Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os -march=rv64imafdcv, sections + --gc-sections, strip, no LTO; BL616 test firmware -Os -g (SDK Kconfig default), no LTO (2026-10-30) | smallest code (rule) | |
-| Features over the minimal image | **MISSING**: this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
+| Features over the minimal image | **MISSING**: deferred 2026-11-08 (read with the cell out or full: on USB the meter includes the charging current): this test's Needs built on test008's floor | test008 floor | bytes, boot ms, RAM, current |
 | Optimised build (-O3, LTO, -march) | n/a: not an optimisation test (test builds use the default flags: user, 2026-10-29) | the faster one stays | |
 
 ## Boot time

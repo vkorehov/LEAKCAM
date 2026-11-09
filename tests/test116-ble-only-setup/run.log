@@ -1,0 +1,11 @@
+08:39:16 test116-ble-only-setup: 0 metric rows MISSING: none
+08:39:21 CHECK pass no network stored 
+08:40:45 BL616 port missing
+08:41:15 BL616 port missing
+08:41:45 BL616 port missing
+08:42:16 BL616 port missing
+08:42:46 BL616 port missing
+08:43:16 BL616 port missing
+08:43:30 CHECK FAIL no network: the setup firmware setup
+08:43:30 stopped at: no network: the setup firmware
+08:43:31 test116-ble-only-setup: FAIL; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

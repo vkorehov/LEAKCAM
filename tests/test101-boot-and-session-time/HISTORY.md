@@ -98,6 +98,26 @@ boot chain; the session numbers after READY and the energy built on them (1.71 m
 
 ## Runs
 
+### Automated run 2026-11-09 (run.py, 0 s): **FAIL**
+
+not run: the board runs setup, not the full firmware
+
+
+### Automated run 2026-11-08 (run.py, 40 s): pass
+
+4/4 checks pass.
+
+
+### Automated run 2026-11-08 (run.py, 107 s): **FAIL**
+
+3/6 checks pass. Failed: session 1: READY logged (None); session 2: READY logged (None); session 3: READY logged (None).
+
+
+### Automated run 2026-11-08 (run.py, 2 s): **FAIL**
+
+not run: no pt_boot, pt_uart on the BL616.
+
+
 ### Automated run 2026-11-07 (run.py, 1006 s): **FAIL**
 
 0 of 10 sessions complete; session 1: incomplete (first last off); session 2: incomplete (first last off); session 3: incomplete (first last off); session 4: incomplete (first last off); session 5: incomplete (first last off); session 6: incomplete (first last off); session 7: incomplete (first last off); session 8: incomplete (first last off); session 9: incomplete (first last off); session 10: incomplete (first last off)
@@ -116,5 +136,7 @@ boot chain; the session numbers after READY and the energy built on them (1.71 m
 No runs yet.
 
 ## Obstacles
+
+- the BL616 firmware has no pt_boot, pt_uart: flash the test firmware that has it (2026-11-08, automated run)
 
 None recorded.

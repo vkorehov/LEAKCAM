@@ -1,4 +1,5 @@
 #include "usb_full.h"
+#include "evlog.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -110,6 +111,8 @@ static void watch_task(void *arg)
     for (;;) {
         bool usb = usb_present(), on = k230_session_active();
         bool unplugged = !usb && was_usb;                    /* once: on battery a session is a leak check's */
+        if (usb != was_usb)
+            evlog_add(EV_USB, usb, 0);
         if (usb && !was_usb)
             presence_now();                                  /* the plug: charging at the server and the app at once */
         was_usb = usb;

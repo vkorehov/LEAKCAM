@@ -1,21 +1,346 @@
-    0.140 > 'rm /sdcard/leakcam/cam0.hist' (0.06 s)
-    0.140   rm /sdcard/leakcam/cam0.hist
-    0.140   msh />
-    0.140   msh />
-    0.198 > 'rm /sdcard/leakcam/cam1.hist' (0.06 s)
-    0.198   rm /sdcard/leakcam/cam1.hist
-    0.198   msh />
-    0.198   msh />
-    0.254 > 'rm /sdcard/leakcam/sim' (0.06 s)
-    0.254   rm /sdcard/leakcam/sim
-    0.254   cannot remove '/sdcard/leakcam/sim': No such file or directory
-    0.254   msh />
-    0.254   msh />
-    0.582 > 'echo cam0=object /sdcard/leakcam/sim' (0.06 s)
-    0.582   echo cam0=object /sdcard/leakcam/sim
-    0.582   msh />
-    0.582   msh />
-  265.249 > 'rm /sdcard/leakcam/sim' (0.06 s)
-  265.249   rm /sdcard/leakcam/sim
-  265.249   msh />
-  265.249   msh />
+    0.132 > 'rm /sdcard/leakcam/cam0.hist' (0.06 s)
+    0.132   rm /sdcard/leakcam/cam0.hist
+    0.132   U-Boot: command not found.
+    0.132   msh />
+    0.132   msh />
+    0.189 > 'rm /sdcard/leakcam/cam1.hist' (0.06 s)
+    0.189   rm /sdcard/leakcam/cam1.hist
+    0.189   msh />
+    0.189   msh />
+    0.245 > 'rm /sdcard/leakcam/sim' (0.06 s)
+    0.245   rm /sdcard/leakcam/sim
+    0.245   msh />
+    0.245   msh />
+    0.469 > 'echo cam0=object /sdcard/leakcam/sim' (0.06 s)
+    0.469   echo cam0=object /sdcard/leakcam/sim
+    0.469   msh />
+    0.469   msh />
+--- BL616 session (leak check done) 07:56:06 UTC
+leak
+leak: probe dry, every 60 s, next in 59 s, checks 1, wet edges 0, last same,new
+bouffalolab />
+bouffalolab />leak: check rtc: K230 session
+k230: session start: mem free 180012 min 160988 blocks 67 tasks 14 deleted 0
+k230: session rtc: rails on (3V3 in 1713 us), running
+Disable Auto Reconnect
+Not connected
+start connecting ... 
+----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] CTRL-EVENT-NETWORK-ADDED 0
+WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
+Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c 
+�[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
+�[WPA] CTRL-EVENT-SCAN-RESULTS 
+�[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+sm_connect_req_handler sm_env.auth_retry_gap = 0
+--- OPT rxu_mgmt_ind is detected
+[802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
+rc_init: station_id=1 format_mod=2 pre_type=0 short_gi=1 max_bw=0
+rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
+��No handler found for msg:1d from tsk:0 to tsk:6
+[FU]Set timer,state is 5,ongoing++, timeout:512000
+[FU]Tx cfm ongoing--, value is 0
+k230: READY 825 ms after the run
+[FL]RECV AUTH,sn:2629
+[FU]RECV AUTH,sn:2629
+[FU]Rx handler,state:5,fctl:0xb0
+[FU]Clear timer in auth handler
+[FU]Set timer,state is 8,ongoing++, timeout:1024000
+[FU]Tx cfm ongoing--, value is 0
+[FL]RECV ASSOCRSP,sn:2631
+[FU]RECV ASSOCRSP,sn:2631
+[FU]Rx handler,state:8,fctl:0x10
+[FU]Clear timer in assoc rsp handler
+sm_connect_ind sm_env.auth_retry_gap = 0
+[lwip] default netif: wl1
+[lwip] netif status callback
+[FH]fhost_tx_req_do relese this buf(Line:882)!
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] Associated with 84:D8:1B:24:0A:3C
+�[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
+�[WPA] STA-RX-EAPOL1
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] STA-TX-EAPOL2
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] STA-RX-EAPOL3
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] STA-TX-EAPOL4
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
+�[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+=================================================================
+[AT][RX] Connection Status
+[AT][RX]   status_code 0
+[AT][RX]   reason_code 0
+[AT][RX]   status detail: sm connect ind ok
+[AT][RX]   MAC 84:D8:1B:24:0A:3C
+[AT][RX]   vif_idx 0
+[AT][RX]   ap_idx 1
+[AT][RX]   ch_idx 2
+[AT][RX]   qos 1
+[AT][RX]   aid 9
+[AT][RX]   band 2.4G
+[AT][RX]   channel 11
+=================================================================
+start dhcping on vif 0 ... 
+LwIP DHCP ack (wl 1): 
+  IP:192.168.1.222
+  MASK: 255.255.255.0
+  Gateway: 192.168.1.1
+[quick_connect] dhcp bind ip callback
+  IP: 192.168.1.222
+  MK: 255.255.255.0
+  GW: 192.168.1.1
+{FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
+[I][WCHK] check of "VK": state 0x03 detail 0
+Disable Auto Reconnect
+��==========================  Keyram Config ========================
+��  start 08 -->> end 11; nVAP 02; max 31
+==========================  Keyram Dump =========================
+[id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
+==========================  MAC Address =========================
+    MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
+  BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
+[FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 198
+=================================================================
+[AT][RX] Connection Status
+[AT][RX]   status_code 19
+[AT][RX]   reason_code 0
+[AT][RX]   status detail: user disconnect and send deauth
+[AT][RX]   state detail: 0x0
+[AT][RX]   vif_idx 0
+=================================================================
+[lwip] default netif cleared
+[lwip] netif status callback
+�[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] CTRL-EVENT-DSCP-POLICY clear_all
+�[WPA] CTRL-EVENT-DSCP-POLICY clear_all
+�[WPA] CTRL-EVENT-NETWORK-REMOVED 0
+�[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
+�[WPA] CTRL-EVENT-DSCP-POLICY clear_all
+WiFi disconnect
+k230: WAKE rtc taken 1130 ms after the run
+k230: STATUS 0,0.6+g2961d6c-dirty-202611070631,361,6717376,6717376,46059520, battery 4056 mV kept
+leak: DONE changed,same 1259 ms after the ask, probe dry
+Disable Auto Reconnect
+Not connected
+k230: off (leak check done) 1566 ms after power-on: READY at 825 ms, 0 heartbeat edges, 3V3 fall 10381 us, rx dropped 0, fifo overflows 1, tx 175 B, tx failed 0
+k230: session end: mem free 179252 min 160988 blocks 70 tasks 14 deleted 0
+
+--- BL616 session (leak check done) 07:56:25 UTC
+leak
+leak: probe dry, every 86400 s, next in 86399 s, checks 2, wet edges 0, last changed,same
+bouffalolab />
+bouffalolab />leak: probe wet
+leak: check leak: K230 session
+k230: session start: mem free 180012 min 160988 blocks 67 tasks 14 deleted 0
+k230: session leak: rails on (3V3 in 1717 us), running
+Disable Auto Reconnect
+Not connected
+leak: probe dry
+leak: probe wet
+start connecting ... 
+----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] CTRL-EVENT-NETWORK-ADDED 0
+WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
+Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c 
+�[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
+�[WPA] CTRL-EVENT-SCAN-RESULTS 
+�[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+sm_connect_req_handler sm_env.auth_retry_gap = 0
+--- OPT rxu_mgmt_ind is detected
+[802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
+rc_init: station_id=0 format_mod=2 pre_type=0 short_gi=1 max_bw=0
+rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
+��No handler found for msg:1d from tsk:0 to tsk:6
+[FU]Set timer,state is 5,ongoing++, timeout:512000
+[FU]Tx cfm ongoing--, value is 0
+k230: READY 862 ms after the run
+[FL]RECV AUTH,sn:2860
+[FU]RECV AUTH,sn:2860
+[FU]Rx handler,state:5,fctl:0xb0
+[FU]Clear timer in auth handler
+[FU]Set timer,state is 8,ongoing++, timeout:1024000
+[FU]Tx cfm ongoing--, value is 0
+[FL]RECV ASSOCRSP,sn:2862
+[FU]RECV ASSOCRSP,sn:2862
+[FU]Rx handler,state:8,fctl:0x10
+[FU]Clear timer in assoc rsp handler
+sm_connect_ind sm_env.auth_retry_gap = 0
+[lwip] default netif: wl1
+[lwip] netif status callback
+[FH]fhost_tx_req_do relese this buf(Line:882)!
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] Associated with 84:D8:1B:24:0A:3C
+�[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
+�[WPA] STA-RX-EAPOL1
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] STA-TX-EAPOL2
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] STA-RX-EAPOL3
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] STA-TX-EAPOL4
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
+�[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+=================================================================
+[AT][RX] Connection Status
+[AT][RX]   status_code 0
+[AT][RX]   reason_code 0
+[AT][RX]   status detail: sm connect ind ok
+[AT][RX]   MAC 84:D8:1B:24:0A:3C
+[AT][RX]   vif_idx 1
+[AT][RX]   ap_idx 0
+[AT][RX]   ch_idx 2
+[AT][RX]   qos 1
+[AT][RX]   aid 9
+[AT][RX]   band 2.4G
+[AT][RX]   channel 11
+=================================================================
+start dhcping on vif 0 ... 
+LwIP DHCP ack (wl 1): 
+  IP:192.168.1.222
+  MASK: 255.255.255.0
+  Gateway: 192.168.1.1
+[quick_connect] dhcp bind ip callback
+  IP: 192.168.1.222
+  MK: 255.255.255.0
+  GW: 192.168.1.1
+{FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.222/24 UP,CONNECTED
+[I][WCHK] check of "VK": state 0x03 detail 0
+Disable Auto Reconnect
+��==========================  Keyram Config ========================
+��  start 08 -->> end 11; nVAP 02; max 31
+==========================  Keyram Dump =========================
+[id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
+==========================  MAC Address =========================
+    MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
+  BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
+[FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 297
+=================================================================
+[AT][RX] Connection Status
+[AT][RX]   status_code 19
+[AT][RX]   reason_code 0
+[AT][RX]   status detail: user disconnect and send deauth
+[AT][RX]   state detail: 0x0
+[AT][RX]   vif_idx 0
+=================================================================
+[lwip] default netif cleared
+[lwip] netif status callback
+�[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:1B:24:0A:3C reason=3 locally_generated=1
+wpa_supplicant_ctrl_iface_msg_cb: status event sent
+�[WPA] CTRL-EVENT-DSCP-POLICY clear_all
+�[WPA] CTRL-EVENT-DSCP-POLICY clear_all
+�[WPA] CTRL-EVENT-NETWORK-REMOVED 0
+�[WPA] CTRL-EVENT-BSS-REMOVED 0 84:D8:1B:24:0A:3C
+�[WPA] CTRL-EVENT-DSCP-POLICY clear_all
+WiFi disconnect
+k230: WAKE leak taken 1164 ms after the run
+k230: STATUS 0,0.6+g2961d6c-dirty-202611070631,352,6717376,6717376,46059520, battery 4054 mV kept
+leak: DONE changed,same 1293 ms after the ask, probe wet
+Disable Auto Reconnect
+Not connected
+k230: off (leak check done) 1600 ms after power-on: READY at 862 ms, 0 heartbeat edges, 3V3 fall 10395 us, rx dropped 0, fifo overflows 0, tx 177 B, tx failed 0
+k230: session end: mem free 179252 min 160988 blocks 70 tasks 14 deleted 0
+
+  160.138 > 'rm /sdcard/leakcam/sim' (1.63 s)
+  160.138   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 07 2026 - 06:32:04 +0000)
+  160.138   00000000: PMU Major Msg: End of CA training                                            
+  160.138   00000000: PMU Major Msg: End of initialization                                         
+  160.138   00000000: PMU Major Msg: End of read enable training                                   
+  160.138   00000000: PMU Major Msg: End of fine write leveling                                    
+  160.138   00000000: PMU Major Msg: End of read dq deskew training                                
+  160.138   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+  160.138   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+  160.138   00000000: PMU Major Msg: End of write delay center optimization                        
+  160.138   00000000: PMU Major Msg: End of read delay center optimization                         
+  160.138   00000000: PMU Major Msg: End of max read latency training                              
+  160.138   00000000: PMU Major Msg: Firmware run has completed                                    
+  160.138   dbyte0 add =9a040100 value =12
+  160.138   dbyte0 add =9a040500 value =13
+  160.138   dbyte0 add =9a040900 value =13
+  160.138   dbyte0 add =9a040d00 value =13
+  160.138   dbyte0 add =9a041100 value =13
+  160.138   dbyte0 add =9a041500 value =13
+  160.138   dbyte0 add =9a041900 value =13
+  160.138   dbyte0 add =9a041d00 value =14
+  160.138   dbyte1 add =9a044100 value =14
+  160.138   dbyte1 add =9a044500 value =13
+  160.138   dbyte1 add =9a044900 value =14
+  160.138   dbyte1 add =9a044d00 value =13
+  160.138   dbyte1 add =9a045100 value =13
+  160.138   dbyte1 add =9a045500 value =14
+  160.138   dbyte1 add =9a045900 value =13
+  160.138   dbyte1 add =9a045d00 value =13
+  160.138   dbyte2 add =9a048100 value =37
+  160.138   dbyte2 add =9a048500 value =37
+  160.138   dbyte2 add =9a048900 value =37
+  160.138   dbyte2 add =9a048d00 value =37
+  160.138   dbyte2 add =9a049100 value =37
+  160.138   dbyte2 add =9a049500 value =37
+  160.138   dbyte2 add =9a049900 value =37
+  160.138   dbyte2 add =9a049d00 value =37
+  160.138   dbyte3 add =9a04c100 value =37
+  160.138   dbyte3 add =9a04c500 value =37
+  160.138   dbyte3 add =9a04c900 value =37
+  160.138   dbyte3 add =9a04cd00 value =37
+  160.138   dbyte3 add =9a04d100 value =37
+  160.138   dbyte3 add =9a04d500 value =37
+  160.138   dbyte3 add =9a04d900 value =37
+  160.138   dbyte3 add =9a04dd00 value =37
+  160.138   spi_nand spi-flash@0: Winbond SPI NAND was found.
+  160.138   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+  160.138   OpenSBI v0.9
+  160.138   heap: [0x0050c4c0 - 0x00d0c4c0], size 8192 KB
+  160.138   page: [0x00d0c4c8 - 0x039fec00], size 46025 KB
+  160.138    \ | /
+  160.138   - RT -     Thread Smart Operating System
+  160.138    / | \     5.0.0 build Nov  6 2026
+  160.138    2006 - 2020 Copyright by rt-thread team
+  160.138   rtc driver register OK
+  160.138   lwIP-2.1.2 initialized!
+  160.138   [I/I2C] I2C bus [i2c0] registered
+  160.138   [I/I2C] I2C bus [i2c4] registered
+  160.138   [I/board.sdio] boot mode 0 does not use an SD/MMC controller�link_mux: console and /dev/link share uart1
+  160.138   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+  160.138   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+  160.138   os  : system memory alloc 320 bytes
+  160.138   flsh: UFFS consume spare data size 9
+  160.138   os  : system memory alloc 84480 bytes
+  160.138   os  : system memory alloc 53200 bytes
+  160.138   os  : system memory alloc 2048 bytes
+  160.138   tree: DIR 0, FILE 5, DATA 4
+  160.138   os  : system memory alloc 320 bytes
+  160.138   flsh: UFFS consume spare data size 9
+  160.138   os  : system memory alloc 84480 bytes
+  160.138   os  : system memory alloc 53200 bytes
+  160.138   os  : system memory alloc 8192 bytes
+  160.138   tree: DIR 1, FILE 4, DATA 0
+  160.138   /dev/shm file system initialization done!
+  160.138   Can't find sensor on csi0
+  160.138   Can't find sensor on csi2
+  160.138   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+  160.138   <gnne> gnne_device_init done.
+  160.138   #############SDK VERSION######################################
+  160.138   SDK   : unknown-20261107-063215--e23af7bd3b96-4162ec7
+  160.138   nncase: 2.11.0
+  160.138   ##############################################################
+  160.138   msh />leakcam: start: t 564 ms, heap +0 B
+  160.138   leakcam: version 0.6+g2961d6c-dirty-202611070631
+  160.138   leakcam: battery 4381 mV: t 565 ms, heap +0 B
+  160.138   msh />

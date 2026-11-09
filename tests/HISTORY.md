@@ -112,7 +112,7 @@ cases, one per operation the product repeats:
 | [test102 session current](test102-session-current/README.md) | | planned |
 | [test103 leak pipeline timing](test103-leak-pipeline-timing/README.md) | | later: after the cameras, Wi-Fi and the product firmware |
 | [test104 battery energy audit](test104-battery-energy-audit/README.md) | | planned |
-| [test105 maximum current](test105-max-current/README.md) | 2026-10-25 | handover runs 1-2: every camera-free load (LEDs 100 %, Wi-Fi TX, memtest) 1.06 A at 5 V, USB -> cell with no power fault, cells cold, K230 alive at 60.2 C; open: no-reset proof on the cell, the BL616 console leaving the bus at the unplug, the full load with cameras |
+| [test051 maximum current](test051-max-current/README.md) | 2026-10-25 | handover runs 1-2: every camera-free load (LEDs 100 %, Wi-Fi TX, memtest) 1.06 A at 5 V, USB -> cell with no power fault, cells cold, K230 alive at 60.2 C; open: no-reset proof on the cell, the BL616 console leaving the bus at the unplug, the full load with cameras |
 | [test106 Wi-Fi setup from the phone, end to end](test106-wifi-setup-from-phone/README.md) | | planned: after test040; the app driven over adb |
 
 ## Status by subsystem (2026-10-21)

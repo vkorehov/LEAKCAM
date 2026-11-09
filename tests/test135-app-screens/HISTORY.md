@@ -4,6 +4,51 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-09 (run.py, 138 s): pass
+
+35/35 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 145 s): pass
+
+35/35 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 160 s): pass
+
+35/35 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 149 s): pass
+
+35/35 checks pass.
+
+
+### Automated run 2026-11-08 (run.py, 143 s): pass
+
+35/35 checks pass.
+
+
+### Automated run 2026-11-08 (run.py, 158 s): pass
+
+35/35 checks pass.
+
+
+### Automated run 2026-11-08 (run.py, 149 s): pass
+
+35/35 checks pass.
+
+
+### Automated run 2026-11-08 (run.py, 168 s): pass
+
+35/35 checks pass.
+
+
+### Automated run 2026-11-08 (run.py, 20 s): **FAIL**
+
+not run: no Android phone on adb: Wireless debugging on, its <ip>:<port> in /home/vkorehovs/.leakcam_phone.
+
+
 ### Automated run 2026-11-07 (run.py, 141 s): pass
 
 35/35 checks pass.
@@ -15,6 +60,8 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 
 ## Obstacles
+
+- no Android phone on adb: Wireless debugging on, its <ip>:<port> in /home/vkorehovs/.leakcam_phone (the port changes when it is switched off and on) (2026-11-08, automated run)
 
 ## 2026-11-07 22:26 UTC+2: pass 35/35
 

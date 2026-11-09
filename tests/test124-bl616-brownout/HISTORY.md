@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-08 (run.py, 61 s): pass
+
+9/9 checks pass.
+
+
+### Automated run 2026-11-08 (run.py, 64 s): **FAIL**
+
+7/8 checks pass. Failed: each kind leaves its own record (a brown-out's can be told apart) ({'software': '80', 'watchdog': '88', 'exception': '88'}).
+
+
 - 2026-11-02 17:48 UTC: the watchdog fix proven (README Result).
 - 2026-11-02 17:37-17:41 UTC: first fix (the clock ungated only): every sleep window ended in a watchdog reset a few
   seconds in (reset record 0x7d with `wdt`; tick count from 0 after the window). The `crash hang` that followed ran on a

@@ -15,7 +15,7 @@ import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import log, wifi_credentials   # noqa: E402
-from phone import SERVER, board_checkin, board_id, firmware, intervals   # noqa: E402
+from phone import clear_leak, SERVER, board_checkin, board_id, firmware, intervals   # noqa: E402
 
 USER_S = 15
 checks = []
@@ -53,6 +53,7 @@ def change(ssid, psk, want):
 
 r = Run(__file__)
 dev = board_id()
+clear_leak(dev)                  # no open leak: its 1-min wake mode overrides the run's intervals (2026-11-09)
 if firmware() != "full":
     r.finish(f"not run: the board runs {firmware() or 'nothing'}, not the full firmware", False, switch_off=False)
     sys.exit(1)
@@ -65,9 +66,12 @@ try:
           f"state {st:#04x}" if st is not None else "no result line")
     check("wrong passphrase: the server has the failure (wifi_change failed)", at_server == "failed", str(at_server))
     t = time.time()
-    while time.time() - t < 20 and board_checkin() != 300:
-        bl("presence now", 1)
-        time.sleep(3)
+    asked = 0
+    while time.time() - t < 20 and board_checkin() != 300:   # polled; a check-in asked again every 3 s
+        if time.time() - asked > 3:
+            bl("presence now", 1)
+            asked = time.time()
+        time.sleep(0.3)
     check("wrong passphrase: the board in the 5-min wake mode (check-in every 300 s)", board_checkin() == 300,
           f"check-in every {board_checkin()} s")
     check("wrong passphrase: still online on the old network", device().get("online") is True, str(device().get("ssid")))
@@ -76,8 +80,13 @@ try:
     check("right passphrase: tested and stored (state 0x04 saved)", st == 0x04, f"state {st:#04x}" if st is not None else "none")
     check(f"right passphrase: the result within {USER_S} s of the check-in", took2 < USER_S, f"{took2:.1f} s")
     check("right passphrase: the server has it saved, the mode left", at_server == "saved", str(at_server))
-    bl("presence now", 1)
-    time.sleep(4)
+    t = time.time()
+    asked = 0
+    while time.time() - t < 15 and board_checkin() != 5:   # polled: taken at the next check-in (asked every 3 s)
+        if time.time() - asked > 3:
+            bl("presence now", 1)
+            asked = time.time()
+        time.sleep(0.3)
     check("back on the run's 5 s check-in", board_checkin() == 5, f"check-in every {board_checkin()} s")
     r.set("Speed / rate against the top", f"PUT -> the board's result: wrong passphrase {took:.1f} s, right "
           f"{took2:.1f} s (the check-in asked at once)")

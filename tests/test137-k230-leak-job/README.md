@@ -1,4 +1,4 @@
-# test049: the K230 leak job with simulated cameras (low level: the K230 program's job + its link frames)
+# test137: the K230 leak job with simulated cameras (product pair: the K230 program's job + its link frames)
 
 Status: **pass** (2026-11-07 08:34, run.py 11/11, BL616 full 0.6+g2961d6c-dirty, K230 0.6+g2961d6c-dirty): every
 scene gives its verdict on both cameras (new / same / light = same / object = changed), the history kept on a change,

@@ -6,7 +6,8 @@ import android.widget.TextView
 /**
  * The status block under a screen's action row (res/layout/status_block.xml, DESIGN.md 5.3.4): the same on every
  * screen (user 2026-11-07: "status is below buttons", what happens now is status too). busy() shows the spinner line
- * while something runs (every wait has a spinner: the 15 s rule), text is the message.
+ * while something runs (every wait has a spinner: the 15 s rule), text is the message. The setup screen has it at
+ * the very bottom, under the found boards (user 2026-11-08).
  */
 class StatusBlock(val root: View) {
     val text: TextView = root.findViewById(R.id.status_text)

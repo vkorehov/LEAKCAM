@@ -1,4 +1,6 @@
 #include "metrics.h"
+#include "evlog.h"
+#include "leakcam_version.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,6 +66,7 @@ void metrics_boot(void)
     if (GLB_Get_Reset_Reason(&r) == SUCCESS)
         memcpy(&rst, &r, 1);
     GLB_Clr_Reset_Reason();                  /* the next boot reads only its own cause */
+    evlog_add(EV_BOOT, strcmp(LEAKCAM_IMAGE, "setup") == 0, rst);
 }
 
 void metrics_switch(void)

@@ -1,5 +1,5 @@
 /*
- * The board's metrics in every check-in (DESIGN.md 5.3.10, tests/test048, user 2026-11-06: "all metrics possible"):
+ * The board's metrics in every check-in (DESIGN.md 5.3.10, tests/test136, user 2026-11-06: "all metrics possible"):
  * the sensors (AHT20 over I2C, the leak probe node, the BL616's die and supply), the battery (battery.h), uptime,
  * boots and the reset cause, crashes, the heap, this check-in's Wi-Fi (wifi_check.h), counters since the last good
  * check-in, and the K230 as its last STATUS frame and its last session left it. Kept in HBN RAM where they must outlive

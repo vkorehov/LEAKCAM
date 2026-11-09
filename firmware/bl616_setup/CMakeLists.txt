@@ -19,6 +19,7 @@ sdk_add_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../k230_board)   # k230_
 target_sources(app PRIVATE
                ${CMAKE_CURRENT_SOURCE_DIR}/setup_boot.c
                ${CMAKE_CURRENT_SOURCE_DIR}/setup_sleep.c
+               ${CMAKE_CURRENT_SOURCE_DIR}/blecore.c
                ${CMAKE_CURRENT_SOURCE_DIR}/switch_to_full.c
                ${CMAKE_CURRENT_SOURCE_DIR}/ota.c
                ${CMAKE_CURRENT_SOURCE_DIR}/wifi_setup.c
@@ -28,6 +29,7 @@ target_sources(app PRIVATE
                ${S}/flash_sha.c
                ${S}/battery.c
                ${S}/metrics.c
+               ${S}/evlog.c
                ${S}/aht20.c
                ${S}/mem_stat.c
                ${S}/device_id.c

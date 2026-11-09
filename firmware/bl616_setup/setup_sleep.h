@@ -37,6 +37,8 @@ struct setup_sleep_stats {
     uint32_t wdg_exit_max;  /* the counter right after a wake's restart, highest (0 or near) */
     uint32_t vetoed;        /* idle hook calls kept out of the sleep path: BLE up but idle */
     uint32_t usb_wakes;     /* wakes by the USB plug */
+    uint32_t ble_wakes;     /* wakes by the BLE controller (LPFW_WAKEUP_BLE): its advertising events */
+    uint32_t wedges;        /* parked-controller detections (EV_WEDGE 1) */
 };
 void setup_sleep_stats(struct setup_sleep_stats *s);
 

@@ -7,7 +7,8 @@ wedged the BLE core, 2026-11-03) and it is set up again; with USB-C 1 back in it
 console stays up on PR1 except while the setup firmware sleeps. Each hand step waits for HAND_FILE (written by whoever
 watches the bench: `echo unplugged > ~/.leakcam_hand`, phone.hand()).
     tests/test116-ble-only-setup/run.py [--unplugged]   --unplugged: no network stored and USB-C 1 already out (the
-                                                         setup firmware asleep: no console), from step 2's scan on
+                                                         setup firmware asleep: no console), from step 2's scan on;
+                                                         the board's ID in LEAKCAM_DEV (no console to read it)
 """
 import fcntl
 import os
@@ -16,7 +17,7 @@ import time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import board_id, creds, firmware, hand as ask, online, op, ready, to_firmware, want   # noqa: E402
+from phone import erase, board_id, creds, usb_seen, firmware, hand as ask, online, only_boards, op, ready, to_firmware, want   # noqa: E402
 
 
 _lock = open(__file__)
@@ -60,6 +61,7 @@ def found(name, t0, key, secs=60):
 
 def setup_on_battery(what):
     """the app sets the network on battery: Done, the full firmware, present at the server"""
+    only_boards()   # Setup lists new boards only (DESIGN.md 5.3.4): this one off the phone's list first
     res = op("app", ssid=ssid.encode().hex(), psk=psk.encode().hex(), anyway="", secs=45)
     helps = res.get("help", [])
     last = helps[-1]["help"] if helps else res.get("error", "no help text")
@@ -71,7 +73,7 @@ def setup_on_battery(what):
     check(f"{what}: the network stored", creds() == want(ssid, psk))
     t0 = time.time()
     while time.time() - t0 < 30 and not online(dev):
-        time.sleep(1)
+        time.sleep(0.3)
     check(f"{what}: present at the server", online(dev), f"{time.time() - t0:.0f} s after the switch")
 
 
@@ -94,7 +96,7 @@ dev = board_id() or os.environ.get("LEAKCAM_DEV", "")   # --unplugged: no consol
 try:
     # 1. a new board: no network; the full firmware switches to the setup firmware by itself
     if not UNPLUGGED:
-        bl("provision erase", 2, r"erased|erase failed")
+        erase()
         check("no network stored", creds() == (None, None), stop=True)
         t = to_firmware("setup", secs=90)   # the full firmware sees the erase at its next check-in (31 s measured, test116)
         check("no network: the setup firmware", t is not None, f"{t:.0f} s" if t else str(firmware()), stop=True)
@@ -110,14 +112,14 @@ try:
 
     # 4. erased on battery: the full firmware starts the setup firmware without USB (BLE started before any sleep:
     #    setup_boot.c), found and set up again
-    bl("provision erase", 2, r"erased|erase failed")
+    erase()
     t_erase = time.time()
     found("battery start: the phone finds the setup firmware", t_erase, "found_start", secs=120)
     setup_on_battery("battery start")
 
     # 5. USB-C 1 back in: still the full firmware, still silent, still present
     t_plug = hand("plug USB-C 1 back in", "plugged")
-    time.sleep(5)
+    usb_seen(True)                      # the board's own plug edge (no fixed 5 s)
     check("USB back in: the full firmware", firmware() == "full", str(firmware()))
     res = op("scan", secs=15)
     check("USB back in: silent", not res.get("found"), str(res.get("name")))
@@ -127,11 +129,17 @@ try:
                    f"Done {', '.join(f'{t:.1f}' for t in times['setup'])} s ({r.date})")
     r.sample("after the checks")
 except Stop as e:
+    stopped = str(e)
     log("stopped at:", e)
+else:
+    stopped = ""
 
 failed = [c for c in checks if not c[1]]
 summary = f"{len(checks) - len(failed)}/{len(checks)} checks pass."
 if failed:
     summary += " Failed: " + "; ".join(f"{n} ({d})" if d else n for n, _, d in failed) + "."
-r.finish(summary, not failed, switch_off=False)
-sys.exit(1 if failed else 0)
+if stopped:   # the later steps never ran (a missing hand step too): not a pass
+    summary += f" Stopped at: {stopped}."
+ok = not failed and not stopped
+r.finish(summary, ok, switch_off=False)
+sys.exit(0 if ok else 1)

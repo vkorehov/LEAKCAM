@@ -1,0 +1,32 @@
+08:43:48 test113-usb-setup-from-phone: 0 metric rows MISSING: none
+08:43:53 board: network erased
+08:43:58 CHECK pass no network stored: the setup firmware runs setup
+08:44:07 phone: relay 5.4 s
+08:44:07 relay box: phone (USB-C 1: take the cable off the bench, plug the phone in with a USB-C cable (detected on the phone))
+08:44:23 CHECK FAIL the plug opens the app's setup screen on this board, no network not within 15 s
+08:44:40 phone: app 16.7 s
+08:44:40 app:  Connecting to 7C3E8262B149… | Your phone now asks to pair with 7C3E8262B149: tap Pair. No PIN to typ | The LEAKCAM is now joining "<network>" to check it (up to a minute). | The router refused the password for "<network>" (code 33). Check it and try a
+08:44:40 CHECK FAIL a wrong password is named over the cable The router refused the password for "<network>" (code 33). Check it
+08:44:40 CHECK pass a wrong password stores nothing: still the setup firmware setup
+08:44:40 CHECK pass a failed setup leaves the board off this phone's list (Setup lists it for the retry) 
+08:44:52 phone: app 12.5 s
+08:44:52 app:  Connecting to 7C3E8262B149… | Your phone now asks to pair with 7C3E8262B149: tap Pair. No PIN to typ | The LEAKCAM is now joining "<network>" to check it (up to a minute). | Done. 7C3E8262B149 joined "<network>". 7C3E8262B149: online, Wi-Fi "<network>" · nex
+08:44:52 CHECK FAIL the app used the cable (no Bluetooth pairing) 5 screens
+08:44:52 CHECK pass the app says Done Done. 7C3E8262B149 joined "<network>".
+7C3E8262B149: online, Wi-Fi 
+08:45:03 BL616 port missing: the VM's USB controller reset (xhci unbind/bind)
+08:45:08 CHECK pass the network stored on the board 
+08:45:08 CHECK pass the board back on the full firmware full
+08:45:08 CHECK pass the server sees the board online 0 s
+08:45:08 board: network erased again, the phone stays plugged
+08:45:41 CHECK FAIL erased with the phone in: the setup screen with the board again 30.4 s
+08:46:05 phone: app 24.4 s, error no setup screen; on screen: 
+08:46:05 app: no setup screen; on screen:  
+08:46:05 CHECK FAIL the cable pulled during the check: the app does not claim Done no error
+08:46:36 CHECK FAIL the board finished the check alone: network stored, online setup, 30 s
+08:47:03 CHECK FAIL a set-up board on the cable: the plug opens Setup, the board answers no `usb board` line within 15 s
+08:47:03 CHECK FAIL a set-up board on the cable: Setup does not list it 
+08:47:08 phone: relay 5.0 s
+08:47:08 relay box: bench (USB-C 1: take the phone off, plug the bench cable back in)
+08:47:12 sample after the setup {'board': None, 'bl_mem': (136148, 122884, 127048, 101, 73644, 17, 0)}
+08:47:16 test113-usb-setup-from-phone: FAIL; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

@@ -1,8 +1,9 @@
 # test113: full setup from the phone app over a USB-C cable (high level, product firmware)
 
-Status: **pass** (2026-11-07 07:48-07:51, BL616 pair 0.6+g5fc1138-dirty (the code of 58bf10c), K230 0.6+g98e16d7: 18/18, the cable screen
-5.18 s after the plug; step 12, Change Wi-Fi on the set-up board over the cable: SETUP -> the setup firmware's relay
-back 2.6 s, Done 1.2 s later, the full firmware's relay back 4.6 s after Done with the Done screen kept). The phone's plug opens LEAKCAM Setup on the cable screen of the board (4.3 s), the
+Status: **pass** (2026-11-08 08:14-08:16, the new screens (DESIGN.md 5.3.4): 15/15, Setup open 1.2 s after the plug;
+a wrong password leaves the board off the phone's list and the retry gets Done; a board set up from this phone, on the
+cable, is not listed by Setup (step 12, which changed Wi-Fi over the cable until 2026-11-07: changes go through the
+server now). Earlier results: HISTORY.md). The phone's plug opens LEAKCAM Setup with the board on the cable, the
 app sets the network up over the cable (no Bluetooth) to Done, the board saves it, goes back to the full firmware and is
 online at the server; product BL616 pair + product K230 image. Low level: test043 (K230 USB device), test044 (the
 phone as host), test045 (link frames reach the K230 program).
@@ -38,19 +39,18 @@ cable into USB-C 1, BLE not used: on the **product firmware** pair (BL616 setup 
 9. Hand: USB-C 1 back to the bench.
 10. **Battery over the cable (DESIGN.md 5.3.9, test131):** the `ID` answer carries the battery and USB power
     (`ID <id> <stored> <mV> 1 <setup|full>`); the cable screen's row shows the battery icon green, filled to the board's `battery`.
-11. **The setup in the metrics (DESIGN.md 5.3.10, tests/test048):** the credential check of step 5 is itself a
+11. **The setup in the metrics (DESIGN.md 5.3.10, tests/test136):** the credential check of step 5 is itself a
     check-in (the setup firmware's, the K230 still relaying): `chg=1`, `usbw=1` (the plug woke the setup firmware),
     `ks` = the relays that ended before it (the bench cable's when it was pulled: 1), not the running one; it starts the
     counters again. The full firmware's first check-in after step 6: `ks=1`, `klast=1`, `kms` ~
     the relay's rails-on time, `kver` (the K230 program that relayed), `sw=1`, `usbw=0`. The wrong password of step 7
     never reaches the server (no sample, `fails` +1 in the next one); `t`/`rh`/`probe` in every sample.
-12. **Change Wi-Fi on a set-up board over the cable (DESIGN.md 5.3.4):** the board on the full firmware, the phone in
-    USB-C 1: the app opens on the cable screen (`creds 1`); one Send: the app reads `ID ... full`, sends `PIN`,
-    `SETUP`, rides out the switch (the relay gone and back with the setup firmware, `ID ... setup`), then `PIN`,
-    `SSID`, `PSK`, `COMMIT`; Done; the board back on the full firmware, online; when its relay comes back on the cable
-    the Done screen stays. Phone (2026-11-07): the link back on the setup firmware 2.6 s after it went, Done 1.2 s later.
-    Bench run (the PC as the phone, tools/test-runner/cable.py): the relay gone 0.9 s after SETUP's OK, back 6.6 s
-    (the PC's enumeration + udev), SAVED 1.2 s later, 8.0 s in all.
+12. **A set-up board on the cable is not listed (DESIGN.md 5.3.4, user 2026-11-07: Setup is for new devices; one of
+    mine changes its Wi-Fi through the server):** the board on the full firmware and on this phone's list; the
+    phone's port roles flipped as a re-plug: the plug opens Setup, the board answers (`usb board <id> creds 1`, 0.2 s),
+    no row for it. The cable's `SETUP` path (the PC as the phone, tools/test-runner/cable.py) stays for the bench.
+13. **A failed setup adds nothing (2026-11-08):** the PIN's fetch makes the phone the board's user; after the wrong
+    password (step 7) the app takes it back, so the board is still new and the retry (step 3) has its row.
 
 ## Needs (build features and dependencies)
 

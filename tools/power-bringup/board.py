@@ -87,23 +87,40 @@ def xhci_reset():
 
 
 def bl(c, secs=1.5, until=None):
-    for i in range(30):
+    for i in range(150):                # 30 s, polled every 0.2 s (no fixed waits, user 2026-11-09)
         try:
             fd = openp(BL_PORT)
             break
         except OSError:
-            if i == 10 and "hub_ext_port_status failed" in subprocess.run(
+            if i == 50 and "hub_ext_port_status failed" in subprocess.run(
                     ["sudo", "-n", "dmesg"], capture_output=True, text=True).stdout[-2000:]:
                 xhci_reset()        # only the controller's fault: a sleeping BL616 has no port either
-            time.sleep(1)
+            time.sleep(0.2)
     else:
         log("BL616 port missing")
         return ""
-    if i >= 10:
+    if i >= 50:
         cmd(fd, "", 1)          # the first command after a reconnect got lost once (the erase, 2026-11-06)
     r = cmd(fd, c, secs, until)
     os.close(fd)
     return r
+
+
+def bl_back(secs=60):
+    """after a BL616 reboot or switch: its port gone (up to 3 s), then back with a shell that answers; seconds, None if
+    not in secs. In place of fixed sleeps after `reboot` (user 2026-11-09: "no need to wait")"""
+    t0 = time.time()
+    while time.time() - t0 < 3 and os.path.exists(BL_PORT):
+        time.sleep(0.05)
+    while time.time() - t0 < secs:
+        if os.path.exists(BL_PORT):
+            try:
+                if re.search(r"leakcam-build|/>", bl("slot", 1, r"leakcam-build \S+")):
+                    return time.time() - t0
+            except OSError:
+                pass
+        time.sleep(0.1)
+    return None
 
 
 def k230():

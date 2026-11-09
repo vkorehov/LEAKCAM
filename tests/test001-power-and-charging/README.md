@@ -46,7 +46,7 @@ Rails within their limits; the cell charges at the set current and terminates (D
 - USB detected (PGOOD low) 8 of 8, K230 boots on the charger rail (run.py, 2026-10-25).
 
 - D1 (/CHG) lights only during the first charge cycle after USB is plugged in. A top-up charge started later (the
-  cell below the ~4.1 V restart threshold, e.g. after test105's full load) runs at ~0.44 A with D1 dark; a cell at
+  cell below the ~4.1 V restart threshold, e.g. after test051's full load) runs at ~0.44 A with D1 dark; a cell at
   4.15-4.17 V after such a run does not charge at all until it falls below the threshold (2026-10-30). "Full" for a
   current reading = the input back at the BL616-only level with the K230 off, not "D1 off".
 

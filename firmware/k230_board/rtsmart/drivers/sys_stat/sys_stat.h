@@ -1,5 +1,5 @@
 /*
- * /dev/sysstat: the kernel's memory for the product program's STATUS frame (DESIGN.md 5.3.10, tests/test048). One
+ * /dev/sysstat: the kernel's memory for the product program's STATUS frame (DESIGN.md 5.3.10, tests/test136). One
  * read() of struct sys_stat; the kernel driver (sys_stat.c) and the program (k230_app) share this header.
  */
 #ifndef LEAKCAM_SYS_STAT_H

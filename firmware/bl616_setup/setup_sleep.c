@@ -3,6 +3,8 @@
  * (tests/test120, test121; skill bl616-ble-low-power).
  */
 #include "setup_sleep.h"
+#include "evlog.h"
+#include "blecore.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -27,7 +29,8 @@
 #include "wdg_guard.h"
 
 static volatile struct setup_sleep_stats st;
-static bool usb_off, sleeping;
+static bool usb_off, sleeping, paused;
+static uint32_t window_ble;     /* BLE wakes since the sleep window began */
 static TaskHandle_t usb_plug_handle;
 
 /* -Wl,--wrap=vApplicationSleep (CMakeLists.txt): the SDK's idle hook (tickless_accurate.c) behind a BLE check and the
@@ -55,6 +58,43 @@ void __wrap_vApplicationSleep(TickType_t idle)
 int bflb_pm_app_check(void)
 {
     return pm_pbufc_check();
+}
+
+/* The parked BLE controller (2026-11-08/09, skill bl616-ble-low-power 5): asleep with the host advertising, the
+ * controller never woke the chip (one PDS sleep per window, LPFW active 0 ms) and no phone found the board, on any
+ * firmware, until a power loss. Every advertising event wakes the app (LPFW_WAKEUP_BLE), so none in WEDGE_CHECK_MS
+ * while asleep and advertising is the wedge: logged once per window (EV_WEDGE 1, the evlog after the next plug). The
+ * check's own timer wakes the chip once per period. */
+#define WEDGE_CHECK_MS 30000
+static TimerHandle_t wedge_timer;
+static uint32_t wedge_ble, wedge_wakes;
+static bool wedge_logged;
+
+static void wedge_check(TimerHandle_t t)
+{
+    (void)t;
+    uint32_t ble = st.ble_wakes, wakes = st.exited;
+    if (sleeping && !paused && ble_pairing_sleep_ok() && ble == wedge_ble && !wedge_logged) {
+        wedge_logged = true;
+        st.wedges++;
+        evlog_add(EV_WEDGE, 1, wakes - wedge_wakes);
+        blecore_dump(BLECORE_PARKED);
+    }
+    wedge_ble = ble;
+    wedge_wakes = wakes;
+}
+
+static void wedge_watch(bool on)
+{
+    if (wedge_timer == NULL &&
+        (wedge_timer = xTimerCreate("wedge", pdMS_TO_TICKS(WEDGE_CHECK_MS), pdTRUE, NULL, wedge_check)) == NULL)
+        vAssertCalled();
+    if (on) {
+        wedge_ble = st.ble_wakes;
+        wedge_wakes = st.exited;
+    }
+    if ((on ? xTimerReset(wedge_timer, 0) : xTimerStop(wedge_timer, 0)) != pdPASS)
+        vAssertCalled();
 }
 
 static void awake(void)
@@ -92,16 +132,24 @@ void setup_sleep_begin(bool usb_too)
         printf("setup: USB power present: no sleep, the full firmware's case\r\n");
         return;
     }
+    evlog_add(EV_SLEEP, 1, 0);
+    blecore_dump(BLECORE_SLEEP_BEGIN);
     sleeping = true;
+    paused = false;
+    window_ble = st.ble_wakes;
+    wedge_logged = false;
+    wedge_watch(true);
     wdg_guard_feed_hold(true);
     pm_enable_tickless();
 }
 
 void setup_sleep_pause(bool pause)
 {
+    paused = pause;
     if (pause) {
         awake();
     } else if (sleeping) {
+        wedge_watch(true);          /* a full period from now: the advertising restarts after a connection */
         wdg_guard_feed_hold(true);
         pm_enable_tickless();
     }
@@ -109,6 +157,9 @@ void setup_sleep_pause(bool pause)
 
 void setup_sleep_end(void)
 {
+    wedge_watch(false);
+    evlog_add(EV_SLEEP, 0, st.ble_wakes - window_ble);
+    blecore_dump(BLECORE_SLEEP_END);
     sleeping = false;
     awake();
 }
@@ -143,6 +194,7 @@ static void usb_plug_task(void *arg)
     while (1) {
         /* asleep: only the plug's wake (a 1 s timeout would wake the chip every second) */
         if (ulTaskNotifyTake(pdTRUE, sleeping ? portMAX_DELAY : pdMS_TO_TICKS(1000))) {
+            evlog_add(EV_USB, 1, 0);             /* the plug's wake */
             setup_sleep_end();
             setup_usb_plugged();
             usb = true;
@@ -152,12 +204,22 @@ static void usb_plug_task(void *arg)
             continue;
         bool now = setup_usb_present();
         if (usb && !now) {
+            evlog_add(EV_USB, 0, 0);
             usb_setup_end("USB unplugged");      /* the cable setup's K230 off at once (battery) */
-            if (ble_pairing_connected())
+            evlog_add(EV_MARK, 1, 0);            /* the K230 stop asked */
+            if (ble_pairing_connected()) {
+                evlog_add(EV_MARK, 2, 0);        /* under a phone */
                 continue;                 /* under a phone: read again once it has left */
+            }
             printf("setup: USB power gone: advertising every %d ms, sleep\r\n", SETUP_ADV_SLEEP_MS);
             ble_pairing_adv_interval(SETUP_ADV_SLEEP_MS);
-            setup_sleep_begin(false);
+            evlog_add(EV_ADV, ble_pairing_sleep_ok(), SETUP_ADV_SLEEP_MS);   /* arg: advertising per the host */
+            /* the sleep 1 s after the advertising restart, never at once (bugs/bug-007, skill bl616-ble-low-power
+             * case G) */
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            if (!setup_usb_present() && !ble_pairing_connected())
+                setup_sleep_begin(false);
+            now = setup_usb_present();
         }
         usb = now;
     }
@@ -269,7 +331,10 @@ static int lp_exit(void *arg)
     if (c > st.wdg_exit_max)
         st.wdg_exit_max = c;
 
-    if (bl_lp_get_wake_reason() & LPFW_WAKEUP_WIFI_BROADCAST) {
+    uint32_t why = bl_lp_get_wake_reason();
+    if (why & LPFW_WAKEUP_BLE)
+        st.ble_wakes++;
+    if (why & LPFW_WAKEUP_WIFI_BROADCAST) {
         vTaskNotifyGiveFromISR(rxl_process_task_hd, &woken);
         portYIELD_FROM_ISR(woken);
     } else {

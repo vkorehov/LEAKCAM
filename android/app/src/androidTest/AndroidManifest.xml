@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- a second runner that instruments the test APK itself: its runs leave the app (com.leakcam.setup) running, where
+     the main runner restarts it. Screen.kt (the screen dump for tests/test135) runs under it -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <instrumentation
+        android:name="com.leakcam.setup.SelfRunner"
+        android:label="LEAKCAM screen dump"
+        android:targetPackage="com.leakcam.setup.test" />
+</manifest>

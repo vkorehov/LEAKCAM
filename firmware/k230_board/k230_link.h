@@ -39,7 +39,7 @@
  *                                     carried as ;b= (DESIGN.md 5.3.9);
  *                                     the program's version, the die temperature (-1000 = none) and the kernel's
  *                                     memory (/dev/sysstat, 0 = none): the BL616 keeps them for its check-in
- *                                     (DESIGN.md 5.3.10, tests/test048)
+ *                                     (DESIGN.md 5.3.10, tests/test136)
  *                 DONE,<cam0>,<cam1>  a leak check finished (k230_app/job.c, DESIGN.md 5.3.12): each camera same, light,
  *                                     changed or new; the BL616 keeps it for the check-in, checks in at once on a
  *                                     change and cuts the power on battery

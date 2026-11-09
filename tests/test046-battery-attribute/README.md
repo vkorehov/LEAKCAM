@@ -1,6 +1,6 @@
 # test046: the K230's battery reading on every link frame, kept by the BL616 (low level: the link, both firmwares)
 
-Status: **partly run** (2026-11-06, from test048's relay: test048-checkin-metrics/relay_*.log): step 1 on USB power
+Status: **partly run** (2026-11-06, from test136's relay: test136-checkin-metrics/relay_*.log): step 1 on USB power
 pass (the K230 read 3737 mV, the BL616 kept nothing: `battery -1 mV kept`), step 6 pass (start t 584 ms -> battery
 t 585 ms: 1 ms), step 7 pass (STATUS at K230 uptime 0, 60, 120, 180 s with every field). Steps 2-5 need the board
 on battery (USB-C 1 out by hand): open. **The unplug** (DESIGN.md 5.3.11, full firmware 0.6+g98e16d7, 2026-11-06
@@ -36,7 +36,7 @@ USB-C 1 out by hand (the cell in), the console stays on PR1.
 7. **The periodic STATUS** (every 60 s, k230_link.h): in a session held 3 min the BL616 logs `k230: STATUS <uptime s>,
    <version>,<die x10>,<heap>,<heap min>,<pages>, battery <mV> mV kept` each minute (no mode field since 2026-11-06,
    DESIGN.md 5.3.9), each frame with a fresh `;b=` (on
-   battery: the kept value follows the K230's). The other fields reach the check-in: tests/test048 step 11.
+   battery: the kept value follows the K230's). The other fields reach the check-in: tests/test136 step 11.
 
 ## Pass
 

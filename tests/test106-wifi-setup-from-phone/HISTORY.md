@@ -4,6 +4,36 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-09 (run.py, 42 s): pass
+
+5/5 checks pass (on battery).
+
+
+### Automated run 2026-11-09 (run.py, 212 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 7.3 s; repeats 7.2-7.2 s.
+
+
+### Automated run 2026-11-09 (run.py, 6 s): **FAIL**
+
+not run: not the full firmware with the network.
+
+
+### Automated run 2026-11-09 (run.py, 386 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 48.9 s; repeats 48.7-48.7 s.
+
+
+### Automated run 2026-11-08 (run.py, 316 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 22.9 s; repeats 23.1-23.1 s.
+
+
+### Automated run 2026-11-08 (run.py, 630 s): pass
+
+29/29 checks pass. First setup (app opened -> Done) 22.8 s; repeats 22.7-24.5 s.
+
+
 ### Automated run 2026-11-07 (run.py, 623 s): pass
 
 29/29 checks pass. First setup (app opened -> Done) 23.3 s; repeats 23.1-26.1 s.
@@ -192,6 +222,8 @@ idempotent handler, the timeout counts from a state change). First setup (app op
 No run yet. Status before the step 6 rewrite: **planned** (2026-10-27).
 
 ## Obstacles
+
+- --battery needs the product pair in the full firmware with the real network stored (2026-11-09, automated run)
 
 - --battery needs the product pair in the full firmware with the real network stored (2026-11-04, automated run)
 

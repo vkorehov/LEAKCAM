@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""test049: the K230 leak job with simulated cameras, on USB power (the bench; no hand, no phone). Each step sets the
+"""test137: the K230 leak job with simulated cameras, on USB power (the bench; no hand, no phone). Each step sets the
 scene on the K230 console (/sdcard/leakcam/sim), asks a check on the BL616 console (`leak check`, the RTC's path:
 CHECK to the running K230) and reads the job's DONE there; step 4 also reads the server's metrics.
-    tests/test049-k230-leak-job/run.py
+    tests/test137-k230-leak-job/run.py
 """
 import json
 import os
@@ -54,6 +54,22 @@ if fw != "full":
     r.finish(f"not run: the board runs {fw or 'nothing'}, not the full firmware", False, switch_off=False)
     sys.exit(1)
 r.fd = openp(K230_PORT)
+
+
+def restore():
+    """the simulated scene back to same and the leak it opened cleared at the server, on every way out: a run stopped
+    between its steps left cam0=object, and every later leak check of every test reported a leak - the alert on the
+    phone and the 1-min wake mode overriding test134's and test108's intervals (2026-11-09)"""
+    try:
+        r.k(f"rm {DIR}/sim", 2)
+        from phone import board_id, clear_leak
+        clear_leak(board_id())
+    except Exception as e:
+        log(f"restore: {e!r}")
+
+
+import atexit   # noqa: E402
+atexit.register(restore)
 t = time.time()
 while "one running" in bl("leak", 2) and time.time() - t < 20:   # the K230's own first check at its start
     time.sleep(1)

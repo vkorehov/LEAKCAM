@@ -1,6 +1,7 @@
 """The Android bench phone for the BLE tests (test040, test106): adb over Wi-Fi, the instrumented BleOp
 (android/app/src/androidTest), installs that answer Play Protect, and the phone made ready for a run (skill
 android-bench-phone)."""
+import base64
 import hashlib
 import json
 import os
@@ -25,6 +26,27 @@ PHONE_FILE = os.path.expanduser("~/.leakcam_phone")   # "<ip>:<port>" of the pho
 # the file's, tried on both
 PHONE_IPS = ("192.168.1.141", "192.168.1.163")
 SERVER = "http://192.168.1.159:8090"   # the presence server (server/, the Pi): the board's pairing PIN comes from it
+
+
+def server_up(secs=15):
+    """seconds until the server answers again (after `systemctl start`), None if not in secs; in place of a fixed
+    sleep (user 2026-11-09: "no need to wait")"""
+    t0 = time.time()
+    while time.time() - t0 < secs:
+        try:
+            with urllib.request.urlopen(SERVER + "/", timeout=2):
+                return time.time() - t0
+        except OSError:
+            time.sleep(0.1)
+    return None
+
+
+def clear_leak(dev):
+    """the board's open leak cleared at the server (POST /v1/devices/<id>/clear, the all-clear): an open leak holds
+    the board in the 1-min wake mode, which overrides every interval a test sets (test108's own leak check opened one
+    and test134, test108 failed after it, 2026-11-09)"""
+    if dev:
+        urllib.request.urlopen(urllib.request.Request(f"{SERVER}/v1/devices/{dev}/clear", method="POST"), timeout=10)
 
 
 def intervals(dev, checkin=0, leakcheck=0):
@@ -83,6 +105,11 @@ def adb(*a, secs=180):
     return subprocess.run(["adb", *a], capture_output=True, text=True, timeout=secs).stdout
 
 
+_dim = []
+_awake = [0.0]
+AWAKE_S = 30
+
+
 def awake():
     """the screen on and the lock screen gone: on battery `svc power stayon` does not hold, the phone dozed after its
     timeout and Wi-Fi adb stopped answering (test040, 2026-11-04); the bench phone has a PIN lock (2026-11-05), typed
@@ -91,20 +118,35 @@ def awake():
     def locked():
         return "mIsShowing=true" in adb("shell", "dumpsys", "window", secs=15)   # Samsung: no isKeyguardShowing
 
+    def unlocked():
+        # the notification shade left open hides the app from UI Automator: "no setup screen; on screen: " with the
+        # focus on NotificationShade (test129 --battery, 2026-11-08)
+        adb("shell", "cmd", "statusbar", "collapse", secs=10)
+        if not _dim:                   # the screen at minimum brightness while testing: less power (user 2026-11-08)
+            adb("shell", "settings", "put", "system", "screen_brightness_mode", "0", secs=10)
+            adb("shell", "settings", "put", "system", "screen_brightness", "1", secs=10)
+            _dim.append(1)
+        _awake[0] = time.time()
+        return True
+
+    # unlocked less than AWAKE_S ago: the screen stays on (stay_on_while_plugged_in / its timeout is longer): the four
+    # adb calls cost ~1.5 s per op, a pause between every relay step (user 2026-11-08: "again very long pauses")
+    if time.time() - _awake[0] < AWAKE_S:
+        return True
     try:
         adb("shell", "input", "keyevent", "KEYCODE_WAKEUP", secs=10)
         adb("shell", "wm", "dismiss-keyguard", secs=10)
         pin = (Path.home() / ".leakcam_phone_pin").read_text().strip()
         for _ in range(3):
             if not locked():
-                return True
+                return unlocked()
             adb("shell", "input", "swipe", "540", "1800", "540", "600", "300", secs=10)
-            time.sleep(1)
+            time.sleep(0.3)
             adb("shell", "input", "keyevent", *[f"KEYCODE_{d}" for d in pin], "KEYCODE_ENTER", secs=15)
-            for _ in range(5):                  # right after the PIN it still reads locked for a moment (2026-11-07)
-                time.sleep(1)
+            for _ in range(25):                 # right after the PIN it still reads locked for a moment (2026-11-07)
+                time.sleep(0.2)
                 if not locked():
-                    return True
+                    return unlocked()
         return False
     except subprocess.TimeoutExpired:
         return False                            # the op's own call then fails, logged
@@ -141,6 +183,17 @@ def op(name, **kw):
     limit = int(kw.get("secs", 10)) + 60
     t0 = time.time()
     awake()
+    if name == "relay":     # no secret in it: on the command line, without the args file's push + rm (~1 s)
+        extra = [x for k, v in kw.items() for x in ("-e", k, str(v))]
+        try:
+            out = adb("shell", "am", "instrument", "-w", "-r", "-e", "op", name, *extra, RUNNER, secs=limit)
+        except subprocess.TimeoutExpired as e:
+            out = ""
+            log(f"phone: {name} no answer in {e.timeout:.0f} s")
+        m = re.search(r"INSTRUMENTATION_STATUS: result=(.*)", out)
+        res = json.loads(m.group(1)) if m else {"error": "no result from the phone"}
+        log(f"phone: {name} {time.time() - t0:.1f} s" + (f", error {res['error']}" if res.get("error") else ""))
+        return res
     fd, local = tempfile.mkstemp(suffix=".json")          # mode 600
     try:
         with os.fdopen(fd, "w") as f:
@@ -164,6 +217,21 @@ def op(name, **kw):
     return res
 
 
+SCREEN_RUNNER = "com.leakcam.setup.test/com.leakcam.setup.SelfRunner"
+
+
+def screen_xml():
+    """the screen's view tree (UI Automator XML) from the test APK's Screen dump: it waits at most 300 ms for an idle
+    screen, `uiautomator dump` up to 10 s (the setup screen's spinner never idles: 10 s per dump, test135 2026-11-08),
+    and it leaves the app running; `uiautomator dump` if that fails"""
+    out = adb("shell", "am", "instrument", "-w", "-r", "-e", "class", "com.leakcam.setup.Screen", SCREEN_RUNNER, secs=30)
+    m = re.search(r"INSTRUMENTATION_STATUS: xml=(\S+)", out)
+    if m:
+        return base64.b64decode(m.group(1)).decode("utf-8", "replace")
+    adb("shell", "uiautomator", "dump", "/sdcard/ui.xml", secs=30)
+    return adb("shell", "cat", "/sdcard/ui.xml", secs=30)
+
+
 def product():
     """True on a BL616 product firmware (firmware/bl616_full or bl616_setup: `provision`), False on the test firmware
     (bl616_powertest: `pt_ble`)"""
@@ -178,7 +246,7 @@ def firmware():
         try:
             m = re.search(r"leakcam-build (\S+)", bl("slot", 3, r"leakcam-build \S+"))
         except OSError:                         # the port went with a slot switch mid-write (EIO, test119 2026-11-03)
-            time.sleep(2)
+            time.sleep(0.5)
             continue
         if m:
             return m.group(1)
@@ -196,17 +264,73 @@ def to_firmware(want, cmd=None, secs=60):
         if fw and cmd:
             bl(cmd, 1)
             cmd = None
-        time.sleep(2)
+        time.sleep(0.3)
     return None
 
 
 HAND_FILE = os.path.expanduser("~/.leakcam_hand")
 
 
+RELAY = "A4:06:E9:9D:30:7E"     # the bench relay box: HM-10 LCRELAY (skill leakcam-bench-relays)
+# PIO LOW = relay on = phone side. K1 PIO2 D+ (green), K2 PIO3 D- (white), K3 PIO4 CC (yellow), K4 PIO5 VBUS (red).
+# Unplug = K4 + K1 + K2 at once (VBUS, D+, D- onto the phone side, where nothing answers while CC stays on the bench):
+# the bench port gives 5 V always (a CC-only unplug left the board powered), and with D+/D- still on the PC a
+# VBUS-only unplug kept the board a live USB device on its cell - console up, the setup firmware never took its
+# unplug path (test116 2026-11-08: no adverts in 60 s). HMSoft sets the pins back to its power-on state (BEFC) when
+# the phone disconnects, so every step first stores its end state as BEFC.
+RELAY_STEPS = {                 # phases of relays to switch on (K1 D+, K2 D-, K3 CC, K4 VBUS); 1 s between phases
+    "unplugged": [{1, 2, 4}], "battery": [{1, 2, 4}],
+    "plugged": [set()], "usb": [set()],
+    "phone": [{1, 2, 4}, {1, 2, 3, 4}],     # unplug, then CC to the phone: it sees the board, powers and enumerates it
+    "bench": [{1, 2, 4}, set()],            # CC off the phone first (its 5 V stops), then every relay off = the bench
+}
+
+
+def bits(on):
+    """HMSoft's PIO2..PIOB word (10 bits, leftmost PIO2; 1 = HIGH = relay off) with relays on (K1..K4 = PIO2..5)"""
+    return "%03X" % sum(0x200 >> (k - 1) for k in (1, 2, 3, 4) if k not in on)
+
+
+relay_left = [None]                     # the relays left on by the last relay() of this process (None: not used)
+
+
+def plug_back():
+    """USB-C 1 back on the bench if this process left it anything else: a test stopped between its unplug and its
+    plug left the board half-plugged (VBUS off, the data lines back) and the next test's setup firmware slept on USB
+    (2026-11-09, test129 --battery -> test116); Run.finish() calls it"""
+    if relay_left[0]:
+        relay([set()])
+
+
+def relay(phases, gaps=None, times=None):
+    """the relay box over BLE from the phone (BleOp op relay): BEFC = the end state (kept after the disconnect), then
+    one AT+MPIO per phase - every relay of a phase switches at once (separate AT+PIOnv writes switched them ~0.5 s
+    apart, 2026-11-08) - gaps[i] ms after phase i's reply (default 1000 each; each command also waits for its reply,
+    ~one BLE connection interval); times: a list that gets each phase's reply time (phone ms); True when every command
+    was answered as asked"""
+    gaps = gaps or [1000] * (len(phases) - 1)
+    cmds = ["AT+BEFC" + bits(phases[-1])]
+    for i, on in enumerate(phases):
+        cmds += ([f"wait:{gaps[i - 1]}"] if i else []) + ["AT+MPIO" + bits(on)]
+    want = ["OK+Set:" + c[-3:] for c in cmds if c.startswith("AT+")]
+    relay_left[0] = phases[-1]              # what the box holds after this op (BEFC), for the end of the test
+    res = op("relay", address=RELAY, cmds=",".join(cmds), secs=20 + sum(gaps) // 1000)
+    replies = res.get("replies", [])
+    if times is not None:
+        times += [r.get("ms", 0) for r in replies if r.get("cmd", "").startswith("AT+MPIO")]
+    return [r.get("reply", "") for r in replies] == want
+
+
 def hand(action, word, secs=900):
-    """a hand step (USB-C 1 out / in): logged as ACTION, done once HAND_FILE holds word (`echo <word> > ~/.leakcam_hand`,
-    written by whoever watches the bench); the time it was done, None if not in secs"""
+    """a hand step (USB-C 1 out / in, bench <-> phone): done by the relay box when it knows the word (RELAY_STEPS),
+    else (or if the box does not answer) logged as ACTION and done once HAND_FILE holds word (`echo <word> >
+    ~/.leakcam_hand`, written by whoever watches the bench); the time it was done, None if not in secs"""
     from board import log
+    if word in RELAY_STEPS:
+        if relay(RELAY_STEPS[word]):
+            log(f"relay box: {word} ({action})")
+            return time.time()
+        log(f"relay box: no answer for {word}, falling back to hands")
     try:
         os.remove(HAND_FILE)
     except FileNotFoundError:
@@ -241,6 +365,9 @@ def phone_id():
     """the app's phone id (its Android ID, one per app signing key: not `settings get secure android_id`), as the app
     logs it at its start ("phone <id>"); the server knows the phone's users by it (DESIGN.md 5.3.5)"""
     if not _phone:
+        awake()                                 # locked after a plug: the app never started (test113, 2026-11-08)
+        # running already (a board's plug launched it): am start only brings it to the front, no "phone" line
+        adb("shell", "am", "force-stop", "com.leakcam.setup")
         adb("logcat", "-c")
         adb("shell", "am", "start", "-n", "com.leakcam.setup/.MainActivity")
         t0 = time.time()
@@ -299,7 +426,7 @@ def online(dev):
 def creds():
     """(ssid len, crc), (psk len, crc) as stored on the BL616 (`provision` / `pt_ble creds`, never the passphrase); None
     for a missing key"""
-    for _ in range(3):                          # a first command after the port opened can go unanswered (test048)
+    for _ in range(3):                          # a first command after the port opened can go unanswered (test136)
         out = bl("provision" if product() else "pt_ble creds", 2, r"wifi_psk[^\n]*\n")
         if "wifi_psk" in out:
             break
@@ -316,6 +443,9 @@ def erase(tries=3):
     from board import log
     for i in range(tries):
         if "credentials and remembered AP erased" in bl("provision erase", 2, r"erased|erase failed"):
+            # the full firmware sees the erase at its next check-in (up to 60 s of an idle bench, user 2026-11-09:
+            # "why phone is idle?"): one asked at once; the setup firmware has no `presence` (not found, at once)
+            bl("presence now", 1, r"check-in now|not found")
             return True
         log(f"board: provision erase not answered (try {i + 1} of {tries})")
     return False
@@ -325,11 +455,16 @@ def want(ssid, psk):
     return tuple((len(v.encode()), zlib.crc32(v.encode())) if v is not None else None for v in (ssid, psk))
 
 
+GRACE_S = 10                                    # Play Protect's dialog after an install over Wi-Fi adb: up to this late
+
+
 def install(apk, notes):
     """adb install, answering Play Protect's "verify this app" dialog on the phone (an install over USB waits for it):
     its "install without checking" button is tapped from a UI dump (2026-10-28, user: no hand on the phone); the test
-    APK's dialog says "Не проверять" (2026-10-30)"""
+    APK's dialog says "Не проверять" (2026-10-30). Over Wi-Fi adb the install returns first and the dialog ("Проверить
+    безопасность приложения?") comes after it: watched GRACE_S more (2026-11-08)"""
     done = threading.Event()
+    answered = threading.Event()
 
     def press():
         while not done.wait(1):
@@ -342,16 +477,67 @@ def install(apk, notes):
                 x1, y1, x2, y2 = map(int, m.groups())
                 adb("shell", "input", "tap", str((x1 + x2) // 2), str((y1 + y2) // 2))
                 notes.append("Play Protect dialog answered at install")
+                answered.set()
 
     t = threading.Thread(target=press, daemon=True)
     t.start()
     adb("install", "-r", "-g", "-t", apk)       # -g: the Bluetooth permissions granted at install
+    answered.wait(GRACE_S)
     done.set()
     t.join()
 
 
+def usb_seen(plugged, secs=5):
+    """seconds until the board's evlog shows USB-C 1 plugged / unplugged as its latest USB event (the relay switched:
+    the firmware's own edge, in place of a fixed sleep; user 2026-11-09), None if not in secs or no console"""
+    t0 = time.time()
+    want = "plugged" if plugged else "unplugged"
+    while time.time() - t0 < secs:
+        log = re.sub(r"\x1b\[[0-9;]*m", "", bl("evlog", 2, r"evlog: (?:empty|\d+ events[\s\S]*?/>)|not found"))
+        usb = re.findall(r" usb +(plugged|unplugged)", log)
+        if usb and usb[-1] == want:
+            return time.time() - t0
+        time.sleep(0.1)
+    return None
+
+
+def wedge():
+    """None, or why the board's BLE core is wedged (skill bl616-ble-low-power 5): a WEDGE in the retained evlog (the
+    setup firmware's detector: no advertising wake in a sleep window, or a BLE start stuck), or the live core of the
+    setup firmware dead (`blecore`: 0x28000100 reads 0 or keeps bit 31, healthy 0000f255-like). Only the EN pin or a
+    power loss clears it, so a test on a wedged board fails for nothing (2026-11-08: test116 "not found" for hours)"""
+    from board import BL_PORT
+    if not os.path.exists(BL_PORT):             # on the cell: no console; the next plugged start checks it
+        return None
+    clean = lambda t: re.sub(r"\x1b\[[0-9;]*m", "", t)
+    log = clean(bl("evlog", 3, r"evlog: (?:empty|\d+ events[\s\S]*?/>)|not found"))
+    hits = [l.strip() for l in log.splitlines() if " WEDGE " in l]
+    if hits:
+        return ("BLE core wedged (evlog: " + hits[-1] + "): power-cycle the board (cell out and USB-C off ~10 s, which "
+                "also clears the evlog), or tap EN and then `evlog clear`")
+    # right after a wake a healthy core reads 0 too (test139, 2026-11-09): dead = 0 or bit 31 in every read for 2 s,
+    # polled 0.1 s apart; a live core answers at the first read (no fixed wait, user 2026-11-09)
+    t0, vals = time.time(), []
+    while True:
+        m = re.search(r"BLE_0x100 +([0-9a-f]{8})", clean(bl("blecore", 3, r"BLE_0x100 +[0-9a-f]{8}|not found")))
+        if not m:
+            return None                         # the full firmware (no BLE) or the test firmware: no live check
+        v = int(m.group(1), 16)
+        if v and not v >> 31:
+            return None
+        vals.append(v)
+        if time.time() - t0 > 2:
+            break
+        time.sleep(0.1)
+    return f"BLE core wedged (0x28000100 read {len(vals)} times in 2 s: {', '.join('%08x' % v for v in vals[-3:])}): " \
+           "power-cycle the board, or tap EN"
+
+
 def ready(notes):
-    """the phone made ready for a run; None, or why it cannot run"""
+    """the phone made ready for a run, and the board's BLE core not wedged (wedge()); None, or why it cannot run"""
+    why = wedge()
+    if why:
+        return why
     if "device" not in adb("get-state", secs=10) and os.path.exists(PHONE_FILE):
         ip, _, port = open(PHONE_FILE).read().strip().rpartition(":")
         for host in dict.fromkeys((ip, *PHONE_IPS)):
@@ -364,6 +550,10 @@ def ready(notes):
                 break
     if "device" not in adb("get-state", secs=10):
         return f"no Android phone on adb: Wireless debugging on, its <ip>:<port> in {PHONE_FILE} (the port changes when it is switched off and on)"
+    # portrait: in landscape the dialogs' buttons (Play Protect's "Не проверять") sit below the screen and are not in the
+    # UI dump, and the unlock swipe is portrait's (2026-11-08)
+    adb("shell", "settings", "put", "system", "accelerometer_rotation", "0")
+    adb("shell", "settings", "put", "system", "user_rotation", "0")
     for pkg, apk in (("com.leakcam.setup", APK), ("com.leakcam.setup.test", TEST_APK)):
         # only a changed APK is installed: every install over USB brings up Play Protect's "verify this app" (2026-10-28)
         on_phone = adb("shell", "pm", "path", pkg).strip().replace("package:", "")

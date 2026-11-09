@@ -1,4 +1,4 @@
-# test105: maximum current - can the battery carry everything at once?
+# test051: maximum current - can the battery carry everything at once?
 
 Status: **pass on USB** (2026-10-30): per-load currents recorded; all camera-free loads 10 min with 0 K230 resets, die
 68 C at the end; with the LEDs on the USB meter's series resistance capped the input at ~0.57-0.60 A and the cell

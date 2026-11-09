@@ -128,6 +128,7 @@ class MainActivity : Activity() {
         const val SCAN_MS = 10_000L           // no board by then: the setup screen says how to bring one
         const val SEND_TIMEOUT_MS = 60_000L   // per step: pairing (the user reads and accepts), each check step
         const val POLL_MS = 1_000L            // STATUS read while the check runs: a notification can be lost (test106)
+        const val SWAP_DB = 6                 // a new board this much stronger replaces the shown one (one setup at a time)
         const val CONNECT_TRIES = 3           // connects before a failure is shown: Android's GATT 133 is common (test110)
         const val RETRY_MS = 500L
         const val RECONCILE_MS = 20_000L      // reconnecting after a lost link to read what the board did
@@ -184,6 +185,8 @@ class MainActivity : Activity() {
     private val charging = HashMap<String, Boolean>()
     private val rssi = HashMap<String, Int>()   // address -> the last advertisement's signal (dBm)
     private val rowLogged = HashMap<String, String>()   // address -> the power and bars last logged (test129)
+    private val rowDrawn = HashMap<String, String>()    // address -> the power, bars and battery its row shows
+    private val rowDrawnAt = HashMap<String, Long>()    // address -> when its row was last redrawn
     private val ticker = Handler(Looper.getMainLooper())   // the status screen's refresh; main's callbacks get cleared
     private val looker = Handler(Looper.getMainLooper())   // the setup screen's search
     private var onStatus = false
@@ -224,6 +227,8 @@ class MainActivity : Activity() {
     private var bondReceiver: BroadcastReceiver? = null
     private var pinReceiver: BroadcastReceiver? = null
     private var pin = ""                 // this send's pairing PIN, from the server (never stored)
+    private var settingsOpened = false   // the denied-permission link opened Android's settings
+    private var pinAdded = ""            // the board this send's PIN fetch made one of mine: taken back if it fails
     private var discovered = false       // services discovered on this connection
     private var bonded = false           // and encrypted: the writes can start
 
@@ -438,6 +443,25 @@ class MainActivity : Activity() {
 
     private fun problem(current: Int, res: Int, vararg args: Any) = showText(current, getString(res, *args), true)
 
+    /** a denied permission: the message and a link to the app's page in Android's settings (user 2026-11-08: "app needs
+     *  to help me to find setting again, with some link in status text, not only message"); after "don't allow" Android
+     *  may not ask again, so the settings page is the way back. onResume goes on once it is allowed there */
+    private fun deniedWithLink(current: Int, res: Int) {
+        problem(current, res)
+        val link = getString(R.string.open_settings)
+        val text = android.text.SpannableStringBuilder(setupStatus.text.text).append("\n\n").append(link)
+        text.setSpan(object : android.text.style.ClickableSpan() {
+            override fun onClick(v: View) {
+                settingsOpened = true
+                Log.i(TAG, "settings opened for a permission")
+                startActivity(Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                     android.net.Uri.parse("package:$packageName")))
+            }
+        }, text.length - link.length, text.length, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        setupStatus.text.text = text
+        setupStatus.text.movementMethod = android.text.method.LinkMovementMethod.getInstance()
+    }
+
     // ---------------- permissions and Bluetooth on ----------------
 
     private fun neededPermissions(): Array<String> =
@@ -554,19 +578,40 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        if (settingsOpened) {                // back from the settings link: go on when it was allowed there
+            settingsOpened = false
+            if (Build.VERSION.SDK_INT >= 33 &&
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED &&
+                !LeakAlert.fullScreenAllowed(this))
+                askingAlert = true
+            if (!onStatus && permissionsGranted()) {
+                setupStatus.text.movementMethod = null
+                wifiHelp()
+                if (ready())
+                    keepLooking()
+            }
+        }
         if (askingAlert)
             alertPermissions()
+        if (onStatus)
+            render()                         // back from the notification settings: the line goes once allowed
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, results: IntArray) {
         if (requestCode == REQUEST_NOTIFY) {
+            // denied: not asked again at once (a "don't allow" answers at once: it looped); the link instead
+            if (Build.VERSION.SDK_INT >= 33 &&
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                askingAlert = false
+                return deniedWithLink(step, R.string.err_notify_permission)
+            }
             alertPermissions()
             return
         }
         if (requestCode != REQUEST_PERMISSIONS)
             return
         if (!permissionsGranted())
-            return problem(step, R.string.err_permission)
+            return deniedWithLink(step, R.string.err_permission)
         wifiHelp()
         if (ready())
             keepLooking()            // no tap again: the setup screen looks by itself
@@ -620,7 +665,12 @@ class MainActivity : Activity() {
         val now = SystemClock.elapsedRealtime()
         for (a in found.keys.filter { now - (seen[it] ?: 0L) > UNSEEN_MS / timeScale }) {
             found.remove(a)
-            devices.findViewWithTag<View>(a)?.let { devices.removeView(it) }
+            devices.findViewWithTag<View>(a)?.let {
+                if (it.id == devices.checkedRadioButtonId)
+                    devices.clearCheck()        // the picked board gone: looking again, the spinner back
+                devices.removeView(it)
+            }
+            updateBusy()
         }
         if (!usbLink.up)
             usbLink.find()
@@ -740,9 +790,18 @@ class MainActivity : Activity() {
             }
         }
         if (found.containsKey(d.address)) {
-            // the same row refreshed (its bars, power, battery) without a redraw of the list
-            devices.findViewWithTag<RadioButton>(d.address)?.let { rb ->
-                rb.setCompoundDrawablesRelative(null, null, iconStrip(ids[d.address] ?: "", d.address), null)
+            // the same row refreshed (its bars, power, battery) without a redraw of the list, and only when one of its
+            // icons changed: redrawn at every advertisement (5 a second) the screen was never idle and each UI
+            // Automator lookup waited 10 s for it (found after 17 s instead of 0.2 s, test106 2026-11-08)
+            // and at most once a second: the bars flip 3 <-> 4 several times a second on the bench
+            val drawn = "${usbPower[d.address]} ${barCount(r.rssi)} ${devId?.let { batteryMv[it] }}"
+            val now = SystemClock.elapsedRealtime()
+            if (rowDrawn[d.address] != drawn && now - (rowDrawnAt[d.address] ?: 0L) >= 1000) {
+                rowDrawn[d.address] = drawn
+                rowDrawnAt[d.address] = now
+                devices.findViewWithTag<RadioButton>(d.address)?.let { rb ->
+                    rb.setCompoundDrawablesRelative(null, null, iconStrip(ids[d.address] ?: "", d.address), null)
+                }
             }
             return
         }
@@ -756,6 +815,19 @@ class MainActivity : Activity() {
         // only new devices: a board set up from this phone is never listed (user 2026-11-07, DESIGN.md 5.3.4)
         if (devId != null && known().has(devId))
             return
+        // one setup at a time, the nearest board (user 2026-11-08: "take strongest signal"): one row only; a new
+        // board clearly stronger (SWAP_DB, against flapping) than the shown one takes its place before a send; the
+        // cable's board always stays
+        val shown = devices.findViewById<View>(devices.checkedRadioButtonId)
+        if (shown != null) {
+            val shownAt = shown.tag as? String
+            if (sending || shownAt == USB_TAG || r.rssi < (rssi[shownAt] ?: -127) + SWAP_DB)
+                return
+            Log.i(TAG, "setup row swapped for a stronger board: ${r.rssi} dBm over ${rssi[shownAt]} dBm")
+            found.remove(shownAt)
+            devices.clearCheck()
+            devices.removeView(shown)
+        }
         stored[d.address] = mfg != null && mfg.size >= 7 && (mfg[6].toInt() and 1) != 0
         Log.i(TAG, "found $name id ${devId ?: "none"} creds ${if (stored[d.address] == true) 1 else 0}")   // test111
         found[d.address] = d to name
@@ -770,6 +842,7 @@ class MainActivity : Activity() {
         // for the whole Find took 10 s of the setup, then 1.7 s (test106); the cable's board takes the pick (USB > BLE)
         if (devices.checkedRadioButtonId == -1 && !sending)
             devices.check(devices.findViewWithTag<View>(d.address).id)
+        updateBusy()
     }
 
     /** what to do now for the picked board; the hints say when the board has a network the app cannot show */
@@ -790,9 +863,11 @@ class MainActivity : Activity() {
     private fun pickedTag() = devices.findViewById<RadioButton>(devices.checkedRadioButtonId)?.tag as String?
 
     /** the setup screen's spinner line (StatusBlock): sending, else looking, else none */
+    /** "Looking..." only until a board is found: one setup at a time (user 2026-11-08: "once LEAKCAM is found, stop
+     *  spinner"); the scan goes on quietly for the found row's live icons */
     private fun updateBusy() = setupStatus.busy(when {
         sending -> getString(R.string.busy_sending)
-        scanning -> getString(R.string.looking)
+        scanning && devices.checkedRadioButtonId == -1 -> getString(R.string.looking)
         else -> null
     })
 
@@ -872,9 +947,26 @@ class MainActivity : Activity() {
             })
         // the last action's answer for a minute, then always the picked board's presence with its next check-in
         // (user 2026-11-07: "always include next checkin time in status")
-        mainStatus.text.text = listOfNotNull(
+        val status = android.text.SpannableStringBuilder(listOfNotNull(
             note?.takeIf { it.first == selected && SystemClock.elapsedRealtime() < it.third }?.second,
-            all.firstOrNull { it.first == selected }?.third).joinToString("\n")
+            all.firstOrNull { it.first == selected }?.third).joinToString("\n"))
+        // notifications off: always said here, with the way to turn them on (user 2026-11-08: "always show we need to
+        // enable notifications permission, this is always on status screen"): without them a leak reaches no one
+        if (!getSystemService(android.app.NotificationManager::class.java).areNotificationsEnabled()) {
+            val link = getString(R.string.notify_turn_on)
+            status.append("\n\n").append(getString(R.string.notify_off)).append(" ").append(link)
+            status.setSpan(object : android.text.style.ClickableSpan() {
+                override fun onClick(v: View) {
+                    Log.i(TAG, "notification settings opened")
+                    startActivity(Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                        .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, packageName))
+                }
+            }, status.length - link.length, status.length, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            mainStatus.error(true)
+        } else
+            mainStatus.error(false)
+        mainStatus.text.text = status
+        mainStatus.text.movementMethod = android.text.method.LinkMovementMethod.getInstance()
         // what waits for its check-ins, in the server's order (user 2026-11-07): one photo, one video, one Wi-Fi
         // change at most, so a button whose ask waits is off
         val waits = pend[selected] ?: org.json.JSONArray()
@@ -1097,6 +1189,7 @@ class MainActivity : Activity() {
      *  BLE connect, or the USB lines). No server, no setup: the board refuses a pairing or a cable setup without it */
     private fun fetchPin(then: () -> Unit) {
         val id = boardId
+        pinAdded = ""
         Thread {
             val got = try {
                 if (id.isEmpty()) throw IllegalStateException("no device ID advertised")
@@ -1115,6 +1208,7 @@ class MainActivity : Activity() {
                 if (got.isEmpty())
                     return@runOnUiThread fail(R.string.err_no_pin, boardName)
                 pin = got
+                pinAdded = if (known().has(id)) "" else id
                 then()
             }
         }.start()
@@ -1211,7 +1305,33 @@ class MainActivity : Activity() {
             done?.invoke()
     }
 
-    private fun fail(res: Int, vararg args: Any) = finishSend { problem(STEP_SAVE, res, *args); keepLooking() }
+    private fun fail(res: Int, vararg args: Any) {
+        // not when the board may have stored the network (the link lost after the commit): it finishes the check alone
+        if (res != R.string.err_unconfirmed && res != R.string.err_usb_unconfirmed)
+            takeBack()
+        finishSend { problem(STEP_SAVE, res, *args); keepLooking() }
+    }
+
+    /** the PIN's fetch made this phone the board's user; a setup that failed takes that back, or the board (one of mine
+     *  now) would leave Setup and the retry after a wrong password had no row (test113, 2026-11-08). Every send fetches
+     *  the PIN again, Save without checking too */
+    private fun takeBack() {
+        val id = pinAdded
+        pinAdded = ""
+        if (id.isNotEmpty())
+            Thread {
+                try {
+                    val c = URL("${BuildConfig.SERVER}/v1/devices/$id/phones/$phoneId").openConnection() as HttpURLConnection
+                    c.requestMethod = "DELETE"
+                    c.connectTimeout = 3000
+                    c.readTimeout = 3000
+                    Log.i(TAG, "setup failed: $id not added (${c.responseCode})")
+                    c.disconnect()
+                } catch (e: Exception) {
+                    Log.w(TAG, "setup failed: $id still on the list ($e)")
+                }
+            }.start()
+    }
 
     private fun closeGatt() {
         gatt?.let {
@@ -1460,15 +1580,24 @@ class MainActivity : Activity() {
             WCHK_INTERNET -> show(STEP_SAVE, R.string.help_check_internet)
             WCHK_SAVED -> finishSend {
                 remember()
-                found.clear()             // the next one (user 2026-11-07: more boards, by cable or Bluetooth)
+                found.clear()
                 devices.removeAllViews()
                 show(STEP_DONE, if (checked) R.string.help_done else R.string.help_done_unchecked, boardName, ssidText)
+                // Done -> the LEAKCAMs screen at once, the board picked, the answer in its status (user 2026-11-08:
+                // "once done we need to go to status screen automatically")
+                if (boardId.isNotEmpty()) {
+                    selected = boardId
+                    note = Triple(boardId, getString(if (checked) R.string.done_note else R.string.done_unchecked_note,
+                                                     boardName, ssidText), SystemClock.elapsedRealtime() + 60_000L)
+                }
+                showStatus()
+                loadMine()
                 alertPermissions()
-                keepLooking()
             }
             else -> {
                 // where the board is now may be the only problem: offer to store unchecked
                 val placeOnly = state in setOf(WCHK_NOT_FOUND, WCHK_NO_ADDRESS, WCHK_NO_DNS, WCHK_NO_INTERNET, WCHK_CAPTIVE, WCHK_NO_API)
+                takeBack()                // nothing stored: the board stays new
                 finishSend {
                     when (state) {
                         WCHK_NOT_FOUND -> problem(STEP_WIFI, R.string.chk_not_found, ssidText)
@@ -1536,6 +1665,7 @@ class MainActivity : Activity() {
                 setCompoundDrawablesRelative(null, null, iconStrip(usbId, USB_TAG), null)
             }, 0)
         devices.check(devices.findViewWithTag<View>(USB_TAG).id)
+        updateBusy()
     }
 
     private fun onUsbUp(up: Boolean) {
@@ -1555,7 +1685,12 @@ class MainActivity : Activity() {
         usbId = ""
         ids.remove(USB_TAG)
         stored.remove(USB_TAG)
-        devices.findViewWithTag<View>(USB_TAG)?.let { devices.removeView(it) }
+        devices.findViewWithTag<View>(USB_TAG)?.let {
+            if (it.id == devices.checkedRadioButtonId)
+                devices.clearCheck()            // the cable's board gone: looking again
+            devices.removeView(it)
+        }
+        updateBusy()
         if (!onStatus && !sending && step != STEP_DONE)   // Done stays: the board ends the link itself after it
             wifiHelp()
     }

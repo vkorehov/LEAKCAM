@@ -4,6 +4,48 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-09 (run.py, 256 s): **FAIL**
+
+1/2 checks pass. Failed: no network: the setup firmware (setup). Stopped at: no network: the setup firmware.
+
+
+### Automated run 2026-11-09 (run.py, 257 s): pass
+
+16/16 checks pass.
+
+
+### Automated run 2026-11-08 (run.py, 80 s): **FAIL**
+
+2/3 checks pass. Failed: unplugged: the phone finds the board asleep (not within 60 s). Stopped at: unplugged: the phone finds the board asleep.
+
+
+### Automated run 2026-11-08 (run.py, 143 s): **FAIL**
+
+2/3 checks pass. Failed: unplugged: the phone finds the board asleep (not within 60 s). Stopped at: unplugged: the phone finds the board asleep.
+
+
+### Step 5 by hand 2026-11-08 07:39 UTC+2 (USB-C 1 back in since 07:36)
+
+The phone helpers' checks of run.py step 5: the full firmware, silent (15 s scan, nothing found), present at the
+server. With the run of 23:31, every step of test116 passes on the new app (14/14).
+
+### Automated run 2026-11-07 23:31 UTC+2 (run.py --unplugged, 1084 s): stopped, not a pass
+
+11/11 checks pass, steps 2-4 (found asleep 12.7 s after the start, set up on battery 35.7 s, full firmware 16 s after
+Done, silent 30 s; erased on battery: setup firmware found 40.6 s after the erase, set up again 26.1 s, full 7 s after
+Done, present). Step 5 (USB-C 1 back in) never ran: no hand step within 15 min. run.py logged this as a pass: fixed,
+a stop now fails the run. App setup from "Connecting" to Done 17.2 s, over 15 s: two GATT connects to the sleeping
+board timed out (status 133, 5 s each), the third connected in 2 s, pairing + Wi-Fi check 3.8 s. Accepted as the exception to the 15 s rule
+(user, 2026-11-08; DESIGN.md 5.3.4).
+
+
+### Automated run 2026-11-07 (run.py, 162 s): **FAIL**
+
+3/4 checks pass. Failed: unplugged: set up from the app on battery (PIN, no dialog) (20.1 s, pairing ). Cause: the
+board was still on this phone's list, and Setup skips known boards (DESIGN.md 5.3.4); run.py now calls only_boards()
+before each setup.
+
+
 ### Automated run 2026-11-03 (run.py, 216 s): pass
 
 16/16 checks pass.

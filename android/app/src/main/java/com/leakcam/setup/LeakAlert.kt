@@ -18,12 +18,19 @@ import android.util.Log
  * silent mode (the alarm stream) and Do Not Disturb (the channel bypasses it once the person allowed DND access).
  */
 object LeakAlert {
-    // a channel's sound is fixed once it exists: a new sound needs a new channel ID (the old one deleted)
-    const val CHANNEL = "leak_alarm"
+    // a channel's sound is fixed once it exists: a new sound needs a new channel ID (the old one deleted). So is its
+    // Do Not Disturb bypass: setBypassDnd(true) counts only if the app has DND access when the channel is first made,
+    // and a channel deleted and made again comes back with its old settings - an alert channel made before the person
+    // allowed DND access never got through DND (the bench phone, 2026-11-09: mBypassDnd=false after a reinstall with
+    // the access denied). So the channel ID depends on the access: "_dnd" once granted, made then with the bypass
+    private const val BASE = "leak_alarm"
     // the bench's quiet nights (user 2026-11-07: "i want quiet night"): debug builds with `settings put global
     // leakcam_quiet 1` post the alert on a channel without sound or vibration; everything else the same
-    const val QUIET_CHANNEL = "leak_alarm_quiet"
+    private const val QUIET_BASE = "leak_alarm_quiet"
     private val OLD_CHANNELS = listOf("leak", "leak_alert")
+    fun channelId(context: Context) = if (dndAccess(context)) "${BASE}_dnd" else BASE
+    fun quietChannelId(context: Context) = if (dndAccess(context)) "${QUIET_BASE}_dnd" else QUIET_BASE
+    private val ALL = listOf(BASE, "${BASE}_dnd", QUIET_BASE, "${QUIET_BASE}_dnd")
     const val EXTRA_ID = "id"
     const val EXTRA_TEXT = "text"
     const val EXTRA_TITLE = "title"
@@ -42,16 +49,20 @@ object LeakAlert {
     fun channel(context: Context) {
         val nm = context.getSystemService(NotificationManager::class.java)
         OLD_CHANNELS.forEach { nm.deleteNotificationChannel(it) }
-        if (quiet(context) && nm.getNotificationChannel(QUIET_CHANNEL) == null)
-            nm.createNotificationChannel(NotificationChannel(QUIET_CHANNEL, "Leak alerts (bench, quiet)",
+        val main = channelId(context)
+        val quietId = quietChannelId(context)
+        ALL.filter { it != main && it != quietId }.forEach { nm.deleteNotificationChannel(it) }  // the other access's
+        if (quiet(context) && nm.getNotificationChannel(quietId) == null)
+            nm.createNotificationChannel(NotificationChannel(quietId, "Leak alerts (bench, quiet)",
                                                              NotificationManager.IMPORTANCE_HIGH).apply {
                 setSound(null, null)
                 enableVibration(false)
                 lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+                setBypassDnd(true)
             })
-        if (nm.getNotificationChannel(CHANNEL) != null)
+        if (nm.getNotificationChannel(main) != null)
             return
-        nm.createNotificationChannel(NotificationChannel(CHANNEL, context.getString(R.string.alert_channel),
+        nm.createNotificationChannel(NotificationChannel(main, context.getString(R.string.alert_channel),
                                                          NotificationManager.IMPORTANCE_HIGH).apply {
             description = context.getString(R.string.alert_channel_about)
             // the emergency alert's attention signal (853 + 960 Hz, WEA cadence: res/raw/leak_alert.wav), not the
@@ -98,7 +109,7 @@ object LeakAlert {
      *  sound over: keeping it quiet would stop the ringing alarm */
     fun picture(context: Context, id: String, picture: android.graphics.Bitmap) {
         val sbn = context.getSystemService(NotificationManager::class.java).activeNotifications
-            .firstOrNull { it.id == notificationId(id) && it.notification.channelId in listOf(CHANNEL, QUIET_CHANNEL) }
+            .firstOrNull { it.id == notificationId(id) && it.notification.channelId in ALL }
             ?: return
         val x = sbn.notification.extras
         context.sendBroadcast(Intent(ACTION_PICTURE).setPackage(context.packageName).putExtra(EXTRA_ID, id))
@@ -118,7 +129,7 @@ object LeakAlert {
         }
         val pi = PendingIntent.getActivity(context, notificationId(id), open,
                                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        val n = Notification.Builder(context, if (quiet(context)) QUIET_CHANNEL else CHANNEL)
+        val n = Notification.Builder(context, if (quiet(context)) quietChannelId(context) else channelId(context))
             .setSmallIcon(R.drawable.ic_alert)
             .setContentTitle(title)
             .setContentText(text)
@@ -161,8 +172,9 @@ object LeakAlert {
             if (!BuildConfig.DEBUG)
                 return
             if (intent.action == ACTION_TEST_ACK) {         // the bench silences it the moment its checks are done
+                // every notification of the app, not only the alerts: a Wi-Fi result (test134) or a leak alert from a
+                // leak check's change (test108) stayed on the bench phone (user 2026-11-09: "hanging notification")
                 context.getSystemService(NotificationManager::class.java).activeNotifications
-                    .filter { it.notification.channelId in listOf(CHANNEL, QUIET_CHANNEL) }
                     .forEach { acknowledge(context, it.id) }
                 context.sendBroadcast(Intent(ACTION_CLOSE).setPackage(context.packageName))
                 return

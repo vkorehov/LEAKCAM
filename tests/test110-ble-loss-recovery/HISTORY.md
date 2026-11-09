@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-08 (run.py, 239 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-08 (run.py, 253 s): **FAIL**
+
+8/10 checks pass. Failed: phone Bluetooth off 4 s before the save: the app and the board agree (app failed, board stored); phone Bluetooth off 4 s during the check: the app and the board agree (app failed, board stored).
+
+
 ### Automated run 2026-11-07 (run.py, 0 s): **FAIL**
 
 not run: not the setup test bed.
@@ -100,6 +110,12 @@ stored the network; the phone's Bluetooth off waited out the 60 s timeout ("did 
 connect was not retried; a link lost with the commit write said "refused the save command".
 
 ## Obstacles
+
+- 2026-11-08: run on the product pair by mistake (it needs the setup test bed; 1xx tests are to run on the product:
+  to be rewritten), stopped halfway: its decoy network ("t110-decoy", stored unchecked before each case) stayed on
+  the board, the full firmware found no such SSID (check-in state 0x10), lost presence after 3 misses and fell back to
+  the setup firmware, over and over; the essential suite's next tests failed. Fixed by the suite's start state
+  (run_tests.py product_start: the bench network, else set up over the cable).
 
 - the BL616 runs full: flash tests/firmware/bl616_setup_test (make flash) (2026-11-07, automated run)
 

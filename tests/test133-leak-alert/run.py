@@ -51,7 +51,9 @@ def one_alert(case, locked=True):
     locked phone), an alarm-usage player started, the acknowledgement; the seconds trigger -> screen"""
     if locked:
         adb("shell", "input", "keyevent", "KEYCODE_SLEEP")
-        time.sleep(1)
+        t1 = time.time()                    # the screen off: polled, not a fixed 1 s
+        while time.time() - t1 < 3 and "mWakefulness=Awake" in adb("shell", "dumpsys", "power", secs=10):
+            time.sleep(0.1)
     adb("logcat", "-c")
     t_phone = adb("shell", "date '+%m-%d %H:%M:%S.%3N'").strip()   # one shell argument: the device shell splits
     # -f 32 (FLAG_INCLUDE_STOPPED_PACKAGES): an app force-stopped by an earlier test gets it too (test135 ends so)
@@ -89,7 +91,7 @@ try:
     s1 = one_alert("locked")
     # the channel exists after the first alert: high importance, bypassing DND (the person's DND access granted)
     ch = adb("shell", "dumpsys", "notification", secs=20)
-    leak = re.search(r"NotificationChannel\{[^}]*mId='leak_alarm'[^}]*\}", ch)
+    leak = re.search(r"NotificationChannel\{[^}]*mId='leak_alarm_dnd'[^}]*\}", ch)   # with DND access the app's channel is leak_alarm_dnd
     check("the channel: importance high, bypasses Do Not Disturb, alarm sound",
           leak is not None and "mImportance=4" in leak.group(0) and "mBypassDnd=true" in leak.group(0)
           and "USAGE_ALARM" in leak.group(0), leak.group(0)[:160] if leak else "no channel")

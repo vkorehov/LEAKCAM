@@ -19,7 +19,7 @@ import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run   # noqa: E402
 from board import log   # noqa: E402
-from phone import SERVER, ack_alerts, adb, board_id, ready   # noqa: E402
+from phone import SERVER, ack_alerts, adb, board_id, firmware, ready, screen_xml   # noqa: E402
 
 PKG = "com.leakcam.setup"
 USER_S = 15                     # the most a person waits (DESIGN.md 5.3.4)
@@ -66,8 +66,7 @@ def device(dev):
 # --- the phone ---------------------------------------------------------------------------------------------------
 def dump():
     """the screen's views: text, desc, res (id), hint, enabled, checked, bounds (x1, y1, x2, y2)"""
-    adb("shell", "uiautomator", "dump", "/sdcard/ui.xml", secs=30)
-    xml = adb("shell", "cat", "/sdcard/ui.xml", secs=30)
+    xml = screen_xml()                  # 300 ms idle wait, not uiautomator dump's 10 s (the spinner never idles)
     nodes = []
     for m in re.finditer(r"<node ([^>]*?)/?>", xml):
         # a text holding double quotes comes in single quotes; entities (&#10; &quot;) decoded
@@ -77,6 +76,17 @@ def dump():
                       "res": a.get("resource-id", "").split("/")[-1], "enabled": a.get("enabled") == "true",
                       "checked": a.get("checked") == "true", "bounds": b})
     return nodes
+
+
+def dump_until(pred, secs=5):
+    """the screen read again until pred(nodes) holds (a view drawn, a text shown), at most secs: in place of a fixed
+    sleep before each dump (user 2026-11-09: "no need to wait"); the last nodes either way"""
+    t0 = time.time()
+    while True:
+        n = dump()
+        if pred(n) or time.time() - t0 > secs:
+            return n
+        time.sleep(0.1)
 
 
 def find(nodes, **kw):
@@ -135,10 +145,10 @@ def status_text(nodes):
 def menu_items():
     """the three-lines menu's items (opened, read, closed)"""
     tap_on(desc="Menu")
-    time.sleep(0.6)
-    items = [n["text"] for n in dump() if n["text"] in ("LEAKCAMs", "Setup")]
+    menu = lambda n: [x["text"] for x in n if x["text"] in ("LEAKCAMs", "Setup") and x["res"] != "screen_title"]
+    items = menu(dump_until(lambda n: len(menu(n)) == 2, 3))
     adb("shell", "input", "keyevent", "KEYCODE_BACK")
-    time.sleep(0.4)
+    dump_until(lambda n: not menu(n), 3)
     return items
 
 
@@ -156,8 +166,7 @@ try:
     t = wait_log(r"screen setup")
     check("1: no boards -> the setup screen at once", t is not None and step("empty -> setup", t) < USER_S,
           f"{t:.1f} s" if t else "not shown")
-    time.sleep(1)
-    n = dump()
+    n = dump_until(lambda n: find(n, res="screen_title", text="LEAKCAM setup"))
     check("1: title LEAKCAM setup", find(n, res="screen_title", text="LEAKCAM setup"))
     check("1: the status block's spinner line says it looks", find(n, res="busy_text", text="Looking for LEAKCAMs nearby…"),
           (find(n, res="busy_text") or {}).get("text", "no spinner line"))
@@ -165,7 +174,9 @@ try:
     check("1: the Wi-Fi fields blank", ssid.get("text") in ("", "Wi-Fi name (SSID)"), ssid.get("text"))
     lg = logs()
     check("1: Bluetooth scan and cable watch on", "scan on" in lg and "usb watch on" in lg)
-    real_seen = wait_log(rf"found {REAL}", 12) is not None   # the real board advertising: makes step 3 conclusive
+    # the real board advertising makes step 3 conclusive; only the setup firmware advertises (the full one has no BLE):
+    # no 12 s wait for an advert that cannot come (2026-11-08)
+    real_seen = firmware() == "setup" and wait_log(rf"found {REAL}", 12) is not None
     check("1: the menu holds only Setup", menu_items() == ["Setup"])
 
     # 2. a board -> LEAKCAMs
@@ -182,7 +193,7 @@ try:
     check("2: the status text says the next check-in", "next check-in" in status_text(n), status_text(n))
     row_photo = (find(n, res="take_photo") or {}).get("bounds")
     adb("logcat", "-c")
-    time.sleep(8)
+    wait_log(r"mine [0-9A-F]{12}")   # the next presence refresh (3 s on the bench): a scan would have started by now
     lg = logs()
     check("2: no Bluetooth scan, no cable watch on LEAKCAMs", "scan on" not in lg and "usb watch on" not in lg)
     check("2: the menu holds LEAKCAMs and Setup", menu_items() == ["LEAKCAMs", "Setup"])
@@ -195,7 +206,7 @@ try:
     tap_on(text="Setup")
     t = wait_log(r"screen setup")
     adb("logcat", "-c")
-    seen_known = wait_log(rf"found {REAL}", 12)
+    seen_known = wait_log(rf"found {REAL}", 12) if real_seen else None
     check("3: Setup skips a board set up from this phone" + ("" if real_seen else " (not conclusive: the board did not "
           "advertise in step 1)"), seen_known is None and not find(dump(), text=REAL))
     unregister(REAL)
@@ -209,16 +220,15 @@ try:
     tap_on(text="Change Wi-Fi")
     t = wait_log(rf"screen change {FAKE}")
     check("4: Change Wi-Fi opens its own screen", t is not None)
-    time.sleep(0.8)
-    n = dump()
+    n = dump_until(lambda n: find(n, res="screen_title", text="Change Wi-Fi") and find(n, res="ssid", text="TESTNET"))
     check("4: title Change Wi-Fi", find(n, res="screen_title", text="Change Wi-Fi"))
     check("4: the SSID filled in", (find(n, res="ssid") or {}).get("text") == "TESTNET", (find(n, res="ssid") or {}).get("text"))
     pw = find(n, res="password") or {}
     check("4: the password as dots", "••••••••" in (pw.get("hint", "") + pw.get("text", "")), pw.get("hint") or pw.get("text"))
     check("4: no search on Change Wi-Fi", "scan on" not in logs() and not find(n, res="busy_text", text="Looking*"))
     tap_on(res="send")
-    time.sleep(0.8)
-    check("4: the same network without its password refused", "password hidden" in status_text(dump()), status_text(dump()))
+    st = status_text(dump_until(lambda n: "password hidden" in status_text(n)))
+    check("4: the same network without its password refused", "password hidden" in st, st)
     tap_on(res="ssid")
     adb("shell", "input", "keyevent", "KEYCODE_MOVE_END")
     for _ in range(8):
@@ -231,8 +241,7 @@ try:
     t = wait_log(r"screen status")
     check("4: sent through the server, back on LEAKCAMs", t is not None and step("change Wi-Fi", time.time() - t0) < USER_S,
           f"{time.time() - t0:.1f} s")
-    time.sleep(0.8)
-    st = status_text(dump())
+    st = status_text(dump_until(lambda n: "next check-in" in status_text(n)))
     check("4: the note names the next check-in", re.search(r'takes "TESTNET2" at its next check-in \((about|any moment)', st), st)
 
     # 5. photo and video: queued once each, the server's order, delivered one per check-in
@@ -242,8 +251,7 @@ try:
     tap_on(res="take_video")
     wait_log(rf"capture video {FAKE}")
     step("take photo + video", time.time() - t0)
-    time.sleep(1.5)
-    n = dump()
+    n = dump_until(lambda n: "3. Take a 15 s video" in (find(n, res="pending_list") or {}).get("text", ""))
     plist = (find(n, res="pending_list") or {}).get("text", "")
     check("5: the pending list in order: Wi-Fi, photo, video",
           re.search(r'1\. Change Wi-Fi to "TESTNET2".*\n2\. Take a photo.*\n3\. Take a 15 s video', plist), plist)
@@ -284,8 +292,7 @@ try:
     check("7: Not a leak clears it at the server", t is not None and device(FAKE).get("leak") is None,
           f"{time.time() - t0:.1f} s")
     step("not a leak", time.time() - t0)
-    time.sleep(0.8)
-    st = status_text(dump())
+    st = status_text(dump_until(lambda n: "watches again" in status_text(n)))
     check("7: the note says it watches again from its next check-in", re.search(r"watches again from its next check-in \(", st), st)
     checkin(FAKE, probe="3000")                           # dried: re-armed
     adb("logcat", "-c")
@@ -304,8 +311,7 @@ try:
              "image/jpeg" if ext == "jpg" else "video/mp4")
     start()
     wait_log(r"screen status")
-    time.sleep(2)
-    n = dump()
+    n = dump_until(lambda n: sum(bool(re.match(r"(Photo|Video), ", x["text"])) for x in n) >= len(ids))
     links = [x for x in n if re.match(r"(Photo|Video), ", x["text"])]
     check("8: the photos and videos listed as links", find(n, text="Photos and videos") and len(links) >= len(ids), len(links))
     if links:
@@ -316,7 +322,7 @@ try:
             top = re.search(r"topResumedActivity=\S+ \S+ (\S+)", adb("shell", "dumpsys", "activity", "activities", secs=30))
             if top and not top.group(1).startswith(PKG):
                 opened = top.group(1)
-            time.sleep(0.5)
+            time.sleep(0.2)
         check("8: a link opens the file alone in the phone's viewer", opened, opened or "the app stayed on top")
         step("open a link", time.time() - t0)
         adb("shell", "input", "keyevent", "KEYCODE_BACK")

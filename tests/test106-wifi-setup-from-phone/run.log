@@ -1,62 +1,15 @@
-22:50:40 test106-wifi-setup-from-phone: 0 metric rows MISSING: none
-22:50:40 BL616 firmware: product (firmware/bl616_common)
-22:50:52 CHECK pass BLE advertising on USB power 
-22:50:55 CHECK pass nothing stored before the first setup 
-22:51:24 phone: app 26.3 s
-22:51:24 setup <network> 23.3 s {'pairing': '', 'save_anyway': False, 'ms_found': 17152} help at 2.0,18.7,19.6,21.6,23.1 Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "<network>" to check the name and password. This t | Done. 7C3E8262B149 joined "<network>", reached the internet and stored the ne
-22:51:30 CHECK pass stored: back in the full firmware 6.2 s
-22:51:30 CHECK pass first setup: Done 23.3 s, pairing 
-22:51:30 CHECK pass first setup: the network stored 
-22:51:34 sample after the first setup {'board': None, 'bl_mem': (179640, 148036, 177692, 64, 79536, 14, 0)}
-22:52:13 phone: app 31.1 s
-22:52:13 setup <network> 27.6 s {'pairing': '', 'save_anyway': False, 'ms_found': 16835} help at 1.7,2.6,18.3,20.5,22.4,27.2 Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "<network>" to check the name and password. This t | The router refused the password for "<network>" (code 33). Check the password
-22:52:13 CHECK pass wrong password named 27.6 s
-22:52:13 CHECK pass wrong password: no Save without checking 
-22:52:14 CHECK pass wrong password: the old network kept 
-22:52:45 phone: app 31.7 s
-22:52:45 setup t106-not-here 28.5 s {'pairing': '', 'save_anyway': True, 'ms_found': 16900} help at 1.8,18.5,21.2,23.2,27.0 Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "t106-not-here" to check the name and passw | The LEAKCAM cannot see "t106-not-here".  • Check the name: upper and l
-22:52:45 CHECK pass network not seen named 28.5 s
-22:52:45 CHECK pass network not seen: Save without checking offered 
-22:52:46 CHECK pass network not seen: the old network kept 
-22:53:19 phone: app 33.1 s
-22:53:19 setup t106-not-here 30.1 s {'pairing': '', 'save_anyway': True, 'ms_anyway': 26259, 'ms_found': 16553} help at 1.5,2.9,18.1,19.1,21.2,24.7,27.1,28.2,29.8 Connecting to 7C3E8262B149… | Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | Saved without checking. 7C3E8262B149 stored the Wi-Fi network "t106-no
-22:53:28 CHECK pass stored: back in the full firmware 9.2 s
-22:53:28 CHECK pass save without checking: said so 30.1 s
-22:53:28 CHECK pass save without checking: the new network stored 
-22:54:00 phone: app 27.0 s
-22:54:00 setup <network> 23.6 s {'pairing': '', 'save_anyway': False, 'ms_found': 16598} help at 1.5,2.4,18.3,20.0,22.2,23.4 Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "<network>" to check the name and password. This t | Done. 7C3E8262B149 joined "<network>", reached the internet and stored the ne
-22:54:06 CHECK pass stored: back in the full firmware 6.1 s
-22:54:06 CHECK pass change back: Done 23.6 s
-22:54:07 CHECK pass change back: the first network stored again 
-22:54:42 phone: app 27.0 s
-22:54:42 setup <network> 23.8 s {'pairing': '', 'save_anyway': False, 'ms_found': 17033} help at 1.8,18.6,20.6,22.3,23.5 Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "<network>" to check the name and password. This t | Done. 7C3E8262B149 joined "<network>", reached the internet and stored the ne
-22:54:48 CHECK pass stored: back in the full firmware 6.1 s
-22:55:20 phone: app 27.0 s
-22:55:20 setup <network> 23.7 s {'pairing': '', 'save_anyway': False, 'ms_found': 17088} help at 1.9,18.7,20.1,22.0,23.3 Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "<network>" to check the name and password. This t | Done. 7C3E8262B149 joined "<network>", reached the internet and stored the ne
-22:55:29 CHECK pass stored: back in the full firmware 9.2 s
-22:56:04 phone: app 29.4 s
-22:56:04 setup <network> 26.1 s {'pairing': '', 'save_anyway': False, 'ms_found': 16786} help at 1.7,18.5,19.7,22.6,25.8 Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | Connected to the router. Checking that the internet can be reached… | Done. 7C3E8262B149 joined "<network>", reached the internet and stored the ne
-22:56:13 CHECK pass stored: back in the full firmware 9.2 s
-22:56:49 phone: app 26.9 s
-22:56:49 setup <network> 23.2 s {'pairing': '', 'save_anyway': False, 'ms_found': 17022} help at 1.8,18.5,19.9,22.9 Connecting to 7C3E8262B149… | Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | Done. 7C3E8262B149 joined "<network>", reached the internet and stored the ne
-22:56:58 CHECK pass stored: back in the full firmware 9.2 s
-22:57:33 phone: app 26.7 s
-22:57:33 setup <network> 23.1 s {'pairing': '', 'save_anyway': False, 'ms_found': 16952} help at 1.8,18.4,19.5,22.9 Connecting to 7C3E8262B149… | Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | Done. 7C3E8262B149 joined "<network>", reached the internet and stored the ne
-22:57:42 CHECK pass stored: back in the full firmware 9.2 s
-22:58:17 phone: app 26.3 s
-22:58:17 setup <network> 23.2 s {'pairing': '', 'save_anyway': False, 'ms_found': 16832} help at 1.7,18.6,19.5,22.9 Connecting to 7C3E8262B149… | Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | Done. 7C3E8262B149 joined "<network>", reached the internet and stored the ne
-22:58:26 CHECK pass stored: back in the full firmware 9.2 s
-22:59:01 phone: app 27.0 s
-22:59:01 setup <network> 23.6 s {'pairing': '', 'save_anyway': False, 'ms_found': 16709} help at 2.2,18.2,19.6,21.8,23.6 Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "<network>" to check the name and password. This t | Done. 7C3E8262B149 joined "<network>", reached the internet and stored the ne
-22:59:08 CHECK pass stored: back in the full firmware 6.1 s
-22:59:43 phone: app 26.9 s
-22:59:43 setup <network> 23.3 s {'pairing': '', 'save_anyway': False, 'ms_found': 16925} help at 1.7,18.5,19.6,21.6,22.9 Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "<network>" to check the name and password. This t | Done. 7C3E8262B149 joined "<network>", reached the internet and stored the ne
-22:59:55 BL616 port missing: the VM's USB controller reset (xhci unbind/bind)
-23:00:01 CHECK pass stored: back in the full firmware 18.4 s
-23:00:01 CHECK pass 8 setups in a row: every one Done 8/8
-23:00:26 CHECK pass BLE started again after a reset 
-23:00:54 phone: app 27.2 s
-23:00:54 setup <network> 23.9 s {'pairing': '', 'save_anyway': False, 'ms_found': 16977} help at 1.9,18.5,20.5,22.3,23.7 Your phone now asks to pair with 7C3E8262B149.  • Tap Pair (on some ph | The LEAKCAM is now joining "<network>" to check the name and password. This t | Done. 7C3E8262B149 joined "<network>", reached the internet and stored the ne
-23:01:03 CHECK pass stored: back in the full firmware 9.2 s
-23:01:03 CHECK pass after the reset: Done with no Forget by hand 23.9 s, pairing 
-23:01:03 test106-wifi-setup-from-phone: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+08:30:24 test106-wifi-setup-from-phone: 0 metric rows MISSING: none
+08:30:24 BL616 firmware: product (firmware/bl616_common)
+08:30:33 phone: relay 4.1 s
+08:30:33 relay box: unplugged (unplug USB-C 1 (the cell stays in))
+08:30:33 CHECK pass USB-C 1 out (hand) 
+08:30:40 phone: scan 5.3 s
+08:30:57 phone: app 14.2 s
+08:30:57 setup <network> 10.5 s {'pairing': '', 'save_anyway': False, 'ms_found': 2413} help at 1.5,2.4,4.0,6.9,10.5 Connecting to 7C3E8262B149… | Your phone now asks to pair with 7C3E8262B149: tap Pair. No PIN to typ | Done. 7C3E8262B149 joined "<network>". 7C3E8262B149: online, Wi-Fi "<network>" · nex
+08:31:00 CHECK pass stored: back in the full firmware 2.7 s
+08:31:00 CHECK pass 1 setups on battery: every one found and Done 1/1, found after 5 s
+08:31:00 CHECK pass on battery: the network stored 
+08:31:05 phone: relay 4.9 s
+08:31:05 relay box: plugged (plug USB-C 1 back in)
+08:31:05 CHECK pass USB-C 1 back in (hand) 
+08:31:06 test106-wifi-setup-from-phone: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

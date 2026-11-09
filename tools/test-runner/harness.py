@@ -73,6 +73,14 @@ class Run:
         self.rows = metric_rows(metrics_block(text).group(1))
         self.missing = [c[0] for _, c in self.rows if MISSING in c[1]]
         log(f"{self.name}: {len(self.missing)} metric rows MISSING: {', '.join(self.missing) or 'none'}")
+        # every test, alone or in run_tests.py: no run on a wedged BLE core (skill bl616-ble-low-power 5; user
+        # 2026-11-09: "keep it in general"); finish() checks again, a run that leaves it wedged fails
+        from phone import wedge
+        why = wedge()
+        if why:
+            self.obstacle(why)
+            self.finish(f"not run: {why.split(' (')[0]}.", False, switch_off=False)
+            sys.exit(1)
 
     # --- which row a key means ---------------------------------------------------------------------------------
     def row(self, key):
@@ -97,7 +105,7 @@ class Run:
     # --- board ---------------------------------------------------------------------------------------------------
     def boot(self, boot1="low", until=b"msh />", secs=20, expect_msh=True, after_on=None):
         """K230 off -> on -> reset released, timed by the console milestones; returns the console fd. after_on runs
-        with the rails up and the K230 still in reset (the Wi-Fi bridge needs the 3V3: test105 started it with the
+        with the rails up and the K230 still in reset (the Wi-Fi bridge needs the 3V3: test051 started it with the
         rails off and it was refused, 2026-10-30)"""
         bl("pt_off", 2)
         time.sleep(1)
@@ -273,7 +281,7 @@ class Run:
             d["temp"] = f"die {f(die)}; board {f(brd)} (AHT20) ({self.date})"
         bm = [s["bl_mem"] for s in self.samples if s.get("bl_mem")]
         km = [s["k_free"] for s in self.samples if s.get("k_free")]
-        # the leak verdict only over the repeated phase: programs starting take memory once (test105, 2026-10-30)
+        # the leak verdict only over the repeated phase: programs starting take memory once (test051, 2026-10-30)
         steady = self.samples[self.leak_from:]
         lbm = [s["bl_mem"] for s in steady if s.get("bl_mem")]
         lkm = [s["k_free"] for s in steady if s.get("k_free")]
@@ -328,6 +336,22 @@ class Run:
         open(p, "w").write(h)
 
     def finish(self, result, ok=True, switch_off=True):
+        # no notification left on the bench phone by any test (user 2026-11-09: "again hanging notification on
+        # phone"): the debug app's TEST_ACK clears all of its own; nothing when no phone is on adb
+        try:
+            from phone import ack_alerts, adb, plug_back
+            plug_back()                 # USB-C 1 back on the bench if the test left it out (the next test's start)
+            if "device" in adb("get-state", secs=5):
+                ack_alerts()
+        except Exception:
+            pass
+        if not result.startswith("not run"):
+            from phone import wedge
+            why = wedge()
+            if why:
+                ok = False
+                result = result.rstrip() + f" BLE core WEDGED after this run: {why}"
+                self.obstacle(why)
         if switch_off:
             self.off()
         vals = self.derived()

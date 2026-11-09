@@ -6,10 +6,12 @@
 #include "setup_boot.h"
 
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "FreeRTOS.h"
 #include "task.h"
+#include "timers.h"
 
 #include "bflb_boot2.h"
 #include "bl_lp.h"
@@ -21,6 +23,8 @@
 #include "rfparam_adapter.h"
 
 #include "ble_pairing.h"
+#include "blecore.h"
+#include "evlog.h"
 #include "setup_sleep.h"
 #include "wifi_setup.h"
 
@@ -30,13 +34,31 @@
  * 5 s: at 2 s a setup takes 16-23 s now and then, without a dialog since the app bonds with every connect (test106,
  * 2026-11-02; user: 2 s kept on battery). Started during the Wi-Fi start's pause, as the SDK example orders it.
  * app_clock_init() first: the stored RC32K calibration */
+/* The BLE core wedge's other form (bug-006, skill bl616-ble-low-power 5): after a reset the controller's init spins
+ * for good in rwip_time_get. The start takes well under a second; not done in BLE_START_DEADLINE_MS -> EV_WEDGE 2
+ * (the timer task outranks the spinning start task). */
+#define BLE_START_DEADLINE_MS 5000
+
+static void ble_start_late(TimerHandle_t t)
+{
+    (void)t;
+    evlog_add(EV_WEDGE, 2, 0);
+    blecore_dump(BLECORE_STUCK);
+    printf("setup: BLE start not done in %u ms: the BLE core wedge, only EN or a power loss clears it\r\n",
+           BLE_START_DEADLINE_MS);
+}
+
 static void ble_start_task(void *arg)
 {
+    TimerHandle_t late = xTimerCreate("ble_late", pdMS_TO_TICKS(BLE_START_DEADLINE_MS), pdFALSE, NULL, ble_start_late);
+    if (late == NULL || xTimerStart(late, 0) != pdPASS)
+        vAssertCalled();
     app_clock_init();
     ble_pairing_start();
     setup_sleep_ble_register();
     ble_pairing_adv_interval((unsigned int)(uintptr_t)arg);
     ble_pairing_advertise(true);
+    (void)xTimerDelete(late, 0);
     vTaskDelete(NULL);
 }
 
