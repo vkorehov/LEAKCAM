@@ -518,6 +518,16 @@ static long leak_kohm(int mv)
 
 /* ---------------------------------------------------------------- status ---- */
 static const char *wake_names(unsigned w);
+/* metrics.c (pt_ble's credential check) logs its boot to the product's event log; this firmware keeps no event log
+ * (evlog.c's HBN RAM buffer overflows the 4 KB HBN RAM next to t021, 2026-11-10): the entry is dropped */
+#include "evlog.h"
+void evlog_add(enum ev ev, int arg, unsigned val)
+{
+    (void)ev;
+    (void)arg;
+    (void)val;
+}
+
 static unsigned last_wake;                         /* main(): HBN wake sources of this boot (WAKE_* bits) */
 
 static bool usb_pgood_high(void)

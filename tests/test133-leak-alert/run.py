@@ -26,7 +26,9 @@ def check(name, ok, detail=""):
 
 
 RING_S = 0.5                    # a test alert rings at most this long (user: "even 0.5 sec"); checked from the logs after
-ACK_S = RING_S + 0.75           # trigger -> acknowledged: the ring plus adb's broadcast round trip (1.09 s seen over Wi-Fi)
+# trigger -> acknowledged: the ring plus adb's broadcast round trip over Wi-Fi: 1.09 s typical, 2.35 s and 2.52 s
+# seen (the phone busy, an app just reinstalled; 2026-11-09): 3 s (user: "increase timing a bit")
+ACK_S = 3.0
 # quiet nights (user 2026-11-07: "i want quiet night"): the alert posts on the debug quiet channel (phone.ready sets
 # it) and the sound check is skipped; `run.py --loud` checks the alarm sound too
 LOUD = "--loud" in sys.argv

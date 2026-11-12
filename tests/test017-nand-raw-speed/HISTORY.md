@@ -4,6 +4,15 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 56 s): pass
+
+8 x `nand_bench read 64`, checksums equal (b640083d); last:
+
+    raw page read (2 KiB pages)      8192 KB in 531292 us:   15.7 MB/s
+    nand_bench read: nand0 blocks 384..447, 0 read errors, checksum b640083d
+    raw page read (2 KiB pages)      8192 KB in 531577 us:   15.7 MB/s
+
+
 ### Automated run 2026-10-30 (run.py, 55 s): pass
 
 8 x `nand_bench read 64`, checksums equal (843c88ac); last:

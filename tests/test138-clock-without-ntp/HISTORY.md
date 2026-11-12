@@ -4,6 +4,81 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 34 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-12 (run.py, 33 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-11 (run.py, 33 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 42 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 35 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 33 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 36 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 35 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 33 s): **FAIL**
+
+10/11 checks pass. Failed: the BL616's clock: within 5 s of UTC, set from the server (off +1.5 s, set 0 times).
+
+
+### Automated run 2026-11-10 (run.py, 89 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 89 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 92 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 94 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 91 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 89 s): pass
+
+11/11 checks pass.
+
+
 ### Automated run 2026-11-09 (run.py, 89 s): pass
 
 11/11 checks pass.

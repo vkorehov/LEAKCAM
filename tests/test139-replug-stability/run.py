@@ -14,12 +14,13 @@ firmware) at the end.
 import fcntl
 import os
 import re
+import subprocess
 import sys
 import threading
 import time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
-from board import BL_PORT, log   # noqa: E402
+from board import BL_PORT, log, xhci_reset   # noqa: E402
 from phone import erase, board_id, firmware, op, ready, relay, to_firmware, wedge   # noqa: E402
 
 _lock = open(__file__)
@@ -74,6 +75,12 @@ def proof(name, scan_secs=30, detail=""):
     if not relay([P]):
         raise Stop("the relay box does not answer")
     up = console() and to_firmware("setup", secs=30) is not None
+    if not up and "hub_ext_port_status failed" in subprocess.run(["sudo", "-n", "dmesg"], capture_output=True,
+                                                                  text=True).stdout[-3000:]:
+        # the VM's USB controller hung at the replug (VMware, 2026-11-09 A2000), not the board: reset it, look again
+        xhci_reset()
+        up = console() and to_firmware("setup", secs=30) is not None
+        log(f"{name}: the VM's USB controller hung; after its reset the setup firmware {'back' if up else 'still not back'}")
     w = wedge() if up else "no console"
     ok = t is not None and up and w is None
     seen = f"found {t:.1f} s" if t is not None else f"NOT found in {scan_secs} s"

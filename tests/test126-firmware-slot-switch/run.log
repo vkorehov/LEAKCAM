@@ -1,8 +1,8 @@
-06:16:54 start firmware full, slot 0 (table age 72, FW entry age 0x00000048) PIN stored, network stored yes, heap 206788, crash: no record
-06:16:59 round 1 full->setup in 4.7 s: firmware setup, slot 1 (table age 73, FW entry age 0x00000049) PIN stored, network stored yes, heap 131980, crash: no record
-06:17:06 round 1 setup->full in 6.6 s: firmware full, slot 0 (table age 74, FW entry age 0x0000004a) PIN stored, network stored yes, heap 179660, crash: no record
-06:17:11 round 2 full->setup in 4.7 s: firmware setup, slot 1 (table age 75, FW entry age 0x0000004b) PIN stored, network stored yes, heap 131980, crash: no record
-06:17:16 round 2 setup->full in 4.3 s: firmware full, slot 0 (table age 76, FW entry age 0x0000004c) PIN stored, network stored yes, heap 206788, crash: no record
-06:17:16 full->setup: 2 switches, 4.7 / 4.7 / 4.7 s (min / median / max)
-06:17:16 setup->full: 2 switches, 4.3 / 6.6 / 6.6 s (min / median / max)
-06:17:16 PASS
+01:47:31 start firmware full, slot 0 (table age 6, FW entry age 0x00000006) PIN stored, network stored yes, heap 197764, crash: no record
+01:47:40 round 1 full->setup in 8.0 s: firmware setup, slot 1 (table age 7, FW entry age 0x00000007) PIN stored, network stored yes, heap 126856, crash: no record
+01:47:44 round 1 setup->full in 4.3 s: firmware full, slot 0 (table age 8, FW entry age 0x00000008) PIN stored, network stored yes, heap 197764, crash: no record
+01:47:53 round 2 full->setup in 8.0 s: firmware setup, slot 1 (table age 9, FW entry age 0x00000009) PIN stored, network stored yes, heap 126856, crash: no record
+01:48:01 round 2 setup->full in 7.6 s: firmware full, slot 0 (table age 10, FW entry age 0x0000000a) PIN stored, network stored yes, heap 170532, crash: no record
+01:48:01 full->setup: 2 switches, 8.0 / 8.0 / 8.0 s (min / median / max)
+01:48:01 setup->full: 2 switches, 4.3 / 7.6 / 7.6 s (min / median / max)
+01:48:01 PASS

@@ -11,7 +11,7 @@ consistency: STATUS is the board's state and the app reconciles with it), and a 
 
 - The setup firmware's test bed (tests/firmware/bl616_setup_test, make flash there; since 2026-11-03, before: the
   power test firmware): firmware/bl616_setup's own sources started by `lp_boot`, its switch to the full firmware off
-  (`switch_to_full off`), with `pt_fault`: linker wraps around the product's provisioning (ble_pairing.c,
+  (`lp_switch off`), with `pt_fault`: linker wraps around the product's provisioning (ble_pairing.c,
   wifi_check.c), the product sources unchanged. BLE retransmits on the
   link layer, so a loss there is a dropped notification (host buffers full) or a dropped link (supervision timeout);
   on Wi-Fi a DNS or HTTP answer that never comes.

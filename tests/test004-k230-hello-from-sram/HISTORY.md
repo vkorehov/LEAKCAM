@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 173 s): pass
+
+3 USB boots: k230_hello loaded in 5.8, 4.2, 4.2 s, K230_ALIVE toggling (avg half-period 1000, 1000, 1000 ms).
+
+
 ### Automated run 2026-10-25 (run.py, 170 s): pass
 
 3 USB boots: k230_hello loaded in 4.2, 4.2, 4.2 s, K230_ALIVE toggling (avg half-period 1000, 1000, 1000 ms).

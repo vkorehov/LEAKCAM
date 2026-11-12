@@ -21,12 +21,14 @@ func testServer(t *testing.T) *httptest.Server {
 	metricFile, imageDir, mediaDir = dir+"/metrics.jsonl", dir, dir
 	checkinS, leakCheckS = CheckinS, LeakCheckS
 	intervals, seen, phones = map[string]Intervals{}, map[string]CheckIn{}, map[string][]string{}
+	thresholds, thrFile = map[string]Thresholds{}, dir+"/thresholds.json"
 	leaks, wifiChanges, tokens, tokenFile = map[string]Leak{}, map[string]*WifiChange{}, map[string]string{}, dir+"/tokens.json"
 	captures, notLeak = map[string][]Capture{}, map[string]string{}
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /v1/poll", poll)
 	mux.HandleFunc("GET /v1/devices/{id}", device)
 	mux.HandleFunc("PUT /v1/devices/{id}/intervals", setIntervals)
+	mux.HandleFunc("PUT /v1/devices/{id}/thresholds", setThresholds)
 	mux.HandleFunc("POST /v1/devices/{id}/capture", capture)
 	mux.HandleFunc("POST /v1/devices/{id}/clear", clearLeak)
 	mux.HandleFunc("PUT /v1/devices/{id}/wifi", putWifi)
@@ -100,7 +102,7 @@ func TestIntervalsPerDevice(t *testing.T) {
 	if ans, _ = checkIn(t, s, url.Values{}); ans["checkin"] != float64(CheckinS) {
 		t.Fatalf("0 = the default: %v", ans)
 	}
-	for _, bad := range []string{`{"checkin":4}`, `{"checkin":3601}`, `{"leakcheck":59}`, `{"leakcheck":604801}`, `x`} {
+	for _, bad := range []string{`{"checkin":4}`, `{"checkin":3601}`, `{"leakcheck":9}`, `{"leakcheck":604801}`, `x`} {
 		if c := put(t, s, bad); c != http.StatusBadRequest {
 			t.Errorf("PUT %s: %d, want 400", bad, c)
 		}
@@ -293,5 +295,96 @@ func TestNotALeak(t *testing.T) {
 	}
 	if m := deviceMedia(TestID); len(m) != 2 || m[0].Kind != "video" || m[1].At != 1794081605 {
 		t.Errorf("media list: %+v", m)
+	}
+}
+
+// 85 %RH or more at any reading opens a leak (DESIGN.md 5.3.15); 84.9 does not; Not a leak keeps it quiet until the
+// humidity fell below 85 %RH; the room keys are kept
+func TestHumidityLeak(t *testing.T) {
+	s := testServer(t)
+	if ans, _ := checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "rh": {"849"}}); ans["mode"] != float64(0) {
+		t.Errorf("84.9 %%RH opened a leak: mode %v", ans["mode"])
+	}
+	if ans, _ := checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "rh": {"850"}}); ans["mode"] != float64(1) {
+		t.Errorf("85.0 %%RH: no leak: mode %v", ans["mode"])
+	}
+	mu.Lock()
+	l, open := leaks[TestID]
+	mu.Unlock()
+	if !open || l.Why != "humidity high" {
+		t.Errorf("leak: %v %+v", open, l)
+	}
+	must(http.Post(s.URL+"/v1/devices/"+TestID+"/clear?not_leak=1", "", nil))
+	if ans, _ := checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "rh": {"900"}}); ans["mode"] != float64(0) {
+		t.Errorf("still humid after Not a leak: mode %v", ans["mode"])
+	}
+	checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "rh": {"600"}, "troom": {"212"}, "rhroom": {"583"},
+		"roomago": {"40"}, "quiet": {"11000"}})
+	mu.Lock()
+	m := seen[TestID].Metrics
+	mu.Unlock()
+	if m["troom"] != int64(212) || m["rhroom"] != int64(583) || m["quiet"] != int64(11000) {
+		t.Errorf("room keys: %v", m)
+	}
+	if ans, _ := checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "rh": {"860"}}); ans["mode"] != float64(1) {
+		t.Errorf("humid again after it fell: mode %v", ans["mode"])
+	}
+}
+
+func putThr(t *testing.T, s *httptest.Server, body string) int {
+	t.Helper()
+	req, _ := http.NewRequest(http.MethodPut, s.URL+"/v1/devices/"+TestID+"/thresholds", strings.NewReader(body))
+	r, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.Body.Close()
+	return r.StatusCode
+}
+
+// the leak thresholds ride every check-in answer (DESIGN.md 5.3.16): the defaults, per device, kept in the file across
+// a restart, judged with the device's own values, out of range refused, 0 back to the default
+func TestThresholds(t *testing.T) {
+	s := testServer(t)
+	full := url.Values{"full": {"0.6+g1234567"}}
+	if ans, _ := checkIn(t, s, full); ans["probe_mv"] != float64(LeakProbeMV) || ans["humid"] != float64(HumidPct) {
+		t.Fatalf("defaults: %v", ans)
+	}
+	for _, bad := range []string{`{"probe_mv":1125}`, `{"probe_mv":450}`, `{"probe_mv":1650}`, `{"humid":49}`, `{"humid":100}`} {
+		if c := putThr(t, s, bad); c != http.StatusBadRequest {
+			t.Errorf("%s: %d, want 400", bad, c)
+		}
+	}
+	if c := putThr(t, s, `{"probe_mv":900,"humid":70}`); c != http.StatusOK {
+		t.Fatalf("put: %d", c)
+	}
+	if ans, _ := checkIn(t, s, full); ans["probe_mv"] != float64(900) || ans["humid"] != float64(70) {
+		t.Fatalf("per device: %v", ans)
+	}
+	mu.Lock()
+	thresholds = map[string]Thresholds{} // a restart: read back from the file
+	mu.Unlock()
+	loadThresholds()
+	if got := deviceThresholds(TestID); got != (Thresholds{900, 70}) {
+		t.Fatalf("after a restart: %+v", got)
+	}
+	// judged with the device's values: 72 %RH is humid at 70, a probe at 1000 mV is dry at 900
+	if ans, _ := checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "probe": {"1000"}, "rh": {"650"}}); ans["mode"] != float64(0) {
+		t.Errorf("dry and below 70 %%RH: mode %v", ans["mode"])
+	}
+	if ans, _ := checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "rh": {"720"}, "thmv": {"900"}, "thrh": {"70"}}); ans["mode"] != float64(1) {
+		t.Errorf("72 %%RH at a 70 threshold: mode %v", ans["mode"])
+	}
+	mu.Lock()
+	m := seen[TestID].Metrics
+	mu.Unlock()
+	if m["thmv"] != int64(900) || m["thrh"] != int64(70) {
+		t.Errorf("the thresholds in use not kept: %v", m)
+	}
+	if c := putThr(t, s, `{"probe_mv":0,"humid":0}`); c != http.StatusOK {
+		t.Fatalf("put 0: %d", c)
+	}
+	if ans, _ := checkIn(t, s, full); ans["probe_mv"] != float64(LeakProbeMV) || ans["humid"] != float64(HumidPct) {
+		t.Fatalf("back to the defaults: %v", ans)
 	}
 }

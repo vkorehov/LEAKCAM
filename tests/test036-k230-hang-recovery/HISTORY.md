@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 365 s): pass
+
+12 sessions: normal: rails off 30.75-30.75 s, first heartbeat 1.41-1.42 s; hang: rails off 7.32-7.33 s, first heartbeat 0.92-1.42 s; reboot: rails off 35.41-35.41 s, first heartbeat 0.92-1.42 s; noboot: rails off 15.32-15.32 s.
+
+
 ### Automated run 2026-10-31 (run.py, 346 s): pass
 
 12 sessions: normal: rails off 27.73-27.74 s, first heartbeat 0.91-1.42 s; hang: rails off 7.32-7.32 s, first heartbeat 0.91-1.41 s; reboot: rails off 32.39-32.39 s, first heartbeat 1.41-1.41 s; noboot: rails off 15.31-15.31 s.

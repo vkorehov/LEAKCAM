@@ -64,3 +64,51 @@ CONFIG_BTBLECONTROLLER_LIB =ble1m0s1bredr0
 CONFIG_BLE_USE_MAC2 =n
 CONFIG_BT_STACK_CLI =n
 CONFIG_BT_FIXED_PASSKEY =y
+
+# mTLS for the check-in (tls_link.c; the full firmware's defconfig says why): TLS 1.3 + 1.2, PSA, 4 KB records
+CONFIG_MBEDTLS_TLS_VERSION_1_3        =y
+CONFIG_MBEDTLS_PSA_CRYPTO_C           =y
+CONFIG_MBEDTLS_SSL_MAX_CONTENT_LEN    =4096
+CONFIG_MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_EPHEMERAL_ENABLED =y
+CONFIG_MBEDTLS_HKDF_C                 =y
+# the PSA algorithms TLS 1.3 / 1.2 with P-256 need (mbedtls check_config.h): ECDHE + ECDSA on P-256, AES-GCM, SHA-256,
+# HKDF, HMAC, the TLS 1.2 PRF; nothing else
+CONFIG_PSA_WANT_ALG_ECDH                       =y
+CONFIG_PSA_WANT_ALG_ECDSA                      =y
+CONFIG_PSA_WANT_ALG_DETERMINISTIC_ECDSA        =y
+CONFIG_PSA_WANT_ALG_GCM                        =y
+CONFIG_PSA_WANT_ALG_ECB_NO_PADDING             =y
+CONFIG_PSA_WANT_ALG_HKDF                       =y
+CONFIG_PSA_WANT_ALG_HKDF_EXTRACT               =y
+CONFIG_PSA_WANT_ALG_HKDF_EXPAND                =y
+CONFIG_PSA_WANT_ALG_HMAC                       =y
+CONFIG_PSA_WANT_ALG_SHA_256                    =y
+CONFIG_PSA_WANT_ALG_TLS12_PRF                  =y
+CONFIG_PSA_WANT_ECC_SECP_R1_256                =y
+CONFIG_PSA_WANT_KEY_TYPE_AES                   =y
+CONFIG_PSA_WANT_KEY_TYPE_HMAC                  =y
+CONFIG_PSA_WANT_KEY_TYPE_DERIVE                =y
+CONFIG_PSA_WANT_KEY_TYPE_RAW_DATA              =y
+CONFIG_PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY        =y
+CONFIG_PSA_WANT_KEY_TYPE_ECC_KEY_PAIR_IMPORT   =y
+CONFIG_PSA_WANT_KEY_TYPE_ECC_KEY_PAIR_EXPORT   =y
+CONFIG_PSA_WANT_KEY_TYPE_ECC_KEY_PAIR_GENERATE =y
+CONFIG_PSA_WANT_KEY_TYPE_ECC_KEY_PAIR_DERIVE   =y
+# PSA key material on the heap while a key exists, not 16 static slots sized for the largest key enabled (RSA, from
+# the Wi-Fi set's TLS 1.2 key exchanges): 38.4 KB of static RAM otherwise (the QUIC spike's finding, 2026-11-10)
+CONFIG_MBEDTLS_PSA_STATIC_KEY_SLOTS =n
+
+# mbedTLS trimmed to what the check-in's mTLS uses (user 2026-11-10: "trim mbedTLS"): ECDHE-ECDSA on P-256 with
+# AES-GCM only. The Wi-Fi set's defaults pull in every TLS key exchange (RSA, DHE, PSK, ECDH), DES, DHM and prime
+# generation: code for ciphersuites nothing here offers. wpa_supplicant's own needs (WPA2/3 personal: SHA-1, PBKDF2,
+# MD5, AES, ECC) stay
+CONFIG_MBEDTLS_KEY_EXCHANGE_PSK_ENABLED       =n
+CONFIG_MBEDTLS_KEY_EXCHANGE_RSA_ENABLED       =n
+CONFIG_MBEDTLS_KEY_EXCHANGE_DHE_RSA_ENABLED   =n
+CONFIG_MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED =n
+CONFIG_MBEDTLS_KEY_EXCHANGE_ECDH_ECDSA_ENABLED =n
+CONFIG_MBEDTLS_KEY_EXCHANGE_ECDH_RSA_ENABLED  =n
+CONFIG_MBEDTLS_CIPHER_DES_ENABLED             =n
+CONFIG_MBEDTLS_DHM_C                          =n
+CONFIG_MBEDTLS_GENPRIME_ENABLED               =n
+CONFIG_MBEDTLS_PK_WRITE_C                     =n

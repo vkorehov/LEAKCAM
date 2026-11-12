@@ -20,6 +20,8 @@ struct cap_cam {
     void *buf[CAP_NBUF];
     size_t len[CAP_NBUF];
     uint8_t *luma;                 /* width x height copy of the Y plane of the kept frame */
+    uint8_t *chroma;               /* optional, set by the caller: width x height / 2, the frame's interleaved UV plane
+                                    * (NV12) - tests/test030 cam_shot for colour pictures; NULL: luminance only */
     unsigned frames;               /* frames dequeued so far */
 };
 

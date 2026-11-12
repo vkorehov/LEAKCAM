@@ -4,6 +4,131 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 80 s): pass
+
+6/6 checks pass.
+
+
+### Automated run 2026-11-12 (run.py, 51 s): pass
+
+5/5 checks pass.
+
+
+### Automated run 2026-11-12 (run.py, 73 s): pass
+
+6/6 checks pass.
+
+
+### Automated run 2026-11-12 (run.py, 48 s): pass
+
+5/5 checks pass.
+
+
+### Automated run 2026-11-11 (run.py, 68 s): pass
+
+6/6 checks pass.
+
+
+### Automated run 2026-11-11 (run.py, 52 s): pass
+
+5/5 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 65 s): pass
+
+6/6 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 50 s): pass
+
+5/5 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 72 s): pass
+
+6/6 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 52 s): pass
+
+5/5 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 100 s): pass
+
+6/6 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 53 s): pass
+
+5/5 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 57 s): pass
+
+6/6 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 48 s): pass
+
+5/5 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 53 s): pass
+
+5/5 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 65 s): pass
+
+6/6 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 50 s): pass
+
+5/5 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 64 s): pass
+
+6/6 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 54 s): pass
+
+5/5 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 61 s): pass
+
+6/6 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 45 s): pass
+
+5/5 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 67 s): pass
+
+6/6 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 48 s): pass
+
+5/5 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 103 s): pass
+
+6/6 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 49 s): pass
+
+5/5 checks pass.
+
+
 ### Automated run 2026-11-09 (run.py, 64 s): pass
 
 6/6 checks pass.

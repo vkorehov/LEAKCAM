@@ -16,7 +16,7 @@ product flow are test106.
 
 - The setup firmware's test bed (tests/firmware/bl616_setup_test, `run.py --flash` or make flash there; since
   2026-11-03, before: the power test firmware): firmware/bl616_setup's own sources started by `lp_boot`, its switch
-  to the full firmware off (`switch_to_full off`: every store stays here), and the power test firmware's `pt_ble`:
+  to the full firmware off (`lp_switch off`: every store stays here), and the power test firmware's `pt_ble`:
   `pt_ble creds` (lengths and a CRC of the stored `wifi_ssid` / `wifi_psk`, never the passphrase itself),
   `pt_ble erase` (delete both keys and `wifi_ap`). Console PR1 (`/dev/leakcam-bl616`).
 - BLE central: the user's Android phone on adb over USB (2026-10-27; the VM has no Bluetooth controller of its own).
@@ -79,7 +79,7 @@ power cut; no leak over the repeats; the passphrase never appears on a console o
 ## Result
 
 - 2026-11-03 06:15-06:21 UTC, run.py 37/37, 368 s, setup_test 0.6+g8828b50-dirty-202611030525 (the test bed,
-  `switch_to_full off`), USB-C 1 in, the phone 8 m away in another room: advertising seen 4.7 s after `lp_boot`
+  `lp_switch off`), USB-C 1 in, the phone 8 m away in another room: advertising seen 4.7 s after `lp_boot`
   (RSSI -62); the cancelled pairing and the pairing without the PIN: every write refused, nothing stored; paired with
   the PIN (passkey entry), MTU 247; every write limit enforced; stored exactly (no old tail bytes); kept over a reset
   and a watchdog reset (`crash hang`, the record cleared after); wrong passphrase 0x11, unknown SSID 0x10, the old

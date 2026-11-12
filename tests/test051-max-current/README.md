@@ -4,6 +4,14 @@ Status: **pass on USB** (2026-10-30): per-load currents recorded; all camera-fre
 68 C at the end; with the LEDs on the USB meter's series resistance capped the input at ~0.57-0.60 A and the cell
 carried the rest (board ~1.13 A; 1.05 A from USB through a 10 A-range meter on 2026-10-25). Cell-only
 runs: n/a (no battery measurements, user 2026-10-30).
+Open (2026-11-12): the cameras arrived after the 10-30 readings; one reading with both cameras streaming
+(`tests/test030-camera-capture/stream.py`) completes "everything at once"; the other loads' readings stand.
+Datasheet estimate until then (2026-11-12, **not measured**): OmniVision's OV5647 product brief gives active 96 mA,
+standby 20 uA (as quoted by a datasheet listing; the source page was not reachable to confirm); the full preliminary
+datasheet (v1.0, Table 8-3) leaves every current TBD. Taken as 96 mA per sensor at the camera board's 3.3 V input
+(its own LDOs to 2.8 / 1.8 / 1.5 V): ~0.32 W each, ~0.63 W for two, ~0.14 A more at the 5 V USB input (90 % converter),
+~0.19 A more from a 3.7 V cell. The K230's CSI / VICAP / ISP share is not in any datasheet. So "everything at once"
+with the cameras: ~0.74 A input, board ~1.27 A (from 0.60 / 1.13 A, 2026-10-30): a reading replaces this.
 
 The worst case the cell and the power path must survive: every consumer on the board busy at the same time, on a
 full and on a low cell. Rev 1 has no hardware discharge cutoff (bug-004): a sag below the rails' minimum would reset

@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 62 s): pass
+
+2 x 15 fps: ch0 14.9 fps 511 kbit/s, ch1 14.8 fps 509 kbit/s; 1 channel max: ch0 79.2 fps 2639 kbit/s.
+
+
 ### Automated run 2026-10-31 (run.py, 61 s): pass
 
 2 x 15 fps: ch0 15.0 fps 511 kbit/s, ch1 14.9 fps 509 kbit/s; 1 channel max: ch0 75.3 fps 2516 kbit/s.

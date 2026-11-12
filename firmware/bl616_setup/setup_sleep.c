@@ -2,6 +2,7 @@
  * The setup firmware's sleep: see setup_sleep.h. From bouffalo_sdk examples/pmu/wl_ble_lp (main.c), changed for rev 1
  * (tests/test120, test121; skill bl616-ble-low-power).
  */
+#include "climate.h"
 #include "setup_sleep.h"
 #include "evlog.h"
 #include "blecore.h"
@@ -205,6 +206,7 @@ static void usb_plug_task(void *arg)
         bool now = setup_usb_present();
         if (usb && !now) {
             evlog_add(EV_USB, 0, 0);
+            climate_heat();                      /* the charger's heat ends: the cool window starts (climate.h) */
             usb_setup_end("USB unplugged");      /* the cable setup's K230 off at once (battery) */
             evlog_add(EV_MARK, 1, 0);            /* the K230 stop asked */
             if (ble_pairing_connected()) {
@@ -334,6 +336,15 @@ static int lp_exit(void *arg)
     uint32_t why = bl_lp_get_wake_reason();
     if (why & LPFW_WAKEUP_BLE)
         st.ble_wakes++;
+    /* USB power as state, not only its edge: power back between the sleep's last check and the PDS entry gave no
+     * falling edge on PGOOD, and the board slept on USB power for good (tests/test139 A600, 2026-11-09). Read at every
+     * wake (the advertising's, every 2 s): a plug seen within one period; the edge's own wake notifies too (harmless:
+     * the task takes the notification once) */
+    if (sleeping && usb_plug_handle && setup_usb_present()) {
+        vTaskNotifyGiveFromISR(usb_plug_handle, &woken);
+        portYIELD_FROM_ISR(woken);
+        woken = pdFALSE;
+    }
     if (why & LPFW_WAKEUP_WIFI_BROADCAST) {
         vTaskNotifyGiveFromISR(rxl_process_task_hd, &woken);
         portYIELD_FROM_ISR(woken);

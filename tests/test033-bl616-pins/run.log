@@ -1,9 +1,10 @@
-09:00:56 test033-bl616-pins: 0 metric rows MISSING: none
-09:01:03 sample off {'board': 32.5, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0)}
-09:01:10 sample on_reset {'board': 32.3, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0)}
-09:01:18 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
-09:01:24 sample running {'board': 32.0, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 39.156, 'k_free': (7025152, 1390848), 'vbat': 4151}
-09:01:34 boot NO CONSOLE
-09:02:05 sample boot1_high {'board': 32.0, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': None, 'k_free': None, 'vbat': None}
-09:02:40 sample uart_on {'board': 32.6, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': None, 'k_free': None, 'vbat': None}
-09:02:42 test033-bl616-pins: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+00:37:36 test033-bl616-pins: 0 metric rows MISSING: none
+00:37:46 BL616 port missing: the VM's USB controller reset (xhci unbind/bind)
+00:37:59 sample off {'board': 23.7, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+00:38:06 sample on_reset {'board': 23.8, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+00:38:14 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.56 msh 0.57
+00:38:20 sample running {'board': 24.1, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 30.654, 'k_free': (7020032, 1395968), 'vbat': 4384}
+00:38:30 boot NO CONSOLE
+00:39:01 sample boot1_high {'board': 24.8, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': None, 'k_free': None, 'vbat': None}
+00:39:36 sample uart_on {'board': 26.7, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': None, 'k_free': None, 'vbat': None}
+00:39:39 test033-bl616-pins: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

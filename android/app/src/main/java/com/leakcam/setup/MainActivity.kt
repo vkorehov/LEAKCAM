@@ -220,6 +220,9 @@ class MainActivity : Activity() {
     private var planned = listOf<Pair<UUID, ByteArray>>()
     private var tries = 0                // connects of this send before the commit
     private var reconciling = false      // the link was lost after the commit: reconnecting to read STATUS
+    private var commitAt = 0L            // elapsedRealtime of the commit: the server's check-in must be newer
+    private var held = false             // a send's result on the screen: a board leaving the list does not replace it
+    private var heldFor = ""            // the row (address or USB_TAG) of that send: the same board found again keeps it
     private var firstRead = false        // the first STATUS after a reconnect decides
     private var adapterReceiver: BroadcastReceiver? = null
     private var ssidText = ""
@@ -300,7 +303,12 @@ class MainActivity : Activity() {
                 if (show) InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD else InputType.TYPE_TEXT_VARIATION_PASSWORD
             passwordField.setSelection(passwordField.text.length)
         }
-        devices.setOnCheckedChangeListener { _, _ -> if (gatt == null && !sending) wifiHelp() }
+        // a board leaving the list clears the pick: the last send's result stays (test110, 2026-11-09: the board finished
+        // its check alone, left for the full firmware, and "Plug the LEAKCAM in" replaced the answer); a pick shows help
+        devices.setOnCheckedChangeListener { _, id ->
+            if (id != -1 && pickedTag() != heldFor) held = false
+            if (gatt == null && !sending && !held) wifiHelp()
+        }
         sendButton.setOnClickListener { if (ready()) send(true) }
         setupMore.setOnClickListener { v ->
             android.widget.PopupMenu(this, v).apply {
@@ -1156,10 +1164,12 @@ class MainActivity : Activity() {
         if (device.bondState != BluetoothDevice.BOND_NONE && !removeBond(device))
             return problem(STEP_SAVE, R.string.err_unpair, name)
         boardName = name
+        heldFor = address
         boardId = ids[address] ?: ""
         ssidText = ssidField.text.toString()
         checked = check
         committed = false
+        held = false
         val commit = if (check) COMMIT_CHECK else COMMIT_UNCHECKED
         attempt = (1..Int.MAX_VALUE).random()
         val id = ByteArray(4) { (attempt shr (8 * it)).toByte() }
@@ -1301,8 +1311,10 @@ class MainActivity : Activity() {
         usbLater.clear()
         usbSwitching = false
         sendButton.isEnabled = true
-        if (wasSending)
+        if (wasSending) {
+            held = true                  // its result stays until the next pick or send
             done?.invoke()
+        }
     }
 
     private fun fail(res: Int, vararg args: Any) {
@@ -1363,6 +1375,24 @@ class MainActivity : Activity() {
         main.postDelayed({ if (sending && gatt == null) connect() }, RETRY_MS)
     }
 
+    /** the board stored the network: Done, then the LEAKCAMs screen with it picked */
+    private fun saved() = finishSend {
+        remember()
+        found.clear()
+        devices.removeAllViews()
+        show(STEP_DONE, if (checked) R.string.help_done else R.string.help_done_unchecked, boardName, ssidText)
+        // Done -> the LEAKCAMs screen at once, the board picked, the answer in its status (user 2026-11-08:
+        // "once done we need to go to status screen automatically")
+        if (boardId.isNotEmpty()) {
+            selected = boardId
+            note = Triple(boardId, getString(if (checked) R.string.done_note else R.string.done_unchecked_note,
+                                             boardName, ssidText), SystemClock.elapsedRealtime() + 60_000L)
+        }
+        showStatus()
+        loadMine()
+        alertPermissions()
+    }
+
     private val reconcileDeadline = Runnable { fail(R.string.err_unconfirmed, boardName) }
 
     /** the link (or Bluetooth) lost after the commit: the board may have stored the network; reconnect and read STATUS
@@ -1374,6 +1404,7 @@ class MainActivity : Activity() {
         if (!reconciling) {
             reconciling = true
             main.postDelayed(reconcileDeadline, RECONCILE_MS)
+            serverCheck()
         }
         firstRead = true
         writes = ArrayDeque()
@@ -1381,6 +1412,45 @@ class MainActivity : Activity() {
             return show(STEP_SAVE, R.string.help_bluetooth_off_reconnect, boardName)
         show(STEP_SAVE, R.string.help_reconnecting, boardName)
         main.postDelayed({ if (sending && gatt == null) connect() }, RETRY_MS)
+    }
+
+    /** while reconnecting after a lost link: the board that finished its check alone goes to the full firmware and
+     *  stops advertising for setup, so the reconnect cannot find it; its check-in at the server on the network just
+     *  sent, newer than the commit, is the answer (test110 2026-11-09: the app said "plug it in" for a stored network) */
+    private fun serverCheck() {
+        val id = boardId
+        val ssid = ssidText
+        if (id.isEmpty())
+            return
+        Thread {
+            while (true) {
+                if (!(reconciling && sending))   // read off the main thread: a stale read costs one more poll
+                    return@Thread
+                try {
+                    val c = URL("${BuildConfig.SERVER}/v1/devices/$id").openConnection() as HttpURLConnection
+                    c.connectTimeout = 3000
+                    c.readTimeout = 3000
+                    val j = if (c.responseCode == 200) JSONObject(c.inputStream.bufferedReader().readText()) else null
+                    c.disconnect()
+                    val since = (SystemClock.elapsedRealtime() - commitAt) / 1000
+                    if (j != null && j.optBoolean("online") && j.optString("ssid") == ssid &&
+                        j.optLong("last_seen_s", Long.MAX_VALUE) < since) {
+                        main.post {
+                            if (reconciling && sending) {
+                                Log.i(TAG, "lost link: $id checked in on the new network: saved")
+                                reconciling = false
+                                main.removeCallbacks(reconcileDeadline)
+                                saved()
+                            }
+                        }
+                        return@Thread
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "lost link: server check ($e)")
+                }
+                SystemClock.sleep(1500)
+            }
+        }.start()
     }
 
     /** Bluetooth turned off during a send gives no disconnect callback (test110): watch the adapter itself */
@@ -1578,22 +1648,7 @@ class MainActivity : Activity() {
             WCHK_JOINING -> show(STEP_SAVE, R.string.help_check_join, ssidText)
             WCHK_ADDRESS -> show(STEP_SAVE, R.string.help_check_address)
             WCHK_INTERNET -> show(STEP_SAVE, R.string.help_check_internet)
-            WCHK_SAVED -> finishSend {
-                remember()
-                found.clear()
-                devices.removeAllViews()
-                show(STEP_DONE, if (checked) R.string.help_done else R.string.help_done_unchecked, boardName, ssidText)
-                // Done -> the LEAKCAMs screen at once, the board picked, the answer in its status (user 2026-11-08:
-                // "once done we need to go to status screen automatically")
-                if (boardId.isNotEmpty()) {
-                    selected = boardId
-                    note = Triple(boardId, getString(if (checked) R.string.done_note else R.string.done_unchecked_note,
-                                                     boardName, ssidText), SystemClock.elapsedRealtime() + 60_000L)
-                }
-                showStatus()
-                loadMine()
-                alertPermissions()
-            }
+            WCHK_SAVED -> saved()
             else -> {
                 // where the board is now may be the only problem: offer to store unchecked
                 val placeOnly = state in setOf(WCHK_NOT_FOUND, WCHK_NO_ADDRESS, WCHK_NO_DNS, WCHK_NO_INTERNET, WCHK_CAPTIVE, WCHK_NO_API)
@@ -1631,6 +1686,7 @@ class MainActivity : Activity() {
         val (uuid, value) = next
         if (uuid == COMMIT) {
             committed = true             // STATUS may answer before the write does (save, busy)
+            commitAt = SystemClock.elapsedRealtime()
             lastState = -1
         }
         val c = g.getService(SERVICE)?.getCharacteristic(uuid) ?: return fail(R.string.err_no_service)
@@ -1691,7 +1747,7 @@ class MainActivity : Activity() {
             devices.removeView(it)
         }
         updateBusy()
-        if (!onStatus && !sending && step != STEP_DONE)   // Done stays: the board ends the link itself after it
+        if (!onStatus && !sending && step != STEP_DONE && !held)   // Done stays: the board ends the link itself after it
             wifiHelp()
     }
 
@@ -1773,6 +1829,7 @@ class MainActivity : Activity() {
             return problem(STEP_FIND, R.string.err_usb_gone, usbId)
         stopScan()
         boardName = usbId
+        heldFor = USB_TAG
         boardId = usbId
         ssidText = ssidField.text.toString()
         checked = check
@@ -1869,7 +1926,22 @@ class MainActivity : Activity() {
         }
         // its next check-in always said (user 2026-11-07): when a photo, a video or a Wi-Fi change reaches it
         return getString(R.string.mine_next, getString(R.string.mine_ssid, state, ssid.ifEmpty { getString(R.string.mine_ssid_unknown) }),
-                         checkinAt(j.optLong("next_checkin", 0)))
+                         checkinAt(j.optLong("next_checkin", 0))) + room(j)
+    }
+
+    /** the room's temperature and humidity (DESIGN.md 5.3.15): only a reading the board took after 3 h cool, with its
+     *  age; none yet: nothing said */
+    private fun room(j: JSONObject): String {
+        val m = j.optJSONObject("metrics") ?: return ""
+        if (!m.has("troom") || !m.has("rhroom"))
+            return ""
+        val t = m.getInt("troom") / 10.0
+        val rh = m.getInt("rhroom") / 10.0
+        val ago = m.optLong("roomago", -1)
+        val seen = j.optLong("last_seen_s", -1)
+        val h = if (ago >= 0 && seen >= 0) (ago + seen) / 3600 else -1
+        val what = getString(R.string.mine_room, t, rh)
+        return " · " + if (h >= 1) getString(R.string.mine_room_ago, what, h.toInt()) else what
     }
 
     /** the delete goes to the server (DELETE /v1/devices/<id>/phones/<phone>): this phone no longer a user; then the

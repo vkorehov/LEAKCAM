@@ -19,6 +19,8 @@ void k230_power_run(void);
 /* reset held, rails off, discharged (300 ms settle), the pins parked again; the 3V3 fall in us, 0 = it stayed up */
 uint32_t k230_power_off(void);
 bool k230_power_is_on(void);
+/* when the K230 was last switched off, ms since boot (0 = not in this boot): the board cools from then (climate.c) */
+uint64_t k230_power_off_ms(void);
 /* K230_ALIVE (IO01 <- K230 GPIO2): the program's heartbeat; reads low with the K230 off (its pull-up is on the 3V3) */
 bool k230_alive(void);
 /* shell `k230 usbboot | off` (both product firmwares, user 2026-11-05: flash the K230 without the test firmware):

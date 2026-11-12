@@ -4,6 +4,13 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 679 s): pass
+
+6 load steps on USB; then all loads 10 min: 0 K230 resets. Die 41.9-48.5 C over the steps.
+
+- Wi-Fi step skipped: no TCP sink on 192.168.1.131:5001 (pc_tcp_bench.py sink)
+
+
 ### Automated run 2026-11-07 (run.py, 42 s): **FAIL**
 
 stopped at 'K230 at msh idle (agent running)': the load did not start

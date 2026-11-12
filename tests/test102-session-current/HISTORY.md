@@ -18,6 +18,16 @@ budget is 24 check-ins + 1 leak check a day (~2.85 mAh/day estimate). The old li
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 12 s): **FAIL**
+
+no meter reading given.
+
+
+### Automated run 2026-11-12 (run.py, 3 s): **FAIL**
+
+not run: no pt_boot, pt_session on the BL616.
+
+
 ### Automated run 2026-11-07 (run.py, 10 s): **FAIL**
 
 no meter reading given.
@@ -46,5 +56,11 @@ Not run yet.
 - Steps: 1. Rails off (BL616 only): sleep-level current (the BL616 test firmware does not hibernate: product firmware later).
 
 ## Obstacles
+
+- **2026-11-12 04:17, FAIL in the all-tests batch: not a regression.** The test is deferred (user 2026-11-08); its
+  run.py is the old test firmware's (`pt_session`) and records only meter readings, none asked unattended. To be
+  rewritten for the product pair and read with the cell out or full.
+
+- the BL616 firmware has no pt_boot, pt_session: flash the test firmware that has it (2026-11-12, automated run)
 
 None.

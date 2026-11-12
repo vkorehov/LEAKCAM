@@ -1,14 +1,14 @@
-09:48:25 test124-bl616-brownout: 0 metric rows MISSING: none
-09:48:32 CHECK pass software reset (`reboot`): the full firmware back 7.0 s
-09:48:32 CHECK pass software reset: the reset record read rst=80
-09:48:32 reset record after a software reset: rst=80
-09:48:47 CHECK pass watchdog reset (`crash hang`): the full firmware back 14.9 s
-09:48:47 CHECK pass watchdog reset: the reset record read rst=88
-09:48:47 reset record after a watchdog reset: rst=88
-09:49:02 CHECK pass exception reset (`crash test`): the full firmware back 14.8 s
-09:49:02 CHECK pass exception reset: the reset record read rst=88
-09:49:02 reset record after a exception reset: rst=88
-09:49:02 CHECK pass software and watchdog resets leave different records (a brown-out's can be told apart) {'software': '80', 'watchdog': '88', 'exception': '88'}
-09:49:02 CHECK pass an exception resets through the watchdog (its record = the watchdog's; the crash record names it) {'software': '80', 'watchdog': '88', 'exception': '88'}
-09:49:24 CHECK pass the server has the last reset record (check-in metrics) server rst=88
-09:49:26 test124-bl616-brownout: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+02:38:06 test124-bl616-brownout: 0 metric rows MISSING: none
+02:38:10 CHECK pass software reset (`reboot`): the full firmware back 3.9 s
+02:38:10 CHECK pass software reset: the reset record read rst=80
+02:38:10 reset record after a software reset: rst=80
+02:38:25 CHECK pass watchdog reset (`crash hang`): the full firmware back 15.0 s
+02:38:25 CHECK pass watchdog reset: the reset record read rst=88
+02:38:25 reset record after a watchdog reset: rst=88
+02:38:40 CHECK pass exception reset (`crash test`): the full firmware back 14.7 s
+02:38:40 CHECK pass exception reset: the reset record read rst=88
+02:38:40 reset record after a exception reset: rst=88
+02:38:40 CHECK pass software and watchdog resets leave different records (a brown-out's can be told apart) {'software': '80', 'watchdog': '88', 'exception': '88'}
+02:38:40 CHECK pass an exception resets through the watchdog (its record = the watchdog's; the crash record names it) {'software': '80', 'watchdog': '88', 'exception': '88'}
+02:39:02 CHECK pass the server has the last reset record (check-in metrics) server rst=88
+02:39:05 test124-bl616-brownout: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

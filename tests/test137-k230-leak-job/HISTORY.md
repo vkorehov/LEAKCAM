@@ -4,6 +4,51 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 109 s): **FAIL**
+
+7/12 checks pass. Failed: same scene: same,same (changed,same in 2813 ms); an object on cam0: changed,same (changed,changed in 2814 ms); cam1 same again: same,same (the history was kept on the change) (changed,same in 2817 ms); 8 checks: all same,same (); 8 checks: the K230 program's heap does not grow (heap + [942080, 942080, 942080] B).
+
+
+### Automated run 2026-11-12 (run.py, 118 s): **FAIL**
+
+10/12 checks pass. Failed: 8 checks: all same,same (); 8 checks: the K230 program's heap does not grow (heap + [942080, 942080] B).
+
+
+### Automated run 2026-11-12 (run.py, 104 s): **FAIL**
+
+9/11 checks pass. Failed: 8 checks: all same,same (); 8 checks: the K230 program's heap does not grow (heap + [942080, 942080, 942080, 942080] B).
+
+
+### Automated run 2026-11-12 (run.py, 83 s): **FAIL**
+
+10/11 checks pass. Failed: 8 checks: the K230 program's heap does not grow (heap + [942080, 942080, 942080, 942080, 954368, 917504] B).
+
+
+### Automated run 2026-11-12 (run.py, 19 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-11 (run.py, 21 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 21 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 19 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 19 s): pass
+
+11/11 checks pass.
+
+
 ### Automated run 2026-11-07 (run.py, 22 s): pass
 
 11/11 checks pass.

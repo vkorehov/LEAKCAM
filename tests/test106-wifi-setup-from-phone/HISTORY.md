@@ -4,6 +4,146 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 48 s): pass
+
+5/5 checks pass (on battery).
+
+
+### Automated run 2026-11-12 (run.py, 212 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 8.4 s; repeats 7.9-7.9 s.
+
+
+### Automated run 2026-11-12 (run.py, 37 s): pass
+
+5/5 checks pass (on battery).
+
+
+### Automated run 2026-11-12 (run.py, 211 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 8.2 s; repeats 8.5-8.5 s.
+
+
+### Automated run 2026-11-11 (run.py, 55 s): pass
+
+5/5 checks pass (on battery).
+
+
+### Automated run 2026-11-11 (run.py, 198 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 8.3 s; repeats 7.9-7.9 s.
+
+
+### Automated run 2026-11-11 (run.py, 1011 s): pass
+
+29/29 checks pass. First setup (app opened -> Done) 10.3 s; repeats 7.8-10.5 s.
+
+
+### Automated run 2026-11-10 (run.py, 58 s): pass
+
+5/5 checks pass (on battery).
+
+
+### Automated run 2026-11-10 (run.py, 243 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 8.1 s; repeats 8.2-8.2 s.
+
+
+### Automated run 2026-11-10 (run.py, 416 s): pass
+
+29/29 checks pass. First setup (app opened -> Done) 9.0 s; repeats 8.2-8.9 s.
+
+
+### Automated run 2026-11-10 (run.py, 49 s): pass
+
+5/5 checks pass (on battery).
+
+
+### Automated run 2026-11-10 (run.py, 221 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 9.4 s; repeats 8.9-8.9 s.
+
+
+### Automated run 2026-11-10 (run.py, 51 s): pass
+
+5/5 checks pass (on battery).
+
+
+### Automated run 2026-11-10 (run.py, 215 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 8.7 s; repeats 8.4-8.4 s.
+
+
+### Automated run 2026-11-10 (run.py, 57 s): pass
+
+5/5 checks pass (on battery).
+
+
+### Automated run 2026-11-10 (run.py, 209 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 8.2 s; repeats 8.9-8.9 s.
+
+
+### Automated run 2026-11-10 (run.py, 206 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 8.1 s; repeats 10.4-10.4 s.
+
+
+### Automated run 2026-11-10 (run.py, 51 s): pass
+
+5/5 checks pass (on battery).
+
+
+### Automated run 2026-11-10 (run.py, 212 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 7.7 s; repeats 8.6-8.6 s.
+
+
+### Automated run 2026-11-09 (run.py, 411 s): pass
+
+29/29 checks pass. First setup (app opened -> Done) 8.3 s; repeats 7.7-11.0 s.
+
+
+### Automated run 2026-11-09 (run.py, 35 s): pass
+
+5/5 checks pass (on battery).
+
+
+### Automated run 2026-11-09 (run.py, 212 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 8.1 s; repeats 8.0-8.0 s.
+
+
+### Automated run 2026-11-09 (run.py, 49 s): pass
+
+5/5 checks pass (on battery).
+
+
+### Automated run 2026-11-09 (run.py, 210 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 8.2 s; repeats 7.9-7.9 s.
+
+
+### Automated run 2026-11-09 (run.py, 51 s): pass
+
+5/5 checks pass (on battery).
+
+
+### Automated run 2026-11-09 (run.py, 219 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 8.7 s; repeats 8.1-8.1 s.
+
+
+### Automated run 2026-11-09 (run.py, 44 s): pass
+
+5/5 checks pass (on battery).
+
+
+### Automated run 2026-11-09 (run.py, 209 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 8.7 s; repeats 8.5-8.5 s.
+
+
 ### Automated run 2026-11-09 (run.py, 42 s): pass
 
 5/5 checks pass (on battery).
@@ -222,6 +362,8 @@ idempotent handler, the timeout counts from a state change). First setup (app op
 No run yet. Status before the step 6 rewrite: **planned** (2026-10-27).
 
 ## Obstacles
+
+- 2026-11-10 05:09 UTC+2, --battery in the essential suite: "no setup screen" (an empty screen dump, the phone dozing): the bench phone at 2 % on no charger (adb over Wi-Fi; it started the night at 14 %). Not the board: the run stopped, the board left in the setup firmware with no network (only the phone can store one). The rest queued until the phone is charged (>= 40 %).
 
 - --battery needs the product pair in the full firmware with the real network stored (2026-11-09, automated run)
 

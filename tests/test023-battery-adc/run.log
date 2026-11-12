@@ -1,11 +1,11 @@
-15:52:04 test023-battery-adc: 5 metric rows MISSING: Voltage under load (min), Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Features over the minimal image, Optimised build (-O3, LTO, -march)
-15:52:11 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.45 msh 0.46
-15:52:17 sample idle 1 {'board': 29.2, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 34.913, 'k_free': (7025152, 1390848), 'vbat': 4382}
-15:52:22 sample idle 2 {'board': 29.2, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 36.43, 'k_free': (7025152, 1390848), 'vbat': 4356}
-15:52:26 sample idle 3 {'board': 29.4, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 36.43, 'k_free': (7025152, 1390848), 'vbat': 4372}
-15:52:30 sample idle 4 {'board': 29.7, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 36.43, 'k_free': (7025152, 1390848), 'vbat': 4371}
-15:52:40 sample memtest 1 {'board': 30.1, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 42.177, 'k_free': (6822976, 1721152), 'vbat': 4377}
-15:52:49 sample memtest 2 {'board': 30.7, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 41.271, 'k_free': (7111808, 1721152), 'vbat': 4355}
-15:52:58 sample memtest 3 {'board': 31.3, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 43.384, 'k_free': (7111808, 1721152), 'vbat': 4382}
-15:53:08 sample memtest 4 {'board': 31.8, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0), 'die': 43.685, 'k_free': (7111808, 1721152), 'vbat': 4395}
-15:53:10 test023-battery-adc: PASS; filled 3: Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Voltage under load (min); still MISSING 2: Features over the minimal image, Optimised build (-O3, LTO, -march)
+23:41:23 test023-battery-adc: 0 metric rows MISSING: none
+23:41:31 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.54 msh 0.54
+23:41:38 sample idle 1 {'board': 30.1, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 36.127, 'k_free': (7020032, 1395968), 'vbat': 4362}
+23:41:42 sample idle 2 {'board': 30.1, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 38.853, 'k_free': (7020032, 1395968), 'vbat': 4381}
+23:41:46 sample idle 3 {'board': 30.2, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 39.76, 'k_free': (7020032, 1395968), 'vbat': 4349}
+23:41:50 sample idle 4 {'board': 30.4, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 38.551, 'k_free': (7020032, 1395968), 'vbat': 4369}
+23:42:00 sample memtest 1 {'board': 30.9, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 41.573, 'k_free': (6662720, 1726144), 'vbat': 4394}
+23:42:09 sample memtest 2 {'board': 31.4, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 43.082, 'k_free': (7106880, 2278720), 'vbat': 4361}
+23:42:18 sample memtest 3 {'board': 31.9, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 44.288, 'k_free': (7106880, 2278720), 'vbat': 4370}
+23:42:28 sample memtest 4 {'board': 32.4, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 45.493, 'k_free': (7106880, 2278720), 'vbat': 4377}
+23:42:30 test023-battery-adc: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

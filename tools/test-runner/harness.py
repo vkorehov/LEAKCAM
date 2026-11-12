@@ -34,7 +34,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.insert(0, os.path.join(REPO, "tools", "power-bringup"))
 sys.path.insert(0, HERE)
-from board import bl, cmd, k230, log   # noqa: E402
+from board import bl, cmd, k230, log, media_quiet   # noqa: E402
 from check_tests import MISSING, REQUIRED, metric_rows, metrics_block   # noqa: E402
 from mem_leak import leak_verdict   # noqa: E402
 
@@ -75,7 +75,11 @@ class Run:
         log(f"{self.name}: {len(self.missing)} metric rows MISSING: {', '.join(self.missing) or 'none'}")
         # every test, alone or in run_tests.py: no run on a wedged BLE core (skill bl616-ble-low-power 5; user
         # 2026-11-09: "keep it in general"); finish() checks again, a run that leaves it wedged fails
-        from phone import wedge
+        from phone import session_start, wedge
+        # the phone's adb first, in every session (user, 2026-11-11): a test started alone does it too; under
+        # run_tests.py it is done once per batch (LEAKCAM_PHONE_SESSION inherited)
+        if not os.environ.get("LEAKCAM_PHONE_SESSION"):
+            session_start()
         why = wedge()
         if why:
             self.obstacle(why)
@@ -136,6 +140,13 @@ class Run:
         time.sleep(1.5)                           # the app's start-up lines
         cmd(self.fd, None, 0.5)
         return self.fd
+
+    def media_quiet(self):
+        """the cameras, mic and video buffers to this test alone: the agent stopped, its boot capture hook over
+        (board.media_quiet: the hook ~23-28 s after boot collided with leakcam_stream / cam_shot, 2026-11-12)"""
+        secs = media_quiet(self.fd)
+        log(f"media quiet: agent stopped, no capture hook running ({secs:.1f} s)")
+        return secs
 
     def k(self, c, secs=3, until=r"msh />"):
         """one K230 console command; everything read is also kept in self.console, so a background program's lines

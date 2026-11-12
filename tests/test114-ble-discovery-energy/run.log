@@ -1,14 +1,74 @@
-14:18:46 test114-ble-discovery-energy: 6 metric rows MISSING: discovery time against current (A, B, C), Current idle / during (min / avg / peak), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak
-14:18:53 meter advertising every 100 ms, BLE idle otherwise: not asked (LEAKCAM_METER=ask to be prompted)
-14:19:58 adv 100 ms: found 10/10, median 224.5 ms, max 549 ms, current not read
-14:19:58 meter advertising every 500 ms, BLE idle otherwise: not asked (LEAKCAM_METER=ask to be prompted)
-14:21:08 adv 500 ms: found 10/10, median 553.5 ms, max 1814 ms, current not read
-14:21:08 meter advertising every 1000 ms, BLE idle otherwise: not asked (LEAKCAM_METER=ask to be prompted)
-14:22:19 adv 1000 ms: found 10/10, median 756.5 ms, max 2541 ms, current not read
-14:22:19 meter advertising every 2000 ms, BLE idle otherwise: not asked (LEAKCAM_METER=ask to be prompted)
-14:23:29 adv 2000 ms: found 10/10, median 2182.5 ms, max 4085 ms, current not read
-14:23:29 meter advertising every 5000 ms, BLE idle otherwise: not asked (LEAKCAM_METER=ask to be prompted)
-14:25:00 adv 5000 ms: found 9/10, median 3156 ms, max 9539 ms, current not read
-14:25:00 meter advertising every 10240 ms, BLE idle otherwise: not asked (LEAKCAM_METER=ask to be prompted)
-14:27:44 adv 10240 ms: found 8/10, median 8423.0 ms, max 22419 ms, current not read
-14:27:46 test114-ble-discovery-energy: FAIL; filled 1: discovery time against current (A, B, C); still MISSING 5: Current idle / during (min / avg / peak), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak; run in HISTORY.md - README Status/Result by hand
+04:17:49 test114-ble-discovery-energy: 5 metric rows MISSING: Current idle / during (min / avg / peak), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak
+04:17:59 meter advertising every 100 ms, BLE idle otherwise: not asked (LEAKCAM_METER=ask to be prompted)
+04:18:02 phone: scan 3.3 s
+04:18:10 phone: scan 3.7 s
+04:18:16 phone: scan 3.4 s
+04:18:24 phone: scan 3.6 s
+04:18:31 phone: scan 4.1 s
+04:18:37 phone: scan 3.1 s
+04:18:44 phone: scan 3.2 s
+04:18:52 phone: scan 3.6 s
+04:18:58 phone: scan 3.2 s
+04:19:06 phone: scan 4.1 s
+04:19:06 adv 100 ms: found 10/10, median 173.0 ms, max 412 ms, current not read
+04:19:06 meter advertising every 500 ms, BLE idle otherwise: not asked (LEAKCAM_METER=ask to be prompted)
+04:19:14 phone: scan 4.6 s
+04:19:20 phone: scan 4.2 s
+04:19:28 phone: scan 5.3 s
+04:19:33 phone: scan 3.2 s
+04:19:42 phone: scan 4.9 s
+04:19:48 phone: scan 4.0 s
+04:19:55 phone: scan 3.8 s
+04:20:03 phone: scan 4.6 s
+04:20:09 phone: scan 3.5 s
+04:20:16 phone: scan 4.1 s
+04:20:16 adv 500 ms: found 10/10, median 879.5 ms, max 2012 ms, current not read
+04:20:16 meter advertising every 1000 ms, BLE idle otherwise: not asked (LEAKCAM_METER=ask to be prompted)
+04:20:24 phone: scan 4.7 s
+04:20:31 phone: scan 4.6 s
+04:20:38 phone: scan 4.7 s
+04:20:44 phone: scan 3.7 s
+04:20:52 phone: scan 4.7 s
+04:20:59 phone: scan 4.8 s
+04:21:06 phone: scan 4.7 s
+04:21:13 phone: scan 4.8 s
+04:21:20 phone: scan 4.5 s
+04:21:27 phone: scan 4.8 s
+04:21:27 adv 1000 ms: found 10/10, median 1414.0 ms, max 1571 ms, current not read
+04:21:27 meter advertising every 2000 ms, BLE idle otherwise: not asked (LEAKCAM_METER=ask to be prompted)
+04:21:34 phone: scan 5.3 s
+04:21:40 phone: scan 4.3 s
+04:21:52 phone: scan 9.3 s
+04:21:58 phone: scan 6.0 s
+04:22:06 phone: scan 7.1 s
+04:22:11 phone: scan 4.1 s
+04:22:18 phone: scan 5.0 s
+04:22:31 phone: scan 10.1 s
+04:22:34 phone: scan 3.8 s
+04:22:44 phone: scan 6.8 s
+04:22:44 adv 2000 ms: found 10/10, median 2550.0 ms, max 6708 ms, current not read
+04:22:44 meter advertising every 5000 ms, BLE idle otherwise: not asked (LEAKCAM_METER=ask to be prompted)
+04:22:51 phone: scan 6.2 s
+04:22:56 phone: scan 4.3 s
+04:23:11 phone: scan 12.2 s
+04:23:16 phone: scan 5.1 s
+04:23:26 phone: scan 8.1 s
+04:23:31 phone: scan 4.9 s
+04:23:41 phone: scan 8.0 s
+04:23:51 phone: scan 10.0 s
+04:23:56 phone: scan 5.0 s
+04:24:06 phone: scan 8.0 s
+04:24:06 adv 5000 ms: found 10/10, median 4008.0 ms, max 9047 ms, current not read
+04:24:06 meter advertising every 10240 ms, BLE idle otherwise: not asked (LEAKCAM_METER=ask to be prompted)
+04:24:18 phone: scan 11.6 s
+04:24:38 phone: scan 20.5 s
+04:24:48 phone: scan 10.1 s
+04:24:59 phone: scan 10.3 s
+04:25:09 phone: scan 10.2 s
+04:25:19 phone: scan 10.3 s
+04:25:29 phone: scan 10.1 s
+04:25:40 phone: scan 10.4 s
+04:25:50 phone: scan 10.0 s
+04:26:00 phone: scan 10.3 s
+04:26:00 adv 10240 ms: found 10/10, median 7267.0 ms, max 17550 ms, current not read
+04:26:04 test114-ble-discovery-energy: PASS; filled 0: -; still MISSING 5: Current idle / during (min / avg / peak), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak; run in HISTORY.md - README Status/Result by hand

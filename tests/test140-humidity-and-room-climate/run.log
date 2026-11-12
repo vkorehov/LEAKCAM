@@ -1,0 +1,31 @@
+05:14:29 test140-humidity-and-room-climate: 0 metric rows MISSING: none
+05:14:44 CHECK pass USB: a reading, the board warm, not the room climate now
+bouffalolab />
+bouffalolab />climate: now: 45.6 C 19.3 %RH, warm 0 s
+05:14:46 CHECK pass USB: the check-in carries t/rh and quiet ~0 t 456, rh 193, quiet 0
+05:14:48 phone: relay 0.3 s (http)
+05:14:48 relay box: battery (USB-C 1 out (the board on its battery))
+05:14:51 CHECK pass battery: cool once the K230 is off 4 s after the unplug
+05:15:04 CHECK pass battery, cool >= 10 s: the reading is the room's climate now
+bouffalolab />
+bouffalolab />climate: now: 43.5 C 19.9 %RH, cool 14 s: the roo
+05:15:05 CHECK pass battery: the check-in carries troom/rhroom (that reading), roomago, quiet >= window troom 433, rhroom 200, roomago 1, quiet 16 (reading (435, 199))
+05:15:11 CHECK pass battery: the leak check's K230 session ran and ended leak: DONE new,new 4035 ms after the ask, probe dry
+05:15:13 CHECK pass right after the K230 session: cool < window, no room reading climate now
+bouffalolab />
+bouffalolab />climate: now: 42.4 C 20.4 %RH, cool 0 s
+05:15:14 CHECK FAIL 84 %RH: no alarm climate now
+bouffalolab />
+bouffalolab />climate: now: 42.2 C 84.0 %RH, cool 3 s
+05:15:20 CHECK pass 90 %RH: the alarm and a K230 leak check `humid` seen
+05:15:40 CHECK FAIL 90 %RH: the server's leak `humidity high` at once leak {'since': '2026-11-12T05:14:30.186375634+02:00', 'why': 'camera change'}
+05:15:42 phone: relay 0.3 s (http)
+05:15:42 relay box: usb (USB-C 1 back (the bench))
+05:15:44 CHECK pass USB back: warm again 
+05:16:17 CHECK pass USB back: the K230 up, its start check done 31 s
+05:16:22 CHECK pass USB, 90 %RH: CHECK humid to the running K230 seen
+05:16:43 CHECK pass switch_to_setup lost: in the setup firmware 
+05:16:58 BL616 port missing: the VM's USB controller reset (xhci unbind/bind)
+05:17:05 CHECK pass setup, 90 %RH: the alarm switches back to the full firmware full after 19 s
+05:17:05 CHECK pass the BL616's free heap kept (170532, 140916) -> (170504, 140404)
+05:17:05 test140-humidity-and-room-climate: FAIL; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

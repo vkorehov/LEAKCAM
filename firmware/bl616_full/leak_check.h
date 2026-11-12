@@ -2,8 +2,8 @@
  * The leak checks of the full firmware (DESIGN.md 5.3.12): a wet probe (ACOMP1 below 1.10 V, tests/test034) at once and
  * the RTC check every interval the server gives (default a day) each run a K230 leak check: a new session with that
  * WAKE reason, or CHECK to a K230 already on (USB). The K230's DONE ends it: the result kept for the check-in, a check-in
- * at once on a change or a wet probe, the K230 off on battery. (HBN sleep between the events comes next: the firmware
- * still stays awake.)
+ * at once on a change or a wet probe, the K230 off on battery. On battery HBN sleep between the events (hbn_sleep.c):
+ * the next check and the probe's state kept there.
  */
 #ifndef LEAKCAM_LEAK_CHECK_H
 #define LEAKCAM_LEAK_CHECK_H
@@ -19,6 +19,12 @@ void leak_check_start(void);
 void leak_check_every(uint32_t s);
 /* the K230's DONE,<cam0>,<cam1> (in the session's task) */
 void leak_check_done(const struct link_msg *m);
+/* a leak check now for `why` (WAKE / CHECK reason, e.g. "humid": climate.c), unless one is running */
+void leak_check_now(const char *why);
+/* the probe wet now (ACOMP1 below 1.10 V): the sleep arms its next edge */
+bool leak_check_wet(void);
+/* the probe's comparator re-armed at the threshold in use (thresholds.h), after the server changed it */
+void leak_check_probe(void);
 /* a check asked and its DONE not in yet: the session must not be ended */
 bool leak_check_busy(void);
 

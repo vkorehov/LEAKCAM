@@ -17,6 +17,71 @@ lines:
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 129 s): pass
+
+27/27 checks pass.
+
+
+### Automated run 2026-11-12 (run.py, 124 s): pass
+
+27/27 checks pass.
+
+
+### Automated run 2026-11-11 (run.py, 118 s): pass
+
+27/27 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 138 s): pass
+
+27/27 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 119 s): pass
+
+27/27 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 138 s): pass
+
+27/27 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 150 s): pass
+
+27/27 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 121 s): pass
+
+27/27 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 128 s): pass
+
+27/27 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 118 s): pass
+
+27/27 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 124 s): **FAIL**
+
+26/27 checks pass. Failed: board: last check-in reached the server (0x03) (no answer).
+
+
+### Automated run 2026-11-09 (run.py, 139 s): pass
+
+27/27 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 131 s): pass
+
+27/27 checks pass.
+
+
 ### Automated run 2026-11-09 (run.py, 121 s): pass
 
 27/27 checks pass.
@@ -200,3 +265,9 @@ After four runs that failed on the test driver and one app bug (below), all chec
 - 2026-11-01: a console command typed right after the board started checking in came back "command not found" (the Wi-Fi
   stack's log lines interleaved with it); run.py retries the `presence` read once. The same log flood cut test106's
   product detection short (it read `help`): phone.product() now asks `prov` itself.
+
+## Obstacle 2026-11-10 09:52 UTC+2: the harness crashed on a vanished port (fixed)
+
+Right after the setup's Done the board switched to the full firmware; `presence now` was written to the BL616 port as
+it disappeared (OSError ENODEV) and the run stopped with a traceback. board.bl() now asks again once the port is back
+(one retry), as it already waits for a missing port.

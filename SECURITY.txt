@@ -95,6 +95,15 @@ them.
     - TLS for /v1/check, /v1/nn, /v1/poll and the clips (RTMPS, or the server pulls over TLS).
     - A per-device identity (a key or certificate made at the factory or at first setup), so the server knows which
       device posts, and the device knows it talks to the real server (pinned server certificate).
+    - Decided 2026-11-10 (user; DESIGN.md 5.3.12 "Design decision"): the check-in over mTLS; the server's key pinned
+      (current + next); the device certificate long-lived (the server checks its dates); the board ignores the
+      certificate dates ONLY on the first check while it has no clock (after a battery loss), takes the time from
+      that verified answer's X-Time, and checks dates from then on. No plain fallback, time never from an
+      unverified exchange.
+    - Built 2026-11-10 for the BL616's requests (DESIGN.md 5.3.12 "Built"): one CA (tools/pki/leakcam_pki.py, P-256,
+      20 years) for the server and every device; the CA certificate, the device certificate and its key in the
+      board's flash (provision_tls.py at make flash); server :8443 mTLS only, CN = the device ID. Still plain: the
+      app and the K230 on :8090 (the phone's TLS to the same CA and the K230's are next).
     - The change net ("nn") and thresholds from the server: check the CRC against a signed value, not only the
       transport.
   The presence server (server/, the Pi, plain HTTP on the LAN, use case 2): check-ins carry the device ID and the

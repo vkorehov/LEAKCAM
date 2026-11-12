@@ -100,12 +100,28 @@ check("battery, the RTC's check: a K230 session rtc", "k230: session rtc" in out
 check("battery, the RTC's check: DONE changed,same (cam0's object)", res == "changed,same", f"{res}, {ask_ms} ms after the ask")
 check("battery, the RTC's check: the K230 off after DONE", why == "leak check done" and on_ms is not None,
       f"rails on {on_ms} ms" if on_ms else "no off line")
-got = wait(lambda: metrics()[0].get("job") == "changed,same" and 0 <= metrics()[0].get("jago", -1) <= 30, 40)
+# ks counts the sessions since the last good check-in and is 0 again in the next one: read it from the same check-in
+# that carried the job (2026-11-12 FAIL "ks 0, klast 1": a second metrics() read got the check-in after it)
+seen = {}
+
+
+def job_checkin():
+    m0 = metrics()[0]
+    if m0.get("job") == "changed,same" and 0 <= m0.get("jago", -1) <= 30:
+        seen.setdefault("m", m0)
+        return True
+    return False
+
+
+got = wait(job_checkin, 40)
 check("battery, the RTC's check: the server has job=changed,same at once", got is not None,
       f"{got:.0f} s after DONE" if got is not None else "not in 40 s")
-m, _, _ = metrics()
-check("battery, the RTC's check: in the check-in ks >= 1, klast 1", m.get("ks", 0) >= 1 and m.get("klast") == 1,
-      f"ks {m.get('ks')}, klast {m.get('klast')}, kms {m.get('kms')}")
+m = seen.get("m", {})
+# this session in the check-in: klast 1 and either ks >= 1 (the check-in right after it) or kago <= 60 s (a later one:
+# ks is 0 again there, klast/kago keep the last session)
+check("battery, the RTC's check: the check-in reports the session (klast 1; ks >= 1 or kago <= 60 s)",
+      m.get("klast") == 1 and (m.get("ks", 0) >= 1 or 0 <= m.get("kago", -1) <= 60),
+      f"ks {m.get('ks')}, klast {m.get('klast')}, kago {m.get('kago')}, kms {m.get('kms')}")
 if on_ms:
     r.set("Battery leak check: rails on", f"{on_ms} ms rails on per check (power-on -> off after DONE), DONE "
           f"{ask_ms} ms after the ask")

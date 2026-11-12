@@ -71,7 +71,8 @@ if fw != "full":
     sys.exit(1)
 r.fd = openp(K230_PORT)
 intervals(dev)                               # the defaults (a run before may have left an override)
-wait(lambda: board_checkin() == 60 and "check-in state 0x03" in bl("presence", 2, r"missed \d+"), 70)
+bl("presence now", 1)                        # taken at a check-in: triggered, not the next one up to 60 s away
+wait(lambda: board_checkin() == 60 and "check-in state 0x03" in bl("presence", 2, r"missed \d+"), 15)
 # the first heap sample after a check-in: the Wi-Fi's memory is taken by then (a sample right after the runner's
 # reboot read 11 KB more free and called the end a leak, 2026-11-09)
 mem0 = bl_free()
@@ -83,15 +84,23 @@ check("defaults: check-in every 60 s (the bench server's), leak check every 8640
 
 # 2. the check-in interval per device
 t0 = time.time()
-intervals(dev, checkin=20)
-took = wait(lambda: board_checkin() == 20, 70)
-times = check_in_times(3, 80)
+# the shortest intervals the firmware takes (user 2026-11-09: "adjust intervals to shortest during tests"): check-in
+# 5 s, leak check 10 s; the PUT taken at a check-in triggered now (`presence now`), not the next one 60 s away
+intervals(dev, checkin=5)
+bl("presence now", 1)
+took = wait(lambda: board_checkin() == 5, 15)
+# the interval runs from the end of a check-in to the next start: 5 s + the check-in's 1-3 s = 6-8 s apart (the
+# server's history 2026-11-10: 06:48:05, :11, :18, :26); three of them need ~24 s (20 s missed the third)
+times = check_in_times(3, 30)
 gaps = [round(b - a) for a, b in zip(times, times[1:])]
-check("PUT checkin 20: the board on it within one old interval (60 s)", took is not None,
-      f"{took:.0f} s after the PUT" if took is not None else "not in 70 s")
-check("PUT checkin 20: check-ins ~20 s apart", len(gaps) == 2 and all(15 <= g <= 30 for g in gaps), f"gaps {gaps} s")
+check("PUT checkin 5: the board on it at its next check-in (triggered)", took is not None,
+      f"{took:.1f} s after the PUT" if took is not None else "not in 15 s")
+# up to 15 s: each check-in joins Wi-Fi and runs a TLS session, a slow join took ~7 s (gaps 9 and 12 s, 2026-11-11);
+# still far from the 60 s default this step tells apart
+check("PUT checkin 5: check-ins 5 s + the check-in apart", len(gaps) == 2 and all(4 <= g <= 15 for g in gaps),
+      f"gaps {gaps} s")
 if took is not None:
-    r.set("Interval taken", f"check-in 20 s taken {took:.0f} s after the PUT; check-ins then {gaps} s apart")
+    r.set("Interval taken", f"check-in 5 s taken {took:.1f} s after the PUT; check-ins then {gaps} s apart")
 
 # 2b. kept across a reset (HBN RAM): the server down meanwhile, the board still on 20 s, not the 3600 s default
 pi = ["ssh", "-o", "BatchMode=yes", "pi@192.168.1.159"]
@@ -106,43 +115,44 @@ try:
 finally:
     subprocess.run(pi + ["sudo systemctl start leakcam-server"], timeout=30)
     server_up()
-    intervals(dev, checkin=20)               # the server keeps per-device intervals in memory only
+    intervals(dev, checkin=5)                # the server keeps per-device intervals in memory only
 r.fd = openp(K230_PORT)                      # the BL616's ports came back with the reset: the old one is dead
-check("a reset with the server down: the board keeps the server's 20 s (not the 3600 s default)", kept == 20,
+check("a reset with the server down: the board keeps the server's 5 s (not the 3600 s default)", kept == 5,
       f"check-in every {kept} s after the reset")
-wait(lambda: board_checkin() == 20, 40)
+wait(lambda: board_checkin() == 5, 15)
 
-# 3. the leak check interval per device: a check by itself within ~60 s
-intervals(dev, checkin=20, leakcheck=60)
-took = wait(lambda: leak_state()[0] == 60, 40)
-check("PUT leakcheck 60: the board on it at the next check-in", took is not None,
-      f"{took:.0f} s after the PUT" if took is not None else "not in 40 s")
-_, n1, _ = leak_state()
+# 3. the leak check interval per device: a check by itself within ~10 s
+intervals(dev, checkin=5, leakcheck=10)
+took = wait(lambda: leak_state()[0] == 10, 15)
+check("PUT leakcheck 10: the board on it at the next check-in", took is not None,
+      f"{took:.0f} s after the PUT" if took is not None else "not in 15 s")
+n1 = leak_state()[1] or 0                    # 0: no answer (the console back late after a reset)
 r.console = ""
 t1 = time.time()
-first = wait(lambda: (leak_state()[1] or 0) > n1, 75)
+first = wait(lambda: (leak_state()[1] or 0) > n1, 25)
 t_first = time.time()
 r.console += cmd(r.fd, None, 2)
 every, n2, last = leak_state()
-check("a leak check by itself within ~60 s (the RTC check)", first is not None and last not in (None, "none"),
-      f"{first:.0f} s after the interval was taken, result {last}" if first is not None else "none in 75 s")
+n2 = n2 or 0                                 # 0: no answer (the console busy)
+check("a leak check by itself within ~10 s (the RTC check)", first is not None and last not in (None, "none"),
+      f"{first:.0f} s after the interval was taken, result {last}" if first is not None else "none in 25 s")
 check("its CHECK reached the running K230 (job: CHECK rtc), the K230 still on", "job: CHECK rtc" in r.console
       and "job: done" in r.console, "seen" if "job: CHECK rtc" in r.console else "no CHECK line")
 
 # 4. again on its interval
-second = wait(lambda: (leak_state()[1] or 0) > n2, 80)
+second = wait(lambda: (leak_state()[1] or 0) > n2, 25)
 spacing = time.time() - t_first if second is not None else None
-check("the next leak check 60 s +- 5 s later", spacing is not None and 55 <= spacing <= 65,
-      f"{spacing:.0f} s" if spacing is not None else "none in 80 s")
+check("the next leak check 10 s +- 3 s later", spacing is not None and 7 <= spacing <= 13,
+      f"{spacing:.1f} s" if spacing is not None else "none in 25 s")
 if spacing is not None:
-    r.set("Leak check on its interval", f"{spacing:.0f} s between two RTC checks at leakcheck 60")
+    r.set("Leak check on its interval", f"{spacing:.1f} s between two RTC checks at leakcheck 10")
 
 # 5. back to the defaults; the leak the checks above may have opened (a changed result: "camera change") cleared at
 #    the server: its 1-min wake mode overrode every interval of the next tests (test134, 2026-11-09)
 clear_leak(dev)
 intervals(dev)
-took = wait(lambda: board_checkin() == 60 and leak_state()[0] == 86400, 40)
-check("PUT 0: back on 60 s / 86400 s", took is not None, f"{took:.0f} s" if took is not None else "not in 40 s")
+took = wait(lambda: board_checkin() == 60 and leak_state()[0] == 86400, 15)
+check("PUT 0: back on 60 s / 86400 s", took is not None, f"{took:.0f} s" if took is not None else "not in 15 s")
 mem1 = bl_free()
 check("the BL616's free heap kept", mem0 and mem1 and mem1[0] >= mem0[0] - 1024, f"{mem0} -> {mem1}")
 r.set("Memory BL616", f"BL616 free {mem0} -> {mem1} (free, min); the K230 job's heap: test137")

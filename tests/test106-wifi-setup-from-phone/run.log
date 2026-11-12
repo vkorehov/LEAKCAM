@@ -1,15 +1,15 @@
-08:30:24 test106-wifi-setup-from-phone: 0 metric rows MISSING: none
-08:30:24 BL616 firmware: product (firmware/bl616_common)
-08:30:33 phone: relay 4.1 s
-08:30:33 relay box: unplugged (unplug USB-C 1 (the cell stays in))
-08:30:33 CHECK pass USB-C 1 out (hand) 
-08:30:40 phone: scan 5.3 s
-08:30:57 phone: app 14.2 s
-08:30:57 setup <network> 10.5 s {'pairing': '', 'save_anyway': False, 'ms_found': 2413} help at 1.5,2.4,4.0,6.9,10.5 Connecting to 7C3E8262B149… | Your phone now asks to pair with 7C3E8262B149: tap Pair. No PIN to typ | Done. 7C3E8262B149 joined "<network>". 7C3E8262B149: online, Wi-Fi "<network>" · nex
-08:31:00 CHECK pass stored: back in the full firmware 2.7 s
-08:31:00 CHECK pass 1 setups on battery: every one found and Done 1/1, found after 5 s
-08:31:00 CHECK pass on battery: the network stored 
-08:31:05 phone: relay 4.9 s
-08:31:05 relay box: plugged (plug USB-C 1 back in)
-08:31:05 CHECK pass USB-C 1 back in (hand) 
-08:31:06 test106-wifi-setup-from-phone: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+03:59:16 test106-wifi-setup-from-phone: 0 metric rows MISSING: none
+03:59:16 BL616 firmware: product (firmware/bl616_common)
+03:59:24 phone: relay 0.3 s (http)
+03:59:24 relay box: unplugged (unplug USB-C 1 (the cell stays in))
+03:59:24 CHECK pass USB-C 1 out (hand) 
+03:59:35 phone: scan 9.5 s
+03:59:54 phone: app 17.2 s
+03:59:54 setup <network> 13.8 s {'pairing': '', 'save_anyway': False, 'ms_found': 3703} help at 1.4,3.5,5.2,10.3,11.9,12.8,13.7 The LEAKCAM is now joining "<network>" to check it (up to a minute). | Connected to the router. Checking that the internet can be reached… | Done. 7C3E8262B149 joined "<network>". 7C3E8262B149: online, Wi-Fi "<network>" · nex
+04:00:01 CHECK pass stored: back in the full firmware 6.0 s
+04:00:01 CHECK pass 1 setups on battery: every one found and Done 1/1, found after 10 s
+04:00:01 CHECK pass on battery: the network stored 
+04:00:02 phone: relay 0.5 s (http)
+04:00:02 relay box: plugged (plug USB-C 1 back in)
+04:00:02 CHECK pass USB-C 1 back in (hand) 
+04:00:04 test106-wifi-setup-from-phone: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

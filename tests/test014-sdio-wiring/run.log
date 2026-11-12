@@ -1,18 +1,18 @@
-17:49:44 test014-sdio-wiring: 10 metric rows MISSING: Boot, power-on -> app init (median / max of runs), This part's boot share, Test run time, Speed / rate against the top, Current floor / typical / peak, Voltage under load (min), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak
-17:49:55 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.46 msh 0.47
-17:50:10 sample boot 1 {'board': 29.1, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 39.458, 'k_free': (7025152, 1390848), 'vbat': 4360}
-17:50:21 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.46 msh 0.47
-17:50:36 sample boot 2 {'board': 29.1, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 39.156, 'k_free': (7025152, 1390848), 'vbat': 4357}
-17:50:47 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.46 msh 0.47
-17:51:02 sample boot 3 {'board': 29.2, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 38.551, 'k_free': (7025152, 1390848), 'vbat': 4369}
-17:51:13 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.46 msh 0.47
-17:51:28 sample boot 4 {'board': 29.1, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 36.733, 'k_free': (7025152, 1390848), 'vbat': 4363}
-17:51:39 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.46 msh 0.47
-17:51:54 sample boot 5 {'board': 29.0, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 39.156, 'k_free': (7025152, 1390848), 'vbat': 4359}
-17:52:05 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.46 msh 0.47
-17:52:20 sample boot 6 {'board': 29.2, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 37.642, 'k_free': (7025152, 1390848), 'vbat': 4347}
-17:52:31 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.46 msh 0.47
-17:52:46 sample boot 7 {'board': 29.2, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 39.76, 'k_free': (7025152, 1390848), 'vbat': 4367}
-17:52:57 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.46 msh 0.47
-17:53:12 sample boot 8 {'board': 29.4, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 39.76, 'k_free': (7025152, 1390848), 'vbat': 4332}
-17:53:14 test014-sdio-wiring: PASS; filled 9: Boot, power-on -> app init (median / max of runs), Test run time, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Voltage under load (min), Speed / rate against the top, This part's boot share, Power, energy per operation, Per day; still MISSING 1: Current floor / typical / peak
+23:23:54 test014-sdio-wiring: 0 metric rows MISSING: none
+23:24:06 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.56 msh 0.56
+23:24:21 sample boot 1 {'board': 34.3, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 43.384, 'k_free': (7020032, 1395968), 'vbat': 4347}
+23:24:32 boot SPL 0.17 OpenSBI 0.27 RT-Smart 0.28 mounted 0.56 msh 0.56
+23:24:47 sample boot 2 {'board': 34.0, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 43.082, 'k_free': (7020032, 1395968), 'vbat': 4368}
+23:24:59 boot SPL 0.17 OpenSBI 0.28 RT-Smart 0.29 mounted 0.56 msh 0.57
+23:25:13 sample boot 3 {'board': 33.8, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 42.78, 'k_free': (7020032, 1395968), 'vbat': 4367}
+23:25:25 boot SPL 0.17 OpenSBI 0.27 RT-Smart 0.28 mounted 0.56 msh 0.56
+23:25:39 sample boot 4 {'board': 33.6, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 43.082, 'k_free': (7020032, 1395968), 'vbat': 4373}
+23:25:51 boot SPL 0.17 OpenSBI 0.27 RT-Smart 0.29 mounted 0.56 msh 0.56
+23:26:05 sample boot 5 {'board': 33.4, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 42.78, 'k_free': (7020032, 1395968), 'vbat': 4374}
+23:26:17 boot SPL 0.17 OpenSBI 0.27 RT-Smart 0.28 mounted 0.56 msh 0.56
+23:26:32 sample boot 6 {'board': 33.3, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 41.271, 'k_free': (7020032, 1395968), 'vbat': 4356}
+23:26:44 boot SPL 0.17 OpenSBI 0.28 RT-Smart 0.29 mounted 0.56 msh 0.56
+23:26:58 sample boot 7 {'board': 33.2, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 42.479, 'k_free': (7020032, 1395968), 'vbat': 4377}
+23:27:10 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.56 msh 0.56
+23:27:24 sample boot 8 {'board': 33.0, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 40.969, 'k_free': (7020032, 1395968), 'vbat': 4354}
+23:27:27 test014-sdio-wiring: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

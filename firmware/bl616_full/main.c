@@ -17,6 +17,7 @@
 #include "crash_rec.h"
 #include "k230_power.h"
 #include "full_boot.h"
+#include "hbn_sleep.h"
 #include "metrics.h"
 #include "usb_power.h"
 #include "wdg_guard.h"
@@ -28,6 +29,7 @@ int main(void)
      * record lives there). */
     BL_WR_REG(HBN_BASE, HBN_SRAM, BL_RD_REG(HBN_BASE, HBN_SRAM) & ~(HBN_RETRAM_RET_MSK | HBN_RETRAM_SLP_MSK));
     metrics_boot();                     /* boots and the reset cause, for the check-in (metrics.h) */
+    (void)hbn_sleep_boot();             /* a wake from HBN sleep (not a boot), and the schedule kept through it */
     board_init();                       /* clocks, the USB CDC console and its shell */
     crash_rec_report();                 /* the last crash's record, if any, at every boot */
     (void)wdg_guard_start();            /* hangs are reset and recorded (crash_rec.c, `crash`): the record tells a

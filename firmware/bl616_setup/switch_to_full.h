@@ -14,6 +14,9 @@
  * Both run in a task of their own (a check takes up to a minute); a second request while one runs is dropped. */
 void switch_to_full_on_usb(void);
 void switch_to_full_after_credentials(void);
+/* a humidity alarm (climate.c, DESIGN.md 5.3.15): to the full firmware when a network is stored (it alarms at its first
+ * reading), after a phone left; none stored: setup stays */
+void switch_to_full_humid(void);
 
 /* at the start, after easyflash: reads (and deletes) why the full firmware switched here ("setup_why": "lost", "wake";
  * none after a power-on or a flash) and starts the way back; true when the full firmware sent it here (a USB power

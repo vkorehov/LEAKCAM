@@ -17,7 +17,7 @@ import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
-from phone import adb, board_checkin, board_id, firmware, intervals, only_boards, op, phone_boards, product, ready, register, to_firmware   # noqa: E402
+from phone import adb, as_board, board_checkin, board_id, firmware, intervals, only_boards, op, phone_boards, product, ready, register, to_firmware   # noqa: E402
 
 SERVER = "http://192.168.1.159:8090"
 CHECKIN_S = 5                       # for the run (the firmware's minimum): no test step waits long; the bench default is 60
@@ -140,8 +140,14 @@ try:
     check("server: the board online after the setup", online, f"{time.time() - t0:.0f} s")
     r.set("speed", f"setup Done -> online at the server {time.time() - t0:.0f} s (check-in every {CHECKIN_S} s, the board's first "
           f"interval {60} s until told)")
-    # its own answer, asked again when the Wi-Fi logs drown it (2026-11-04: the prompt was read instead)
-    st = next((o for o in (bl("presence", 3, r"last check-in state 0x[0-9a-f]{2}") for _ in range(3)) if re.search(r"last check-in state 0x", o)), "")
+    # its own answer: "online" above can be the setup firmware's check, the full firmware just started with "no
+    # check-in yet" (2026-11-09: three asks in 10 s, no state) - one triggered now, its state polled
+    bl("presence now", 1)
+    st, t1 = "", time.time()
+    while time.time() - t1 < 15 and not re.search(r"last check-in state 0x", st):
+        st = bl("presence", 2, r"last check-in state 0x[0-9a-f]{2}|no check-in yet")
+        if not re.search(r"last check-in state 0x", st):
+            time.sleep(0.5)
     m = re.search(r"state 0x[0-9a-f]{2}", st)
     check("board: last check-in reached the server (0x03)", "state 0x03" in st, m.group(0) if m else "no answer")
 
@@ -156,7 +162,7 @@ try:
     lines = app_mine()
     check("app: second LEAKCAM listed, not seen yet", "not seen yet" in lines.get(SECOND, ""), lines.get(SECOND))
     intervals(SECOND, checkin=CHECKIN_S)   # per device (DESIGN.md 5.3.12), before its check-in: the answer tells it
-    server(f"/v1/poll?id={SECOND}", b"ssid=t111-second")   # as a board reports its network
+    as_board(SECOND, f"/v1/poll?id={SECOND}", b"ssid=t111-second")   # as a board reports its network (mTLS)
     lines = app_mine()
     check("app: second LEAKCAM online after its check-in", ": online" in lines.get(SECOND, ""), lines.get(SECOND))
     check("app: second LEAKCAM's network shown", 'Wi-Fi "t111-second"' in lines.get(SECOND, ""), lines.get(SECOND))

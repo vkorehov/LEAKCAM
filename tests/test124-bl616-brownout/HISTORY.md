@@ -4,6 +4,36 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 59 s): pass
+
+9/9 checks pass.
+
+
+### Automated run 2026-11-11 (run.py, 62 s): pass
+
+9/9 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 59 s): pass
+
+9/9 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 99 s): **FAIL**
+
+8/9 checks pass. Failed: watchdog reset (`crash hang`): the full firmware back ().
+
+
+### Automated run 2026-11-09 (run.py, 59 s): pass
+
+9/9 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 64 s): pass
+
+9/9 checks pass.
+
+
 ### Automated run 2026-11-08 (run.py, 61 s): pass
 
 9/9 checks pass.

@@ -1,12 +1,14 @@
-17:16:30 test017-nand-raw-speed: 2 metric rows MISSING: Optimised build (-O3, LTO, -march), Power, energy per operation
-17:16:38 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.48 msh 0.48
-17:16:44 sample idle {'board': 34.2, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 42.78, 'k_free': (7025152, 1390848), 'vbat': 4344}
-17:16:49 sample run 1 {'board': 34.1, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 43.082, 'k_free': (7025152, 1390848), 'vbat': 4351}
-17:16:54 sample run 2 {'board': 34.1, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 43.082, 'k_free': (7025152, 1390848), 'vbat': 4360}
-17:16:59 sample run 3 {'board': 34.2, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 43.082, 'k_free': (7025152, 1390848), 'vbat': 4348}
-17:17:03 sample run 4 {'board': 34.3, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 43.384, 'k_free': (7312064, 1520704), 'vbat': 4355}
-17:17:08 sample run 5 {'board': 34.4, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 43.987, 'k_free': (7312064, 1520704), 'vbat': 4371}
-17:17:13 sample run 6 {'board': 34.5, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 44.891, 'k_free': (7312064, 1520704), 'vbat': 4349}
-17:17:18 sample run 7 {'board': 34.7, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 43.987, 'k_free': (7312064, 1520704), 'vbat': 4363}
-17:17:22 sample run 8 {'board': 34.8, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 44.589, 'k_free': (7312064, 1520704), 'vbat': 4339}
-17:17:24 test017-nand-raw-speed: PASS; filled 1: Power, energy per operation; still MISSING 1: Optimised build (-O3, LTO, -march)
+23:30:23 test017-nand-raw-speed: 0 metric rows MISSING: none
+23:30:31 boot SPL 0.17 OpenSBI 0.28 RT-Smart 0.29 mounted 0.56 msh 0.56
+23:30:38 sample idle {'board': 34.3, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 42.479, 'k_free': (7020032, 1395968), 'vbat': 4387}
+23:30:38 meter K230 at msh idle (agent running): not asked (LEAKCAM_METER=ask to be prompted)
+23:30:42 sample run 1 {'board': 34.2, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 42.479, 'k_free': (7020032, 1395968), 'vbat': 4347}
+23:30:42 meter K230 running nand_bench read 64 over and over: not asked (LEAKCAM_METER=ask to be prompted)
+23:30:47 sample run 2 {'board': 34.1, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 43.384, 'k_free': (7020032, 1395968), 'vbat': 4388}
+23:30:52 sample run 3 {'board': 34.2, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 43.384, 'k_free': (7020032, 1395968), 'vbat': 4373}
+23:30:57 sample run 4 {'board': 34.3, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 43.685, 'k_free': (6503552, 6477248), 'vbat': 4385}
+23:31:02 sample run 5 {'board': 34.5, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 43.082, 'k_free': (7307072, 6477248), 'vbat': 4366}
+23:31:07 sample run 6 {'board': 34.7, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 44.589, 'k_free': (7307072, 6477248), 'vbat': 4379}
+23:31:12 sample run 7 {'board': 34.8, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 44.589, 'k_free': (7307072, 6477248), 'vbat': 4356}
+23:31:17 sample run 8 {'board': 34.9, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 44.891, 'k_free': (7307072, 6477248), 'vbat': 4369}
+23:31:20 test017-nand-raw-speed: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

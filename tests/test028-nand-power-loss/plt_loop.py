@@ -10,8 +10,19 @@ def openp(path, k230):
     else:
         a[3] &= ~(termios.ICANON | termios.ECHO)
     termios.tcsetattr(fd, termios.TCSANOW, a); return fd
+def send(fd, data):
+    # non-blocking port: a full buffer says EAGAIN, wait for room (as board.cmd; 2026-11-12 the first write after a
+    # boot crashed here with BlockingIOError, the whole run wrote no rows)
+    t1 = time.time()
+    while data:
+        try:
+            data = data[os.write(fd, data):]
+        except BlockingIOError:
+            if time.time() - t1 > 5:
+                raise
+            select.select([], [fd], [], 0.1)
 def cmd(fd, c, secs, until=None):
-    os.write(fd, c.encode() + b"\r\n"); out = b""; t0 = time.time()
+    send(fd, c.encode() + b"\r\n"); out = b""; t0 = time.time()
     while time.time() - t0 < secs:
         if select.select([fd], [], [], 0.05)[0]:
             try: out += os.read(fd, 65536)
@@ -46,7 +57,7 @@ for i in range(1, N + 1):
         with open(LOG + ".fail.txt", "a") as f:
             f.write(f"--- cycle {i} {time.strftime('%H:%M:%S')}\n{bt}\n{ck}\n")
     cut = random.uniform(2, 20)
-    os.write(fd, b"plt_write\r\n"); out = b""; t0 = time.time()
+    send(fd, b"plt_write\r\n"); out = b""; t0 = time.time()
     while time.time() - t0 < cut:
         if select.select([fd], [], [], 0.05)[0]:
             try: out += os.read(fd, 65536)

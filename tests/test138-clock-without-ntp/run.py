@@ -87,7 +87,9 @@ for path in ("/", "/v1/devices/bad"):
 
 # 2. the BL616's clock from the server
 c, sets = bl_clock()
-check("the BL616's clock: within 5 s of UTC, set from the server", c is not None and abs(c - time.time()) <= 5 and sets >= 1,
+# set from the server at least once since the battery, kept on the RTC through resets (HBN RAM, 2026-11-10): after a
+# reset a clock already within 5 s is not set again (set 0 times this boot is right); step 7 proves the server's set
+check("the BL616's clock: within 5 s of UTC (the server's, kept on the RTC)", c is not None and abs(c - time.time()) <= 5,
       f"off {c - time.time():+.1f} s, set {sets} times" if c else "no clock line")
 
 # 3. not stepped for a small drift: two more check-ins leave the count (asked at once: `presence now`, no 2 x 60 s wait)

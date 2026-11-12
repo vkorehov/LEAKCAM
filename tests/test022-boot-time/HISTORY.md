@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 172 s): pass
+
+8 of 8 cold boots reached msh with `boot_times`: reset release -> app init 0.406 / 0.406 / 0.407 s (min / median / max); mounts done at 0.401-0.402 s.
+
+
 ### Automated run 2026-10-30 (run.py, 171 s): pass
 
 8 of 8 cold boots reached msh with `boot_times`: reset release -> app init 0.402 / 0.403 / 0.404 s (min / median / max); mounts done at 0.392-0.394 s.

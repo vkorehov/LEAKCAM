@@ -4,6 +4,23 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 94 s): pass
+
+5 NAND boots of the flashed image, /sdcard/app:
+
+    cam_shot                                842640
+    leakcam_wake                            5181000
+    leakcam_stream                          1034976
+    venctest                                79600
+    leakcam_kputest                         4397680
+    leakcam_change.kmodel                   211488
+    leakcam_hist                            100376
+    fdump                                   75376
+    leakcam_cpubench                        75376
+    memtest                                 67120
+    leakcam_agent                           87552
+
+
 ### Automated run 2026-10-25 (run.py, 93 s): pass
 
 5 NAND boots of the flashed image, /sdcard/app:

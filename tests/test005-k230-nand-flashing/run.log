@@ -1,12 +1,12 @@
-16:29:08 test005-k230-nand-flashing: 12 metric rows MISSING: Boot, power-on -> app init (median / max of runs), This part's boot share, Test run time, Speed / rate against the top, Current floor / typical / peak, Voltage under load (min), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Features over the minimal image, Optimised build (-O3, LTO, -march)
-16:29:19 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.63 msh 0.64
-16:29:26 sample boot 1 {'board': 31.8, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': 36.733, 'k_free': (7025152, 1390848), 'vbat': 4390}
-16:29:38 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.63 msh 0.64
-16:29:44 sample boot 2 {'board': 31.8, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': 39.76, 'k_free': (7025152, 1390848), 'vbat': 4381}
-16:29:56 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.63 msh 0.64
-16:30:02 sample boot 3 {'board': 31.7, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': 39.76, 'k_free': (7025152, 1390848), 'vbat': 4356}
-16:30:14 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.63 msh 0.64
-16:30:21 sample boot 4 {'board': 31.7, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': 37.036, 'k_free': (7025152, 1390848), 'vbat': 4360}
-16:30:32 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.63 msh 0.64
-16:30:39 sample boot 5 {'board': 31.7, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': 39.156, 'k_free': (7025152, 1390848), 'vbat': 4360}
-16:30:41 test005-k230-nand-flashing: PASS; filled 9: Boot, power-on -> app init (median / max of runs), Test run time, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Voltage under load (min), This part's boot share, Speed / rate against the top, Power, energy per operation, Per day; still MISSING 3: Current floor / typical / peak, Features over the minimal image, Optimised build (-O3, LTO, -march)
+23:00:32 test005-k230-nand-flashing: 0 metric rows MISSING: none
+23:00:44 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.29 mounted 0.57 msh 0.58
+23:00:51 sample boot 1 {'board': 32.1, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 36.43, 'k_free': (7020032, 1395968), 'vbat': 4375}
+23:01:02 boot SPL 0.16 OpenSBI 0.28 RT-Smart 0.29 mounted 0.57 msh 0.58
+23:01:09 sample boot 2 {'board': 31.9, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 39.458, 'k_free': (7020032, 1395968), 'vbat': 4396}
+23:01:21 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.57 msh 0.58
+23:01:27 sample boot 3 {'board': 31.8, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 37.339, 'k_free': (7020032, 1395968), 'vbat': 4380}
+23:01:39 boot SPL 0.17 OpenSBI 0.27 RT-Smart 0.28 mounted 0.57 msh 0.58
+23:01:45 sample boot 4 {'board': 31.7, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 37.642, 'k_free': (7020032, 1395968), 'vbat': 4367}
+23:01:57 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.58 msh 0.58
+23:02:04 sample boot 5 {'board': 31.6, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 37.642, 'k_free': (7020032, 1395968), 'vbat': 4376}
+23:02:06 test005-k230-nand-flashing: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

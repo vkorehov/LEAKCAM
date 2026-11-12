@@ -4,6 +4,51 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 163 s): pass
+
+9/9 checks pass.
+
+
+### Automated run 2026-11-11 (run.py, 171 s): pass
+
+9/9 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 150 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 147 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 161 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 150 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 167 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 167 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 213 s): **FAIL**
+
+9/10 checks pass. Failed: phone Bluetooth off 4 s during the check: the app and the board agree (app failed, board stored).
+
+
 ### Automated run 2026-11-08 (run.py, 239 s): pass
 
 10/10 checks pass.

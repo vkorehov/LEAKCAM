@@ -18,6 +18,7 @@ import json
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import log, wifi_credentials   # noqa: E402
+import phone   # noqa: E402
 from phone import SERVER, adb, board_id, creds, erase, firmware, hand, only_boards, op, phone_boards, ready, screen_xml, want   # noqa: E402
 
 checks = []
@@ -114,7 +115,10 @@ if phone_host():                             # already on the phone: a re-plug b
     log("phone: already on USB-C 1, re-plugged by its port roles")
     replug_roles()
 else:   # the relay box moves USB-C 1 to the phone (skill leakcam-bench-relays), else a hand step
-    hand("USB-C 1: take the cable off the bench, plug the phone in with a USB-C cable (detected on the phone)", "phone")
+    if hand("USB-C 1: take the cable off the bench, plug the phone in with a USB-C cable (detected on the phone)",
+            "phone") is None:
+        r.finish("not run: the relay box did not move USB-C 1 to the phone", False)
+        sys.exit(1)
 while not phone_host():                      # the plug: the phone becomes USB host (a hand file was mixed up, 2026-11-06)
     if time.time() - t > 120:
         r.finish("not run: no plug into the phone within 120 s", False)
@@ -128,7 +132,12 @@ while time.time() - t_con < 10 and not os.path.exists("/dev/leakcam-bl616"):
     time.sleep(0.1)
 while time.time() - t_con < 3 and (os.path.exists("/dev/leakcam-k230usb") or not os.path.exists("/dev/leakcam-bl616")):
     time.sleep(0.1)                           # USB-C 1 leaving the bench (no fixed 1 s)
-if os.path.exists("/dev/leakcam-k230usb") or not os.path.exists("/dev/leakcam-bl616"):
+if phone.relay_left[0]:                       # the relay box moved it: no wrong cable possible; the console only slow
+    while time.time() - t_con < 20 and not os.path.exists("/dev/leakcam-bl616"):   # (suite 2026-11-09: > 10 s once)
+        time.sleep(0.1)
+    log(f"relay box: the bench console {'back' if os.path.exists('/dev/leakcam-bl616') else 'NOT back'} "
+        f"{time.time() - t_con:.1f} s after the plug")
+elif os.path.exists("/dev/leakcam-k230usb") or not os.path.exists("/dev/leakcam-bl616"):
     log("ACTION: wrong cable: the phone is on the BL616 console (USB-C 2); it belongs in USB-C 1 (the K230, "
         "/dev/leakcam-k230usb on the bench)")
     r.finish("not run: the phone on the wrong cable (the BL616 console, not USB-C 1)", False)

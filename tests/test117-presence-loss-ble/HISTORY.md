@@ -11,6 +11,136 @@ with `PUT /v1/devices/<id>/intervals` (product default 3600 s, the bench server 
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 252 s): pass
+
+20/20 checks pass.
+
+
+### Automated run 2026-11-12 (run.py, 215 s): pass
+
+19/19 checks pass.
+
+
+### Automated run 2026-11-12 (run.py, 246 s): pass
+
+20/20 checks pass.
+
+
+### Automated run 2026-11-12 (run.py, 222 s): pass
+
+19/19 checks pass.
+
+
+### Automated run 2026-11-11 (run.py, 285 s): pass
+
+20/20 checks pass.
+
+
+### Automated run 2026-11-11 (run.py, 214 s): pass
+
+19/19 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 290 s): pass
+
+20/20 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 250 s): **FAIL**
+
+18/19 checks pass. Failed: network gone: saved without checking (no result from the phone).
+
+
+### Automated run 2026-11-10 (run.py, 222 s): pass
+
+19/19 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 280 s): pass
+
+20/20 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 225 s): pass
+
+19/19 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 285 s): pass
+
+20/20 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 223 s): pass
+
+19/19 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 291 s): pass
+
+20/20 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 204 s): pass
+
+19/19 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 231 s): pass
+
+19/19 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 267 s): pass
+
+20/20 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 202 s): pass
+
+19/19 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 262 s): pass
+
+20/20 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 212 s): pass
+
+19/19 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 289 s): pass
+
+20/20 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 216 s): pass
+
+19/19 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 280 s): pass
+
+20/20 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 220 s): pass
+
+19/19 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 266 s): pass
+
+20/20 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 220 s): pass
+
+19/19 checks pass.
+
+
 ### Automated run 2026-11-09 (run.py, 275 s): pass
 
 20/20 checks pass.
@@ -95,6 +225,11 @@ silent again 2 s later, present at the server 14 s after that setup started.
 
 
 ## Obstacles
+
+- **2026-11-10 23:33 UTC, Wi-Fi adb gone for ~20 s (bench, --battery in the essential suite).** The "network gone" setup
+  op got no result after 19 s, the wakefulness poll no answer, and ~60 scans after it failed at once; adb answered
+  again by itself at the same port within a minute. The phone's log had rotated past it (cause unknown). Fix in the
+  harness: phone.op() retries once after adb_up() when adb is down after a "no result". Rerun alone: pass.
 
 - 2026-11-01 14:38, first run: "server down: advertising (presence lost)" not within 40 s; the board's check-in that
   failed came at 14:38:20, 1 s after the wait: it was still on the old 60 s interval. The check-in right after the save

@@ -1,0 +1,15 @@
+00:56:33 test044-phone-usb-link: 0 metric rows MISSING: none
+00:56:44 phone: relay 2.5 s (http)
+00:56:44 relay box: phone (USB-C 1: take the cable off the bench, plug the phone in with a USB-C cable)
+00:56:47 CHECK pass K230 off: the phone lists no board device 
+00:56:55 start 1: the phone lists 1209:ABD1 1.31 s after pt_run
+00:57:03 start 2: the phone lists 1209:ABD1 1.15 s after pt_run
+00:57:12 start 3: the phone lists 1209:ABD1 1.28 s after pt_run
+00:57:20 start 4: the phone lists 1209:ABD1 1.13 s after pt_run
+00:57:28 start 5: the phone lists 1209:ABD1 1.15 s after pt_run
+00:57:28 CHECK pass the phone sees the board's USB device after every K230 start (5) 5/5; median 1.15 s, max 1.31 s
+00:57:28 CHECK pass the phone is the USB host and powers the cable power_role source, data_role host
+00:57:30 CHECK pass K230 off: the device leaves the phone's list 0.20 s
+00:57:32 phone: relay 1.3 s (http)
+00:57:32 relay box: bench (USB-C 1: take the phone off, plug the bench cable back in)
+00:57:34 test044-phone-usb-link: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

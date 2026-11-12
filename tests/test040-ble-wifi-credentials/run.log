@@ -1,60 +1,1501 @@
-14:03:53 test040-ble-wifi-credentials: 0 metric rows MISSING: none
-14:04:06 sample start {'board': 29.2, 'bl_mem': (166576, 163812, 163836, 19, 36048, 7, 0)}
-14:04:06 CHECK pass BLE started (pt_ble on) 
-14:04:08 CHECK pass advertises on USB power 7C3E8262B149 rssi -31 after 2.5 s
-14:04:08 CHECK pass BLE name = the serial (USB serial number), no prefix 7C3E8262B149
-14:04:35 CHECK pass no write succeeds after a cancelled pairing [-1, -1]
-14:04:39 CHECK pass nothing stored without pairing 
-14:05:21 CHECK pass no PIN (a phone without the app): every write refused still bonding after 'Устан. сопряж.'+'no PIN: cancel': [-1, -1]
-14:05:25 CHECK pass nothing stored without the PIN 
-14:05:42 CHECK pass paired (Just Works on USB power) bonded after 'Устан. сопряж.'+'PIN', MTU 247
-14:05:42 CHECK pass ssid 32 bytes accepted GATT 0
-14:05:42 CHECK pass ssid 33 bytes refused GATT 13
-14:05:42 CHECK pass psk 7 bytes refused GATT 13
-14:05:42 CHECK pass psk 64 bytes refused GATT 13
-14:05:42 CHECK pass psk 8 bytes accepted GATT 0
-14:05:42 CHECK pass psk 63 bytes accepted GATT 0
-14:05:42 CHECK pass commit 1 bytes refused GATT 13
-14:05:42 CHECK pass commit 2 bytes refused GATT 13
-14:05:49 CHECK pass commit without an SSID refused GATT 13
-14:05:53 CHECK pass commit without an SSID stores nothing 
-14:05:59 CHECK pass offset (long) write refused GATT 6
-14:06:03 CHECK pass store unchecked 32/63 bytes: SAVED [4]
-14:06:07 CHECK pass stored exactly 32/63 bytes 
-14:06:11 CHECK pass store unchecked 6/8 bytes: SAVED [4]
-14:06:15 CHECK pass stored exactly 6/8 bytes 
-14:06:27 CHECK pass BLE started again after HBN sleep and wake 
-14:06:47 CHECK pass kept over HBN sleep and wake 
-14:07:09 CHECK pass BLE started again after a watchdog reset 
-14:07:29 CHECK pass kept over a watchdog reset 
-14:07:39 CHECK pass check, wrong passphrase: 0x11 [1, 17]
-14:07:43 CHECK pass check, wrong passphrase: old credentials kept 
-14:07:50 CHECK pass check, unknown SSID: 0x10 [1, 16]
-14:07:54 CHECK pass check, unknown SSID: old credentials kept 
-14:08:07 CHECK pass check with the link dropped: the board finishes and stores [1, 2, 3, 4]
-14:08:12 CHECK pass checked store: JOINING -> ADDRESS -> INTERNET -> SAVED [1, 2, 3, 4]
-14:08:12 CHECK pass a second commit during the check starts no second check 
-14:08:16 CHECK pass checked store: the real network stored 
-14:08:21 CHECK pass session: the bridge on the stored network 
-14:08:29 CHECK pass check during a session runs (BLE first): WRONG_PASSWORD [1, 17]
-14:08:33 CHECK pass check during a session: old credentials kept 
-14:08:34 CHECK pass check during a session: the session rejoins 0.1 s after the result
-14:08:38 CHECK pass checked store during a session: SAVED [1, 2, 3, 4]
-14:08:38 CHECK pass checked store during a session: the session restarts on the network 0.1 s after SAVED
-14:08:42 CHECK pass store 0x02 during a session: SAVED [4]
-14:08:42 CHECK pass store 0x02 during a session: the session restarts on the new network (gone from the old one) 
-14:09:04 CHECK pass the real network stored again after a failed join: the session restarts on it 3.6 s
-14:09:07 CHECK pass password changed: the session restarts on the old one and fails 
-14:09:33 CHECK pass password changed: the check of the new one during the retries passes [1, 2, 3, 4]
-14:09:37 CHECK pass password changed: the session back on the network 4.7 s after SAVED
-14:09:51 sample cycle 1 {'board': 29.6, 'bl_mem': (99740, 87764, 77360, 166, 102188, 19, 0)}
-14:10:03 sample cycle 2 {'board': 29.6, 'bl_mem': (99740, 87764, 77360, 166, 102188, 19, 0)}
-14:10:14 sample cycle 3 {'board': 29.6, 'bl_mem': (99740, 87764, 77360, 166, 102188, 19, 0)}
-14:10:25 sample cycle 4 {'board': 29.6, 'bl_mem': (99740, 87764, 77360, 166, 102188, 19, 0)}
-14:10:37 sample cycle 5 {'board': 29.6, 'bl_mem': (99736, 87764, 77360, 166, 102188, 19, 0)}
-14:10:48 sample cycle 6 {'board': 29.6, 'bl_mem': (99736, 87764, 77360, 166, 102188, 19, 0)}
-14:10:59 sample cycle 7 {'board': 29.7, 'bl_mem': (99736, 87764, 77360, 166, 102188, 19, 0)}
-14:11:10 sample cycle 8 {'board': 29.6, 'bl_mem': (99736, 87764, 77360, 166, 102188, 19, 0)}
-14:11:10 CHECK pass 8 store cycles 0 failed
-14:11:18 CHECK pass the real network stored again at the end 
-14:11:22 test040-ble-wifi-credentials: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+02:06:16 test040-ble-wifi-credentials: 0 metric rows MISSING: none
+make: Entering directory '/home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test'
+python3 /home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/sdk_patch.py /home/vkorehovs/k230d-hw/bouffalo_sdk
+docker run --rm --user $(id -u):$(id -g) -e HOME=/tmp -e LEAKCAM_IN_CONTAINER=1 -e BL_SDK_BASE=/home/vkorehovs/k230d-hw/bouffalo_sdk \
+    -e PATH=/home/vkorehovs/k230d-hw/toolchain_gcc_t-head_linux/bin:/usr/bin:/bin -v /home/vkorehovs/k230d-hw:/home/vkorehovs/k230d-hw -w /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test k230-rtos-sdk-build:arm64-x86tc sh -c \
+    'if [ build/CMakeCache.txt -nt /home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_setup/defconfig ] && [ build/CMakeCache.txt -nt CMakeLists.txt ] && true; then for t in pre_build all post_build combine; do \
+        make --no-print-directory -C build -j8 $t || exit 1; done; else make -j5; fi'
+python3 "/home/vkorehovs/k230d-hw/bouffalo_sdk/tools/kconfig/config_seed.py" \
+	--defconfig "/home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/generated/autoconfig.input" \
+	--kconfig "/home/vkorehovs/k230d-hw/bouffalo_sdk/Kconfig" \
+	--def-out "/home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/generated/autoconfig.def" \
+	--cmake-out "/home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/generated/autoconfig.cmake" \
+	--header-out "/home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/generated/autoconfig.h" \
+	--make-out "/home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/generated/autoconfig.mk"
+Generated /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/generated/autoconfig.def, /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/generated/autoconfig.cmake, /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/generated/autoconfig.h and /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/generated/autoconfig.mk
+cmake  -E remove "build/CMakeCache.txt"
+cmake  -E remove_directory "build/CMakeFiles"
+cmake  -S . -B "build" -G "Unix Makefiles" -DCMAKE_COLOR_DIAGNOSTICS=ON -DBUILD_DIR="build" -DSDK_DEMO_PATH="/home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test" -DFLASH_BAUDRATE=2000000 -DFLASH_COMX=COM5 -DCROSS_COMPILE=riscv64-unknown-elf-
+-- The C compiler identification is GNU 10.2.0
+-- The CXX compiler identification is GNU 10.2.0
+-- The ASM compiler identification is GNU
+-- Found assembler: /home/vkorehovs/k230d-hw/toolchain_gcc_t-head_linux/bin/riscv64-unknown-elf-gcc
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /home/vkorehovs/k230d-hw/toolchain_gcc_t-head_linux/bin/riscv64-unknown-elf-gcc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /home/vkorehovs/k230d-hw/toolchain_gcc_t-head_linux/bin/riscv64-unknown-elf-g++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Project SDK Version: 1.1.1
+-- Select board: /home/vkorehovs/k230d-hw/bouffalo_sdk/bsp/board/bl616dk
+-- LINK IN bl616_common.ld.in
+-- [register library : libmbedtls], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/crypto/mbedtls
+-- [register library : libdebug], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/debug
+-- [register library : liblittlefs], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/fs/littlefs
+-- [register library : libmm], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/mm
+-- [register library : libsysinit], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/sysinit
+-- [register library : liblibc], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/libc
+-- [register library : libxz], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/lzma/xz
+-- [register library : liblwip], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/net/lwip/lwip
+-- [register library : libfreertos], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/os/freertos
+-- [register library : libpower_mgmt], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/os/power_mgmt
+-- [register library : libshell], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/shell
+-- [register library : libcherryusb], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/usb/cherryusb
+-- [register library : libutils], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/utils
+-- [register extern library : libbtblecontroller_bl616_ble1m0s1bredr0], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/bluetooth
+-- [register library : libblestack], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/bluetooth/blestack
+-- [register extern library : libmacsw_bl616], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless
+-- [register extern library : libmacsw_config_bl616_default], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless
+-- [register extern library : libfhost_bl616_default], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless
+-- [register library : libwpa_supplicant], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant
+CMake Warning at /home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/CMakeLists.txt:206 (message):
+  WPA SUPPLICNAT USE SMALL STACK
+
+
+-- [register library : libwifi6_lwip_adapter], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wifi6_lwip_adapter
+-- [register library : libmacsw_os_adapter], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/macsw_os_adapter
+-- [register library : libfhost_config], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/fhost_config
+-- [register extern library : liblpfw_private], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/lpfw_private
+-- [register library : libmacsw_plat], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless
+-- [register library : liblhal], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/drivers/lhal
+-- [register extern library : libcsi_xt900p32f_dsp], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/drivers/lhal
+-- [register extern library : libpka_bl616], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/drivers/lhal
+-- LHAL Version: v2.3.35-dirty
+-- [register library : libstd], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/drivers/soc/bl616/std
+-- [register library : libsys], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/drivers/sys
+-- [register library : librfparam], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/drivers/rfparam
+-- [register extern library : libbl616_phyrf], path:/home/vkorehovs/k230d-hw/bouffalo_sdk/drivers/soc/bl616/phyrf
+-- Use full firmware tool: /home/vkorehovs/k230d-hw/bouffalo_sdk/tools/bflb_tools/bflb_fw_post_proc/bflb_fw_post_proc-ubuntu
+Generated /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/flash_prog_cfg.ini
+-- Configuring done
+-- Generating done
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    FLASH_BAUDRATE
+    FLASH_COMX
+
+
+-- Build files have been written to: /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build
+make -C "build" pre_build
+Built target pre_build
+make -C "build" -j8
+make[1]: warning: -j8 forced in submake: resetting jobserver mode.
+[  1%] Building C object build_out/components/fs/littlefs/CMakeFiles/liblittlefs.dir/littlefs/lfs_util.c.obj
+[  2%] Building C object build_out/components/debug/CMakeFiles/libdebug.dir/src/unwind_6byte.c.obj
+[  2%] Building C object build_out/drivers/rfparam/CMakeFiles/librfparam.dir/Src/rfparam_adapter.c.obj
+[  2%] Building C object build_out/components/mm/CMakeFiles/libmm.dir/mm.c.obj
+[  2%] Building C object build_out/components/sysinit/CMakeFiles/libsysinit.dir/sysinit.c.obj
+[  2%] Built target leakcam_version
+[  2%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/newlib/syscalls_simple_io.c.obj
+[  3%] Building C object build_out/components/lzma/xz/CMakeFiles/libxz.dir/xz_crc32.c.obj
+[  3%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/aes.c.obj
+[  3%] Building C object build_out/components/fs/littlefs/CMakeFiles/liblittlefs.dir/littlefs/lfs.c.obj
+[  3%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/aesce.c.obj
+[  3%] Linking C static library ../../lib/libsysinit.a
+[  3%] Built target libsysinit
+[  4%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/apps/lwiperf/lwiperf.c.obj
+[  5%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/aesni.c.obj
+[  5%] Building C object build_out/components/lzma/xz/CMakeFiles/libxz.dir/xz_dec_lzma2.c.obj
+[  5%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/newlib/port_file_nosys.c.obj
+[  5%] Building C object build_out/components/debug/CMakeFiles/libdebug.dir/src/backtrace.c.obj
+[  5%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/aria.c.obj
+[  5%] Building C object build_out/drivers/rfparam/CMakeFiles/librfparam.dir/Src/rfparam_rftlv.c.obj
+[  5%] Building C object build_out/components/mm/CMakeFiles/libmm.dir/mm_debug.c.obj
+[  5%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/newlib/syscalls_nosys.c.obj
+[  5%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/asn1parse.c.obj
+[  5%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/apps/http/fs.c.obj
+[  5%] Linking C static library ../../lib/librfparam.a
+[  5%] Built target librfparam
+[  5%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/snprintf.c.obj
+[  6%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/sprintf.c.obj
+[  7%] Building C object build_out/components/mm/CMakeFiles/libmm.dir/tlsf/tlsf.c.obj
+[  7%] Linking C static library ../../lib/libdebug.a
+[  7%] Built target libdebug
+[  7%] Building C object build_out/components/fs/littlefs/CMakeFiles/liblittlefs.dir/port/lfs_xip_flash.c.obj
+[  7%] Building C object build_out/components/lzma/xz/CMakeFiles/libxz.dir/xz_dec_stream.c.obj
+[  7%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/asn1write.c.obj
+[  7%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/vsprintf.c.obj
+[  7%] Building C object build_out/components/mm/CMakeFiles/libmm.dir/tlsf/tlsf_allocator.c.obj
+[  7%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/apps/http/http_client.c.obj
+[  7%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/base64.c.obj
+[  7%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/printf.c.obj
+[  7%] Building C object build_out/components/fs/littlefs/CMakeFiles/liblittlefs.dir/easyflash_port/lfs_easyflash.c.obj
+[  7%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/vprintf.c.obj
+[  7%] Building C object build_out/components/lzma/xz/CMakeFiles/libxz.dir/xz_decompress.c.obj
+[  7%] Linking C static library ../../lib/libmm.a
+[  7%] Built target libmm
+[  7%] Building C object build_out/components/os/freertos/CMakeFiles/libfreertos.dir/croutine.c.obj
+[  7%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/bignum_core.c.obj
+[  7%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/apps/dhcpd/dhcp_server_raw.c.obj
+[  7%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/assert.c.obj
+[  7%] Building C object build_out/components/lzma/xz/CMakeFiles/libxz.dir/xz_port.c.obj
+[  7%] Building C object build_out/components/os/power_mgmt/CMakeFiles/libpower_mgmt.dir/clock_manager.c.obj
+[  8%] Building C object build_out/components/os/freertos/CMakeFiles/libfreertos.dir/event_groups.c.obj
+[  9%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/vsnprintf.c.obj
+[ 10%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/bignum_mod.c.obj
+[ 11%] Linking C static library ../../../lib/libxz.a
+[ 11%] Built target libxz
+[ 11%] Building C object build_out/components/os/freertos/CMakeFiles/libfreertos.dir/list.c.obj
+[ 11%] Building C object build_out/components/os/power_mgmt/CMakeFiles/libpower_mgmt.dir/pm_manager.c.obj
+[ 11%] Linking C static library ../../../lib/liblittlefs.a
+[ 11%] Built target liblittlefs
+[ 12%] Building C object build_out/components/shell/CMakeFiles/libshell.dir/shell.c.obj
+[ 12%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/newlib/port_memory.c.obj
+[ 12%] Building C object build_out/components/os/freertos/CMakeFiles/libfreertos.dir/queue.c.obj
+[ 12%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/bignum_mod_raw.c.obj
+[ 12%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/api/api_lib.c.obj
+[ 12%] Building C object build_out/components/os/power_mgmt/CMakeFiles/libpower_mgmt.dir/tickless_hook.c.obj
+[ 12%] Building C object build_out/components/shell/CMakeFiles/libshell.dir/shell_auto.c.obj
+[ 12%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/block_cipher.c.obj
+[ 12%] Building C object build_out/components/os/freertos/CMakeFiles/libfreertos.dir/tasks.c.obj
+[ 12%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/newlib/port_time.c.obj
+[ 13%] Building C object build_out/components/os/power_mgmt/CMakeFiles/libpower_mgmt.dir/rc32k_trim.c.obj
+[ 13%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/camellia.c.obj
+[ 13%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/api/api_msg.c.obj
+[ 13%] Building C object build_out/components/shell/CMakeFiles/libshell.dir/shell_freertos.c.obj
+[ 13%] Building C object build_out/components/os/power_mgmt/CMakeFiles/libpower_mgmt.dir/tickless_accurate.c.obj
+[ 13%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ccm.c.obj
+[ 13%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/newlib/port_init_fini.c.obj
+[ 13%] Building C object build_out/components/os/freertos/CMakeFiles/libfreertos.dir/timers.c.obj
+[ 13%] Building C object build_out/components/usb/cherryusb/CMakeFiles/libcherryusb.dir/core/usbd_core.c.obj
+[ 13%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/chacha20.c.obj
+[ 14%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/chachapoly.c.obj
+[ 14%] Linking C static library ../../lib/libshell.a
+[ 14%] Built target libshell
+[ 14%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/log/log.c.obj
+[ 14%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/stdlib/lib_abs.c.obj
+[ 14%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/cipher.c.obj
+[ 14%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/ring_buffer/ring_buffer.c.obj
+[ 14%] Linking C static library ../../../lib/libpower_mgmt.a
+[ 14%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/stdlib/lib_atof.c.obj
+[ 14%] Built target libpower_mgmt
+[ 14%] Building C object build_out/components/usb/cherryusb/CMakeFiles/libcherryusb.dir/class/cdc/usbd_cdc_acm.c.obj
+[ 14%] Building C object build_out/components/os/freertos/CMakeFiles/libfreertos.dir/stream_buffer.c.obj
+[ 15%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/stdlib/lib_atoi.c.obj
+[ 16%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/api/err.c.obj
+[ 17%] Building C object build_out/components/os/freertos/CMakeFiles/libfreertos.dir/freertos_port.c.obj
+[ 17%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/api/netbuf.c.obj
+[ 17%] Building C object build_out/components/usb/cherryusb/CMakeFiles/libcherryusb.dir/osal/usb_osal_freertos.c.obj
+[ 17%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/bflb_block_pool/bflb_block_pool.c.obj
+[ 17%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/cipher_wrap.c.obj
+[ 17%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/stdlib/lib_atol.c.obj
+[ 17%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/stdlib/lib_atoll.c.obj
+[ 17%] Building C object build_out/components/os/freertos/CMakeFiles/libfreertos.dir/portable/MemMang/heap_3.c.obj
+[ 17%] Building C object build_out/components/wireless/CMakeFiles/libmacsw_plat.dir/macsw_plat.c.obj
+[ 17%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/stdlib/lib_bsearch.c.obj
+[ 17%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/api/netdb.c.obj
+[ 18%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/bflb_timestamp/bflb_timestamp.c.obj
+[ 18%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/cmac.c.obj
+[ 18%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/port/bl_port.c.obj
+[ 18%] Building C object build_out/components/os/freertos/CMakeFiles/libfreertos.dir/portable/GCC/RISC-V/common/port.c.obj
+[ 18%] Linking C static library ../../../lib/libcherryusb.a
+[ 18%] Built target libcherryusb
+[ 19%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/wpa_supplicant.c.obj
+[ 19%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/constant_time.c.obj
+[ 19%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/getopt/utils_getopt.c.obj
+[ 19%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/stdlib/lib_checkbase.c.obj
+[ 19%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/api/netifapi.c.obj
+[ 19%] Linking C static library ../../../lib/libfreertos.a
+[ 19%] Built target libfreertos
+[ 19%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/wps_supplicant.c.obj
+[ 19%] Linking C static library ../../lib/libmacsw_plat.a
+[ 19%] Built target libmacsw_plat
+[ 19%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ctr_drbg.c.obj
+[ 19%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/atomic_c.c.obj
+[ 20%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/des.c.obj
+[ 20%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/stdlib/lib_itoa.c.obj
+[ 20%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/coredump/coredump.c.obj
+[ 20%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/api/sockets.c.obj
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/wps_supplicant.c:[m[K In function '[01m[Kwpas_wps_set_uuid[m[K':
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/wps_supplicant.c:1525:14:[m[K [01;35m[Kwarning: [m[Kvariable '[01m[Ksrc[m[K' set but not used [[01;35m[K-Wunused-but-set-variable[m[K]
+ 1525 |  const char *[01;35m[Ksrc[m[K;
+      |              [01;35m[K^~~[m[K
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/wps_supplicant.c:[m[K In function '[01m[Kwpas_wps_dump_ap_info[m[K':
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/wps_supplicant.c:2897:28:[m[K [01;35m[Kwarning: [m[Kunused variable '[01m[Ke[m[K' [[01;35m[K-Wunused-variable[m[K]
+ 2897 |   struct wpa_bssid_ignore *[01;35m[Ke[m[K = wpa_bssid_ignore_get(wpa_s,
+      |                            [01;35m[K^[m[K
+[ 20%] Building C object build_out/components/wireless/wifi6/wifi6_lwip_adapter/CMakeFiles/libwifi6_lwip_adapter.dir/cli_al.c.obj
+[ 20%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/buf.c.obj
+[ 21%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/stdlib/lib_llabs.c.obj
+[ 21%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/coredump/encoder_v1.c.obj
+[ 21%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/stdlib/lib_lldiv.c.obj
+[ 21%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/dhm.c.obj
+[ 21%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/stdlib/lib_qsort.c.obj
+[ 21%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ecdh.c.obj
+[ 21%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/coredump/bin_fmt_v1.c.obj
+[ 21%] Building C object build_out/components/wireless/wifi6/macsw_os_adapter/CMakeFiles/libmacsw_os_adapter.dir/src/rtos_al.c.obj
+[ 22%] Building C object build_out/components/wireless/wifi6/wifi6_lwip_adapter/CMakeFiles/libwifi6_lwip_adapter.dir/net_al.c.obj
+[ 23%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/log.c.obj
+[ 23%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/partition/partition.c.obj
+[ 23%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ecdsa.c.obj
+[ 23%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/stdlib/lib_strtod.c.obj
+[ 23%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_ffs.c.obj
+[ 24%] Building C object build_out/components/wireless/wifi6/macsw_os_adapter/CMakeFiles/libmacsw_os_adapter.dir/src/platform_bouffalo_sdk.c.obj
+[ 24%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/api/tcpip.c.obj
+[ 24%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/poll.c.obj
+[ 24%] Building C object build_out/components/wireless/wifi6/wifi6_lwip_adapter/CMakeFiles/libwifi6_lwip_adapter.dir/pbuf_custom_ref.c.obj
+[ 24%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_ffsl.c.obj
+[ 25%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/bflb_mtd/bflb_mtd.c.obj
+[ 25%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ecjpake.c.obj
+[ 26%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_ffsll.c.obj
+[ 26%] Linking C static library ../../../../lib/libmacsw_os_adapter.a
+[ 26%] Built target libmacsw_os_adapter
+[ 26%] Building C object build_out/components/wireless/wifi6/fhost_config/CMakeFiles/libfhost_config.dir/fhost_config_buffer.c.obj
+[ 26%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ecp.c.obj
+[ 26%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_fls.c.obj
+[ 26%] Building C object build_out/components/wireless/wifi6/wifi6_lwip_adapter/CMakeFiles/libwifi6_lwip_adapter.dir/net_al_ext.c.obj
+[ 27%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ipv4/autoip.c.obj
+[ 27%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/rpa.c.obj
+[ 28%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ecp_curves.c.obj
+[ 28%] Linking C static library ../../../../lib/libfhost_config.a
+[ 28%] Built target libfhost_config
+[ 28%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_common.c.obj
+[ 28%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/bflb_mtd/bflb_boot2.c.obj
+[ 28%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_flsl.c.obj
+[ 28%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ipv4/dhcp.c.obj
+[ 28%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/events.c.obj
+[ 28%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ecp_curves_new.c.obj
+[ 28%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/work_q.c.obj
+[ 28%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/entropy.c.obj
+[ 28%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_flsll.c.obj
+[ 28%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_index.c.obj
+[ 28%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/cjson/cJSON.c.obj
+[ 29%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_cks.c.obj
+[ 29%] Building C object build_out/components/wireless/wifi6/wifi6_lwip_adapter/CMakeFiles/libwifi6_lwip_adapter.dir/wifi_pkt_hooks.c.obj
+[ 29%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/utils.c.obj
+[ 29%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_memccpy.c.obj
+[ 29%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/entropy_poll.c.obj
+[ 29%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_ef_ctrl.c.obj
+[ 29%] Building C object build_out/components/wireless/wifi6/wifi6_lwip_adapter/CMakeFiles/libwifi6_lwip_adapter.dir/tx_buffer_copy.c.obj
+[ 29%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/error.c.obj
+[ 29%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/gcm.c.obj
+[ 30%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_memchr.c.obj
+[ 30%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/dec.c.obj
+[ 30%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ipv4/etharp.c.obj
+[ 30%] Linking C static library ../../../../lib/libwifi6_lwip_adapter.a
+[ 30%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_memmove.c.obj
+[ 30%] Built target libwifi6_lwip_adapter
+[ 30%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/startup/start_load.c.obj
+[ 31%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/dummy.c.obj
+[ 31%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_gpio.c.obj
+[ 31%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/tinycrypt/source/aes_decrypt.c.obj
+[ 31%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/scan.c.obj
+[ 31%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/startup/system_bl616.c.obj
+[ 31%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_memrchr.c.obj
+[ 32%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/hkdf.c.obj
+[ 32%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ipv4/icmp.c.obj
+[ 32%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/tinycrypt/source/aes_encrypt.c.obj
+[ 32%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_memset.c.obj
+[ 32%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_i2c.c.obj
+[ 32%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/hmac_drbg.c.obj
+[ 32%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/cjson/cJSON_Utils.c.obj
+[ 32%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/startup/interrupt.c.obj
+[ 32%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ipv4/igmp.c.obj
+[ 32%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_stpcpy.c.obj
+[ 32%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/lmots.c.obj
+[ 32%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/tinycrypt/source/cbc_mode.c.obj
+[ 32%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ipv4/ip4_addr.c.obj
+[ 32%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/src/bl616_romapi_e907.c.obj
+[ 32%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_stpncpy.c.obj
+[ 32%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_dma.c.obj
+[ 32%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/lms.c.obj
+[ 32%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/tinycrypt/source/ccm_mode.c.obj
+[ 33%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ipv4/ip4_frag.c.obj
+[ 33%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/md5.c.obj
+[ 34%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_strcasecmp.c.obj
+[ 34%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/notify.c.obj
+[ 34%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/math/src/utils_base64.c.obj
+[ 34%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_strcasestr.c.obj
+[ 35%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_rtc.c.obj
+[ 36%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/tinycrypt/source/cmac_mode.c.obj
+[ 36%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/math/src/utils_crc.c.obj
+[ 36%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ipv4/ip4.c.obj
+[ 36%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/md.c.obj
+[ 36%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_strcat.c.obj
+[ 37%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/math/src/utils_hex.c.obj
+[ 37%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/tinycrypt/source/ctr_mode.c.obj
+[ 37%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_sec_mutex.c.obj
+[ 38%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/bss.c.obj
+[ 38%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_strchr.c.obj
+[ 38%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/src/bl616_romapi_patch.c.obj
+[ 39%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/memory_buffer_alloc.c.obj
+[ 39%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/list/utils_list.c.obj
+[ 39%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ipv4/ip4_napt.c.obj
+[ 39%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/tinycrypt/source/ctr_prng.c.obj
+[ 39%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_strcmp.c.obj
+[ 39%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_sec_aes.c.obj
+[ 39%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/mps_reader.c.obj
+[ 39%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ipv6/dhcp6.c.obj
+[ 39%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ipv6/ethip6.c.obj
+[ 39%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_strcspn.c.obj
+[ 39%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ipv6/icmp6.c.obj
+[ 39%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/async_event/async_event.c.obj
+[ 39%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/tinycrypt/source/ecc.c.obj
+[ 40%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_strdup.c.obj
+[ 40%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_sec_sha.c.obj
+[ 41%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ipv6/inet6.c.obj
+[ 41%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/mps_trace.c.obj
+[ 41%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/wmm_ac.c.obj
+[ 41%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_strnlen.c.obj
+[ 41%] Building C object build_out/components/utils/CMakeFiles/libutils.dir/async_event/rtos_al.c.obj
+[ 41%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ipv6/ip6.c.obj
+[ 41%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/nist_kw.c.obj
+[ 41%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ipv6/ip6_addr.c.obj
+[ 41%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/oid.c.obj
+[ 41%] Linking C static library ../../lib/libutils.a
+[ 41%] Built target libutils
+[ 41%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/wpas_glue.c.obj
+[ 41%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_strpbrk.c.obj
+[ 41%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ipv6/ip6_frag.c.obj
+[ 42%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/src/bl616_clock.c.obj
+[ 42%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_sec_trng.c.obj
+[ 42%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ipv6/mld6.c.obj
+[ 42%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_strrchr.c.obj
+[ 42%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/tinycrypt/source/ecc_dh.c.obj
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/wpas_glue.c:269:21:[m[K [01;35m[Kwarning: [m[K'[01m[Kresult_str[m[K' defined but not used [[01;35m[K-Wunused-function[m[K]
+  269 | static const char * [01;35m[Kresult_str[m[K(enum eapol_supp_result result)
+      |                     [01;35m[K^~~~~~~~~~[m[K
+[ 42%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_strsep.c.obj
+[ 42%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ipv6/nd6.c.obj
+[ 42%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/padlock.c.obj
+[ 43%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/def.c.obj
+[ 43%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_strspn.c.obj
+[ 44%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/pem.c.obj
+[ 44%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/tinycrypt/source/ecc_dsa.c.obj
+[ 44%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_spi.c.obj
+[ 44%] Building C object build_out/drivers/sys/CMakeFiles/libsys.dir/bl616/bl616_sys.c.obj
+[ 44%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/eap_register.c.obj
+[ 44%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/src/bl616_common.c.obj
+[ 45%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_strstr.c.obj
+[ 46%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/tinycrypt/source/ecc_platform_specific.c.obj
+[ 46%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/dns.c.obj
+[ 46%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/tinycrypt/source/hmac.c.obj
+[ 46%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/config.c.obj
+[ 46%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_strtok.c.obj
+[ 46%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/pk.c.obj
+[ 46%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/src/bl616_ef_cfg.c.obj
+[ 47%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_timer.c.obj
+[ 48%] Building C object build_out/drivers/sys/CMakeFiles/libsys.dir/bl_lp_callback.c.obj
+[ 48%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_strtokr.c.obj
+[ 48%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/tinycrypt/source/hmac_prng.c.obj
+[ 48%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/tinycrypt/source/sha256.c.obj
+[ 48%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/inet_chksum.c.obj
+[ 48%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_memcmp.c.obj
+[ 48%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_uart.c.obj
+[ 48%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/src/bl616_sdh.c.obj
+[ 48%] Building C object build_out/drivers/sys/CMakeFiles/libsys.dir/bl_lp_bcn.c.obj
+[ 48%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/pkcs12.c.obj
+[ 48%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/common/tinycrypt/source/utils.c.obj
+[ 48%] Building C object build_out/components/libc/CMakeFiles/liblibc.dir/nuttx/libc/string/lib_vikmemcpy.c.obj
+[ 48%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/init.c.obj
+[ 48%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/pkcs5.c.obj
+[ 48%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/hci_onchip/hci_driver.c.obj
+[ 48%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_wdg.c.obj
+[ 48%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/ip.c.obj
+[ 48%] Building C object build_out/drivers/sys/CMakeFiles/libsys.dir/bl_pm_wifi.c.obj
+[ 48%] Linking C static library ../../lib/liblibc.a
+[ 48%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/src/bl616_sdu.c.obj
+[ 48%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/config_none.c.obj
+[ 48%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/mem.c.obj
+[ 48%] Built target liblibc
+[ 49%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/host/crypto.c.obj
+[ 49%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_flash.c.obj
+[ 49%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/pkcs7.c.obj
+[ 49%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/host/hci_core.c.obj
+[ 50%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/ctrl_iface.c.obj
+[ 51%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/pk_ecc.c.obj
+[ 51%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/src/bl616_tzc_sec.c.obj
+[ 52%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/memp.c.obj
+[ 52%] Building C object build_out/drivers/sys/CMakeFiles/libsys.dir/bl_lp_fw_image.c.obj
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/ctrl_iface.c:[m[K In function '[01m[Kwpa_supplicant_ctrl_iface_ap_sta_del[m[K':
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/ctrl_iface.c:12616:5:[m[K [01;35m[Kwarning: [m[Kimplicit declaration of function '[01m[Khostapd_ctrl_iface_deauthenticate[m[K'; did you mean '[01m[Kap_ctrl_iface_sta_deauthenticate[m[K'? [[01;35m[K-Wimplicit-function-declaration[m[K]
+12616 |     [01;35m[Khostapd_ctrl_iface_deauthenticate[m[K(wpa_s->ap_iface->bss[0],
+      |     [01;35m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+      |     [32m[Kap_ctrl_iface_sta_deauthenticate[m[K
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/ctrl_iface.c:[m[K In function '[01m[Kwpa_supplicant_ctrl_iface_process[m[K':
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/ctrl_iface.c:12759:14:[m[K [01;35m[Kwarning: [m[Kimplicit declaration of function '[01m[Kap_ctrl_iface_acl_enable[m[K'; did you mean '[01m[Kap_ctrl_iface_acl_del_mac[m[K'? [[01;35m[K-Wimplicit-function-declaration[m[K]
+12759 |              [01;35m[Kap_ctrl_iface_acl_enable[m[K(wpa_s, buf + 11);
+      |              [01;35m[K^~~~~~~~~~~~~~~~~~~~~~~~[m[K
+      |              [32m[Kap_ctrl_iface_acl_del_mac[m[K
+[ 52%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/pkparse.c.obj
+At top level:
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/ctrl_iface.c:2980:15:[m[K [01;35m[Kwarning: [m[K'[01m[Kwpa_supplicant_wps_ie_txt_buf[m[K' defined but not used [[01;35m[K-Wunused-function[m[K]
+ 2980 | static char * [01;35m[Kwpa_supplicant_wps_ie_txt_buf[m[K(struct wpa_supplicant *wpa_s,
+      |               [01;35m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/ctrl_iface.c:1974:12:[m[K [01;35m[Kwarning: [m[K'[01m[Kwpa_supplicant_ctrl_iface_wps_ap_pin[m[K' defined but not used [[01;35m[K-Wunused-function[m[K]
+ 1974 | static int [01;35m[Kwpa_supplicant_ctrl_iface_wps_ap_pin[m[K(struct wpa_supplicant *wpa_s,
+      |            [01;35m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/ctrl_iface.c:1922:12:[m[K [01;35m[Kwarning: [m[K'[01m[Kwpa_supplicant_ctrl_iface_wps_reg[m[K' defined but not used [[01;35m[K-Wunused-function[m[K]
+ 1922 | static int [01;35m[Kwpa_supplicant_ctrl_iface_wps_reg[m[K(struct wpa_supplicant *wpa_s,
+      |            [01;35m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/ctrl_iface.c:998:12:[m[K [01;35m[Kwarning: [m[K'[01m[Kwpa_supplicant_ctrl_iface_preauth[m[K' defined but not used [[01;35m[K-Wunused-function[m[K]
+  998 | static int [01;35m[Kwpa_supplicant_ctrl_iface_preauth[m[K(struct wpa_supplicant *wpa_s,
+      |            [01;35m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[ 52%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/flash/bflb_sf_cfg.c.obj
+[ 52%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/netif.c.obj
+[ 52%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/ctrl_iface_macsw.c.obj
+[ 52%] Building C object build_out/drivers/sys/CMakeFiles/libsys.dir/bl_lp_time_trace.c.obj
+[ 53%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/src/bl616_psram.c.obj
+[ 53%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/pk_wrap.c.obj
+[ 53%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/flash/bflb_xip_sflash.c.obj
+[ 53%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/pbuf.c.obj
+[ 53%] Building C object build_out/drivers/sys/CMakeFiles/libsys.dir/bl616/bl616_lp_callback.c.obj
+[ 53%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/bouffalo_sdk/bsp/sdk_version.c.obj
+[ 54%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/flash/bflb_sflash.c.obj
+[ 54%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/main_macsw.c.obj
+[ 54%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/src/bl616_pm.c.obj
+[ 54%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/pkwrite.c.obj
+[ 54%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/bouffalo_sdk/bsp/board/bl616dk/board_flash_psram.c.obj
+[ 54%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/platform.c.obj
+[ 55%] Building C object build_out/drivers/sys/CMakeFiles/libsys.dir/bl616/bl616_lp_wakeup.c.obj
+[ 55%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/op_classes.c.obj
+[ 55%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/platform_util.c.obj
+[ 56%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/poly1305.c.obj
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/op_classes.c:[m[K In function '[01m[Kwpas_sta_secondary_channel_offset[m[K':
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/op_classes.c:446:9:[m[K [01;35m[Kwarning: [m[Kunused variable '[01m[Kies_len[m[K' [[01;35m[K-Wunused-variable[m[K]
+  446 |  size_t [01;35m[Kies_len[m[K;
+      |         [01;35m[K^~~~~~~[m[K
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/op_classes.c:445:5:[m[K [01;35m[Kwarning: [m[Kunused variable '[01m[Kphy_type[m[K' [[01;35m[K-Wunused-variable[m[K]
+  445 |  u8 [01;35m[Kphy_type[m[K;
+      |     [01;35m[K^~~~~~~~[m[K
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/op_classes.c:444:12:[m[K [01;35m[Kwarning: [m[Kunused variable '[01m[Kies[m[K' [[01;35m[K-Wunused-variable[m[K]
+  444 |  const u8 *[01;35m[Kies[m[K;
+      |            [01;35m[K^~~[m[K
+[ 56%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/bouffalo_sdk/bsp/board/bl616dk/board_gpio.c.obj
+[ 56%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/src/bl616_sec_dbg.c.obj
+[ 56%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/psa_crypto_aead.c.obj
+[ 56%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/raw.c.obj
+[ 56%] Building C object build_out/drivers/sys/CMakeFiles/libsys.dir/bl616/bl616_lp.c.obj
+[ 56%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/host/hci_ecc.c.obj
+[ 56%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/bssid_ignore.c.obj
+[ 56%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/flash/bflb_sf_ctrl.c.obj
+[ 56%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/bouffalo_sdk/bsp/board/bl616dk/board.c.obj
+[ 56%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/psa_crypto.c.obj
+[ 56%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/src/bl616_mfg_efuse.c.obj
+[ 56%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/stats.c.obj
+[ 56%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/host/l2cap.c.obj
+[ 56%] Building C object build_out/drivers/sys/CMakeFiles/libsys.dir/bl616/bl616_xip_recovery.c.obj
+[ 56%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/robust_av.c.obj
+[ 56%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/sys.c.obj
+[ 56%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/src/bl616_mfg_flash.c.obj
+[ 56%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/bouffalo_sdk/bsp/board/bl616dk/fw_header.c.obj
+[ 56%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/flash/bflb_flash_secreg_port.c.obj
+[ 57%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/bouffalo_sdk/bsp/board/bl616dk/board_rf.c.obj
+[ 58%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/tcp_in.c.obj
+[ 58%] Building C object build_out/drivers/sys/CMakeFiles/libsys.dir/bl616/bl616_32k_trim.c.obj
+[ 59%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/src/bl616_mfg_media.c.obj
+[ 59%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/host/uuid.c.obj
+[ 59%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/flash/bflb_flash_secreg.c.obj
+[ 59%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/bouffalo_sdk/bsp/board/bl616dk/wireless_regdb.c.obj
+[ 59%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/bouffalo_sdk/bsp/board/bl616dk/wireless_spur.c.obj
+[ 59%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/port/bl616_gpio.c.obj
+[ 59%] Building C object build_out/drivers/sys/CMakeFiles/libsys.dir/bl616/bl616_lp_fw_image.c.obj
+[ 59%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/bl_hci_wrapper/bl_hci_wrapper.c.obj
+[ 60%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/utils/eloop_rtos.c.obj
+[ 60%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_powertest/pt_ble.c.obj
+[ 60%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/port/bl616_clock.c.obj
+[ 60%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/tcp_out.c.obj
+[ 60%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_clock.c.obj
+[ 60%] Building C object build_out/drivers/sys/CMakeFiles/libsys.dir/bl616/bl616_lp_wifi.c.obj
+[ 61%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/bluetooth/version_btble_component.c.obj
+[ 61%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_powertest/pt_fault.c.obj
+[ 61%] Building C object build_out/drivers/soc/bl616/std/CMakeFiles/libstd.dir/port/bl616_reset.c.obj
+[ 61%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_reset.c.obj
+[ 61%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/host/att.c.obj
+[ 61%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/psa_crypto_cipher.c.obj
+[ 61%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/utils/common.c.obj
+[ 62%] Linking C static library ../../lib/libsys.a
+[ 62%] Built target libsys
+[ 62%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/utils/wpabuf.c.obj
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/utils/common.c:[m[K In function '[01m[Kwpa_selection_sort[m[K':
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/utils/common.c:1329:30:[m[K [01;35m[Kwarning: [m[Kpointer of type '[01m[Kvoid *[m[K' used in arithmetic [[01;35m[K-Wpointer-arith[m[K]
+ 1329 |             if (compare(base [01;35m[K+[m[K j * size, base + m_i * size) < 0)
+      |                              [01;35m[K^[m[K
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/utils/common.c:1329:47:[m[K [01;35m[Kwarning: [m[Kpointer of type '[01m[Kvoid *[m[K' used in arithmetic [[01;35m[K-Wpointer-arith[m[K]
+ 1329 |             if (compare(base + j * size, base [01;35m[K+[m[K m_i * size) < 0)
+      |                                               [01;35m[K^[m[K
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/utils/common.c:1332:24:[m[K [01;35m[Kwarning: [m[Kpointer of type '[01m[Kvoid *[m[K' used in arithmetic [[01;35m[K-Wpointer-arith[m[K]
+ 1332 |             swap_(base [01;35m[K+[m[K i * size, base + m_i * size, size);
+      |                        [01;35m[K^[m[K
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/utils/common.c:1332:41:[m[K [01;35m[Kwarning: [m[Kpointer of type '[01m[Kvoid *[m[K' used in arithmetic [[01;35m[K-Wpointer-arith[m[K]
+ 1332 |             swap_(base + i * size, base [01;35m[K+[m[K m_i * size, size);
+      |                                         [01;35m[K^[m[K
+[ 62%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/tcp.c.obj
+[ 63%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_adc.c.obj
+[ 63%] Linking C static library ../../../../lib/libstd.a
+[ 64%] Built target libstd
+[ 64%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/psa_crypto_client.c.obj
+[ 64%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_setup/setup_boot.c.obj
+[ 64%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/host/conn.c.obj
+[ 64%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/psa_crypto_ecp.c.obj
+[ 64%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/timeouts.c.obj
+[ 65%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_setup/setup_sleep.c.obj
+[ 65%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/utils/os_macsw.c.obj
+[ 65%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_acomp.c.obj
+[ 66%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/psa_crypto_ffdh.c.obj
+[ 66%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/host/gatt.c.obj
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/utils/os_macsw.c:[m[K In function '[01m[Kos_get_time[m[K':
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/utils/os_macsw.c:28:8:[m[K [01;35m[Kwarning: [m[Kimplicit declaration of function '[01m[Kget_time_SINCE_EPOCH[m[K' [[01;35m[K-Wimplicit-function-declaration[m[K]
+   28 |  ret = [01;35m[Kget_time_SINCE_EPOCH[m[K(&sec, &usec);
+      |        [01;35m[K^~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/utils/os_macsw.c:[m[K In function '[01m[Kos_get_reltime[m[K':
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/utils/os_macsw.c:40:8:[m[K [01;35m[Kwarning: [m[Kimplicit declaration of function '[01m[Kget_time_SINCE_BOOT[m[K' [[01;35m[K-Wimplicit-function-declaration[m[K]
+   40 |  ret = [01;35m[Kget_time_SINCE_BOOT[m[K(&sec, &usec);
+      |        [01;35m[K^~~~~~~~~~~~~~~~~~~[m[K
+[ 66%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/psa_crypto_hash.c.obj
+[ 66%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_dac.c.obj
+[ 66%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/core/udp.c.obj
+[ 66%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/netif/ethernet.c.obj
+[ 66%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_setup/blecore.c.obj
+[ 66%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_emac.c.obj
+[ 66%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/utils/wpa_debug.c.obj
+[ 66%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_ir.c.obj
+[ 66%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/psa_crypto_mac.c.obj
+[ 66%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_setup/switch_to_full.c.obj
+[ 67%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/netif/bridgeif.c.obj
+[ 67%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/utils/bitfield.c.obj
+[ 67%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/src/netif/bridgeif_fdb.c.obj
+[ 67%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/psa_crypto_pake.c.obj
+[ 67%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/host/smp.c.obj
+[ 67%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_setup/provision.c.obj
+[ 67%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_mjpeg.c.obj
+[ 67%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/psa_crypto_rsa.c.obj
+[ 67%] Building C object build_out/components/net/lwip/lwip/CMakeFiles/liblwip.dir/lwip-port/FreeRTOS/sys_arch.c.obj
+[ 68%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wpa_crypto/rc4.c.obj
+[ 68%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_setup/usb_setup.c.obj
+[ 69%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_pwm_v2.c.obj
+[ 69%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/psa_crypto_se.c.obj
+[ 69%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/k230_link.c.obj
+[ 69%] Linking C static library ../../../../lib/liblwip.a
+[ 70%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/psa_crypto_slot_management.c.obj
+[ 70%] Built target liblwip
+[ 70%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/psa_crypto_storage.c.obj
+[ 70%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wpa_crypto/sha1-prf.c.obj
+[ 70%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/host/keys.c.obj
+[ 70%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_cam.c.obj
+[ 70%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/psa_its_file.c.obj
+[ 70%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wpa_crypto/sha1-pbkdf2.c.obj
+[ 70%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wpa_crypto/sha256-prf.c.obj
+[ 71%] Building C object build_out/components/wireless/bluetooth/blestack/CMakeFiles/libblestack.dir/src/host/settings.c.obj
+[ 71%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/psa_util.c.obj
+[ 72%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/k230_session.c.obj
+[ 72%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_sdio2.c.obj
+[ 72%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ripemd160.c.obj
+[ 72%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/wall_clock.c.obj
+[ 72%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wpa_crypto/sha256-kdf.c.obj
+[ 72%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/rsa_alt_helpers.c.obj
+[ 73%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/rsa.c.obj
+[ 73%] Linking C static library ../../../../lib/libblestack.a
+[ 73%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/k230_power.c.obj
+[ 73%] Built target libblestack
+[ 73%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/provision_cmd.c.obj
+[ 73%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_setup/ota.c.obj
+[ 73%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/sha1.c.obj
+[ 73%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wpa_crypto/aes-wrap.c.obj
+[ 73%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_i2s.c.obj
+[ 73%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/flash_sha.c.obj
+[ 74%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/battery.c.obj
+[ 75%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wpa_crypto/aes-unwrap.c.obj
+[ 75%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/sha256.c.obj
+[ 75%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/metrics.c.obj
+[ 75%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_dbi.c.obj
+[ 75%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/sha3.c.obj
+[ 75%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wpa_crypto/aes-omac1.c.obj
+[ 75%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_audac.c.obj
+[ 76%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_auadc.c.obj
+[ 76%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wpa_crypto/random.c.obj
+[ 76%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/climate.c.obj
+[ 76%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/sha512.c.obj
+[ 76%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_wo.c.obj
+[ 76%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/thresholds.c.obj
+[ 76%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ssl_cache.c.obj
+[ 76%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wpa_crypto/tls_none.c.obj
+[ 76%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wpa_crypto/dh_group5.c.obj
+[ 76%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_sdh.c.obj
+[ 77%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ssl_ciphersuites.c.obj
+[ 77%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/tls_link.c.obj
+[ 77%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ssl_client.c.obj
+[ 77%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_sec_gmac.c.obj
+[ 77%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/rtc_clock.c.obj
+[ 77%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wpa_crypto/crypto_internal-modexp.c.obj
+[ 77%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ssl_cookie.c.obj
+[ 78%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/tls/bignum.c.obj
+[ 79%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/evlog.c.obj
+[ 79%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_usb_v2.c.obj
+[ 79%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/aht20.c.obj
+[ 79%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_irq.c.obj
+[ 79%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ssl_msg.c.obj
+[ 79%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_setup/wifi_setup.c.obj
+[ 79%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/sme.c.obj
+[ 80%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_rv_privilege.c.obj
+[ 80%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/usb_console2.c.obj
+[ 80%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_l1c.c.obj
+[ 80%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/src/bflb_mtimer.c.obj
+[ 80%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/wdg_guard.c.obj
+[ 80%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/include/arch/risc-v/t-head/rv_hart.c.obj
+[ 80%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ssl_ticket.c.obj
+[ 80%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/common/sae.c.obj
+[ 80%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/include/arch/risc-v/t-head/rv_pmp.c.obj
+[ 80%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ssl_tls12_client.c.obj
+[ 80%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/common/dragonfly.c.obj
+[ 80%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/config/bl616/device_table.c.obj
+[ 80%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/crash_rec.c.obj
+[ 81%] Building C object build_out/drivers/lhal/CMakeFiles/liblhal.dir/config/lhal_version.c.obj
+[ 82%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/mem_stat.c.obj
+[ 82%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wpa_crypto/crypto_mbedtls.c.obj
+[ 82%] Linking C static library ../../lib/liblhal.a
+[ 82%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wpa_crypto/crypto_mbedtls_misc.c.obj
+[ 83%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wpa_crypto/dh_groups.c.obj
+[ 84%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ssl_tls12_server.c.obj
+[ 84%] Built target liblhal
+[ 84%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/l2_packet/l2_packet_macsw.c.obj
+[ 84%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/device_id.c.obj
+[ 84%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/rsn_supp/wpa.c.obj
+[ 84%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_setup/ble_pairing.c.obj
+[ 84%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/wifi_check.c.obj
+[ 84%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ssl_tls13_client.c.obj
+[ 84%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ssl_tls13_generic.c.obj
+[ 84%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/rsn_supp/wpa_ie.c.obj
+[ 84%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/rsn_supp/preauth.c.obj
+[ 84%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ssl_tls13_keys.c.obj
+[ 84%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/slot.c.obj
+[ 84%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/eapol_supp/eapol_supp_sm.c.obj
+[ 84%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ssl_tls13_server.c.obj
+[ 84%] Building C object CMakeFiles/app.dir/home/vkorehovs/k230d-hw/LEAKCAM/firmware/bl616_common/api.c.obj
+[ 85%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/drivers/drivers.c.obj
+[ 85%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ssl_tls.c.obj
+[ 85%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/drivers/driver_common.c.obj
+[ 85%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/drivers/driver_macsw.c.obj
+[ 85%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/common/wpa_common.c.obj
+[ 86%] Linking C static library build_out/lib/libapp.a
+[ 86%] Built target app
+[ 87%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/threading.c.obj
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/drivers/driver_macsw.c:[m[K In function '[01m[K_wpa_macsw_driver_process_scan_result[m[K':
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/drivers/driver_macsw.c:615:62:[m[K [01;35m[Kwarning: [m[Kpassing argument 3 of '[01m[K_wpa_macsw_driver_process_scan_ie_buffer[m[K' discards '[01m[Kconst[m[K' qualifier from pointer target type [[01;35m[K-Wdiscarded-qualifiers[m[K]
+  615 |   _wpa_macsw_driver_process_scan_ie_buffer(bssid_index, dst, [01;35m[Kref_ssid_ie[m[K,
+      |                                                              [01;35m[K^~~~~~~~~~~[m[K
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/drivers/driver_macsw.c:492:9:[m[K [01;36m[Knote: [m[Kexpected '[01m[Ku8 *[m[K' {aka '[01m[Kunsigned char *[m[K'} but argument is of type '[01m[Kconst u8 *[m[K' {aka '[01m[Kconst unsigned char *[m[K'}
+  491 | static void _wpa_macsw_driver_process_scan_ie_buffer(int bssid_index, u8* dst, [01;36m[Ku8*[m[K
+      |                                                                                [01;36m[K~~~[m[K
+  492 | [01;36m[K        ref_ssid_ie[m[K, u8* multi_ssid_ie, u8 *ie, int origin_ie_len)
+      |         [01;36m[K^~~~~~~~~~~[m[K
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/drivers/driver_macsw.c:620:62:[m[K [01;35m[Kwarning: [m[Kpassing argument 3 of '[01m[K_wpa_macsw_driver_process_scan_ie_buffer[m[K' discards '[01m[Kconst[m[K' qualifier from pointer target type [[01;35m[K-Wdiscarded-qualifiers[m[K]
+  620 |   _wpa_macsw_driver_process_scan_ie_buffer(bssid_index, dst, [01;35m[Kref_ssid_ie[m[K,
+      |                                                              [01;35m[K^~~~~~~~~~~[m[K
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/drivers/driver_macsw.c:492:9:[m[K [01;36m[Knote: [m[Kexpected '[01m[Ku8 *[m[K' {aka '[01m[Kunsigned char *[m[K'} but argument is of type '[01m[Kconst u8 *[m[K' {aka '[01m[Kconst unsigned char *[m[K'}
+  491 | static void _wpa_macsw_driver_process_scan_ie_buffer(int bssid_index, u8* dst, [01;36m[Ku8*[m[K
+      |                                                                                [01;36m[K~~~[m[K
+  492 | [01;36m[K        ref_ssid_ie[m[K, u8* multi_ssid_ie, u8 *ie, int origin_ie_len)
+      |         [01;36m[K^~~~~~~~~~~[m[K
+[ 87%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/timing.c.obj
+[ 87%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/version.c.obj
+[ 87%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/x509.c.obj
+[ 87%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/common/ieee802_11_common.c.obj
+[ 87%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/common/hw_features_common.c.obj
+[ 88%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/wpa_supplicant/ap.c.obj
+[ 88%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/x509_create.c.obj
+[ 88%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/hostapd.c.obj
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/ap.c:[m[K In function '[01m[Kap_ctrl_iface_acl_enable[m[K':
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/wpa_supplicant/ap.c:1628:12:[m[K [01;35m[Kwarning: [m[Kimplicit declaration of function '[01m[Khostapd_ctrl_iface_acl_enable[m[K'; did you mean '[01m[Kap_ctrl_iface_acl_enable[m[K'? [[01;35m[K-Wimplicit-function-declaration[m[K]
+ 1628 |     return [01;35m[Khostapd_ctrl_iface_acl_enable[m[K(wpa_s->ap_iface->bss[0],
+      |            [01;35m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+      |            [32m[Kap_ctrl_iface_acl_enable[m[K
+[ 88%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/wpa_auth_glue.c.obj
+[ 88%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/utils.c.obj
+[ 88%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/x509_crl.c.obj
+[ 88%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/authsrv.c.obj
+[ 89%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/x509_crt.c.obj
+[ 90%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/ap_config.c.obj
+[ 90%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/utils/ip_addr.c.obj
+[ 90%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/sta_info.c.obj
+[ 90%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/tkip_countermeasures.c.obj
+[ 90%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/ap_mlme.c.obj
+[ 90%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/x509_csr.c.obj
+[ 90%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/ieee802_1x.c.obj
+[ 91%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/eapol_auth/eapol_auth_sm.c.obj
+[ 91%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/x509write.c.obj
+[ 91%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/ieee802_11_auth.c.obj
+[ 91%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/x509write_crt.c.obj
+[ 91%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/ieee802_11_shared.c.obj
+[ 91%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/x509write_csr.c.obj
+[ 91%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/drv_callbacks.c.obj
+[ 92%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/debug.c.obj
+[ 92%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/ap_drv_ops.c.obj
+[ 92%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/beacon.c.obj
+[ 93%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/bss_load.c.obj
+[ 93%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/ssl_debug_helpers_generated.c.obj
+[ 93%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/eap_user_db.c.obj
+[ 93%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/mbedtls_v3/library/psa_crypto_driver_wrappers_no_static.c.obj
+[ 93%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/neighbor_db.c.obj
+[ 93%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/utils/crc32.c.obj
+[ 93%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/utils/uuid.c.obj
+[ 93%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/port/net_sockets.c.obj
+[ 93%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/port/entropy_poll_alt.c.obj
+[ 93%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/port/hw_acc/aes_alt.c.obj
+[ 93%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/utils/base64.c.obj
+[ 94%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/port/hw_acc/sha1_alt.c.obj
+[ 94%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/port/hw_acc/sha256_alt.c.obj
+[ 95%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/wmm.c.obj
+[ 95%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/ap_list.c.obj
+[ 95%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/ieee802_11.c.obj
+[ 95%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/hw_features.c.obj
+[ 95%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/port/hw_acc/sha512_alt.c.obj
+[ 95%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/port/bignum.c.obj
+[ 95%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/port/hw_acc/bignum_alt.c.obj
+[ 95%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/dfs.c.obj
+[ 95%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/port/hw_acc/ecp_alt.c.obj
+[ 95%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/wpa_auth.c.obj
+[ 96%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/wpa_auth_ie.c.obj
+[ 97%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/port/hw_acc/ecp_curves_alt.c.obj
+[ 97%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/port/hw_acc/bignum_ext.c.obj
+[ 97%] Building C object build_out/components/crypto/mbedtls/CMakeFiles/libmbedtls.dir/port/alt_timing.c.obj
+[ 97%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/pmksa_cache_auth.c.obj
+[ 97%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/ieee802_11_ht.c.obj
+[ 97%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/ieee802_11_vht.c.obj
+[ 97%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/ieee802_11_he.c.obj
+[ 97%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/eap_server/eap_server.c.obj
+[ 98%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/wps_hostapd.c.obj
+[ 98%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wps/wps.c.obj
+[ 98%] Linking C static library ../../../lib/libmbedtls.a
+[ 98%] Built target libmbedtls
+[ 98%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wps/wps_attr_build.c.obj
+[ 98%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wps/wps_dev_attr.c.obj
+[ 98%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wps/wps_attr_parse.c.obj
+[ 98%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wps/wps_registrar.c.obj
+[ 99%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wps/wps_common.c.obj
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/wps/wps_registrar.c:[m[K In function '[01m[Kwps_process_assoc_state[m[K':
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/wps/wps_registrar.c:2576:6:[m[K [01;35m[Kwarning: [m[Kvariable '[01m[Ka[m[K' set but not used [[01;35m[K-Wunused-but-set-variable[m[K]
+ 2576 |  u16 [01;35m[Ka[m[K;
+      |      [01;35m[K^[m[K
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/wps/wps_registrar.c:[m[K In function '[01m[Kwps_process_config_error[m[K':
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/wps/wps_registrar.c:2592:6:[m[K [01;35m[Kwarning: [m[Kvariable '[01m[Ke[m[K' set but not used [[01;35m[K-Wunused-but-set-variable[m[K]
+ 2592 |  u16 [01;35m[Ke[m[K;
+      |      [01;35m[K^[m[K
+[ 99%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/eap_server/eap_server_identity.c.obj
+[ 99%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/eap_server/eap_server_methods.c.obj
+[ 99%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/eap_common/eap_common.c.obj
+[ 99%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/eap_peer/eap.c.obj
+[ 99%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/eap_peer/eap_wsc.c.obj
+[100%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/eap_peer/eap_methods.c.obj
+[100%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/eap_common/eap_wsc_common.c.obj
+[100%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/ap/ctrl_iface_ap.c.obj
+[100%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wps/wps_attr_process.c.obj
+[100%] Building C object build_out/components/wireless/wifi6/wpa_supplicant/CMakeFiles/libwpa_supplicant.dir/src/wps/wps_enrollee.c.obj
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/eap_peer/eap.c:[m[K In function '[01m[Keap_sm_buildNak[m[K':
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/eap_peer/eap.c:1450:6:[m[K [01;35m[Kwarning: [m[Kvariable '[01m[Kstart[m[K' set but not used [[01;35m[K-Wunused-but-set-variable[m[K]
+ 1450 |  u8 *[01;35m[Kstart[m[K;
+      |      [01;35m[K^~~~~[m[K
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/eap_peer/eap_wsc.c:32:21:[m[K [01;35m[Kwarning: [m[K'[01m[Keap_wsc_state_txt[m[K' defined but not used [[01;35m[K-Wunused-function[m[K]
+   32 | static const char * [01;35m[Keap_wsc_state_txt[m[K(int state)
+      |                     [01;35m[K^~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/wps/wps_enrollee.c:[m[K In function '[01m[Kwps_build_ap_settings[m[K':
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/wps/wps_enrollee.c:351:20:[m[K [01;35m[Kwarning: [m[Kvariable '[01m[Kend[m[K' set but not used [[01;35m[K-Wunused-but-set-variable[m[K]
+  351 |  const u8 *start, *[01;35m[Kend[m[K;
+      |                    [01;35m[K^~~[m[K
+[01m[K/home/vkorehovs/k230d-hw/bouffalo_sdk/components/wireless/wifi6/wpa_supplicant/src/wps/wps_enrollee.c:351:12:[m[K [01;35m[Kwarning: [m[Kvariable '[01m[Kstart[m[K' set but not used [[01;35m[K-Wunused-but-set-variable[m[K]
+  351 |  const u8 *[01;35m[Kstart[m[K, *end;
+      |            [01;35m[K^~~~~[m[K
+[100%] Linking C static library ../../../../lib/libwpa_supplicant.a
+[100%] Built target libwpa_supplicant
+[100%] Building C object CMakeFiles/bl616_setup_test_bl616.elf.dir/main.c.obj
+[100%] Linking C executable build_out/bl616_setup_test_bl616.elf
+Memory region         Used Size  Region Size  %age Used
+       fw_header:         256 B         4 KB      6.25%
+      rom_header:        4528 B         6 KB     73.70%
+             rom:       1332 KB         4 MB     32.52%
+     ram_nocache:        4992 B       319 KB      1.53%
+             ram:      114496 B       319 KB     35.05%
+       ram_psram:          0 GB         4 MB      0.00%
+        ram_wifi:      121456 B       128 KB     92.66%
+      hbn_memory:        4060 B         4 KB     99.12%
+Generate /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/bl616_setup_test_bl616.bin
+[100%] Built target bl616_setup_test_bl616.elf
+make -C "build" post_build
+[lp_fw] concate with lp fw bin
+af18e619e2efc6596c2b00eef24ef9c60b68d43cc59e2acb9bca9061f54a8a5a
+[dwarfcfi] generating and embedding DWARF CFI table
+Built target post_build
+make -C "build" combine
+[00:10:03.528] - Firmware post process: v1.4.7
+[00:10:03.531] - Chipname: bl616
+[00:10:03.531] - Process /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/bl616_setup_test_bl616.bin
+[00:10:03.532] - Create partition using /home/vkorehovs/k230d-hw/bouffalo_sdk/bsp/board/bl616dk/config/partition_cfg_4M.toml
+[00:10:03.546] - Create dts for /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/bl616_setup_test_bl616.bin
+[00:10:03.546] - Create dts using /home/vkorehovs/k230d-hw/bouffalo_sdk/bsp/board/bl616dk/config/bl_factory_params_IoTKitA_auto.dts
+[00:10:03.660] - 4K header found, append dts file
+[00:10:03.661] - Copy /home/vkorehovs/k230d-hw/bouffalo_sdk/bsp/board/bl616dk/config/boot2_bl616_isp_release_v8.1.8.bin
+[00:10:03.663] - Process /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/bl616_setup_test_bl616.bin
+[00:10:03.665] - Flash config crc: b'b5fec518'
+[00:10:03.665] - Clock config crc: b'4a05f490'
+[00:10:03.665] - Flash Image
+[00:10:03.665] - Image offset: 0x1000
+[00:10:03.673] - Image hash: b'5e0497c6be534d011cc24647166411789171bea1ae47aeaf61fd78e45b531b9d'
+[00:10:03.673] - Encrypt efuse data
+[00:10:03.876] - Decrypt efuse data
+[00:10:03.877] - Encrypt efuse data
+[00:10:03.879] - Image offset: 0x1000
+[00:10:03.879] - Image hash ignore, not calculate
+[00:10:03.879] - Bootheader config crc: b'0666e6e8'
+[00:10:03.880] - Process /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/boot2_bl616_isp_release_v8.1.8.bin
+[00:10:03.881] - Flash config crc: b'b5fec518'
+[00:10:03.881] - Clock config crc: b'4a05f490'
+[00:10:03.881] - Flash Image
+[00:10:03.881] - Image offset: 0x2000
+[00:10:03.882] - Image hash: b'ebc3453460f4448c02e1ba3e2b6b70f039ba5964959aad58a878bf87754f0225'
+[00:10:03.882] - Encrypt efuse data
+[00:10:03.883] - Decrypt efuse data
+[00:10:03.884] - Encrypt efuse data
+[00:10:03.885] - Image offset: 0x2000
+[00:10:03.885] - Image hash ignore, not calculate
+[00:10:03.885] - Bootheader config crc: b'c95d2920'
+[00:10:04.714] - Create ota file: /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/bl616_setup_test_bl616.bin.ota
+[00:10:04.715] - Create hash file: /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/bl616_setup_test_bl616.bin.hash
+[00:10:04.723] - Create xz file: /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/bl616_setup_test_bl616.xz
+[00:10:05.376] - Create xz hash file: /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/bl616_setup_test_bl616.xz.hash
+[00:10:05.381] - Create xz ota file: /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/bl616_setup_test_bl616.xz.ota
+Built target combine
+-rwxr-xr-x 1 vkorehovs vkorehovs 1422528 Nov 12 02:10 build/build_out/bl616_setup_test_bl616.bin
+-rwxrwxr-x 1 vkorehovs vkorehovs   52576 Nov 12 02:10 build/build_out/boot2_bl616_isp_release_v8.1.8.bin
+-rw-r--r-- 1 vkorehovs vkorehovs   21696 Nov 12 02:10 build/build_out/dwarfcfi.bin
+-rw-r--r-- 1 vkorehovs vkorehovs    4608 Nov 12 02:10 build/build_out/efusedata.bin
+-rw-r--r-- 1 vkorehovs vkorehovs     512 Nov 12 02:10 build/build_out/efusedata_mask.bin
+-rw-r--r-- 1 vkorehovs vkorehovs     512 Nov 12 02:10 build/build_out/efusedata_raw.bin
+-rw-r--r-- 1 vkorehovs vkorehovs     308 Nov 12 02:10 build/build_out/partition.bin
+make: Leaving directory '/home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test'
+make: Entering directory '/home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test'
+flash: leakcam-build setup_test 0.6+g93e689f-dirty-202611120006
+cp build/flash_prog_cfg.ini /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/flash_leakcam.ini
+printf '\n[partition1]\nfiledir = %s\naddress = 0xF000\n' /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/partition.bin >> /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/flash_leakcam.ini
+port=$(/home/vkorehovs/k230d-hw/LEAKCAM/tools/power-bringup/bl616_isp.py) && \
+docker run --rm --user $(id -u):$(id -g) --group-add $(stat -c %g $port) --device $port -e HOME=/tmp \
+    -e LEAKCAM_IN_CONTAINER=1 -v /home/vkorehovs/k230d-hw:/home/vkorehovs/k230d-hw -w /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test k230-rtos-sdk-build:arm64-x86tc \
+    /home/vkorehovs/k230d-hw/bouffalo_sdk/tools/bflb_tools/bouffalo_flash_cube/BLFlashCommand-ubuntu --interface=uart --baudrate=2000000 \
+    --port=$port --chipname=bl616 --config=/home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/flash_leakcam.ini
+/dev/ttyACM0: isp
+2026-11-12 00:10:11,528 - INFO - [00:10:11.527] - The serial port is /dev/ttyACM0
+2026-11-12 00:10:11,530 - INFO - [00:10:11.530] - ==================================================
+2026-11-12 00:10:11,544 - INFO - [00:10:11.544] - The default start addr is 0x0
+2026-11-12 00:10:11,551 - INFO - [00:10:11.551] - Start programming
+2026-11-12 00:10:11,552 - INFO - [00:10:11.552] - ========= eflash loader cmd args =========
+2026-11-12 00:10:11,561 - INFO - [00:10:11.561] - The chip type is bl616
+2026-11-12 00:10:11,561 - INFO - [00:10:11.561] - The default timeout is 2s
+2026-11-12 00:10:11,563 - INFO - [00:10:11.563] - The cpu reset flag is False
+2026-11-12 00:10:12,086 - INFO - [00:10:12.085] - The com speed is 2000000
+2026-11-12 00:10:12,087 - INFO - [00:10:12.086] - ========= interface is uart =========
+2026-11-12 00:10:12,087 - INFO - [00:10:12.087] - Bootrom load
+2026-11-12 00:10:12,088 - INFO - [00:10:12.088] - ========= get boot info =========
+2026-11-12 00:10:12,091 - INFO - [00:10:12.091] - Start handshake
+2026-11-12 00:10:12,350 - INFO - [00:10:12.349] - Power off tx and rx, press the device
+2026-11-12 00:10:12,405 - INFO - [00:10:12.404] - Power on tx and rx
+2026-11-12 00:10:13,317 - INFO - [00:10:13.316] - Clean buffer
+2026-11-12 00:10:13,320 - INFO - [00:10:13.319] - Send sync
+2026-11-12 00:10:13,525 - INFO - [00:10:13.525] - The ack data is b'4f4b'
+2026-11-12 00:10:13,527 - INFO - [00:10:13.527] - Handshake succeeded
+2026-11-12 00:10:14,031 - INFO - [00:10:14.030] - The chip type is bl616
+2026-11-12 00:10:14,031 - INFO - [00:10:14.031] - The chip version is a0
+2026-11-12 00:10:14,033 - INFO - [00:10:14.033] - The read data is b'01001606000001002792800149b162823e7c1a000f758010'
+2026-11-12 00:10:14,033 - INFO - [00:10:14.033] - ========= chip id is 7c3e8262b149 =========
+2026-11-12 00:10:14,036 - INFO - [00:10:14.036] - Get bootinfo time cost(ms): 1946.305
+2026-11-12 00:10:14,037 - INFO - [00:10:14.037] - Change baudrate to 2000000
+2026-11-12 00:10:14,037 - INFO - [00:10:14.037] - Set clock pll
+2026-11-12 00:10:14,039 - INFO - [00:10:14.039] - Set clock time cost(ms): 0.934
+2026-11-12 00:10:14,151 - INFO - [00:10:14.151] - Read mac addr
+2026-11-12 00:10:14,154 - INFO - [00:10:14.154] - The mac addr is 7c3e8262b149
+2026-11-12 00:10:14,155 - INFO - [00:10:14.155] - ========= flash set param =========
+2026-11-12 00:10:14,155 - INFO - [00:10:14.155] - Get flash pin cfg from bootinfo: 0x02
+2026-11-12 00:10:14,156 - INFO - [00:10:14.156] - Set flash cfg to 1014102
+2026-11-12 00:10:14,156 - INFO - [00:10:14.156] - ========= flash set config =========
+2026-11-12 00:10:14,159 - INFO - [00:10:14.159] - Set para time cost(ms): 2.022
+2026-11-12 00:10:14,160 - INFO - [00:10:14.159] - ========= flash read jedec id =========
+2026-11-12 00:10:14,161 - INFO - [00:10:14.161] - Read flash jedec id
+2026-11-12 00:10:14,161 - INFO - [00:10:14.161] - The read data is b'c8601600'
+2026-11-12 00:10:14,164 - INFO - [00:10:14.164] - Use private flash para file: /home/vkorehovs/k230d-hw/bouffalo_sdk/tools/bflb_tools/bouffalo_flash_cube/temp/bflb_flash_para_fghxo17q/flash_para.bin
+2026-11-12 00:10:14,165 - INFO - [00:10:14.165] - The flash config is not found, use default
+2026-11-12 00:10:14,165 - INFO - [00:10:14.165] - The jedec id is c86016
+2026-11-12 00:10:14,166 - INFO - [00:10:14.166] - The flash size is 0x00400000
+2026-11-12 00:10:14,166 - INFO - [00:10:14.166] - Start to write flash
+2026-11-12 00:10:14,167 - INFO - [00:10:14.167] - Processing index 0
+2026-11-12 00:10:14,167 - INFO - [00:10:14.167] - Start to write /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/boot2_bl616_isp_release_v8.1.8.bin to 0x0
+2026-11-12 00:10:14,169 - INFO - [00:10:14.169] - The flash para file is /home/vkorehovs/k230d-hw/bouffalo_sdk/tools/bflb_tools/bouffalo_flash_cube/temp/bflb_flash_para_fghxo17q/flash_para.bin
+2026-11-12 00:10:14,169 - INFO - [00:10:14.169] - ========= flash set config =========
+2026-11-12 00:10:14,172 - INFO - [00:10:14.172] - Set para time cost(ms): 2.038
+2026-11-12 00:10:14,173 - INFO - [00:10:14.173] - Start to erase flash
+2026-11-12 00:10:14,174 - INFO - [00:10:14.174] - ========= flash erase =========
+2026-11-12 00:10:14,174 - INFO - [00:10:14.174] - Erase flash from 0x0 to 0xcd5f
+2026-11-12 00:10:14,425 - INFO - [00:10:14.425] - Erase time cost(ms): 249.762
+2026-11-12 00:10:14,462 - INFO - [00:10:14.462] - Decompress flash load 27408
+2026-11-12 00:10:14,463 - INFO - [00:10:14.463] - ========= flash load =========
+2026-11-12 00:10:14,464 - INFO - [00:10:14.464] - ========= writing /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/boot2_bl616_isp_release_v8.1.8.bin
+2026-11-12 00:10:14,492 - INFO - [00:10:14.492] - Load  2048/27408 [7%]
+2026-11-12 00:10:14,509 - INFO - [00:10:14.509] - Load  4096/27408 [14%]
+2026-11-12 00:10:14,526 - INFO - [00:10:14.526] - Load  6144/27408 [22%]
+2026-11-12 00:10:14,544 - INFO - [00:10:14.543] - Load  8192/27408 [29%]
+2026-11-12 00:10:14,561 - INFO - [00:10:14.561] - Load 10240/27408 [37%]
+2026-11-12 00:10:14,572 - INFO - [00:10:14.571] - Load 12288/27408 [44%]
+2026-11-12 00:10:14,589 - INFO - [00:10:14.588] - Load 14336/27408 [52%]
+2026-11-12 00:10:14,606 - INFO - [00:10:14.606] - Load 16384/27408 [59%]
+2026-11-12 00:10:14,616 - INFO - [00:10:14.616] - Load 18432/27408 [67%]
+2026-11-12 00:10:14,633 - INFO - [00:10:14.633] - Load 20480/27408 [74%]
+2026-11-12 00:10:14,651 - INFO - [00:10:14.651] - Load 22528/27408 [82%]
+2026-11-12 00:10:14,669 - INFO - [00:10:14.669] - Load 24576/27408 [89%]
+2026-11-12 00:10:14,687 - INFO - [00:10:14.687] - Load 26624/27408 [97%]
+2026-11-12 00:10:14,698 - INFO - [00:10:14.697] - Load 27408/27408 [100%]
+2026-11-12 00:10:14,698 - INFO - [00:10:14.698] - Load 27408/27408 [100%]
+2026-11-12 00:10:14,699 - INFO - [00:10:14.698] - Start to check flash
+2026-11-12 00:10:14,700 - INFO - [00:10:14.700] - Flash load time cost(ms): 273.664
+2026-11-12 00:10:14,701 - INFO - [00:10:14.701] - SHA caled by host: 92a329c660e23f1b488a21779cebb6d5fe0ae61fd25dc00d3df7e4334192ace6
+2026-11-12 00:10:14,702 - INFO - [00:10:14.702] - XIP mode verify
+2026-11-12 00:10:14,748 - INFO - [00:10:14.747] - Read SHA256/52576
+2026-11-12 00:10:14,748 - INFO - [00:10:14.748] - Flash xip readsha time cost(ms): 45.421
+2026-11-12 00:10:14,750 - INFO - [00:10:14.750] - SHA caled by dev: 92a329c660e23f1b488a21779cebb6d5fe0ae61fd25dc00d3df7e4334192ace6
+2026-11-12 00:10:14,750 - INFO - [00:10:14.750] - Verification succeeded
+2026-11-12 00:10:14,751 - INFO - [00:10:14.751] - Processing index 1
+2026-11-12 00:10:14,752 - INFO - [00:10:14.751] - Start to write /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/partition.bin to 0xE000
+2026-11-12 00:10:14,753 - INFO - [00:10:14.753] - The flash para file is /home/vkorehovs/k230d-hw/bouffalo_sdk/tools/bflb_tools/bouffalo_flash_cube/temp/bflb_flash_para_fghxo17q/flash_para.bin
+2026-11-12 00:10:14,754 - INFO - [00:10:14.754] - ========= flash set config =========
+2026-11-12 00:10:14,757 - INFO - [00:10:14.757] - Set para time cost(ms): 2.154
+2026-11-12 00:10:14,758 - INFO - [00:10:14.758] - Start to erase flash
+2026-11-12 00:10:14,758 - INFO - [00:10:14.758] - ========= flash erase =========
+2026-11-12 00:10:14,759 - INFO - [00:10:14.759] - Erase flash from 0xe000 to 0xe133
+2026-11-12 00:10:14,797 - INFO - [00:10:14.796] - Erase time cost(ms): 37.052
+2026-11-12 00:10:14,798 - INFO - [00:10:14.798] - ========= flash load =========
+2026-11-12 00:10:14,799 - INFO - [00:10:14.799] - ========= writing /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/partition.bin
+2026-11-12 00:10:14,801 - INFO - [00:10:14.801] - Load 308/308 [100%]
+2026-11-12 00:10:14,802 - INFO - [00:10:14.802] - Load 308/308 [100%]
+2026-11-12 00:10:14,802 - INFO - [00:10:14.802] - Start to check flash
+2026-11-12 00:10:14,804 - INFO - [00:10:14.804] - Flash load time cost(ms): 6.289
+2026-11-12 00:10:14,805 - INFO - [00:10:14.805] - SHA caled by host: 99c055a2a7279c04d989a2a270106d2e2584a2d5773b57e40b3af0d87f623d12
+2026-11-12 00:10:14,805 - INFO - [00:10:14.805] - XIP mode verify
+2026-11-12 00:10:14,808 - INFO - [00:10:14.807] - Read SHA256/308
+2026-11-12 00:10:14,808 - INFO - [00:10:14.808] - Flash xip readsha time cost(ms): 1.552
+2026-11-12 00:10:14,809 - INFO - [00:10:14.809] - SHA caled by dev: 99c055a2a7279c04d989a2a270106d2e2584a2d5773b57e40b3af0d87f623d12
+2026-11-12 00:10:14,810 - INFO - [00:10:14.810] - Verification succeeded
+2026-11-12 00:10:14,811 - INFO - [00:10:14.810] - Processing index 2
+2026-11-12 00:10:14,811 - INFO - [00:10:14.811] - Start to write /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/partition.bin to 0xF000
+2026-11-12 00:10:14,812 - INFO - [00:10:14.812] - The flash para file is /home/vkorehovs/k230d-hw/bouffalo_sdk/tools/bflb_tools/bouffalo_flash_cube/temp/bflb_flash_para_fghxo17q/flash_para.bin
+2026-11-12 00:10:14,813 - INFO - [00:10:14.813] - ========= flash set config =========
+2026-11-12 00:10:14,816 - INFO - [00:10:14.816] - Set para time cost(ms): 1.984
+2026-11-12 00:10:14,816 - INFO - [00:10:14.816] - Start to erase flash
+2026-11-12 00:10:14,817 - INFO - [00:10:14.817] - ========= flash erase =========
+2026-11-12 00:10:14,817 - INFO - [00:10:14.817] - Erase flash from 0xf000 to 0xf133
+2026-11-12 00:10:14,855 - INFO - [00:10:14.855] - Erase time cost(ms): 36.956
+2026-11-12 00:10:14,857 - INFO - [00:10:14.856] - ========= flash load =========
+2026-11-12 00:10:14,857 - INFO - [00:10:14.857] - ========= writing /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/partition.bin
+2026-11-12 00:10:14,859 - INFO - [00:10:14.859] - Load 308/308 [100%]
+2026-11-12 00:10:14,860 - INFO - [00:10:14.860] - Load 308/308 [100%]
+2026-11-12 00:10:14,860 - INFO - [00:10:14.860] - Start to check flash
+2026-11-12 00:10:14,861 - INFO - [00:10:14.861] - Flash load time cost(ms): 5.268
+2026-11-12 00:10:14,862 - INFO - [00:10:14.862] - SHA caled by host: 99c055a2a7279c04d989a2a270106d2e2584a2d5773b57e40b3af0d87f623d12
+2026-11-12 00:10:14,862 - INFO - [00:10:14.862] - XIP mode verify
+2026-11-12 00:10:14,864 - INFO - [00:10:14.864] - Read SHA256/308
+2026-11-12 00:10:14,865 - INFO - [00:10:14.865] - Flash xip readsha time cost(ms): 1.516
+2026-11-12 00:10:14,866 - INFO - [00:10:14.866] - SHA caled by dev: 99c055a2a7279c04d989a2a270106d2e2584a2d5773b57e40b3af0d87f623d12
+2026-11-12 00:10:14,867 - INFO - [00:10:14.866] - Verification succeeded
+2026-11-12 00:10:14,867 - INFO - [00:10:14.867] - Processing index 3
+2026-11-12 00:10:14,868 - INFO - [00:10:14.868] - Start to write /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/bl616_setup_test_bl616.bin to 0x10000
+2026-11-12 00:10:14,870 - INFO - [00:10:14.870] - The flash para file is /home/vkorehovs/k230d-hw/bouffalo_sdk/tools/bflb_tools/bouffalo_flash_cube/temp/bflb_flash_para_fghxo17q/flash_para.bin
+2026-11-12 00:10:14,871 - INFO - [00:10:14.871] - ========= flash set config =========
+2026-11-12 00:10:14,874 - INFO - [00:10:14.874] - Set para time cost(ms): 2.084
+2026-11-12 00:10:14,876 - INFO - [00:10:14.876] - Start to erase flash
+2026-11-12 00:10:14,876 - INFO - [00:10:14.876] - ========= flash erase =========
+2026-11-12 00:10:14,877 - INFO - [00:10:14.877] - Erase flash from 0x10000 to 0x16b4bf
+2026-11-12 00:10:17,511 - INFO - [00:10:17.510] - Erase time cost(ms): 2632.819
+2026-11-12 00:10:18,157 - INFO - [00:10:18.157] - Decompress flash load 787248
+2026-11-12 00:10:18,159 - INFO - [00:10:18.159] - ========= flash load =========
+2026-11-12 00:10:18,159 - INFO - [00:10:18.159] - ========= writing /home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test/build/build_out/bl616_setup_test_bl616.bin
+2026-11-12 00:10:18,187 - INFO - [00:10:18.186] - Load   2048/787248 [0%]
+2026-11-12 00:10:18,203 - INFO - [00:10:18.203] - Load   4096/787248 [0%]
+2026-11-12 00:10:18,221 - INFO - [00:10:18.221] - Load   6144/787248 [0%]
+2026-11-12 00:10:18,238 - INFO - [00:10:18.238] - Load   8192/787248 [1%]
+2026-11-12 00:10:18,248 - INFO - [00:10:18.248] - Load  10240/787248 [1%]
+2026-11-12 00:10:18,273 - INFO - [00:10:18.273] - Load  12288/787248 [1%]
+2026-11-12 00:10:18,300 - INFO - [00:10:18.300] - Load  14336/787248 [1%]
+2026-11-12 00:10:18,310 - INFO - [00:10:18.310] - Load  16384/787248 [2%]
+2026-11-12 00:10:18,328 - INFO - [00:10:18.327] - Load  18432/787248 [2%]
+2026-11-12 00:10:18,345 - INFO - [00:10:18.345] - Load  20480/787248 [2%]
+2026-11-12 00:10:18,362 - INFO - [00:10:18.362] - Load  22528/787248 [2%]
+2026-11-12 00:10:18,373 - INFO - [00:10:18.373] - Load  24576/787248 [3%]
+2026-11-12 00:10:18,391 - INFO - [00:10:18.390] - Load  26624/787248 [3%]
+2026-11-12 00:10:18,409 - INFO - [00:10:18.408] - Load  28672/787248 [3%]
+2026-11-12 00:10:18,427 - INFO - [00:10:18.427] - Load  30720/787248 [3%]
+2026-11-12 00:10:18,439 - INFO - [00:10:18.438] - Load  32768/787248 [4%]
+2026-11-12 00:10:18,457 - INFO - [00:10:18.457] - Load  34816/787248 [4%]
+2026-11-12 00:10:18,476 - INFO - [00:10:18.476] - Load  36864/787248 [4%]
+2026-11-12 00:10:18,495 - INFO - [00:10:18.494] - Load  38912/787248 [4%]
+2026-11-12 00:10:18,513 - INFO - [00:10:18.513] - Load  40960/787248 [5%]
+2026-11-12 00:10:18,524 - INFO - [00:10:18.524] - Load  43008/787248 [5%]
+2026-11-12 00:10:18,542 - INFO - [00:10:18.542] - Load  45056/787248 [5%]
+2026-11-12 00:10:18,560 - INFO - [00:10:18.560] - Load  47104/787248 [5%]
+2026-11-12 00:10:18,578 - INFO - [00:10:18.578] - Load  49152/787248 [6%]
+2026-11-12 00:10:18,589 - INFO - [00:10:18.589] - Load  51200/787248 [6%]
+2026-11-12 00:10:18,606 - INFO - [00:10:18.606] - Load  53248/787248 [6%]
+2026-11-12 00:10:18,624 - INFO - [00:10:18.623] - Load  55296/787248 [7%]
+2026-11-12 00:10:18,641 - INFO - [00:10:18.641] - Load  57344/787248 [7%]
+2026-11-12 00:10:18,658 - INFO - [00:10:18.658] - Load  59392/787248 [7%]
+2026-11-12 00:10:18,669 - INFO - [00:10:18.669] - Load  61440/787248 [7%]
+2026-11-12 00:10:18,687 - INFO - [00:10:18.687] - Load  63488/787248 [8%]
+2026-11-12 00:10:18,705 - INFO - [00:10:18.705] - Load  65536/787248 [8%]
+2026-11-12 00:10:18,723 - INFO - [00:10:18.722] - Load  67584/787248 [8%]
+2026-11-12 00:10:18,740 - INFO - [00:10:18.740] - Load  69632/787248 [8%]
+2026-11-12 00:10:18,751 - INFO - [00:10:18.750] - Load  71680/787248 [9%]
+2026-11-12 00:10:18,768 - INFO - [00:10:18.768] - Load  73728/787248 [9%]
+2026-11-12 00:10:18,786 - INFO - [00:10:18.786] - Load  75776/787248 [9%]
+2026-11-12 00:10:18,803 - INFO - [00:10:18.803] - Load  77824/787248 [9%]
+2026-11-12 00:10:18,821 - INFO - [00:10:18.821] - Load  79872/787248 [10%]
+2026-11-12 00:10:18,832 - INFO - [00:10:18.832] - Load  81920/787248 [10%]
+2026-11-12 00:10:18,849 - INFO - [00:10:18.849] - Load  83968/787248 [10%]
+2026-11-12 00:10:18,867 - INFO - [00:10:18.866] - Load  86016/787248 [10%]
+2026-11-12 00:10:18,884 - INFO - [00:10:18.884] - Load  88064/787248 [11%]
+2026-11-12 00:10:18,902 - INFO - [00:10:18.902] - Load  90112/787248 [11%]
+2026-11-12 00:10:18,913 - INFO - [00:10:18.912] - Load  92160/787248 [11%]
+2026-11-12 00:10:18,930 - INFO - [00:10:18.930] - Load  94208/787248 [11%]
+2026-11-12 00:10:18,948 - INFO - [00:10:18.948] - Load  96256/787248 [12%]
+2026-11-12 00:10:18,966 - INFO - [00:10:18.965] - Load  98304/787248 [12%]
+2026-11-12 00:10:18,983 - INFO - [00:10:18.983] - Load 100352/787248 [12%]
+2026-11-12 00:10:18,994 - INFO - [00:10:18.994] - Load 102400/787248 [13%]
+2026-11-12 00:10:19,011 - INFO - [00:10:19.011] - Load 104448/787248 [13%]
+2026-11-12 00:10:19,028 - INFO - [00:10:19.028] - Load 106496/787248 [13%]
+2026-11-12 00:10:19,046 - INFO - [00:10:19.046] - Load 108544/787248 [13%]
+2026-11-12 00:10:19,056 - INFO - [00:10:19.056] - Load 110592/787248 [14%]
+2026-11-12 00:10:19,074 - INFO - [00:10:19.074] - Load 112640/787248 [14%]
+2026-11-12 00:10:19,091 - INFO - [00:10:19.091] - Load 114688/787248 [14%]
+2026-11-12 00:10:19,102 - INFO - [00:10:19.101] - Load 116736/787248 [14%]
+2026-11-12 00:10:19,119 - INFO - [00:10:19.119] - Load 118784/787248 [15%]
+2026-11-12 00:10:19,136 - INFO - [00:10:19.136] - Load 120832/787248 [15%]
+2026-11-12 00:10:19,154 - INFO - [00:10:19.154] - Load 122880/787248 [15%]
+2026-11-12 00:10:19,171 - INFO - [00:10:19.171] - Load 124928/787248 [15%]
+2026-11-12 00:10:19,189 - INFO - [00:10:19.189] - Load 126976/787248 [16%]
+2026-11-12 00:10:19,207 - INFO - [00:10:19.207] - Load 129024/787248 [16%]
+2026-11-12 00:10:19,218 - INFO - [00:10:19.218] - Load 131072/787248 [16%]
+2026-11-12 00:10:19,243 - INFO - [00:10:19.243] - Load 133120/787248 [16%]
+2026-11-12 00:10:19,261 - INFO - [00:10:19.261] - Load 135168/787248 [17%]
+2026-11-12 00:10:19,272 - INFO - [00:10:19.272] - Load 137216/787248 [17%]
+2026-11-12 00:10:19,290 - INFO - [00:10:19.290] - Load 139264/787248 [17%]
+2026-11-12 00:10:19,308 - INFO - [00:10:19.308] - Load 141312/787248 [17%]
+2026-11-12 00:10:19,326 - INFO - [00:10:19.326] - Load 143360/787248 [18%]
+2026-11-12 00:10:19,344 - INFO - [00:10:19.344] - Load 145408/787248 [18%]
+2026-11-12 00:10:19,363 - INFO - [00:10:19.362] - Load 147456/787248 [18%]
+2026-11-12 00:10:19,381 - INFO - [00:10:19.381] - Load 149504/787248 [18%]
+2026-11-12 00:10:19,399 - INFO - [00:10:19.399] - Load 151552/787248 [19%]
+2026-11-12 00:10:19,417 - INFO - [00:10:19.416] - Load 153600/787248 [19%]
+2026-11-12 00:10:19,428 - INFO - [00:10:19.428] - Load 155648/787248 [19%]
+2026-11-12 00:10:19,446 - INFO - [00:10:19.445] - Load 157696/787248 [20%]
+2026-11-12 00:10:19,463 - INFO - [00:10:19.463] - Load 159744/787248 [20%]
+2026-11-12 00:10:19,481 - INFO - [00:10:19.481] - Load 161792/787248 [20%]
+2026-11-12 00:10:19,499 - INFO - [00:10:19.499] - Load 163840/787248 [20%]
+2026-11-12 00:10:19,517 - INFO - [00:10:19.516] - Load 165888/787248 [21%]
+2026-11-12 00:10:19,535 - INFO - [00:10:19.534] - Load 167936/787248 [21%]
+2026-11-12 00:10:19,553 - INFO - [00:10:19.553] - Load 169984/787248 [21%]
+2026-11-12 00:10:19,571 - INFO - [00:10:19.570] - Load 172032/787248 [21%]
+2026-11-12 00:10:19,581 - INFO - [00:10:19.581] - Load 174080/787248 [22%]
+2026-11-12 00:10:19,599 - INFO - [00:10:19.599] - Load 176128/787248 [22%]
+2026-11-12 00:10:19,617 - INFO - [00:10:19.617] - Load 178176/787248 [22%]
+2026-11-12 00:10:19,635 - INFO - [00:10:19.635] - Load 180224/787248 [22%]
+2026-11-12 00:10:19,653 - INFO - [00:10:19.653] - Load 182272/787248 [23%]
+2026-11-12 00:10:19,671 - INFO - [00:10:19.670] - Load 184320/787248 [23%]
+2026-11-12 00:10:19,688 - INFO - [00:10:19.688] - Load 186368/787248 [23%]
+2026-11-12 00:10:19,706 - INFO - [00:10:19.706] - Load 188416/787248 [23%]
+2026-11-12 00:10:19,716 - INFO - [00:10:19.716] - Load 190464/787248 [24%]
+2026-11-12 00:10:19,734 - INFO - [00:10:19.734] - Load 192512/787248 [24%]
+2026-11-12 00:10:19,752 - INFO - [00:10:19.752] - Load 194560/787248 [24%]
+2026-11-12 00:10:19,770 - INFO - [00:10:19.770] - Load 196608/787248 [24%]
+2026-11-12 00:10:19,788 - INFO - [00:10:19.788] - Load 198656/787248 [25%]
+2026-11-12 00:10:19,806 - INFO - [00:10:19.806] - Load 200704/787248 [25%]
+2026-11-12 00:10:19,825 - INFO - [00:10:19.824] - Load 202752/787248 [25%]
+2026-11-12 00:10:19,843 - INFO - [00:10:19.842] - Load 204800/787248 [26%]
+2026-11-12 00:10:19,861 - INFO - [00:10:19.861] - Load 206848/787248 [26%]
+2026-11-12 00:10:19,879 - INFO - [00:10:19.878] - Load 208896/787248 [26%]
+2026-11-12 00:10:19,897 - INFO - [00:10:19.897] - Load 210944/787248 [26%]
+2026-11-12 00:10:19,916 - INFO - [00:10:19.915] - Load 212992/787248 [27%]
+2026-11-12 00:10:19,928 - INFO - [00:10:19.927] - Load 215040/787248 [27%]
+2026-11-12 00:10:19,945 - INFO - [00:10:19.945] - Load 217088/787248 [27%]
+2026-11-12 00:10:19,964 - INFO - [00:10:19.963] - Load 219136/787248 [27%]
+2026-11-12 00:10:19,981 - INFO - [00:10:19.981] - Load 221184/787248 [28%]
+2026-11-12 00:10:20,000 - INFO - [00:10:19.999] - Load 223232/787248 [28%]
+2026-11-12 00:10:20,019 - INFO - [00:10:20.018] - Load 225280/787248 [28%]
+2026-11-12 00:10:20,038 - INFO - [00:10:20.037] - Load 227328/787248 [28%]
+2026-11-12 00:10:20,056 - INFO - [00:10:20.055] - Load 229376/787248 [29%]
+2026-11-12 00:10:20,073 - INFO - [00:10:20.073] - Load 231424/787248 [29%]
+2026-11-12 00:10:20,084 - INFO - [00:10:20.084] - Load 233472/787248 [29%]
+2026-11-12 00:10:20,102 - INFO - [00:10:20.102] - Load 235520/787248 [29%]
+2026-11-12 00:10:20,119 - INFO - [00:10:20.119] - Load 237568/787248 [30%]
+2026-11-12 00:10:20,137 - INFO - [00:10:20.137] - Load 239616/787248 [30%]
+2026-11-12 00:10:20,155 - INFO - [00:10:20.154] - Load 241664/787248 [30%]
+2026-11-12 00:10:20,172 - INFO - [00:10:20.172] - Load 243712/787248 [30%]
+2026-11-12 00:10:20,183 - INFO - [00:10:20.183] - Load 245760/787248 [31%]
+2026-11-12 00:10:20,201 - INFO - [00:10:20.200] - Load 247808/787248 [31%]
+2026-11-12 00:10:20,219 - INFO - [00:10:20.219] - Load 249856/787248 [31%]
+2026-11-12 00:10:20,238 - INFO - [00:10:20.237] - Load 251904/787248 [31%]
+2026-11-12 00:10:20,256 - INFO - [00:10:20.256] - Load 253952/787248 [32%]
+2026-11-12 00:10:20,274 - INFO - [00:10:20.274] - Load 256000/787248 [32%]
+2026-11-12 00:10:20,292 - INFO - [00:10:20.292] - Load 258048/787248 [32%]
+2026-11-12 00:10:20,304 - INFO - [00:10:20.304] - Load 260096/787248 [33%]
+2026-11-12 00:10:20,322 - INFO - [00:10:20.322] - Load 262144/787248 [33%]
+2026-11-12 00:10:20,340 - INFO - [00:10:20.340] - Load 264192/787248 [33%]
+2026-11-12 00:10:20,359 - INFO - [00:10:20.359] - Load 266240/787248 [33%]
+2026-11-12 00:10:20,377 - INFO - [00:10:20.376] - Load 268288/787248 [34%]
+2026-11-12 00:10:20,395 - INFO - [00:10:20.395] - Load 270336/787248 [34%]
+2026-11-12 00:10:20,413 - INFO - [00:10:20.413] - Load 272384/787248 [34%]
+2026-11-12 00:10:20,424 - INFO - [00:10:20.424] - Load 274432/787248 [34%]
+2026-11-12 00:10:20,442 - INFO - [00:10:20.442] - Load 276480/787248 [35%]
+2026-11-12 00:10:20,460 - INFO - [00:10:20.460] - Load 278528/787248 [35%]
+2026-11-12 00:10:20,478 - INFO - [00:10:20.478] - Load 280576/787248 [35%]
+2026-11-12 00:10:20,496 - INFO - [00:10:20.496] - Load 282624/787248 [35%]
+2026-11-12 00:10:20,514 - INFO - [00:10:20.514] - Load 284672/787248 [36%]
+2026-11-12 00:10:20,533 - INFO - [00:10:20.533] - Load 286720/787248 [36%]
+2026-11-12 00:10:20,553 - INFO - [00:10:20.553] - Load 288768/787248 [36%]
+2026-11-12 00:10:20,571 - INFO - [00:10:20.571] - Load 290816/787248 [36%]
+2026-11-12 00:10:20,596 - INFO - [00:10:20.596] - Load 292864/787248 [37%]
+2026-11-12 00:10:20,615 - INFO - [00:10:20.614] - Load 294912/787248 [37%]
+2026-11-12 00:10:20,626 - INFO - [00:10:20.625] - Load 296960/787248 [37%]
+2026-11-12 00:10:20,643 - INFO - [00:10:20.643] - Load 299008/787248 [37%]
+2026-11-12 00:10:20,661 - INFO - [00:10:20.661] - Load 301056/787248 [38%]
+2026-11-12 00:10:20,678 - INFO - [00:10:20.678] - Load 303104/787248 [38%]
+2026-11-12 00:10:20,696 - INFO - [00:10:20.696] - Load 305152/787248 [38%]
+2026-11-12 00:10:20,707 - INFO - [00:10:20.707] - Load 307200/787248 [39%]
+2026-11-12 00:10:20,725 - INFO - [00:10:20.725] - Load 309248/787248 [39%]
+2026-11-12 00:10:20,743 - INFO - [00:10:20.743] - Load 311296/787248 [39%]
+2026-11-12 00:10:20,761 - INFO - [00:10:20.761] - Load 313344/787248 [39%]
+2026-11-12 00:10:20,772 - INFO - [00:10:20.771] - Load 315392/787248 [40%]
+2026-11-12 00:10:20,789 - INFO - [00:10:20.789] - Load 317440/787248 [40%]
+2026-11-12 00:10:20,807 - INFO - [00:10:20.806] - Load 319488/787248 [40%]
+2026-11-12 00:10:20,824 - INFO - [00:10:20.824] - Load 321536/787248 [40%]
+2026-11-12 00:10:20,842 - INFO - [00:10:20.842] - Load 323584/787248 [41%]
+2026-11-12 00:10:20,860 - INFO - [00:10:20.860] - Load 325632/787248 [41%]
+2026-11-12 00:10:20,878 - INFO - [00:10:20.877] - Load 327680/787248 [41%]
+2026-11-12 00:10:20,895 - INFO - [00:10:20.895] - Load 329728/787248 [41%]
+2026-11-12 00:10:20,913 - INFO - [00:10:20.913] - Load 331776/787248 [42%]
+2026-11-12 00:10:20,924 - INFO - [00:10:20.924] - Load 333824/787248 [42%]
+2026-11-12 00:10:20,942 - INFO - [00:10:20.942] - Load 335872/787248 [42%]
+2026-11-12 00:10:20,960 - INFO - [00:10:20.959] - Load 337920/787248 [42%]
+2026-11-12 00:10:20,978 - INFO - [00:10:20.978] - Load 339968/787248 [43%]
+2026-11-12 00:10:20,996 - INFO - [00:10:20.996] - Load 342016/787248 [43%]
+2026-11-12 00:10:21,008 - INFO - [00:10:21.008] - Load 344064/787248 [43%]
+2026-11-12 00:10:21,027 - INFO - [00:10:21.026] - Load 346112/787248 [43%]
+2026-11-12 00:10:21,045 - INFO - [00:10:21.044] - Load 348160/787248 [44%]
+2026-11-12 00:10:21,062 - INFO - [00:10:21.062] - Load 350208/787248 [44%]
+2026-11-12 00:10:21,080 - INFO - [00:10:21.080] - Load 352256/787248 [44%]
+2026-11-12 00:10:21,098 - INFO - [00:10:21.098] - Load 354304/787248 [45%]
+2026-11-12 00:10:21,117 - INFO - [00:10:21.116] - Load 356352/787248 [45%]
+2026-11-12 00:10:21,135 - INFO - [00:10:21.134] - Load 358400/787248 [45%]
+2026-11-12 00:10:21,153 - INFO - [00:10:21.152] - Load 360448/787248 [45%]
+2026-11-12 00:10:21,172 - INFO - [00:10:21.171] - Load 362496/787248 [46%]
+2026-11-12 00:10:21,184 - INFO - [00:10:21.183] - Load 364544/787248 [46%]
+2026-11-12 00:10:21,202 - INFO - [00:10:21.202] - Load 366592/787248 [46%]
+2026-11-12 00:10:21,222 - INFO - [00:10:21.222] - Load 368640/787248 [46%]
+2026-11-12 00:10:21,240 - INFO - [00:10:21.240] - Load 370688/787248 [47%]
+2026-11-12 00:10:21,252 - INFO - [00:10:21.252] - Load 372736/787248 [47%]
+2026-11-12 00:10:21,270 - INFO - [00:10:21.270] - Load 374784/787248 [47%]
+2026-11-12 00:10:21,288 - INFO - [00:10:21.288] - Load 376832/787248 [47%]
+2026-11-12 00:10:21,306 - INFO - [00:10:21.305] - Load 378880/787248 [48%]
+2026-11-12 00:10:21,323 - INFO - [00:10:21.323] - Load 380928/787248 [48%]
+2026-11-12 00:10:21,341 - INFO - [00:10:21.341] - Load 382976/787248 [48%]
+2026-11-12 00:10:21,359 - INFO - [00:10:21.359] - Load 385024/787248 [48%]
+2026-11-12 00:10:21,370 - INFO - [00:10:21.370] - Load 387072/787248 [49%]
+2026-11-12 00:10:21,388 - INFO - [00:10:21.387] - Load 389120/787248 [49%]
+2026-11-12 00:10:21,405 - INFO - [00:10:21.405] - Load 391168/787248 [49%]
+2026-11-12 00:10:21,423 - INFO - [00:10:21.423] - Load 393216/787248 [49%]
+2026-11-12 00:10:21,443 - INFO - [00:10:21.443] - Load 395264/787248 [50%]
+2026-11-12 00:10:21,454 - INFO - [00:10:21.453] - Load 397312/787248 [50%]
+2026-11-12 00:10:21,471 - INFO - [00:10:21.471] - Load 399360/787248 [50%]
+2026-11-12 00:10:21,489 - INFO - [00:10:21.489] - Load 401408/787248 [50%]
+2026-11-12 00:10:21,509 - INFO - [00:10:21.509] - Load 403456/787248 [51%]
+2026-11-12 00:10:21,520 - INFO - [00:10:21.519] - Load 405504/787248 [51%]
+2026-11-12 00:10:21,537 - INFO - [00:10:21.537] - Load 407552/787248 [51%]
+2026-11-12 00:10:21,556 - INFO - [00:10:21.556] - Load 409600/787248 [52%]
+2026-11-12 00:10:21,573 - INFO - [00:10:21.573] - Load 411648/787248 [52%]
+2026-11-12 00:10:21,591 - INFO - [00:10:21.590] - Load 413696/787248 [52%]
+2026-11-12 00:10:21,608 - INFO - [00:10:21.608] - Load 415744/787248 [52%]
+2026-11-12 00:10:21,619 - INFO - [00:10:21.619] - Load 417792/787248 [53%]
+2026-11-12 00:10:21,636 - INFO - [00:10:21.636] - Load 419840/787248 [53%]
+2026-11-12 00:10:21,654 - INFO - [00:10:21.654] - Load 421888/787248 [53%]
+2026-11-12 00:10:21,672 - INFO - [00:10:21.672] - Load 423936/787248 [53%]
+2026-11-12 00:10:21,689 - INFO - [00:10:21.689] - Load 425984/787248 [54%]
+2026-11-12 00:10:21,707 - INFO - [00:10:21.707] - Load 428032/787248 [54%]
+2026-11-12 00:10:21,718 - INFO - [00:10:21.717] - Load 430080/787248 [54%]
+2026-11-12 00:10:21,743 - INFO - [00:10:21.743] - Load 432128/787248 [54%]
+2026-11-12 00:10:21,761 - INFO - [00:10:21.761] - Load 434176/787248 [55%]
+2026-11-12 00:10:21,772 - INFO - [00:10:21.772] - Load 436224/787248 [55%]
+2026-11-12 00:10:21,789 - INFO - [00:10:21.789] - Load 438272/787248 [55%]
+2026-11-12 00:10:21,807 - INFO - [00:10:21.807] - Load 440320/787248 [55%]
+2026-11-12 00:10:21,825 - INFO - [00:10:21.824] - Load 442368/787248 [56%]
+2026-11-12 00:10:21,843 - INFO - [00:10:21.843] - Load 444416/787248 [56%]
+2026-11-12 00:10:21,860 - INFO - [00:10:21.860] - Load 446464/787248 [56%]
+2026-11-12 00:10:21,878 - INFO - [00:10:21.877] - Load 448512/787248 [56%]
+2026-11-12 00:10:21,896 - INFO - [00:10:21.895] - Load 450560/787248 [57%]
+2026-11-12 00:10:21,913 - INFO - [00:10:21.913] - Load 452608/787248 [57%]
+2026-11-12 00:10:21,931 - INFO - [00:10:21.930] - Load 454656/787248 [57%]
+2026-11-12 00:10:21,942 - INFO - [00:10:21.941] - Load 456704/787248 [58%]
+2026-11-12 00:10:21,960 - INFO - [00:10:21.959] - Load 458752/787248 [58%]
+2026-11-12 00:10:21,978 - INFO - [00:10:21.977] - Load 460800/787248 [58%]
+2026-11-12 00:10:21,996 - INFO - [00:10:21.995] - Load 462848/787248 [58%]
+2026-11-12 00:10:22,014 - INFO - [00:10:22.013] - Load 464896/787248 [59%]
+2026-11-12 00:10:22,032 - INFO - [00:10:22.032] - Load 466944/787248 [59%]
+2026-11-12 00:10:22,052 - INFO - [00:10:22.052] - Load 468992/787248 [59%]
+2026-11-12 00:10:22,065 - INFO - [00:10:22.064] - Load 471040/787248 [59%]
+2026-11-12 00:10:22,082 - INFO - [00:10:22.082] - Load 473088/787248 [60%]
+2026-11-12 00:10:22,100 - INFO - [00:10:22.099] - Load 475136/787248 [60%]
+2026-11-12 00:10:22,117 - INFO - [00:10:22.117] - Load 477184/787248 [60%]
+2026-11-12 00:10:22,134 - INFO - [00:10:22.134] - Load 479232/787248 [60%]
+2026-11-12 00:10:22,145 - INFO - [00:10:22.145] - Load 481280/787248 [61%]
+2026-11-12 00:10:22,162 - INFO - [00:10:22.162] - Load 483328/787248 [61%]
+2026-11-12 00:10:22,180 - INFO - [00:10:22.179] - Load 485376/787248 [61%]
+2026-11-12 00:10:22,198 - INFO - [00:10:22.197] - Load 487424/787248 [61%]
+2026-11-12 00:10:22,216 - INFO - [00:10:22.215] - Load 489472/787248 [62%]
+2026-11-12 00:10:22,234 - INFO - [00:10:22.234] - Load 491520/787248 [62%]
+2026-11-12 00:10:22,245 - INFO - [00:10:22.244] - Load 493568/787248 [62%]
+2026-11-12 00:10:22,262 - INFO - [00:10:22.262] - Load 495616/787248 [62%]
+2026-11-12 00:10:22,280 - INFO - [00:10:22.279] - Load 497664/787248 [63%]
+2026-11-12 00:10:22,297 - INFO - [00:10:22.297] - Load 499712/787248 [63%]
+2026-11-12 00:10:22,315 - INFO - [00:10:22.315] - Load 501760/787248 [63%]
+2026-11-12 00:10:22,333 - INFO - [00:10:22.332] - Load 503808/787248 [63%]
+2026-11-12 00:10:22,350 - INFO - [00:10:22.350] - Load 505856/787248 [64%]
+2026-11-12 00:10:22,361 - INFO - [00:10:22.361] - Load 507904/787248 [64%]
+2026-11-12 00:10:22,379 - INFO - [00:10:22.379] - Load 509952/787248 [64%]
+2026-11-12 00:10:22,397 - INFO - [00:10:22.397] - Load 512000/787248 [65%]
+2026-11-12 00:10:22,415 - INFO - [00:10:22.415] - Load 514048/787248 [65%]
+2026-11-12 00:10:22,433 - INFO - [00:10:22.433] - Load 516096/787248 [65%]
+2026-11-12 00:10:22,450 - INFO - [00:10:22.450] - Load 518144/787248 [65%]
+2026-11-12 00:10:22,469 - INFO - [00:10:22.468] - Load 520192/787248 [66%]
+2026-11-12 00:10:22,486 - INFO - [00:10:22.486] - Load 522240/787248 [66%]
+2026-11-12 00:10:22,498 - INFO - [00:10:22.497] - Load 524288/787248 [66%]
+2026-11-12 00:10:22,515 - INFO - [00:10:22.515] - Load 526336/787248 [66%]
+2026-11-12 00:10:22,533 - INFO - [00:10:22.532] - Load 528384/787248 [67%]
+2026-11-12 00:10:22,551 - INFO - [00:10:22.550] - Load 530432/787248 [67%]
+2026-11-12 00:10:22,568 - INFO - [00:10:22.568] - Load 532480/787248 [67%]
+2026-11-12 00:10:22,579 - INFO - [00:10:22.579] - Load 534528/787248 [67%]
+2026-11-12 00:10:22,597 - INFO - [00:10:22.597] - Load 536576/787248 [68%]
+2026-11-12 00:10:22,615 - INFO - [00:10:22.615] - Load 538624/787248 [68%]
+2026-11-12 00:10:22,633 - INFO - [00:10:22.633] - Load 540672/787248 [68%]
+2026-11-12 00:10:22,651 - INFO - [00:10:22.651] - Load 542720/787248 [68%]
+2026-11-12 00:10:22,670 - INFO - [00:10:22.669] - Load 544768/787248 [69%]
+2026-11-12 00:10:22,688 - INFO - [00:10:22.688] - Load 546816/787248 [69%]
+2026-11-12 00:10:22,706 - INFO - [00:10:22.706] - Load 548864/787248 [69%]
+2026-11-12 00:10:22,724 - INFO - [00:10:22.724] - Load 550912/787248 [69%]
+2026-11-12 00:10:22,736 - INFO - [00:10:22.736] - Load 552960/787248 [70%]
+2026-11-12 00:10:22,754 - INFO - [00:10:22.754] - Load 555008/787248 [70%]
+2026-11-12 00:10:22,772 - INFO - [00:10:22.772] - Load 557056/787248 [70%]
+2026-11-12 00:10:22,790 - INFO - [00:10:22.790] - Load 559104/787248 [71%]
+2026-11-12 00:10:22,808 - INFO - [00:10:22.808] - Load 561152/787248 [71%]
+2026-11-12 00:10:22,819 - INFO - [00:10:22.818] - Load 563200/787248 [71%]
+2026-11-12 00:10:22,836 - INFO - [00:10:22.836] - Load 565248/787248 [71%]
+2026-11-12 00:10:22,854 - INFO - [00:10:22.854] - Load 567296/787248 [72%]
+2026-11-12 00:10:22,872 - INFO - [00:10:22.872] - Load 569344/787248 [72%]
+2026-11-12 00:10:22,889 - INFO - [00:10:22.889] - Load 571392/787248 [72%]
+2026-11-12 00:10:22,907 - INFO - [00:10:22.907] - Load 573440/787248 [72%]
+2026-11-12 00:10:22,918 - INFO - [00:10:22.918] - Load 575488/787248 [73%]
+2026-11-12 00:10:22,935 - INFO - [00:10:22.935] - Load 577536/787248 [73%]
+2026-11-12 00:10:22,954 - INFO - [00:10:22.953] - Load 579584/787248 [73%]
+2026-11-12 00:10:22,971 - INFO - [00:10:22.971] - Load 581632/787248 [73%]
+2026-11-12 00:10:22,982 - INFO - [00:10:22.982] - Load 583680/787248 [74%]
+2026-11-12 00:10:23,000 - INFO - [00:10:23.000] - Load 585728/787248 [74%]
+2026-11-12 00:10:23,018 - INFO - [00:10:23.018] - Load 587776/787248 [74%]
+2026-11-12 00:10:23,036 - INFO - [00:10:23.036] - Load 589824/787248 [74%]
+2026-11-12 00:10:23,054 - INFO - [00:10:23.054] - Load 591872/787248 [75%]
+2026-11-12 00:10:23,072 - INFO - [00:10:23.072] - Load 593920/787248 [75%]
+2026-11-12 00:10:23,082 - INFO - [00:10:23.082] - Load 595968/787248 [75%]
+2026-11-12 00:10:23,100 - INFO - [00:10:23.100] - Load 598016/787248 [75%]
+2026-11-12 00:10:23,118 - INFO - [00:10:23.118] - Load 600064/787248 [76%]
+2026-11-12 00:10:23,135 - INFO - [00:10:23.135] - Load 602112/787248 [76%]
+2026-11-12 00:10:23,153 - INFO - [00:10:23.153] - Load 604160/787248 [76%]
+2026-11-12 00:10:23,164 - INFO - [00:10:23.164] - Load 606208/787248 [77%]
+2026-11-12 00:10:23,181 - INFO - [00:10:23.181] - Load 608256/787248 [77%]
+2026-11-12 00:10:23,199 - INFO - [00:10:23.199] - Load 610304/787248 [77%]
+2026-11-12 00:10:23,217 - INFO - [00:10:23.216] - Load 612352/787248 [77%]
+2026-11-12 00:10:23,234 - INFO - [00:10:23.234] - Load 614400/787248 [78%]
+2026-11-12 00:10:23,245 - INFO - [00:10:23.245] - Load 616448/787248 [78%]
+2026-11-12 00:10:23,263 - INFO - [00:10:23.263] - Load 618496/787248 [78%]
+2026-11-12 00:10:23,281 - INFO - [00:10:23.280] - Load 620544/787248 [78%]
+2026-11-12 00:10:23,298 - INFO - [00:10:23.298] - Load 622592/787248 [79%]
+2026-11-12 00:10:23,316 - INFO - [00:10:23.316] - Load 624640/787248 [79%]
+2026-11-12 00:10:23,327 - INFO - [00:10:23.327] - Load 626688/787248 [79%]
+2026-11-12 00:10:23,345 - INFO - [00:10:23.345] - Load 628736/787248 [79%]
+2026-11-12 00:10:23,363 - INFO - [00:10:23.362] - Load 630784/787248 [80%]
+2026-11-12 00:10:23,380 - INFO - [00:10:23.380] - Load 632832/787248 [80%]
+2026-11-12 00:10:23,398 - INFO - [00:10:23.398] - Load 634880/787248 [80%]
+2026-11-12 00:10:23,416 - INFO - [00:10:23.416] - Load 636928/787248 [80%]
+2026-11-12 00:10:23,427 - INFO - [00:10:23.427] - Load 638976/787248 [81%]
+2026-11-12 00:10:23,453 - INFO - [00:10:23.453] - Load 641024/787248 [81%]
+2026-11-12 00:10:23,465 - INFO - [00:10:23.465] - Load 643072/787248 [81%]
+2026-11-12 00:10:23,483 - INFO - [00:10:23.483] - Load 645120/787248 [81%]
+2026-11-12 00:10:23,502 - INFO - [00:10:23.501] - Load 647168/787248 [82%]
+2026-11-12 00:10:23,519 - INFO - [00:10:23.519] - Load 649216/787248 [82%]
+2026-11-12 00:10:23,537 - INFO - [00:10:23.537] - Load 651264/787248 [82%]
+2026-11-12 00:10:23,555 - INFO - [00:10:23.555] - Load 653312/787248 [82%]
+2026-11-12 00:10:23,573 - INFO - [00:10:23.573] - Load 655360/787248 [83%]
+2026-11-12 00:10:23,591 - INFO - [00:10:23.591] - Load 657408/787248 [83%]
+2026-11-12 00:10:23,609 - INFO - [00:10:23.609] - Load 659456/787248 [83%]
+2026-11-12 00:10:23,620 - INFO - [00:10:23.620] - Load 661504/787248 [84%]
+2026-11-12 00:10:23,639 - INFO - [00:10:23.638] - Load 663552/787248 [84%]
+2026-11-12 00:10:23,657 - INFO - [00:10:23.657] - Load 665600/787248 [84%]
+2026-11-12 00:10:23,675 - INFO - [00:10:23.675] - Load 667648/787248 [84%]
+2026-11-12 00:10:23,693 - INFO - [00:10:23.693] - Load 669696/787248 [85%]
+2026-11-12 00:10:23,711 - INFO - [00:10:23.710] - Load 671744/787248 [85%]
+2026-11-12 00:10:23,728 - INFO - [00:10:23.728] - Load 673792/787248 [85%]
+2026-11-12 00:10:23,746 - INFO - [00:10:23.746] - Load 675840/787248 [85%]
+2026-11-12 00:10:23,757 - INFO - [00:10:23.757] - Load 677888/787248 [86%]
+2026-11-12 00:10:23,774 - INFO - [00:10:23.774] - Load 679936/787248 [86%]
+2026-11-12 00:10:23,792 - INFO - [00:10:23.791] - Load 681984/787248 [86%]
+2026-11-12 00:10:23,809 - INFO - [00:10:23.809] - Load 684032/787248 [86%]
+2026-11-12 00:10:23,827 - INFO - [00:10:23.827] - Load 686080/787248 [87%]
+2026-11-12 00:10:23,838 - INFO - [00:10:23.837] - Load 688128/787248 [87%]
+2026-11-12 00:10:23,855 - INFO - [00:10:23.855] - Load 690176/787248 [87%]
+2026-11-12 00:10:23,872 - INFO - [00:10:23.872] - Load 692224/787248 [87%]
+2026-11-12 00:10:23,891 - INFO - [00:10:23.890] - Load 694272/787248 [88%]
+2026-11-12 00:10:23,908 - INFO - [00:10:23.908] - Load 696320/787248 [88%]
+2026-11-12 00:10:23,927 - INFO - [00:10:23.927] - Load 698368/787248 [88%]
+2026-11-12 00:10:23,953 - INFO - [00:10:23.953] - Load 700416/787248 [88%]
+2026-11-12 00:10:23,970 - INFO - [00:10:23.970] - Load 702464/787248 [89%]
+2026-11-12 00:10:23,997 - INFO - [00:10:23.997] - Load 704512/787248 [89%]
+2026-11-12 00:10:24,016 - INFO - [00:10:24.015] - Load 706560/787248 [89%]
+2026-11-12 00:10:24,035 - INFO - [00:10:24.035] - Load 708608/787248 [90%]
+2026-11-12 00:10:24,062 - INFO - [00:10:24.061] - Load 710656/787248 [90%]
+2026-11-12 00:10:24,079 - INFO - [00:10:24.079] - Load 712704/787248 [90%]
+2026-11-12 00:10:24,098 - INFO - [00:10:24.097] - Load 714752/787248 [90%]
+2026-11-12 00:10:24,124 - INFO - [00:10:24.124] - Load 716800/787248 [91%]
+2026-11-12 00:10:24,144 - INFO - [00:10:24.143] - Load 718848/787248 [91%]
+2026-11-12 00:10:24,170 - INFO - [00:10:24.170] - Load 720896/787248 [91%]
+2026-11-12 00:10:24,189 - INFO - [00:10:24.189] - Load 722944/787248 [91%]
+2026-11-12 00:10:24,216 - INFO - [00:10:24.215] - Load 724992/787248 [92%]
+2026-11-12 00:10:24,242 - INFO - [00:10:24.241] - Load 727040/787248 [92%]
+2026-11-12 00:10:24,261 - INFO - [00:10:24.261] - Load 729088/787248 [92%]
+2026-11-12 00:10:24,287 - INFO - [00:10:24.287] - Load 731136/787248 [92%]
+2026-11-12 00:10:24,307 - INFO - [00:10:24.307] - Load 733184/787248 [93%]
+2026-11-12 00:10:24,332 - INFO - [00:10:24.331] - Load 735232/787248 [93%]
+2026-11-12 00:10:24,351 - INFO - [00:10:24.350] - Load 737280/787248 [93%]
+2026-11-12 00:10:24,370 - INFO - [00:10:24.370] - Load 739328/787248 [93%]
+2026-11-12 00:10:24,396 - INFO - [00:10:24.396] - Load 741376/787248 [94%]
+2026-11-12 00:10:24,424 - INFO - [00:10:24.424] - Load 743424/787248 [94%]
+2026-11-12 00:10:24,450 - INFO - [00:10:24.450] - Load 745472/787248 [94%]
+2026-11-12 00:10:24,470 - INFO - [00:10:24.469] - Load 747520/787248 [94%]
+2026-11-12 00:10:24,488 - INFO - [00:10:24.488] - Load 749568/787248 [95%]
+2026-11-12 00:10:24,514 - INFO - [00:10:24.514] - Load 751616/787248 [95%]
+2026-11-12 00:10:24,533 - INFO - [00:10:24.533] - Load 753664/787248 [95%]
+2026-11-12 00:10:24,559 - INFO - [00:10:24.559] - Load 755712/787248 [95%]
+2026-11-12 00:10:24,578 - INFO - [00:10:24.578] - Load 757760/787248 [96%]
+2026-11-12 00:10:24,595 - INFO - [00:10:24.595] - Load 759808/787248 [96%]
+2026-11-12 00:10:24,606 - INFO - [00:10:24.606] - Load 761856/787248 [96%]
+2026-11-12 00:10:24,623 - INFO - [00:10:24.623] - Load 763904/787248 [97%]
+2026-11-12 00:10:24,641 - INFO - [00:10:24.641] - Load 765952/787248 [97%]
+2026-11-12 00:10:24,658 - INFO - [00:10:24.658] - Load 768000/787248 [97%]
+2026-11-12 00:10:24,669 - INFO - [00:10:24.669] - Load 770048/787248 [97%]
+2026-11-12 00:10:24,687 - INFO - [00:10:24.687] - Load 772096/787248 [98%]
+2026-11-12 00:10:24,713 - INFO - [00:10:24.712] - Load 774144/787248 [98%]
+2026-11-12 00:10:24,724 - INFO - [00:10:24.724] - Load 776192/787248 [98%]
+2026-11-12 00:10:24,742 - INFO - [00:10:24.742] - Load 778240/787248 [98%]
+2026-11-12 00:10:24,760 - INFO - [00:10:24.760] - Load 780288/787248 [99%]
+2026-11-12 00:10:24,779 - INFO - [00:10:24.778] - Load 782336/787248 [99%]
+2026-11-12 00:10:24,797 - INFO - [00:10:24.797] - Load 784384/787248 [99%]
+2026-11-12 00:10:24,809 - INFO - [00:10:24.809] - Load 786432/787248 [99%]
+2026-11-12 00:10:24,824 - INFO - [00:10:24.824] - Load 787248/787248 [100%]
+2026-11-12 00:10:24,825 - INFO - [00:10:24.824] - Load 787248/787248 [100%]
+2026-11-12 00:10:24,825 - INFO - [00:10:24.825] - Start to check flash
+2026-11-12 00:10:24,827 - INFO - [00:10:24.827] - Flash load time cost(ms): 7314.436
+2026-11-12 00:10:24,837 - INFO - [00:10:24.837] - SHA caled by host: ab99bd4ebe25e9541545daf007147976ed688513e87c5a0db95ac1892c6704b4
+2026-11-12 00:10:24,838 - INFO - [00:10:24.838] - XIP mode verify
+2026-11-12 00:10:26,016 - INFO - [00:10:26.016] - Read SHA256/1422528
+2026-11-12 00:10:26,016 - INFO - [00:10:26.016] - Flash xip readsha time cost(ms): 1177.459
+2026-11-12 00:10:26,017 - INFO - [00:10:26.017] - SHA caled by dev: ab99bd4ebe25e9541545daf007147976ed688513e87c5a0db95ac1892c6704b4
+2026-11-12 00:10:26,018 - INFO - [00:10:26.018] - Verification succeeded
+2026-11-12 00:10:26,019 - INFO - [00:10:26.018] - Flash writing succeeded
+2026-11-12 00:10:26,020 - INFO - [00:10:26.020] - Total time cost(ms): 14468.445
+2026-11-12 00:10:26,121 - INFO - [00:10:26.120] - Close interface
+2026-11-12 00:10:26,121 - INFO - [00:10:26.121] - All programming completed successfully
+/home/vkorehovs/k230d-hw/LEAKCAM/tools/power-bringup/bl616_isp.py --boot $(/home/vkorehovs/k230d-hw/LEAKCAM/tools/power-bringup/bl616_isp.py)
+waiting for firmware console (ffff:ffff)
+/dev/ttyACM0
+provision_pin: 7C3E8262B149 holds a pairing PIN already
+leakcam_pki: 7C3E8262B149 has its certificate already
+provision_tls: 7C3E8262B149 holds its CA, certificate and key already
+make: Leaving directory '/home/vkorehovs/k230d-hw/LEAKCAM/tests/firmware/bl616_setup_test'
+02:10:53 CHECK pass BLE started (lp_boot) 
+02:10:57 phone: scan 4.2 s
+02:10:57 CHECK pass advertises on USB power 7C3E8262B149 rssi -36 after 6.7 s
+02:10:57 CHECK pass BLE name = the serial (USB serial number), no prefix 7C3E8262B149
+02:11:00 phone: unpair 3.0 s
+02:11:06 sample start {'board': None, 'bl_mem': (141132, 127884, 134764, 101, 73604, 17, 0)}
+02:11:23 phone: session 17.5 s, error no services
+02:11:23 CHECK pass no write succeeds after a cancelled pairing [] no services
+02:11:24 CHECK pass nothing stored without pairing 
+02:11:38 phone: session 14.0 s
+02:11:38 CHECK pass a phone that never pairs: dropped after 10 s 9966 ms after the connect
+02:11:41 phone: unpair 3.3 s
+02:12:06 phone: session 24.7 s, error no services
+02:12:06 CHECK pass a phone without the PIN: not bonded, dropped not bonded after 'Устан. сопряж.'+'no PIN: cancel', dropped 12185 ms
+02:12:09 phone: unpair 3.8 s
+02:12:24 phone: session 14.5 s
+02:12:24 session limits no STATUS: {'connect_ms': 329, 'pair': "bonded after 'Устан. сопряж.'+'PIN'", 'bond': 12, 'ccc': 0, 'error': None} [0, 13, 13, 13, 0, 0, 13, 13]
+02:12:24 CHECK pass paired (passkey entry with the PIN) bonded after 'Устан. сопряж.'+'PIN', MTU 247
+02:12:24 CHECK pass ssid 32 bytes accepted GATT 0
+02:12:24 CHECK pass ssid 33 bytes refused GATT 13
+02:12:24 CHECK pass psk 7 bytes refused GATT 13
+02:12:24 CHECK pass psk 64 bytes refused GATT 13
+02:12:24 CHECK pass psk 8 bytes accepted GATT 0
+02:12:24 CHECK pass psk 63 bytes accepted GATT 0
+02:12:24 CHECK pass commit 1 bytes refused GATT 13
+02:12:24 CHECK pass commit 2 bytes refused GATT 13
+02:12:31 phone: session 7.1 s
+02:12:31 session commit without an SSID no STATUS: {'connect_ms': 222, 'pair': 'bonded after ', 'bond': 12, 'ccc': 0, 'error': None} [13]
+02:12:31 CHECK pass commit without an SSID refused GATT 13
+02:12:31 CHECK pass commit without an SSID stores nothing 
+02:12:38 phone: session 6.7 s
+02:12:38 CHECK pass offset (long) write refused GATT 6
+02:12:42 phone: session 4.5 s
+02:12:42 CHECK pass store unchecked 32/63 bytes: SAVED [4]
+02:12:42 CHECK pass stored exactly 32/63 bytes 
+02:12:46 phone: session 3.8 s
+02:12:46 CHECK pass store unchecked 6/8 bytes: SAVED [4]
+02:12:46 CHECK pass stored exactly 6/8 bytes 
+02:12:55 CHECK pass BLE started again after a reset 
+02:12:59 phone: scan 3.8 s
+02:13:02 phone: unpair 3.0 s
+02:13:13 phone: session 11.7 s
+02:13:14 CHECK pass kept over a reset 
+02:13:37 CHECK pass BLE started again after a watchdog reset 
+02:13:41 phone: scan 4.0 s
+02:13:44 phone: unpair 3.1 s
+02:13:55 phone: session 11.0 s
+02:13:55 CHECK pass kept over a watchdog reset 
+02:14:07 phone: session 9.4 s
+02:14:07 CHECK pass check, wrong passphrase: 0x11 [1, 17]
+02:14:07 CHECK pass check, wrong passphrase: old credentials kept 
+02:14:15 phone: session 7.8 s
+02:14:15 CHECK pass check, unknown SSID: 0x10 [1, 16]
+02:14:15 CHECK pass check, unknown SSID: old credentials kept 
+Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
+02:14:22 phone: session 5.4 s
+Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
+02:14:23 CHECK pass check, the API down: 0x19 [1, 2, 3, 25]
+02:14:23 CHECK pass check, the API down: old credentials kept 
+02:14:29 phone: session 5.9 s
+02:14:29 CHECK pass check with the link dropped: the board finishes and stores [1, 2, 3, 4]
+02:14:35 phone: session 5.4 s
+02:14:35 CHECK pass checked store: JOINING -> ADDRESS -> INTERNET -> SAVED [1, 2, 3, 4]
+02:14:35 CHECK pass a second commit during the check starts no second check 
+02:14:35 CHECK pass checked store: the real network stored 
+02:14:39 phone: session 3.9 s
+02:14:43 sample cycle 1 {'board': None, 'bl_mem': (140384, 127884, 103752, 109, 74324, 17, 0)}
+02:14:47 phone: session 4.6 s
+02:14:51 sample cycle 2 {'board': None, 'bl_mem': (140384, 127884, 103752, 109, 74324, 17, 0)}
+02:14:55 phone: session 4.4 s
+02:14:59 sample cycle 3 {'board': None, 'bl_mem': (140384, 127884, 103752, 109, 74324, 17, 0)}
+02:15:03 phone: session 4.3 s
+02:15:07 sample cycle 4 {'board': None, 'bl_mem': (140384, 127884, 103752, 109, 74324, 17, 0)}
+02:15:11 phone: session 4.3 s
+02:15:15 sample cycle 5 {'board': None, 'bl_mem': (140384, 127884, 103752, 109, 74324, 17, 0)}
+02:15:19 phone: session 3.8 s
+02:15:23 sample cycle 6 {'board': None, 'bl_mem': (140384, 127884, 103752, 109, 74324, 17, 0)}
+02:15:27 phone: session 4.3 s
+02:15:31 sample cycle 7 {'board': None, 'bl_mem': (140384, 127884, 103752, 109, 74324, 17, 0)}
+02:15:36 phone: session 4.6 s
+02:15:39 sample cycle 8 {'board': None, 'bl_mem': (140384, 127884, 103752, 109, 74324, 17, 0)}
+02:15:39 CHECK pass 8 store cycles 0 failed
+02:15:44 phone: session 4.3 s
+02:15:44 CHECK pass the real network stored again at the end 
+02:15:47 phone: unpair 3.0 s
+02:15:48 test040-ble-wifi-credentials: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

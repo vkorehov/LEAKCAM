@@ -1,2 +1,8 @@
-08:47:50 test101-boot-and-session-time: 6 metric rows MISSING: session length per step, Current idle / during (min / avg / peak), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Features over the minimal image
-08:47:50 test101-boot-and-session-time: FAIL; filled 0: -; still MISSING 6: session length per step, Current idle / during (min / avg / peak), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Features over the minimal image; run in HISTORY.md - README Status/Result by hand
+02:18:23 test101-boot-and-session-time: 6 metric rows MISSING: session length per step, Current idle / during (min / avg / peak), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Features over the minimal image
+02:18:55 CHECK pass session 1: READY logged {'ready': 805, 'edge': 804, 'ramp_us': 1739}
+02:18:59 sample after session 1 {'board': None, 'bl_mem': (171032, 133384, 141452, 73, 85972, 16, 0)}
+02:18:59 CHECK pass leak check 1: DONE from the running K230 leak: DONE same,same 110 ms after the ask
+02:18:59 CHECK pass leak check 2: DONE from the running K230 leak: DONE same,same 110 ms after the ask
+02:19:00 CHECK pass leak check 3: DONE from the running K230 leak: DONE same,same 110 ms after the ask
+02:19:03 sample after the leak checks {'board': None, 'bl_mem': (171032, 133384, 141452, 73, 85972, 16, 0)}
+02:19:05 test101-boot-and-session-time: PASS; filled 0: -; still MISSING 6: session length per step, Current idle / during (min / avg / peak), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Features over the minimal image; run in HISTORY.md - README Status/Result by hand

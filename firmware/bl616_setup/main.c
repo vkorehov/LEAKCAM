@@ -18,6 +18,7 @@
 #include "bl616_hbn.h"
 
 #include "ble_pairing.h"
+#include "climate.h"
 #include "crash_rec.h"
 #include "k230_power.h"
 #include "k230_session.h"
@@ -51,6 +52,18 @@ void setup_usb_plugged(void)
     switch_to_full_on_usb();
 }
 
+/* the board's heat sources (test048): the K230 (the cable setup's relay) and the charger on USB power */
+static bool warm(void)
+{
+    return k230_power_is_on() || setup_usb_present();
+}
+
+static void humid(int rh_x10)
+{
+    (void)rh_x10;
+    switch_to_full_humid();
+}
+
 static void boot_task(void *arg)
 {
     (void)arg;
@@ -60,6 +73,7 @@ static void boot_task(void *arg)
     setup_boot();
     bool from_full = switch_to_full_start();     /* the way back to the full firmware */
     bool ota = ota_start();                     /* the full firmware's upgrade: written now, awake until done */
+    climate_start(warm, humid, false);                 /* the AHT20 every 10 min: the room, the 85 %RH alarm (DESIGN 5.3.15) */
     if (setup_usb_present() && !from_full) {    /* plugged in: from the full firmware it is not a plug */
         setup_usb_plugged();
     } else if (!ota) {

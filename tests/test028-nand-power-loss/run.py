@@ -19,6 +19,8 @@ p = subprocess.run([sys.executable, os.path.join(r.dir, "plt_loop.py"), "20", cs
                    timeout=1800)
 import csv as csvmod   # noqa: E402
 rows = list(csvmod.DictReader(open(csv))) if os.path.exists(csv) else []
+if not rows:    # its reason, not only "wrote no rows" (2026-11-12: a FAIL with nothing to go on)
+    print(f"OBSTACLE plt_loop.py exit {p.returncode}: {(p.stdout + p.stderr).strip()[-800:]}", flush=True)
 bad_n = sum(int(x["bad"] or 0) for x in rows)
 unparsed = sum(1 for x in rows if not x["checked"])
 apps = sorted(float(x["app_init_s"]) for x in rows if x["app_init_s"])

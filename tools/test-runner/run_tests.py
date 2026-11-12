@@ -41,7 +41,7 @@ TIMEOUT_S = 3600
 # test132 (the leak probe wet/dry has no relay), the 0xx link tests.
 ESSENTIAL = ["test135", "test133", "test134", "test108", "test128", "test126", "test138", "test106", "test111",
              "test117", "test129", "test106 --battery", "test117 --battery", "test129 --battery", "test116",
-             "test113"]
+             "test113", "test140", "test141", "test142", "test109"]
 
 
 def reset_bl616():
@@ -229,7 +229,10 @@ def main():
           or "none", flush=True)
     summary = []
     from board import BL_PORT
-    from phone import firmware, relay
+    from phone import firmware, relay, session_start
+    # the session's start: adb to the phone (USB when it is on one, else Wi-Fi from ~/.leakcam_phone); the relays work
+    # without adb (the relay app's HTTP port)
+    session_start()
     # USB-C 1 back on the bench first: a test stopped after its unplug left the console gone, and every check below
     # waited 30 s per read for it while the phone sat idle (2026-11-09)
     if not os.path.exists(BL_PORT):

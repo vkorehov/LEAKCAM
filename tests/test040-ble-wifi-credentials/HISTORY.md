@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 573 s): pass
+
+39 of 39 checks passed. Not automated: advertising stops on unplug, pairing refused on battery, power cut (README Steps 1, 2, 5).
+
+
+### Automated run 2026-11-11 (run.py, 31 s): **FAIL**
+
+not run: not the setup test bed.
+
+
 ### Automated run 2026-11-04 (run.py, 379 s): pass
 
 39 of 39 checks passed. Not automated: advertising stops on unplug, pairing refused on battery, power cut (README Steps 1, 2, 5).
@@ -236,6 +246,17 @@ the board was never seen advertising.
 - Optimised build note (2026-10-29): "-O3 + LTO adopted in the product and test defconfigs".
 
 ## Obstacles
+
+- **2026-11-12 00:53-02:15, test040 failed 5 times before it ran (all tools, none the firmware).** (1) In the 0xx batch
+  without --flash: the BL616 ran the power test firmware. (2) `--flash`: provision_pin failed - the bed has the
+  product's `provision` command but opens easyflash only with `lp_boot`, so the tool took it for the product right after
+  the flash (by hand it worked: an earlier lp_boot had opened it). (3) The runner's wedge check then read the bed's
+  un-started BLE core (0) as "wedged" and refused the batch. (4) provision_tls the same as (2) after provision_pin's
+  reboot. (5) `--flash` never built: a bed binary from 11-10 08:14 (before mTLS) went on. Fixed: board.store_open()
+  (lp_boot on a setup_test build) in both provision tools; phone.wedge() skips the live check while the bed's BLE is
+  not started; run.py builds, then flashes. 02:15: pass.
+
+- the BL616 runs None: flash the setup test bed first (run.py --flash) (2026-11-11, automated run)
 
 - store cycle 1: no write left the phone (connect None ms, pair None, bond None, error 'no connection'), retried (2026-11-04, automated run)
 

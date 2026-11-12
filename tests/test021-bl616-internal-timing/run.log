@@ -1,10 +1,10 @@
-15:49:44 test021-bl616-internal-timing: 11 metric rows MISSING: Boot, power-on -> READY (median of 5), This part's boot share, Test run time, BL616 step times (wake -> K230 power-on, I2C read), Voltage under load (min), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Features over the minimal image, Optimised build (-O3, LTO, -march)
-15:50:04 sample wake 1 {'board': 32.4, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0)}
-15:50:21 sample wake 2 {'board': 31.8, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0)}
-15:50:38 sample wake 3 {'board': 31.2, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0)}
-15:50:55 sample wake 4 {'board': 30.7, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0)}
-15:51:12 sample wake 5 {'board': 30.3, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0)}
-15:51:30 sample wake 6 {'board': 29.9, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0)}
-15:51:47 sample wake 7 {'board': 29.6, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0)}
-15:52:04 sample wake 8 {'board': 29.3, 'bl_mem': (207136, 186564, 204396, 19, 36048, 7, 0)}
-15:52:04 test021-bl616-internal-timing: PASS; filled 9: Test run time, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, BL616 step times (wake -> K230 power-on, I2C read), Boot, power-on -> READY (median of 5), This part's boot share, Voltage under load (min), Power, energy per operation, Per day; still MISSING 2: Features over the minimal image, Optimised build (-O3, LTO, -march)
+23:35:56 test021-bl616-internal-timing: 0 metric rows MISSING: none
+23:36:17 sample wake 1 {'board': 33.8, 'bl_mem': (161728, 158948, 158988, 19, 36048, 7, 0)}
+23:36:34 sample wake 2 {'board': 32.9, 'bl_mem': (161728, 158948, 158988, 19, 36048, 7, 0)}
+23:36:51 sample wake 3 {'board': 32.1, 'bl_mem': (161728, 158948, 158988, 19, 36048, 7, 0)}
+23:37:08 sample wake 4 {'board': 31.4, 'bl_mem': (161728, 158948, 158988, 19, 36048, 7, 0)}
+23:37:25 sample wake 5 {'board': 30.9, 'bl_mem': (161728, 158948, 158988, 19, 36048, 7, 0)}
+23:37:42 sample wake 6 {'board': 30.4, 'bl_mem': (161728, 158948, 158988, 19, 36048, 7, 0)}
+23:37:59 sample wake 7 {'board': 29.9, 'bl_mem': (161728, 158948, 158988, 19, 36048, 7, 0)}
+23:38:16 sample wake 8 {'board': 29.5, 'bl_mem': (161728, 158948, 158988, 19, 36048, 7, 0)}
+23:38:17 test021-bl616-internal-timing: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

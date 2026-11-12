@@ -37,6 +37,8 @@
     <string name="mine_unknown">%1$s: status unknown (server not reached)</string>
     <string name="mine_ssid">%1$s, Wi-Fi \"%2$s\"</string>
     <string name="mine_next">%1$s · next check-in %2$s</string>
+    <string name="mine_room">room %1$.1f °C, %2$.0f %%</string>
+    <string name="mine_room_ago">%1$s (%2$d h ago)</string>
     <string name="checkin_at">about %1$s</string>
     <string name="checkin_now">any moment now</string>
     <string name="checkin_within">within %1$s</string>

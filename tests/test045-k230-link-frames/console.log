@@ -1,1205 +1,1263 @@
-    0.008 BL616
-    0.008   pt_off
-    0.318 BL616
-    0.318   OK: 3V3 gone 9 ms after K230_PWR low (expected 56-82 ms through RD1/RD2).
-    0.318 BL616
-    0.318   bouffalolab />
-    1.518 BL616
-    1.518   bouffalolab />pt_uart on
-    1.518 BL616
-    1.518   3V3 is off: pt_on first (the link pins are pulled up to the K230's 3V3)
-    1.518 BL616
-    1.518   bouffalolab />
-    1.826 BL616
-    1.826   bouffalolab />pt_boot1 low
-    1.826 BL616
-    1.826   K230 BOOT1  : IO27 low (NAND boot); the ROM reads it at reset (pt_hold, pt_run)
-    1.827 BL616
-    1.827   bouffalolab />
-    2.135 BL616
-    2.135   bouffalolab />pt_on
-    2.135 BL616
-    2.135   OK: 3V3 up 1.636 ms after K230_PWR (expected ~3 ms). K230 held in reset.
-    2.135 BL616
-    2.135     Now measure 0V8, 3V3, 1V8, 1V1 (power_check.py flashed), then pt_run.
-    2.135 BL616
-    2.135   bouffalolab />
-    4.139 BL616
-    4.139   bouffalolab />pt_run
-    4.140 BL616
-    4.140   K230 reset released. With a blank NAND its ROM enumerates on USB-C 1 within ~2 s:
-    4.140 BL616
-    4.140     lsusb | grep 29f1:0230      (Windows: Device Manager, 'K230 USB Boot Device')
-    4.140 BL616
-    4.140   That proves 0V8, 1V1, 1V8 and 3V3 together. pt_hold puts it back in reset.
-    4.140 BL616
-    4.140   bouffalolab />
-    4.215 K230
-    4.215 K230
-    4.215   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 05 2026 - 20:25:12 +0000)
-    4.224 K230
-    4.224   00000000: PMU Major Msg: End of CA training
-    4.224 K230
-    4.224   00000000: PMU Major Msg: End of initialization
-    4.224 K230
-    4.224   00000000: PMU Major Msg: End of read enable training
-    4.224 K230
-    4.224   00000000: PMU Major Msg: End of fine write leveling
-    4.224 K230
-    4.224   00000000: PMU Major Msg: End of read dq deskew training
-    4.224 K230
-    4.224   00000000: PMU Major Msg: End of MPR read delay center optimization
-    4.224 K230
-    4.224   00000000: PMU Major Msg: End of Write leveling coarse delay
-    4.224 K230
-    4.224   00000000: PMU Major Msg: End of write delay center optimization
-    4.224 K230
-    4.224   00000000: PMU Major Msg: End of read delay center optimization
-    4.224 K230
-    4.224   00000000: PMU Major Msg: End of max read latency training
-    4.224 K230
-    4.224   00000000: PMU Major Msg: Firmware run has completed
-    4.245 K230
-    4.245   dbyte0 add =9a040100 value =12
-    4.245 K230
-    4.245   dbyte0 add =9a040500 value =13
-    4.245 K230
-    4.245   dbyte0 add =9a040900 value =13
-    4.245 K230
-    4.245   dbyte0 add =9a040d00 value =13
-    4.245 K230
-    4.245   dbyte0 add =9a041100 value =13
-    4.245 K230
-    4.245   dbyte0 add =9a041500 value =13
-    4.245 K230
-    4.245   dbyte0 add =9a041900 value =13
-    4.245 K230
-    4.245   dbyte0 add =9a041d00 value =15
-    4.245 K230
-    4.245   dbyte1 add =9a044100 value =13
-    4.245 K230
-    4.245   dbyte1 add =9a044500 value =13
-    4.245 K230
-    4.245   dbyte1 add =9a044900 value =15
-    4.245 K230
-    4.245   dbyte1 add =9a044d00 value =13
-    4.245 K230
-    4.245   dbyte1 add =9a045100 value =13
-    4.245 K230
-    4.245   dbyte1 add =9a045500 value =13
-    4.245 K230
-    4.245   dbyte1 add =9a045900 value =13
-    4.245 K230
-    4.245   dbyte1 add =9a045d00 value =13
-    4.245 K230
-    4.245   dbyte2 add =9a048100 value =37
-    4.245 K230
-    4.245   dbyte2 add =9a048500 value =37
-    4.245 K230
-    4.245   dbyte2 add =9a048900 value =37
-    4.245 K230
-    4.245   dbyte2 add =9a048d00 value =37
-    4.245 K230
-    4.245   dbyte2 add =9a049100 value =37
-    4.245 K230
-    4.245   dbyte2 add =9a049500 value =37
-    4.245 K230
-    4.245   dbyte2 add =9a049900 value =37
-    4.245 K230
-    4.245   dbyte2 add =9a049d00 value =37
-    4.245 K230
-    4.245   dbyte3 add =9a04c100 value =37
-    4.245 K230
-    4.245   dbyte3 add =9a04c500 value =37
-    4.245 K230
-    4.245   dbyte3 add =9a04c900 value =37
-    4.245 K230
-    4.245   dbyte3 add =9a04cd00 value =37
-    4.245 K230
-    4.245   dbyte3 add =9a04d100 value =37
-    4.245 K230
-    4.245   dbyte3 add =9a04d500 value =37
-    4.245 K230
-    4.245   dbyte3 add =9a04d900 value =37
-    4.245 K230
-    4.245   dbyte3 add =9a04dd00 value =37
-    4.249 K230
-    4.249   spi_nand spi-flash@0: Winbond SPI NAND was found.
-    4.249 K230
-    4.249   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
-    4.350 K230
-    4.350 K230
-    4.350   OpenSBI v0.9
-    4.361 K230
-    4.361   heap: [0x004f84c0 - 0x00cf84c0], size 8192 KB
-    4.361 K230
-    4.361   page: [0x00cf84c8 - 0x039fec00], size 46105 KB
-    4.361 K230
-    4.361 K230
-    4.361    \ | /
-    4.361 K230
-    4.361   - RT -     Thread Smart Operating System
-    4.361 K230
-    4.361    / | \     5.0.0 build Nov  5 2026
-    4.361 K230
-    4.361    2006 - 2020 Copyright by rt-thread team
-    4.367 K230
-    4.367   rtc driver register OK
-    4.383 K230
-    4.383   lwIP-2.1.2 initialized!
-    4.383 K230
-    4.383   [I/I2C] I2C bus [i2c0] registered
-    4.383 K230
-    4.383   [I/I2C] I2C bus [i2c4] registered
-    4.383 K230
-    4.383   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
-    4.383   �link_mux: console and /dev/link share uart1
-    4.383 K230
-    4.383   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
-    4.383 K230
-    4.383   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
-    4.383 K230
-    4.383   os  : system memory alloc 320 bytes
-    4.383 K230
-    4.383   flsh: UFFS consume spare data size 9
-    4.383 K230
-    4.383   os  : system memory alloc 84480 bytes
-    4.383 K230
-    4.383   os  : system memory alloc 53200 bytes
-    4.384 K230
-    4.384   os  : system memory alloc 2048 bytes
-    4.451 K230
-    4.451   tree: DIR 0, FILE 5, DATA 4
-    4.451 K230
-    4.451   os  : system memory alloc 320 bytes
-    4.451 K230
-    4.451   flsh: UFFS consume spare data size 9
-    4.451 K230
-    4.451   os  : system memory alloc 84480 bytes
-    4.451 K230
-    4.451   os  : system memory alloc 53200 bytes
-    4.451 K230
-    4.451   os  : system memory alloc 8192 bytes
+    0.153 BL616
+    0.153   pt_off
+    0.153 BL616
+    0.153   OK: 3V3 gone 0 ms after K230_PWR low (expected 56-82 ms through RD1/RD2).
+    0.153 BL616
+    0.153   bouffalolab />
+    1.662 BL616
+    1.662   bouffalolab />pt_uart on
+    1.662 BL616
+    1.662   3V3 is off: pt_on first (the link pins are pulled up to the K230's 3V3)
+    1.662 BL616
+    1.662   bouffalolab />
+    1.970 BL616
+    1.970   bouffalolab />pt_boot1 low
+    1.970 BL616
+    1.970   K230 BOOT1  : IO27 low (NAND boot); the ROM reads it at reset (pt_hold, pt_run)
+    1.970 BL616
+    1.970   bouffalolab />
+    2.279 BL616
+    2.279   bouffalolab />pt_on
+    2.279 BL616
+    2.279   OK: 3V3 up 1.725 ms after K230_PWR (expected ~3 ms). K230 held in reset.
+    2.279 BL616
+    2.279     Now measure 0V8, 3V3, 1V8, 1V1 (power_check.py flashed), then pt_run.
+    2.279 BL616
+    2.279   bouffalolab />
+    4.294 BL616
+    4.294   bouffalolab />pt_run
+    4.295 BL616
+    4.295   K230 reset released. With a blank NAND its ROM enumerates on USB-C 1 within ~2 s:
+    4.295 BL616
+    4.295     lsusb | grep 29f1:0230      (Windows: Device Manager, 'K230 USB Boot Device')
+    4.295 BL616
+    4.295   That proves 0V8, 1V1, 1V8 and 3V3 together. pt_hold puts it back in reset.
+    4.295 BL616
+    4.295   bouffalolab />
+    4.371 K230
+    4.371 K230
+    4.371   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 11 2026 - 23:55:29 +0000)
+    4.378 K230
+    4.378   00000000: PMU Major Msg: End of CA training
+    4.379 K230
+    4.379   00000000: PMU Major Msg: End of initialization
+    4.379 K230
+    4.379   00000000: PMU Major Msg: End of read enable training
+    4.379 K230
+    4.379   00000000: PMU Major Msg: End of fine write leveling
+    4.379 K230
+    4.379   00000000: PMU Major Msg: End of read dq deskew training
+    4.379 K230
+    4.379   00000000: PMU Major Msg: End of MPR read delay center optimization
+    4.379 K230
+    4.379   00000000: PMU Major Msg: End of Write leveling coarse delay
+    4.379 K230
+    4.379   00000000: PMU Major Msg: End of write delay center optimization
+    4.379 K230
+    4.379   00000000: PMU Major Msg: End of read delay center optimization
+    4.379 K230
+    4.379   00000000: PMU Major Msg: End of max read latency training
+    4.379 K230
+    4.379   00000000: PMU Major Msg: Firmware run has completed
+    4.400 K230
+    4.400   dbyte0 add =9a040100 value =11
+    4.400 K230
+    4.400   dbyte0 add =9a040500 value =13
+    4.400 K230
+    4.400   dbyte0 add =9a040900 value =13
+    4.400 K230
+    4.400   dbyte0 add =9a040d00 value =13
+    4.400 K230
+    4.400   dbyte0 add =9a041100 value =13
+    4.400 K230
+    4.400   dbyte0 add =9a041500 value =13
+    4.400 K230
+    4.400   dbyte0 add =9a041900 value =13
+    4.400 K230
+    4.400   dbyte0 add =9a041d00 value =14
+    4.400 K230
+    4.400   dbyte1 add =9a044100 value =13
+    4.400 K230
+    4.400   dbyte1 add =9a044500 value =13
+    4.400 K230
+    4.400   dbyte1 add =9a044900 value =13
+    4.400 K230
+    4.400   dbyte1 add =9a044d00 value =12
+    4.400 K230
+    4.400   dbyte1 add =9a045100 value =13
+    4.400 K230
+    4.400   dbyte1 add =9a045500 value =13
+    4.400 K230
+    4.400   dbyte1 add =9a045900 value =13
+    4.400 K230
+    4.400   dbyte1 add =9a045d00 value =13
+    4.400 K230
+    4.400   dbyte2 add =9a048100 value =37
+    4.400 K230
+    4.400   dbyte2 add =9a048500 value =37
+    4.400 K230
+    4.400   dbyte2 add =9a048900 value =37
+    4.400 K230
+    4.400   dbyte2 add =9a048d00 value =37
+    4.400 K230
+    4.400   dbyte2 add =9a049100 value =37
+    4.400 K230
+    4.400   dbyte2 add =9a049500 value =37
+    4.400 K230
+    4.400   dbyte2 add =9a049900 value =37
+    4.400 K230
+    4.400   dbyte2 add =9a049d00 value =37
+    4.400 K230
+    4.400   dbyte3 add =9a04c100 value =37
+    4.400 K230
+    4.400   dbyte3 add =9a04c500 value =37
+    4.400 K230
+    4.400   dbyte3 add =9a04c900 value =37
+    4.400 K230
+    4.400   dbyte3 add =9a04cd00 value =37
+    4.400 K230
+    4.400   dbyte3 add =9a04d100 value =37
+    4.400 K230
+    4.400   dbyte3 add =9a04d500 value =37
+    4.400 K230
+    4.400   dbyte3 add =9a04d900 value =37
+    4.400 K230
+    4.400   dbyte3 add =9a04dd00 value =37
+    4.404 K230
+    4.404   spi_nand spi-flash@0: Winbond SPI NAND was found.
+    4.404 K230
+    4.404   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+    4.509 K230
+    4.509 K230
+    4.509   OpenSBI v0.9
+    4.520 K230
+    4.520   heap: [0x0050c4c0 - 0x00d0c4c0], size 8192 KB
+    4.520 K230
+    4.520   page: [0x00d0c4c8 - 0x039fec00], size 46025 KB
+    4.521 K230
+    4.521 K230
+    4.521    \ | /
+    4.521 K230
+    4.521   - RT -     Thread Smart Operating System
+    4.521 K230
+    4.521    / | \     5.0.0 build Nov 11 2026
+    4.521 K230
+    4.521    2006 - 2020 Copyright by rt-thread team
+    4.525 K230
+    4.525   rtc driver register OK
     4.542 K230
-    4.542   tree: DIR 1, FILE 2, DATA 0
+    4.542   lwIP-2.1.2 initialized!
     4.542 K230
-    4.542   /dev/shm file system initialization done!
+    4.542   [I/I2C] I2C bus [i2c0] registered
     4.542 K230
-    4.542   Can't find sensor on csi0
-    4.548 K230
-    4.548   Can't find sensor on csi2
-    4.548 K230
-    4.548   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
-    4.548 K230
-    4.548   <gnne> gnne_device_init done.
-    4.548 K230
-    4.548 K230
-    4.553 K230
-    4.553   #############SDK VERSION######################################
-    4.553 K230
-    4.553   SDK   : unknown-20261105-202455--402980114adb-4162ec7
-    4.553 K230
-    4.553   nncase: 2.11.0
-    4.553 K230
-    4.553   ##############################################################
-    4.568 BL616
-    4.568   bouffalolab />link rx: $0,READY*23
-    4.568 K230
-    4.568   msh />leakcam: start: t 352 ms, heap +0 B
-    4.574 BL616
-    4.574   pt_uart frame 0,ACK,0
-    4.574 BL616
-    4.574   sent frame
-    4.574 BL616
-    4.574   bouffalolab />
-    4.574 BL616
-    4.574   bouffalolab />pt_uart frame 0,WAKE,setup,0,-1,0,-1,-1
-    4.574 BL616
-    4.574   sent frame
-    4.574 BL616
-    4.574   bouffalolab />
-    4.574 BL616
-    4.574   bouffalolab />link rx: $0,ACK,0*01
-    4.574 K230
-    4.574   leakcam: WAKE setup: t 359 ms, heap +0 B
-    4.579 BL616
-    4.579   pt_off
-    4.889 BL616
-    4.889   OK: 3V3 gone 10 ms after K230_PWR low (expected 56-82 ms through RD1/RD2).
-    4.889 BL616
-    4.889   bouffalolab />
-    6.084 BL616
-    6.084   bouffalolab />pt_uart on
-    6.084 BL616
-    6.084   3V3 is off: pt_on first (the link pins are pulled up to the K230's 3V3)
-    6.084 BL616
-    6.084   bouffalolab />
-    6.392 BL616
-    6.392   bouffalolab />pt_boot1 low
-    6.392 BL616
-    6.392   K230 BOOT1  : IO27 low (NAND boot); the ROM reads it at reset (pt_hold, pt_run)
-    6.392 BL616
-    6.392   bouffalolab />
-    6.700 BL616
-    6.700   bouffalolab />pt_on
-    6.700 BL616
-    6.700   OK: 3V3 up 1.640 ms after K230_PWR (expected ~3 ms). K230 held in reset.
-    6.700 BL616
-    6.700     Now measure 0V8, 3V3, 1V8, 1V1 (power_check.py flashed), then pt_run.
-    6.700 BL616
-    6.700   bouffalolab />
-    8.703 BL616
-    8.703   bouffalolab />pt_run
-    8.703 BL616
-    8.703   K230 reset released. With a blank NAND its ROM enumerates on USB-C 1 within ~2 s:
-    8.703 BL616
-    8.703     lsusb | grep 29f1:0230      (Windows: Device Manager, 'K230 USB Boot Device')
-    8.703 BL616
-    8.703   That proves 0V8, 1V1, 1V8 and 3V3 together. pt_hold puts it back in reset.
-    8.703 BL616
-    8.703   bouffalolab />
-    8.779 K230
-    8.779   leakcam: setup: USB relay on /dev/ttyGS0: t 360 ms, heap +0 B
-    8.779 K230
-    8.779 K230
-    8.779   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 05 2026 - 20:25:12 +0000)
-    8.787 K230
-    8.787   00000000: PMU Major Msg: End of CA training
-    8.787 K230
-    8.787   00000000: PMU Major Msg: End of initialization
-    8.787 K230
-    8.787   00000000: PMU Major Msg: End of read enable training
-    8.787 K230
-    8.787   00000000: PMU Major Msg: End of fine write leveling
-    8.787 K230
-    8.787   00000000: PMU Major Msg: End of read dq deskew training
-    8.787 K230
-    8.787   00000000: PMU Major Msg: End of MPR read delay center optimization
-    8.787 K230
-    8.787   00000000: PMU Major Msg: End of Write leveling coarse delay
-    8.787 K230
-    8.787   00000000: PMU Major Msg: End of write delay center optimization
-    8.787 K230
-    8.787   00000000: PMU Major Msg: End of read delay center optimization
-    8.787 K230
-    8.787   00000000: PMU Major Msg: End of max read latency training
-    8.787 K230
-    8.787   00000000: PMU Major Msg: Firmware run has completed
-    8.808 K230
-    8.808   dbyte0 add =9a040100 value =12
-    8.808 K230
-    8.808   dbyte0 add =9a040500 value =13
-    8.808 K230
-    8.808   dbyte0 add =9a040900 value =13
-    8.808 K230
-    8.808   dbyte0 add =9a040d00 value =13
-    8.808 K230
-    8.808   dbyte0 add =9a041100 value =13
-    8.808 K230
-    8.808   dbyte0 add =9a041500 value =13
-    8.808 K230
-    8.808   dbyte0 add =9a041900 value =13
-    8.808 K230
-    8.808   dbyte0 add =9a041d00 value =14
-    8.808 K230
-    8.808   dbyte1 add =9a044100 value =14
-    8.808 K230
-    8.808   dbyte1 add =9a044500 value =14
-    8.808 K230
-    8.808   dbyte1 add =9a044900 value =14
-    8.808 K230
-    8.808   dbyte1 add =9a044d00 value =12
-    8.808 K230
-    8.808   dbyte1 add =9a045100 value =13
-    8.808 K230
-    8.808   dbyte1 add =9a045500 value =13
-    8.808 K230
-    8.808   dbyte1 add =9a045900 value =13
-    8.808 K230
-    8.808   dbyte1 add =9a045d00 value =13
-    8.808 K230
-    8.808   dbyte2 add =9a048100 value =37
-    8.808 K230
-    8.808   dbyte2 add =9a048500 value =37
-    8.808 K230
-    8.808   dbyte2 add =9a048900 value =37
-    8.808 K230
-    8.808   dbyte2 add =9a048d00 value =37
-    8.808 K230
-    8.808   dbyte2 add =9a049100 value =37
-    8.808 K230
-    8.808   dbyte2 add =9a049500 value =37
-    8.808 K230
-    8.808   dbyte2 add =9a049900 value =37
-    8.808 K230
-    8.808   dbyte2 add =9a049d00 value =37
-    8.808 K230
-    8.808   dbyte3 add =9a04c100 value =37
-    8.808 K230
-    8.808   dbyte3 add =9a04c500 value =37
-    8.808 K230
-    8.808   dbyte3 add =9a04c900 value =37
-    8.808 K230
-    8.808   dbyte3 add =9a04cd00 value =37
-    8.808 K230
-    8.808   dbyte3 add =9a04d100 value =37
-    8.808 K230
-    8.808   dbyte3 add =9a04d500 value =37
-    8.808 K230
-    8.808   dbyte3 add =9a04d900 value =37
-    8.808 K230
-    8.808   dbyte3 add =9a04dd00 value =37
-    8.813 K230
-    8.813   spi_nand spi-flash@0: Winbond SPI NAND was found.
-    8.813 K230
-    8.813   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
-    8.914 K230
-    8.914 K230
-    8.914   OpenSBI v0.9
-    8.925 K230
-    8.925   heap: [0x004f84c0 - 0x00cf84c0], size 8192 KB
-    8.925 K230
-    8.925   page: [0x00cf84c8 - 0x039fec00], size 46105 KB
-    8.925 K230
-    8.925 K230
-    8.925    \ | /
-    8.925 K230
-    8.925   - RT -     Thread Smart Operating System
-    8.925 K230
-    8.925    / | \     5.0.0 build Nov  5 2026
-    8.925 K230
-    8.925    2006 - 2020 Copyright by rt-thread team
-    8.930 K230
-    8.930   rtc driver register OK
-    8.946 K230
-    8.946   lwIP-2.1.2 initialized!
-    8.946 K230
-    8.946   [I/I2C] I2C bus [i2c0] registered
-    8.946 K230
-    8.946   [I/I2C] I2C bus [i2c4] registered
-    8.946 K230
-    8.946   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
-    8.946   �link_mux: console and /dev/link share uart1
-    8.946 K230
-    8.946   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
-    8.946 K230
-    8.946   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
-    8.946 K230
-    8.946   os  : system memory alloc 320 bytes
-    8.946 K230
-    8.946   flsh: UFFS consume spare data size 9
-    8.946 K230
-    8.946   os  : system memory alloc 84480 bytes
-    8.946 K230
-    8.946   os  : system memory alloc 53200 bytes
-    8.946 K230
-    8.946   os  : system memory alloc 2048 bytes
-    9.015 K230
-    9.015   tree: DIR 0, FILE 5, DATA 4
-    9.015 K230
-    9.015   os  : system memory alloc 320 bytes
-    9.015 K230
-    9.015   flsh: UFFS consume spare data size 9
-    9.015 K230
-    9.015   os  : system memory alloc 84480 bytes
-    9.015 K230
-    9.015   os  : system memory alloc 53200 bytes
-    9.015 K230
-    9.015   os  : system memory alloc 8192 bytes
-    9.106 K230
-    9.106   tree: DIR 1, FILE 2, DATA 0
-    9.106 K230
-    9.106   /dev/shm file system initialization done!
-    9.106 K230
-    9.106   Can't find sensor on csi0
-    9.111 K230
-    9.111   Can't find sensor on csi2
-    9.111 K230
-    9.111   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
-    9.111 K230
-    9.111   <gnne> gnne_device_init done.
-    9.111 K230
-    9.111 K230
-    9.116 K230
-    9.116   #############SDK VERSION######################################
-    9.116 K230
-    9.116   SDK   : unknown-20261105-202455--402980114adb-4162ec7
-    9.116 K230
-    9.116   nncase: 2.11.0
-    9.116 K230
-    9.116   ##############################################################
-    9.130 BL616
-    9.130   bouffalolab />link rx: $0,READY*23
-    9.130 K230
-    9.130   msh />leakcam: start: t 351 ms, heap +0 B
-    9.137 BL616
-    9.137   pt_uart frame 0,ACK,0
-    9.137 BL616
-    9.137   sent frame
-    9.137 BL616
-    9.137   bouffalolab />
-    9.137 BL616
-    9.137   bouffalolab />pt_uart frame 0,WAKE,setup,0,-1,0,-1,-1
-    9.137 BL616
-    9.137   sent frame
-    9.137 BL616
-    9.137   bouffalolab />
-    9.137 BL616
-    9.137   bouffalolab />link rx: $0,ACK,0*01
-    9.137 K230
-    9.137   leakcam: WAKE setup: t 359 ms, heap +0 B
-    9.142 BL616
-    9.142   pt_off
-    9.452 BL616
-    9.452   OK: 3V3 gone 10 ms after K230_PWR low (expected 56-82 ms through RD1/RD2).
-    9.452 BL616
-    9.452   bouffalolab />
-   10.647 BL616
-   10.647   bouffalolab />pt_uart on
-   10.647 BL616
-   10.647   3V3 is off: pt_on first (the link pins are pulled up to the K230's 3V3)
-   10.647 BL616
-   10.647   bouffalolab />
-   10.955 BL616
-   10.955   bouffalolab />pt_boot1 low
-   10.955 BL616
-   10.955   K230 BOOT1  : IO27 low (NAND boot); the ROM reads it at reset (pt_hold, pt_run)
-   10.955 BL616
-   10.955   bouffalolab />
-   11.262 BL616
-   11.262   bouffalolab />pt_on
-   11.262 BL616
-   11.262   OK: 3V3 up 1.641 ms after K230_PWR (expected ~3 ms). K230 held in reset.
-   11.262 BL616
-   11.262     Now measure 0V8, 3V3, 1V8, 1V1 (power_check.py flashed), then pt_run.
-   11.262 BL616
-   11.262   bouffalolab />
-   13.264 BL616
-   13.264   bouffalolab />pt_run
-   13.264 BL616
-   13.264   K230 reset released. With a blank NAND its ROM enumerates on USB-C 1 within ~2 s:
-   13.264 BL616
-   13.264     lsusb | grep 29f1:0230      (Windows: Device Manager, 'K230 USB Boot Device')
-   13.264 BL616
-   13.264   That proves 0V8, 1V1, 1V8 and 3V3 together. pt_hold puts it back in reset.
-   13.264 BL616
-   13.264   bouffalolab />
-   13.340 K230
-   13.340   leakcam: setup: USB relay on /dev/ttyGS0: t 359 ms, heap +0 B
-   13.340 K230
-   13.340 K230
-   13.340   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 05 2026 - 20:25:12 +0000)
-   13.348 K230
-   13.348   00000000: PMU Major Msg: End of CA training
-   13.348 K230
-   13.348   00000000: PMU Major Msg: End of initialization
-   13.348 K230
-   13.348   00000000: PMU Major Msg: End of read enable training
-   13.348 K230
-   13.348   00000000: PMU Major Msg: End of fine write leveling
-   13.348 K230
-   13.348   00000000: PMU Major Msg: End of read dq deskew training
-   13.348 K230
-   13.348   00000000: PMU Major Msg: End of MPR read delay center optimization
-   13.348 K230
-   13.348   00000000: PMU Major Msg: End of Write leveling coarse delay
-   13.348 K230
-   13.348   00000000: PMU Major Msg: End of write delay center optimization
-   13.348 K230
-   13.348   00000000: PMU Major Msg: End of read delay center optimization
-   13.348 K230
-   13.348   00000000: PMU Major Msg: End of max read latency training
-   13.348 K230
-   13.348   00000000: PMU Major Msg: Firmware run has completed
-   13.369 K230
-   13.369   dbyte0 add =9a040100 value =12
-   13.369 K230
-   13.369   dbyte0 add =9a040500 value =13
-   13.369 K230
-   13.369   dbyte0 add =9a040900 value =13
-   13.369 K230
-   13.369   dbyte0 add =9a040d00 value =13
-   13.369 K230
-   13.369   dbyte0 add =9a041100 value =13
-   13.369 K230
-   13.369   dbyte0 add =9a041500 value =13
-   13.369 K230
-   13.369   dbyte0 add =9a041900 value =13
-   13.369 K230
-   13.369   dbyte0 add =9a041d00 value =14
-   13.369 K230
-   13.369   dbyte1 add =9a044100 value =14
-   13.369 K230
-   13.369   dbyte1 add =9a044500 value =13
-   13.369 K230
-   13.369   dbyte1 add =9a044900 value =14
-   13.369 K230
-   13.369   dbyte1 add =9a044d00 value =13
-   13.369 K230
-   13.369   dbyte1 add =9a045100 value =13
-   13.369 K230
-   13.369   dbyte1 add =9a045500 value =13
-   13.369 K230
-   13.369   dbyte1 add =9a045900 value =13
-   13.369 K230
-   13.369   dbyte1 add =9a045d00 value =13
-   13.369 K230
-   13.369   dbyte2 add =9a048100 value =37
-   13.369 K230
-   13.369   dbyte2 add =9a048500 value =37
-   13.369 K230
-   13.369   dbyte2 add =9a048900 value =37
-   13.369 K230
-   13.369   dbyte2 add =9a048d00 value =37
-   13.369 K230
-   13.369   dbyte2 add =9a049100 value =37
-   13.369 K230
-   13.369   dbyte2 add =9a049500 value =37
-   13.369 K230
-   13.369   dbyte2 add =9a049900 value =37
-   13.369 K230
-   13.369   dbyte2 add =9a049d00 value =37
-   13.369 K230
-   13.369   dbyte3 add =9a04c100 value =37
-   13.369 K230
-   13.369   dbyte3 add =9a04c500 value =37
-   13.369 K230
-   13.369   dbyte3 add =9a04c900 value =37
-   13.369 K230
-   13.369   dbyte3 add =9a04cd00 value =37
-   13.369 K230
-   13.369   dbyte3 add =9a04d100 value =37
-   13.369 K230
-   13.369   dbyte3 add =9a04d500 value =37
-   13.369 K230
-   13.369   dbyte3 add =9a04d900 value =37
-   13.369 K230
-   13.369   dbyte3 add =9a04dd00 value =37
-   13.374 K230
-   13.374   spi_nand spi-flash@0: Winbond SPI NAND was found.
-   13.374 K230
-   13.374   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
-   13.476 K230
-   13.476 K230
-   13.476   OpenSBI v0.9
-   13.487 K230
-   13.487   heap: [0x004f84c0 - 0x00cf84c0], size 8192 KB
-   13.487 K230
-   13.487   page: [0x00cf84c8 - 0x039fec00], size 46105 KB
-   13.487 K230
-   13.487 K230
-   13.487    \ | /
-   13.487 K230
-   13.487   - RT -     Thread Smart Operating System
-   13.487 K230
-   13.487    / | \     5.0.0 build Nov  5 2026
-   13.487 K230
-   13.487    2006 - 2020 Copyright by rt-thread team
-   13.492 K230
-   13.492   rtc driver register OK
-   13.508 K230
-   13.508   lwIP-2.1.2 initialized!
-   13.508 K230
-   13.508   [I/I2C] I2C bus [i2c0] registered
-   13.508 K230
-   13.508   [I/I2C] I2C bus [i2c4] registered
-   13.508 K230
-   13.508   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
-   13.508   �link_mux: console and /dev/link share uart1
-   13.508 K230
-   13.508   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
-   13.508 K230
-   13.508   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
-   13.508 K230
-   13.508   os  : system memory alloc 320 bytes
-   13.508 K230
-   13.508   flsh: UFFS consume spare data size 9
-   13.508 K230
-   13.508   os  : system memory alloc 84480 bytes
-   13.508 K230
-   13.508   os  : system memory alloc 53200 bytes
-   13.508 K230
-   13.508   os  : system memory alloc 2048 bytes
-   13.577 K230
-   13.577   tree: DIR 0, FILE 5, DATA 4
-   13.577 K230
-   13.577   os  : system memory alloc 320 bytes
-   13.577 K230
-   13.577   flsh: UFFS consume spare data size 9
-   13.577 K230
-   13.577   os  : system memory alloc 84480 bytes
-   13.577 K230
-   13.577   os  : system memory alloc 53200 bytes
-   13.577 K230
-   13.577   os  : system memory alloc 8192 bytes
-   13.668 K230
-   13.668   tree: DIR 1, FILE 2, DATA 0
-   13.668 K230
-   13.668   /dev/shm file system initialization done!
-   13.668 K230
-   13.668   Can't find sensor on csi0
-   13.673 K230
-   13.673   Can't find sensor on csi2
-   13.673 K230
-   13.673   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
-   13.673 K230
-   13.673   <gnne> gnne_device_init done.
-   13.673 K230
-   13.673 K230
-   13.678 K230
-   13.678   #############SDK VERSION######################################
-   13.678 K230
-   13.678   SDK   : unknown-20261105-202455--402980114adb-4162ec7
-   13.678 K230
-   13.678   nncase: 2.11.0
-   13.678 K230
-   13.678   ##############################################################
-   13.692 K230
-   13.692   msh />leakcam: start: t 352 ms, heap +0 B
-   13.692 BL616
-   13.692   bouffalolab />link rx: $0,READY*23
-   13.699 BL616
-   13.699   pt_uart frame 0,ACK,0
-   13.699 BL616
-   13.699   sent frame
-   13.699 BL616
-   13.699   bouffalolab />
-   13.699 BL616
-   13.699   bouffalolab />pt_uart frame 0,WAKE,setup,0,-1,0,-1,-1
-   13.699 BL616
-   13.699   sent frame
-   13.699 BL616
-   13.699   bouffalolab />
-   13.699 BL616
-   13.699   bouffalolab />link rx: $0,ACK,0*01
-   13.699 K230
-   13.699   leakcam: WAKE setup: t 360 ms, heap +0 B
-   13.704 BL616
-   13.704   pt_off
-   14.014 BL616
-   14.014   OK: 3V3 gone 10 ms after K230_PWR low (expected 56-82 ms through RD1/RD2).
-   14.014 BL616
-   14.014   bouffalolab />
-   15.209 BL616
-   15.209   bouffalolab />pt_uart on
-   15.209 BL616
-   15.209   3V3 is off: pt_on first (the link pins are pulled up to the K230's 3V3)
-   15.209 BL616
-   15.209   bouffalolab />
-   15.516 BL616
-   15.516   bouffalolab />pt_boot1 low
-   15.517 BL616
-   15.517   K230 BOOT1  : IO27 low (NAND boot); the ROM reads it at reset (pt_hold, pt_run)
-   15.517 BL616
-   15.517   bouffalolab />
-   15.824 BL616
-   15.824   bouffalolab />pt_on
-   15.825 BL616
-   15.825   OK: 3V3 up 1.645 ms after K230_PWR (expected ~3 ms). K230 held in reset.
-   15.825 BL616
-   15.825     Now measure 0V8, 3V3, 1V8, 1V1 (power_check.py flashed), then pt_run.
-   15.825 BL616
-   15.825   bouffalolab />
-   17.827 BL616
-   17.827   bouffalolab />pt_run
-   17.827 BL616
-   17.827   K230 reset released. With a blank NAND its ROM enumerates on USB-C 1 within ~2 s:
-   17.827 BL616
-   17.827     lsusb | grep 29f1:0230      (Windows: Device Manager, 'K230 USB Boot Device')
-   17.827 BL616
-   17.827   That proves 0V8, 1V1, 1V8 and 3V3 together. pt_hold puts it back in reset.
-   17.827 BL616
-   17.827   bouffalolab />
-   17.903 K230
-   17.903   leakcam: setup: USB relay on /dev/ttyGS0: t 360 ms, heap +0 B
-   17.903 K230
-   17.903 K230
-   17.903   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 05 2026 - 20:25:12 +0000)
-   17.912 K230
-   17.912   00000000: PMU Major Msg: End of CA training
-   17.912 K230
-   17.912   00000000: PMU Major Msg: End of initialization
-   17.912 K230
-   17.912   00000000: PMU Major Msg: End of read enable training
-   17.912 K230
-   17.912   00000000: PMU Major Msg: End of fine write leveling
-   17.912 K230
-   17.912   00000000: PMU Major Msg: End of read dq deskew training
-   17.912 K230
-   17.912   00000000: PMU Major Msg: End of MPR read delay center optimization
-   17.912 K230
-   17.912   00000000: PMU Major Msg: End of Write leveling coarse delay
-   17.912 K230
-   17.912   00000000: PMU Major Msg: End of write delay center optimization
-   17.912 K230
-   17.912   00000000: PMU Major Msg: End of read delay center optimization
-   17.912 K230
-   17.912   00000000: PMU Major Msg: End of max read latency training
-   17.912 K230
-   17.912   00000000: PMU Major Msg: Firmware run has completed
-   17.933 K230
-   17.933   dbyte0 add =9a040100 value =12
-   17.933 K230
-   17.933   dbyte0 add =9a040500 value =13
-   17.933 K230
-   17.933   dbyte0 add =9a040900 value =13
-   17.933 K230
-   17.933   dbyte0 add =9a040d00 value =13
-   17.933 K230
-   17.933   dbyte0 add =9a041100 value =13
-   17.933 K230
-   17.933   dbyte0 add =9a041500 value =13
-   17.933 K230
-   17.933   dbyte0 add =9a041900 value =13
-   17.933 K230
-   17.933   dbyte0 add =9a041d00 value =14
-   17.933 K230
-   17.933   dbyte1 add =9a044100 value =14
-   17.933 K230
-   17.933   dbyte1 add =9a044500 value =14
-   17.933 K230
-   17.933   dbyte1 add =9a044900 value =14
-   17.933 K230
-   17.933   dbyte1 add =9a044d00 value =13
-   17.933 K230
-   17.933   dbyte1 add =9a045100 value =13
-   17.933 K230
-   17.933   dbyte1 add =9a045500 value =13
-   17.933 K230
-   17.933   dbyte1 add =9a045900 value =13
-   17.933 K230
-   17.933   dbyte1 add =9a045d00 value =13
-   17.933 K230
-   17.933   dbyte2 add =9a048100 value =37
-   17.933 K230
-   17.933   dbyte2 add =9a048500 value =37
-   17.933 K230
-   17.933   dbyte2 add =9a048900 value =37
-   17.933 K230
-   17.933   dbyte2 add =9a048d00 value =37
-   17.933 K230
-   17.933   dbyte2 add =9a049100 value =37
-   17.933 K230
-   17.933   dbyte2 add =9a049500 value =37
-   17.933 K230
-   17.933   dbyte2 add =9a049900 value =37
-   17.933 K230
-   17.933   dbyte2 add =9a049d00 value =37
-   17.933 K230
-   17.933   dbyte3 add =9a04c100 value =37
-   17.933 K230
-   17.933   dbyte3 add =9a04c500 value =37
-   17.933 K230
-   17.933   dbyte3 add =9a04c900 value =37
-   17.933 K230
-   17.933   dbyte3 add =9a04cd00 value =37
-   17.933 K230
-   17.933   dbyte3 add =9a04d100 value =37
-   17.933 K230
-   17.933   dbyte3 add =9a04d500 value =37
-   17.933 K230
-   17.933   dbyte3 add =9a04d900 value =37
-   17.933 K230
-   17.933   dbyte3 add =9a04dd00 value =37
-   17.937 K230
-   17.937   spi_nand spi-flash@0: Winbond SPI NAND was found.
-   17.937 K230
-   17.937   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
-   18.038 K230
-   18.038 K230
-   18.038   OpenSBI v0.9
+    4.542   [I/I2C] I2C bus [i2c4] registered
+    4.542 K230
+    4.542   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+    4.542   �link_mux: console and /dev/link share uart1
+    4.542 K230
+    4.542   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+    4.543 K230
+    4.543   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+    4.543 K230
+    4.543   os  : system memory alloc 320 bytes
+    4.543 K230
+    4.543   flsh: UFFS consume spare data size 9
+    4.543 K230
+    4.543   os  : system memory alloc 84480 bytes
+    4.543 K230
+    4.543   os  : system memory alloc 53200 bytes
+    4.543 K230
+    4.543   os  : system memory alloc 2048 bytes
+    4.610 K230
+    4.610   tree: DIR 0, FILE 5, DATA 4
+    4.611 K230
+    4.611   os  : system memory alloc 320 bytes
+    4.611 K230
+    4.611   flsh: UFFS consume spare data size 9
+    4.611 K230
+    4.611   os  : system memory alloc 84480 bytes
+    4.611 K230
+    4.611   os  : system memory alloc 53200 bytes
+    4.611 K230
+    4.611   os  : system memory alloc 8192 bytes
+    4.682 K230
+    4.682   tree: DIR 0, FILE 1, DATA 0
+    4.683 K230
+    4.683   /dev/shm file system initialization done!
+    4.683 K230
+    4.683   Probe dummy af driver
+    4.683 K230
+    4.683   find sensor(ov5647_csi0) on csi0
+    4.683 K230
+    4.683   Probe dummy af driver
+    4.683 K230
+    4.683   find sensor(ov5647_csi2) on csi2
+    4.687 K230
+    4.687   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+    4.687 K230
+    4.687   <gnne> gnne_device_init done.
+    4.687 K230
+    4.687 K230
+    4.687 K230
+    4.687   #############SDK VERSION######################################
+    4.687 K230
+    4.687   SDK   : unknown-20261111-235801--e26d63572397-4162ec7
+    4.687 K230
+    4.687   nncase: 2.11.0
+    4.687 K230
+    4.687   ##############################################################
+    4.696 BL616
+    4.696   bouffalolab />link rx: $0,READY;b=4374*37
+    4.696 K230
+    4.696   msh />leakcam: start: t 324 ms, heap +0 B
+    4.696 K230
+    4.696   leakcam: version 0.6+g93e689f-dirty-202611112355
+    4.696 K230
+    4.696   leakcam: battery 4374 mV: t 325 ms, heap +0 B
+    4.702 BL616
+    4.702   pt_uart frame 0,ACK,0
+    4.702 BL616
+    4.702   sent frame
+    4.702 BL616
+    4.702   bouffalolab />
+    4.702 BL616
+    4.702   bouffalolab />pt_uart frame 0,WAKE,setup,0,-1,0,-1,-1
+    4.702 BL616
+    4.702   sent frame
+    4.702 BL616
+    4.702   bouffalolab />
+    4.703 BL616
+    4.703   bouffalolab />link rx: $0,ACK,0;b=4374*2F
+    4.703 K230
+    4.703   leakcam: WAKE setup: t 333 ms, heap +0 B
+    4.707 BL616
+    4.707   pt_off
+    5.014 BL616
+    5.014   OK: 3V3 gone 6 ms after K230_PWR low (expected 56-82 ms through RD1/RD2).
+    5.014 BL616
+    5.014   bouffalolab />
+    6.216 BL616
+    6.216   bouffalolab />pt_uart on
+    6.216 BL616
+    6.216   3V3 is off: pt_on first (the link pins are pulled up to the K230's 3V3)
+    6.216 BL616
+    6.216   bouffalolab />
+    6.523 BL616
+    6.523   bouffalolab />pt_boot1 low
+    6.523 BL616
+    6.523   K230 BOOT1  : IO27 low (NAND boot); the ROM reads it at reset (pt_hold, pt_run)
+    6.523 BL616
+    6.523   bouffalolab />
+    6.832 BL616
+    6.832   bouffalolab />pt_on
+    6.832 BL616
+    6.832   OK: 3V3 up 1.721 ms after K230_PWR (expected ~3 ms). K230 held in reset.
+    6.832 BL616
+    6.832     Now measure 0V8, 3V3, 1V8, 1V1 (power_check.py flashed), then pt_run.
+    6.832 BL616
+    6.832   bouffalolab />
+    8.852 BL616
+    8.852   bouffalolab />pt_run
+    8.852 BL616
+    8.852   K230 reset released. With a blank NAND its ROM enumerates on USB-C 1 within ~2 s:
+    8.852 BL616
+    8.852     lsusb | grep 29f1:0230      (Windows: Device Manager, 'K230 USB Boot Device')
+    8.852 BL616
+    8.852   That proves 0V8, 1V1, 1V8 and 3V3 together. pt_hold puts it back in reset.
+    8.852 BL616
+    8.852   bouffalolab />
+    8.927 K230
+    8.927   leakcam: relay: USB relay on /dev/ttyGS0: t 333 ms, heap +0 B
+    8.927 K230
+    8.927 K230
+    8.927   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 11 2026 - 23:55:29 +0000)
+    8.936 K230
+    8.936   00000000: PMU Major Msg: End of CA training
+    8.936 K230
+    8.936   00000000: PMU Major Msg: End of initialization
+    8.936 K230
+    8.936   00000000: PMU Major Msg: End of read enable training
+    8.936 K230
+    8.936   00000000: PMU Major Msg: End of fine write leveling
+    8.936 K230
+    8.936   00000000: PMU Major Msg: End of read dq deskew training
+    8.937 K230
+    8.937   00000000: PMU Major Msg: End of MPR read delay center optimization
+    8.937 K230
+    8.937   00000000: PMU Major Msg: End of Write leveling coarse delay
+    8.937 K230
+    8.937   00000000: PMU Major Msg: End of write delay center optimization
+    8.937 K230
+    8.937   00000000: PMU Major Msg: End of read delay center optimization
+    8.937 K230
+    8.937   00000000: PMU Major Msg: End of max read latency training
+    8.937 K230
+    8.937   00000000: PMU Major Msg: Firmware run has completed
+    8.957 K230
+    8.957   dbyte0 add =9a040100 value =11
+    8.957 K230
+    8.957   dbyte0 add =9a040500 value =13
+    8.957 K230
+    8.957   dbyte0 add =9a040900 value =13
+    8.957 K230
+    8.957   dbyte0 add =9a040d00 value =13
+    8.957 K230
+    8.957   dbyte0 add =9a041100 value =13
+    8.957 K230
+    8.957   dbyte0 add =9a041500 value =13
+    8.957 K230
+    8.957   dbyte0 add =9a041900 value =13
+    8.957 K230
+    8.957   dbyte0 add =9a041d00 value =14
+    8.957 K230
+    8.957   dbyte1 add =9a044100 value =13
+    8.957 K230
+    8.957   dbyte1 add =9a044500 value =13
+    8.957 K230
+    8.957   dbyte1 add =9a044900 value =13
+    8.957 K230
+    8.957   dbyte1 add =9a044d00 value =12
+    8.957 K230
+    8.957   dbyte1 add =9a045100 value =13
+    8.957 K230
+    8.957   dbyte1 add =9a045500 value =14
+    8.957 K230
+    8.957   dbyte1 add =9a045900 value =13
+    8.957 K230
+    8.957   dbyte1 add =9a045d00 value =13
+    8.957 K230
+    8.957   dbyte2 add =9a048100 value =37
+    8.957 K230
+    8.957   dbyte2 add =9a048500 value =37
+    8.957 K230
+    8.957   dbyte2 add =9a048900 value =37
+    8.957 K230
+    8.957   dbyte2 add =9a048d00 value =37
+    8.957 K230
+    8.957   dbyte2 add =9a049100 value =37
+    8.957 K230
+    8.957   dbyte2 add =9a049500 value =37
+    8.957 K230
+    8.957   dbyte2 add =9a049900 value =37
+    8.957 K230
+    8.957   dbyte2 add =9a049d00 value =37
+    8.957 K230
+    8.957   dbyte3 add =9a04c100 value =37
+    8.957 K230
+    8.957   dbyte3 add =9a04c500 value =37
+    8.957 K230
+    8.957   dbyte3 add =9a04c900 value =37
+    8.957 K230
+    8.957   dbyte3 add =9a04cd00 value =37
+    8.957 K230
+    8.957   dbyte3 add =9a04d100 value =37
+    8.957 K230
+    8.957   dbyte3 add =9a04d500 value =37
+    8.957 K230
+    8.957   dbyte3 add =9a04d900 value =37
+    8.957 K230
+    8.957   dbyte3 add =9a04dd00 value =37
+    8.961 K230
+    8.961   spi_nand spi-flash@0: Winbond SPI NAND was found.
+    8.961 K230
+    8.961   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+    9.066 K230
+    9.066 K230
+    9.066   OpenSBI v0.9
+    9.077 K230
+    9.077   heap: [0x0050c4c0 - 0x00d0c4c0], size 8192 KB
+    9.077 K230
+    9.077   page: [0x00d0c4c8 - 0x039fec00], size 46025 KB
+    9.077 K230
+    9.077 K230
+    9.077    \ | /
+    9.077 K230
+    9.077   - RT -     Thread Smart Operating System
+    9.077 K230
+    9.077    / | \     5.0.0 build Nov 11 2026
+    9.077 K230
+    9.077    2006 - 2020 Copyright by rt-thread team
+    9.082 K230
+    9.082   rtc driver register OK
+    9.098 K230
+    9.098   lwIP-2.1.2 initialized!
+    9.098 K230
+    9.098   [I/I2C] I2C bus [i2c0] registered
+    9.098 K230
+    9.098   [I/I2C] I2C bus [i2c4] registered
+    9.098 K230
+    9.098   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+    9.098   �link_mux: console and /dev/link share uart1
+    9.098 K230
+    9.098   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+    9.098 K230
+    9.098   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+    9.098 K230
+    9.098   os  : system memory alloc 320 bytes
+    9.098 K230
+    9.098   flsh: UFFS consume spare data size 9
+    9.099 K230
+    9.099   os  : system memory alloc 84480 bytes
+    9.099 K230
+    9.099   os  : system memory alloc 53200 bytes
+    9.099 K230
+    9.099   os  : system memory alloc 2048 bytes
+    9.167 K230
+    9.167   tree: DIR 0, FILE 5, DATA 4
+    9.167 K230
+    9.167   os  : system memory alloc 320 bytes
+    9.167 K230
+    9.167   flsh: UFFS consume spare data size 9
+    9.167 K230
+    9.167   os  : system memory alloc 84480 bytes
+    9.167 K230
+    9.167   os  : system memory alloc 53200 bytes
+    9.167 K230
+    9.167   os  : system memory alloc 8192 bytes
+    9.240 K230
+    9.240   tree: DIR 0, FILE 1, DATA 0
+    9.240 K230
+    9.240   /dev/shm file system initialization done!
+    9.240 K230
+    9.240   Probe dummy af driver
+    9.240 K230
+    9.240   find sensor(ov5647_csi0) on csi0
+    9.240 K230
+    9.240   Probe dummy af driver
+    9.240 K230
+    9.240   find sensor(ov5647_csi2) on csi2
+    9.245 K230
+    9.245   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+    9.245 K230
+    9.245   <gnne> gnne_device_init done.
+    9.245 K230
+    9.245 K230
+    9.245 K230
+    9.245   #############SDK VERSION######################################
+    9.245 K230
+    9.245   SDK   : unknown-20261111-235801--e26d63572397-4162ec7
+    9.245 K230
+    9.245   nncase: 2.11.0
+    9.245 K230
+    9.245   ##############################################################
+    9.251 BL616
+    9.251   bouffalolab />link rx: $0,READY;b=4375*30
+    9.252 K230
+    9.252   msh />leakcam: start: t 323 ms, heap +0 B
+    9.252 K230
+    9.252   leakcam: version 0.6+g93e689f-dirty-202611112355
+    9.252 K230
+    9.252   leakcam: battery 4375 mV: t 324 ms, heap +0 B
+    9.258 BL616
+    9.258   pt_uart frame 0,ACK,0
+    9.259 BL616
+    9.259   sent frame
+    9.259 BL616
+    9.259   bouffalolab />
+    9.259 BL616
+    9.259   bouffalolab />pt_uart frame 0,WAKE,setup,0,-1,0,-1,-1
+    9.259 BL616
+    9.259   sent frame
+    9.259 BL616
+    9.259   bouffalolab />
+    9.259 BL616
+    9.259   bouffalolab />link rx: $0,ACK,0;b=4375*28
+    9.259 K230
+    9.259   leakcam: WAKE setup: t 332 ms, heap +0 B
+    9.263 BL616
+    9.263   pt_off
+    9.581 BL616
+    9.581   OK: 3V3 gone 16 ms after K230_PWR low (expected 56-82 ms through RD1/RD2).
+    9.581 BL616
+    9.581   bouffalolab />
+   10.766 BL616
+   10.766   bouffalolab />pt_uart on
+   10.767 BL616
+   10.767   3V3 is off: pt_on first (the link pins are pulled up to the K230's 3V3)
+   10.767 BL616
+   10.767   bouffalolab />
+   11.077 BL616
+   11.077   bouffalolab />pt_boot1 low
+   11.077 BL616
+   11.077   K230 BOOT1  : IO27 low (NAND boot); the ROM reads it at reset (pt_hold, pt_run)
+   11.077 BL616
+   11.077   bouffalolab />
+   11.385 BL616
+   11.385   bouffalolab />pt_on
+   11.385 BL616
+   11.385   OK: 3V3 up 1.718 ms after K230_PWR (expected ~3 ms). K230 held in reset.
+   11.385 BL616
+   11.385     Now measure 0V8, 3V3, 1V8, 1V1 (power_check.py flashed), then pt_run.
+   11.385 BL616
+   11.385   bouffalolab />
+   13.401 BL616
+   13.401   bouffalolab />pt_run
+   13.402 BL616
+   13.402   K230 reset released. With a blank NAND its ROM enumerates on USB-C 1 within ~2 s:
+   13.402 BL616
+   13.402     lsusb | grep 29f1:0230      (Windows: Device Manager, 'K230 USB Boot Device')
+   13.402 BL616
+   13.402   That proves 0V8, 1V1, 1V8 and 3V3 together. pt_hold puts it back in reset.
+   13.402 BL616
+   13.402   bouffalolab />
+   13.478 K230
+   13.478   leakcam: relay: USB relay on /dev/ttyGS0: t 332 ms, heap +0 B
+   13.478 K230
+   13.478 K230
+   13.478   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 11 2026 - 23:55:29 +0000)
+   13.485 K230
+   13.485   00000000: PMU Major Msg: End of CA training
+   13.486 K230
+   13.486   00000000: PMU Major Msg: End of initialization
+   13.486 K230
+   13.486   00000000: PMU Major Msg: End of read enable training
+   13.486 K230
+   13.486   00000000: PMU Major Msg: End of fine write leveling
+   13.486 K230
+   13.486   00000000: PMU Major Msg: End of read dq deskew training
+   13.486 K230
+   13.486   00000000: PMU Major Msg: End of MPR read delay center optimization
+   13.486 K230
+   13.486   00000000: PMU Major Msg: End of Write leveling coarse delay
+   13.486 K230
+   13.486   00000000: PMU Major Msg: End of write delay center optimization
+   13.486 K230
+   13.486   00000000: PMU Major Msg: End of read delay center optimization
+   13.486 K230
+   13.486   00000000: PMU Major Msg: End of max read latency training
+   13.486 K230
+   13.486   00000000: PMU Major Msg: Firmware run has completed
+   13.507 K230
+   13.507   dbyte0 add =9a040100 value =12
+   13.507 K230
+   13.507   dbyte0 add =9a040500 value =13
+   13.507 K230
+   13.507   dbyte0 add =9a040900 value =13
+   13.507 K230
+   13.507   dbyte0 add =9a040d00 value =13
+   13.507 K230
+   13.507   dbyte0 add =9a041100 value =13
+   13.507 K230
+   13.507   dbyte0 add =9a041500 value =13
+   13.507 K230
+   13.507   dbyte0 add =9a041900 value =13
+   13.507 K230
+   13.507   dbyte0 add =9a041d00 value =14
+   13.507 K230
+   13.507   dbyte1 add =9a044100 value =14
+   13.507 K230
+   13.507   dbyte1 add =9a044500 value =13
+   13.507 K230
+   13.507   dbyte1 add =9a044900 value =14
+   13.507 K230
+   13.507   dbyte1 add =9a044d00 value =13
+   13.507 K230
+   13.507   dbyte1 add =9a045100 value =13
+   13.507 K230
+   13.507   dbyte1 add =9a045500 value =13
+   13.507 K230
+   13.507   dbyte1 add =9a045900 value =13
+   13.507 K230
+   13.507   dbyte1 add =9a045d00 value =13
+   13.507 K230
+   13.507   dbyte2 add =9a048100 value =37
+   13.507 K230
+   13.507   dbyte2 add =9a048500 value =37
+   13.507 K230
+   13.507   dbyte2 add =9a048900 value =37
+   13.507 K230
+   13.507   dbyte2 add =9a048d00 value =37
+   13.507 K230
+   13.507   dbyte2 add =9a049100 value =37
+   13.507 K230
+   13.507   dbyte2 add =9a049500 value =37
+   13.507 K230
+   13.507   dbyte2 add =9a049900 value =37
+   13.507 K230
+   13.507   dbyte2 add =9a049d00 value =37
+   13.507 K230
+   13.507   dbyte3 add =9a04c100 value =37
+   13.507 K230
+   13.507   dbyte3 add =9a04c500 value =37
+   13.507 K230
+   13.507   dbyte3 add =9a04c900 value =37
+   13.507 K230
+   13.507   dbyte3 add =9a04cd00 value =37
+   13.507 K230
+   13.507   dbyte3 add =9a04d100 value =37
+   13.507 K230
+   13.507   dbyte3 add =9a04d500 value =37
+   13.507 K230
+   13.507   dbyte3 add =9a04d900 value =37
+   13.507 K230
+   13.507   dbyte3 add =9a04dd00 value =37
+   13.511 K230
+   13.511   spi_nand spi-flash@0: Winbond SPI NAND was found.
+   13.511 K230
+   13.511   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+   13.616 K230
+   13.616 K230
+   13.616   OpenSBI v0.9
+   13.626 K230
+   13.626   heap: [0x0050c4c0 - 0x00d0c4c0], size 8192 KB
+   13.627 K230
+   13.627   page: [0x00d0c4c8 - 0x039fec00], size 46025 KB
+   13.627 K230
+   13.627 K230
+   13.627    \ | /
+   13.627 K230
+   13.627   - RT -     Thread Smart Operating System
+   13.627 K230
+   13.627    / | \     5.0.0 build Nov 11 2026
+   13.627 K230
+   13.627    2006 - 2020 Copyright by rt-thread team
+   13.631 K230
+   13.631   rtc driver register OK
+   13.649 K230
+   13.649   lwIP-2.1.2 initialized!
+   13.649 K230
+   13.649   [I/I2C] I2C bus [i2c0] registered
+   13.649 K230
+   13.649   [I/I2C] I2C bus [i2c4] registered
+   13.649 K230
+   13.649   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+   13.649   �link_mux: console and /dev/link share uart1
+   13.649 K230
+   13.649   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+   13.649 K230
+   13.649   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+   13.649 K230
+   13.649   os  : system memory alloc 320 bytes
+   13.649 K230
+   13.649   flsh: UFFS consume spare data size 9
+   13.649 K230
+   13.649   os  : system memory alloc 84480 bytes
+   13.649 K230
+   13.649   os  : system memory alloc 53200 bytes
+   13.649 K230
+   13.649   os  : system memory alloc 2048 bytes
+   13.717 K230
+   13.717   tree: DIR 0, FILE 5, DATA 4
+   13.717 K230
+   13.717   os  : system memory alloc 320 bytes
+   13.717 K230
+   13.717   flsh: UFFS consume spare data size 9
+   13.717 K230
+   13.717   os  : system memory alloc 84480 bytes
+   13.717 K230
+   13.717   os  : system memory alloc 53200 bytes
+   13.717 K230
+   13.717   os  : system memory alloc 8192 bytes
+   13.789 K230
+   13.789   tree: DIR 0, FILE 1, DATA 0
+   13.789 K230
+   13.789   /dev/shm file system initialization done!
+   13.789 K230
+   13.789   Probe dummy af driver
+   13.789 K230
+   13.789   find sensor(ov5647_csi0) on csi0
+   13.789 K230
+   13.789   Probe dummy af driver
+   13.789 K230
+   13.789   find sensor(ov5647_csi2) on csi2
+   13.793 K230
+   13.793   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+   13.794 K230
+   13.794   <gnne> gnne_device_init done.
+   13.794 K230
+   13.794 K230
+   13.794 K230
+   13.794   #############SDK VERSION######################################
+   13.794 K230
+   13.794   SDK   : unknown-20261111-235801--e26d63572397-4162ec7
+   13.794 K230
+   13.794   nncase: 2.11.0
+   13.794 K230
+   13.794   ##############################################################
+   13.801 BL616
+   13.801   bouffalolab />link rx: $0,READY;b=4376*39
+   13.802 K230
+   13.802   msh />leakcam: start: t 323 ms, heap +0 B
+   13.802 K230
+   13.802   leakcam: version 0.6+g93e689f-dirty-202611112355
+   13.802 K230
+   13.802   leakcam: battery 4376 mV: t 324 ms, heap +0 B
+   13.808 BL616
+   13.808   pt_uart frame 0,ACK,0
+   13.808 BL616
+   13.808   sent frame
+   13.808 BL616
+   13.808   bouffalolab />
+   13.808 BL616
+   13.808   bouffalolab />pt_uart frame 0,WAKE,setup,0,-1,0,-1,-1
+   13.808 BL616
+   13.808   sent frame
+   13.808 BL616
+   13.808   bouffalolab />
+   13.808 BL616
+   13.808   bouffalolab />link rx: $0,ACK,0;b=4376*21
+   13.808 K230
+   13.808   leakcam: WAKE setup: t 332 ms, heap +0 B
+   13.813 BL616
+   13.813   pt_off
+   14.131 BL616
+   14.131   OK: 3V3 gone 16 ms after K230_PWR low (expected 56-82 ms through RD1/RD2).
+   14.131 BL616
+   14.131   bouffalolab />
+   15.333 BL616
+   15.333   bouffalolab />pt_uart on
+   15.334 BL616
+   15.334   3V3 is off: pt_on first (the link pins are pulled up to the K230's 3V3)
+   15.334 BL616
+   15.334   bouffalolab />
+   15.644 BL616
+   15.644   bouffalolab />pt_boot1 low
+   15.644 BL616
+   15.644   K230 BOOT1  : IO27 low (NAND boot); the ROM reads it at reset (pt_hold, pt_run)
+   15.644 BL616
+   15.644   bouffalolab />
+   15.951 BL616
+   15.951   bouffalolab />pt_on
+   15.951 BL616
+   15.951   OK: 3V3 up 1.719 ms after K230_PWR (expected ~3 ms). K230 held in reset.
+   15.951 BL616
+   15.951     Now measure 0V8, 3V3, 1V8, 1V1 (power_check.py flashed), then pt_run.
+   15.951 BL616
+   15.951   bouffalolab />
+   17.966 BL616
+   17.966   bouffalolab />pt_run
+   17.966 BL616
+   17.966   K230 reset released. With a blank NAND its ROM enumerates on USB-C 1 within ~2 s:
+   17.966 BL616
+   17.966     lsusb | grep 29f1:0230      (Windows: Device Manager, 'K230 USB Boot Device')
+   17.966 BL616
+   17.966   That proves 0V8, 1V1, 1V8 and 3V3 together. pt_hold puts it back in reset.
+   17.966 BL616
+   17.966   bouffalolab />
+   18.042 K230
+   18.042   leakcam: relay: USB relay on /dev/ttyGS0: t 332 ms, heap +0 B
+   18.042 K230
+   18.042 K230
+   18.042   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 11 2026 - 23:55:29 +0000)
    18.049 K230
-   18.049   heap: [0x004f84c0 - 0x00cf84c0], size 8192 KB
-   18.049 K230
-   18.049   page: [0x00cf84c8 - 0x039fec00], size 46105 KB
-   18.049 K230
-   18.049 K230
-   18.049    \ | /
+   18.049   00000000: PMU Major Msg: End of CA training
    18.050 K230
-   18.050   - RT -     Thread Smart Operating System
+   18.050   00000000: PMU Major Msg: End of initialization
    18.050 K230
-   18.050    / | \     5.0.0 build Nov  5 2026
+   18.050   00000000: PMU Major Msg: End of read enable training
    18.050 K230
-   18.050    2006 - 2020 Copyright by rt-thread team
-   18.055 K230
-   18.055   rtc driver register OK
+   18.050   00000000: PMU Major Msg: End of fine write leveling
+   18.050 K230
+   18.050   00000000: PMU Major Msg: End of read dq deskew training
+   18.050 K230
+   18.050   00000000: PMU Major Msg: End of MPR read delay center optimization
+   18.050 K230
+   18.050   00000000: PMU Major Msg: End of Write leveling coarse delay
+   18.050 K230
+   18.050   00000000: PMU Major Msg: End of write delay center optimization
+   18.050 K230
+   18.050   00000000: PMU Major Msg: End of read delay center optimization
+   18.050 K230
+   18.050   00000000: PMU Major Msg: End of max read latency training
+   18.050 K230
+   18.050   00000000: PMU Major Msg: Firmware run has completed
    18.071 K230
-   18.071   lwIP-2.1.2 initialized!
+   18.071   dbyte0 add =9a040100 value =12
    18.071 K230
-   18.071   [I/I2C] I2C bus [i2c0] registered
+   18.071   dbyte0 add =9a040500 value =13
    18.071 K230
-   18.071   [I/I2C] I2C bus [i2c4] registered
+   18.071   dbyte0 add =9a040900 value =13
    18.071 K230
-   18.071   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
-   18.071   �link_mux: console and /dev/link share uart1
+   18.071   dbyte0 add =9a040d00 value =13
    18.071 K230
-   18.071   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+   18.071   dbyte0 add =9a041100 value =13
    18.071 K230
-   18.071   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
-   18.072 K230
-   18.072   os  : system memory alloc 320 bytes
-   18.072 K230
-   18.072   flsh: UFFS consume spare data size 9
-   18.072 K230
-   18.072   os  : system memory alloc 84480 bytes
-   18.072 K230
-   18.072   os  : system memory alloc 53200 bytes
-   18.072 K230
-   18.072   os  : system memory alloc 2048 bytes
-   18.139 K230
-   18.139   tree: DIR 0, FILE 5, DATA 4
-   18.140 K230
-   18.140   os  : system memory alloc 320 bytes
-   18.140 K230
-   18.140   flsh: UFFS consume spare data size 9
-   18.140 K230
-   18.140   os  : system memory alloc 84480 bytes
-   18.140 K230
-   18.140   os  : system memory alloc 53200 bytes
-   18.140 K230
-   18.140   os  : system memory alloc 8192 bytes
-   18.230 K230
-   18.230   tree: DIR 1, FILE 2, DATA 0
-   18.231 K230
-   18.231   /dev/shm file system initialization done!
-   18.231 K230
-   18.231   Can't find sensor on csi0
-   18.236 K230
-   18.236   Can't find sensor on csi2
-   18.236 K230
-   18.236   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
-   18.237 K230
-   18.237   <gnne> gnne_device_init done.
-   18.237 K230
-   18.237 K230
-   18.241 K230
-   18.241   #############SDK VERSION######################################
-   18.242 K230
-   18.242   SDK   : unknown-20261105-202455--402980114adb-4162ec7
-   18.242 K230
-   18.242   nncase: 2.11.0
-   18.242 K230
-   18.242   ##############################################################
-   18.255 BL616
-   18.255   bouffalolab />link rx: $0,READY*23
-   18.256 K230
-   18.256   msh />leakcam: start: t 352 ms, heap +0 B
-   18.262 BL616
-   18.262   pt_uart frame 0,ACK,0
-   18.262 BL616
-   18.262   sent frame
-   18.262 BL616
-   18.262   bouffalolab />
-   18.262 BL616
-   18.262   bouffalolab />pt_uart frame 0,WAKE,setup,0,-1,0,-1,-1
-   18.262 BL616
-   18.262   sent frame
-   18.262 BL616
-   18.262   bouffalolab />
-   18.262 BL616
-   18.262   bouffalolab />link rx: $0,ACK,0*01
-   18.262 K230
-   18.262   leakcam: WAKE setup: t 359 ms, heap +0 B
-   18.267 BL616
-   18.267   pt_off
-   18.577 BL616
-   18.577   OK: 3V3 gone 10 ms after K230_PWR low (expected 56-82 ms through RD1/RD2).
-   18.578 BL616
-   18.578   bouffalolab />
-   19.773 BL616
-   19.773   bouffalolab />pt_uart on
-   19.773 BL616
-   19.773   3V3 is off: pt_on first (the link pins are pulled up to the K230's 3V3)
-   19.773 BL616
-   19.773   bouffalolab />
-   20.082 BL616
-   20.082   bouffalolab />pt_boot1 low
-   20.082 BL616
-   20.082   K230 BOOT1  : IO27 low (NAND boot); the ROM reads it at reset (pt_hold, pt_run)
-   20.082 BL616
-   20.082   bouffalolab />
-   20.389 BL616
-   20.389   bouffalolab />pt_on
-   20.389 BL616
-   20.389   OK: 3V3 up 1.646 ms after K230_PWR (expected ~3 ms). K230 held in reset.
-   20.389 BL616
-   20.389     Now measure 0V8, 3V3, 1V8, 1V1 (power_check.py flashed), then pt_run.
-   20.389 BL616
-   20.389   bouffalolab />
-   22.394 BL616
-   22.394   bouffalolab />pt_run
-   22.394 BL616
-   22.394   K230 reset released. With a blank NAND its ROM enumerates on USB-C 1 within ~2 s:
-   22.394 BL616
-   22.394     lsusb | grep 29f1:0230      (Windows: Device Manager, 'K230 USB Boot Device')
-   22.394 BL616
-   22.394   That proves 0V8, 1V1, 1V8 and 3V3 together. pt_hold puts it back in reset.
-   22.394 BL616
-   22.394   bouffalolab />
-   22.469 K230
-   22.469   leakcam: setup: USB relay on /dev/ttyGS0: t 359 ms, heap +0 B
-   22.469 K230
-   22.469 K230
-   22.469   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 05 2026 - 20:25:12 +0000)
-   22.478 K230
-   22.478   00000000: PMU Major Msg: End of CA training
-   22.478 K230
-   22.478   00000000: PMU Major Msg: End of initialization
-   22.478 K230
-   22.478   00000000: PMU Major Msg: End of read enable training
-   22.478 K230
-   22.478   00000000: PMU Major Msg: End of fine write leveling
-   22.478 K230
-   22.478   00000000: PMU Major Msg: End of read dq deskew training
-   22.478 K230
-   22.478   00000000: PMU Major Msg: End of MPR read delay center optimization
-   22.478 K230
-   22.478   00000000: PMU Major Msg: End of Write leveling coarse delay
-   22.478 K230
-   22.478   00000000: PMU Major Msg: End of write delay center optimization
-   22.478 K230
-   22.478   00000000: PMU Major Msg: End of read delay center optimization
-   22.478 K230
-   22.478   00000000: PMU Major Msg: End of max read latency training
-   22.478 K230
-   22.478   00000000: PMU Major Msg: Firmware run has completed
-   22.499 K230
-   22.499   dbyte0 add =9a040100 value =11
-   22.499 K230
-   22.499   dbyte0 add =9a040500 value =13
-   22.499 K230
-   22.499   dbyte0 add =9a040900 value =13
-   22.499 K230
-   22.499   dbyte0 add =9a040d00 value =12
-   22.499 K230
-   22.499   dbyte0 add =9a041100 value =13
-   22.499 K230
-   22.499   dbyte0 add =9a041500 value =13
-   22.499 K230
-   22.499   dbyte0 add =9a041900 value =13
-   22.499 K230
-   22.499   dbyte0 add =9a041d00 value =14
-   22.499 K230
-   22.499   dbyte1 add =9a044100 value =14
-   22.499 K230
-   22.499   dbyte1 add =9a044500 value =13
-   22.499 K230
-   22.499   dbyte1 add =9a044900 value =14
-   22.499 K230
-   22.499   dbyte1 add =9a044d00 value =13
-   22.499 K230
-   22.499   dbyte1 add =9a045100 value =12
-   22.499 K230
-   22.499   dbyte1 add =9a045500 value =14
-   22.499 K230
-   22.499   dbyte1 add =9a045900 value =13
-   22.499 K230
-   22.499   dbyte1 add =9a045d00 value =13
-   22.499 K230
-   22.499   dbyte2 add =9a048100 value =37
-   22.499 K230
-   22.499   dbyte2 add =9a048500 value =37
-   22.499 K230
-   22.499   dbyte2 add =9a048900 value =37
-   22.499 K230
-   22.499   dbyte2 add =9a048d00 value =37
-   22.499 K230
-   22.499   dbyte2 add =9a049100 value =37
-   22.499 K230
-   22.499   dbyte2 add =9a049500 value =37
-   22.499 K230
-   22.499   dbyte2 add =9a049900 value =37
-   22.499 K230
-   22.499   dbyte2 add =9a049d00 value =37
-   22.499 K230
-   22.499   dbyte3 add =9a04c100 value =37
-   22.499 K230
-   22.499   dbyte3 add =9a04c500 value =37
-   22.499 K230
-   22.499   dbyte3 add =9a04c900 value =37
-   22.499 K230
-   22.499   dbyte3 add =9a04cd00 value =37
-   22.499 K230
-   22.499   dbyte3 add =9a04d100 value =37
-   22.499 K230
-   22.499   dbyte3 add =9a04d500 value =37
-   22.499 K230
-   22.499   dbyte3 add =9a04d900 value =37
-   22.499 K230
-   22.499   dbyte3 add =9a04dd00 value =37
-   22.503 K230
-   22.503   spi_nand spi-flash@0: Winbond SPI NAND was found.
-   22.503 K230
-   22.503   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
-   22.605 K230
-   22.605 K230
-   22.605   OpenSBI v0.9
-   22.616 K230
-   22.616   heap: [0x004f84c0 - 0x00cf84c0], size 8192 KB
-   22.616 K230
-   22.616   page: [0x00cf84c8 - 0x039fec00], size 46105 KB
-   22.616 K230
-   22.616 K230
-   22.616    \ | /
-   22.616 K230
-   22.616   - RT -     Thread Smart Operating System
-   22.616 K230
-   22.616    / | \     5.0.0 build Nov  5 2026
-   22.616 K230
-   22.616    2006 - 2020 Copyright by rt-thread team
-   22.622 K230
-   22.622   rtc driver register OK
-   22.638 K230
-   22.638   lwIP-2.1.2 initialized!
-   22.638 K230
-   22.638   [I/I2C] I2C bus [i2c0] registered
-   22.638 K230
-   22.638   [I/I2C] I2C bus [i2c4] registered
-   22.638 K230
-   22.638   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
-   22.638   �link_mux: console and /dev/link share uart1
-   22.638 K230
-   22.638   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
-   22.638 K230
-   22.638   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
-   22.638 K230
-   22.638   os  : system memory alloc 320 bytes
-   22.638 K230
-   22.638   flsh: UFFS consume spare data size 9
-   22.638 K230
-   22.638   os  : system memory alloc 84480 bytes
-   22.638 K230
-   22.638   os  : system memory alloc 53200 bytes
-   22.638 K230
-   22.638   os  : system memory alloc 2048 bytes
-   22.706 K230
-   22.706   tree: DIR 0, FILE 5, DATA 4
-   22.706 K230
-   22.706   os  : system memory alloc 320 bytes
-   22.706 K230
-   22.706   flsh: UFFS consume spare data size 9
-   22.706 K230
-   22.706   os  : system memory alloc 84480 bytes
-   22.706 K230
-   22.706   os  : system memory alloc 53200 bytes
-   22.706 K230
-   22.706   os  : system memory alloc 8192 bytes
-   22.797 K230
-   22.797   tree: DIR 1, FILE 2, DATA 0
-   22.797 K230
-   22.797   /dev/shm file system initialization done!
-   22.797 K230
-   22.797   Can't find sensor on csi0
-   22.803 K230
-   22.803   Can't find sensor on csi2
-   22.803 K230
-   22.803   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
-   22.803 K230
-   22.803   <gnne> gnne_device_init done.
-   22.803 K230
-   22.803 K230
-   22.803 K230
-   22.803   #############SDK VERSION######################################
-   22.808 K230
-   22.808   SDK   : unknown-20261105-202455--402980114adb-4162ec7
-   22.808 K230
-   22.808   nncase: 2.11.0
-   22.808 K230
-   22.808   ##############################################################
-   22.822 BL616
-   22.822   bouffalolab />link rx: $0,READY*23
-   22.822 K230
-   22.822   msh />leakcam: start: t 352 ms, heap +0 B
-   22.829 BL616
-   22.829   pt_uart frame 0,ACK,0
-   22.829 BL616
-   22.829   sent frame
-   22.829 BL616
-   22.829   bouffalolab />
-   22.829 BL616
-   22.829   bouffalolab />pt_uart frame 0,WAKE,setup,0,-1,0,-1,-1
-   22.829 BL616
-   22.829   sent frame
-   22.829 BL616
-   22.829   bouffalolab />
-   22.829 BL616
-   22.829   bouffalolab />link rx: $0,ACK,0*01
-   22.829 K230
-   22.829   leakcam: WAKE setup: t 360 ms, heap +0 B
-   22.834 K230
-   22.834   leakcam: setup: USB relay on /dev/ttyGS0: t 360 ms, heap +0 B
-   22.834 K230
-   22.834   link_stat
-   22.834 K230
-   22.834   link_stat: rx 53 text 11 text_drop 0 frames 2 frame_drop 0 paused 0 kcon_free 2048
-   22.834 K230
-   22.834   link_stat: during a bench: console output held 0, dropped (hold full) 0; link frames dropped 0
-   22.834 K230
-   22.834   link_stat: uart1 errors framing 0 parity 0 overrun 0, bytes dropped 0, last LSR 0x00, fifo bytes 53
-   22.834 K230
-   22.834   link_stat: uart1 resets 2, irqs 4 (rx data 1, char timeout 3, line status 0, other 0)
-   22.834 K230
-   22.834   link_stat: /dev/link fops attached, waiting 0 B, opens 1, polls 6 (data 2), reads 42 (42 B)
-   22.834 K230
-   22.834   msh />
-   23.011 K230
-   23.011   msh />usb disconnect
-   23.066 K230
-   23.066   usb disconnect
-   28.025 > 'chip_temp' (0.07 s)
-   28.025   chip_temp
-   28.025   chip temperature: 49.704 C
-   28.025   msh />
-   28.025   msh />
-   28.081 > 'free' (0.06 s)
-   28.081   free
-   28.081   memheap               pool size  max used size available size
-   28.081   -------------------- ---------- ------------- --------------
-   28.081   heap                 8388608    1391232       7007360
-   28.081   msh />
-   28.081   msh />
-   28.137 > 'adc probe adc' (0.06 s)
-   28.137   adc probe adc
-   28.137   probe adc success 
-   28.137   msh />
-   28.137   msh />
-   28.193 > 'adc read 1' (0.06 s)
-   28.193   adc read 1
-   28.193   adc channel 1  read value is 0x00000A4D 
-   28.193   msh />
-   28.193   msh />
-   28.249 > 'adc read 1' (0.06 s)
-   28.249   adc read 1
-   28.249   adc channel 1  read value is 0x00000A50 
-   28.249   msh />
-   28.249   msh />
-   28.304 > 'adc read 1' (0.05 s)
-   28.304   adc read 1
-   28.304   adc channel 1  read value is 0x00000A43 
-   28.304   msh />
-   28.304   msh />
-   28.360 > 'adc read 1' (0.06 s)
-   28.360   adc read 1
-   28.360   adc channel 1  read value is 0x00000A4D 
-   28.360   msh />
-   28.360   msh />
-   28.418 > 'adc read 1' (0.06 s)
-   28.418   adc read 1
-   28.418   adc channel 1  read value is 0x00000A2A 
-   28.418   msh />
-   28.418   msh />
-   28.475 > 'adc read 1' (0.06 s)
-   28.475   adc read 1
-   28.475   adc channel 1  read value is 0x00000A62 
-   28.475   msh />
-   28.475   msh />
-   28.530 > 'adc read 1' (0.05 s)
-   28.530   adc read 1
-   28.530   adc channel 1  read value is 0x00000A41 
-   28.530   msh />
-   28.530   msh />
-   28.586 > 'adc read 1' (0.06 s)
-   28.586   adc read 1
-   28.586   adc channel 1  read value is 0x00000A23 
-   28.586   msh />
-   28.586   msh />
+   18.071   dbyte0 add =9a041500 value =13
+   18.071 K230
+   18.071   dbyte0 add =9a041900 value =13
+   18.071 K230
+   18.071   dbyte0 add =9a041d00 value =14
+   18.071 K230
+   18.071   dbyte1 add =9a044100 value =14
+   18.071 K230
+   18.071   dbyte1 add =9a044500 value =13
+   18.071 K230
+   18.071   dbyte1 add =9a044900 value =14
+   18.071 K230
+   18.071   dbyte1 add =9a044d00 value =12
+   18.071 K230
+   18.071   dbyte1 add =9a045100 value =13
+   18.071 K230
+   18.071   dbyte1 add =9a045500 value =13
+   18.071 K230
+   18.071   dbyte1 add =9a045900 value =13
+   18.071 K230
+   18.071   dbyte1 add =9a045d00 value =13
+   18.071 K230
+   18.071   dbyte2 add =9a048100 value =37
+   18.071 K230
+   18.071   dbyte2 add =9a048500 value =37
+   18.071 K230
+   18.071   dbyte2 add =9a048900 value =37
+   18.071 K230
+   18.071   dbyte2 add =9a048d00 value =37
+   18.071 K230
+   18.071   dbyte2 add =9a049100 value =37
+   18.071 K230
+   18.071   dbyte2 add =9a049500 value =37
+   18.071 K230
+   18.071   dbyte2 add =9a049900 value =37
+   18.071 K230
+   18.071   dbyte2 add =9a049d00 value =37
+   18.071 K230
+   18.071   dbyte3 add =9a04c100 value =37
+   18.071 K230
+   18.071   dbyte3 add =9a04c500 value =37
+   18.071 K230
+   18.071   dbyte3 add =9a04c900 value =37
+   18.071 K230
+   18.071   dbyte3 add =9a04cd00 value =37
+   18.071 K230
+   18.071   dbyte3 add =9a04d100 value =37
+   18.071 K230
+   18.071   dbyte3 add =9a04d500 value =37
+   18.071 K230
+   18.071   dbyte3 add =9a04d900 value =37
+   18.071 K230
+   18.071   dbyte3 add =9a04dd00 value =37
+   18.076 K230
+   18.076   spi_nand spi-flash@0: Winbond SPI NAND was found.
+   18.076 K230
+   18.076   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+   18.180 K230
+   18.180 K230
+   18.180   OpenSBI v0.9
+   18.191 K230
+   18.191   heap: [0x0050c4c0 - 0x00d0c4c0], size 8192 KB
+   18.191 K230
+   18.191   page: [0x00d0c4c8 - 0x039fec00], size 46025 KB
+   18.191 K230
+   18.191 K230
+   18.191    \ | /
+   18.191 K230
+   18.191   - RT -     Thread Smart Operating System
+   18.191 K230
+   18.191    / | \     5.0.0 build Nov 11 2026
+   18.191 K230
+   18.191    2006 - 2020 Copyright by rt-thread team
+   18.197 K230
+   18.197   rtc driver register OK
+   18.213 K230
+   18.213   lwIP-2.1.2 initialized!
+   18.213 K230
+   18.213   [I/I2C] I2C bus [i2c0] registered
+   18.213 K230
+   18.213   [I/I2C] I2C bus [i2c4] registered
+   18.213 K230
+   18.213   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+   18.213   �link_mux: console and /dev/link share uart1
+   18.213 K230
+   18.213   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+   18.213 K230
+   18.213   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+   18.213 K230
+   18.213   os  : system memory alloc 320 bytes
+   18.213 K230
+   18.213   flsh: UFFS consume spare data size 9
+   18.213 K230
+   18.213   os  : system memory alloc 84480 bytes
+   18.213 K230
+   18.213   os  : system memory alloc 53200 bytes
+   18.213 K230
+   18.213   os  : system memory alloc 2048 bytes
+   18.281 K230
+   18.281   tree: DIR 0, FILE 5, DATA 4
+   18.281 K230
+   18.281   os  : system memory alloc 320 bytes
+   18.281 K230
+   18.281   flsh: UFFS consume spare data size 9
+   18.281 K230
+   18.281   os  : system memory alloc 84480 bytes
+   18.281 K230
+   18.281   os  : system memory alloc 53200 bytes
+   18.281 K230
+   18.281   os  : system memory alloc 8192 bytes
+   18.352 K230
+   18.352   tree: DIR 0, FILE 1, DATA 0
+   18.352 K230
+   18.352   /dev/shm file system initialization done!
+   18.352 K230
+   18.352   Probe dummy af driver
+   18.352 K230
+   18.352   find sensor(ov5647_csi0) on csi0
+   18.352 K230
+   18.352   Probe dummy af driver
+   18.352 K230
+   18.352   find sensor(ov5647_csi2) on csi2
+   18.357 K230
+   18.357   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+   18.357 K230
+   18.357   <gnne> gnne_device_init done.
+   18.357 K230
+   18.357 K230
+   18.357 K230
+   18.357   #############SDK VERSION######################################
+   18.357 K230
+   18.357   SDK   : unknown-20261111-235801--e26d63572397-4162ec7
+   18.357 K230
+   18.357   nncase: 2.11.0
+   18.357 K230
+   18.357   ##############################################################
+   18.365 BL616
+   18.365   bouffalolab />link rx: $0,READY;b=4369*01
+   18.365 K230
+   18.365   msh />leakcam: start: t 323 ms, heap +0 B
+   18.365 K230
+   18.365   leakcam: version 0.6+g93e689f-dirty-202611112355
+   18.365 K230
+   18.365   leakcam: battery 4369 mV: t 324 ms, heap +0 B
+   18.372 BL616
+   18.372   pt_uart frame 0,ACK,0
+   18.372 BL616
+   18.372   sent frame
+   18.372 BL616
+   18.372   bouffalolab />
+   18.372 BL616
+   18.372   bouffalolab />pt_uart frame 0,WAKE,setup,0,-1,0,-1,-1
+   18.372 BL616
+   18.372   sent frame
+   18.372 BL616
+   18.372   bouffalolab />
+   18.372 BL616
+   18.372   bouffalolab />link rx: $0,ACK,0;b=4369*19
+   18.372 K230
+   18.372   leakcam: WAKE setup: t 332 ms, heap +0 B
+   18.377 BL616
+   18.377   pt_off
+   18.694 BL616
+   18.694   OK: 3V3 gone 16 ms after K230_PWR low (expected 56-82 ms through RD1/RD2).
+   18.694 BL616
+   18.694   bouffalolab />
+   19.895 BL616
+   19.895   bouffalolab />pt_uart on
+   19.896 BL616
+   19.896   3V3 is off: pt_on first (the link pins are pulled up to the K230's 3V3)
+   19.896 BL616
+   19.896   bouffalolab />
+   20.205 BL616
+   20.205   bouffalolab />pt_boot1 low
+   20.206 BL616
+   20.206   K230 BOOT1  : IO27 low (NAND boot); the ROM reads it at reset (pt_hold, pt_run)
+   20.206 BL616
+   20.206   bouffalolab />
+   20.514 BL616
+   20.514   bouffalolab />pt_on
+   20.515 BL616
+   20.515   OK: 3V3 up 1.720 ms after K230_PWR (expected ~3 ms). K230 held in reset.
+   20.515 BL616
+   20.515     Now measure 0V8, 3V3, 1V8, 1V1 (power_check.py flashed), then pt_run.
+   20.515 BL616
+   20.515   bouffalolab />
+   22.527 BL616
+   22.527   bouffalolab />pt_run
+   22.527 BL616
+   22.527   K230 reset released. With a blank NAND its ROM enumerates on USB-C 1 within ~2 s:
+   22.527 BL616
+   22.527     lsusb | grep 29f1:0230      (Windows: Device Manager, 'K230 USB Boot Device')
+   22.527 BL616
+   22.527   That proves 0V8, 1V1, 1V8 and 3V3 together. pt_hold puts it back in reset.
+   22.527 BL616
+   22.527   bouffalolab />
+   22.603 K230
+   22.603   leakcam: relay: USB relay on /dev/ttyGS0: t 332 ms, heap +0 B
+   22.603 K230
+   22.603 K230
+   22.603   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 11 2026 - 23:55:29 +0000)
+   22.612 K230
+   22.612   00000000: PMU Major Msg: End of CA training
+   22.612 K230
+   22.612   00000000: PMU Major Msg: End of initialization
+   22.612 K230
+   22.612   00000000: PMU Major Msg: End of read enable training
+   22.612 K230
+   22.612   00000000: PMU Major Msg: End of fine write leveling
+   22.612 K230
+   22.612   00000000: PMU Major Msg: End of read dq deskew training
+   22.612 K230
+   22.612   00000000: PMU Major Msg: End of MPR read delay center optimization
+   22.612 K230
+   22.612   00000000: PMU Major Msg: End of Write leveling coarse delay
+   22.612 K230
+   22.612   00000000: PMU Major Msg: End of write delay center optimization
+   22.612 K230
+   22.612   00000000: PMU Major Msg: End of read delay center optimization
+   22.612 K230
+   22.612   00000000: PMU Major Msg: End of max read latency training
+   22.612 K230
+   22.612   00000000: PMU Major Msg: Firmware run has completed
+   22.632 K230
+   22.632   dbyte0 add =9a040100 value =12
+   22.632 K230
+   22.632   dbyte0 add =9a040500 value =13
+   22.632 K230
+   22.632   dbyte0 add =9a040900 value =13
+   22.632 K230
+   22.632   dbyte0 add =9a040d00 value =13
+   22.632 K230
+   22.632   dbyte0 add =9a041100 value =13
+   22.632 K230
+   22.632   dbyte0 add =9a041500 value =13
+   22.632 K230
+   22.632   dbyte0 add =9a041900 value =13
+   22.632 K230
+   22.632   dbyte0 add =9a041d00 value =13
+   22.632 K230
+   22.632   dbyte1 add =9a044100 value =13
+   22.632 K230
+   22.632   dbyte1 add =9a044500 value =13
+   22.632 K230
+   22.632   dbyte1 add =9a044900 value =14
+   22.632 K230
+   22.632   dbyte1 add =9a044d00 value =13
+   22.632 K230
+   22.632   dbyte1 add =9a045100 value =13
+   22.632 K230
+   22.632   dbyte1 add =9a045500 value =14
+   22.632 K230
+   22.632   dbyte1 add =9a045900 value =13
+   22.632 K230
+   22.632   dbyte1 add =9a045d00 value =13
+   22.632 K230
+   22.632   dbyte2 add =9a048100 value =37
+   22.632 K230
+   22.632   dbyte2 add =9a048500 value =37
+   22.632 K230
+   22.632   dbyte2 add =9a048900 value =37
+   22.632 K230
+   22.632   dbyte2 add =9a048d00 value =37
+   22.632 K230
+   22.632   dbyte2 add =9a049100 value =37
+   22.632 K230
+   22.632   dbyte2 add =9a049500 value =37
+   22.632 K230
+   22.632   dbyte2 add =9a049900 value =37
+   22.632 K230
+   22.632   dbyte2 add =9a049d00 value =37
+   22.632 K230
+   22.632   dbyte3 add =9a04c100 value =37
+   22.632 K230
+   22.632   dbyte3 add =9a04c500 value =37
+   22.632 K230
+   22.632   dbyte3 add =9a04c900 value =37
+   22.632 K230
+   22.632   dbyte3 add =9a04cd00 value =37
+   22.632 K230
+   22.632   dbyte3 add =9a04d100 value =37
+   22.632 K230
+   22.632   dbyte3 add =9a04d500 value =37
+   22.632 K230
+   22.632   dbyte3 add =9a04d900 value =37
+   22.632 K230
+   22.632   dbyte3 add =9a04dd00 value =37
+   22.636 K230
+   22.636   spi_nand spi-flash@0: Winbond SPI NAND was found.
+   22.636 K230
+   22.636   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+   22.742 K230
+   22.742 K230
+   22.742   OpenSBI v0.9
+   22.753 K230
+   22.753   heap: [0x0050c4c0 - 0x00d0c4c0], size 8192 KB
+   22.753 K230
+   22.753   page: [0x00d0c4c8 - 0x039fec00], size 46025 KB
+   22.753 K230
+   22.753 K230
+   22.753    \ | /
+   22.753 K230
+   22.753   - RT -     Thread Smart Operating System
+   22.753 K230
+   22.753    / | \     5.0.0 build Nov 11 2026
+   22.753 K230
+   22.753    2006 - 2020 Copyright by rt-thread team
+   22.758 K230
+   22.758   rtc driver register OK
+   22.774 K230
+   22.774   lwIP-2.1.2 initialized!
+   22.774 K230
+   22.774   [I/I2C] I2C bus [i2c0] registered
+   22.774 K230
+   22.774   [I/I2C] I2C bus [i2c4] registered
+   22.774 K230
+   22.774   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+   22.774   �link_mux: console and /dev/link share uart1
+   22.774 K230
+   22.774   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+   22.774 K230
+   22.774   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+   22.774 K230
+   22.774   os  : system memory alloc 320 bytes
+   22.774 K230
+   22.774   flsh: UFFS consume spare data size 9
+   22.774 K230
+   22.774   os  : system memory alloc 84480 bytes
+   22.774 K230
+   22.774   os  : system memory alloc 53200 bytes
+   22.774 K230
+   22.774   os  : system memory alloc 2048 bytes
+   22.843 K230
+   22.843   tree: DIR 0, FILE 5, DATA 4
+   22.843 K230
+   22.843   os  : system memory alloc 320 bytes
+   22.843 K230
+   22.843   flsh: UFFS consume spare data size 9
+   22.843 K230
+   22.843   os  : system memory alloc 84480 bytes
+   22.843 K230
+   22.843   os  : system memory alloc 53200 bytes
+   22.843 K230
+   22.843   os  : system memory alloc 8192 bytes
+   22.915 K230
+   22.915   tree: DIR 0, FILE 1, DATA 0
+   22.915 K230
+   22.915   /dev/shm file system initialization done!
+   22.915 K230
+   22.915   Probe dummy af driver
+   22.915 K230
+   22.915   find sensor(ov5647_csi0) on csi0
+   22.915 K230
+   22.915   Probe dummy af driver
+   22.915 K230
+   22.915   find sensor(ov5647_csi2) on csi2
+   22.919 K230
+   22.919   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+   22.920 K230
+   22.920   <gnne> gnne_device_init done.
+   22.920 K230
+   22.920 K230
+   22.920 K230
+   22.920   #############SDK VERSION######################################
+   22.920 K230
+   22.920   SDK   : unknown-20261111-235801--e26d63572397-4162ec7
+   22.920 K230
+   22.920   nncase: 2.11.0
+   22.920 K230
+   22.920   ##############################################################
+   22.927 BL616
+   22.927   bouffalolab />link rx: $0,READY;b=4369*01
+   22.928 K230
+   22.928   msh />leakcam: start: t 324 ms, heap +0 B
+   22.928 K230
+   22.928   leakcam: version 0.6+g93e689f-dirty-202611112355
+   22.928 K230
+   22.928   leakcam: battery 4369 mV: t 325 ms, heap +0 B
+   22.934 BL616
+   22.934   pt_uart frame 0,ACK,0
+   22.934 BL616
+   22.934   sent frame
+   22.934 BL616
+   22.934   bouffalolab />
+   22.934 BL616
+   22.934   bouffalolab />pt_uart frame 0,WAKE,setup,0,-1,0,-1,-1
+   22.934 BL616
+   22.934   sent frame
+   22.934 BL616
+   22.934   bouffalolab />
+   22.934 BL616
+   22.934   bouffalolab />link rx: $0,ACK,0;b=4369*19
+   22.934 K230
+   22.934   leakcam: WAKE setup: t 332 ms, heap +0 B
+   22.939 K230
+   22.939   leakcam: relay: USB relay on /dev/ttyGS0: t 333 ms, heap +0 B
+   22.939 K230
+   22.939   link_stat
+   22.939 K230
+   22.939   link_stat: rx 53 text 11 text_drop 0 frames 2 frame_drop 0 paused 0 kcon_free 2048
+   22.939 K230
+   22.939   link_stat: during a bench: console output held 0, dropped (hold full) 0; link frames dropped 0
+   22.939 K230
+   22.939   link_stat: uart1 errors framing 0 parity 0 overrun 0, bytes dropped 0, last LSR 0x00, fifo bytes 53
+   22.939 K230
+   22.939   link_stat: uart1 resets 2, irqs 4 (rx data 1, char timeout 3, line status 0, other 0)
+   22.939 K230
+   22.939   link_stat: /dev/link fops attached, waiting 0 B, opens 1, polls 4 (data 2), reads 42 (42 B)
+   22.939 K230
+   22.939   msh />
+   22.959 BL616
+   22.959   link rx: $1,STATUS,0,0.6+g93e689f-dirty-202611112355,318,6717376,6717376,46059520;b=4368*D2
+   22.959 K230
+   22.959   msh />leakcam: job: check: t 356 ms, heap +0 B
+   23.033 K230
+   23.033   leakcam: job: cam0 new: history written: t 431 ms, heap +0 B
+   23.090 K230
+   23.090   leakcam: job: cam1 new: history written: t 487 ms, heap +0 B
+   23.090 K230
+   23.090   leakcam: job: done: t 487 ms, heap +0 B
+   23.131 K230
+   23.131   usb disconnect
+   23.185 K230
+   23.185   usb disconnect
+   23.260 BL616
+   23.260   link rx: $1,STATUS,0,0.6+g93e689f-dirty-202611112355,318,6717376,6717376,46059520;b=4368*D2
+   23.560 BL616
+   23.560   link rx: $1,STATUS,0,0.6+g93e689f-dirty-202611112355,318,6717376,6717376,46059520;b=4368*D2
+   23.860 BL616
+   23.860   link rx: $1,STATUS,0,0.6+g93e689f-dirty-202611112355,318,6717376,6717376,46059520;b=4368*D2
+   24.160 BL616
+   24.160   link rx: $1,STATUS,0,0.6+g93e689f-dirty-202611112355,318,6717376,6717376,46059520;b=4368*D2
+   28.145 > 'chip_temp' (0.07 s)
+   28.145   chip_temp
+   28.145   chip temperature: 35.824 C
+   28.145   msh />
+   28.145   msh />
+   28.201 > 'free' (0.06 s)
+   28.201   free
+   28.201   memheap               pool size  max used size available size
+   28.201   -------------------- ---------- ------------- --------------
+   28.201   heap                 8388608    1748928       6716544
+   28.201   msh />
+   28.201   msh />
+   28.259 > 'adc probe adc' (0.06 s)
+   28.259   adc probe adc
+   28.259   probe adc success 
+   28.259   msh />
+   28.259   msh />
+   28.314 > 'adc read 1' (0.06 s)
+   28.314   adc read 1
+   28.314   adc channel 1  read value is 0x00000D06 
+   28.314   msh />
+   28.314   msh />
+   28.370 > 'adc read 1' (0.06 s)
+   28.370   adc read 1
+   28.370   adc channel 1  read value is 0x00000D3F 
+   28.370   msh />
+   28.370   msh />
+   28.426 > 'adc read 1' (0.06 s)
+   28.426   adc read 1
+   28.426   adc channel 1  read value is 0x00000CE6 
+   28.426   msh />
+   28.426   msh />
+   28.481 > 'adc read 1' (0.05 s)
+   28.481   adc read 1
+   28.481   adc channel 1  read value is 0x00000CE6 
+   28.481   msh />
+   28.481   msh />
+   28.537 > 'adc read 1' (0.06 s)
+   28.537   adc read 1
+   28.537   adc channel 1  read value is 0x00000D43 
+   28.537   msh />
+   28.537   msh />
+   28.594 > 'adc read 1' (0.06 s)
+   28.594   adc read 1
+   28.594   adc channel 1  read value is 0x00000D19 
+   28.594   msh />
+   28.594   msh />
+   28.650 > 'adc read 1' (0.06 s)
+   28.650   adc read 1
+   28.650   adc channel 1  read value is 0x00000D16 
+   28.650   msh />
+   28.650   msh />
+   28.706 > 'adc read 1' (0.06 s)
+   28.706   adc read 1
+   28.706   adc channel 1  read value is 0x00000D1C 
+   28.706   msh />
+   28.706   msh />

@@ -86,22 +86,42 @@ def xhci_reset():
         time.sleep(2)
 
 
-def bl(c, secs=1.5, until=None):
+_bl_seen = [0.0]                         # when this process last opened the BL616's port
+
+
+def bl(c, secs=1.5, until=None, _retry=True):
     for i in range(150):                # 30 s, polled every 0.2 s (no fixed waits, user 2026-11-09)
         try:
             fd = openp(BL_PORT)
+            _bl_seen[0] = time.time()
             break
         except OSError:
-            if i == 50 and "hub_ext_port_status failed" in subprocess.run(
-                    ["sudo", "-n", "dmesg"], capture_output=True, text=True).stdout[-2000:]:
-                xhci_reset()        # only the controller's fault: a sleeping BL616 has no port either
+            # the controller's fault, not a sleeping BL616 (which has no port either): its hub error in the log, or a
+            # port this process had less than a minute ago (a reset, a wake from HBN) still gone after 10 s - the VM
+            # missed the re-enumeration with no error logged (2026-11-10: test124's watchdog reset, test141's wake,
+            # both back at once after the reset)
+            if i == 50 and ("hub_ext_port_status failed" in subprocess.run(
+                    ["sudo", "-n", "dmesg"], capture_output=True, text=True).stdout[-2000:]
+                    or time.time() - _bl_seen[0] < 60 + 10):
+                xhci_reset()
             time.sleep(0.2)
     else:
         log("BL616 port missing")
         return ""
-    if i >= 50:
-        cmd(fd, "", 1)          # the first command after a reconnect got lost once (the erase, 2026-11-06)
-    r = cmd(fd, c, secs, until)
+    try:
+        if i >= 50:
+            cmd(fd, "", 1)      # the first command after a reconnect got lost once (the erase, 2026-11-06)
+        r = cmd(fd, c, secs, until)
+    except OSError:
+        if not _retry:
+            raise
+        # the port went away under the command (a firmware switch right then: ENODEV, test111 2026-11-10): asked
+        # again once it is back, as a missing port is waited for
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+        return bl(c, secs, until, False)
     os.close(fd)
     return r
 
@@ -130,6 +150,28 @@ def k230():
         except OSError:
             time.sleep(1)
     return None
+
+
+def store_open():
+    """The BL616's easyflash (PIN, TLS credentials) open for the provision tools. The setup test bed (build
+    "setup_test") has the product's `provision` command but opens easyflash only with `lp_boot`; after a flash or a
+    reboot `provision pin` / `provision tls` failed there (2026-11-12, test040 --flash: provision_pin took the bed for
+    the product, provision_tls said "built before mTLS?"). The product firmwares open it at boot: nothing to do."""
+    if re.search(r"leakcam-build setup_test", bl("slot", 2, r"leakcam-build \S+|not found")):
+        bl("lp_boot", 30, r"lp: boot done|already")
+
+
+def media_quiet(fd, secs=40):
+    """The K230's cameras, microphone and video buffers to a bench program alone: on the test image leakcam_agent runs
+    the capture hook `leakcam_wake cold` ~23-28 s after every boot (its READY to the BL616 test firmware goes
+    unanswered); a cam_shot / leakcam_stream started meanwhile got "VB is initialized" / "pools failed" (vb_cases.py
+    2026-11-12 01:15, test012 run 2 on 2026-11-11). Stops the agent (no hook later), then waits until no leakcam_wake
+    runs. Returns the seconds waited."""
+    t, prompt = time.time(), r"msh />\s*$"
+    cmd(fd, "killall leakcam_agent", 2, prompt)
+    while time.time() - t < secs and "leakcam_wake" in cmd(fd, "ps", 2, prompt):
+        time.sleep(0.5)
+    return time.time() - t
 
 
 def wifi_credentials():

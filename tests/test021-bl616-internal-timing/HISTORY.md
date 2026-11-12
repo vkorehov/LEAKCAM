@@ -11,6 +11,11 @@ only. The old line (Battery energy):
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 141 s): pass
+
+RTC wake -> main() 17.7 / 17.7 / 17.7 ms; core reset -> main() 8.3 / 8.3 / 8.3 ms; K230_PWR -> 3V3 1.7 / 1.7 / 1.7 ms; AHT20 trigger -> data 36.5 / 36.5 / 36.7 ms (min / median / max of 8 wakes).
+
+
 ### Automated run 2026-10-25 (run.py, 140 s): pass
 
 RTC wake -> main() 17.3 / 17.4 / 17.4 ms; core reset -> main() 8.0 / 8.0 / 8.0 ms; K230_PWR -> 3V3 1.7 / 1.7 / 1.7 ms; AHT20 trigger -> data 36.5 / 36.5 / 36.5 ms (min / median / max of 8 wakes).

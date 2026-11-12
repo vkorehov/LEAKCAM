@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 226 s): pass
+
+white and IR stepped 25 / 50 / 100 %, both 100 % for 2 min: die 36.4 -> 52.4 C.
+
+
 ### Automated run 2026-10-25 (run.py, 227 s): pass
 
 white and IR stepped 25 / 50 / 100 %, both 100 % for 2 min: die 41.6 -> 48.2 C.

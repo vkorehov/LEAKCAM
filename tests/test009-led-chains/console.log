@@ -1,0 +1,1314 @@
+    7.748 boot
+    7.748   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 11 2026 - 20:25:19 +0000)
+    7.748   00000000: PMU Major Msg: End of CA training                                            
+    7.748   00000000: PMU Major Msg: End of initialization                                         
+    7.748   00000000: PMU Major Msg: End of read enable training                                   
+    7.748   00000000: PMU Major Msg: End of fine write leveling                                    
+    7.748   00000000: PMU Major Msg: End of read dq deskew training                                
+    7.748   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+    7.748   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+    7.748   00000000: PMU Major Msg: End of write delay center optimization                        
+    7.748   00000000: PMU Major Msg: End of read delay center optimization                         
+    7.748   00000000: PMU Major Msg: End of max read latency training                              
+    7.748   00000000: PMU Major Msg: Firmware run has completed                                    
+    7.748   dbyte0 add =9a040100 value =11
+    7.748   dbyte0 add =9a040500 value =13
+    7.748   dbyte0 add =9a040900 value =13
+    7.748   dbyte0 add =9a040d00 value =13
+    7.748   dbyte0 add =9a041100 value =13
+    7.748   dbyte0 add =9a041500 value =13
+    7.748   dbyte0 add =9a041900 value =13
+    7.748   dbyte0 add =9a041d00 value =13
+    7.748   dbyte1 add =9a044100 value =13
+    7.748   dbyte1 add =9a044500 value =13
+    7.748   dbyte1 add =9a044900 value =14
+    7.748   dbyte1 add =9a044d00 value =13
+    7.748   dbyte1 add =9a045100 value =13
+    7.748   dbyte1 add =9a045500 value =14
+    7.748   dbyte1 add =9a045900 value =13
+    7.748   dbyte1 add =9a045d00 value =13
+    7.748   dbyte2 add =9a048100 value =37
+    7.748   dbyte2 add =9a048500 value =37
+    7.748   dbyte2 add =9a048900 value =37
+    7.748   dbyte2 add =9a048d00 value =37
+    7.748   dbyte2 add =9a049100 value =37
+    7.748   dbyte2 add =9a049500 value =37
+    7.748   dbyte2 add =9a049900 value =37
+    7.748   dbyte2 add =9a049d00 value =37
+    7.748   dbyte3 add =9a04c100 value =37
+    7.748   dbyte3 add =9a04c500 value =37
+    7.748   dbyte3 add =9a04c900 value =37
+    7.748   dbyte3 add =9a04cd00 value =37
+    7.748   dbyte3 add =9a04d100 value =37
+    7.748   dbyte3 add =9a04d500 value =37
+    7.748   dbyte3 add =9a04d900 value =37
+    7.748   dbyte3 add =9a04dd00 value =37
+    7.748   spi_nand spi-flash@0: Winbond SPI NAND was found.
+    7.748   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+    7.748   OpenSBI v0.9
+    7.748   heap: [0x0050c4c0 - 0x00d0c4c0], size 8192 KB
+    7.748   page: [0x00d0c4c8 - 0x039fec00], size 46025 KB
+    7.748    \ | /
+    7.748   - RT -     Thread Smart Operating System
+    7.748    / | \     5.0.0 build Nov 11 2026
+    7.748    2006 - 2020 Copyright by rt-thread team
+    7.748   rtc driver register OK
+    7.748   lwIP-2.1.2 initialized!
+    7.748   [I/I2C] I2C bus [i2c0] registered
+    7.748   [I/I2C] I2C bus [i2c4] registered
+    7.748   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+    7.748   �link_mux: console and /dev/link share uart1
+    7.748   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+    7.748   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+    7.748   os  : system memory alloc 320 bytes
+    7.748   flsh: UFFS consume spare data size 9
+    7.748   os  : system memory alloc 84480 bytes
+    7.748   os  : system memory alloc 53200 bytes
+    7.748   os  : system memory alloc 2048 bytes
+    7.748   tree: DIR 0, FILE 5, DATA 4
+    7.748   os  : system memory alloc 320 bytes
+    7.748   flsh: UFFS consume spare data size 9
+    7.748   os  : system memory alloc 84480 bytes
+    7.748   os  : system memory alloc 53200 bytes
+    7.748   os  : system memory alloc 8192 bytes
+    7.748   tree: DIR 1, FILE 16, DATA 177
+    7.748   /dev/shm file system initialization done!
+    7.748   Probe dummy af driver
+    7.748   find sensor(ov5647_csi0) on csi0
+    7.748   Probe dummy af driver
+    7.748   find sensor(ov5647_csi2) on csi2
+    7.748   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+    7.748   <gnne> gnne_device_init done.
+    7.748   #############SDK VERSION######################################
+    7.748   SDK   : unknown-20261111-202742--bcd25471ec04-4162ec7
+    7.748   nncase: 2.11.0
+    7.748   ##############################################################
+    7.748   msh />
+    9.837 > 'pwm_disable pwm 0' (0.06 s)
+    9.837   pwm_disable pwm 0
+    9.837   msh />
+    9.837   msh />
+    9.894 > 'pwm_disable pwm 1' (0.06 s)
+    9.894   pwm_disable pwm 1
+    9.894   msh />
+    9.894   msh />
+   13.640 > 'chip_temp' (0.07 s)
+   13.640   chip_temp
+   13.640   chip temperature: 36.430 C
+   13.640   msh />
+   13.640   msh />
+   13.696 > 'free' (0.06 s)
+   13.696   free
+   13.696   memheap               pool size  max used size available size
+   13.696   -------------------- ---------- ------------- --------------
+   13.696   heap                 8388608    1395968       7020032
+   13.696   msh />
+   13.696   msh />
+   13.752 > 'adc probe adc' (0.06 s)
+   13.752   adc probe adc
+   13.752   probe adc success 
+   13.752   msh />
+   13.752   msh />
+   13.826 > 'adc read 1' (0.07 s)
+   13.826   adc read 1
+   13.826   adc channel 1  read value is 0x00000D44 
+   13.826   msh />
+   13.826   msh />
+   13.884 > 'adc read 1' (0.06 s)
+   13.884   adc read 1
+   13.884   adc channel 1  read value is 0x00000D02 
+   13.884   msh />
+   13.884   msh />
+   13.941 > 'adc read 1' (0.06 s)
+   13.941   adc read 1
+   13.941   adc channel 1  read value is 0x00000D3A 
+   13.941   msh />
+   13.941   msh />
+   13.997 > 'adc read 1' (0.06 s)
+   13.997   adc read 1
+   13.997   adc channel 1  read value is 0x00000D4C 
+   13.997   msh />
+   13.997   msh />
+   14.053 > 'adc read 1' (0.06 s)
+   14.053   adc read 1
+   14.053   adc channel 1  read value is 0x00000D16 
+   14.053   msh />
+   14.053   msh />
+   14.108 > 'adc read 1' (0.05 s)
+   14.108   adc read 1
+   14.108   adc channel 1  read value is 0x00000D0B 
+   14.108   msh />
+   14.108   msh />
+   14.163 > 'adc read 1' (0.05 s)
+   14.163   adc read 1
+   14.163   adc channel 1  read value is 0x00000D02 
+   14.163   msh />
+   14.163   msh />
+   14.219 > 'adc read 1' (0.06 s)
+   14.219   adc read 1
+   14.219   adc channel 1  read value is 0x00000D18 
+   14.219   msh />
+   14.219   msh />
+   14.274 > 'pwm_set pwm 1 40000 10000' (0.05 s)
+   14.274   pwm_set pwm 1 40000 10000
+   14.274   msh />
+   14.274   msh />
+   14.329 > 'pwm_enable pwm 1' (0.05 s)
+   14.329   pwm_enable pwm 1
+   14.329   msh />
+   14.329   msh />
+   23.093 > 'chip_temp' (0.07 s)
+   23.093   chip_temp
+   23.093   chip temperature: 37.036 C
+   23.093   msh />
+   23.093   msh />
+   23.149 > 'free' (0.06 s)
+   23.149   free
+   23.149   memheap               pool size  max used size available size
+   23.149   -------------------- ---------- ------------- --------------
+   23.149   heap                 8388608    1395968       7020032
+   23.149   msh />
+   23.149   msh />
+   23.205 > 'adc probe adc' (0.06 s)
+   23.205   adc probe adc
+   23.205   probe adc success 
+   23.205   msh />
+   23.205   msh />
+   23.262 > 'adc read 1' (0.06 s)
+   23.262   adc read 1
+   23.262   adc channel 1  read value is 0x00000D45 
+   23.262   msh />
+   23.262   msh />
+   23.318 > 'adc read 1' (0.06 s)
+   23.318   adc read 1
+   23.318   adc channel 1  read value is 0x00000D19 
+   23.318   msh />
+   23.318   msh />
+   23.374 > 'adc read 1' (0.06 s)
+   23.374   adc read 1
+   23.374   adc channel 1  read value is 0x00000CFA 
+   23.374   msh />
+   23.374   msh />
+   23.431 > 'adc read 1' (0.06 s)
+   23.431   adc read 1
+   23.431   adc channel 1  read value is 0x00000D00 
+   23.431   msh />
+   23.431   msh />
+   23.488 > 'adc read 1' (0.06 s)
+   23.488   adc read 1
+   23.488   adc channel 1  read value is 0x00000D0B 
+   23.488   msh />
+   23.488   msh />
+   23.545 > 'adc read 1' (0.06 s)
+   23.545   adc read 1
+   23.545   adc channel 1  read value is 0x00000D34 
+   23.545   msh />
+   23.545   msh />
+   23.601 > 'adc read 1' (0.06 s)
+   23.601   adc read 1
+   23.601   adc channel 1  read value is 0x00000CE5 
+   23.601   msh />
+   23.601   msh />
+   23.658 > 'adc read 1' (0.06 s)
+   23.658   adc read 1
+   23.658   adc channel 1  read value is 0x00000D18 
+   23.658   msh />
+   23.658   msh />
+   23.715 > 'pwm_set pwm 1 40000 20000' (0.06 s)
+   23.715   pwm_set pwm 1 40000 20000
+   23.715   msh />
+   23.715   msh />
+   23.771 > 'pwm_enable pwm 1' (0.06 s)
+   23.771   pwm_enable pwm 1
+   23.771   msh />
+   23.771   msh />
+   32.547 > 'chip_temp' (0.06 s)
+   32.547   chip_temp
+   32.547   chip temperature: 40.063 C
+   32.547   msh />
+   32.547   msh />
+   32.604 > 'free' (0.06 s)
+   32.604   free
+   32.604   memheap               pool size  max used size available size
+   32.604   -------------------- ---------- ------------- --------------
+   32.604   heap                 8388608    6477248       5442816
+   32.604   msh />
+   32.604   msh />
+   32.660 > 'adc probe adc' (0.06 s)
+   32.660   adc probe adc
+   32.660   probe adc success 
+   32.660   msh />
+   32.660   msh />
+   32.717 > 'adc read 1' (0.06 s)
+   32.717   adc read 1
+   32.717   adc channel 1  read value is 0x00000D0E 
+   32.717   msh />
+   32.717   msh />
+   32.773 > 'adc read 1' (0.06 s)
+   32.773   adc read 1
+   32.773   adc channel 1  read value is 0x00000D2A 
+   32.773   msh />
+   32.773   msh />
+   32.830 > 'adc read 1' (0.06 s)
+   32.830   adc read 1
+   32.830   adc channel 1  read value is 0x00000D27 
+   32.830   msh />
+   32.830   msh />
+   32.886 > 'adc read 1' (0.06 s)
+   32.886   adc read 1
+   32.886   adc channel 1  read value is 0x00000D00 
+   32.886   msh />
+   32.886   msh />
+   32.942 > 'adc read 1' (0.06 s)
+   32.942   adc read 1
+   32.942   adc channel 1  read value is 0x00000D26 
+   32.942   msh />
+   32.942   msh />
+   32.998 > 'adc read 1' (0.06 s)
+   32.998   adc read 1
+   32.998   adc channel 1  read value is 0x00000D05 
+   32.998   msh />
+   32.998   msh />
+   33.061 > 'adc read 1' (0.06 s)
+   33.061   adc read 1
+   33.061   adc channel 1  read value is 0x00000D4E 
+   33.061   msh />
+   33.061   msh />
+   33.120 > 'adc read 1' (0.06 s)
+   33.120   adc read 1
+   33.120   adc channel 1  read value is 0x00000D49 
+   33.120   msh />
+   33.120   msh />
+   33.182 > 'pwm_set pwm 1 40000 40000' (0.06 s)
+   33.182   pwm_set pwm 1 40000 40000
+   33.182   msh />
+   33.182   msh />
+   33.240 > 'pwm_enable pwm 1' (0.06 s)
+   33.240   pwm_enable pwm 1
+   33.240   msh />
+   33.240   msh />
+   41.999 > 'chip_temp' (0.07 s)
+   41.999   chip_temp
+   41.999   chip temperature: 39.760 C
+   41.999   msh />
+   41.999   msh />
+   42.056 > 'free' (0.06 s)
+   42.056   free
+   42.056   memheap               pool size  max used size available size
+   42.056   -------------------- ---------- ------------- --------------
+   42.056   heap                 8388608    6477248       7307072
+   42.056   msh />
+   42.056   msh />
+   42.115 > 'adc probe adc' (0.06 s)
+   42.115   adc probe adc
+   42.115   probe adc success 
+   42.115   msh />
+   42.115   msh />
+   42.171 > 'adc read 1' (0.06 s)
+   42.171   adc read 1
+   42.171   adc channel 1  read value is 0x00000D50 
+   42.171   msh />
+   42.171   msh />
+   42.228 > 'adc read 1' (0.06 s)
+   42.228   adc read 1
+   42.228   adc channel 1  read value is 0x00000D1B 
+   42.228   msh />
+   42.228   msh />
+   42.286 > 'adc read 1' (0.06 s)
+   42.286   adc read 1
+   42.286   adc channel 1  read value is 0x00000CE3 
+   42.286   msh />
+   42.286   msh />
+   42.344 > 'adc read 1' (0.06 s)
+   42.344   adc read 1
+   42.344   adc channel 1  read value is 0x00000D47 
+   42.344   msh />
+   42.344   msh />
+   42.401 > 'adc read 1' (0.06 s)
+   42.401   adc read 1
+   42.401   adc channel 1  read value is 0x00000CE9 
+   42.401   msh />
+   42.401   msh />
+   42.462 > 'adc read 1' (0.06 s)
+   42.462   adc read 1
+   42.462   adc channel 1  read value is 0x00000D46 
+   42.462   msh />
+   42.462   msh />
+   42.518 > 'adc read 1' (0.06 s)
+   42.518   adc read 1
+   42.518   adc channel 1  read value is 0x00000CE4 
+   42.518   msh />
+   42.518   msh />
+   42.577 > 'adc read 1' (0.06 s)
+   42.577   adc read 1
+   42.577   adc channel 1  read value is 0x00000D2F 
+   42.577   msh />
+   42.577   msh />
+   42.635 > 'pwm_disable pwm 1' (0.06 s)
+   42.635   pwm_disable pwm 1
+   42.635   msh />
+   42.635   msh />
+   42.709 > 'pwm_set pwm 0 40000 10000' (0.07 s)
+   42.709   pwm_set pwm 0 40000 10000
+   42.709   msh />
+   42.709   msh />
+   42.775 > 'pwm_enable pwm 0' (0.07 s)
+   42.775   pwm_enable pwm 0
+   42.775   msh />
+   42.775   msh />
+   51.513 > 'chip_temp' (0.07 s)
+   51.513   chip_temp
+   51.513   chip temperature: 39.760 C
+   51.513   msh />
+   51.513   msh />
+   51.569 > 'free' (0.06 s)
+   51.569   free
+   51.569   memheap               pool size  max used size available size
+   51.569   -------------------- ---------- ------------- --------------
+   51.569   heap                 8388608    6477248       7307072
+   51.569   msh />
+   51.569   msh />
+   51.625 > 'adc probe adc' (0.06 s)
+   51.625   adc probe adc
+   51.625   probe adc success 
+   51.625   msh />
+   51.625   msh />
+   51.681 > 'adc read 1' (0.06 s)
+   51.681   adc read 1
+   51.681   adc channel 1  read value is 0x00000CF3 
+   51.681   msh />
+   51.681   msh />
+   51.737 > 'adc read 1' (0.06 s)
+   51.737   adc read 1
+   51.737   adc channel 1  read value is 0x00000D35 
+   51.737   msh />
+   51.737   msh />
+   51.793 > 'adc read 1' (0.06 s)
+   51.793   adc read 1
+   51.793   adc channel 1  read value is 0x00000CE1 
+   51.793   msh />
+   51.793   msh />
+   51.849 > 'adc read 1' (0.06 s)
+   51.849   adc read 1
+   51.849   adc channel 1  read value is 0x00000D2B 
+   51.849   msh />
+   51.849   msh />
+   51.905 > 'adc read 1' (0.06 s)
+   51.905   adc read 1
+   51.905   adc channel 1  read value is 0x00000D47 
+   51.905   msh />
+   51.905   msh />
+   51.962 > 'adc read 1' (0.06 s)
+   51.962   adc read 1
+   51.962   adc channel 1  read value is 0x00000CEF 
+   51.962   msh />
+   51.962   msh />
+   52.018 > 'adc read 1' (0.06 s)
+   52.018   adc read 1
+   52.018   adc channel 1  read value is 0x00000D58 
+   52.018   msh />
+   52.018   msh />
+   52.074 > 'adc read 1' (0.06 s)
+   52.074   adc read 1
+   52.074   adc channel 1  read value is 0x00000D4E 
+   52.074   msh />
+   52.074   msh />
+   52.130 > 'pwm_set pwm 0 40000 20000' (0.06 s)
+   52.130   pwm_set pwm 0 40000 20000
+   52.130   msh />
+   52.130   msh />
+   52.186 > 'pwm_enable pwm 0' (0.06 s)
+   52.186   pwm_enable pwm 0
+   52.186   msh />
+   52.186   msh />
+   60.914 > 'chip_temp' (0.06 s)
+   60.914   chip_temp
+   60.914   chip temperature: 41.573 C
+   60.914   msh />
+   60.914   msh />
+   60.970 > 'free' (0.06 s)
+   60.970   free
+   60.970   memheap               pool size  max used size available size
+   60.970   -------------------- ---------- ------------- --------------
+   60.970   heap                 8388608    6477248       7307072
+   60.970   msh />
+   60.970   msh />
+   61.027 > 'adc probe adc' (0.06 s)
+   61.027   adc probe adc
+   61.027   probe adc success 
+   61.027   msh />
+   61.027   msh />
+   61.083 > 'adc read 1' (0.06 s)
+   61.083   adc read 1
+   61.083   adc channel 1  read value is 0x00000D00 
+   61.083   msh />
+   61.083   msh />
+   61.139 > 'adc read 1' (0.06 s)
+   61.139   adc read 1
+   61.139   adc channel 1  read value is 0x00000D14 
+   61.139   msh />
+   61.139   msh />
+   61.195 > 'adc read 1' (0.06 s)
+   61.195   adc read 1
+   61.195   adc channel 1  read value is 0x00000D54 
+   61.195   msh />
+   61.195   msh />
+   61.251 > 'adc read 1' (0.06 s)
+   61.251   adc read 1
+   61.251   adc channel 1  read value is 0x00000D34 
+   61.251   msh />
+   61.251   msh />
+   61.307 > 'adc read 1' (0.06 s)
+   61.307   adc read 1
+   61.307   adc channel 1  read value is 0x00000D31 
+   61.307   msh />
+   61.307   msh />
+   61.363 > 'adc read 1' (0.06 s)
+   61.363   adc read 1
+   61.363   adc channel 1  read value is 0x00000CF2 
+   61.363   msh />
+   61.363   msh />
+   61.424 > 'adc read 1' (0.06 s)
+   61.424   adc read 1
+   61.424   adc channel 1  read value is 0x00000CF4 
+   61.424   msh />
+   61.424   msh />
+   61.481 > 'adc read 1' (0.06 s)
+   61.481   adc read 1
+   61.481   adc channel 1  read value is 0x00000D43 
+   61.481   msh />
+   61.481   msh />
+   61.541 > 'pwm_set pwm 0 40000 40000' (0.06 s)
+   61.541   pwm_set pwm 0 40000 40000
+   61.541   msh />
+   61.541   msh />
+   61.599 > 'pwm_enable pwm 0' (0.06 s)
+   61.599   pwm_enable pwm 0
+   61.599   msh />
+   61.599   msh />
+   70.354 > 'chip_temp' (0.07 s)
+   70.354   chip_temp
+   70.354   chip temperature: 43.082 C
+   70.354   msh />
+   70.354   msh />
+   70.411 > 'free' (0.06 s)
+   70.411   free
+   70.411   memheap               pool size  max used size available size
+   70.411   -------------------- ---------- ------------- --------------
+   70.411   heap                 8388608    6477248       7307072
+   70.411   msh />
+   70.411   msh />
+   70.468 > 'adc probe adc' (0.06 s)
+   70.468   adc probe adc
+   70.468   probe adc success 
+   70.468   msh />
+   70.468   msh />
+   70.524 > 'adc read 1' (0.06 s)
+   70.524   adc read 1
+   70.524   adc channel 1  read value is 0x00000D01 
+   70.524   msh />
+   70.524   msh />
+   70.581 > 'adc read 1' (0.06 s)
+   70.581   adc read 1
+   70.581   adc channel 1  read value is 0x00000D37 
+   70.581   msh />
+   70.581   msh />
+   70.637 > 'adc read 1' (0.06 s)
+   70.637   adc read 1
+   70.637   adc channel 1  read value is 0x00000D0E 
+   70.637   msh />
+   70.637   msh />
+   70.695 > 'adc read 1' (0.06 s)
+   70.695   adc read 1
+   70.695   adc channel 1  read value is 0x00000D28 
+   70.695   msh />
+   70.695   msh />
+   70.751 > 'adc read 1' (0.06 s)
+   70.751   adc read 1
+   70.751   adc channel 1  read value is 0x00000CFA 
+   70.751   msh />
+   70.751   msh />
+   70.807 > 'adc read 1' (0.06 s)
+   70.807   adc read 1
+   70.807   adc channel 1  read value is 0x00000D14 
+   70.807   msh />
+   70.807   msh />
+   70.865 > 'adc read 1' (0.06 s)
+   70.865   adc read 1
+   70.865   adc channel 1  read value is 0x00000D58 
+   70.865   msh />
+   70.865   msh />
+   70.921 > 'adc read 1' (0.06 s)
+   70.921   adc read 1
+   70.921   adc channel 1  read value is 0x00000D44 
+   70.921   msh />
+   70.921   msh />
+   70.978 > 'pwm_disable pwm 0' (0.06 s)
+   70.978   pwm_disable pwm 0
+   70.978   msh />
+   70.978   msh />
+   71.035 > 'pwm_set pwm 0 40000 40000' (0.06 s)
+   71.035   pwm_set pwm 0 40000 40000
+   71.035   msh />
+   71.035   msh />
+   71.092 > 'pwm_enable pwm 0' (0.06 s)
+   71.092   pwm_enable pwm 0
+   71.092   msh />
+   71.092   msh />
+   71.149 > 'pwm_set pwm 1 40000 40000' (0.06 s)
+   71.149   pwm_set pwm 1 40000 40000
+   71.149   msh />
+   71.149   msh />
+   71.205 > 'pwm_enable pwm 1' (0.06 s)
+   71.205   pwm_enable pwm 1
+   71.205   msh />
+   71.205   msh />
+   82.963 > 'chip_temp' (0.07 s)
+   82.963   chip_temp
+   82.963   chip temperature: 43.384 C
+   82.963   msh />
+   82.963   msh />
+   83.020 > 'free' (0.06 s)
+   83.020   free
+   83.020   memheap               pool size  max used size available size
+   83.020   -------------------- ---------- ------------- --------------
+   83.020   heap                 8388608    6477248       7307072
+   83.020   msh />
+   83.020   msh />
+   83.077 > 'adc probe adc' (0.06 s)
+   83.077   adc probe adc
+   83.077   probe adc success 
+   83.077   msh />
+   83.077   msh />
+   83.136 > 'adc read 1' (0.06 s)
+   83.136   adc read 1
+   83.136   adc channel 1  read value is 0x00000CDF 
+   83.136   msh />
+   83.136   msh />
+   83.193 > 'adc read 1' (0.06 s)
+   83.193   adc read 1
+   83.193   adc channel 1  read value is 0x00000D2A 
+   83.193   msh />
+   83.193   msh />
+   83.250 > 'adc read 1' (0.06 s)
+   83.250   adc read 1
+   83.250   adc channel 1  read value is 0x00000CFC 
+   83.250   msh />
+   83.250   msh />
+   83.308 > 'adc read 1' (0.06 s)
+   83.308   adc read 1
+   83.308   adc channel 1  read value is 0x00000D45 
+   83.308   msh />
+   83.308   msh />
+   83.364 > 'adc read 1' (0.06 s)
+   83.364   adc read 1
+   83.364   adc channel 1  read value is 0x00000CE8 
+   83.364   msh />
+   83.364   msh />
+   83.420 > 'adc read 1' (0.06 s)
+   83.420   adc read 1
+   83.420   adc channel 1  read value is 0x00000D56 
+   83.420   msh />
+   83.420   msh />
+   83.476 > 'adc read 1' (0.06 s)
+   83.476   adc read 1
+   83.476   adc channel 1  read value is 0x00000CEA 
+   83.476   msh />
+   83.476   msh />
+   83.532 > 'adc read 1' (0.06 s)
+   83.532   adc read 1
+   83.532   adc channel 1  read value is 0x00000D19 
+   83.532   msh />
+   83.532   msh />
+   95.271 > 'chip_temp' (0.07 s)
+   95.271   chip_temp
+   95.271   chip temperature: 44.589 C
+   95.271   msh />
+   95.271   msh />
+   95.328 > 'free' (0.06 s)
+   95.328   free
+   95.328   memheap               pool size  max used size available size
+   95.328   -------------------- ---------- ------------- --------------
+   95.328   heap                 8388608    6477248       7307072
+   95.328   msh />
+   95.328   msh />
+   95.384 > 'adc probe adc' (0.06 s)
+   95.384   adc probe adc
+   95.384   probe adc success 
+   95.384   msh />
+   95.384   msh />
+   95.441 > 'adc read 1' (0.06 s)
+   95.441   adc read 1
+   95.441   adc channel 1  read value is 0x00000D54 
+   95.441   msh />
+   95.441   msh />
+   95.498 > 'adc read 1' (0.06 s)
+   95.498   adc read 1
+   95.498   adc channel 1  read value is 0x00000D39 
+   95.498   msh />
+   95.498   msh />
+   95.556 > 'adc read 1' (0.06 s)
+   95.556   adc read 1
+   95.556   adc channel 1  read value is 0x00000D48 
+   95.556   msh />
+   95.556   msh />
+   95.612 > 'adc read 1' (0.06 s)
+   95.612   adc read 1
+   95.612   adc channel 1  read value is 0x00000D43 
+   95.612   msh />
+   95.612   msh />
+   95.668 > 'adc read 1' (0.06 s)
+   95.668   adc read 1
+   95.668   adc channel 1  read value is 0x00000D0F 
+   95.668   msh />
+   95.668   msh />
+   95.725 > 'adc read 1' (0.06 s)
+   95.725   adc read 1
+   95.725   adc channel 1  read value is 0x00000D52 
+   95.725   msh />
+   95.725   msh />
+   95.781 > 'adc read 1' (0.06 s)
+   95.781   adc read 1
+   95.781   adc channel 1  read value is 0x00000D1A 
+   95.781   msh />
+   95.781   msh />
+   95.837 > 'adc read 1' (0.06 s)
+   95.837   adc read 1
+   95.837   adc channel 1  read value is 0x00000D4A 
+   95.837   msh />
+   95.837   msh />
+  107.578 > 'chip_temp' (0.07 s)
+  107.578   chip_temp
+  107.578   chip temperature: 45.493 C
+  107.578   msh />
+  107.578   msh />
+  107.634 > 'free' (0.06 s)
+  107.634   free
+  107.634   memheap               pool size  max used size available size
+  107.634   -------------------- ---------- ------------- --------------
+  107.634   heap                 8388608    6477248       7307072
+  107.634   msh />
+  107.634   msh />
+  107.690 > 'adc probe adc' (0.06 s)
+  107.690   adc probe adc
+  107.690   probe adc success 
+  107.690   msh />
+  107.690   msh />
+  107.746 > 'adc read 1' (0.06 s)
+  107.746   adc read 1
+  107.746   adc channel 1  read value is 0x00000D24 
+  107.746   msh />
+  107.746   msh />
+  107.802 > 'adc read 1' (0.06 s)
+  107.802   adc read 1
+  107.802   adc channel 1  read value is 0x00000D17 
+  107.802   msh />
+  107.802   msh />
+  107.858 > 'adc read 1' (0.06 s)
+  107.858   adc read 1
+  107.858   adc channel 1  read value is 0x00000CE4 
+  107.858   msh />
+  107.858   msh />
+  107.915 > 'adc read 1' (0.06 s)
+  107.915   adc read 1
+  107.915   adc channel 1  read value is 0x00000CF3 
+  107.915   msh />
+  107.915   msh />
+  107.971 > 'adc read 1' (0.06 s)
+  107.971   adc read 1
+  107.971   adc channel 1  read value is 0x00000D30 
+  107.971   msh />
+  107.971   msh />
+  108.027 > 'adc read 1' (0.06 s)
+  108.027   adc read 1
+  108.027   adc channel 1  read value is 0x00000D28 
+  108.027   msh />
+  108.027   msh />
+  108.083 > 'adc read 1' (0.06 s)
+  108.083   adc read 1
+  108.083   adc channel 1  read value is 0x00000D16 
+  108.083   msh />
+  108.083   msh />
+  108.139 > 'adc read 1' (0.06 s)
+  108.139   adc read 1
+  108.139   adc channel 1  read value is 0x00000D25 
+  108.139   msh />
+  108.139   msh />
+  119.877 > 'chip_temp' (0.07 s)
+  119.877   chip_temp
+  119.877   chip temperature: 48.502 C
+  119.877   msh />
+  119.877   msh />
+  119.936 > 'free' (0.06 s)
+  119.936   free
+  119.936   memheap               pool size  max used size available size
+  119.936   -------------------- ---------- ------------- --------------
+  119.936   heap                 8388608    6477248       7307072
+  119.936   msh />
+  119.936   msh />
+  119.992 > 'adc probe adc' (0.06 s)
+  119.992   adc probe adc
+  119.992   probe adc success 
+  119.992   msh />
+  119.992   msh />
+  120.053 > 'adc read 1' (0.06 s)
+  120.053   adc read 1
+  120.053   adc channel 1  read value is 0x00000D59 
+  120.053   msh />
+  120.053   msh />
+  120.109 > 'adc read 1' (0.06 s)
+  120.109   adc read 1
+  120.109   adc channel 1  read value is 0x00000D03 
+  120.109   msh />
+  120.109   msh />
+  120.165 > 'adc read 1' (0.06 s)
+  120.165   adc read 1
+  120.165   adc channel 1  read value is 0x00000D3A 
+  120.165   msh />
+  120.165   msh />
+  120.221 > 'adc read 1' (0.06 s)
+  120.221   adc read 1
+  120.221   adc channel 1  read value is 0x00000D49 
+  120.221   msh />
+  120.221   msh />
+  120.277 > 'adc read 1' (0.06 s)
+  120.277   adc read 1
+  120.277   adc channel 1  read value is 0x00000CEC 
+  120.277   msh />
+  120.277   msh />
+  120.333 > 'adc read 1' (0.06 s)
+  120.333   adc read 1
+  120.333   adc channel 1  read value is 0x00000D1A 
+  120.333   msh />
+  120.333   msh />
+  120.389 > 'adc read 1' (0.06 s)
+  120.389   adc read 1
+  120.389   adc channel 1  read value is 0x00000CFB 
+  120.389   msh />
+  120.389   msh />
+  120.449 > 'adc read 1' (0.06 s)
+  120.449   adc read 1
+  120.449   adc channel 1  read value is 0x00000D0B 
+  120.449   msh />
+  120.449   msh />
+  132.206 > 'chip_temp' (0.07 s)
+  132.206   chip_temp
+  132.206   chip temperature: 47.900 C
+  132.206   msh />
+  132.206   msh />
+  132.262 > 'free' (0.06 s)
+  132.262   free
+  132.262   memheap               pool size  max used size available size
+  132.262   -------------------- ---------- ------------- --------------
+  132.262   heap                 8388608    6477248       7307072
+  132.262   msh />
+  132.262   msh />
+  132.318 > 'adc probe adc' (0.06 s)
+  132.318   adc probe adc
+  132.318   probe adc success 
+  132.318   msh />
+  132.318   msh />
+  132.375 > 'adc read 1' (0.06 s)
+  132.375   adc read 1
+  132.375   adc channel 1  read value is 0x00000D14 
+  132.375   msh />
+  132.375   msh />
+  132.431 > 'adc read 1' (0.06 s)
+  132.431   adc read 1
+  132.431   adc channel 1  read value is 0x00000D28 
+  132.431   msh />
+  132.431   msh />
+  132.487 > 'adc read 1' (0.06 s)
+  132.487   adc read 1
+  132.487   adc channel 1  read value is 0x00000D35 
+  132.487   msh />
+  132.487   msh />
+  132.543 > 'adc read 1' (0.06 s)
+  132.543   adc read 1
+  132.543   adc channel 1  read value is 0x00000D29 
+  132.543   msh />
+  132.543   msh />
+  132.600 > 'adc read 1' (0.06 s)
+  132.600   adc read 1
+  132.600   adc channel 1  read value is 0x00000D14 
+  132.600   msh />
+  132.600   msh />
+  132.659 > 'adc read 1' (0.06 s)
+  132.659   adc read 1
+  132.659   adc channel 1  read value is 0x00000D29 
+  132.659   msh />
+  132.659   msh />
+  132.717 > 'adc read 1' (0.06 s)
+  132.717   adc read 1
+  132.717   adc channel 1  read value is 0x00000CDD 
+  132.717   msh />
+  132.717   msh />
+  132.774 > 'adc read 1' (0.06 s)
+  132.774   adc read 1
+  132.774   adc channel 1  read value is 0x00000D20 
+  132.774   msh />
+  132.774   msh />
+  144.506 > 'chip_temp' (0.07 s)
+  144.506   chip_temp
+  144.506   chip temperature: 47.900 C
+  144.506   msh />
+  144.506   msh />
+  144.563 > 'free' (0.06 s)
+  144.563   free
+  144.563   memheap               pool size  max used size available size
+  144.563   -------------------- ---------- ------------- --------------
+  144.563   heap                 8388608    6477248       7307072
+  144.563   msh />
+  144.563   msh />
+  144.619 > 'adc probe adc' (0.06 s)
+  144.619   adc probe adc
+  144.619   probe adc success 
+  144.619   msh />
+  144.619   msh />
+  144.675 > 'adc read 1' (0.06 s)
+  144.675   adc read 1
+  144.675   adc channel 1  read value is 0x00000D1F 
+  144.675   msh />
+  144.675   msh />
+  144.731 > 'adc read 1' (0.06 s)
+  144.731   adc read 1
+  144.731   adc channel 1  read value is 0x00000D10 
+  144.731   msh />
+  144.731   msh />
+  144.787 > 'adc read 1' (0.06 s)
+  144.787   adc read 1
+  144.787   adc channel 1  read value is 0x00000D3E 
+  144.787   msh />
+  144.787   msh />
+  144.843 > 'adc read 1' (0.06 s)
+  144.843   adc read 1
+  144.843   adc channel 1  read value is 0x00000D4D 
+  144.843   msh />
+  144.843   msh />
+  144.902 > 'adc read 1' (0.06 s)
+  144.902   adc read 1
+  144.902   adc channel 1  read value is 0x00000D34 
+  144.902   msh />
+  144.902   msh />
+  144.959 > 'adc read 1' (0.06 s)
+  144.959   adc read 1
+  144.959   adc channel 1  read value is 0x00000D07 
+  144.959   msh />
+  144.959   msh />
+  145.017 > 'adc read 1' (0.06 s)
+  145.017   adc read 1
+  145.017   adc channel 1  read value is 0x00000D32 
+  145.017   msh />
+  145.017   msh />
+  145.074 > 'adc read 1' (0.06 s)
+  145.074   adc read 1
+  145.074   adc channel 1  read value is 0x00000CEF 
+  145.074   msh />
+  145.074   msh />
+  156.811 > 'chip_temp' (0.07 s)
+  156.811   chip_temp
+  156.811   chip temperature: 47.900 C
+  156.811   msh />
+  156.811   msh />
+  156.868 > 'free' (0.06 s)
+  156.868   free
+  156.868   memheap               pool size  max used size available size
+  156.868   -------------------- ---------- ------------- --------------
+  156.868   heap                 8388608    6477248       7307072
+  156.868   msh />
+  156.868   msh />
+  156.925 > 'adc probe adc' (0.06 s)
+  156.925   adc probe adc
+  156.925   probe adc success 
+  156.925   msh />
+  156.925   msh />
+  156.980 > 'adc read 1' (0.05 s)
+  156.980   adc read 1
+  156.980   adc channel 1  read value is 0x00000D27 
+  156.980   msh />
+  156.980   msh />
+  157.036 > 'adc read 1' (0.06 s)
+  157.036   adc read 1
+  157.036   adc channel 1  read value is 0x00000D18 
+  157.036   msh />
+  157.036   msh />
+  157.095 > 'adc read 1' (0.06 s)
+  157.095   adc read 1
+  157.095   adc channel 1  read value is 0x00000D23 
+  157.095   msh />
+  157.095   msh />
+  157.162 > 'adc read 1' (0.06 s)
+  157.162   adc read 1
+  157.162   adc channel 1  read value is 0x00000D3C 
+  157.162   msh />
+  157.162   msh />
+  157.219 > 'adc read 1' (0.06 s)
+  157.219   adc read 1
+  157.219   adc channel 1  read value is 0x00000D53 
+  157.219   msh />
+  157.219   msh />
+  157.275 > 'adc read 1' (0.06 s)
+  157.275   adc read 1
+  157.275   adc channel 1  read value is 0x00000CF8 
+  157.275   msh />
+  157.275   msh />
+  157.331 > 'adc read 1' (0.06 s)
+  157.331   adc read 1
+  157.331   adc channel 1  read value is 0x00000D1A 
+  157.331   msh />
+  157.331   msh />
+  157.389 > 'adc read 1' (0.06 s)
+  157.389   adc read 1
+  157.389   adc channel 1  read value is 0x00000CEB 
+  157.389   msh />
+  157.389   msh />
+  169.138 > 'chip_temp' (0.07 s)
+  169.138   chip_temp
+  169.138   chip temperature: 49.704 C
+  169.138   msh />
+  169.138   msh />
+  169.194 > 'free' (0.06 s)
+  169.194   free
+  169.194   memheap               pool size  max used size available size
+  169.194   -------------------- ---------- ------------- --------------
+  169.194   heap                 8388608    6477248       7307072
+  169.194   msh />
+  169.194   msh />
+  169.250 > 'adc probe adc' (0.06 s)
+  169.250   adc probe adc
+  169.250   probe adc success 
+  169.250   msh />
+  169.250   msh />
+  169.308 > 'adc read 1' (0.06 s)
+  169.308   adc read 1
+  169.308   adc channel 1  read value is 0x00000CE6 
+  169.308   msh />
+  169.308   msh />
+  169.366 > 'adc read 1' (0.06 s)
+  169.366   adc read 1
+  169.366   adc channel 1  read value is 0x00000D0C 
+  169.366   msh />
+  169.366   msh />
+  169.426 > 'adc read 1' (0.06 s)
+  169.426   adc read 1
+  169.426   adc channel 1  read value is 0x00000CF8 
+  169.426   msh />
+  169.426   msh />
+  169.482 > 'adc read 1' (0.06 s)
+  169.482   adc read 1
+  169.482   adc channel 1  read value is 0x00000D37 
+  169.482   msh />
+  169.482   msh />
+  169.542 > 'adc read 1' (0.06 s)
+  169.542   adc read 1
+  169.542   adc channel 1  read value is 0x00000D04 
+  169.542   msh />
+  169.542   msh />
+  169.599 > 'adc read 1' (0.06 s)
+  169.599   adc read 1
+  169.599   adc channel 1  read value is 0x00000CE2 
+  169.599   msh />
+  169.599   msh />
+  169.655 > 'adc read 1' (0.06 s)
+  169.655   adc read 1
+  169.655   adc channel 1  read value is 0x00000D20 
+  169.655   msh />
+  169.655   msh />
+  169.714 > 'adc read 1' (0.06 s)
+  169.714   adc read 1
+  169.714   adc channel 1  read value is 0x00000D13 
+  169.714   msh />
+  169.714   msh />
+  181.447 > 'chip_temp' (0.06 s)
+  181.447   chip_temp
+  181.447   chip temperature: 50.605 C
+  181.447   msh />
+  181.447   msh />
+  181.503 > 'free' (0.06 s)
+  181.503   free
+  181.503   memheap               pool size  max used size available size
+  181.503   -------------------- ---------- ------------- --------------
+  181.503   heap                 8388608    6477248       7307072
+  181.503   msh />
+  181.503   msh />
+  181.561 > 'adc probe adc' (0.06 s)
+  181.561   adc probe adc
+  181.561   probe adc success 
+  181.561   msh />
+  181.561   msh />
+  181.617 > 'adc read 1' (0.06 s)
+  181.617   adc read 1
+  181.617   adc channel 1  read value is 0x00000D3F 
+  181.617   msh />
+  181.617   msh />
+  181.678 > 'adc read 1' (0.06 s)
+  181.678   adc read 1
+  181.678   adc channel 1  read value is 0x00000D3B 
+  181.678   msh />
+  181.678   msh />
+  181.734 > 'adc read 1' (0.06 s)
+  181.734   adc read 1
+  181.734   adc channel 1  read value is 0x00000D3F 
+  181.734   msh />
+  181.734   msh />
+  181.791 > 'adc read 1' (0.06 s)
+  181.791   adc read 1
+  181.791   adc channel 1  read value is 0x00000CDB 
+  181.791   msh />
+  181.791   msh />
+  181.848 > 'adc read 1' (0.06 s)
+  181.848   adc read 1
+  181.848   adc channel 1  read value is 0x00000D4D 
+  181.848   msh />
+  181.848   msh />
+  181.904 > 'adc read 1' (0.06 s)
+  181.904   adc read 1
+  181.904   adc channel 1  read value is 0x00000D00 
+  181.904   msh />
+  181.904   msh />
+  181.960 > 'adc read 1' (0.06 s)
+  181.960   adc read 1
+  181.960   adc channel 1  read value is 0x00000CEF 
+  181.960   msh />
+  181.960   msh />
+  182.017 > 'adc read 1' (0.06 s)
+  182.017   adc read 1
+  182.017   adc channel 1  read value is 0x00000CE7 
+  182.017   msh />
+  182.017   msh />
+  193.774 > 'chip_temp' (0.07 s)
+  193.774   chip_temp
+  193.774   chip temperature: 50.305 C
+  193.774   msh />
+  193.774   msh />
+  193.831 > 'free' (0.06 s)
+  193.831   free
+  193.831   memheap               pool size  max used size available size
+  193.831   -------------------- ---------- ------------- --------------
+  193.831   heap                 8388608    6477248       7307072
+  193.831   msh />
+  193.831   msh />
+  193.888 > 'adc probe adc' (0.06 s)
+  193.888   adc probe adc
+  193.888   probe adc success 
+  193.888   msh />
+  193.888   msh />
+  193.946 > 'adc read 1' (0.06 s)
+  193.946   adc read 1
+  193.946   adc channel 1  read value is 0x00000D50 
+  193.946   msh />
+  193.946   msh />
+  194.003 > 'adc read 1' (0.06 s)
+  194.003   adc read 1
+  194.003   adc channel 1  read value is 0x00000D09 
+  194.003   msh />
+  194.003   msh />
+  194.060 > 'adc read 1' (0.06 s)
+  194.060   adc read 1
+  194.060   adc channel 1  read value is 0x00000D44 
+  194.060   msh />
+  194.060   msh />
+  194.118 > 'adc read 1' (0.06 s)
+  194.118   adc read 1
+  194.118   adc channel 1  read value is 0x00000CEC 
+  194.118   msh />
+  194.118   msh />
+  194.183 > 'adc read 1' (0.06 s)
+  194.183   adc read 1
+  194.183   adc channel 1  read value is 0x00000CEE 
+  194.183   msh />
+  194.183   msh />
+  194.241 > 'adc read 1' (0.06 s)
+  194.241   adc read 1
+  194.241   adc channel 1  read value is 0x00000D21 
+  194.241   msh />
+  194.241   msh />
+  194.301 > 'adc read 1' (0.06 s)
+  194.301   adc read 1
+  194.301   adc channel 1  read value is 0x00000CE3 
+  194.301   msh />
+  194.301   msh />
+  194.360 > 'adc read 1' (0.06 s)
+  194.360   adc read 1
+  194.360   adc channel 1  read value is 0x00000D54 
+  194.360   msh />
+  194.360   msh />
+  206.090 > 'chip_temp' (0.07 s)
+  206.090   chip_temp
+  206.090   chip temperature: 52.106 C
+  206.090   msh />
+  206.090   msh />
+  206.147 > 'free' (0.06 s)
+  206.147   free
+  206.147   memheap               pool size  max used size available size
+  206.147   -------------------- ---------- ------------- --------------
+  206.147   heap                 8388608    6477248       7307072
+  206.147   msh />
+  206.147   msh />
+  206.203 > 'adc probe adc' (0.06 s)
+  206.203   adc probe adc
+  206.203   probe adc success 
+  206.203   msh />
+  206.203   msh />
+  206.261 > 'adc read 1' (0.06 s)
+  206.261   adc read 1
+  206.261   adc channel 1  read value is 0x00000D46 
+  206.261   msh />
+  206.261   msh />
+  206.318 > 'adc read 1' (0.06 s)
+  206.318   adc read 1
+  206.318   adc channel 1  read value is 0x00000D32 
+  206.318   msh />
+  206.318   msh />
+  206.374 > 'adc read 1' (0.06 s)
+  206.374   adc read 1
+  206.374   adc channel 1  read value is 0x00000CFF 
+  206.374   msh />
+  206.374   msh />
+  206.432 > 'adc read 1' (0.06 s)
+  206.432   adc read 1
+  206.432   adc channel 1  read value is 0x00000D2A 
+  206.432   msh />
+  206.432   msh />
+  206.488 > 'adc read 1' (0.06 s)
+  206.488   adc read 1
+  206.488   adc channel 1  read value is 0x00000D2E 
+  206.488   msh />
+  206.488   msh />
+  206.544 > 'adc read 1' (0.06 s)
+  206.544   adc read 1
+  206.544   adc channel 1  read value is 0x00000CEE 
+  206.544   msh />
+  206.544   msh />
+  206.602 > 'adc read 1' (0.06 s)
+  206.602   adc read 1
+  206.602   adc channel 1  read value is 0x00000D01 
+  206.602   msh />
+  206.602   msh />
+  206.659 > 'adc read 1' (0.06 s)
+  206.659   adc read 1
+  206.659   adc channel 1  read value is 0x00000D39 
+  206.659   msh />
+  206.659   msh />
+  218.407 > 'chip_temp' (0.07 s)
+  218.407   chip_temp
+  218.407   chip temperature: 52.406 C
+  218.407   msh />
+  218.407   msh />
+  218.466 > 'free' (0.06 s)
+  218.466   free
+  218.466   memheap               pool size  max used size available size
+  218.466   -------------------- ---------- ------------- --------------
+  218.466   heap                 8388608    6477248       7307072
+  218.466   msh />
+  218.466   msh />
+  218.524 > 'adc probe adc' (0.06 s)
+  218.524   adc probe adc
+  218.524   probe adc success 
+  218.524   msh />
+  218.524   msh />
+  218.581 > 'adc read 1' (0.06 s)
+  218.581   adc read 1
+  218.581   adc channel 1  read value is 0x00000CE6 
+  218.581   msh />
+  218.581   msh />
+  218.638 > 'adc read 1' (0.06 s)
+  218.638   adc read 1
+  218.638   adc channel 1  read value is 0x00000D3E 
+  218.638   msh />
+  218.638   msh />
+  218.695 > 'adc read 1' (0.06 s)
+  218.695   adc read 1
+  218.695   adc channel 1  read value is 0x00000D03 
+  218.695   msh />
+  218.695   msh />
+  218.751 > 'adc read 1' (0.06 s)
+  218.751   adc read 1
+  218.751   adc channel 1  read value is 0x00000D19 
+  218.751   msh />
+  218.751   msh />
+  218.808 > 'adc read 1' (0.06 s)
+  218.808   adc read 1
+  218.808   adc channel 1  read value is 0x00000CFF 
+  218.808   msh />
+  218.808   msh />
+  218.868 > 'adc read 1' (0.06 s)
+  218.868   adc read 1
+  218.868   adc channel 1  read value is 0x00000D2C 
+  218.868   msh />
+  218.868   msh />
+  218.924 > 'adc read 1' (0.06 s)
+  218.924   adc read 1
+  218.924   adc channel 1  read value is 0x00000CFF 
+  218.924   msh />
+  218.924   msh />
+  218.983 > 'adc read 1' (0.06 s)
+  218.983   adc read 1
+  218.983   adc channel 1  read value is 0x00000D42 
+  218.983   msh />
+  218.983   msh />
+  219.043 > 'pwm_disable pwm 0' (0.06 s)
+  219.043   pwm_disable pwm 0
+  219.043   msh />
+  219.043   msh />
+  219.099 > 'pwm_disable pwm 1' (0.06 s)
+  219.099   pwm_disable pwm 1
+  219.099   msh />
+  219.099   msh />
+  222.854 > 'chip_temp' (0.07 s)
+  222.854   chip_temp
+  222.854   chip temperature: 52.406 C
+  222.854   msh />
+  222.854   msh />
+  222.914 > 'free' (0.06 s)
+  222.914   free
+  222.914   memheap               pool size  max used size available size
+  222.914   -------------------- ---------- ------------- --------------
+  222.914   heap                 8388608    6477248       7307072
+  222.914   msh />
+  222.914   msh />
+  222.974 > 'adc probe adc' (0.06 s)
+  222.974   adc probe adc
+  222.974   probe adc success 
+  222.974   msh />
+  222.974   msh />
+  223.035 > 'adc read 1' (0.06 s)
+  223.035   adc read 1
+  223.035   adc channel 1  read value is 0x00000CEE 
+  223.035   msh />
+  223.035   msh />
+  223.096 > 'adc read 1' (0.06 s)
+  223.096   adc read 1
+  223.096   adc channel 1  read value is 0x00000D4A 
+  223.096   msh />
+  223.096   msh />
+  223.154 > 'adc read 1' (0.06 s)
+  223.154   adc read 1
+  223.154   adc channel 1  read value is 0x00000D52 
+  223.154   msh />
+  223.154   msh />
+  223.214 > 'adc read 1' (0.06 s)
+  223.214   adc read 1
+  223.214   adc channel 1  read value is 0x00000D4F 
+  223.214   msh />
+  223.214   msh />
+  223.270 > 'adc read 1' (0.06 s)
+  223.270   adc read 1
+  223.270   adc channel 1  read value is 0x00000D3E 
+  223.270   msh />
+  223.270   msh />
+  223.331 > 'adc read 1' (0.06 s)
+  223.331   adc read 1
+  223.331   adc channel 1  read value is 0x00000CFF 
+  223.331   msh />
+  223.331   msh />
+  223.389 > 'adc read 1' (0.06 s)
+  223.389   adc read 1
+  223.389   adc channel 1  read value is 0x00000D10 
+  223.389   msh />
+  223.389   msh />
+  223.444 > 'adc read 1' (0.06 s)
+  223.444   adc read 1
+  223.444   adc channel 1  read value is 0x00000CF6 
+  223.444   msh />
+  223.444   msh />

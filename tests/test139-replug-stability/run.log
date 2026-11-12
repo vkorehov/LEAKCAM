@@ -1,0 +1,297 @@
+03:09:11 test139-replug-stability: 0 metric rows MISSING: none
+03:09:17 phone: relay 0.5 s (http)
+03:09:25 CHECK pass no network: the setup firmware 8 s
+03:09:25 case A100: unplugged, plugged back after d ms (inside the unplug path: K230 stop, advertising restart at ~4 ms, the sleep
+03:09:29 phone: relay 3.6 s (http)
+03:09:35 phone: scan 5.8 s
+03:09:36 phone: relay 0.5 s (http)
+03:09:43 CHECK pass A100: replug 100 ms after the unplug phases 174/3183 ms; found 5.8 s
+03:09:43 case A300: unplugged, plugged back after d ms (inside the unplug path: K230 stop, advertising restart at ~4 ms, the sleep
+03:09:47 phone: relay 3.7 s (http)
+03:09:51 phone: scan 3.6 s
+03:09:51 phone: relay 0.5 s (http)
+03:09:58 CHECK pass A300: replug 300 ms after the unplug phases 393/3121 ms; found 3.6 s
+03:09:58 case A600: unplugged, plugged back after d ms (inside the unplug path: K230 stop, advertising restart at ~4 ms, the sleep
+03:10:03 phone: relay 4.0 s (http)
+03:10:07 phone: scan 4.0 s
+03:10:07 phone: relay 0.5 s (http)
+03:10:11 CHECK pass A600: replug 600 ms after the unplug phases 657/3091 ms; found 4.0 s
+03:10:11 case A900: unplugged, plugged back after d ms (inside the unplug path: K230 stop, advertising restart at ~4 ms, the sleep
+03:10:16 phone: relay 4.3 s (http)
+03:10:24 phone: scan 7.6 s
+03:10:24 phone: relay 0.4 s (http)
+03:10:31 CHECK pass A900: replug 900 ms after the unplug phases 960/3120 ms; found 7.6 s
+03:10:31 case A1000: unplugged, plugged back after d ms (inside the unplug path: K230 stop, advertising restart at ~4 ms, the sleep
+03:10:36 phone: relay 4.5 s (http)
+03:10:49 phone: scan 12.3 s
+03:10:50 phone: relay 0.4 s (http)
+03:10:56 CHECK pass A1000: replug 1000 ms after the unplug phases 1080/3090 ms; found 12.3 s
+03:10:56 case A1100: unplugged, plugged back after d ms (inside the unplug path: K230 stop, advertising restart at ~4 ms, the sleep
+03:11:02 phone: relay 4.6 s (http)
+03:11:10 phone: scan 7.8 s
+03:11:10 phone: relay 0.2 s (http)
+03:11:15 CHECK pass A1100: replug 1100 ms after the unplug phases 1169/3090 ms; found 7.8 s
+03:11:15 case A1300: unplugged, plugged back after d ms (inside the unplug path: K230 stop, advertising restart at ~4 ms, the sleep
+03:11:20 phone: relay 5.1 s (http)
+03:11:28 phone: scan 7.7 s
+03:11:28 phone: relay 0.2 s (http)
+03:11:33 CHECK pass A1300: replug 1300 ms after the unplug phases 1351/3181 ms; found 7.7 s
+03:11:33 case A2000: unplugged, plugged back after d ms (inside the unplug path: K230 stop, advertising restart at ~4 ms, the sleep
+03:11:38 phone: relay 5.4 s (http)
+03:11:44 phone: scan 5.4 s
+03:11:45 phone: relay 0.4 s (http)
+03:11:52 CHECK pass A2000: replug 2000 ms after the unplug phases 2126/3065 ms; found 5.4 s
+03:11:52 case A3000: unplugged, plugged back after d ms (inside the unplug path: K230 stop, advertising restart at ~4 ms, the sleep
+03:11:59 phone: relay 6.4 s (http)
+03:12:05 phone: scan 6.3 s
+03:12:06 phone: relay 0.4 s (http)
+03:12:09 CHECK pass A3000: replug 3000 ms after the unplug phases 3121/3060 ms; found 6.3 s
+03:12:09 case A6000: unplugged, plugged back after d ms (inside the unplug path: K230 stop, advertising restart at ~4 ms, the sleep
+03:12:20 phone: relay 9.5 s (http)
+03:12:25 phone: scan 5.4 s
+03:12:26 phone: relay 0.2 s (http)
+03:12:33 CHECK pass A6000: replug 6000 ms after the unplug phases 6116/3063 ms; found 5.4 s
+03:12:33 case B50: asleep 8 s (advertising), plugged (the PGOOD wake, USB back, the K230 session at ~0.1-1.6 s), unplugged d ms
+03:12:42 phone: relay 8.5 s (http)
+03:12:49 phone: scan 6.8 s
+03:12:50 phone: relay 0.2 s (http)
+03:12:57 CHECK pass B50: asleep, plugged, unplugged 50 ms later phases 8160/150 ms; found 6.8 s
+03:12:57 case B150: asleep 8 s (advertising), plugged (the PGOOD wake, USB back, the K230 session at ~0.1-1.6 s), unplugged d ms
+03:13:06 phone: relay 8.6 s (http)
+03:13:11 phone: scan 4.9 s
+03:13:12 phone: relay 0.2 s (http)
+03:13:19 CHECK pass B150: asleep, plugged, unplugged 150 ms later phases 8075/209 ms; found 4.9 s
+03:13:19 case B400: asleep 8 s (advertising), plugged (the PGOOD wake, USB back, the K230 session at ~0.1-1.6 s), unplugged d ms
+03:13:28 phone: relay 8.8 s (http)
+03:13:35 phone: scan 6.2 s
+03:13:35 phone: relay 0.2 s (http)
+03:14:15 BL616 port missing: the VM's USB controller reset (xhci unbind/bind)
+03:14:20 B400: asleep, plugged, unplugged 400 ms later: the VM's USB controller hung; after its reset the setup firmware back
+03:14:20 CHECK pass B400: asleep, plugged, unplugged 400 ms later phases 8101/480 ms; found 6.2 s
+03:14:20 case B800: asleep 8 s (advertising), plugged (the PGOOD wake, USB back, the K230 session at ~0.1-1.6 s), unplugged d ms
+03:14:30 phone: relay 9.2 s (http)
+03:14:43 phone: scan 13.7 s
+03:14:44 phone: relay 0.3 s (http)
+03:14:51 CHECK pass B800: asleep, plugged, unplugged 800 ms later phases 8070/870 ms; found 13.7 s
+03:14:51 case B1500: asleep 8 s (advertising), plugged (the PGOOD wake, USB back, the K230 session at ~0.1-1.6 s), unplugged d ms
+03:15:02 phone: relay 10.1 s (http)
+03:15:07 phone: scan 5.5 s
+03:15:08 phone: relay 0.3 s (http)
+03:15:15 CHECK pass B1500: asleep, plugged, unplugged 1500 ms later phases 8159/1561 ms; found 5.5 s
+03:15:15 case B3000: asleep 8 s (advertising), plugged (the PGOOD wake, USB back, the K230 session at ~0.1-1.6 s), unplugged d ms
+03:15:27 phone: relay 11.5 s (http)
+03:15:31 phone: scan 4.4 s
+03:15:32 phone: relay 0.3 s (http)
+03:15:39 CHECK pass B3000: asleep, plugged, unplugged 3000 ms later phases 8074/3119 ms; found 4.4 s
+03:15:39 case C10x100: n replugs in a row g ms apart (a bad cable, a plug wiggled in), ending unplugged
+03:15:43 phone: relay 3.8 s (http)
+03:15:52 phone: scan 9.0 s
+03:15:53 phone: relay 0.4 s (http)
+03:16:00 CHECK pass C10x100: 10 replugs 100 ms apart phases 153/178/150/152/181/175/154/180/150/180/180/177/152/181/178/182/180/150/180/180 ms; found 9.0 s
+03:16:00 case C5x200: n replugs in a row g ms apart (a bad cable, a plug wiggled in), ending unplugged
+03:16:04 phone: relay 3.1 s (http)
+03:16:13 phone: scan 9.6 s
+03:16:14 phone: relay 0.2 s (http)
+03:16:21 CHECK pass C5x200: 5 replugs 200 ms apart phases 267/272/271/269/269/303/266/275/268/270 ms; found 9.6 s
+03:16:21 case C5x500: n replugs in a row g ms apart (a bad cable, a plug wiggled in), ending unplugged
+03:16:28 phone: relay 6.0 s (http)
+03:16:32 phone: scan 4.5 s
+03:16:33 phone: relay 0.2 s (http)
+03:16:40 CHECK pass C5x500: 5 replugs 500 ms apart phases 571/571/566/575/569/570/570/568/574/565 ms; found 4.5 s
+03:16:40 case C3x1000: n replugs in a row g ms apart (a bad cable, a plug wiggled in), ending unplugged
+03:16:48 phone: relay 6.8 s (http)
+03:16:55 phone: scan 7.7 s
+03:16:56 phone: relay 0.4 s (http)
+03:17:03 CHECK pass C3x1000: 3 replugs 1000 ms apart phases 1077/1108/1051/1052/1081/1079 ms; found 7.7 s
+03:17:03 case D0: `slot switch` (setup -> full, no network: the full firmware switches back to the setup firmware) with the
+03:17:04 phone: relay 0.3 s (http)
+03:17:17 BL616 port missing: the VM's USB controller reset (xhci unbind/bind)
+03:17:41 BL616 port missing
+03:17:46 phone: scan 4.1 s
+03:17:46 phone: relay 0.3 s (http)
+03:17:54 CHECK pass D0: unplug around the switch to the full firmware unplug 0 ms after the relay's first phase; see the evlog for the offset; found 4.1 s
+03:17:54 evlog (D offsets):
+evlog
+evlog: 44 events, oldest first (ms = uptime since that boot)
+      9132 ms  k230   session stops
+      9133 ms  mark   step 1 value 0
+      9137 ms  adv    on, 2000 ms
+     11137 ms  usb    unplugged
+     11137 ms  mark   step 1 value 0
+     11142 ms  adv    on, 2000 ms
+     13141 ms  usb    unplugged
+     13141 ms  mark   step 1 value 0
+     13146 ms  adv    on, 2000 ms
+     15145 ms  usb    unplugged
+     15145 ms  mark   step 1 value 0
+     15150 ms  adv    on, 2000 ms
+     16149 ms  sleep  begins
+         3 ms  usb    plugged
+         3 ms  sleep  ends, 4 advertising wakes
+        74 ms  k230   session starts
+      8070 ms  usb    unplugged
+      8070 ms  k230   session stops
+      8071 ms  mark   step 1 value 0
+      8075 ms  adv    on, 2000 ms
+      9075 ms  sleep  begins
+         3 ms  usb    plugged
+         3 ms  sleep  ends, 21 advertising wakes
+       124 ms  k230   session starts
+bouffalolab />
+bouffalolab />
+03:17:54 case D1000: `slot switch` (setup -> full, no network: the full firmware switches back to the setup firmware) with the
+03:17:56 phone: relay 1.4 s (http)
+03:18:08 BL616 port missing: the VM's USB controller reset (xhci unbind/bind)
+03:18:32 BL616 port missing
+03:18:38 phone: scan 5.8 s
+03:18:38 phone: relay 0.2 s (http)
+03:18:46 CHECK pass D1000: unplug around the switch to the full firmware unplug 1000 ms after the relay's first phase; see the evlog for the offset; found 5.8 s
+03:18:46 evlog (D offsets):
+evlog
+evlog: 44 events, oldest first (ms = uptime since that boot)
+         3 ms  usb    plugged
+         3 ms  sleep  ends, 4 advertising wakes
+        74 ms  k230   session starts
+      8070 ms  usb    unplugged
+      8070 ms  k230   session stops
+      8071 ms  mark   step 1 value 0
+      8075 ms  adv    on, 2000 ms
+      9075 ms  sleep  begins
+         3 ms  usb    plugged
+         3 ms  sleep  ends, 21 advertising wakes
+       124 ms  k230   session starts
+     10120 ms  usb    unplugged
+     10120 ms  k230   session stops
+     10121 ms  mark   step 1 value 0
+     10125 ms  adv    on, 2000 ms
+     11125 ms  sleep  begins
+         3 ms  usb    plugged
+         3 ms  sleep  ends, 21 advertising wakes
+       115 ms  k230   session starts
+bouffalolab />
+bouffalolab />
+03:18:46 case D2000: `slot switch` (setup -> full, no network: the full firmware switches back to the setup firmware) with the
+03:18:49 phone: relay 2.3 s (http)
+03:18:57 phone: scan 6.2 s
+03:18:58 phone: relay 0.4 s (http)
+03:19:05 CHECK pass D2000: unplug around the switch to the full firmware unplug 2000 ms after the relay's first phase; see the evlog for the offset; found 6.2 s
+03:19:05 evlog (D offsets):
+evlog
+evlog: 44 events, oldest first (ms = uptime since that boot)
+         3 ms  usb    plugged
+         3 ms  sleep  ends, 21 advertising wakes
+       115 ms  k230   session starts
+     11110 ms  usb    unplugged
+     11110 ms  k230   session stops
+     11111 ms  mark   step 1 value 0
+     11115 ms  adv    on, 2000 ms
+     11595 ms  switch to the full firmware
+     12115 ms  sleep  begins
+         7 ms  boot   full firmware, rst=fd
+       191 ms  switch to the setup firmware
+         8 ms  boot   setup firmware, rst=80
+       169 ms  sleep  begins
+         3 ms  usb    plugged
+         3 ms  sleep  ends, 3 advertising wakes
+      1949 ms  k230   session starts
+bouffalolab />
+bouffalolab />
+03:19:05 case D3000: `slot switch` (setup -> full, no network: the full firmware switches back to the setup firmware) with the
+03:19:09 phone: relay 3.5 s (http)
+03:19:18 phone: scan 8.0 s
+03:19:18 phone: relay 0.2 s (http)
+03:19:22 CHECK pass D3000: unplug around the switch to the full firmware unplug 3000 ms after the relay's first phase; see the evlog for the offset; found 8.0 s
+03:19:23 evlog (D offsets):
+evlog
+evlog: 44 events, oldest first (ms = uptime since that boot)
+         7 ms  boot   full firmware, rst=fd
+       191 ms  switch to the setup firmware
+         8 ms  boot   setup firmware, rst=80
+       169 ms  sleep  begins
+         3 ms  usb    plugged
+         3 ms  sleep  ends, 3 advertising wakes
+      1949 ms  k230   session starts
+     11244 ms  switch to the full firmware
+         7 ms  boot   full firmware, rst=fd
+       194 ms  switch to the setup firmware
+         8 ms  boot   setup firmware, rst=80
+       169 ms  sleep  begins
+         3 ms  usb    plugged
+         3 ms  sleep  ends, 3 advertising wakes
+       126 ms  k230   session starts
+bouffalolab />
+bouffalolab />
+03:19:23 case D5000: `slot switch` (setup -> full, no network: the full firmware switches back to the setup firmware) with the
+03:19:28 phone: relay 5.4 s (http)
+03:19:36 phone: scan 8.1 s
+03:19:37 phone: relay 0.4 s (http)
+03:19:44 CHECK pass D5000: unplug around the switch to the full firmware unplug 5000 ms after the relay's first phase; see the evlog for the offset; found 8.1 s
+03:19:44 evlog (D offsets):
+evlog
+evlog: 44 events, oldest first (ms = uptime since that boot)
+         8 ms  boot   setup firmware, rst=80
+       169 ms  sleep  begins
+         3 ms  usb    plugged
+         3 ms  sleep  ends, 3 advertising wakes
+       126 ms  k230   session starts
+      8476 ms  switch to the full firmware
+         7 ms  boot   full firmware, rst=fd
+       194 ms  switch to the setup firmware
+         8 ms  boot   setup firmware, rst=80
+       212 ms  k230   session starts
+      1033 ms  usb    unplugged
+      1034 ms  k230   session stops
+      1034 ms  mark   step 1 value 0
+      1039 ms  adv    on, 2000 ms
+      2038 ms  sleep  begins
+         3 ms  usb    plugged
+         3 ms  sleep  ends, 3 advertising wakes
+      2004 ms  k230   session starts
+bouffalolab />
+bouffalolab />
+03:19:44 case Ecc-only: the half-plugged states of the relay box's bring-up (2026-11-08 18:42-18:49, the last thing before the first
+03:19:58 phone: relay 13.5 s (http)
+03:20:11 phone: scan 13.3 s
+03:20:12 phone: relay 0.5 s (http)
+03:20:19 CHECK pass E cc-only phases 10078/3059 ms; found 13.3 s
+03:20:19 case Evbus-only: the half-plugged states of the relay box's bring-up (2026-11-08 18:42-18:49, the last thing before the first
+03:20:30 phone: relay 10.5 s (http)
+03:20:38 phone: scan 7.4 s
+03:20:38 phone: relay 0.4 s (http)
+03:20:45 CHECK pass E vbus-only phases 10139 ms; found 7.4 s
+03:20:45 case Edata-first: the half-plugged states of the relay box's bring-up (2026-11-08 18:42-18:49, the last thing before the first
+03:20:47 phone: relay 0.8 s (http)
+03:20:51 phone: scan 4.0 s
+03:20:51 phone: relay 0.4 s (http)
+03:20:58 CHECK pass E data-first phases 573 ms; found 4.0 s
+03:20:58 case Epower-first: the half-plugged states of the relay box's bring-up (2026-11-08 18:42-18:49, the last thing before the first
+03:21:00 phone: relay 1.4 s (http)
+03:21:07 phone: scan 6.4 s
+03:21:07 phone: relay 0.3 s (http)
+03:21:47 BL616 port missing: the VM's USB controller reset (xhci unbind/bind)
+03:21:55 E power-first: the VM's USB controller hung; after its reset the setup firmware back
+03:21:55 CHECK pass E power-first phases 572/570 ms; found 6.4 s
+03:21:55 case Eone-by-one: the half-plugged states of the relay box's bring-up (2026-11-08 18:42-18:49, the last thing before the first
+03:21:58 phone: relay 2.5 s (http)
+03:22:03 phone: scan 4.8 s
+03:22:03 phone: relay 0.3 s (http)
+03:22:07 CHECK pass E one-by-one phases 568/572/565/570 ms; found 4.8 s
+03:22:07 case Ephone: the half-plugged states of the relay box's bring-up (2026-11-08 18:42-18:49, the last thing before the first
+03:22:19 phone: relay 11.4 s (http)
+03:22:25 phone: scan 5.7 s
+03:22:25 phone: relay 0.4 s (http)
+03:22:32 CHECK pass E phone phases 1080/10078 ms; found 5.7 s
+03:22:32 case Ephone-bench: the half-plugged states of the relay box's bring-up (2026-11-08 18:42-18:49, the last thing before the first
+03:22:48 phone: relay 15.5 s (http)
+03:22:55 phone: scan 6.4 s
+03:22:55 phone: relay 0.4 s (http)
+03:22:59 CHECK pass E phone-bench phases 1053/10076/1053/3060 ms; found 6.4 s
+03:23:00 phone: relay 0.2 s (http)
+03:23:04 sample after the cases {'board': None, 'bl_mem': (131544, 118348, 122408, 103, 76824, 18, 0)}
+03:23:06 cable: ID 7C3E8262B149 0 4141 1 setup
+03:23:06 cable: STATUS 1 0 1
+03:23:07 cable: STATUS 2 0 1
+03:23:07 cable: STATUS 3 0 1
+03:23:08 cable: STATUS 4 0 1
+suite start state: not the bench network on setup: set up over the cable (4, 1.636242151260376), full in 10 s
+03:23:20 test139-replug-stability: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

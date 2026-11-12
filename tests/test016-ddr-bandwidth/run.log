@@ -1,14 +1,12 @@
-16:51:20 test016-ddr-bandwidth: 2 metric rows MISSING: Current idle / during (min / avg / peak), Power, energy per operation
-16:51:28 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
-16:51:34 sample idle {'board': 26.8, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 32.786, 'k_free': (7025152, 1390848), 'vbat': 4351}
-16:51:39 sample run 1 {'board': 26.9, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 34.306, 'k_free': (7025152, 7655168), 'vbat': 4385}
-16:51:39 >>> METER test016-ddr-bandwidth: K230 running ddr_bench 3072 over and over - reading in amps to /home/vkorehovs/.leakcam_meter
-16:53:11 meter K230 running ddr_bench 3072 over and over: 0.250 A
-16:53:16 sample run 2 {'board': 32.4, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.082, 'k_free': (7312064, 7655360), 'vbat': 4379}
-16:53:20 sample run 3 {'board': 32.6, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.987, 'k_free': (7312064, 7655360), 'vbat': 4348}
-16:53:24 sample run 4 {'board': 32.8, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.987, 'k_free': (7312064, 7655360), 'vbat': 4363}
-16:53:29 sample run 5 {'board': 32.9, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.082, 'k_free': (7312064, 7655360), 'vbat': 4335}
-16:53:33 sample run 6 {'board': 33.0, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.082, 'k_free': (7312064, 7655360), 'vbat': 4382}
-16:53:38 sample run 7 {'board': 33.2, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.987, 'k_free': (7312064, 7655360), 'vbat': 4333}
-16:53:42 sample run 8 {'board': 33.3, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 44.589, 'k_free': (7312064, 7655360), 'vbat': 4369}
-16:53:44 test016-ddr-bandwidth: PASS; filled 2: Current idle / during (min / avg / peak), Power, energy per operation; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+23:29:23 test016-ddr-bandwidth: 0 metric rows MISSING: none
+23:29:31 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.56 msh 0.56
+23:29:37 sample idle {'board': 34.3, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 41.271, 'k_free': (7020032, 1395968), 'vbat': 4359}
+23:29:42 sample run 1 {'board': 34.2, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 42.177, 'k_free': (7020032, 7660288), 'vbat': 4354}
+23:29:46 sample run 2 {'board': 34.1, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 43.082, 'k_free': (7020032, 7660288), 'vbat': 4370}
+23:29:51 sample run 3 {'board': 34.2, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 43.384, 'k_free': (7020032, 7660288), 'vbat': 4348}
+23:29:56 sample run 4 {'board': 34.3, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 44.288, 'k_free': (2495616, 7660288), 'vbat': 4278}
+23:30:00 sample run 5 {'board': 34.4, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 44.288, 'k_free': (7307072, 7660288), 'vbat': 4360}
+23:30:04 sample run 6 {'board': 34.6, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 43.987, 'k_free': (7307072, 7660288), 'vbat': 4406}
+23:30:09 sample run 7 {'board': 34.7, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 43.987, 'k_free': (7307072, 7660288), 'vbat': 4414}
+23:30:13 sample run 8 {'board': 34.8, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 44.288, 'k_free': (7307072, 7660288), 'vbat': 4377}
+23:30:16 test016-ddr-bandwidth: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

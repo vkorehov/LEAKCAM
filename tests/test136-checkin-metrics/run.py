@@ -18,7 +18,7 @@ import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, K230_PORT, log, openp, wifi_credentials   # noqa: E402
-from phone import SERVER, board_id, creds, erase, firmware, to_firmware, want   # noqa: E402
+from phone import SERVER, as_board, board_id, creds, erase, firmware, to_firmware, want   # noqa: E402
 import cable   # noqa: E402
 
 PI = "pi@192.168.1.159"
@@ -108,12 +108,18 @@ form = m.group(1) if m else ""
 keys = dict(kv.split("=", 1) for kv in form.strip("&").split("&") if "=" in kv)
 check("metrics on the console: every BL616 key", all(k in keys for k in BASE),
       "missing " + " ".join(k for k in BASE if k not in keys) if not all(k in keys for k in BASE) else f"{len(keys)} keys")
-check("form size within the 512 B buffer (with ssid and version)", len(form) + 80 <= 512, f"{len(form)} B + ~80")
+# worst case of the firmware's prefix (wifi_check.c poll_form): "ssid=" + a 32 B name url-encoded (96) + "&<image>="
+# + a 36 B version url-encoded (108); the form buffer is FORM_CAP (wifi_check.c; 512 B overflowed into an assert,
+# 2026-11-12)
+FORM_CAP = 768
+worst = len(form) + len("ssid=") + 96 + len("&setup=") + 108
+check(f"form size within the {FORM_CAP} B buffer at the worst ssid and version", worst < FORM_CAP,
+      f"{len(form)} B metrics, {worst} B at worst")
 t0 = time.time()
 bl("metrics", 3, r"metrics: [^\n]*\n")
 r.set("Sensor read", f"<= {(time.time() - t0) * 1000:.0f} ms (the whole `metrics` command over the console, sampling "
       "and printing)")
-r.set("Form size", f"{len(form)} B metrics + ssid/version ({len(form) + 80} B with ~80 B prefix) of 512")
+r.set("Form size", f"{len(form)} B metrics; {worst} B with the longest ssid and version (url-encoded) of {FORM_CAP}")
 s1 = next_checkin(dev, utc())
 check("a check-in reaches the server with the metrics", s1 is not None)
 if s1 is None:
@@ -127,7 +133,7 @@ d = json.loads(urllib.request.urlopen(f"{SERVER}/v1/devices/{dev}", timeout=5).r
 check("GET /v1/devices/{id} gives the last check-in's metrics", d.get("metrics", {}).get("up") is not None)
 
 # 5. (and the sensors' ranges) the BL616 die and supply, the AHT20, the dry probe
-check("tdie 25-60 C", 250 <= mt["tdie"] <= 600, f"{mt['tdie'] / 10} C")
+check("tdie 10-70 C (plausible: the idle chip sits near the room, 23.7 C at night 2026-11-09)", 100 <= mt["tdie"] <= 700, f"{mt['tdie'] / 10} C")
 check("vdd 3200-3400 mV", 3200 <= mt["vdd"] <= 3400, f"{mt['vdd']} mV")
 check("AHT20 read (rh != -1), plausible", mt["rh"] >= 0 and 0 < mt["t"] < 600, f"t {mt['t'] / 10} C, rh {mt['rh'] / 10} %")
 check("probe dry 1600-1700 mV", 1600 <= mt["probe"] <= 1700, f"{mt['probe']} mV")
@@ -151,16 +157,26 @@ check("reboot: boots +1, up small, rst set", s3 and s3["metrics"]["boots"] == bo
 
 # 10. counters: the switch to setup and back
 t = utc()
-to_firmware("setup", "switch_to_setup wake", 60)
-back = to_firmware("full", None, 240)     # a phone's wake: the setup firmware goes back after 120 s
-check("switch_to_setup wake and back on USB power", back is not None, f"{back:.0f} s" if back else "not back")
-# on USB power the K230 runs in both firmwares (DESIGN.md 5.3.11): the full firmware's session ended by the switch and
-# the setup firmware's relay ended by the switch back both reach the full firmware's first check-in, with both switches
-check("no check-in from the wake's setup firmware", not next_checkin(dev, t, "setup", 5))
-sf = next_checkin(dev, t, "full")
+# `lost` (the phone's `wake` is gone from the product since 2026-11-07: the command answered "lost | unused" and the
+# board stayed, 2026-11-09); after `lost` the setup firmware runs no check ("no check", test128 step 5): its next start
+# on USB power with the network stored checks it and goes back to the full firmware
+went = to_firmware("setup", "switch_to_setup lost", 30)
+check("switch_to_setup lost: in the setup firmware", went is not None, f"{went:.1f} s" if went is not None else "not in 30 s")
+bl("reboot", 1)
+back = to_firmware("full", None, 90)
+check("switch_to_setup lost and back on USB power", back is not None, f"{back:.0f} s" if back else "not back")
+# on USB power the K230 runs in both firmwares (DESIGN.md 5.3.11). The setup firmware's start check reaches the API
+# (it is a check-in): it carries the switch to it and the full firmware's session that switch ended; it switches back
+# at once and starts no session of its own, so the full firmware's first check-in has the switch back alone
+# (2026-11-09; the old expectation "sw 2, ks 2 in the full one" was the removed phone wake's: no setup check-in, a relay)
+ss = next_checkin(dev, t, "setup", 10)
+sm = ss["metrics"] if ss else {}
+check("the setup firmware's check-in: sw 1, ks 1 (the full firmware's session ended by the switch)",
+      sm.get("sw") == 1 and sm.get("ks") == 1, " ".join(f"{k} {sm.get(k)}" for k in ("sw", "ks", "klast", "kms", "kon")))
+sf = next_checkin(dev, ss["at"] if ss else t, "full")
 fm = sf["metrics"] if sf else {}
-check("the full firmware's first check-in: sw 2, ks 2, klast 1 (both sessions ended by the switches)",
-      fm.get("sw") == 2 and fm.get("ks") == 2 and fm.get("klast") == 1,
+check("the full firmware's first check-in: sw 1, ks 0, klast 1 (the switch back; no setup session)",
+      fm.get("sw") == 1 and fm.get("ks") == 0 and fm.get("klast") == 1,
       " ".join(f"{k} {fm.get(k)}" for k in ("sw", "ks", "klast", "kms", "kon", "kfail")))
 sn = next_checkin(dev, sf["at"] if sf else utc(), "full")
 check("the one after: sw 0, ks 0", sn and sn["metrics"]["sw"] == 0 and sn["metrics"]["ks"] == 0,
@@ -208,8 +224,11 @@ check("the board on the full firmware with the network", back is not None and cr
 off = re.search(r"k230: off \(([^)]*)\)", bl_con.text)
 check("the relay ends with the K230 off", off is not None, off.group(1) if off else "no off line")
 sc = next_checkin(dev, t_setup, "setup", 5)
-check("the credential check-in (setup): ks 0 (the session still on)", sc and sc["metrics"]["ks"] == 0,
-      f"ks {sc['metrics']['ks']}" if sc else "none")
+# it carries the full firmware's session ended by the switch the erase caused (sw 1, ks 1), and the relay's own
+# session still on (kon > 0), not counted yet
+check("the credential check-in (setup): sw 1, ks 1 (the full firmware's session), the relay still on (kon > 0)",
+      sc and sc["metrics"]["sw"] == 1 and sc["metrics"]["ks"] == 1 and sc["metrics"]["kon"] > 0,
+      " ".join(f"{k} {sc['metrics'].get(k)}" for k in ("sw", "ks", "kon")) if sc else "none")
 sf = next_checkin(dev, t_setup, "full")
 fm = sf["metrics"] if sf else {}
 check("the full firmware's first check-in: ks 1, klast 1, kms > 0, sw 1",
@@ -221,9 +240,10 @@ check("... K230 values plausible", fm.get("kup", -1) >= 0 and 200 <= fm.get("ktd
       and fm.get("kheapmin", 0) > 0 and fm.get("kpages", 0) > 0,
       " ".join(f"{k} {fm.get(k)}" for k in ("kup", "ktdie", "kheap", "kheapmin", "kpages", "ksago", "kago")))
 # on USB the full firmware's own K230 session sends its first STATUS before the first check-in (DESIGN.md 5.3.11):
-# ksago is that one's age in this boot; the relay session ended in the other boot: kago -1
-check("... kago -1 (the session ended in another boot), ksago the full firmware's own STATUS (0-30 s)",
-      fm.get("kago") == -1 and 0 <= fm.get("ksago", -1) <= 30, f"ksago {fm.get('ksago')}, kago {fm.get('kago')}")
+# ksago is that one's age; the relay session ended before the switch, in the other boot: since 2026-11-10 the ages run
+# on the RTC through resets and switches (DESIGN.md 5.3.10), so kago is its real age, no longer -1
+check("... kago the relay session's age across the switch (RTC, 0-300 s), ksago the full firmware's own STATUS (0-30 s)",
+      0 <= fm.get("kago", -1) <= 300 and 0 <= fm.get("ksago", -1) <= 30, f"ksago {fm.get('ksago')}, kago {fm.get('kago')}")
 
 # 13. survival: a reset keeps the K230 fields and boots counts on (on USB the K230 starts again with the full
 # firmware: its STATUS may refresh kup before the first check-in, DESIGN.md 5.3.11)
@@ -242,17 +262,18 @@ check("the leak check's result in the check-in: job <cam0>,<cam1>, jago >= 0",
       and isinstance(jm.get("jago"), int) and jm["jago"] >= 0, f"job {jm.get('job')}, jago {jm.get('jago')}")
 
 # 14. the server
-req = urllib.request.Request(f"{SERVER}/v1/poll?id=000000000048", data=b"ssid=t048&zz=1&t=215", method="POST")
-urllib.request.urlopen(req, timeout=5).read()
+as_board("000000000048", "/v1/poll?id=000000000048", b"ssid=t048&zz=1&t=215")   # mTLS, as a board
 d = json.loads(urllib.request.urlopen(f"{SERVER}/v1/devices/000000000048", timeout=5).read())
 check("an unknown key is dropped, a known one kept", "zz" not in d["metrics"] and d["metrics"].get("t") == 215,
       json.dumps(d["metrics"]))
-try:
-    urllib.request.urlopen(f"{SERVER}/v1/poll?id=000000000048", timeout=5)
-    code = 200
-except urllib.error.HTTPError as e:
-    code = e.code
+code = as_board("000000000048", "/v1/poll?id=000000000048", method="GET")[0]
 check("a GET check-in is refused (405)", code == 405, str(code))
+try:
+    urllib.request.urlopen(urllib.request.Request(f"{SERVER}/v1/poll?id=000000000048", data=b"ssid=x"), timeout=5)
+    plain_code = 200
+except urllib.error.HTTPError as e:
+    plain_code = e.code
+check("no check-in on the plain port (the boards' requests only over mTLS)", plain_code in (404, 405), str(plain_code))
 hist = samples(dev, time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(t_run)))
 check("every check-in is a history line", len(hist) >= 8, f"{len(hist)} lines in this run")
 

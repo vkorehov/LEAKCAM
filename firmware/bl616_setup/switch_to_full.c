@@ -21,6 +21,11 @@
 #define SWITCH_TO_FULL_RETRY_S  (6 * 3600)   /* presence lost: the stored network tried again (DESIGN.md 5.3.1) */
 
 static volatile bool running;
+/* the cable start's check, readable at any time (`switch_to_full`): a test that waited for its line missed it when it
+ * came before the console was read (test128 step 5 sat 15 s) */
+static enum { CHECK_NONE, CHECK_RUNNING, CHECK_NO_NETWORK, CHECK_FAILED } usb_check;
+static uint8_t usb_check_state;
+static uint16_t usb_check_detail;
 
 static void no_progress(enum wifi_check_state st, uint16_t detail)
 {
@@ -54,7 +59,9 @@ static void usb_task(void *arg)
     (void)arg;
     size_t sl = ef_get_env_blob("wifi_ssid", ssid, sizeof(ssid) - 1, &ss);
     size_t pl = ef_get_env_blob("wifi_psk", psk, sizeof(psk) - 1, &ps);
+    usb_check = CHECK_RUNNING;
     if (ss == 0) {
+        usb_check = CHECK_NO_NETWORK;
         printf("switch_to_full: USB power, no network stored: setup stays\r\n");
         usb_setup_begin();
     } else {
@@ -64,6 +71,9 @@ static void usb_task(void *arg)
         if (st == WCHK_INTERNET)
             switch_now();                   /* never returns on success */
         else {
+            usb_check_state = (uint8_t)st;
+            usb_check_detail = detail;
+            usb_check = CHECK_FAILED;
             printf("switch_to_full: USB power, the stored network failed its check (state 0x%02x detail %u): setup stays\r\n",
                    st, detail);
             usb_setup_begin();
@@ -89,6 +99,26 @@ static void credentials_task(void *arg)
     vTaskDelete(NULL);
 }
 
+/* a humidity alarm (DESIGN.md 5.3.15): the full firmware tells the server and checks the scene (its first reading at
+ * its start sees the same humidity); with no network stored nobody can be told: setup stays */
+static void humid_task(void *arg)
+{
+    (void)arg;
+    char ssid[2];
+    size_t stored = 0;
+    (void)ef_get_env_blob("wifi_ssid", ssid, sizeof(ssid), &stored);
+    while (ble_pairing_connected())
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    if (stored) {                           /* switch_now() ends the cable setup's K230 session first */
+        printf("switch_to_full: humidity alarm: to the full firmware\r\n");
+        switch_now();
+    } else {
+        printf("switch_to_full: humidity alarm, no network stored: setup stays\r\n");
+    }
+    running = false;
+    vTaskDelete(NULL);
+}
+
 static void start(TaskFunction_t fn, const char *name)
 {
     taskENTER_CRITICAL();
@@ -109,6 +139,11 @@ void switch_to_full_on_usb(void)
 void switch_to_full_after_credentials(void)
 {
     start(credentials_task, "hand_cred");
+}
+
+void switch_to_full_humid(void)
+{
+    start(humid_task, "hand_humid");
 }
 
 static void back_task(void *arg)
@@ -140,3 +175,24 @@ bool switch_to_full_start(void)
     }
     return sent > 0;
 }
+
+#ifdef CONFIG_SHELL
+#include "shell.h"
+
+/* `switch_to_full`: the cable start's check of the stored network (a success switches: never seen here) */
+static void cmd_switch_to_full(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    if (usb_check == CHECK_RUNNING)
+        printf("switch_to_full: check running\r\n");
+    else if (usb_check == CHECK_NO_NETWORK)
+        printf("switch_to_full: no network stored: setup stays\r\n");
+    else if (usb_check == CHECK_FAILED)
+        printf("switch_to_full: failed its check (state 0x%02x detail %u): setup stays\r\n", usb_check_state,
+               usb_check_detail);
+    else
+        printf("switch_to_full: no check\r\n");
+}
+SHELL_CMD_EXPORT_ALIAS(cmd_switch_to_full, switch_to_full, the check of the stored network at a cable start);
+#endif

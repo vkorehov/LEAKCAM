@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 31 s): pass
+
+4/4 checks pass.
+
+
+### Automated run 2026-11-11 (run.py, 104 s): **FAIL**
+
+3/4 checks pass. Failed: the program gets ACK + WAKE setup after every K230 start (5) (0/5).
+
+
 ### Automated run 2026-11-05 (run.py, 31 s): pass
 
 4/4 checks pass.
@@ -28,6 +38,15 @@ frames (`link_stat: frames 30 frame_drop 0`, 0 UART errors), the program still l
 "FATAL: no WAKE from the BL616". This ruled out the BL616, the wire and the kernel's split.
 
 ## Obstacles
+
+- **2026-11-12 00:59, FAIL in the 0xx batch (setup, mine):** run with the test K230 image on the NAND; test045 needs
+  the product image (its program in the ROMFS) with the BL616 test firmware. Rerun 02:00 on the product image: pass.
+
+- start 1: the program got no WAKE (no line) (2026-11-11, automated run)
+- start 2: the program got no WAKE (no line) (2026-11-11, automated run)
+- start 3: the program got no WAKE (no line) (2026-11-11, automated run)
+- start 4: the program got no WAKE (no line) (2026-11-11, automated run)
+- start 5: the program got no WAKE (no line) (2026-11-11, automated run)
 
 - **The driver's file ops were wiped by rt_device_register()** (root cause, 2026-11-05). RT-Thread's register resets
   `fops` and the wait queue; set both after it. Any RT-Smart driver with its own `dfs_file_ops` has the same trap:

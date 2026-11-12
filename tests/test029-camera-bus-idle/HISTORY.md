@@ -4,6 +4,22 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 150 s): pass
+
+8 boots, both camera I2C buses scanned, no hang; devices (i2c0: camera 0x36 / none; i2c4: camera 0x36); pad_read:
+
+    pad_read
+
+
+### Automated run 2026-11-11 (run.py, 151 s): **FAIL**
+
+8 boots: both camera I2C buses scanned with no device and no hang; pad_read:
+
+    pad_read
+
+boot 1: a device on i2c0; boot 1: a device on i2c4; boot 2: a device on i2c0; boot 2: a device on i2c4; boot 3: a device on i2c0; boot 3: a device on i2c4; boot 4: a device on i2c0; boot 4: a device on i2c4; boot 5: a device on i2c0; boot 5: a device on i2c4; boot 6: a device on i2c0; boot 6: a device on i2c4; boot 7: a device on i2c0; boot 7: a device on i2c4; boot 8: a device on i2c0; boot 8: a device on i2c4
+
+
 ### Automated run 2026-10-31 (run.py, 149 s): pass
 
 8 boots: both camera I2C buses scanned with no device and no hang; pad_read:
@@ -48,6 +64,10 @@ Boot time (planned): I2C bus init and sensor probe time without cameras (part of
 Battery energy (planned): Current with the cameras powered but idle (their standby draw while the K230 runs).
 
 ## Obstacles
+
+- **2026-11-12 00:13, FAIL: "a device on i2c0" (the test's premise changed).** Written for the board without cameras
+  (no device expected); two OV5647 are plugged since 2026-11-11 and answer at 0x36. run.py now passes per bus on no
+  device (no camera) or 0x36 only (the OV5647), anything else fails, and reports the case per bus. Rerun 01:46: pass.
 
 - **Meter probing at J4/J5 too hard** (0.5 mm FPC pins, J4 and J5 on opposite sides) -> pin levels read in software
   (`pad_read`, pad input bits) instead.

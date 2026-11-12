@@ -1,0 +1,12 @@
+01:59:53 test045-k230-link-frames: 0 metric rows MISSING: none
+01:59:57 start 1: READY 0.41 s, WAKE setup in the program 0.41 s after pt_run
+02:00:02 start 2: READY 0.41 s, WAKE setup in the program 0.41 s after pt_run
+02:00:06 start 3: READY 0.41 s, WAKE setup in the program 0.41 s after pt_run
+02:00:11 start 4: READY 0.41 s, WAKE setup in the program 0.41 s after pt_run
+02:00:15 start 5: READY 0.41 s, WAKE setup in the program 0.41 s after pt_run
+02:00:15 CHECK pass the program gets ACK + WAKE setup after every K230 start (5) 5/5
+02:00:17 CHECK pass /dev/link has the driver's file ops (link_stat) /dev/link fops attached, waiting 0 B, opens 1, polls 4 (data 2), reads 42
+02:00:17 CHECK pass the program's poll() saw the frames polls 4, with data 2
+02:00:17 CHECK pass no frame dropped in the K230 kernel frames 2 frame_drop 0
+02:00:21 sample after the last start {'board': 29.2, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 35.824, 'k_free': (6716544, 1748928), 'vbat': 4357}
+02:00:24 test045-k230-link-frames: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

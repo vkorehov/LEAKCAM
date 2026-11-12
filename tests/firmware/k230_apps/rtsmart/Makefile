@@ -71,9 +71,28 @@ BENCH_OBJS := $(addprefix $(BUILD)/cap/, leakcam_cpubench.o $(CORE:.c=.o))
 # in the same way), also only with LEAKCAM_BENCH=1
 KPUTEST      := $(SDK_APPS_IMAGE_DIR)/leakcam_kputest
 KPUTEST_OBJS := $(addprefix $(BUILD)/cap/, leakcam_kputest.o change.o)
+# tests/test030: one picture per camera (tests/test030-camera-capture/cam_shot.c, copied in the same way), also only
+# with LEAKCAM_BENCH=1
+CAMSHOT      := $(SDK_APPS_IMAGE_DIR)/cam_shot
+CAMSHOT_OBJS := $(addprefix $(BUILD)/cap/, cam_shot.o vicap_cap.o third_party/miniz/miniz.o)
+# tests/test030: a board file to the PC over the console (tests/test030-camera-capture/fdump.c, the H.265 recordings)
+FDUMP      := $(SDK_APPS_IMAGE_DIR)/fdump
+FDUMP_OBJS := $(addprefix $(BUILD)/cap/, fdump.o third_party/miniz/miniz.o)
 ifeq ($(LEAKCAM_BENCH),1)
-all: $(BENCH) $(KPUTEST)
+all: $(BENCH) $(KPUTEST) $(CAMSHOT) $(FDUMP)
 endif
+
+$(FDUMP): $(FDUMP_OBJS)
+	@echo "[LD] $@"
+	@mkdir -p $(dir $@)
+	$(Q)$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
+	$(Q)$(STRIP) $@
+
+$(CAMSHOT): $(CAMSHOT_OBJS)
+	@echo "[LD] $@"
+	@mkdir -p $(dir $@)
+	$(Q)$(CC) $(CFLAGS) $^ $(LDFLAGS) $(LIB_LDFLAGS) -o $@
+	$(Q)$(STRIP) $@
 
 # the MPP libraries after nncase: its allocators call kd_mpi_sys_mmz_*, which leakcam_wake's camera code pulls in
 # first and kputest has none of

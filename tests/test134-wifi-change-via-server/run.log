@@ -1,10 +1,10 @@
-08:09:46 test134-wifi-change-via-server: 0 metric rows MISSING: none
-08:09:53 CHECK pass wrong passphrase: the board tried it and kept the old network (state 0x11 wrong password) state 0x11
-08:09:53 CHECK pass wrong passphrase: the server has the failure (wifi_change failed) failed
-08:09:53 CHECK pass wrong passphrase: the board in the 5-min wake mode (check-in every 300 s) check-in every 300 s
-08:09:53 CHECK pass wrong passphrase: still online on the old network VK
-08:09:59 CHECK pass right passphrase: tested and stored (state 0x04 saved) state 0x04
-08:09:59 CHECK pass right passphrase: the result within 15 s of the check-in 4.6 s
-08:09:59 CHECK pass right passphrase: the server has it saved, the mode left saved
-08:09:59 CHECK pass back on the run's 5 s check-in check-in every 5 s
-08:10:01 test134-wifi-change-via-server: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+03:43:48 test134-wifi-change-via-server: 0 metric rows MISSING: none
+03:43:57 CHECK pass wrong passphrase: the board tried it and kept the old network (state 0x11 wrong password) state 0x11
+03:43:57 CHECK pass wrong passphrase: the server has the failure (wifi_change failed) failed
+03:43:57 CHECK pass wrong passphrase: the board in the 5-min wake mode (check-in every 300 s) check-in every 300 s
+03:43:57 CHECK pass wrong passphrase: still online on the old network VK
+03:44:07 CHECK pass right passphrase: tested and stored (state 0x04 saved) state 0x04
+03:44:07 CHECK pass right passphrase: the result within 15 s of the check-in 5.5 s
+03:44:07 CHECK pass right passphrase: the server has it saved, the mode left saved
+03:44:07 CHECK pass back on the run's 5 s check-in check-in every 5 s
+03:44:09 test134-wifi-change-via-server: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

@@ -80,6 +80,8 @@ void k230_power_run(void)
     bflb_gpio_reset(gpio(), PIN_K230_RSTN);     /* Q4 inverts: low = reset released */
 }
 
+static uint64_t off_ms;                     /* the last power-off (ms since boot): the board cools from then (climate.c) */
+
 uint32_t k230_power_off(void)
 {
     struct bflb_device_s *g = gpio();
@@ -87,6 +89,7 @@ uint32_t k230_power_off(void)
     uint64_t t0 = bflb_mtimer_get_time_us();
     bflb_gpio_reset(g, PIN_K230_PWR);
     rails_on = false;
+    off_ms = bflb_mtimer_get_time_ms();
     uint32_t t = 0;
     while (sense_high() != 0) {
         if (bflb_mtimer_get_time_us() - t0 > FALL_TIMEOUT_US)
@@ -102,6 +105,11 @@ uint32_t k230_power_off(void)
 bool k230_power_is_on(void)
 {
     return rails_on;
+}
+
+uint64_t k230_power_off_ms(void)
+{
+    return off_ms;
 }
 
 bool k230_alive(void)

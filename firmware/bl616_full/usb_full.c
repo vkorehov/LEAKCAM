@@ -13,6 +13,7 @@
 #include "device_id.h"
 #include "k230_power.h"
 #include "k230_session.h"
+#include "climate.h"
 #include "leak_check.h"
 #include "presence.h"
 #include "switch_to_setup.h"
@@ -131,6 +132,7 @@ static void watch_task(void *arg)
             printf("usb_full: USB power: K230 on\r\n");
             k230_session_start("usb", usb_full_cmd);
         } else if (!usb && unplugged) {
+            climate_heat();                                  /* the charger's heat ends: the cool window starts */
             bool got = k230_session_active() && k230_session_battery(BATTERY_MS);   /* the cell, read by the K230 up */
             printf("usb_full: USB unplugged: battery %d mV %s\r\n", battery_mv(), got ? "read now" : "not read");
             if (leak_check_busy()) {

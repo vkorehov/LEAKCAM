@@ -7,6 +7,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -22,10 +23,32 @@ TEST_APK = os.path.join(REPO, "android/app/build/outputs/apk/androidTest/debug/a
 ARGS_FILE = "/data/local/tmp/leakcam_bleop.json"
 RUNNER = "com.leakcam.setup.test/androidx.test.runner.AndroidJUnitRunner"
 PHONE_FILE = os.path.expanduser("~/.leakcam_phone")   # "<ip>:<port>" of the phone's Wireless debugging (adb over Wi-Fi)
-# the phone's two addresses: 192.168.1.163 on one home network, 192.168.1.141 on "VK" (user, 2026-11-05); the port is
-# the file's, tried on both
-PHONE_IPS = ("192.168.1.141", "192.168.1.163")
 SERVER = "http://192.168.1.159:8090"   # the presence server (server/, the Pi): the board's pairing PIN comes from it
+
+
+BOARD_SERVER = ("192.168.1.159", 8443)  # the boards' port: mTLS only (server/mtls.go, DESIGN.md 5.3.12)
+PKI = os.path.join(REPO, ".secrets", "pki")
+
+
+def as_board(dev, path, form=b"", method="POST"):
+    """a request as the board `dev` makes it: over mTLS with that ID's own certificate (tools/pki/leakcam_pki.py
+    issues one for a test ID once), the server checked against the LEAKCAM CA; (status, body bytes)"""
+    import http.client
+    import ssl
+    crt, key = (os.path.join(PKI, "devices", f"{dev}{s}") for s in (".crt", ".key"))
+    if not os.path.exists(crt):
+        subprocess.run([sys.executable, os.path.join(REPO, "tools", "pki", "leakcam_pki.py"), "device", dev],
+                       check=True, capture_output=True)
+    ctx = ssl.create_default_context(cafile=os.path.join(PKI, "ca.crt"))
+    ctx.load_cert_chain(crt, key)
+    c = http.client.HTTPSConnection(*BOARD_SERVER, context=ctx, timeout=10)
+    try:
+        c.request(method, path, body=form if method == "POST" else None,
+                  headers={"Content-Type": "application/x-www-form-urlencoded"} if method == "POST" else {})
+        r = c.getresponse()
+        return r.status, r.read()
+    finally:
+        c.close()
 
 
 def server_up(secs=15):
@@ -101,8 +124,26 @@ def board_pin():
         return json.loads(f.read())["pin"]
 
 
+_reconnecting = []
+
+
 def adb(*a, secs=180):
-    return subprocess.run(["adb", *a], capture_output=True, text=True, timeout=secs).stdout
+    """one adb call; a short one (<= 30 s) that times out with the phone gone from adb (Wi-Fi rejoined at its other
+    address, a new port: test140/141 2026-11-11) is asked again once after adb_up() found it"""
+    try:
+        return subprocess.run(["adb", *a], capture_output=True, text=True, timeout=secs).stdout
+    except subprocess.TimeoutExpired:
+        if secs > 30 or _reconnecting:
+            raise
+        _reconnecting.append(1)
+        try:
+            from board import log
+            log(f"phone: adb {a[0]} timed out: reconnecting")
+            if not adb_up():
+                raise
+        finally:
+            _reconnecting.clear()
+        return subprocess.run(["adb", *a], capture_output=True, text=True, timeout=secs).stdout
 
 
 _dim = []
@@ -182,6 +223,19 @@ def op(name, **kw):
     # logged error within a minute, never a silent wait
     limit = int(kw.get("secs", 10)) + 60
     t0 = time.time()
+    res = _op_once(name, kw, limit)
+    # Wi-Fi adb gone under the call (test117 --battery 2026-11-11: ~20 s without adb, the op and every scan after it
+    # failed at once): adb back (adb_up: the recorded port, else the relay app's) and the op once more
+    if res.get("error") == "no result from the phone" and "device" not in adb("get-state", secs=10):
+        log(f"phone: adb lost during {name}: reconnecting, {name} again")
+        if adb_up():
+            res = _op_once(name, kw, limit)
+    log(f"phone: {name} {time.time() - t0:.1f} s" + (f", error {res['error']}" if res.get("error") else ""))
+    return res
+
+
+def _op_once(name, kw, limit):
+    from board import log
     awake()
     fd, local = tempfile.mkstemp(suffix=".json")          # mode 600
     try:
@@ -201,9 +255,7 @@ def op(name, **kw):
         except subprocess.TimeoutExpired:
             log("phone: args file not removed (no answer)")
     m = re.search(r"INSTRUMENTATION_STATUS: result=(.*)", out)
-    res = json.loads(m.group(1)) if m else {"error": "no result from the phone"}
-    log(f"phone: {name} {time.time() - t0:.1f} s" + (f", error {res['error']}" if res.get("error") else ""))
-    return res
+    return json.loads(m.group(1)) if m else {"error": "no result from the phone"}
 
 
 SCREEN_RUNNER = "com.leakcam.setup.test/com.leakcam.setup.SelfRunner"
@@ -245,14 +297,23 @@ def firmware():
 def to_firmware(want, cmd=None, secs=60):
     """seconds until the want firmware answers (switched by cmd when another one runs, or by the board itself), None
     if not in secs (setup -> full: the phone leaves in <= 15 s, then the slot switch; test106)"""
-    t0 = time.time()
+    t0, sent, at = time.time(), 0, 0.0
     while time.time() - t0 < secs:
         fw = firmware()                         # bl() waits up to 30 s for a port gone in a switch
         if fw == want:
-            return time.time() - t0
-        if fw and cmd:
+            took = time.time() - t0
+            # a full firmware started on the cell (a setup on battery) sleeps in HBN once its first check-in is done,
+            # and its USB console goes with it: the next console step found no port (test116 2026-11-10, step 4).
+            # Kept awake as hand("battery") does; test141 tests the sleep itself (KEEP_AWAKE False)
+            if want == "full" and KEEP_AWAKE:
+                bl("hbn off", 1)
+            return took
+        # sent again while the old firmware still answers 5 s later: a command sent once was lost now and then and the
+        # wait sat its whole bound (test136 2026-11-09: "back" in 0 s, no switch at all); never during the switch
+        # (the port gone: firmware() None)
+        if fw and cmd and sent < 3 and time.time() - at > 5:
             bl(cmd, 1)
-            cmd = None
+            sent, at = sent + 1, time.time()
         time.sleep(0.3)
     return None
 
@@ -273,6 +334,10 @@ RELAY_STEPS = {                 # phases of relays to switch on (K1 D+, K2 D-, K
     "phone": [{1, 2, 4}, {1, 2, 3, 4}],     # unplug, then CC to the phone: it sees the board, powers and enumerates it
     "bench": [{1, 2, 4}, set()],            # CC off the phone first (its 5 V stops), then every relay off = the bench
 }
+# ms between the phases where 1 s is not enough: VBUS off 1 s before the move to the phone was missed by the board
+# now and then (no unplug seen, the K230 never enumerated on the phone: test113 2026-11-09, 1 of 3); 2 s: 6 of 6
+RELAY_GAPS = {"phone": [2000]}
+KEEP_AWAKE = True               # hand("battery"): `hbn off` first (the console on battery); test141 tests the sleep itself
 
 
 def bits(on):
@@ -311,10 +376,50 @@ def relay(phases, gaps=None, times=None):
         cmds += ([f"wait:{gaps[i - 1]}"] if i else []) + ["AT+MPIO" + bits(on)]
     want = ["OK+Set:" + c[-3:] for c in cmds if c.startswith("AT+")]
     relay_left[0] = phases[-1]              # what the box holds after this op (BEFC), for the end of the test
-    if _relay_n[0] == 0 and os.path.exists(RELAY_APK):    # the relay app installed / current, once per process
+    # the relay app installed / current, once per process - only with adb up (session_start() switches the relays over
+    # HTTP precisely when adb is not)
+    if _relay_n[0] == 0 and os.path.exists(RELAY_APK) and "device" in adb("get-state", secs=10):
         on_phone = adb("shell", "pm", "path", RELAY_APP).strip().replace("package:", "")
         if not on_phone or adb("shell", "sha256sum", on_phone).split()[:1] != [hashlib.sha256(open(RELAY_APK, "rb").read()).hexdigest()]:
             install(RELAY_APK, [])
+    for attempt in (1, 2):    # a broken link ("write failed", 2026-11-09: the hand fallback then sat 15 min) is
+        res = _relay_once(cmds, gaps)     # dropped by the app: the second request connects anew; the end state is
+        if not res.get("error"):          # absolute (BEFC, MPIO), so the whole sequence again is safe
+            break
+    replies = res.get("replies", [])
+    if times is not None:
+        times += [r.get("ms", 0) for r in replies if r.get("cmd", "").startswith("AT+MPIO")]
+    return [r.get("reply", "") for r in replies] == want
+
+
+RELAY_PORT = 8765                                   # the relay app's remote port (RelayService.listen)
+RELAY_TOKEN = os.path.expanduser("~/.leakcam_relay_token")   # `adb shell run-as com.relay cat files/token`, 600
+
+
+def _relay_http(cmds, gaps):
+    """the request over the relay app's HTTP port on the phone's LAN address (no adb: user 2026-11-10, "add remote
+    possibility to relay app"); its result (dict), None when the port or the token is not there (adb then)"""
+    if not os.path.exists(RELAY_TOKEN) or not os.path.exists(PHONE_FILE):
+        return None
+    ip = open(PHONE_FILE).read().strip().rpartition(":")[0]
+    req = urllib.request.Request(f"http://{ip}:{RELAY_PORT}/run?address={RELAY}", data=",".join(cmds).encode(),
+                                 headers={"X-Token": open(RELAY_TOKEN).read().strip()}, method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=20 + sum(gaps) / 1000) as f:
+            return json.loads(f.read())
+    except (OSError, ValueError):
+        return None
+
+
+def _relay_once(cmds, gaps):
+    """one request to the relay app, over its HTTP port first, adb's intent + logcat when that is not reachable: its
+    result (dict)"""
+    from board import log
+    t0 = time.time()
+    res = _relay_http(cmds, gaps)
+    if res is not None:
+        log(f"phone: relay {time.time() - t0:.1f} s (http)" + (f", error {res['error']}" if res.get("error") else ""))
+        return res
     _relay_n[0] += 1
     rid = f"{os.getpid()}-{_relay_n[0]}"
     t0 = time.time()
@@ -329,21 +434,25 @@ def relay(phases, gaps=None, times=None):
         time.sleep(0.05)
     res = res or {"error": "no answer from the relay app"}
     log(f"phone: relay {time.time() - t0:.1f} s" + (f", error {res['error']}" if res.get("error") else ""))
-    replies = res.get("replies", [])
-    if times is not None:
-        times += [r.get("ms", 0) for r in replies if r.get("cmd", "").startswith("AT+MPIO")]
-    return [r.get("reply", "") for r in replies] == want
+    return res
 
 def hand(action, word, secs=900):
-    """a hand step (USB-C 1 out / in, bench <-> phone): done by the relay box when it knows the word (RELAY_STEPS),
-    else (or if the box does not answer) logged as ACTION and done once HAND_FILE holds word (`echo <word> >
+    """a hand step (USB-C 1 out / in, bench <-> phone): done by the relay box when it knows the word (RELAY_STEPS; None
+    at once if the box does not answer), else (a real hand step: test132's wet probe) logged as ACTION and done once HAND_FILE holds word (`echo <word> >
     ~/.leakcam_hand`, written by whoever watches the bench); the time it was done, None if not in secs"""
     from board import log
+    if word in ("battery", "unplugged") and KEEP_AWAKE and firmware() == "full":
+        # the full firmware sleeps in HBN on battery (DESIGN.md 5.3.12): its console gone between wakes; a test that
+        # talks to it on battery keeps it awake until the next reset (`hbn off`); test141 sets KEEP_AWAKE False
+        from harness import bl
+        bl("hbn off", 1)
     if word in RELAY_STEPS:
-        if relay(RELAY_STEPS[word]):
+        if relay(RELAY_STEPS[word], RELAY_GAPS.get(word)):
             log(f"relay box: {word} ({action})")
             return time.time()
-        log(f"relay box: no answer for {word}, falling back to hands")
+        log(f"relay box: no answer for {word}: the step failed (no hand fallback: nobody watches a hands-free run, "
+            "a fallback sat 15 min, 2026-11-09)")
+        return None
     try:
         os.remove(HAND_FILE)
     except FileNotFoundError:
@@ -528,6 +637,11 @@ def wedge():
     if hits:
         return ("BLE core wedged (evlog: " + hits[-1] + "): power-cycle the board (cell out and USB-C off ~10 s, which "
                 "also clears the evlog), or tap EN and then `evlog clear`")
+    # the setup test bed (build "setup_test") starts BLE only with `lp_boot`: before it the core is off and reads 0, which
+    # is no wedge (2026-11-12: a fresh `make flash` of the bed stopped the batch as "wedged"); not started = no live check
+    if re.search(r"leakcam-build setup_test", clean(bl("slot", 2, r"leakcam-build \S+|not found"))) and \
+            "easyflash init failed" in clean(bl("pt_ble creds", 3, r"easyflash init failed|pairing PIN")):
+        return None
     # right after a wake a healthy core reads 0 too (test139, 2026-11-09): dead = 0 or bit 31 in every read for 2 s,
     # polled 0.1 s apart; a live core answers at the first read (no fixed wait, user 2026-11-09)
     t0, vals = time.time(), []
@@ -546,23 +660,138 @@ def wedge():
            "power-cycle the board, or tap EN"
 
 
+def _wait(fn, secs, step=0.5):
+    t0 = time.time()
+    while time.time() - t0 < secs:
+        v = fn()
+        if v:
+            return v
+        time.sleep(step)
+    return None
+
+
+def connect():
+    """adb to the bench phone, USB first (user, 2026-11-10: "always connect to phone using usb adb, and enable wifi
+    debug and record port and IP"): with the phone on USB, the run uses that connection (ANDROID_SERIAL, for this
+    process and the tests it starts); Wireless debugging enabled (its Wi-Fi is always on: user, 2026-11-10),
+    and the current <ip>:<port> written to PHONE_FILE and connected too, so the cable can go at any time. Without a
+    cable: the Wi-Fi connection from PHONE_FILE (ready()). The serial in use, or None"""
+    usb = [l.split()[0] for l in adb("devices", secs=10).splitlines()[1:]
+           if l.strip().endswith("device") and ":" not in l.split()[0]]
+    if not usb:
+        os.environ.pop("ANDROID_SERIAL", None)
+        return None
+    s = usb[0]
+    sh = lambda *a, secs=15: adb("-s", s, "shell", *a, secs=secs)   # noqa: E731
+    ip = _wait(lambda: (re.search(r"inet (\d+\.\d+\.\d+\.\d+)/", sh("ip", "-f", "inet", "addr", "show", "wlan0"))
+                        or [None, None])[1], 30)
+    sh("settings", "put", "global", "adb_wifi_enabled", "1")
+    port = _wait(lambda: sh("getprop", "service.adb.tls.port").strip() or None, 15)
+    if ip and port:
+        open(PHONE_FILE, "w").write(f"{ip}:{port}\n")
+        adb("connect", f"{ip}:{port}", secs=10)
+    else:
+        from board import log
+        log(f"phone on USB: Wi-Fi {'up ' + ip if ip else 'no address in 30 s'}, Wireless debugging port "
+            f"{port or 'not shown in 15 s'}: {PHONE_FILE} not updated")
+    os.environ["ANDROID_SERIAL"] = s
+    return s
+
+
+def _only(fixed):
+    """the phone's other adb entries (an old port, offline) dropped, and every adb call of this process and its tests
+    on `fixed`: with two entries a plain `adb` refused ("more than one device", 2026-11-11)"""
+    for line in adb("devices", secs=10).splitlines()[1:]:
+        serial = line.split()[0] if line.strip() else ""
+        if ":" in serial and serial != fixed:
+            adb("disconnect", serial, secs=10)
+    os.environ["ANDROID_SERIAL"] = fixed
+
+
+def _relay_adb(ip):
+    """(ip, Wireless debugging port) from the relay app's GET /adb, None when it does not answer"""
+    if not os.path.exists(RELAY_TOKEN):
+        return None
+    req = urllib.request.Request(f"http://{ip}:{RELAY_PORT}/adb",
+                                 headers={"X-Token": open(RELAY_TOKEN).read().strip()})
+    try:
+        with urllib.request.urlopen(req, timeout=20) as f:
+            d = json.loads(f.read())
+        return (d["ip"], d["port"]) if d.get("port", -1) > 0 else None
+    except (OSError, ValueError, KeyError):
+        return None
+
+
+def adb_up():
+    """adb to the phone over Wireless debugging: the recorded <ip>:<port> while it answers; else (a toggle, a phone
+    restart: a new random port) the relay app's GET /adb switches Wireless debugging on and tells the current port
+    (user, 2026-11-11: no fixed port 5555 any more) - connected (this PC is paired) and recorded. True when adb answers"""
+    from board import log
+
+    def state(serial):
+        try:
+            return "device" in adb("-s", serial, "get-state", secs=10)
+        except subprocess.TimeoutExpired:
+            return False
+
+    def connect_to(serial):
+        try:
+            adb("connect", serial, secs=10)
+        except subprocess.TimeoutExpired:           # a dead port: hung 10 s (2026-11-11), not an error
+            pass
+        return state(serial)
+
+    if not os.path.exists(PHONE_FILE):
+        return False
+    ip, _, port = open(PHONE_FILE).read().strip().rpartition(":")
+    serial = f"{ip}:{port}"
+    if not state(serial) and not connect_to(serial):
+        # one address: the phone joins only VK (VK_5GHZ removed, user 2026-11-11: "5GHZ is instable"; on it the phone
+        # had moved to .163 and adb was lost)
+        w = _relay_adb(ip)
+        if w and connect_to(f"{w[0]}:{w[1]}"):
+            adb("disconnect", serial, secs=10)
+            serial = f"{w[0]}:{w[1]}"
+            open(PHONE_FILE, "w").write(serial + "\n")
+            log(f"phone: Wireless debugging moved to {serial} (from the relay app), recorded")
+    up = state(serial)
+    if up:
+        _only(serial)
+    return up
+
+
+def session_start():
+    """the start of a session: adb to the phone - over USB when it is on one (connect(): Wireless debugging on, the
+    current <ip>:<port> recorded), else over Wi-Fi from PHONE_FILE. The bench has no USB path from the PC to the phone
+    (2026-11-10: the relays only move the board's USB-C 1), so the relays are not switched for it; they work without
+    adb anyway (the relay app's HTTP port). True when adb answers"""
+    from board import log
+    usb = connect()
+    wifi = open(PHONE_FILE).read().strip() if os.path.exists(PHONE_FILE) else "?"
+    if not usb and "device" not in adb("get-state", secs=10):
+        adb("connect", wifi, secs=10)
+    if not usb:
+        adb_up()                                # a moved port: the relay app tells the new one
+    wifi = open(PHONE_FILE).read().strip() if os.path.exists(PHONE_FILE) else "?"
+    up = "device" in adb("get-state", secs=10)
+    os.environ["LEAKCAM_PHONE_SESSION"] = "1"     # done for this process and the tests it starts (harness.Run)
+    log(f"session start: phone on {'USB ' + usb if usb else 'Wi-Fi ' + wifi}, adb {'up' if up else 'DOWN'}"
+        + ("" if up else f" (the relay app at {wifi.rpartition(':')[0]}:{RELAY_PORT} gave no live port: phone off "
+                         "Wi-Fi, or its service not running)"))
+    return up
+
+
 def ready(notes):
     """the phone made ready for a run, and the board's BLE core not wedged (wedge()); None, or why it cannot run"""
     why = wedge()
     if why:
         return why
-    if "device" not in adb("get-state", secs=10) and os.path.exists(PHONE_FILE):
-        ip, _, port = open(PHONE_FILE).read().strip().rpartition(":")
-        for host in dict.fromkeys((ip, *PHONE_IPS)):
-            try:
-                answer = adb("connect", f"{host}:{port}", secs=10)
-            except subprocess.TimeoutExpired:   # a host that does not answer: the next IP (it crashed here, 2026-11-06)
-                continue
-            if "connected to" in answer:
-                open(PHONE_FILE, "w").write(f"{host}:{port}\n")
-                break
+    connect()                                   # USB first, its Wi-Fi debugging recorded for the time without a cable
+    # one address since 2026-11-11 (the phone joins only VK, 192.168.1.141); a moved port from the relay app
     if "device" not in adb("get-state", secs=10):
-        return f"no Android phone on adb: Wireless debugging on, its <ip>:<port> in {PHONE_FILE} (the port changes when it is switched off and on)"
+        adb_up()
+    if "device" not in adb("get-state", secs=10):
+        return f"no Android phone on adb: neither {PHONE_FILE} nor the relay app's /adb answered (phone off Wi-Fi?)"
     # portrait: in landscape the dialogs' buttons (Play Protect's "Не проверять") sit below the screen and are not in the
     # UI dump, and the unlock swipe is portrait's (2026-11-08)
     adb("shell", "settings", "put", "system", "accelerometer_rotation", "0")

@@ -1,19 +1,19 @@
-08:58:12 test029-camera-bus-idle: 0 metric rows MISSING: none
-08:58:24 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
-08:58:31 sample boot 1 {'board': 33.9, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 40.667, 'k_free': (7025152, 1390848), 'vbat': 4140}
-08:58:42 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
-08:58:49 sample boot 2 {'board': 33.7, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 41.573, 'k_free': (7025152, 1390848), 'vbat': 4146}
-08:59:01 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
-08:59:07 sample boot 3 {'board': 33.5, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 42.177, 'k_free': (7025152, 1390848), 'vbat': 4154}
-08:59:19 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
-08:59:26 sample boot 4 {'board': 33.3, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 40.969, 'k_free': (7025152, 1390848), 'vbat': 4140}
-08:59:37 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
-08:59:44 sample boot 5 {'board': 33.2, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 41.573, 'k_free': (7025152, 1390848), 'vbat': 4146}
-08:59:56 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
-09:00:02 sample boot 6 {'board': 33.0, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 39.76, 'k_free': (7025152, 1390848), 'vbat': 4136}
-09:00:14 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
-09:00:21 sample boot 7 {'board': 32.9, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 41.573, 'k_free': (7025152, 1390848), 'vbat': 4151}
-09:00:32 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.57
-09:00:39 sample boot 8 {'board': 32.7, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 39.76, 'k_free': (7025152, 1390848), 'vbat': 4128}
-09:00:39 meter K230 at msh idle (agent running): not asked (LEAKCAM_METER=ask to be prompted)
-09:00:41 test029-camera-bus-idle: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+01:43:53 test029-camera-bus-idle: 0 metric rows MISSING: none
+01:44:05 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.56 msh 0.56
+01:44:11 sample boot 1 {'board': 34.9, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 42.479, 'k_free': (7020032, 1395968), 'vbat': 4363}
+01:44:23 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.56 msh 0.56
+01:44:30 sample boot 2 {'board': 34.4, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 40.667, 'k_free': (7020032, 1395968), 'vbat': 4389}
+01:44:41 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.56 msh 0.56
+01:44:48 sample boot 3 {'board': 34.1, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 42.177, 'k_free': (7020032, 1395968), 'vbat': 4370}
+01:45:00 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
+01:45:07 sample boot 4 {'board': 33.7, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 42.78, 'k_free': (7020032, 1395968), 'vbat': 4394}
+01:45:18 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.56 msh 0.56
+01:45:25 sample boot 5 {'board': 33.3, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 41.875, 'k_free': (7020032, 1395968), 'vbat': 4355}
+01:45:37 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.56 msh 0.56
+01:45:43 sample boot 6 {'board': 33.0, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 39.76, 'k_free': (7020032, 1395968), 'vbat': 4366}
+01:45:55 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.56 msh 0.56
+01:46:02 sample boot 7 {'board': 32.8, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 39.76, 'k_free': (7020032, 1395968), 'vbat': 4348}
+01:46:13 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.56 msh 0.56
+01:46:20 sample boot 8 {'board': 32.6, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 39.76, 'k_free': (7020032, 1395968), 'vbat': 4356}
+01:46:20 meter K230 at msh idle (agent running): not asked (LEAKCAM_METER=ask to be prompted)
+01:46:23 test029-camera-bus-idle: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

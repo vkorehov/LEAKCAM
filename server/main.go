@@ -40,11 +40,12 @@ const (
 	CheckinS   = 3600  // the check-in interval the server gives the devices (LEAKCAM_CHECKIN_S: shorter for tests; DESIGN.md 5.3.12)
 	LeakCheckS = 86400 // the leak check interval it gives them (LEAKCAM_LEAKCHECK_S); both per device too: PUT .../intervals
 	Addr       = ":8090"
-	Crashes    = "/home/pi/leakcam-server/crashes.jsonl" // LEAKCAM_CRASHES
-	Phones     = "/home/pi/leakcam-server/phones.json"   // LEAKCAM_PHONES
-	Images     = "/home/pi/leakcam-server/images"        // LEAKCAM_IMAGES: bl616_full.bin + .xz, k230_rtt.bin
-	Models     = "/home/pi/leakcam-server/models"        // LEAKCAM_MODELS: <device id>.kmodel, default.kmodel
-	Metrics    = "/home/pi/leakcam-server/metrics.jsonl" // LEAKCAM_METRICS: every check-in's metrics
+	Crashes    = "/home/pi/leakcam-server/crashes.jsonl"   // LEAKCAM_CRASHES
+	Phones     = "/home/pi/leakcam-server/phones.json"     // LEAKCAM_PHONES
+	Images     = "/home/pi/leakcam-server/images"          // LEAKCAM_IMAGES: bl616_full.bin + .xz, k230_rtt.bin
+	Models     = "/home/pi/leakcam-server/models"          // LEAKCAM_MODELS: <device id>.kmodel, default.kmodel
+	Metrics    = "/home/pi/leakcam-server/metrics.jsonl"   // LEAKCAM_METRICS: every check-in's metrics
+	ThrFile    = "/home/pi/leakcam-server/thresholds.json" // LEAKCAM_THRESHOLDS: per device its leak thresholds
 )
 
 type Device struct {
@@ -63,6 +64,8 @@ type Device struct {
 	Metrics map[string]any `json:"metrics"`
 	// the intervals its next check-in's answer gives it (DESIGN.md 5.3.12)
 	Intervals Intervals `json:"intervals"`
+	// the leak thresholds its next check-in's answer gives it (DESIGN.md 5.3.16); the ones it uses: metrics thmv, thrh
+	Thresholds Thresholds `json:"thresholds"`
 	// an open leak until a phone's all-clear, the last Wi-Fi change through the server (DESIGN.md 5.3.13)
 	Leak       *Leak  `json:"leak,omitempty"`
 	WifiChange string `json:"wifi_change,omitempty"`
@@ -78,11 +81,13 @@ var MetricKeys = map[string]bool{ // true: an integer, false: text
 	"up": true, "boots": true, "rst": false, "crash": true, // s, count, GLB reset bits (hex), crash record count
 	"free": true, "minfree": true, "blocks": true, // BL616 heap
 	"rssi": true, "ch": true, "scan": true, "join": true, "dhcp": true, "fails": true, // this check-in's Wi-Fi
-	"sw": true, "usbw": true, "ks": true, "kfail": true, "kon": true, // since the last good check-in
+	"sw": true, "usbw": true, "hbnw": true, "thmv": true, "thrh": true, "ks": true, "kfail": true, "kon": true, // since the last good check-in (hbnw: HBN wakes)
 	"klast": true, "kms": true, "kago": true, // the last K230 session: ok 1 / failed 0 / none -1, ms, s ago
 	"kver": false, "kup": true, "ktdie": true, "kheap": true, "kheapmin": true, "kpages": true, "ksago": true, // last STATUS
 	"job": false, "jago": true, // the last leak check (DESIGN.md 5.3.12): "<cam0>,<cam1>", s ago
 	"wchg": true, // the last Wi-Fi change through the server: its wifi_check state (DESIGN.md 5.3.13)
+	// the room: read only after 3 h cool (DESIGN.md 5.3.15): 0.1 C, 0.1 %RH, s since taken, s the board is cool now
+	"troom": true, "rhroom": true, "roomago": true, "quiet": true,
 }
 
 // Sample is one check-in's metrics in the history file
@@ -122,6 +127,14 @@ type Intervals struct {
 	LeakCheck int `json:"leakcheck"`
 }
 
+// Thresholds: a device's leak thresholds (DESIGN.md 5.3.16), the defaults where 0: the probe's comparator reference
+// in mV (500-1600, steps of 50: the comparator's) and the humidity alarm in %RH (50-99). Every check-in answer carries
+// them ("probe_mv", "humid"); the board stores a changed value in flash (firmware/bl616_common/thresholds.c)
+type Thresholds struct {
+	ProbeMV int `json:"probe_mv"`
+	Humid   int `json:"humid"`
+}
+
 // Image is an upgrade on offer: its version read from its own build tag, so the file is all there is to update
 type Image struct {
 	Version string
@@ -138,9 +151,11 @@ var (
 	seen       = map[string]CheckIn{}
 	checkinS   = CheckinS
 	leakCheckS = LeakCheckS
-	intervals  = map[string]Intervals{} // per device, set at runtime (PUT /v1/devices/{id}/intervals); 0 = the default
-	pinKey     []byte                   // the BLE pairing PIN's key, shared with the firmware (LEAKCAM_PIN_KEY); never in the app
-	crashes    = map[string][]Crash{}   // per device; a resend (the same record text) is kept once
+	intervals  = map[string]Intervals{}  // per device, set at runtime (PUT /v1/devices/{id}/intervals); 0 = the default
+	thresholds = map[string]Thresholds{} // per device (PUT /v1/devices/{id}/thresholds), kept in thrFile; 0 = the default
+	thrFile    = ThrFile
+	pinKey     []byte                 // the BLE pairing PIN's key, shared with the firmware (LEAKCAM_PIN_KEY); never in the app
+	crashes    = map[string][]Crash{} // per device; a resend (the same record text) is kept once
 	crashFile  = Crashes
 	metricFile = Metrics
 	hexRe      = regexp.MustCompile(`^[0-9a-f]{1,8}$`)
@@ -269,7 +284,8 @@ func poll(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "no user: back to setup", http.StatusGone)
 		return
 	}
-	ans := map[string]any{"stream": 0, "checkin": iv.Checkin, "leakcheck": iv.LeakCheck}
+	th := deviceThresholdsLocked(id)
+	ans := map[string]any{"stream": 0, "checkin": iv.Checkin, "leakcheck": iv.LeakCheck, "probe_mv": th.ProbeMV, "humid": th.Humid}
 	msgs := checkInAlerts(id, in, ans)
 	in.Told = ans["checkin"].(int) // the 5-min wake mode's own interval, when in it
 	seen[id] = in
@@ -473,7 +489,7 @@ func deviceCrashes(w http.ResponseWriter, r *http.Request) {
 func deviceInfo(id string) Device {
 	c, ok := seen[id]
 	d := Device{ID: id, LastSeen: -1, Phones: len(phones[id]), BatteryMV: -1,
-		Intervals: deviceIntervalsLocked(id), WifiChange: wifiState(id), Pending: pending(id),
+		Intervals: deviceIntervalsLocked(id), Thresholds: deviceThresholdsLocked(id), WifiChange: wifiState(id), Pending: pending(id),
 		Media: deviceMedia(id)}
 	if l, open := leaks[id]; open {
 		d.Leak = &l
@@ -541,9 +557,9 @@ func setIntervals(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "body: "+err.Error(), http.StatusBadRequest)
 		return
 	}
-	// the firmware's limits (presence.c, leak_check.c): check-in 5 s - 1 h, leak check 60 s - 7 days
-	if iv.Checkin != 0 && (iv.Checkin < 5 || iv.Checkin > 3600) || iv.LeakCheck != 0 && (iv.LeakCheck < 60 || iv.LeakCheck > 7*86400) {
-		http.Error(w, "checkin: 5-3600 s, leakcheck: 60-604800 s, 0 = default", http.StatusBadRequest)
+	// the firmware's limits (presence.c, leak_check.c): check-in 5 s - 1 h, leak check 10 s - 7 days
+	if iv.Checkin != 0 && (iv.Checkin < 5 || iv.Checkin > 3600) || iv.LeakCheck != 0 && (iv.LeakCheck < 10 || iv.LeakCheck > 7*86400) {
+		http.Error(w, "checkin: 5-3600 s, leakcheck: 10-604800 s, 0 = default", http.StatusBadRequest)
 		return
 	}
 	mu.Lock()
@@ -552,6 +568,72 @@ func setIntervals(w http.ResponseWriter, r *http.Request) {
 	mu.Unlock()
 	log.Printf("%s: intervals check-in %d s, leak check %d s", id, got.Checkin, got.LeakCheck)
 	reply(w, got)
+}
+
+// deviceThresholdsLocked: a device's leak thresholds, the defaults filled in; mu held
+func deviceThresholdsLocked(id string) Thresholds {
+	th := thresholds[id]
+	if th.ProbeMV == 0 {
+		th.ProbeMV = LeakProbeMV
+	}
+	if th.Humid == 0 {
+		th.Humid = HumidPct
+	}
+	return th
+}
+
+// setThresholds: PUT /v1/devices/{id}/thresholds {"probe_mv":<mV>,"humid":<%RH>}, 0 = back to the default; kept in
+// thrFile; the device takes them with its next check-in's answer (in flash there, written only when changed)
+func setThresholds(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if !idRe.MatchString(id) {
+		http.Error(w, "id: 12 upper-case hex digits", http.StatusBadRequest)
+		return
+	}
+	var th Thresholds
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 256)).Decode(&th); err != nil {
+		http.Error(w, "body: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	// the firmware's limits (thresholds.h): what it would ignore is refused here
+	if th.ProbeMV != 0 && (th.ProbeMV < 500 || th.ProbeMV > 1600 || th.ProbeMV%50 != 0) || th.Humid != 0 && (th.Humid < 50 || th.Humid > 99) {
+		http.Error(w, "probe_mv: 500-1600 mV in steps of 50, humid: 50-99 %RH, 0 = default", http.StatusBadRequest)
+		return
+	}
+	mu.Lock()
+	if th == (Thresholds{}) {
+		delete(thresholds, id)
+	} else {
+		thresholds[id] = th
+	}
+	err := saveJSON(thrFile, thresholds)
+	got := deviceThresholdsLocked(id)
+	mu.Unlock()
+	if err != nil {
+		http.Error(w, "thresholds: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	log.Printf("%s: thresholds probe %d mV, humidity %d %%RH", id, got.ProbeMV, got.Humid)
+	reply(w, got)
+}
+
+func deviceThresholds(id string) Thresholds {
+	mu.Lock()
+	defer mu.Unlock()
+	return deviceThresholdsLocked(id)
+}
+
+func loadThresholds() {
+	b, err := os.ReadFile(thrFile)
+	if os.IsNotExist(err) {
+		return
+	}
+	if err == nil {
+		err = json.Unmarshal(b, &thresholds)
+	}
+	if err != nil {
+		log.Fatalf("thresholds %s: %v", thrFile, err)
+	}
 }
 
 func device(w http.ResponseWriter, r *http.Request) {
@@ -723,6 +805,10 @@ func main() {
 		phoneFile = f
 	}
 	loadPhones()
+	if f := os.Getenv("LEAKCAM_THRESHOLDS"); f != "" {
+		thrFile = f
+	}
+	loadThresholds()
 	if d := os.Getenv("LEAKCAM_MEDIA"); d != "" {
 		mediaDir = d
 	}
@@ -762,11 +848,10 @@ func main() {
 		log.Printf("no LEAKCAM_PIN_KEY (64 hex digits): /v1/devices/{id}/pin answers 503")
 	}
 	http.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) { reply(w, "ok") })
-	http.HandleFunc("POST /v1/poll", poll)
 	http.HandleFunc("GET /v1/devices/{id}", device)
 	http.HandleFunc("PUT /v1/devices/{id}/intervals", setIntervals)
+	http.HandleFunc("PUT /v1/devices/{id}/thresholds", setThresholds)
 	http.HandleFunc("GET /v1/devices/{id}/pin", pin)
-	http.HandleFunc("POST /v1/devices/{id}/crash", crash)
 	http.HandleFunc("GET /v1/devices/{id}/crashes", deviceCrashes)
 	http.HandleFunc("DELETE /v1/devices/{id}/phones/{phone}", unregister)
 	http.HandleFunc("GET /v1/phones/{phone}/devices", phoneDevices)
@@ -777,8 +862,17 @@ func main() {
 	http.HandleFunc("GET /v1/media/{id}", media)
 	http.HandleFunc("POST /v1/media/{id}", putMedia)
 	http.HandleFunc("GET /v1/images/k230_rtt", k230Image)
-	http.HandleFunc("GET /v1/images/{name}", images)
 	http.HandleFunc("GET /v1/devices/{id}/model", model)
+	// the boards' requests (the check-in, a crash record, the OTA image) only over mTLS (mtls.go); this plain port
+	// serves the app and the K230 until their TLS (SECURITY.txt 4)
+	devAddr, tlsDir := DevAddr, TLSDir
+	if a := os.Getenv("LEAKCAM_DEV_ADDR"); a != "" {
+		devAddr = a
+	}
+	if d := os.Getenv("LEAKCAM_TLS"); d != "" {
+		tlsDir = d
+	}
+	go serveDevices(devAddr, tlsDir)
 	log.Printf("listening on %s", addr)
 	log.Fatal(http.ListenAndServe(addr, withTime(http.DefaultServeMux)))
 }

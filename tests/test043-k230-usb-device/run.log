@@ -1,0 +1,7 @@
+00:56:00 test043-k230-usb-device: 0 metric rows MISSING: none
+00:56:08 boot SPL 0.16 OpenSBI 0.28 RT-Smart 0.29 mounted 0.57 msh 0.57
+00:56:12 CHECK pass the K230's USB device enumerates on the bench (1209:ABD1) 4.4 s after the boot
+00:56:13 CHECK pass 200 round trips of 16 bytes, all back 200 ok, 0 bad
+00:56:13 CHECK pass 1 MB echoed, every byte checked 1048576 B, 0 wrong, 2622 KB/s
+00:56:22 sample after the echo {'board': 28.9, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 35.217, 'k_free': (7020032, 1395968), 'vbat': 4394}
+00:56:26 test043-k230-usb-device: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

@@ -15,7 +15,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from board import BL_PORT, bl   # noqa: E402
+from board import BL_PORT, bl, store_open   # noqa: E402
 
 KEY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".secrets", "pairing_secret")
 
@@ -47,10 +47,13 @@ m = re.search(r"ID_SERIAL_SHORT=([0-9A-F]{12})\b", usb)
 if not m:
     sys.exit("provision_pin: no device ID in the USB serial number (a firmware before use case 2?)")
 dev = m.group(1)
+store_open()            # the setup test bed opens easyflash only with lp_boot (board.store_open, 2026-11-12)
 product = bool(answer("provision", r"provision: pairing PIN (stored|none)"))
 cmd = "provision" if product else "pt_ble creds"
-if not product and "easyflash init failed" in bl(cmd, 3, r"easyflash init failed|pairing PIN"):
-    bl("lp_boot", 20, r"lp: boot done")         # the setup test bed: easyflash comes up with its start (2026-11-03)
+if not product and "pairing PIN" not in bl(cmd, 3, r"easyflash init failed|pairing PIN"):
+    # the setup test bed: easyflash comes up with its start (2026-11-03). Any answer but a PIN state starts it: the
+    # flash's boot messages hid "easyflash init failed" on 2026-11-12, lp_boot was skipped and the store failed
+    bl("lp_boot", 30, r"lp: boot done")
 state = answer(cmd, r"pairing PIN (stored|none)")
 if not state:
     sys.exit("provision_pin: the firmware reports no pairing PIN state (built before the PIN change?)")
@@ -59,6 +62,9 @@ if "pairing PIN stored" in state and "--force" not in sys.argv:
     sys.exit(0)
 ok = answer(f"{'provision' if product else 'pt_ble'} pin {pin_for(dev, key)}", r"pairing PIN stored|pin store failed")
 if "pairing PIN stored" not in ok:
-    sys.exit(f"provision_pin: storing the PIN on {dev} failed")
+    # the board's own answer (never the PIN: the command line is not echoed here), for the cause
+    last = bl(f"{'provision' if product else 'pt_ble creds'}", 3, r"pairing PIN[^\n]*\n")
+    tail = " | ".join(l.strip() for l in re.sub(r"\x1b\[[0-9;]*m", "", last).splitlines()[-4:] if l.strip())
+    sys.exit(f"provision_pin: storing the PIN on {dev} failed (state now: {tail})")
 bl("reboot", 1)
 print(f"provision_pin: {dev}: pairing PIN stored, rebooted")

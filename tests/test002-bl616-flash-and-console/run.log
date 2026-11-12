@@ -1,10 +1,10 @@
-15:07:34 test002-bl616-flash-and-console: 5 metric rows MISSING: Voltage under load (min), Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Features over the minimal image, Optimised build (-O3, LTO, -march)
-15:07:42 sample round 1 {'board': 28.8, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0)}
-15:07:48 sample round 2 {'board': 28.8, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0)}
-15:07:53 sample round 3 {'board': 28.8, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0)}
-15:07:59 sample round 4 {'board': 28.7, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0)}
-15:08:05 sample round 5 {'board': 28.7, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0)}
-15:08:10 sample round 6 {'board': 28.7, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0)}
-15:08:16 sample round 7 {'board': 28.7, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0)}
-15:08:22 sample round 8 {'board': 28.6, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0)}
-15:08:24 test002-bl616-flash-and-console: PASS; filled 3: Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Voltage under load (min); still MISSING 2: Features over the minimal image, Optimised build (-O3, LTO, -march)
+22:54:07 test002-bl616-flash-and-console: 0 metric rows MISSING: none
+22:54:15 sample round 1 {'board': 33.0, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+22:54:21 sample round 2 {'board': 32.9, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+22:54:27 sample round 3 {'board': 32.6, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+22:54:33 sample round 4 {'board': 32.4, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+22:54:38 sample round 5 {'board': 32.2, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+22:54:44 sample round 6 {'board': 32.0, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+22:54:50 sample round 7 {'board': 31.9, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+22:54:56 sample round 8 {'board': 31.7, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+22:54:58 test002-bl616-flash-and-console: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

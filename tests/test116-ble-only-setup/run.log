@@ -1,29 +1,29 @@
-08:51:02 test116-ble-only-setup: 0 metric rows MISSING: none
-08:51:07 CHECK pass no network stored 
-08:51:07 CHECK pass no network: the setup firmware 0 s
-08:51:11 phone: relay 4.0 s
-08:51:11 relay box: unplugged (unplug USB-C 1 (the cell stays in))
-08:51:16 phone: scan 4.7 s
-08:51:16 CHECK pass unplugged: the phone finds the board asleep rssi -33, 4.7 s
-08:51:33 phone: app 14.7 s
-08:51:33 CHECK pass unplugged: set up from the app on battery (PIN, no dialog) 11.3 s, pairing 
-08:51:36 CHECK pass unplugged: the full firmware 3 s after Done
-08:51:36 CHECK pass unplugged: the network stored 
-08:51:36 CHECK pass unplugged: present at the server 0 s after the switch
-08:52:09 phone: scan 33.2 s
-08:52:09 CHECK pass configured, on battery: silent (30 s scan) None
-08:52:14 phone: scan 4.2 s
-08:52:14 CHECK pass battery start: the phone finds the setup firmware rssi -30, 4.2 s
-08:52:31 phone: app 17.1 s
-08:52:31 CHECK pass battery start: set up from the app on battery (PIN, no dialog) 13.5 s, pairing 
-08:52:37 CHECK pass battery start: the full firmware 6 s after Done
-08:52:37 CHECK pass battery start: the network stored 
-08:52:37 CHECK pass battery start: present at the server 0 s after the switch
-08:52:41 phone: relay 4.1 s
-08:52:41 relay box: plugged (plug USB-C 1 back in)
-08:52:41 CHECK pass USB back in: the full firmware full
-08:53:00 phone: scan 18.8 s
-08:53:00 CHECK pass USB back in: silent None
-08:53:00 CHECK pass USB back in: present at the server 19 s after the plug
-08:53:03 sample after the checks {'board': None, 'bl_mem': (180012, 141880, 160980, 67, 79152, 14, 0)}
-08:53:05 test116-ble-only-setup: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+04:05:52 test116-ble-only-setup: 0 metric rows MISSING: none
+04:05:58 CHECK pass no network stored 
+04:06:05 CHECK pass no network: the setup firmware 8 s
+04:06:07 phone: relay 0.2 s (http)
+04:06:07 relay box: unplugged (unplug USB-C 1 (the cell stays in))
+04:06:14 phone: scan 7.4 s
+04:06:14 CHECK pass unplugged: the phone finds the board asleep rssi -36, 7.4 s
+04:06:36 phone: app 19.9 s
+04:06:36 CHECK pass unplugged: set up from the app on battery (PIN, no dialog) 16.6 s, pairing 
+04:06:43 CHECK pass unplugged: the full firmware 6 s after Done
+04:06:43 CHECK pass unplugged: the network stored 
+04:06:43 CHECK pass unplugged: present at the server 0 s after the switch
+04:06:55 phone: scan 12.2 s
+04:06:55 CHECK pass configured, on battery: silent (8 s scan) None
+04:07:00 phone: scan 4.3 s
+04:07:00 CHECK pass battery start: the phone finds the setup firmware rssi -36, 4.3 s
+04:07:17 phone: app 17.3 s
+04:07:17 CHECK pass battery start: set up from the app on battery (PIN, no dialog) 13.6 s, pairing 
+04:07:24 CHECK pass battery start: the full firmware 6 s after Done
+04:07:25 CHECK pass battery start: the network stored 
+04:07:25 CHECK pass battery start: present at the server 0 s after the switch
+04:07:25 phone: relay 0.2 s (http)
+04:07:25 relay box: plugged (plug USB-C 1 back in)
+04:07:26 CHECK pass USB back in: the full firmware full
+04:07:37 phone: scan 11.8 s
+04:07:37 CHECK pass USB back in: silent None
+04:07:37 CHECK pass USB back in: present at the server 12 s after the plug
+04:07:41 sample after the checks {'board': None, 'bl_mem': (170532, 133048, 140920, 73, 85964, 16, 0)}
+04:07:42 test116-ble-only-setup: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

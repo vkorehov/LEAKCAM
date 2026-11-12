@@ -23,6 +23,11 @@ default 86400 s), and the clock comes from the server's `X-Time`. The old lines:
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 1301 s): pass
+
+RTC wakes: 10 s -> 14.67, 13.72, 13.74 s; 600 s -> 603.79, 603.76 s (host, command -> console back).
+
+
 ### Automated run 2026-11-01 (run.py, 1285 s): pass
 
 RTC wakes: 10 s -> 14.56, 13.64, 13.65 s; 600 s -> 603.67, 603.71 s (host, command -> console back).

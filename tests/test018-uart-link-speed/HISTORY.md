@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 119 s): pass
+
+8 of 8 runs of uart_bench 1024 at 2 Mbaud: 0 errors, 180739-180740 B/s.
+
+
+### Automated run 2026-11-11 (run.py, 193 s): **FAIL**
+
+8 of 8 runs of uart_bench 1024 at 2 Mbaud: 5753569 errors, 4416-56914 B/s.
+
+
 ### Automated run 2026-10-31 (run.py, 118 s): pass
 
 8 of 8 runs of uart_bench 1024 at 2 Mbaud: 0 errors, 180740-180740 B/s.
@@ -100,6 +110,11 @@ Superseded metric values:
   (the link itself draws next to nothing)."
 
 ## Obstacles
+
+- **2026-11-11 23:34, FAIL: 8 of 8 runs, 5753569 bad bytes, 4416-56914 B/s (unexplained).** The bench output was not
+  in console.log (the BL616 sends the command; r.k(None) reads), so the bad bytes cannot be looked at. Rerun 2026-11-12
+  01:42 on the same board and BL616 firmware, a newer test image (VB teardown fix only): pass. Open: keep the raw
+  uart_bench output of a failing run next time.
 
 - **uart_bench results never reached the console** (2026-10-25, automated run): since test039 the K230 console shares
   UART1 with the link, so while the BL616 echoes for the bench the result lines were echoed back into the K230 ->

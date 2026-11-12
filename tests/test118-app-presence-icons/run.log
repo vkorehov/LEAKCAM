@@ -1,12 +1,9 @@
-14:00:01 test118-app-presence-icons: 7 metric rows MISSING: Test run time, each change -> its icon, Current idle / during (min / avg / peak), Power, energy per operation, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Image (sizes)
-Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
-14:00:39 CHECK pass start: Wi-Fi and Bluetooth icons, not red 11 s, row (1, 1, 0)
-14:01:30 CHECK pass BLE gone: the Bluetooth icon goes 51 s, row (1, 0, 0)
-14:01:30 CHECK pass BLE gone: the Wi-Fi icon stays, not red (1, 0, 0)
-14:01:59 CHECK pass presence gone: the Wi-Fi icon goes, the row red 29 s, row (0, 0, 1)
-14:02:10 CHECK pass presence back: the Wi-Fi icon again, not red 11 s, row (1, 0, 0)
-14:02:29 CHECK pass BLE back: the Bluetooth icon again 20 s, row (1, 1, 0)
-14:03:30 CHECK pass both gone: no icon, the row red 61 s, row (0, 0, 1)
-14:03:34 sample after the checks {'board': 29.3, 'bl_mem': (151448, 146828, 146720, 61, 50936, 11, 0)}
-Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
-14:03:38 test118-app-presence-icons: PASS; filled 4: Test run time, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Image (sizes); still MISSING 3: each change -> its icon, Current idle / during (min / avg / peak), Power, energy per operation; run in HISTORY.md - README Status/Result by hand
+04:35:46 test118-app-presence-icons: 3 metric rows MISSING: each change -> its icon, Current idle / during (min / avg / peak), Power, energy per operation
+04:36:07 CHECK pass start: the Wi-Fi icon, not red 8 s, row (1, 0)
+04:37:18 CHECK pass BLE gone: the row unchanged (Wi-Fi icon, not red) (1, 0)
+04:37:47 CHECK pass presence gone: the Wi-Fi icon goes, the row red 30 s, row (0, 1)
+04:37:56 CHECK pass presence back: the Wi-Fi icon again, not red 9 s, row (1, 0)
+04:38:37 CHECK pass BLE back: the row unchanged (Wi-Fi icon, not red) (1, 0)
+04:39:07 CHECK pass presence gone in BLE range: no Wi-Fi icon, the row red 30 s, row (0, 1)
+04:39:10 sample after the checks {'board': 26.1, 'bl_mem': (143920, 139284, 139192, 63, 53096, 12, 0)}
+04:39:14 test118-app-presence-icons: PASS; filled 0: -; still MISSING 3: each change -> its icon, Current idle / during (min / avg / peak), Power, energy per operation; run in HISTORY.md - README Status/Result by hand

@@ -4,6 +4,21 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 453 s): pass
+
+20 random cuts during plt_write ([run4_2026-11-11.csv](run4_2026-11-11.csv)): 0 bad files, 0 checks unparsed, 621 commits before the cuts; app init after a cut 0.428-0.657 s; free 19584 -> 12288 KB; plt_check after the run: clean.
+
+
+### Automated run 2026-11-11 (run.py, 58 s): **FAIL**
+
+plt_loop.py wrote no rows
+
+
+### Automated run 2026-11-11 (run.py, 58 s): **FAIL**
+
+plt_loop.py wrote no rows
+
+
 ### Automated run 2026-10-30 (run.py, 468 s): pass
 
 20 random cuts during plt_write ([run4_2026-10-30.csv](run4_2026-10-30.csv)): 0 bad files, 0 checks unparsed, 685 commits before the cuts; app init after a cut 0.403-0.630 s; free 20992 -> 12032 KB; plt_check after the run: clean.
@@ -75,6 +90,11 @@ Metrics heading was "## Metrics (2026-10-21, short run)".
 - Setup: **MISSING**: hookup, firmware / image, and the probes named in Metrics.
 
 ## Obstacles
+
+- **2026-11-11 00:11 + 2026-11-12 01:43, FAIL: "plt_loop.py wrote no rows" (test side).** Its own cmd() wrote to the
+  non-blocking K230 console without the EAGAIN retry board.cmd has; the first write after a boot raised
+  BlockingIOError and the runner kept only "no rows". Fixed: send() with the retry; run.py prints plt_loop's output
+  when it writes no rows. Rerun 01:54: pass.
 
 - **2026-10-23 09:46, the 100-cut run was started while the BL616 was still in a test038 lockout session** ->
   stopped after 0 cycles (csv header only). At 09:47:08 that session's 60 s heartbeat limit ran out: rails off, then

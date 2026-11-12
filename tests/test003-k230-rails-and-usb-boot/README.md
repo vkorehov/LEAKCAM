@@ -33,6 +33,10 @@ BL616 test firmware PT_TEST_POWER (GPIO K230_PWR/RSTN); K230 boot ROM USB mode (
 - USB-C 1 to a Mac with the rails on: VUSB ~2.2 V, the Mac never turns on VBUS ([bug-002](../../bugs/bug-002/README.md)),
   solved by the U2 1-2-3 bridge (2026-10-25); with `pt_off`, cable in, `pt_on`, `pt_run`: VUSB 5 V (2026-10-17).
 - The K230 ROM enumerates as `29f1:0230 Canaan K230 USB Boot Device`: pass (2026-10-25, run.py).
+- USB boot cases ([usb_boot_cases.py](usb_boot_cases.py), 2026-11-11 22:21 UTC+2): plain, SDIO pads parked, after a
+  NAND boot, after a BL616 reboot: ROM up in 3.6 s every time; `k230_usb_boot.py on` (as flash_nand.sh) 8.4 s: 10/10,
+  pass. A ROM missing on USB is the bench, not the board: `k230_usb_boot.py` now checks USB-C 1 with a NAND boot (the
+  image's CDC 1209:abd1) and says which side failed (HISTORY.md, 2026-11-11).
 - Debug serial on USBC2: CH340 on `/dev/ttyUSB0`; blank NAND: ROM prints `boot failed with exit code 13` at 115200:
   pass (2026-10-17).
 

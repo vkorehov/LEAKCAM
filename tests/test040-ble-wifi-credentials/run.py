@@ -35,7 +35,7 @@ def states(res):
 def ble_on():
     """the setup firmware's start (`lp_boot`: RF, Wi-Fi, the product BLE), its switch to the full firmware off; True once
     BLE advertises (or the start had run)"""
-    bl("switch_to_full off", 2)
+    bl("lp_switch off", 2)
     return bool(re.search(r"ble: ready as|already run", bl("lp_boot", 20, r"ble: ready as|already run")))
 
 
@@ -92,7 +92,11 @@ def check(name, ok, detail=""):
 
 ssid, psk = wifi_credentials()
 if "--flash" in sys.argv:
-    subprocess.run(["make", "-C", os.path.join(REPO, "tests/firmware/bl616_setup_test"), "flash"], check=True)
+    # build first: `make flash` alone flashed a binary from before the mTLS change (2026-11-12: provision_tls "built
+    # before mTLS?"), as the docstring always said
+    bed = os.path.join(REPO, "tests/firmware/bl616_setup_test")
+    subprocess.run(["make", "-C", bed], check=True)
+    subprocess.run(["make", "-C", bed, "flash"], check=True)
     time.sleep(5)
 if not os.path.exists(BL_PORT):
     r.obstacle("no BL616 console on USB (board or the VM's USB hub gone): reconnect, then run again")

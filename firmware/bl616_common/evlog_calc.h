@@ -11,8 +11,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#define EVLOG_N     48u
-#define EVLOG_MAGIC 0x334C5645u             /* "EVL3" (32-bit val for register dumps); "EVL2" and the attic's "TEVL" read as empty */
+#define EVLOG_N     44u                     /* 48 until 2026-11-10: 48 B of HBN RAM for the sleep schedule (wall_clock, climate, hbn_sleep) */
+#define EVLOG_MAGIC 0x344C5645u             /* "EVL4" (44 entries); "EVL3", "EVL2" and the attic's "TEVL" read as empty */
 
 struct evlog_entry {
     uint32_t ms;                /* uptime when it happened (restarts at every boot: EV_BOOT entries mark them) */

@@ -4,6 +4,91 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 118 s): pass
+
+15/15 checks pass.
+
+
+### Automated run 2026-11-12 (run.py, 104 s): pass
+
+15/15 checks pass.
+
+
+### Automated run 2026-11-11 (run.py, 104 s): pass
+
+15/15 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 125 s): pass
+
+15/15 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 108 s): pass
+
+15/15 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 112 s): pass
+
+15/15 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 101 s): pass
+
+15/15 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 97 s): pass
+
+15/15 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 107 s): pass
+
+15/15 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 102 s): pass
+
+15/15 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 99 s): pass
+
+15/15 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 140 s): **FAIL**
+
+12/15 checks pass. Failed: the plug opens the app's setup screen on this board, no network (not within 15 s); a wrong password is named over the cable (The router refused the password for "<network>" (code 33). Check it); the app used the cable (no Bluetooth pairing) (7 screens).
+
+
+### Automated run 2026-11-09 (run.py, 145 s): **FAIL**
+
+12/15 checks pass. Failed: the plug opens the app's setup screen on this board, no network (not within 15 s); a wrong password is named over the cable (The router refused the password for "<network>" (code 33). Check it); the app used the cable (no Bluetooth pairing) (7 screens).
+
+
+### Automated run 2026-11-09 (run.py, 144 s): **FAIL**
+
+12/15 checks pass. Failed: the plug opens the app's setup screen on this board, no network (not within 15 s); a wrong password is named over the cable (The router refused the password for "<network>" (code 33). Check it); the app used the cable (no Bluetooth pairing) (7 screens).
+
+
+### Automated run 2026-11-09 (run.py, 100 s): pass
+
+15/15 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 97 s): pass
+
+15/15 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 35 s): **FAIL**
+
+not run: the phone on the wrong cable (the BL616 console, not USB-C 1)
+
+
 ### Automated run 2026-11-09 (run.py, 106 s): pass
 
 15/15 checks pass.

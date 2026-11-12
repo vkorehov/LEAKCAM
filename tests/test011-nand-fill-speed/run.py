@@ -10,6 +10,7 @@ from harness import Run, bl   # noqa: E402,F401
 
 r = Run(__file__)
 r.boot()
+r.media_quiet()   # the agent's boot hook (leakcam_wake, ~23-28 s after boot, writes /sdcard) cut run 3 short twice (2026-11-11)
 r.sample("idle")
 idle = r.meter("K230 at msh idle (agent running)", force=True)
 SRC, N = "/sdcard/app/leakcam_wake", 5181000

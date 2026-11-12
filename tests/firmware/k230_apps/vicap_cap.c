@@ -171,6 +171,18 @@ int cap_grab_all(struct cap_cam *cams, int n, unsigned settle, int timeout_ms)
                 for (unsigned r = 0; r < c->height; r++)
                     memcpy(c->luma + (size_t)r * c->width, y + (size_t)r * stride, c->width);
                 kd_mpi_sys_munmap((void *)y, ysize);
+                if (c->chroma) {           /* the UV plane: height / 2 rows of interleaved U, V */
+                    k_u64 uv_phys = f.v_frame.phys_addr[1] ? f.v_frame.phys_addr[1] : f.v_frame.phys_addr[0] + ysize;
+                    k_u32 uvsize = stride * f.v_frame.height / 2;
+                    const k_u8 *uv = kd_mpi_sys_mmap(uv_phys, uvsize);
+                    if (uv) {
+                        for (unsigned r = 0; r < c->height / 2; r++)
+                            memcpy(c->chroma + (size_t)r * c->width, uv + (size_t)r * stride, c->width);
+                        kd_mpi_sys_munmap((void *)uv, uvsize);
+                    } else {
+                        memset(c->chroma, 128, (size_t)c->width * c->height / 2);   /* grey: no colour */
+                    }
+                }
                 done++;
             }
             kd_mpi_vicap_dump_release((k_vicap_dev)c->node, VICAP_CHN_ID_0, &f);
@@ -195,7 +207,8 @@ void cap_close_all(struct cap_cam *cams, int n)
         free(cams[i].luma);
         cams[i].luma = NULL;
     }
-    if (vb_ready)
-        kd_mpi_vb_exit();
+    /* a failed exit leaves VB initialized system-wide: the next program's init fails (leakcam_stream vb_teardown) */
+    if (vb_ready && kd_mpi_vb_exit())
+        fprintf(stderr, "cap: vb exit failed: the next program's VB init will fail\n");
     vb_ready = 0;
 }

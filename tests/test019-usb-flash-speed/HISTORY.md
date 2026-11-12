@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 62 s): pass
+
+flash_nand.sh (erase 0..248M + write 45498368 B): 29.1 s, ok; 1.56 MB/s overall incl. erase; then booted to msh. Log: flash_last.txt
+
+
 ### Automated run 2026-10-31 (run.py, 57 s): pass
 
 flash_nand.sh (erase 0..248M + write 45445120 B): 24.8 s, ok; 1.83 MB/s overall incl. erase; then booted to msh. Log: flash_last.txt

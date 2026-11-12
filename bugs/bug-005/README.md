@@ -1,6 +1,6 @@
 # bug-005: the Pi Zero camera cable lands camera 3V3 on J4 pin 1 (GND)
 
-Found: 2026-10-24, test017 (the K230's 3V3 stopped coming up). Status: open, cause found; rev 1: top-contact connector + rotated cameras, rev 2: reversed pinout.
+Found: 2026-10-24, test017 (the K230's 3V3 stopped coming up). Status: rev 1 reworked 2026-11-11 (top-contact J4/J5), to be proven by test030; rev 2: reversed pinout.
 
 ## What happened
 
@@ -64,3 +64,16 @@ opposite-side contacts), the connector's contact type or a crossover does. Decid
 - AliExpress: same-side 15-to-22 camera cables, 8 cm (bottom camera, J5, ~70 mm needed) and 15 cm (top camera, J4,
   ~83 mm needed; no 10 cm sold), COME ON DIY Store listing 1005005609470913. Check same-side contacts on arrival.
 - On arrival: rework J4/J5, then continuity camera pin 15 -> J4/J5 pin 22 before any power, then test020/test030.
+
+## Rework done (2026-11-11)
+
+J4 and J5 resoldered to JUSHUO AFC07-S22ECA-00 (top contact) by the user; optical inspection passed. One 222 degree
+camera on hand (the second not arrived). Next, before any power: continuity camera pin 15 (3V3) -> J pin 22 with the
+cable seated as mounted, camera pin 1 (GND) -> J pin 1, no short 3V3-GND on the camera; then test030 detection.
+
+2026-11-11: first camera on reworked J4 (222 degree OV5647): 3V3 up with it plugged, sensor at 0x36 on i2c0, chip ID
+0x5647 (test030 step 1). J5 to be proven with the second camera.
+2026-11-11 later: J5 proven too (stopgap OV5647: ID 0x5647 on i2c4, a picture over CSI2); J4 gave pictures with the
+same camera. The rev 1 rework works on both connectors (test030).
+2026-11-11 evening: J5's connector plastic broke (the latch could not clamp: I2C answered, the CSI data lanes came
+and went); the user resolders it. Handle the AFC07 latch gently; swap cameras only with the K230 off.

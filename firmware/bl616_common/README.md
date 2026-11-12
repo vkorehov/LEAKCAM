@@ -15,6 +15,9 @@ k230_linesplit.h).
 | api.c | the LEAKCAM API's check-in target (POST /v1/poll, the metrics in its form): the network check's last step and the presence check-in |
 | metrics.c | every metric in the check-in (DESIGN.md 5.3.10): the sensors, uptime, boots, resets, heap, Wi-Fi, counters, the K230's last STATUS; HBN RAM; `metrics` |
 | aht20.c | the AHT20 (U17) on I2C0: temperature and humidity (from the powertest firmware, tests/test021) |
+| climate.c | the AHT20 every 10 min in both firmwares: the room's values only after 3 h cool, the 85 %RH alarm (the firmware's own action), `climate` (DESIGN.md 5.3.15, tests/test140) |
+| rtc_clock.c | the HBN RTC as the time base through HBN sleep, wakes and resets; Y3 selected before the first sleep |
+| wall_clock.c | the wall clock from the server's X-Time, kept against the RTC in HBN RAM |
 | leakcam_version.cmake, version_gen.cmake | leakcam_version.h on every build: the image name and the product version (../VERSION + git commit) |
 | wifi_check.c, wifi_check_calc.h | the credential check and the check-in run (join, DHCP, HTTP) through the wifi_link.h interface |
 | wifi_link.h | that interface: the full firmware's wifi_link.c (NetHub bridge) or the setup firmware's wifi_setup.c (own station) |

@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 51 s): pass
+
+8 rounds of `pt_status`: leak node dry, AHT20 read, USB detected; all good.
+
+
 ### Automated run 2026-10-25 (run.py, 50 s): pass
 
 8 rounds of `pt_status`: leak node dry, AHT20 read, USB detected; all good.

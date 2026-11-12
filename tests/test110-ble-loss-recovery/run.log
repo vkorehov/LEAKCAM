@@ -1,23 +1,22 @@
-09:49:30 test110-ble-loss-recovery: 0 metric rows MISSING: none
-09:49:56 phone: app 12.3 s
-09:50:04 CHECK pass baseline: Done, the network stored 7.8 s
-09:50:22 fault at 'Paired. Sending the Wi-Fi settings'
-09:50:46 phone: app 31.5 s
-09:50:48 CHECK pass phone Bluetooth off 4 s before the save: a result named within 35 s 27.5 s: The connection to 7C3E8262B149 dropped and the app could not reach it 
-09:50:48 CHECK pass phone Bluetooth off 4 s before the save: the app and the board agree app cannot tell, board stored
-09:51:11 phone: app 12.0 s
-09:51:16 CHECK pass phone Bluetooth off 4 s before the save: then a clean setup, Done 7.9 s
-09:51:34 fault at 'now joining'
-09:51:57 phone: app 30.5 s
-09:52:00 CHECK pass phone Bluetooth off 4 s during the check: a result named within 35 s 26.5 s: The connection to 7C3E8262B149 dropped and the app could not reach it 
-09:52:00 CHECK pass phone Bluetooth off 4 s during the check: the app and the board agree app cannot tell, board stored
-09:52:22 phone: app 11.4 s
-09:52:27 CHECK pass phone Bluetooth off 4 s during the check: then a clean setup, Done 7.6 s
-09:52:45 fault at 'now joining'
-09:52:59 phone: app 21.5 s
-09:53:03 CHECK pass the board reset during the check: a result named within 35 s 17.6 s: The connection to 7C3E8262B149 dropped and the app could not reach it 
-09:53:03 CHECK pass the board reset during the check: the app and the board agree app cannot tell, board nothing stored
-09:53:17 phone: app 11.7 s
-09:53:25 CHECK pass the board reset during the check: then a clean setup, Done 7.6 s
-09:53:28 sample after the cases {'board': None, 'bl_mem': (180012, 141880, 161116, 67, 79152, 14, 0)}
-09:53:28 test110-ble-loss-recovery: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+02:25:15 test110-ble-loss-recovery: 0 metric rows MISSING: none
+02:25:44 phone: app 12.5 s
+02:25:51 CHECK pass baseline: Done, the network stored 8.8 s
+02:26:07 fault at 'Paired. Sending the Wi-Fi settings'
+02:26:10 phone: app 10.5 s
+02:26:14 CHECK pass phone Bluetooth off 4 s before the save: a result named within 35 s 6.8 s: Bluetooth is off. Turn it on, then tap again.
+02:26:14 CHECK pass phone Bluetooth off 4 s before the save: the app and the board agree app failed, board nothing stored
+02:26:26 phone: app 12.0 s
+02:26:31 CHECK pass phone Bluetooth off 4 s before the save: then a clean setup, Done 8.4 s
+02:26:49 fault at 'now joining'
+02:26:54 phone: app 14.1 s
+02:26:57 CHECK pass phone Bluetooth off 4 s during the check: a result named within 35 s 10.4 s: Done. 7C3E8262B149 joined "<network>".
+7C3E8262B149: online, Wi-Fi "<n
+02:26:57 CHECK pass phone Bluetooth off 4 s during the check: the app and the board agree app Done, board stored
+02:27:13 fault at 'now joining'
+02:27:27 phone: app 21.6 s
+02:27:33 CHECK pass the board reset during the check: a result named within 35 s 18.1 s: The connection to 7C3E8262B149 dropped: the app cannot tell whether th
+02:27:33 CHECK pass the board reset during the check: the app and the board agree app cannot tell, board nothing stored
+02:27:46 phone: app 12.5 s
+02:27:53 CHECK pass the board reset during the check: then a clean setup, Done 8.3 s
+02:27:56 sample after the cases {'board': None, 'bl_mem': (171056, 133580, 141456, 72, 85960, 16, 0)}
+02:27:58 test110-ble-loss-recovery: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

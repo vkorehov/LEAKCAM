@@ -20,6 +20,11 @@ probe; no humidity wakes. The old lines:
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 88 s): pass
+
+5 cold boots of the current image to msh; metrics from the harness.
+
+
 ### Automated run 2026-10-30 (run.py, 72 s): pass
 
 5 cold boots of the current image to msh; metrics from the harness.

@@ -18,7 +18,9 @@ interval 60 s). The bench PC's UTC (NTP) is the reference.
 ## Steps
 
 1. **The server:** `X-Time` on every answer (a good one and an error), within 2 s of UTC.
-2. **The BL616's clock:** `clock` shows `clock: <unix s> (set <n> times)`: within 5 s of UTC, set from the server.
+2. **The BL616's clock:** `clock` shows `clock: <unix s> (set <n> times)`: within 5 s of UTC. Kept on the RTC in HBN
+   RAM through resets since 2026-11-10 (wall_clock.c): after the runner's reset it may need no set (n 0); step 7 proves
+   the server's set.
 3. **No step for small drift (BL616, natural):** two check-ins later (130 s) the count is the same.
 4. **The K230's clock:** its shell's `date` within 5 s of UTC.
 5. **No step within 5 s (K230):** the BL616's clock moved 3 s ahead (`clock <unix s>`), a BL616 frame (`leak check`:

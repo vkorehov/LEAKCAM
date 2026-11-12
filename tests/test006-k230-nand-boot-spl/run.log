@@ -1,13 +1,13 @@
-09:13:09 test006-k230-nand-boot-spl: 0 metric rows MISSING: none
-09:13:21 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
-09:13:28 sample boot 1 {'board': 34.9, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 42.78, 'k_free': (7025152, 1390848), 'vbat': 4158}
-09:13:40 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
-09:13:47 sample boot 2 {'board': 34.5, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 42.78, 'k_free': (7025152, 1390848), 'vbat': 4169}
-09:13:59 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
-09:14:05 sample boot 3 {'board': 34.3, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 41.875, 'k_free': (7025152, 1390848), 'vbat': 4157}
-09:14:18 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
-09:14:25 sample boot 4 {'board': 34.0, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 41.271, 'k_free': (7025152, 1390848), 'vbat': 4135}
-09:14:37 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.55 msh 0.56
-09:14:44 sample boot 5 {'board': 33.8, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 42.78, 'k_free': (7025152, 1390848), 'vbat': 4163}
-09:14:44 meter K230 at msh idle (agent running): not asked (LEAKCAM_METER=ask to be prompted)
-09:14:46 test006-k230-nand-boot-spl: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+23:02:14 test006-k230-nand-boot-spl: 0 metric rows MISSING: none
+23:02:27 boot SPL 0.17 OpenSBI 0.27 RT-Smart 0.29 mounted 0.58 msh 0.58
+23:02:33 sample boot 1 {'board': 31.3, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 37.642, 'k_free': (7020032, 1395968), 'vbat': 4378}
+23:02:46 boot SPL 0.17 OpenSBI 0.28 RT-Smart 0.29 mounted 0.58 msh 0.58
+23:02:52 sample boot 2 {'board': 31.2, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 36.43, 'k_free': (7020032, 1395968), 'vbat': 4379}
+23:03:05 boot SPL 0.17 OpenSBI 0.27 RT-Smart 0.28 mounted 0.57 msh 0.58
+23:03:11 sample boot 3 {'board': 31.1, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 37.642, 'k_free': (7020032, 1395968), 'vbat': 4356}
+23:03:24 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.57 msh 0.58
+23:03:30 sample boot 4 {'board': 31.1, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 36.733, 'k_free': (7020032, 1395968), 'vbat': 4371}
+23:03:43 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.57 msh 0.58
+23:03:49 sample boot 5 {'board': 31.1, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 36.43, 'k_free': (7020032, 1395968), 'vbat': 4354}
+23:03:49 meter K230 at msh idle (agent running): not asked (LEAKCAM_METER=ask to be prompted)
+23:03:52 test006-k230-nand-boot-spl: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

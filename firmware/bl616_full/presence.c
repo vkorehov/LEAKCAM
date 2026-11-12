@@ -12,11 +12,15 @@
 #include "shell.h"
 
 #include "api.h"
+#include "climate.h"
 #include "device_id.h"
+#include "hbn_sleep.h"
 #include "leak_check.h"
 #include "metrics.h"
 #include "ota_fetch.h"
+#include "rtc_clock.h"
 #include "switch_to_setup.h"
+#include "thresholds.h"
 #include "wifi_check.h"
 
 #define CHECKIN_S      3600                     /* until the server says otherwise (DESIGN.md 5.3.12: 60 min) */
@@ -28,7 +32,11 @@ static uint32_t checkin_s = CHECKIN_S;
 static enum wifi_check_state last = WCHK_IDLE;
 static uint16_t last_detail;
 static uint32_t last_ms;
-static unsigned missed;                      /* failed check-ins in a row */
+static volatile bool busy;                   /* a check-in running or asked (presence_now): the sleep waits */
+/* asked (presence_now) since the running check-in started: one more follows it. A request during a check-in used to be
+ * dropped as "answered by it", also when it came after the server's answer (a `presence now` 1.4 s after the last
+ * one: no check-in for 20 s, tests/test109 2026-11-10; the Wi-Fi change's "reported now" from inside a check-in) */
+static volatile bool again;
 static TaskHandle_t task;
 
 static void no_progress(enum wifi_check_state st, uint16_t detail)
@@ -137,6 +145,9 @@ static void check_in(void)
     }
     if ((v = last == WCHK_INTERNET ? answer_value(body, "leakcheck") : -1) > 0)
         leak_check_every((uint32_t)v);
+    /* the leak thresholds (thresholds.h): in flash when changed, the probe's comparator re-armed */
+    if (last == WCHK_INTERNET && thresholds_set(answer_value(body, "probe_mv"), answer_value(body, "humid")))
+        leak_check_probe();
 
     if (last == WCHK_CAPTIVE && last_detail == 410) {
         switch_to_setup("unused");        /* no user left: back to setup (DESIGN.md 5.3.5, tests/test111) */
@@ -145,11 +156,13 @@ static void check_in(void)
     if (last != WCHK_INTERNET) {
         /* presence does not flap: lost only after MISSED_MAX failed check-ins in a row, a short outage never starts
          * the setup firmware (DESIGN.md 5.3.6) */
-        if (++missed >= MISSED_MAX)
+        unsigned missed = hbn_sleep_missed() + 1;   /* in HBN RAM: through the sleep between check-ins */
+        hbn_sleep_missed_set(missed);
+        if (missed >= MISSED_MAX)
             switch_to_setup("lost");      /* presence lost, for whatever reason (tests/test117) */
         return;
     }
-    missed = 0;
+    hbn_sleep_missed_set(0);
     if (wifi_change(body))
         return;                           /* the rest of this answer waits for the next check-in, on its network */
     if (ota_fetch(body, ssid, sl, psk, ps ? pl : 0)) {
@@ -165,11 +178,28 @@ static void presence_task(void *arg)
     metrics_intervals(&kept, &unused);
     if (kept >= CHECKIN_MIN_S && kept <= CHECKIN_MAX_S)
         checkin_s = kept;                    /* the server's, from before the reset */
-    vTaskDelay(pdMS_TO_TICKS(5000));         /* online within seconds of the start */
+    /* a reset: online within seconds of the start; a wake from HBN: the due one kept through the sleep */
+    if (!hbn_sleep_woke())
+        hbn_sleep_checkin_set(rtc_clock_s() + 5);
     for (;;) {
+        int32_t left = (int32_t)(hbn_sleep_checkin_due() - rtc_clock_s());
+        if (left > 0 && !again) {
+            if (ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS((uint32_t)left * 1000)) == 0)
+                continue;                  /* due now: looked at again */
+        }
+        again = false;                     /* every request so far: answered by this check-in */
+        busy = true;
+        climate_read("check-in");          /* first, before the radio warms anything (DESIGN.md 5.3.15) */
         check_in();                        /* on USB and on battery; it needs a stored network */
-        (void)ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(checkin_s * 1000));   /* presence_now() ends the wait */
+        hbn_sleep_checkin_set(rtc_clock_s() + checkin_s);
+        busy = again;                      /* asked meanwhile: its own check-in next, no sleep before it */
+        (void)ulTaskNotifyTake(pdTRUE, 0); /* the count only: `again` holds the request */
     }
+}
+
+bool presence_busy(void)
+{
+    return busy;
 }
 
 void presence_start(void)
@@ -180,8 +210,11 @@ void presence_start(void)
 
 void presence_now(void)
 {
-    if (task)
+    if (task) {
+        again = true;
+        busy = true;                       /* asked: no sleep before it ran */
         xTaskNotifyGive(task);
+    }
 }
 
 /* `presence`: the state; `presence now`: a check-in now (the bench: a new interval taken at once, not after the old) */
@@ -196,7 +229,7 @@ static void cmd_presence(int argc, char **argv)
            (unsigned long)checkin_s);
     if (last_ms)
         printf("presence: last check-in state 0x%02x detail %u, %lu s ago, missed %u of %u\r\n", last, last_detail,
-               (unsigned long)(((uint32_t)bflb_mtimer_get_time_ms() - last_ms) / 1000), missed, MISSED_MAX);
+               (unsigned long)(((uint32_t)bflb_mtimer_get_time_ms() - last_ms) / 1000), hbn_sleep_missed(), MISSED_MAX);
     else
         printf("presence: no check-in yet\r\n");
 }

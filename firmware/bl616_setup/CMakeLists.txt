@@ -29,6 +29,10 @@ target_sources(app PRIVATE
                ${S}/flash_sha.c
                ${S}/battery.c
                ${S}/metrics.c
+               ${S}/climate.c
+               ${S}/thresholds.c
+               ${S}/tls_link.c
+               ${S}/rtc_clock.c
                ${S}/evlog.c
                ${S}/aht20.c
                ${S}/mem_stat.c

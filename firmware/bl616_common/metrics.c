@@ -1,4 +1,5 @@
 #include "metrics.h"
+#include "thresholds.h"
 #include "evlog.h"
 #include "leakcam_version.h"
 
@@ -6,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "FreeRTOS.h"
+#include "semphr.h"
 #include "bflb_adc.h"
 #include "bflb_clock.h"
 #include "bflb_gpio.h"
@@ -18,10 +21,12 @@
 #include "board_pins.h"
 #include "crash_rec.h"
 #include "mem_stat.h"
+#include "rtc_clock.h"
 #include "wifi_check.h"
 
-#define MAGIC 0x4d455434u                    /* "MET4": the record is set (2: the leak check, 3: the intervals,
-                                              * 4: the Wi-Fi change's result) */
+#define MAGIC 0x4d455436u                    /* "MET6": the record is set (2: the leak check, 3: the intervals,
+                                              * 4: the Wi-Fi change's result, 5: the room reading, 6: RTC ages and
+                                              * HBN wakes) */
 #define JOB_CAP 24                           /* "changed,changed" and room */
 #define K230_VER_CAP 40                      /* "0.6+g4ec6b02-dirty-202611061530" and room */
 
@@ -32,22 +37,29 @@ static struct {
     uint32_t boots;                          /* BL616 boots since the battery was connected */
     uint32_t fails;                          /* failed check-ins since the last good one */
     uint32_t switches, usb_wakes;            /* since the last good check-in */
+    uint32_t hbn_wakes;                      /* ... HBN sleeps woken (the full firmware on battery: not boots) */
     uint32_t k_sessions, k_failed, k_on_ms;  /* K230 sessions since the last good check-in, failed ones, rails-on ms */
-    uint32_t k_last_ms, k_last_boot;         /* the last session: its length, the BL616 boot it ended in */
-    int32_t k_last_ok, k_last_at_s;          /* ... ok 1 / failed 0 / none -1; BL616 uptime s at its end */
-    uint32_t k_up_s, k_heap, k_heap_min, k_pages, k_boot;   /* the last STATUS; k_boot: the BL616 boot it came in */
+    uint32_t k_last_ms;                      /* the last session: its length */
+    int32_t k_last_ok, k_last_at_s;          /* ... ok 1 / failed 0 / none -1; the RTC s at its end */
+    uint32_t k_up_s, k_heap, k_heap_min, k_pages;   /* the last STATUS */
     int32_t k_tdie_x10, k_at_s;
     char k_ver[K230_VER_CAP];
     char job[JOB_CAP];                       /* the last leak check's DONE (k230_link.h), "" none */
-    uint32_t job_boot;
     int32_t job_at_s;
     uint32_t checkin_s, leakcheck_s;         /* the server's intervals (DESIGN.md 5.3.12), 0 = none yet */
     int32_t wifi_change;                     /* the last Wi-Fi change from the server: its wifi_check state, 0 none
                                               * (DESIGN.md 5.3.13); until a good check-in reported it */
+    int32_t room_t_x10, room_rh_x10;         /* the room, read after 3 h cool (DESIGN.md 5.3.15); rh -1 = none yet */
+    int32_t room_at_s;
 } rec __attribute__((section(".hbn_noinit.metrics")));
 
 static uint8_t rst;                          /* GLB reset recorder bits of this boot (bl616_glb.h) */
 static int rh_x10 = -1, t_x10, probe_mv = -1, tdie_x10 = -1000, vdd_mv = -1;
+static int rh_sim = -1;                      /* `climate sim`: the humidity the AHT20 reads instead (tests, x10) */
+static uint32_t (*quiet_fn)(void);           /* s the board has been cool now (climate.c), NULL: not tracked */
+static SemaphoreHandle_t aht_mu;             /* one AHT20 read at a time: the climate timer and the check-in */
+static StaticSemaphore_t aht_mu_buf;         /* static: metrics_boot() runs before board_init() sets up the heap (a
+                                              * heap mutex there asserted before USB, 2026-11-10: BOOT + EN needed) */
 
 static uint32_t up_s(void)
 {
@@ -59,8 +71,10 @@ void metrics_boot(void)
     if (rec.magic != MAGIC) {
         memset(&rec, 0, sizeof(rec));
         rec.k_last_ok = -1;
+        rec.room_rh_x10 = -1;
         rec.magic = MAGIC;
     }
+    aht_mu = xSemaphoreCreateMutexStatic(&aht_mu_buf);
     rec.boots++;
     GLB_RESET_RECORD_Type r;
     if (GLB_Get_Reset_Reason(&r) == SUCCESS)
@@ -79,13 +93,18 @@ void metrics_usb_wake(void)
     rec.usb_wakes++;
 }
 
+void metrics_hbn_wake(void)
+{
+    rec.boots--;                             /* metrics_boot() counted it: a wake from the sleep, not a boot */
+    rec.hbn_wakes++;
+}
+
 /* STATUS's <uptime s>,<version>,<die x10>,<heap free>,<heap min>,<pages free B> (k230_link.h) */
 void metrics_k230_status(const char *args)
 {
     char *q;
     rec.k_up_s = (uint32_t)strtoul(args, &q, 10);
-    rec.k_at_s = (int32_t)up_s();
-    rec.k_boot = rec.boots;
+    rec.k_at_s = (int32_t)rtc_clock_s();
     if (*q != ',')
         return;
     const char *p = q + 1;
@@ -106,8 +125,7 @@ void metrics_k230_status(const char *args)
 void metrics_job(const char *result)
 {
     snprintf(rec.job, sizeof(rec.job), "%s", result);
-    rec.job_boot = rec.boots;
-    rec.job_at_s = (int32_t)up_s();
+    rec.job_at_s = (int32_t)rtc_clock_s();
 }
 
 void metrics_intervals_set(uint32_t checkin_s, uint32_t leakcheck_s)
@@ -131,8 +149,7 @@ void metrics_k230_session(uint32_t on_ms, bool ok)
     rec.k_on_ms += on_ms;
     rec.k_last_ms = on_ms;
     rec.k_last_ok = ok;
-    rec.k_last_at_s = (int32_t)up_s();
-    rec.k_last_boot = rec.boots;
+    rec.k_last_at_s = (int32_t)rtc_clock_s();
 }
 
 /* one ADC conversion (the SDK's first results after a start are stale: the 6th, as tests/test021's leak_mv()) */
@@ -194,25 +211,70 @@ static int die_x10(struct bflb_device_s *adc)
     return t < -60 || t > 200 ? -1000 : (int)(t * 10);   /* -ETIMEDOUT comes back as a temperature */
 }
 
-void metrics_sample(void)
+/* the AHT20 started (~37 ms to convert) before `meanwhile` runs, then read; rh -1 / t 0 on a failure; `climate sim`
+ * replaces the humidity */
+static bool aht20_read(int *rh, int *t, void (*meanwhile)(void))
 {
-    /* the setup firmware gates every clock it does not need after each PDS wake (setup_sleep.c clocks_after_wake()):
-     * I2C0 and the ADC on again here; the next wake gates them again */
+    xSemaphoreTake(aht_mu, portMAX_DELAY);
     PERIPHERAL_CLOCK_I2C0_ENABLE();
-    PERIPHERAL_CLOCK_ADC_DAC_ENABLE();
     aht20_init();
-    bool started = aht20_start() == AHT20_OK;   /* the AHT20 converts (~37 ms) while the ADC reads */
+    bool ok = aht20_start() == AHT20_OK;
+    if (meanwhile)
+        meanwhile();
+    ok = ok && aht20_finish(rh, t) == AHT20_OK;
+    aht20_deinit();
+    if (!ok) {
+        *rh = -1;                            /* as WAKE's fields: rh -1 = no reading, t then 0 */
+        *t = 0;
+    }
+    if (rh_sim >= 0)
+        *rh = rh_sim;
+    rh_x10 = *rh;
+    t_x10 = *t;
+    xSemaphoreGive(aht_mu);
+    return *rh >= 0;
+}
+
+bool metrics_aht20(int *rh, int *t)
+{
+    return aht20_read(rh, t, NULL);
+}
+
+void metrics_rh_sim(int x10)
+{
+    rh_sim = x10;
+}
+
+void metrics_quiet(uint32_t (*fn)(void))
+{
+    quiet_fn = fn;
+}
+
+void metrics_room(int t, int rh)
+{
+    rec.room_t_x10 = t;
+    rec.room_rh_x10 = rh;
+    rec.room_at_s = (int32_t)rtc_clock_s();
+}
+
+/* the probe node, the supply and the die, while the AHT20 converts */
+static void adc_sample(void)
+{
     struct bflb_device_s *gpio = bflb_device_get_by_name("gpio");
     struct bflb_device_s *adc = bflb_device_get_by_name("adc");
     bflb_gpio_init(gpio, PIN_LEAK_SENS, GPIO_ANALOG | GPIO_SMT_EN | GPIO_DRV_0);
     probe_mv = adc_mv(adc, ADC_CHANNEL_0, false);
     vdd_mv = adc_mv(adc, ADC_CHANNEL_VABT_HALF, true);
     tdie_x10 = die_x10(adc);
-    if (!started || aht20_finish(&rh_x10, &t_x10) != AHT20_OK) {
-        rh_x10 = -1;                         /* as WAKE's fields: rh -1 = no reading, t then 0 */
-        t_x10 = 0;
-    }
-    aht20_deinit();
+}
+
+void metrics_sample(void)
+{
+    /* the setup firmware gates every clock it does not need after each PDS wake (setup_sleep.c clocks_after_wake()):
+     * I2C0 and the ADC on again here; the next wake gates them again */
+    PERIPHERAL_CLOCK_ADC_DAC_ENABLE();
+    int rh, t;
+    aht20_read(&rh, &t, adc_sample);
 }
 
 #define ADD(...)                                                                     \
@@ -228,7 +290,7 @@ size_t metrics_form(char *form, size_t len, size_t cap)
     struct mem_stat m;
     struct crash_rec_info c;
     const struct wifi_check_link *w = wifi_check_last_link();
-    uint32_t now = up_s();
+    uint32_t now = up_s(), at = rtc_clock_s();   /* ages on the RTC: through HBN sleep and resets */
     mem_stat(&m);
     ADD("&bat=%d&chg=%d&t=%d&rh=%d&probe=%d&tdie=%d&vdd=%d", battery_mv(), battery_usb_power() ? 1 : 0, t_x10, rh_x10,
         probe_mv, tdie_x10, vdd_mv);
@@ -237,25 +299,32 @@ size_t metrics_form(char *form, size_t len, size_t cap)
     ADD("&free=%u&minfree=%u&blocks=%lu", (unsigned)m.free_bytes, (unsigned)m.min_free, (unsigned long)m.blocks);
     ADD("&rssi=%d&ch=%u&scan=%lu&join=%lu&dhcp=%lu&fails=%lu", w->rssi, w->channel, (unsigned long)w->scan_ms,
         (unsigned long)w->join_ms, (unsigned long)w->dhcp_ms, (unsigned long)rec.fails);
+    ADD("&hbnw=%lu", (unsigned long)rec.hbn_wakes);
+    ADD("&thmv=%d&thrh=%d", thresholds_probe_mv(), thresholds_humid());   /* the thresholds in use (thresholds.h) */
     ADD("&sw=%lu&usbw=%lu&ks=%lu&kfail=%lu&kon=%lu", (unsigned long)rec.switches, (unsigned long)rec.usb_wakes,
         (unsigned long)rec.k_sessions, (unsigned long)rec.k_failed, (unsigned long)rec.k_on_ms);
     /* ages in s: known only within this boot (no clock across a reset yet: the RTC comes with the sleep, DESIGN 5.3.10) */
-    long kago = rec.k_last_ok >= 0 && rec.k_last_boot == rec.boots ? (long)(now - (uint32_t)rec.k_last_at_s) : -1;
+    long kago = rec.k_last_ok >= 0 ? (long)(at - (uint32_t)rec.k_last_at_s) : -1;
     ADD("&klast=%ld&kms=%lu&kago=%ld", (long)rec.k_last_ok, (unsigned long)rec.k_last_ms, kago);
     if (rec.k_ver[0]) {
         char ver[3 * K230_VER_CAP + 1];
         size_t o = 0;
         for (const char *p = rec.k_ver; *p && o + 4 < sizeof(ver); p++)
             o += (size_t)snprintf(ver + o, sizeof(ver) - o, *p == '+' ? "%%2B" : "%c", *p);
-        long sago = rec.k_boot == rec.boots ? (long)(now - (uint32_t)rec.k_at_s) : -1;
+        long sago = (long)(at - (uint32_t)rec.k_at_s);
         ADD("&kver=%s&kup=%lu&ktdie=%ld&kheap=%lu&kheapmin=%lu&kpages=%lu&ksago=%ld", ver, (unsigned long)rec.k_up_s,
             (long)rec.k_tdie_x10, (unsigned long)rec.k_heap, (unsigned long)rec.k_heap_min, (unsigned long)rec.k_pages,
             sago);
     }
     if (rec.job[0])
-        ADD("&job=%s&jago=%ld", rec.job, rec.job_boot == rec.boots ? (long)(now - (uint32_t)rec.job_at_s) : -1L);
+        ADD("&job=%s&jago=%ld", rec.job, (long)(at - (uint32_t)rec.job_at_s));
     if (rec.wifi_change)
         ADD("&wchg=%ld", (long)rec.wifi_change);
+    if (rec.room_rh_x10 >= 0)
+        ADD("&troom=%ld&rhroom=%ld&roomago=%ld", (long)rec.room_t_x10, (long)rec.room_rh_x10,
+            (long)(at - (uint32_t)rec.room_at_s));
+    if (quiet_fn)
+        ADD("&quiet=%lu", (unsigned long)quiet_fn());
     return len;
 }
 
@@ -265,7 +334,7 @@ void metrics_checkin(bool ok)
         rec.fails++;
         return;
     }
-    rec.fails = rec.switches = rec.usb_wakes = 0;
+    rec.fails = rec.switches = rec.usb_wakes = rec.hbn_wakes = 0;
     rec.k_sessions = rec.k_failed = rec.k_on_ms = 0;
     rec.wifi_change = 0;
 }

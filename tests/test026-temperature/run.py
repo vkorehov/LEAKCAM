@@ -11,6 +11,7 @@ from harness import Run, bl   # noqa: E402,F401
 
 r = Run(__file__)
 r.boot()
+r.media_quiet()                         # the agent's boot capture hook must not share VB (2026-11-12)
 for i in range(12):
     r.sample(f"idle {i * 10} s")
     time.sleep(8)

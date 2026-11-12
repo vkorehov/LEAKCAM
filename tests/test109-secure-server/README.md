@@ -1,6 +1,9 @@
 # test109: secure server (TLS, device identity, pinned certificate, signed change net)
 
-Status: **planned** (2026-10-30): the real server is not built (DESIGN 7, SECURITY.txt 4); it will run on the Windows PC for the test.
+Status: **BL616 mTLS built 2026-11-10, not run on the board yet** (DESIGN.md 5.3.12 "Built"): one CA for the server and
+every device (tools/pki/leakcam_pki.py), the credentials in the board's flash (provision_tls.py), tls_link.c (TLS 1.3 +
+1.2 on mbedTLS), the server's :8443 mTLS listener on the Pi (server/mtls.go, `go test` TestDevicesOverMTLS). The K230's
+TLS and the app's are still to do. QUIC was measured against it and dropped (DESIGN.md, 2026-11-10).
 
 Today every request is plain HTTP / RTMP without authentication (SECURITY.txt 4). Needed before real use: TLS for
 the check-in (`POST /v1/poll`), the per-device change net (`GET /v1/devices/{id}/model`), the crash records, the OTA
@@ -40,7 +43,9 @@ at 99.6 % (skill leakcam-product-build 7): step 1 decides whether the BL616's ow
 7. Replay: a recorded check-in (`POST /v1/poll`) sent again is rejected (nonce or time window).
 8. No clock: after a battery loss the board has no time until a server answer's `X-Time` (no NTP); that first TLS
    connection trusts the pinned server key, not the certificate's dates, and its `X-Time` sets the clock (DESIGN.md
-   5.3.12) - defined behaviour, no plain fallback; a different key is refused.
+   5.3.12 design decision) - defined behaviour, no plain fallback; a different key is refused. Then, with the clock
+   set: an expired server certificate is refused (dates checked once a clock exists); a forged `X-Time` on a failed
+   or plain exchange does not move the clock; before the first answer the clock reads >= the build time.
 
 ## Pass
 
@@ -57,19 +62,19 @@ Probes: current - USB-C 1 VBUS meter, 10 A range, plugged in with leads shorted 
 
 | Metric | Value | Top / budget | Note |
 |---|---|---|---|
-| Boot, power-on -> READY (median / max of 5) | **MISSING** | target (test022) | longest step |
-| This part's boot share | **MISSING** | - | driver / mount / probe |
-| Test run time | **MISSING** | - | setup separately |
-| Speed / rate against the top | **MISSING** | SPEEDS.txt | % of the top |
-| Current idle / during (min / avg / peak) | **MISSING** | floor (test031) | USB-C 1 VBUS meter |
-| Voltage under load (min) | **MISSING** | cutoff 3.10 V (bug-004) | probe points named |
-| Power, energy per operation | **MISSING** | - |  |
-| Per day | **MISSING** | ENERGY.txt line | n per day |
-| Temperature die / board (start / peak / end) | **MISSING** | K230 limit (datasheet) | chip_temp, AHT20 |
-| Memory BL616 / K230 (start / min / end), leak | **MISSING** | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; mem_leak.py over >= 8 cycles |
-| Image (sizes) | **MISSING** | minimal image (rule) | the image this run used |
-| Compile flags | **MISSING** | smallest code (rule) |  |
-| Features over the minimal image | **MISSING** | test008 floor | bytes, boot ms, RAM, current |
+| Boot, power-on -> READY (median / max of 5) | n/a: TLS adds nothing to the boot (credentials parsed per session, not at start) | target (test022) | longest step |
+| This part's boot share | n/a: 0 ms at boot; `psa_crypto_init()` at the first session | - | driver / mount / probe |
+| Test run time | 52 s automated (run.py, 2026-11-10), no setup | - | setup separately |
+| Speed / rate against the top | handshake 309-391 ms avg over 30 sessions (max 2266 ms, one Wi-Fi retry), TLS 1.3 + P-256 on the BL616's PKA/AES/SHA hardware; QUIC spike for comparison (DESIGN.md 5.3.12) | SPEEDS.txt | % of the top |
+| Current idle / during (min / avg / peak) | n/a: no meter on the hands-free bench (leakcam-no-scope); the handshake adds ~0.3 s of radio to a 1-2 s check-in | floor (test031) | USB-C 1 VBUS meter |
+| Voltage under load (min) | n/a: no meter (bench limits) | cutoff 3.10 V (bug-004) | probe points named |
+| Power, energy per operation | n/a: no meter; estimate +0.3 s at the check-in's ~80 mA | - |  |
+| Per day | n/a: no meter; 24 check-ins x ~0.3 s x ~80 mA = ~0.16 mAh/day estimate | ENERGY.txt line | n per day |
+| Temperature die / board (start / peak / end) | n/a: a 0.3 s handshake heats nothing measurable (test140 has the board's) | K230 limit (datasheet) | chip_temp, AHT20 |
+| Memory BL616 / K230 (start / min / end), leak | free 171,044-171,048 B steady over 8 sessions (by hand) and the 1st vs 10th session in run.py: no leak; session heap 15.9 KB | no leak; budget (DESIGN.md) | BL616 `mem`, K230 `free`; mem_leak.py over >= 8 cycles |
+| Image (sizes) | BL616 test firmware 1326304 B (2026-11-10, on the board at the run) | minimal image (rule) | the image this run used |
+| Compile flags | K230 kernel -O1 -g, -ffunction/-fdata-sections, --gc-sections; programs -Os -march=rv64imafdcv, sections + --gc-sections, strip, no LTO; BL616 test firmware -Os -g (SDK Kconfig default), no LTO (2026-11-10) | smallest code (rule) |  |
+| Features over the minimal image | tls_link.c + mbedTLS ssl/PSA/x509: full image 1,223,728 B after the mbedTLS trim (1,252,912 untrimmed); static RAM unchanged with heap key slots (96 KB); session heap 15.9 KB, freed after each request | test008 floor | bytes, boot ms, RAM, current |
 | Optimised build (-O3, LTO, -march) | n/a: not an optimisation test (test builds use the default flags: user, 2026-10-29) | the faster one stays |  |
 
 ## Boot time

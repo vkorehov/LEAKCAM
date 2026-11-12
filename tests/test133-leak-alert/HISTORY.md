@@ -4,6 +4,81 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 18 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-12 (run.py, 17 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-11 (run.py, 19 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 21 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 20 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 19 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 19 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 22 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 20 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 18 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 19 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 20 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 18 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 21 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 20 s): **FAIL**
+
+9/10 checks pass. Failed: silent mode: acknowledged within 1.25 s, nothing left (rang 2.35 s).
+
+
 ### Automated run 2026-11-09 (run.py, 19 s): pass
 
 10/10 checks pass.

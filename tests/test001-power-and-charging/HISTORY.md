@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 164 s): pass
+
+8 cycles: USB detected (PGOOD low) every time, K230 booted on the charger rail; VBAT in the Voltage row.
+
+
 ### Automated run 2026-10-25 (run.py, 169 s): pass
 
 8 cycles: USB detected (PGOOD low) every time, K230 booted on the charger rail; VBAT in the Voltage row.

@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 99 s): pass
+
+5 of 5 cold boots to msh with /bin and /sdcard mounted.
+
+
 ### Automated run 2026-10-25 (run.py, 97 s): pass
 
 5 of 5 cold boots to msh with /bin and /sdcard mounted.

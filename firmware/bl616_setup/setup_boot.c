@@ -26,6 +26,7 @@
 #include "blecore.h"
 #include "evlog.h"
 #include "setup_sleep.h"
+#include "thresholds.h"
 #include "wifi_setup.h"
 
 /* the product's BLE: advertising as the device ID with the provisioning service, PIN pairing; every 2 s while the chip
@@ -70,6 +71,7 @@ void setup_boot(void)
 
     if (bflb_boot2_init() != 0 || easyflash_init() != EF_NO_ERR)
         vAssertCalled();            /* the partition table and easyflash: nothing works without them */
+    thresholds_load();              /* the full firmware's stored leak thresholds: the humidity alarm here too */
 
     /* RC32K. The example stores the passive crystal (Y3) and resets the chip, and app_clock_init() falls back to RC and
      * stores that when its crystal check fails: a possible reset loop with a flash write per boot. Y3 needs the HBN

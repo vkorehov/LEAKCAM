@@ -22,6 +22,11 @@ target_sources(app PRIVATE
                usb_power.c
                usb_full.c
                leak_check.c
+               ${S}/climate.c
+               ${S}/thresholds.c
+               ${S}/tls_link.c
+               ${S}/rtc_clock.c
+               hbn_sleep.c
                full_boot.c
                ota_fetch.c
                presence.c

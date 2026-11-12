@@ -41,6 +41,7 @@ wifi = pc_sink()
 if not wifi:
     r.notes.append(f"Wi-Fi step skipped: no TCP sink on {PC}:{PC_PORT} (pc_tcp_bench.py sink)")
 r.boot(after_on=bridge if wifi else None)
+r.media_quiet()                         # the agent's boot capture hook must not share VB (2026-11-12)
 r.sample("idle")
 steps = []
 
@@ -63,7 +64,7 @@ def step(name, start, known=None, busy=None):
     log("step", name, a)
 
 
-step("K230 at msh idle (agent running)", lambda: None, known=0.220)          # test006
+step("K230 at msh idle (agent stopped)", lambda: None, known=0.220)          # test006
 # memtest last: it takes all the MMZ and system RAM left, so the KPU and the encoder started after it failed
 # (mmz alloc, 2026-10-30) and their readings were memtest alone
 step("+ KPU change net in a loop", lambda: r.k("/sdcard/app/leakcam_kputest 2000000 &", 2))

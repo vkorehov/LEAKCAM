@@ -1,14 +1,14 @@
-09:02:57 test036-k230-hang-recovery: 0 metric rows MISSING: none
-09:03:32 sample normal 1 {'board': 32.4, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0)}
-09:04:08 sample normal 2 {'board': 33.0, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0)}
-09:04:43 sample normal 3 {'board': 33.4, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0)}
-09:04:58 sample hang 1 {'board': 33.4, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0)}
-09:05:13 sample hang 2 {'board': 33.2, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0)}
-09:05:29 sample hang 3 {'board': 33.0, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0)}
-09:06:09 sample reboot 1 {'board': 33.4, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0)}
-09:06:49 sample reboot 2 {'board': 33.9, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0)}
-09:07:29 sample reboot 3 {'board': 34.2, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0)}
-09:07:52 sample noboot 1 {'board': 34.0, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0)}
-09:08:15 sample noboot 2 {'board': 33.8, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0)}
-09:08:38 sample noboot 3 {'board': 33.7, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0)}
-09:08:42 test036-k230-hang-recovery: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+00:39:47 test036-k230-hang-recovery: 0 metric rows MISSING: none
+00:40:25 sample normal 1 {'board': 28.5, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+00:41:04 sample normal 2 {'board': 30.0, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+00:41:42 sample normal 3 {'board': 31.1, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+00:41:58 sample hang 1 {'board': 31.2, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+00:42:13 sample hang 2 {'board': 31.0, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+00:42:28 sample hang 3 {'board': 30.9, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+00:43:11 sample reboot 1 {'board': 31.8, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+00:43:54 sample reboot 2 {'board': 32.7, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+00:44:37 sample reboot 3 {'board': 33.3, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+00:45:01 sample noboot 1 {'board': 33.2, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+00:45:24 sample noboot 2 {'board': 32.9, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+00:45:47 sample noboot 3 {'board': 32.7, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0)}
+00:45:51 test036-k230-hang-recovery: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

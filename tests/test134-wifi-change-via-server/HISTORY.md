@@ -4,6 +4,76 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 21 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-12 (run.py, 19 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-11 (run.py, 16 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 15 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 16 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 15 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 26 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 28 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 14 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 14 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 16 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 13 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 17 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 13 s): pass
+
+8/8 checks pass.
+
+
 ### Automated run 2026-11-09 (run.py, 15 s): pass
 
 8/8 checks pass.

@@ -19,7 +19,7 @@ import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run   # noqa: E402
 from board import log   # noqa: E402
-from phone import SERVER, ack_alerts, adb, board_id, firmware, ready, screen_xml   # noqa: E402
+from phone import SERVER, ack_alerts, adb, as_board, board_id, firmware, ready, screen_xml   # noqa: E402
 
 PKG = "com.leakcam.setup"
 USER_S = 15                     # the most a person waits (DESIGN.md 5.3.4)
@@ -48,7 +48,8 @@ def http(method, path, body=None, ctype="application/x-www-form-urlencoded"):
 def checkin(dev, **form):
     """a check-in as the board makes it (POST /v1/poll); the answer"""
     form.setdefault("ssid", "TESTNET")
-    return http("POST", f"/v1/poll?id={dev}", urllib.parse.urlencode(form).encode())[1]
+    st, body = as_board(dev, f"/v1/poll?id={dev}", urllib.parse.urlencode(form).encode())   # mTLS, as the board
+    return json.loads(body) if body[:1] in (b"{", b"[") else body
 
 
 def register(dev):

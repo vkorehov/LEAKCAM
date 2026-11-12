@@ -1,6 +1,6 @@
 
 
-U-Boot SPL 2022.10-gc096dae6-dirty (Nov 07 2026 - 06:32:04 +0000)
+U-Boot SPL 2022.10-gc096dae6-dirty (Nov 11 2026 - 23:55:29 +0000)
 
 00000000: PMU Major Msg: End of CA training                                            
 
@@ -24,7 +24,7 @@ U-Boot SPL 2022.10-gc096dae6-dirty (Nov 07 2026 - 06:32:04 +0000)
 
 00000000: PMU Major Msg: Firmware run has completed                                    
 
-dbyte0 add =9a040100 value =10
+dbyte0 add =9a040100 value =12
 
 dbyte0 add =9a040500 value =13
 
@@ -32,7 +32,7 @@ dbyte0 add =9a040900 value =13
 
 dbyte0 add =9a040d00 value =13
 
-dbyte0 add =9a041100 value =13
+dbyte0 add =9a041100 value =14
 
 dbyte0 add =9a041500 value =13
 
@@ -42,13 +42,13 @@ dbyte0 add =9a041d00 value =15
 
 dbyte1 add =9a044100 value =13
 
-dbyte1 add =9a044500 value =12
+dbyte1 add =9a044500 value =13
 
-dbyte1 add =9a044900 value =13
+dbyte1 add =9a044900 value =15
 
-dbyte1 add =9a044d00 value =12
+dbyte1 add =9a044d00 value =13
 
-dbyte1 add =9a045100 value =12
+dbyte1 add =9a045100 value =13
 
 dbyte1 add =9a045500 value =13
 
@@ -106,7 +106,7 @@ page: [0x00d0c4c8 - 0x039fec00], size 46025 KB
 
 - RT -     Thread Smart Operating System
 
- / | \     5.0.0 build Nov  6 2026
+ / | \     5.0.0 build Nov 11 2026
 
  2006 - 2020 Copyright by rt-thread team
 
@@ -151,9 +151,13 @@ tree: DIR 1, FILE 4, DATA 0
 
 /dev/shm file system initialization done!
 
-Can't find sensor on csi0
+Probe dummy af driver
 
-Can't find sensor on csi2
+find sensor(ov5647_csi0) on csi0
+
+Probe dummy af driver
+
+find sensor(ov5647_csi2) on csi2
 
 <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
 
@@ -166,38 +170,62 @@ Can't find sensor on csi2
 
 #############SDK VERSION######################################
 
-SDK   : unknown-20261107-063215--e23af7bd3b96-4162ec7
+SDK   : unknown-20261111-235801--e26d63572397-4162ec7
 
 nncase: 2.11.0
 
 ##############################################################
 
-msh />leakcam: start: t 611 ms, heap +0 B
+msh />leakcam: start: t 678 ms, heap +0 B
 
-leakcam: version 0.6+g2961d6c-dirty-202611070631
+leakcam: version 0.6+g93e689f-dirty-202611112355
 
-leakcam: battery 4365 mV: t 612 ms, heap +0 B
+leakcam: battery 4376 mV: t 679 ms, heap +0 B
 
-leakcam: WAKE setup: t 613 ms, heap +0 B
+551*98
 
-leakcam: relay: USB relay on /dev/ttyGS0: t 613 ms, heap +0 B
+551*98: command not found.
 
-leakcam: job: check: t 618 ms, heap +0 B
+msh />leakcam: clock: 1794447551 from the BL616 (was -58757951 s off)
 
-leakcam: job: cam0 same (simulated same): 0 blocks, max 0.7, gain 1.00: t 650 ms, heap +0 B
-
-leakcam: job: cam1 same (simulated same): 0 blocks, max 0.7, gain 1.00: t 677 ms, heap +0 B
-leakcam: job: done: t 678 ms, heap +0 B
-usb disconnect
 usb disconnect
 
+usb disconnect
+
+leakcam: WAKE setup: t 985 ms, heap +0 B
+
+leakcam: relay: USB relay on /dev/ttyGS0: t 986 ms, heap +0 B
+[31m[E/drv_adc] Wait adc done timeout 2, -110[0m
+leakcam: job: check: t 991 ms, heap +0 B
+leakcam: battery: ADC channel 1: No error information
+leakcam: job: cam0 same (simulated same): 0 blocks, max 0.0, gain 1.00: t 1022 ms, heap +0 B
+leakcam: job: cam1 same (simulated same): 0 blocks, max 0.0, gain 1.00: t 1050 ms, heap +0 B
+leakcam: job: done: t 1051 ms, heap +0 B
+
 msh />
 msh />
 msh />
-msh />U-Boot SPL 2022.100000000: PMU Major Ms
+msh />U-Boot SPL 2022.00000000: PMU M  ay center optimization           te=37
 U-Boot: command not found.
 msh />
-msh />00ay center optia0d =9a0D/M]:4######ree): 0 blocks, max 0.7, gain 1.00: t 650 ms, heap +0 B
-00ay: command not found.
 msh />
-msh />leakcam: job: cam1 same (simulated same): 0 blockleakcam: clock: 1794075645 from the BL616 (was -58385983 s off)
+msh />
+msh />dbyte3 add =9a04dd00 value =37
+dbyte3: command not found.
+msh />
+msh />
+msh />
+msh />8 - 0x039feed
+8: command not found.
+msh />
+msh />
+msh />
+msh />[I/IFFSes
+[I/IFFSes: command not found.
+msh />
+msh />
+msh />
+msh />o_dart: t 678 ms, heap +0 B
+o_dart:: command not found.
+msh />
+msh />leak

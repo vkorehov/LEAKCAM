@@ -30,6 +30,7 @@
 #include "api.h"
 #include "crash_rec.h"
 #include "metrics.h"
+#include "tls_link.h"
 #include "wall_clock.h"
 #include "wifi_link.h"
 
@@ -155,7 +156,8 @@ const struct wifi_check_link *wifi_check_last_link(void)
 }
 
 /* every answer of the LEAKCAM server carries its time, X-Time: <unix s> (DESIGN.md 5.3.12: no NTP): the wall clock set
- * from whatever exchange came last */
+ * from the last verified exchange only (the mTLS session to the server: never a plain answer, which anyone could
+ * forge, DESIGN.md 5.3.12 design decision) */
 static void take_time(const char *headers)
 {
     const char *p = strstr(headers, "\r\nX-Time: ");
@@ -164,15 +166,37 @@ static void take_time(const char *headers)
         wall_clock_set((uint32_t)v);
 }
 
+/* the LEAKCAM server's port: mTLS (tls_link.h); anything else (the connectivity probe) plain */
+static bool tls_target(const struct wifi_check_target *t)
+{
+    return strcmp(t->port, API_PORT) == 0;
+}
+
+static bool tls_on;                      /* this request's session (one request at a time) */
+
+static int io_send(int fd, const void *b, size_t n)
+{
+    return tls_on ? tls_link_send(b, n) : lwip_send(fd, b, n, 0);
+}
+
+static int io_recv(int fd, void *b, size_t n)
+{
+    return tls_on ? tls_link_recv(b, n) : lwip_recv(fd, b, n, 0);
+}
+
 static enum wifi_check_state internet(const struct wifi_check_target *t, uint16_t *detail)
 {
     struct addrinfo hints, *ai = NULL;
-    static char req[768];                /* the headers + a crash record's form (api.h); static: one run at a time */
+    static char req[1024];               /* the headers (~150 B) + the largest form (the check-in's, 768 B below); static:
+                                          * one run at a time */
     static char buf[640];                /* the headers + an upgrade offer's body (~190 B, tests/test130) */
     int n = 0, want = (int)sizeof(buf) - 1;   /* the headers (X-Time) and a short answer's body */
     int rl;
 
-    static char form[512];               /* the check-in's form (metrics.h: ~420 B with the K230's) */
+    /* the check-in's form: the metrics (433 B on 2026-11-12, metrics.h) + ssid (32 B, url-encoded up to 96) + the
+     * image's version (36 B, up to 108): ~650 B at worst. 512 B overflowed into vAssertCalled() for a long or non-ASCII
+     * network name (test136 2026-11-12: 433 B + the prefix past 512) */
+    static char form[768];
     const char *post = t->post;
     if (t->form) {
         if (t->form(form, sizeof(form)) >= sizeof(form))
@@ -197,29 +221,38 @@ static enum wifi_check_state internet(const struct wifi_check_target *t, uint16_
     lwip_freeaddrinfo(ai);
     if (fd < 0)
         return WCHK_NO_INTERNET;
+    tls_on = tls_target(t);
+    if (tls_on && !tls_link_start(fd)) {
+        tls_on = false;
+        (void)lwip_close(fd);            /* no session: nothing goes out plain to the server */
+        return WCHK_NO_INTERNET;
+    }
     int sink_status = -1;
     bool streamed = false;
-    if (lwip_send(fd, req, (size_t)rl, 0) == rl) {
+    if (io_send(fd, req, (size_t)rl) == rl) {
         int k;
-        while (n < want && (k = lwip_recv(fd, buf + n, (size_t)want - (size_t)n, 0)) > 0) {
+        while (n < want && (k = io_recv(fd, buf + n, (size_t)want - (size_t)n)) > 0) {
             n += k;
             buf[n] = 0;
             if ((t->sink || !t->body) && strstr(buf, "\r\n\r\n"))
                 break;                   /* the headers are in: the rest goes to the sink, or nobody wants it */
         }
-        if (n > 0)
-            take_time(buf);              /* buf is static: only this answer's headers */
+        if (n > 0 && tls_on)
+            take_time(buf);              /* buf is static: only this answer's headers; verified sessions only */
         const char *b = t->sink && n > 0 ? strstr(buf, "\r\n\r\n") : NULL;
         if (b) {
             sink_status = wchk_http_status(buf, (size_t)n);
             if (sink_status == t->expect) {
                 b += 4;
                 streamed = t->sink((const uint8_t *)b, (size_t)(buf + n - b), t->sink_arg);
-                while (streamed && (k = lwip_recv(fd, buf, sizeof(buf), 0)) > 0)   /* buf reused: status taken */
+                while (streamed && (k = io_recv(fd, buf, sizeof(buf))) > 0)   /* buf reused: status taken */
                     streamed = t->sink((const uint8_t *)buf, (size_t)k, t->sink_arg);
             }
         }
     }
+    if (tls_on)
+        tls_link_end();
+    tls_on = false;
     (void)lwip_close(fd);               /* the answer is read: a close error changes nothing */
     if (t->sink) {                       /* the sink checks the length and the checksum itself */
         if (sink_status == t->expect)

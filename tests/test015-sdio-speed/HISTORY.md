@@ -4,6 +4,18 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 101 s): pass
+
+SDIO bus, K230 -> BL616 echo device: bl616_clk: 50000000 Hz, 4-bit, high speed 1; 2000 x 1514 B: bus 21246 KB/s, end to end 9084 KB/s; 200 x 1514 B: bus 21247 KB/s, end to end 9146 KB/s; 50 x 512 B: bus 20366 KB/s, end to end 3917 KB/s; soak: 32 of 32 runs clean
+
+- BL616 echo device over the run: 66321 blocks in, 66321 out, 67108 KB; CRC errors 0, aborts 0, other 0, resets 0
+- bl616_clk: 50000000 Hz, 4-bit, high speed 1
+- 2000 x 1514 B: bus 21246 KB/s, end to end 9084 KB/s
+- 200 x 1514 B: bus 21247 KB/s, end to end 9146 KB/s
+- 50 x 512 B: bus 20366 KB/s, end to end 3917 KB/s
+- soak: 32 of 32 runs clean
+
+
 ### Automated run 2026-10-31 (run.py, 134 s): pass
 
 SDIO bus, K230 -> BL616 echo device: msh />; 2000 x 1514 B: bus 21226 KB/s, end to end 9076 KB/s; 200 x 1514 B: bus 21211 KB/s, end to end 9156 KB/s; 50 x 512 B: bus 20333 KB/s, end to end 3816 KB/s; soak: 32 of 32 runs clean

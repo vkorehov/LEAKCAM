@@ -4,6 +4,25 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 139 s): pass
+
+8 rail cycles: 3V3 up in 1.72-1.73 ms, off after pt_off every time; USB boot ROM enumerated (29f1:0230).
+
+
+### 2026-11-11: the ROM missing on USB for ~1 h (obstacle, two causes)
+
+- Symptom: after BOOT1 high + power-on, no 29f1:0230 and no USB event at all in the VM, on the test and the product
+  BL616 firmware; the camera image could not be flashed.
+- Cause 1, my script: on the test firmware `k230 usbboot` answers `k230: command not found.`; `k230_usb_boot.py` took
+  any `k230:` line for the product refusing and returned in 0.1 s without sending pt_* (since 2026-11-05). Fixed:
+  `refused()`; regression case `script` in usb_boot_cases.py.
+- Cause 2, the bench: USB-C 1 half plugged in (VBUS and PGOOD there, no data), so the hand-typed pt_* tries and the
+  product's `k230 usbboot` failed too. The user reseated it. `k230_usb_boot.py` now boots the NAND image when the ROM
+  does not come: its CDC device (1209:abd1) on the same path tells the cable/host from the ROM side.
+- Ruled out (usb_boot_cases.py, 12/12 then 10/10 with `script`): the SDIO pads, the BOOT1 strap (no NAND boot with it
+  high), a NAND boot or BL616 reboot just before. My first idea, the SDIO pads, came from one success right after
+  `pt_sdio park` and did not hold.
+
 ### Automated run 2026-10-25 (run.py, 220 s): pass
 
 8 rail cycles: 3V3 up in 1.69-1.70 ms, off after pt_off every time; USB boot ROM enumerated (29f1:0230).

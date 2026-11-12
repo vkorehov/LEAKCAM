@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 150 s): pass
+
+4 boots, 1000 of 1000 `version` round trips answered; host-timed command -> answer 55 / 56 / 98 ms (min / median / max); 0 late (> 2 s).
+
+- counters boot 1: host_to_bl 2261, bl_to_k230 2261, bl_put_fail 0, k230_rx 2261, k230_text_drop 0, k230_overrun 0, k230_bytes_dropped 0, k230_uart_resets 0
+- counters boot 2: host_to_bl 2261, bl_to_k230 2261, bl_put_fail 0, k230_rx 2261, k230_text_drop 0, k230_overrun 0, k230_bytes_dropped 0, k230_uart_resets 0
+- counters boot 3: host_to_bl 2261, bl_to_k230 2261, bl_put_fail 0, k230_rx 2261, k230_text_drop 0, k230_overrun 0, k230_bytes_dropped 0, k230_uart_resets 0
+- counters boot 4: host_to_bl 2261, bl_to_k230 2261, bl_put_fail 0, k230_rx 2261, k230_text_drop 0, k230_overrun 0, k230_bytes_dropped 0, k230_uart_resets 0
+
+
 ### Automated run 2026-10-30 (run.py, 147 s): pass
 
 4 boots, 1000 of 1000 `version` round trips answered; host-timed command -> answer 55 / 55 / 70 ms (min / median / max); 0 late (> 2 s).

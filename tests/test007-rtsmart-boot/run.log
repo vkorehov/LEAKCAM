@@ -1,12 +1,12 @@
-15:14:42 test007-rtsmart-boot: 12 metric rows MISSING: Boot, power-on -> app init (median / max of runs), This part's boot share, Test run time, Speed / rate against the top, Current floor / typical / peak, Voltage under load (min), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Features over the minimal image, Optimised build (-O3, LTO, -march)
-15:14:54 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.44 msh 0.45
-15:15:01 sample boot 1 {'board': 33.3, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 40.667, 'k_free': (7025152, 1390848), 'vbat': 4353}
-15:15:13 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.44 msh 0.45
-15:15:20 sample boot 2 {'board': 33.1, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 41.271, 'k_free': (7025152, 1390848), 'vbat': 4365}
-15:15:32 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.44 msh 0.45
-15:15:39 sample boot 3 {'board': 32.7, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 39.76, 'k_free': (7025152, 1390848), 'vbat': 4373}
-15:15:51 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.44 msh 0.45
-15:15:58 sample boot 4 {'board': 32.6, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 39.76, 'k_free': (7025152, 1390848), 'vbat': 4359}
-15:16:10 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.25 mounted 0.44 msh 0.45
-15:16:17 sample boot 5 {'board': 32.5, 'bl_mem': (206440, 186564, 204396, 16, 36768, 8, 0), 'die': 39.76, 'k_free': (7025152, 1390848), 'vbat': 4399}
-15:16:19 test007-rtsmart-boot: PASS; filled 10: Boot, power-on -> app init (median / max of runs), Test run time, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Voltage under load (min), Current floor / typical / peak, This part's boot share, Speed / rate against the top, Power, energy per operation, Per day; still MISSING 2: Features over the minimal image, Optimised build (-O3, LTO, -march)
+23:04:00 test007-rtsmart-boot: 0 metric rows MISSING: none
+23:04:13 boot SPL 0.17 OpenSBI 0.28 RT-Smart 0.29 mounted 0.58 msh 0.58
+23:04:19 sample boot 1 {'board': 30.7, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 36.127, 'k_free': (7020032, 1395968), 'vbat': 4366}
+23:04:32 boot SPL 0.17 OpenSBI 0.28 RT-Smart 0.29 mounted 0.58 msh 0.58
+23:04:38 sample boot 2 {'board': 30.7, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 37.036, 'k_free': (7020032, 1395968), 'vbat': 4369}
+23:04:51 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.57 msh 0.58
+23:04:58 sample boot 3 {'board': 30.7, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 37.945, 'k_free': (7020032, 1395968), 'vbat': 4351}
+23:05:10 boot SPL 0.17 OpenSBI 0.28 RT-Smart 0.29 mounted 0.58 msh 0.58
+23:05:17 sample boot 4 {'board': 30.7, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 37.339, 'k_free': (7020032, 1395968), 'vbat': 4392}
+23:05:30 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.57 msh 0.58
+23:05:36 sample boot 5 {'board': 30.7, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 37.036, 'k_free': (7020032, 1395968), 'vbat': 4401}
+23:05:39 test007-rtsmart-boot: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

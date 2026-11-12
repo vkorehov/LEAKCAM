@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 67 s): pass
+
+VBAT 4349-4394 mV over 8 samples (idle, then memtest), spread 45 mV.
+
+
 ### Automated run 2026-10-25 (run.py, 66 s): pass
 
 VBAT 4355-4395 mV over 8 samples (idle, then memtest), spread 40 mV.

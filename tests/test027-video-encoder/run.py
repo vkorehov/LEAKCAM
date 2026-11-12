@@ -10,6 +10,7 @@ from harness import Run, bl   # noqa: E402,F401
 
 r = Run(__file__)
 r.boot()
+r.media_quiet()                         # the agent's boot capture hook must not share VB (2026-11-12)
 r.sample("idle")
 res = []
 for args, name in (("2 20 15", "2 x 15 fps"), ("1 15 0", "1 channel max")):

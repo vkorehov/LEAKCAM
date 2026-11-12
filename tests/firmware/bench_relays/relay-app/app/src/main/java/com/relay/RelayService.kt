@@ -12,15 +12,32 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.database.ContentObserver
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import android.net.nsd.NsdManager
+import android.net.nsd.NsdServiceInfo
+import android.provider.Settings
+import java.net.Inet4Address
 import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
 import android.os.SystemClock
 import android.util.Log
+import java.io.File
+import java.net.InetSocketAddress
+import java.net.ServerSocket
+import java.net.Socket
+import java.security.SecureRandom
 import java.util.UUID
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 
@@ -36,6 +53,21 @@ import java.util.concurrent.TimeUnit
  * runs the commands in order (wait:<ms> pauses; every AT command waits up to 3 s for the box's answer) and logs
  *   RESULT <id> {"replies":[{"cmd":..,"reply":..,"ms":..},..],"connect_ms":..,"error":..}
  * under the tag LeakcamRelay (the PC reads it with logcat). Requests run one at a time, in their order.
+ *
+ * Remote (user, 2026-11-10: "add remote possibility to relay app"): the same requests over HTTP on the LAN, port
+ * 8765, while the service runs - no adb needed (adb over Wi-Fi drops, its port changes):
+ *   POST /run   body: the cmds list as above      -> the RESULT JSON
+ *   GET  /state                                    -> {"connected":..,"address":..}
+ *   GET  /adb                                      -> {"ip":..,"port":..,"enabled":..}: Wireless debugging switched
+ *        on (Settings.Global adb_wifi_enabled; needs `pm grant com.relay android.permission.WRITE_SECURE_SETTINGS`,
+ *        once over adb) and its port, found by the phone's own mDNS announcement (_adb-tls-connect._tcp) - the port
+ *        changes at every toggle or restart (user, 2026-11-11: "build a relay app to enable debugger and tell port")
+ * BootReceiver starts the service at boot: the remote port is back after a phone restart.
+ * Wireless debugging is kept on (user, 2026-11-11: "relay app can also re-enable debugger"): at the service's start,
+ * whenever the setting goes off (an observer on adb_wifi_enabled: Samsung switches it off by itself, e.g. at a Wi-Fi
+ * reconnect) and whenever Wi-Fi comes back.
+ * Every request carries the header "X-Token: <token>": the app makes the token once (files/token, 32 hex digits);
+ * the PC reads it with `adb shell run-as com.relay cat files/token` (debug build) into ~/.leakcam_relay_token.
  */
 class RelayService : Service() {
     private val thread = HandlerThread("relay").apply { start() }
@@ -44,6 +76,15 @@ class RelayService : Service() {
     private var gatt: BluetoothGatt? = null
     private var char: BluetoothGattCharacteristic? = null
     private var address = ""
+    private var server: ServerSocket? = null
+    private val token by lazy {
+        val f = File(filesDir, "token")
+        if (!f.exists()) {
+            val b = ByteArray(16).also { SecureRandom().nextBytes(it) }
+            f.writeText(b.joinToString("") { "%02x".format(it) })
+        }
+        f.readText().trim()
+    }
 
     private val cb = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(g: BluetoothGatt, status: Int, state: Int) {
@@ -70,13 +111,166 @@ class RelayService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    private var watching = false
+
+    /** Wireless debugging on now and kept on (needs WRITE_SECURE_SETTINGS, granted once over adb) */
+    private fun keepAdbOn() {
+        val on = Runnable {
+            try {
+                if (Settings.Global.getInt(contentResolver, "adb_wifi_enabled", 0) != 1) {
+                    Settings.Global.putInt(contentResolver, "adb_wifi_enabled", 1)
+                    Log.i(TAG, "adb: Wireless debugging switched back on")
+                }
+            } catch (e: SecurityException) {
+                Log.w(TAG, "adb: no WRITE_SECURE_SETTINGS: Wireless debugging not kept on")
+            }
+        }
+        on.run()
+        if (watching) return
+        watching = true
+        contentResolver.registerContentObserver(Settings.Global.getUriFor("adb_wifi_enabled"), false,
+            object : ContentObserver(work) { override fun onChange(self: Boolean) { work.postDelayed(on, 1000) } })
+        getSystemService(ConnectivityManager::class.java).registerNetworkCallback(
+            NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI).build(),
+            object : ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(n: Network) { work.postDelayed(on, 3000) }
+            })
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         foreground()
-        val id = intent?.getStringExtra("id") ?: return START_NOT_STICKY
-        val addr = intent.getStringExtra("address") ?: "A4:06:E9:9D:30:7E"
+        listen()
+        keepAdbOn()
+        val id = intent?.getStringExtra("id") ?: return START_STICKY
+        val addr = intent.getStringExtra("address") ?: DEFAULT_ADDR
         val cmds = intent.getStringExtra("cmds").orEmpty().split(",").filter { it.isNotBlank() }
         work.post { Log.i(TAG, "RESULT $id ${run(addr, cmds)}") }
-        return START_NOT_STICKY
+        return START_STICKY                    // restarted if Android stops it: the remote port stays
+    }
+
+    /** the HTTP listener on the LAN (one request at a time, each queued behind the adb ones on `work`) */
+    private fun listen() {
+        if (server != null) return
+        val ss = try {
+            ServerSocket().apply { reuseAddress = true; bind(InetSocketAddress(PORT)) }
+        } catch (e: Exception) {
+            Log.w(TAG, "remote: port $PORT: $e"); return
+        }
+        server = ss
+        Thread({
+            while (!ss.isClosed) {
+                val c = try { ss.accept() } catch (e: Exception) { break }
+                try { serve(c) } catch (e: Exception) { Log.w(TAG, "remote: $e") } finally { c.close() }
+            }
+        }, "relay-http").start()
+        Log.i(TAG, "remote: listening on $PORT")
+    }
+
+    private fun serve(c: Socket) {
+        c.soTimeout = 10000
+        val inp = c.getInputStream().bufferedReader()
+        val start = inp.readLine() ?: return
+        val headers = HashMap<String, String>()
+        while (true) {
+            val l = inp.readLine() ?: break
+            if (l.isEmpty()) break
+            val i = l.indexOf(':')
+            if (i > 0) headers[l.substring(0, i).trim().lowercase()] = l.substring(i + 1).trim()
+        }
+        val len = headers["content-length"]?.toIntOrNull() ?: 0
+        val body = if (len in 1..4096) CharArray(len).also { var n = 0; while (n < len) { val k = inp.read(it, n, len - n); if (k < 0) break; n += k } }.concatToString() else ""
+        val (method, path) = start.split(" ").let { (it.getOrNull(0) ?: "") to (it.getOrNull(1) ?: "") }
+        val (code, out) = when {
+            headers["x-token"] != token -> 403 to "{\"error\":\"token\"}"
+            method == "GET" && path == "/adb" -> 200 to adb()
+            method == "GET" && path == "/state" -> 200 to "{\"connected\":${char != null},\"address\":${json(address)}}"
+            method == "POST" && path.startsWith("/run") -> {
+                val addr = Regex("[?&]address=([0-9A-Fa-f:]{17})").find(path)?.groupValues?.get(1) ?: DEFAULT_ADDR
+                val cmds = body.trim().split(",").filter { it.isNotBlank() }
+                val f = CompletableFuture<String>()
+                work.post { f.complete(run(addr, cmds)) }
+                200 to f.get(60, TimeUnit.SECONDS)
+            }
+            else -> 404 to "{\"error\":\"not found\"}"
+        }
+        val b = out.toByteArray()
+        c.getOutputStream().apply {
+            write(("HTTP/1.1 $code ${if (code == 200) "OK" else "Error"}\r\nContent-Type: application/json\r\n" +
+                "Content-Length: ${b.size}\r\nConnection: close\r\n\r\n").toByteArray())
+            write(b)
+            flush()
+        }
+    }
+
+    /** Wireless debugging on, then its live port: the phone's own mDNS announcement, kept only when a TCP connect to it
+     * works (the cache handed back a stale port after a re-enable, 2026-11-11: "connection refused"); none in 8 s ->
+     * Wireless debugging switched off and on once and looked for again */
+    private fun adb(): String {
+        val first = adbOnce()
+        if (!first.contains("\"port\":-1")) return first
+        try {
+            Settings.Global.putInt(contentResolver, "adb_wifi_enabled", 0)
+            SystemClock.sleep(2000)
+            Settings.Global.putInt(contentResolver, "adb_wifi_enabled", 1)
+            SystemClock.sleep(2000)
+        } catch (e: SecurityException) {
+            return first
+        }
+        return adbOnce()
+    }
+
+    private fun alive(ip: String, port: Int) = try {
+        Socket().use { it.connect(InetSocketAddress(ip, port), 700) }
+        true
+    } catch (e: Exception) {
+        false
+    }
+
+    private fun adbOnce(): String {
+        var enabled = Settings.Global.getInt(contentResolver, "adb_wifi_enabled", 0) == 1
+        if (!enabled) {
+            enabled = try {
+                Settings.Global.putInt(contentResolver, "adb_wifi_enabled", 1)
+            } catch (e: SecurityException) {
+                return "{\"error\":\"no WRITE_SECURE_SETTINGS (adb shell pm grant com.relay android.permission.WRITE_SECURE_SETTINGS)\"}"
+            }
+        }
+        val ip = ownIp() ?: return "{\"error\":\"no Wi-Fi address\",\"enabled\":$enabled}"
+        val nsd = getSystemService(NsdManager::class.java)
+        val found = CompletableFuture<Int>()
+        val pending = LinkedBlockingQueue<NsdServiceInfo>()
+        val listener = object : NsdManager.DiscoveryListener {
+            override fun onDiscoveryStarted(t: String) {}
+            override fun onDiscoveryStopped(t: String) {}
+            override fun onStartDiscoveryFailed(t: String, e: Int) { found.complete(-1) }
+            override fun onStopDiscoveryFailed(t: String, e: Int) {}
+            override fun onServiceFound(i: NsdServiceInfo) { pending.offer(i) }
+            override fun onServiceLost(i: NsdServiceInfo) {}
+        }
+        nsd.discoverServices("_adb-tls-connect._tcp", NsdManager.PROTOCOL_DNS_SD, listener)
+        val until = SystemClock.elapsedRealtime() + 8000
+        while (!found.isDone && SystemClock.elapsedRealtime() < until) {
+            val i = pending.poll(200, TimeUnit.MILLISECONDS) ?: continue
+            val r = CompletableFuture<NsdServiceInfo?>()
+            @Suppress("DEPRECATION")
+            nsd.resolveService(i, object : NsdManager.ResolveListener {
+                override fun onResolveFailed(x: NsdServiceInfo, e: Int) { r.complete(null) }
+                override fun onServiceResolved(x: NsdServiceInfo) { r.complete(x) }
+            })
+            val x = try { r.get(3, TimeUnit.SECONDS) } catch (e: Exception) { null } ?: continue
+            @Suppress("DEPRECATION")
+            if (x.host?.hostAddress == ip && alive(ip, x.port))   // this phone's, not another's; listening now
+                found.complete(x.port)
+        }
+        try { nsd.stopServiceDiscovery(listener) } catch (_: Exception) {}
+        val port = if (found.isDone) found.get() else -1
+        return "{\"ip\":${json(ip)},\"port\":$port,\"enabled\":$enabled}"
+    }
+
+    private fun ownIp(): String? {
+        val cm = getSystemService(ConnectivityManager::class.java)
+        val lp = cm.getLinkProperties(cm.activeNetwork) ?: return null
+        return lp.linkAddresses.map { it.address }.firstOrNull { it is Inet4Address }?.hostAddress
     }
 
     private fun foreground() {
@@ -178,6 +372,7 @@ class RelayService : Service() {
     }
 
     override fun onDestroy() {
+        try { server?.close() } catch (_: Exception) {}
         work.post { drop() }
         thread.quitSafely()
         super.onDestroy()
@@ -185,8 +380,18 @@ class RelayService : Service() {
 
     companion object {
         const val TAG = "LeakcamRelay"
+        const val PORT = 8765
+        const val DEFAULT_ADDR = "A4:06:E9:9D:30:7E"
         val SERVICE: UUID = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb")
         val CHAR: UUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb")
         val CCC: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+    }
+}
+
+/** the service at boot and after an update: the remote port back after a phone restart, no adb needed (relay app README) */
+class BootReceiver : BroadcastReceiver() {
+    override fun onReceive(c: Context, i: Intent) {
+        if (i.action == Intent.ACTION_BOOT_COMPLETED || i.action == Intent.ACTION_MY_PACKAGE_REPLACED)
+            c.startForegroundService(Intent(c, RelayService::class.java))
     }
 }

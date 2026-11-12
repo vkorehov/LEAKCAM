@@ -3,6 +3,11 @@
  * with audio: H.265 (Main) per camera plus the microphone as Opus, over Enhanced RTMP (rtmp.h).
  *
  *   leakcam_stream -p <host>:<port> -t <seconds>     (run by leakcam_wake for the clip the server asks for)
+ *   leakcam_stream -f -t <seconds> [-r <fps>]       bench: no network, each camera's H.265 to /sdcard/cam<N>.h265
+ *                                                    (the first REC_MAX_BYTES; /sdcard holds ~15 MB) and per camera
+ *                                                    at the end frames, IDRs, bytes, fps, kbit/s and the longest gap
+ *                                                    between two frames (a dropped frame shows as a gap over 1.5
+ *                                                    frame times); -r the frame rate, default 15, sensor top 45
  *   leakcam_stream -m <seconds> [-o <file>] [-x] [-g <pga>,<alc>]
  *                                                    microphone check, no cameras: the same mic setup,
  *                                                    level per 0.5 s on stdout, raw 16 kHz s16le mono
@@ -61,7 +66,8 @@
 #define HEIGHT          960
 /* Battery: every byte is Wi-Fi airtime and every frame ISP + encoder work. A fixed camera on a
  * mostly still room needs little of either; raise them only if the board shows a clip too poor */
-#define FPS             15              /* VICAP chn fps (sensor runs 45); venc src=dst=FPS */
+#define FPS_DEFAULT     15              /* VICAP chn fps (sensor runs 45); venc src=dst=fps */
+static k_u32 g_fps = FPS_DEFAULT;       /* -r on the bench */
 #define VIDEO_KBPS      500             /* per camera; k_venc_cbr.bit_rate is kbps (sample_venc.c) */
 #define GOP_S           10              /* a 5 s clip starts on a requested IDR: one is enough */
 #define RAW_BUF_NUM     3               /* offline-mode raw buffers per device (all SDK samples: 3) */
@@ -104,6 +110,11 @@ static uint8_t au[NCAM][STREAM_SIZE];     /* the access unit being collected fro
 static size_t au_len[NCAM];
 static volatile uint64_t g_t0_ms;         /* stream time 0: the cameras started; 0 = not yet */
 static OpusEncoder *g_opus;
+#define REC_MAX_BYTES   (4u << 20)       /* -f: saved per camera; counting goes on after it (a 10 min run, test020) */
+static bool rec_on[NCAM];                 /* -f: this camera is counted */
+static FILE *rec[NCAM];                   /* -f: the H.265 elementary stream per camera, NULL once full or failed */
+static unsigned rec_frames[NCAM], rec_idr[NCAM], rec_gap_ms[NCAM];
+static uint64_t rec_bytes[NCAM], rec_saved[NCAM], rec_first_ms[NCAM], rec_last_ms[NCAM];
 
 static uint64_t now_ms(void)
 {
@@ -122,6 +133,8 @@ static void send_result(int cam, int rc)
 }
 
 /* ------------------------------------------------------------------ VB + VENC */
+
+static k_u32 audio_pool = VB_INVALID_POOLID;   /* the AI's frame pool (vb_setup), destroyed in vb_teardown */
 
 static int vb_setup(void)
 {
@@ -142,13 +155,26 @@ static int vb_setup(void)
     pool.blk_cnt = AUDIO_QUEUE + 2;
     pool.blk_size = VB_ALIGN_UP(AUDIO_FRAME * 4 * 2, 4096);
     pool.mode = VB_REMAP_MODE_NOCACHE;
-    k_u32 audio_pool = (k_u32)kd_mpi_vb_create_pool(&pool);
+    audio_pool = (k_u32)kd_mpi_vb_create_pool(&pool);
     if (audio_pool == VB_INVALID_POOLID) {
         fprintf(stderr, "vb: audio pool failed\n");
         kd_mpi_vb_exit();
         return -1;
     }
     return 0;
+}
+
+/* The audio pool first, then VB: kd_mpi_vb_exit() fails while a pool exists, VB then stays initialized system-wide and
+ * the next program's vb_setup() gets "VB is initialized!" / "vb init failed" (test012 2026-11-11 23:23: run 1 fine,
+ * run 2 failed; the same as cam_shot's "video buffer pools failed" after several runs). As Canaan's sample_audio
+ * (audio_sample.c: destroy the pool, then exit). Every failure is printed: a VB left behind breaks the next program. */
+static void vb_teardown(void)
+{
+    if (audio_pool != VB_INVALID_POOLID && kd_mpi_vb_destory_pool(audio_pool))
+        fprintf(stderr, "vb: audio pool %u not destroyed\n", audio_pool);
+    audio_pool = VB_INVALID_POOLID;
+    if (kd_mpi_vb_exit())
+        fprintf(stderr, "vb: exit failed (a pool still in use?): the next program's VB init will fail\n");
 }
 
 static int venc_create(k_u32 chn)
@@ -172,9 +198,9 @@ static int venc_create(k_u32 chn)
     a.venc_attr.pic_height = HEIGHT;
     a.venc_attr.profile = VENC_PROFILE_H265_MAIN;
     a.rc_attr.rc_mode = K_VENC_RC_MODE_CBR;
-    a.rc_attr.cbr.gop = GOP_S * FPS;    /* each stream also requests an IDR at its start */
-    a.rc_attr.cbr.src_frame_rate = FPS;
-    a.rc_attr.cbr.dst_frame_rate = FPS;
+    a.rc_attr.cbr.gop = GOP_S * g_fps;  /* each stream also requests an IDR at its start */
+    a.rc_attr.cbr.src_frame_rate = g_fps;
+    a.rc_attr.cbr.dst_frame_rate = g_fps;
     a.rc_attr.cbr.bit_rate = VIDEO_KBPS;
     if (kd_mpi_venc_create_chn(chn, &a)) {
         fprintf(stderr, "venc %u: create_chn failed\n", chn);
@@ -248,6 +274,28 @@ static void *venc_thread(void *arg)
         }
         if (venc_pull(cam, 1000))
             continue;
+        if (rec_on[cam]) {
+            uint64_t t = now_ms();
+            if (!rec_frames[cam]++)
+                rec_first_ms[cam] = t;
+            else if (t - rec_last_ms[cam] > rec_gap_ms[cam])
+                rec_gap_ms[cam] = (unsigned)(t - rec_last_ms[cam]);
+            rec_last_ms[cam] = t;
+            rec_bytes[cam] += au_len[cam];
+            /* an IDR access unit carries VPS/SPS/PPS first: NAL type 32 after the start code */
+            if (au_len[cam] > 4 && ((au[cam][4] >> 1) & 0x3f) == 32)
+                rec_idr[cam]++;
+            /* the file ends at REC_MAX_BYTES or a short write (a full /sdcard stalled the encoder when every write
+             * failed, test027 2026-10-30); the counting goes on */
+            if (rec[cam] && (rec_saved[cam] + au_len[cam] > REC_MAX_BYTES ||
+                             fwrite(au[cam], 1, au_len[cam], rec[cam]) != au_len[cam])) {
+                fclose(rec[cam]);
+                rec[cam] = NULL;
+            } else if (rec[cam]) {
+                rec_saved[cam] += au_len[cam];
+            }
+            continue;
+        }
         pthread_mutex_lock(&out_mu[cam]);
         if (out[cam].fd >= 0)
             send_result(cam, rtmp_video(&out[cam], au[cam], au_len[cam], (uint32_t)(now_ms() - g_t0_ms)));
@@ -475,7 +523,7 @@ static int vicap_setup(int cam)
     c.buffer_size = NV12_SIZE;
     c.buffer_pool_id = VB_INVALID_POOLID;
     c.alignment = 12;                                 /* 4 KiB, every VENC sample uses 12 */
-    c.fps = FPS;
+    c.fps = g_fps;
     if (kd_mpi_vicap_set_chn_attr(dev, VICAP_CHN_ID_0, c)) {
         fprintf(stderr, "vicap %d: set_chn_attr chn0 failed\n", cam);
         return -1;
@@ -490,9 +538,9 @@ static void on_sig(int sig) { (void)sig; g_run = 0; }
 int main(int argc, char **argv)
 {
     int seconds = 0, mic_seconds = 0, status = 0, opt;
-    bool mic_on = false, bound[NCAM] = { false }, streaming = false;
+    bool mic_on = false, bound[NCAM] = { false }, streaming = false, to_file = false;
     char host[64] = "", port[8] = "";
-    while ((opt = getopt(argc, argv, "p:t:m:o:xg:")) != -1) {
+    while ((opt = getopt(argc, argv, "p:t:m:o:xg:fr:")) != -1) {
         if (opt == 'p' && sscanf(optarg, "%63[^:]:%7s", host, port) == 2)
             continue;
         if (opt == 't' && (seconds = atoi(optarg)) > 0)
@@ -501,6 +549,14 @@ int main(int argc, char **argv)
             continue;
         if (opt == 'o') {
             mic_raw = optarg;
+            continue;
+        }
+        if (opt == 'f') {
+            to_file = true;
+            continue;
+        }
+        if (opt == 'r' && atoi(optarg) > 0 && atoi(optarg) <= 45) {
+            g_fps = (k_u32)atoi(optarg);
             continue;
         }
         if (opt == 'x') {
@@ -517,11 +573,12 @@ int main(int argc, char **argv)
         if (vb_setup())
             return 1;
         status = mic_test(mic_seconds);
-        kd_mpi_vb_exit();
+        vb_teardown();
         return status;
     }
-    if (!host[0] || seconds <= 0) {
-        fprintf(stderr, "usage: %s -p host:port -t seconds | -m seconds [-o file] [-x] [-g pga,alc]\n", argv[0]);
+    if ((!host[0] && !to_file) || seconds <= 0) {
+        fprintf(stderr, "usage: %s -p host:port -t seconds | -f -t seconds [-r fps] | -m seconds [-o file] [-x] "
+                "[-g pga,alc]\n", argv[0]);
         return 2;
     }
     signal(SIGINT, on_sig);
@@ -539,8 +596,18 @@ int main(int argc, char **argv)
         if (venc_create(i))
             goto done_err;
 
-    /* 4. one publish per camera, set up before the first frame, audio header first */
-    for (int i = 0; i < NCAM; i++) {
+    /* 4. one publish per camera, set up before the first frame, audio header first (-f: a file each) */
+    for (int i = 0; to_file && i < NCAM; i++) {
+        char path[32];
+        snprintf(path, sizeof(path), "/sdcard/cam%d.h265", i);
+        if (!(rec[i] = fopen(path, "wb"))) {
+            fprintf(stderr, "%s: cannot write\n", path);
+            goto done_err;
+        }
+        rec_on[i] = true;
+        g_want_idr[i] = 1;
+    }
+    for (int i = 0; !to_file && i < NCAM; i++) {
         opus_int32 lookahead = 0;
         opus_encoder_ctl(g_opus, OPUS_GET_LOOKAHEAD(&lookahead));
         if (rtmp_publish(&out[i], host, port, "leakcam", stream_name[i], 10) ||
@@ -596,11 +663,21 @@ done:
             bind(i, false);
         kd_mpi_vicap_deinit((k_vicap_dev)i);
         venc_destroy(i);
-        if (out[i].fd < 0)
+        if (to_file) {
+            double s = rec_frames[i] > 1 ? (rec_last_ms[i] - rec_first_ms[i]) / 1000.0 : 0;
+            printf("STREAMREC cam%d frames %u idr %u bytes %llu fps %.2f kbps %.0f gap_ms %u saved %llu\n", i,
+                   rec_frames[i], rec_idr[i], (unsigned long long)rec_bytes[i], s > 0 ? (rec_frames[i] - 1) / s : 0.0,
+                   s > 0 ? rec_bytes[i] * 8 / 1000.0 / s : 0.0, rec_gap_ms[i], (unsigned long long)rec_saved[i]);
+            if (!rec_frames[i])
+                status = 1;
+            if (rec[i])
+                fclose(rec[i]);
+            rec[i] = NULL;
+        } else if (out[i].fd < 0)
             status = 1;                               /* a stream that broke off fails the run */
         rtmp_close(&out[i]);
     }
     kd_mpi_venc_close_fd();
-    kd_mpi_vb_exit();
+    vb_teardown();
     return status;
 }

@@ -4,6 +4,66 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 110 s): pass
+
+16/16 checks pass.
+
+
+### Automated run 2026-11-12 (run.py, 115 s): pass
+
+16/16 checks pass.
+
+
+### Automated run 2026-11-11 (run.py, 113 s): pass
+
+16/16 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 123 s): pass
+
+16/16 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 118 s): pass
+
+16/16 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 137 s): pass
+
+16/16 checks pass.
+
+
+### Automated run 2026-11-10 (run.py, 307 s): **FAIL**
+
+8/9 checks pass. Failed: battery start: the phone finds the setup firmware (not within 120 s). Stopped at: battery start: the phone finds the setup firmware.
+
+
+### Automated run 2026-11-10 (run.py, 110 s): pass
+
+16/16 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 125 s): pass
+
+16/16 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 137 s): pass
+
+16/16 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 126 s): pass
+
+16/16 checks pass.
+
+
+### Automated run 2026-11-09 (run.py, 115 s): pass
+
+16/16 checks pass.
+
+
 ### Automated run 2026-11-09 (run.py, 123 s): pass
 
 16/16 checks pass.
@@ -98,3 +158,11 @@ not run: the phone is locked: unlock it.
   started (that change reverted). bugs/bug-006.
 
 - the phone is locked: unlock it (screen lock off for the bench phone, or Developer options > Stay awake) (2026-11-03, automated run)
+
+## Obstacle 2026-11-10 09:16 UTC+2: erase on battery not answered (HBN sleep)
+
+Step 4's `provision erase` found no BL616 port three times (30 s each) and the setup firmware was never found: the
+full firmware set up on battery (step 2) now sleeps in HBN after its first check-in (hbn_sleep.c, 2026-11-10), and its
+USB console sleeps with it. phone.hand("battery") keeps a board awake (`hbn off`), but here the full firmware started on
+the cell after the unplug. Fixed in the harness: to_firmware("full") sends `hbn off` too (unless KEEP_AWAKE is False,
+test141).

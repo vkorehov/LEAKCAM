@@ -26,6 +26,9 @@ building without it.
   library (called from its own sm.c, inside LTO: -Wl,--wrap does not reach it) formats each key row and logs it as
   "%s" through wifi_syslog, which drops those rows (tests/test040, 2026-10-29)
 
+  mbedTLS's PSA options sourced (Kconfig.psa.auto/.logic): TLS 1.3 for the check-in's mTLS needs PSA_WANT_* and the
+  SDK never read them (2026-11-10)
+
     sdk_patch.py <bouffalo_sdk dir>
 """
 import os
@@ -65,6 +68,14 @@ PATCHES = [
      "        keyrows = false;\n"
      "    else if (keyrows && !strcmp(fmt, \"%s\"))\n"
      "        return;\n"),
+    # the PSA crypto options (mbedTLS's TLS 1.3 needs PSA_WANT_*): the SDK ships Kconfig.psa.auto/.logic but never
+    # sources them (components/crypto/Kconfig reads only Kconfig.tls-generic), so the defconfig's CONFIG_PSA_WANT_* were "undefined symbols" and TLS 1.3 failed check_config.h
+    # (tls_link.c, the check-in's mTLS, 2026-11-10)
+    ("components/crypto/Kconfig",
+     'source "$BL_SDK_BASE/components/crypto/mbedtls/Kconfig.tls-generic"\n',
+     'source "$BL_SDK_BASE/components/crypto/mbedtls/Kconfig.tls-generic"\n# LEAKCAM: the PSA options (TLS 1.3, '
+     'tls_link.c)\nsource "$BL_SDK_BASE/components/crypto/mbedtls/Kconfig.psa.auto"\n'
+     'source "$BL_SDK_BASE/components/crypto/mbedtls/Kconfig.psa.logic"\n'),
 ]
 # binary files: the same length, so nothing else in them moves
 BINARY = [

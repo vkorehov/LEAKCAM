@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 213 s): pass
+
+8 boots, pt_sdio watch during bl616_rescan: CLK 5557338-5566072 edges, CMD 124-126 edges, D0-D3 0/0/0/0 (last boot; no data phase without a card).
+
+
 ### Automated run 2026-10-25 (run.py, 210 s): pass
 
 8 boots, pt_sdio watch during bl616_rescan: CLK 5593283-5594738 edges, CMD 126-126 edges, D0-D3 0/0/0/0 (last boot; no data phase without a card).

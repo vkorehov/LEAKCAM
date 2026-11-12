@@ -4,6 +4,11 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 227 s): pass
+
+8 boots, pt_alive 10 after each: half-period 500 / 500 / 500 ms (min / avg / max over 8 boots, agent 500); after pt_off no back-feed (0 of 5 pull-ups).
+
+
 ### Automated run 2026-10-31 (run.py, 226 s): pass
 
 8 boots, pt_alive 10 after each: half-period 500 / 500 / 500 ms (min / avg / max over 8 boots, agent 500); after pt_off no back-feed (0 of 5 pull-ups).

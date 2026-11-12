@@ -23,7 +23,8 @@ var (
 
 const (
 	Media       = "/home/pi/leakcam-server/media"       // LEAKCAM_MEDIA: the boards' pictures and videos, by ID
-	LeakProbeMV = 1100                                  // a probe below this is wet: the firmware's comparator reference (leak_check.c VIO_LEAK)
+	LeakProbeMV = 1100                                  // a probe below this is wet: the default probe threshold (thresholds.h THR_PROBE_MV)
+	HumidPct    = 85                                    // %RH or more at any reading: a humid room, the default (DESIGN.md 5.3.15; thresholds.h THR_HUMID)
 	WakeModeS   = 300                                   // the check-in interval in the wake mode after a failed Wi-Fi change
 	LeakModeS   = 60                                    // during a leak: near real time (user 2026-11-07), ~60 mAh a day
 	WakeModeMax = 24 * time.Hour                        // the mode ends after this at the latest: it costs the battery ~13 mAh a day
@@ -81,10 +82,14 @@ var (
 	tokenFile = Tokens
 )
 
-// leakIn: why this check-in shows a leak ("" none): a wet probe, or the leak job's camera change in this check-in
-func leakIn(m map[string]any) string {
-	if p, ok := m["probe"].(int64); ok && p >= 0 && p < LeakProbeMV {
+// leakIn: why this check-in shows a leak ("" none): a wet probe, 85 %RH or more (a warm board only reads lower: any
+// reading counts, DESIGN.md 5.3.15), or the leak job's camera change in this check-in
+func leakIn(m map[string]any, th Thresholds) string {
+	if p, ok := m["probe"].(int64); ok && p >= 0 && p < int64(th.ProbeMV) {
 		return "probe wet"
+	}
+	if h, ok := m["rh"].(int64); ok && h >= int64(th.Humid)*10 {
+		return "humidity high"
 	}
 	if j, ok := m["job"].(string); ok && strings.Contains(j, "changed") {
 		if ago, ok := m["jago"].(int64); ok && ago >= 0 && ago <= 60 {
@@ -98,10 +103,10 @@ func leakIn(m map[string]any) string {
 // messages to send once mu is released; mu held
 func checkInAlerts(id string, in CheckIn, ans map[string]any) (msgs []map[string]string) {
 	m := in.Metrics
-	why := leakIn(m)
+	why := leakIn(m, deviceThresholdsLocked(id))
 	switch notLeak[id] {
-	case "probe wet": // re-armed once the probe is dry: the next wet probe is a leak again
-		if why == "probe wet" {
+	case "probe wet", "humidity high": // re-armed once the probe is dry / the humidity below 85 %RH
+		if why == notLeak[id] {
 			why = ""
 		} else {
 			delete(notLeak, id)

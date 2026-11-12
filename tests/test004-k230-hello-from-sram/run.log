@@ -1,8 +1,8 @@
-15:46:54 test004-k230-hello-from-sram: 12 metric rows MISSING: Boot, power-on -> app init (median / max of runs), This part's boot share, Test run time, Speed / rate against the top, Current floor / typical / peak, Voltage under load (min), Power, energy per operation, Per day, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Features over the minimal image, Optimised build (-O3, LTO, -march)
-15:47:04 boot NO CONSOLE
-15:47:49 sample run 1 {'board': 30.4, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': None, 'k_free': None, 'vbat': None}
-15:47:59 boot NO CONSOLE
-15:48:43 sample run 2 {'board': 31.6, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': None, 'k_free': None, 'vbat': None}
-15:48:53 boot NO CONSOLE
-15:49:38 sample run 3 {'board': 32.4, 'bl_mem': (208608, 186564, 204396, 14, 34608, 7, 0), 'die': None, 'k_free': None, 'vbat': None}
-15:49:44 test004-k230-hello-from-sram: PASS; filled 8: Test run time, Temperature die / board (start / peak / end), Memory BL616 / K230 (start / min / end), leak, Boot, power-on -> app init (median / max of runs), This part's boot share, Speed / rate against the top, Per day, Power, energy per operation; still MISSING 4: Current floor / typical / peak, Voltage under load (min), Features over the minimal image, Optimised build (-O3, LTO, -march)
+22:57:32 test004-k230-hello-from-sram: 0 metric rows MISSING: none
+22:57:42 boot NO CONSOLE
+22:58:29 sample run 1 {'board': 29.9, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': None, 'k_free': None, 'vbat': None}
+22:58:39 boot NO CONSOLE
+22:59:24 sample run 2 {'board': 31.3, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': None, 'k_free': None, 'vbat': None}
+22:59:34 boot NO CONSOLE
+23:00:19 sample run 3 {'board': 32.2, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': None, 'k_free': None, 'vbat': None}
+23:00:25 test004-k230-hello-from-sram: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

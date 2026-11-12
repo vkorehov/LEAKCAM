@@ -4,6 +4,21 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 64 s): pass
+
+cp /sdcard/app/leakcam_wake -> RAM: 0.57, 0.57, 0.57 s; RAM -> /sdcard: 3.84, 3.14, 2.77 s; read 9.0 MB/s, write 1.9 MB/s.
+
+
+### Automated run 2026-11-11 (run.py, 61 s): **FAIL**
+
+cp /sdcard/app/leakcam_wake -> RAM: 0.58, 0.58, 0.12 s; RAM -> /sdcard: 3.84, 3.14, 0.43 s; read 44.1 MB/s, write 12.2 MB/s.
+
+
+### Automated run 2026-11-11 (run.py, 78 s): **FAIL**
+
+cp /sdcard/app/leakcam_wake -> RAM: 0.58, 0.57, 0.21 s; RAM -> /sdcard: 3.33, 2.78, 0.81 s; read 24.4 MB/s, write 6.4 MB/s.
+
+
 ### Automated run 2026-10-30 (run.py, 63 s): pass
 
 cp /sdcard/app/leakcam_wake -> RAM: 0.58, 0.58, 0.44 s; RAM -> /sdcard: 3.83, 3.22, 2.79 s; read 11.7 MB/s, write 1.9 MB/s.
@@ -45,6 +60,17 @@ Not recorded (before the boot rule, 2026-10-21). If re-run: the UFFS mount time 
 Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: extra current while reading and writing /sdcard vs idle; energy per MB written (clips) and read.
 
 ## Obstacles
+
+- run 3: written file size 720896 != 5181000 (2026-11-11, automated run)
+
+- **2026-11-11 23:16, FAIL: run 3 wrote 994888 of 5181000 B (own mistake, test030).** /sdcard was full: my camera runs
+  had left cam0/cam1.nv12 (1.8 MB each) and cam0/cam1.h265 (4 MB each) on it. shot.py and stream.py now delete the
+  board copy once the PC has it. **Correction (2026-11-12): not the cause.** Rerun with 19.5 MB free failed the same
+  way; by hand 4 write + delete cycles all fine (19.5 -> 14.5 -> 19.5 MB, 2.8 s each: UFFS frees at once). Both short
+  writes came 24-25 s after the boot = the agent's boot capture hook (`leakcam_wake cold`, 23-28 s, writes /sdcard):
+  run.py now calls r.media_quiet() (stops the agent, waits for the hook) after the boot.
+
+- run 3: written file size 994888 != 5181000 (2026-11-11, automated run)
 
 - **`echo` cannot create files** -> msh `echo` opens without O_CREAT -> create with `cp` first.
 - **No checksum tool on the K230** -> byte-exact check with `hexdump` of a 100 KB file, compared on the host.

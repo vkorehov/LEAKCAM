@@ -61,5 +61,6 @@ flash:
 	$(ISP) --boot $$($(ISP))
 	@$(ISP) --wait-app
 	@python3 $(HW_ROOT)/LEAKCAM/tools/power-bringup/provision_pin.py   # the BLE pairing PIN, pre-stored once
+	@python3 $(HW_ROOT)/LEAKCAM/tools/power-bringup/provision_tls.py   # the mTLS CA, certificate and key, once
 clean:
 	rm -rf build

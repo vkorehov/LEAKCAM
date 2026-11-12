@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 53 s): pass
+
+8 x `ddr_bench 3072`; last run:
+
+    copy (memcpy, bytes moved)      64512 KB in  23789 us: 2776.9 MB/s
+    write (memset)                  64512 KB in  10853 us: 6086.8 MB/s
+    read (64-bit sum)               64512 KB in  13664 us: 4834.6 MB/s
+    copy (memcpy, bytes moved)      64512 KB in  23786 us: 2777.2 MB/s
+
+
 ### Automated run 2026-10-31 (run.py, 144 s): pass
 
 8 x `ddr_bench 3072`; last run:

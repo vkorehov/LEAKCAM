@@ -71,11 +71,6 @@ From the rev 1 bugs
    (BQ24072, linear: ~1.1 W while charging) and U3 (K230, ~1 W, on the whole time on USB since DESIGN 5.3.11), both
    ~19 mm from U17; Q1/Q2/Q4 5 mm away (rail switches, not checked). Not yet separated: the same reading on battery
    after ~10 min (no charging, K230 off) tells. Rev 2: U17 at the end of the board away from U1 and U3 as well.
-   **Preferred (user, 2026-11-06): the sensor off the board.** The AHT20 (+ R52/C4/C9 at its end) on a small sensor
-   board at the leak probe's head, sharing the probe's cable (floor level, where a leak changes the air; no board
-   heat at all), else on a short flex tail out of the enclosure. 4 lines (3V3_SLEEP, GND, SDA, SCL; I2C 100 kHz is fine
-   over 30-50 cm), ESD protection on SDA/SCL at the main board, a connector; a vented sensor housing, ideally a PTFE
-   membrane against splashes and dust. The cable exit or connector changes the frozen exterior: the user's approval
-   first (memory leakcam-exterior-frozen); if the probe cable already leaves the enclosure, the sensor shares its exit.
-   Humidity stays a hint in either case (dew point / absolute humidity trend -> a camera check), never a leak verdict
-   alone: the probe and the camera judge.
+   The sensor stays on the board (user, 2026-11-10: no sensor off the board): the firmware reads the room only
+   after the board has been cool for 3 h (DESIGN.md 5.3.15), and a warm board only lowers the humidity it reads, so
+   the 85 %RH alarm stays valid. The placement above is a nice-to-have (a shorter cool-down), not required.

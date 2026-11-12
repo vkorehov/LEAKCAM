@@ -4,6 +4,15 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 1343 s): pass
+
+die idle 43.6 C, memtest peak 53.0 C, end 48.2 C.
+
+- KPU: die 48.2 -> 48.5 C peak over 3 min
+- encoder: die 47.9 -> 50.9 C peak over 3 min
+- KPU + encoder: die 49.4 -> 50.9 C peak over 3 min
+
+
 ### Automated run 2026-11-01 (run.py, 1364 s): pass
 
 die idle 37.8 C, memtest peak 53.6 C, end 50.0 C.

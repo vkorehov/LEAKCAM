@@ -1,0 +1,33 @@
+
+## 2026-11-12 00:55:00 UTC+0200 - unlabelled (10 scans each)
+Wi-Fi receive, per access point (median dBm; seen = scans that saw it):
+  ch  board seen  phone seen   diff  bssid
+   1    -88    2    -89   10      1  78:9a:18:58:2f:5d
+   1    -85    9      -    0      -  da:88:63:5f:f6:30
+   3    -69   10    -74   10      5  74:fe:ce:aa:69:83
+   3      -    0    -69   10      -  76:fe:ce:4a:69:83
+   4    -68   10    -78   10     10  54:13:10:a2:4f:4c
+   5    -63   10    -71   10      8  74:da:88:48:31:a6
+   5    -61   10    -57   10     -4  c0:06:c3:65:64:66
+   5      -    0    -57   10      -  c2:06:c3:25:64:66
+   6      -    0    -57   10      -  0e:75:0c:90:0b:af
+   6    -50   10    -56   10      6  ec:75:0c:90:0b:af
+   8    -88   10    -81   10     -6  c2:67:d6:2d:a3:e2
+   9    -88   10      -    0      -  d8:44:89:9b:71:72
+  11    -92   10      -    0      -  30:de:4b:5e:94:e1
+  11    -91    6      -    0      -  68:ff:7b:e4:2e:37
+  11    -50   10    -44   10     -6  84:d8:1b:24:0a:3c
+  11    -92   10    -82   10    -10  a0:a3:f0:7a:9e:ad
+  11    -61   10    -58   10     -3  e4:ca:12:e2:e6:d0
+  board - phone, median per channel (APs seen in at least half the scans by both): ch 3 +5 dB (1 AP), ch 4 +10 dB (1 AP), ch 5 +2 dB (2 AP), ch 6 +6 dB (1 AP), ch 8 -6 dB (1 AP), ch 11 -6 dB (3 AP); all -3 dB
+00:55:11 phone: scan 11.1 s
+00:55:15 phone: scan 3.3 s
+00:55:18 phone: scan 3.1 s
+00:55:23 phone: scan 4.7 s
+00:55:26 phone: scan 3.3 s
+00:55:39 phone: scan 13.1 s
+00:55:43 phone: scan 4.2 s
+00:55:47 phone: scan 3.3 s
+00:55:50 phone: scan 3.5 s
+00:55:54 phone: scan 3.4 s
+BLE transmit: the phone heard the board in 9 of 10 scans, RSSI median -36 dBm (min -38, max 3)

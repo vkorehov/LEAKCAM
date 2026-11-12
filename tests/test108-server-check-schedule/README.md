@@ -7,7 +7,7 @@ interval (57-61 s at 60, CHECK to the running K230 on USB), back on the defaults
 
 DESIGN.md 5.3.12 (user, 2026-11-07: "make check-in time driven by the server and the leak check also, so we can adjust
 it dynamically"): every check-in's answer carries `"checkin":<s>` (5 s - 1 h, default 3600; the bench server 60) and
-`"leakcheck":<s>` (60 s - 7 days, default 86400); `PUT /v1/devices/<id>/intervals` changes them per device at runtime
+`"leakcheck":<s>` (10 s - 7 days, default 86400); `PUT /v1/devices/<id>/intervals` changes them per device at runtime
 (0 = the default, kept in the server's memory); the board takes them with its next check-in. The leak check runs on its
 interval by itself (the RTC's check: a K230 session on battery, CHECK to the running K230 on USB).
 

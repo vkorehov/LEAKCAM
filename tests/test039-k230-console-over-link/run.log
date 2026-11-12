@@ -1,14 +1,14 @@
-16:25:22 test039-k230-console-over-link: 0 metric rows MISSING: none
-16:25:34 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.26 mounted 0.45 msh 0.46
-16:25:58 sample boot 1 {'board': 34.6, 'bl_mem': (176528, 172292, 172316, 14, 34608, 7, 0), 'die': 44.589, 'k_free': (7023232, 1520704), 'vbat': 4390}
-16:26:10 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.26 mounted 0.46 msh 0.47
-16:26:34 sample boot 2 {'board': 34.8, 'bl_mem': (176528, 172292, 172316, 14, 34608, 7, 0), 'die': 45.192, 'k_free': (7023232, 1520704), 'vbat': 4378}
-16:26:46 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.26 mounted 0.46 msh 0.47
-16:27:10 sample boot 3 {'board': 34.9, 'bl_mem': (176528, 172292, 172316, 14, 34608, 7, 0), 'die': 45.493, 'k_free': (7023232, 1520704), 'vbat': 4350}
-16:27:22 boot SPL 0.16 OpenSBI 0.24 RT-Smart 0.26 mounted 0.46 msh 0.47
-16:27:47 sample boot 4 {'board': 35.1, 'bl_mem': (176528, 172292, 172316, 14, 34608, 7, 0), 'die': 45.493, 'k_free': (7023232, 1520704), 'vbat': 4356}
+00:50:04 test039-k230-console-over-link: 0 metric rows MISSING: none
+00:50:16 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.57 msh 0.57
+00:50:41 sample boot 1 {'board': 34.3, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 43.987, 'k_free': (4411904, 6477248), 'vbat': 4375}
+00:50:52 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.57 msh 0.57
+00:51:17 sample boot 2 {'board': 34.3, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 44.589, 'k_free': (4411968, 6477248), 'vbat': 4394}
+00:51:29 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.56 msh 0.57
+00:51:54 sample boot 3 {'board': 34.3, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 44.589, 'k_free': (4411904, 6477248), 'vbat': 4358}
+00:52:06 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.57 msh 0.57
+00:52:31 sample boot 4 {'board': 34.3, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 43.685, 'k_free': (4411904, 6477248), 'vbat': 4360}
 counters {'boot': 1, 'host_to_bl': 2261, 'bl_to_k230': 2261, 'bl_put_fail': 0, 'k230_rx': 2261, 'k230_text_drop': 0, 'k230_overrun': 0, 'k230_bytes_dropped': 0, 'k230_uart_resets': 0}
 counters {'boot': 2, 'host_to_bl': 2261, 'bl_to_k230': 2261, 'bl_put_fail': 0, 'k230_rx': 2261, 'k230_text_drop': 0, 'k230_overrun': 0, 'k230_bytes_dropped': 0, 'k230_uart_resets': 0}
 counters {'boot': 3, 'host_to_bl': 2261, 'bl_to_k230': 2261, 'bl_put_fail': 0, 'k230_rx': 2261, 'k230_text_drop': 0, 'k230_overrun': 0, 'k230_bytes_dropped': 0, 'k230_uart_resets': 0}
 counters {'boot': 4, 'host_to_bl': 2261, 'bl_to_k230': 2261, 'bl_put_fail': 0, 'k230_rx': 2261, 'k230_text_drop': 0, 'k230_overrun': 0, 'k230_bytes_dropped': 0, 'k230_uart_resets': 0}
-16:27:49 test039-k230-console-over-link: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+00:52:34 test039-k230-console-over-link: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

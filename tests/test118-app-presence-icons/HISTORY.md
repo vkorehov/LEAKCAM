@@ -11,6 +11,21 @@ The server's global `poll` interval is gone: the runner sets the board's check-i
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 209 s): pass
+
+6/6 checks pass.
+
+
+### Automated run 2026-11-12 (run.py, 497 s): **FAIL**
+
+0/7 checks pass. Failed: start: Wi-Fi and Bluetooth icons, not red (not within 60 s, row None); BLE gone: the Bluetooth icon goes (not within 120 s, row None); BLE gone: the Wi-Fi icon stays, not red (None); presence gone: the Wi-Fi icon goes, the row red (not within 70 s, row None); presence back: the Wi-Fi icon again, not red (not within 40 s, row None); BLE back: the Bluetooth icon again (not within 60 s, row None); both gone: no icon, the row red (not within 120 s, row None).
+
+
+### Automated run 2026-11-12 (run.py, 3 s): **FAIL**
+
+not run: no pt_ble.
+
+
 ### Automated run 2026-11-07 (run.py, 2 s): **FAIL**
 
 not run: no pt_ble.
@@ -24,5 +39,7 @@ not run: no pt_ble.
 
 
 ## Obstacles
+
+- the BL616 test firmware with pt_ble is needed (tests/firmware/bl616_powertest) (2026-11-12, automated run)
 
 - the BL616 test firmware with pt_ble is needed (tests/firmware/bl616_powertest) (2026-11-07, automated run)

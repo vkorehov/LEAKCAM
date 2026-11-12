@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """test118 automated: the app's status icons follow the board (user 2026-11-01). The app's row for a LEAKCAM shows the
 Bluetooth icon while the board is in BLE range, the Wi-Fi icon while it is present at the server, and its text in red
-when it has no presence. The app logs every redraw of a row ("row <id> wifi 0|1 ble 0|1 red 0|1"); the runner reads
-those. On the test firmware (no presence of its own): the bench checks in at the server under the board's own ID (as
+when it has no presence. The app logs every redraw of a row ("row <id> wifi 0|1 red 0|1 bat <pct> chg 0|1"); the
+runner reads those. Since the app's 11-07 screens (commit 4c904fb: the LEAKCAMs list is the server's view, no BLE wake)
+that list shows no Bluetooth icon; the Bluetooth icon and bars are on the Setup list's rows (test129). So the checks
+here: Wi-Fi and red follow presence, and BLE in or out of range does not change the LEAKCAMs row (2026-11-12: the old
+"ble" field in the log made every check read "row None"). On the test firmware (no presence of its own): the bench checks in at the server under the board's own ID (as
 the board would), and the board's advertising goes off and on (`pt_ble adv off|on`). USB-C 1 in, the phone on adb,
 unlocked; nothing by hand.
     tests/test118-app-presence-icons/run.py
@@ -13,13 +16,11 @@ import re
 import sys
 import threading
 import time
-import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "test-runner"))
 from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log   # noqa: E402
-from phone import adb, board_id, intervals, only_boards, ready   # noqa: E402
+from phone import adb, as_board, board_id, intervals, only_boards, ready   # noqa: E402
 
-SERVER = "http://192.168.1.159:8090"
 CHECKIN_S = 10                      # for the run; the bench server's default is 60 (offline after three missed)
 PKG = "com.leakcam.setup"
 
@@ -50,20 +51,20 @@ def checker(dev):
     while True:
         if present.is_set():
             try:
-                urllib.request.urlopen(f"{SERVER}/v1/poll?id={dev}", data=b"ssid=t118", timeout=5).read()   # POST, as the board
+                as_board(dev, f"/v1/poll?id={dev}", b"ssid=t118")   # as the board: mTLS with its certificate
             except OSError as e:
                 log("check-in failed", repr(e))
         time.sleep(CHECKIN_S)
 
 
 def row(dev):
-    """the app's last redraw of the board's row: (wifi, ble, red) or None"""
-    m = re.findall(rf"row {dev} wifi (\d) ble (\d) red (\d)", adb("logcat", "-d", "-s", "LeakcamSetup:I"))
+    """the app's last redraw of the board's row: (wifi, red) or None"""
+    m = re.findall(rf"row {dev} wifi (\d) red (\d)", adb("logcat", "-d", "-s", "LeakcamSetup:I"))
     return tuple(int(x) for x in m[-1]) if m else None
 
 
 def wait_row(dev, name, want, secs):
-    """want: (wifi, ble, red) with None for "any"; the time until the row shows it"""
+    """want: (wifi, red) with None for "any"; the time until the row shows it"""
     t0, got = time.time(), None
     while time.time() - t0 < secs:
         got = row(dev)
@@ -101,25 +102,25 @@ try:
     add_only(dev)
     adb("logcat", "-c")
     adb("shell", "am", "start", "-n", f"{PKG}/.MainActivity")   # the status screen: presence every 10 s, scan 30 s
-    # in range and present: both icons, not red
-    wait_row(dev, "start: Wi-Fi and Bluetooth icons, not red", (1, 1, 0), 60)
-    # out of BLE range (advertising off): the Bluetooth icon goes (a board unseen 45 s, scans every 30 s)
+    # present (BLE advertising too): the Wi-Fi icon, not red
+    wait_row(dev, "start: the Wi-Fi icon, not red", (1, 0), 60)
+    # out of BLE range (advertising off): the LEAKCAMs row follows the server, not BLE - unchanged after a scan or two
     bl("pt_ble adv off", 2, r"advertising off")
-    wait_row(dev, "BLE gone: the Bluetooth icon goes", (None, 0, None), 120)
-    check("BLE gone: the Wi-Fi icon stays, not red", row(dev) == (1, 0, 0), str(row(dev)))
+    time.sleep(70)
+    check("BLE gone: the row unchanged (Wi-Fi icon, not red)", row(dev) == (1, 0), str(row(dev)))
     # presence lost (no check-in for three intervals): the Wi-Fi icon goes, the row red
     present.clear()
-    wait_row(dev, "presence gone: the Wi-Fi icon goes, the row red", (0, 0, 1), 3 * CHECKIN_S + 40)
+    wait_row(dev, "presence gone: the Wi-Fi icon goes, the row red", (0, 1), 3 * CHECKIN_S + 40)
     # presence back: the Wi-Fi icon again, not red
     present.set()
-    wait_row(dev, "presence back: the Wi-Fi icon again, not red", (1, 0, 0), CHECKIN_S + 30)
-    # BLE back: the Bluetooth icon again (the next scan, every 30 s)
+    wait_row(dev, "presence back: the Wi-Fi icon again, not red", (1, 0), CHECKIN_S + 30)
+    # BLE back while present: the row unchanged
     bl("pt_ble adv on", 2, r"advertising on")
-    wait_row(dev, "BLE back: the Bluetooth icon again", (1, 1, 0), 60)
-    # both gone at once: no icon, red
-    bl("pt_ble adv off", 2, r"advertising off")
+    time.sleep(40)
+    check("BLE back: the row unchanged (Wi-Fi icon, not red)", row(dev) == (1, 0), str(row(dev)))
+    # presence lost while in BLE range: red all the same (BLE is no presence)
     present.clear()
-    wait_row(dev, "both gone: no icon, the row red", (0, 0, 1), 3 * CHECKIN_S + 90)
+    wait_row(dev, "presence gone in BLE range: no Wi-Fi icon, the row red", (0, 1), 3 * CHECKIN_S + 40)
     r.sample("after the checks")
 finally:
     present.clear()

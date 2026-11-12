@@ -1,6 +1,6 @@
-08:56:57 test027-video-encoder: 0 metric rows MISSING: none
-08:57:04 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.53 msh 0.54
-08:57:11 sample idle {'board': 33.3, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 40.365, 'k_free': (7025152, 1390848), 'vbat': 4129}
-08:57:36 sample 2 x 15 fps {'board': 33.8, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 45.192, 'k_free': (7312064, 2553088), 'vbat': 4109}
-08:57:55 sample 1 channel max {'board': 34.5, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 46.998, 'k_free': (7312064, 2553088), 'vbat': 4127}
-08:57:57 test027-video-encoder: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+00:09:03 test027-video-encoder: 0 metric rows MISSING: none
+00:09:10 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.57 msh 0.57
+00:09:17 sample idle {'board': 36.8, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 44.891, 'k_free': (7020032, 1395968), 'vbat': 4380}
+00:09:42 sample 2 x 15 fps {'board': 36.7, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 48.201, 'k_free': (7307072, 2558208), 'vbat': 4370}
+00:10:02 sample 1 channel max {'board': 37.0, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 47.9, 'k_free': (7307072, 2558208), 'vbat': 4368}
+00:10:05 test027-video-encoder: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

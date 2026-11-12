@@ -51,6 +51,10 @@ and after every test: no BLE core wedge (`--wedge-probe`: a sleep probe after ea
 | test129 --battery | the battery icon after the unplug |
 | test116 BLE-only setup | the whole setup with no USB: asleep, set up, erased on the cell, the switch back (bug-006's path) |
 | test113 cable setup from the phone | the USB cable setup: USB-C 1 moved to the phone and back |
+| test140 humidity and room climate | the room's temperature/humidity only from a cool board, the 85 %RH alarm -> leak (DESIGN 5.3.15) |
+| test141 HBN sleep on battery | the full firmware asleep between events: check-ins through the sleep, wakes not boots, the USB plug wakes it |
+| test142 leak thresholds from the server | probe mV + humidity %RH as check-in answer attributes, in flash only when changed, kept through a reset and in setup |
+| test109 secure server (BL616 part) | the check-in over mTLS: TLS 1.3, the date rule (no clock / expired / clock set), no answer without a device certificate, 10 sessions without a leak |
 
 Not in it: repeats and soaks (`--stress`: test106's 8 setups, test126's 10 round trips); tests that still need hands or
 the meter (test102 meter, test132: the leak probe wet/dry has no relay yet); test139 replug stability (~11 min); test110
@@ -90,7 +94,7 @@ Leak tests, one per operation the product repeats:
 | [test017 SPI NAND raw speed and SPI clock](test017-nand-raw-speed/README.md) | 2026-10-30 | **pass**: NAND at 50 MHz, sample delay 5 (kernel + U-Boot/SPL), for stability; raw read 15.7 MB/s, |
 | [test018 K230 <-> BL616 UART link: speed, latency, errors](test018-uart-link-speed/README.md) | 2026-10-31 | **pass**: the link runs 2 Mbaud from boot (stability, test039); 8 x 1 MB echoed with 0 errors |
 | [test019 K230 USB-C 1: USB boot and flashing speed](test019-usb-flash-speed/README.md) | 2026-10-25 | **pass**: K230 whole image 24.6 s (erase 0-248 MB 8 s + 45.4 MB write, USB 2.0 high speed); |
-| [test020 Camera interfaces: CSI frame rate, I2C clock](test020-camera-csi-i2c/README.md) | 2026-10-21 | **planned**: not run yet; waits for the cameras. |
+| [test020 Camera interfaces: CSI frame rate, I2C clock](test020-camera-csi-i2c/README.md) | 2026-11-11 22:40 UTC+2 | **pass for CSI**: both cameras 10 min at 15 fps H.265, 8819 frames each, no drop; top 32.7 fps per camera with both; I2C clock to do |
 | [test021 BL616: wake latency, flash storage, sensor reads](test021-bl616-internal-timing/README.md) | 2026-10-25 | **pass**: RTC wake -> main() 17.3-17.4 ms, K230_PWR -> 3V3 1.7 ms, AHT20 36.5 ms, leak ADC 2.6 ms |
 | [test022 K230 boot time](test022-boot-time/README.md) | 2026-10-25 | **0.32 s**: reset release -> app init 0.320 / 0.320 / 0.321 s (min / median / max, 8 of 8 cold |
 | [test023 Battery ADC (K230 ADC_1, VBAT/3)](test023-battery-adc/README.md) | 2026-10-25 | **pass**: calibrated 64-read mean within +-10 mV of the meter at 4.07-4.37 V; low cell and load open. |
@@ -100,7 +104,7 @@ Leak tests, one per operation the product repeats:
 | [test027 H.265 encoder with synthetic frames](test027-video-encoder/README.md) | 2026-10-25 | **pass**: 2 x 15 fps at the product settings (511 / 510 kbit/s); 1-channel top 75.9 fps (84.2 fps on |
 | [test028 NAND / UFFS power-loss robustness](test028-nand-power-loss/README.md) | 2026-10-25 | **pass**: 520 random power cuts during writes over all runs (100 + 400 on 2026-10-23, 20 on |
 | [test029 Camera buses and IO without cameras](test029-camera-bus-idle/README.md) | 2026-10-25 | **pass**: both camera I2C buses scan clean with no hang over 8 boots, idle high; CAM GPIOs low. |
-| [test030 cameras: detection, capture, image](test030-camera-capture/README.md) | 2026-10-21 | **placeholder**: not run; the cameras are not delivered yet (two OV5647 with 222 degree M12 |
+| [test030 cameras: detection, capture, image](test030-camera-capture/README.md) | 2026-11-11 22:24 UTC+2 | **in progress**: both connectors capture (standard-lens OV5647), colour stills (green cast: ISP calibration), real H.265 from both decoded on the PC; the 222 degree unit faulty |
 | [test031 sleep and minimal currents (every power state's floor)](test031-sleep-current/README.md) | 2026-10-25 | **pass, done**: on the battery the product sleep (HBN level 0, comparators armed) draws 35 uA, |
 | [test032 RTC wake (BL616 HBN timer, 32.768 kHz crystal)](test032-rtc-wake/README.md) | 2026-11-01, run.py 1285 s, again | **partial**: HBN RTC wake on Y3 works (10 s -> 13.6-14.6 s, 600 s -> |
 | [test033 every BL616 pin: function, levels, back-feed](test033-bl616-pins/README.md) | 2026-10-25 | **pass**: every pin as in the table in all 5 states (pt_pins + pin_check.py, 0 off); BOOT1 (IO27) |
@@ -111,6 +115,7 @@ Leak tests, one per operation the product repeats:
 | [test038 battery brown-out below 3.10 V (cutoff, lockout, recovery)](test038-battery-brownout/README.md) | 2026-10-23 | **partial**: with a raised threshold on the cell the chain works - K230 `bat_watch` cut, |
 | [test039 K230 console over the BL616 link (no CH340)](test039-k230-console-over-link/README.md) | 2026-10-30 | **pass**: 1000 of 1000 commands answered in each of 4 boots at 2 Mbaud, every drop counter 0; |
 | [test040 BLE provisioning on the BL616: Wi-Fi credentials into flash](test040-ble-wifi-credentials/README.md) | 2026-11-03 | **pass**: run.py 37/37 in 368 s on the setup firmware's test bed (firmware/bl616_setup's own |
+| [test041 humidity alarm and room readings with the real AHT20 (low level: the sensor on the board)](test041-humidity-alarm/README.md) |  | **not run yet** (restored 2026-11-10): salt boxes by hand |
 | [test042 RF performance against the bench phone (RSSI side by side)](test042-rf-rssi-vs-phone/README.md) | 2026-10-31, 10 runs, board flat, phone flat beside it | **position 1 done**: Wi-Fi receive board - phone |
 | [test043 the K230's USB device on USB-C 1 (low level, before USB setup)](test043-k230-usb-device/README.md) | 2026-11-05 | **pass**: the K230 enumerates as CDC ACM on USB-C 1 and echoes 1 MB without a wrong byte. |
 | [test044 the phone sees the board over a USB-C cable (low level: the USB link the app will use)](test044-phone-usb-link/README.md) | 2026-11-05 | **steps 1-6 pass**: the phone (USB host, powering the cable) lists the board's USB device 1.41 s |
@@ -154,6 +159,9 @@ Leak tests, one per operation the product repeats:
 | [test137 the K230 leak job with simulated cameras (product pair: the K230 program's job + its link frames)](test137-k230-leak-job/README.md) | 2026-11-07 08:34, run.py 11/11, BL616 full 0.6+g2961d6c-dirty, K230 0.6+g2961d6c-dirty | **pass**: every |
 | [test138 time without NTP (product pair: the server -> BL616 -> K230 clock chain)](test138-clock-without-ntp/README.md) | 2026-11-07 08:56, run.py 11/11, BL616 full + K230 0.6+g2961d6c-dirty | **pass**: both clocks within 2 s of |
 | [test139 USB-C 1 replug stability (no timing wedges the BLE core)](test139-replug-stability/README.md) | 2026-11-09: A-D 26/26 at 04:19 UTC in 10.4 min, E 8/8 at 04:31 UTC, product pair with the wedge detector | **pass**: no plug timing wedged the BLE core; found asleep after every case in 3.8-6.8 s. |
+| [test140 temperature and humidity: the room after a cool window, the 85 %RH alarm (whole product flow, product firmware)](test140-humidity-and-room-climate/README.md) |  | **not run yet** (2026-11-10): hands-free, relay box + `climate quiet`/`climate sim` |
+| [test141 the full firmware on battery sleeps in HBN between its events (whole product flow, product firmware)](test141-battery-hbn-sleep/README.md) | 2026-11-10 04:48 UTC+2 | **pass, 7/7**: asleep 2 s after the unplug, check-ins 22 s apart through the sleep, hbnw counted, room reading at a wake, USB plug wakes it in 3.5 s, clock -3 s |
+| [test142 the leak thresholds from the server, kept in flash (whole product flow, product firmware)](test142-server-leak-thresholds/README.md) | - | **not run yet** (written 2026-11-10) |
 
 ## Re-test audit after the two-firmware design (2026-11-02)
 
@@ -225,7 +233,7 @@ for it. The bench relay box takes USB-C 1 out at the start and puts it back at t
 | Behaviour | Where it belongs |
 |---|---|
 | What the BL616 does after each wake (the wake sources themselves pass on the test firmware: RTC test032, leak probe test034, USB plug test035, timing test021): doing what is due (humidity, report, server check with / without a stream request) and overlaps (a leak during a check, a check with a report due, a check while on USB; no AP, no server, no credentials) | new test, on the test firmware with the wake handling from attic/firmware/bl616 (DESIGN 5.1 asks for it) |
-| Humidity alarm (AHT20 threshold -> report) | dropped 2026-11-06 (test041 removed): the AHT20 is reported only |
+| Humidity alarm (AHT20 threshold -> report) | restored 2026-11-10 (DESIGN.md 5.3.15): test041 (the real sensor, salt boxes, by hand), test140 (hands-free) |
 | `leakcam_wake` on the board: capture -> history compare (imgdiff + change net) -> `/v1/check` to the mock server -> the sleep it chooses | test103 |
 | The model update from the server (per device `GET /v1/devices/{id}/model`, `.new`/`.old`, a bad model) | test130 steps 9-11 (the K230 OTA writer not built; test107 removed 2026-11-07) |
 | Session protocol end to end (READY / WAKE / ACK / TIME / SLEEP) with the product agent; NTP time back to the BL616 | test101, test037 steps 1-6 |

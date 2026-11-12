@@ -1,12 +1,13 @@
-18:49:03 test008-minimal-image: 0 metric rows MISSING: none
-18:49:10 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.52 msh 0.54
-18:49:17 sample boot 1 {'board': 32.9, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0), 'die': 39.76, 'k_free': (7025152, 1390848), 'vbat': 4358}
-18:49:24 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.52 msh 0.54
-18:49:30 sample boot 2 {'board': 33.0, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0), 'die': 39.76, 'k_free': (7025152, 1390848), 'vbat': 4392}
-18:49:38 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.52 msh 0.53
-18:49:44 sample boot 3 {'board': 33.1, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0), 'die': 40.365, 'k_free': (7025152, 1390848), 'vbat': 4376}
-18:49:52 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.53 msh 0.54
-18:49:58 sample boot 4 {'board': 33.2, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0), 'die': 39.76, 'k_free': (7025152, 1390848), 'vbat': 4349}
-18:50:06 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.53 msh 0.54
-18:50:12 sample boot 5 {'board': 33.3, 'bl_mem': (123320, 116188, 114916, 125, 87324, 15, 0), 'die': 40.365, 'k_free': (7025152, 1390848), 'vbat': 4371}
-18:50:14 test008-minimal-image: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+23:06:42 test008-minimal-image: 0 metric rows MISSING: none
+23:06:53 BL616 port missing: the VM's USB controller reset (xhci unbind/bind)
+23:07:06 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.58 msh 0.58
+23:07:12 sample boot 1 {'board': 29.1, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 34.913, 'k_free': (7020032, 1395968), 'vbat': 4352}
+23:07:20 boot SPL 0.17 OpenSBI 0.28 RT-Smart 0.29 mounted 0.58 msh 0.58
+23:07:26 sample boot 2 {'board': 29.4, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 35.824, 'k_free': (7020032, 1395968), 'vbat': 4388}
+23:07:34 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.57 msh 0.58
+23:07:40 sample boot 3 {'board': 29.7, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 35.824, 'k_free': (7020032, 1395968), 'vbat': 4385}
+23:07:48 boot SPL 0.16 OpenSBI 0.28 RT-Smart 0.29 mounted 0.58 msh 0.58
+23:07:54 sample boot 4 {'board': 29.9, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 36.127, 'k_free': (7020032, 1395968), 'vbat': 4366}
+23:08:02 boot SPL 0.17 OpenSBI 0.28 RT-Smart 0.29 mounted 0.58 msh 0.58
+23:08:08 sample boot 5 {'board': 30.2, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 37.945, 'k_free': (7020032, 1395968), 'vbat': 4378}
+23:08:11 test008-minimal-image: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

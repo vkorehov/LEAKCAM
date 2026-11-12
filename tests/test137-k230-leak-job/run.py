@@ -128,8 +128,19 @@ for i in range(8):
     times += [ms] if isinstance(ms, int) else []
     r.console += cmd(r.fd, None, 1)              # the job's lines, read as they come (a command drains them first)
 mem1 = bl_free()
-heaps = [int(x) for x in re.findall(r"job: done: t \d+ ms, heap \+(-?\d+) B", r.console)]
+HEAP_RE = r"job: done: t \d+ ms, heap \+(-?\d+) B"
+# with the real cameras a check takes ~2.8 s and a job's last line can come after the 1 s read: read on until all 8
+# (2026-11-12: 6 of 8 caught, the check failed on the count, the heap itself flat)
+t_end = time.time() + 10
+while len(re.findall(HEAP_RE, r.console)) < 8 and time.time() < t_end:
+    r.console += cmd(r.fd, None, 1)
+heaps = [int(x) for x in re.findall(HEAP_RE, r.console)]
 check("8 checks: all same,same", res == "same,same")
+# real frames, not black: the job logs each camera's mean brightness; all-zero frames (a dark room without the LEDs,
+# 2026-11-12) compare "same" with anything, so every check would pass for nothing
+means = [(int(a), int(b)) for a, b in re.findall(r"job: captured, mean (\d+) / (\d+)", r.console)]
+check("every capture lit: each camera's mean brightness above 0 (the LEDs on for the shot)",
+      means and all(a > 0 and b > 0 for a, b in means), f"{len(means)} captures, means {means[:4]}...")
 check("8 checks: the K230 program's heap does not grow", len(heaps) >= 8 and heaps[-1] <= heaps[-8],
       f"heap + {heaps[-8:] if heaps else 'none'} B")
 check("8 checks: the BL616's free heap does not shrink", mem0 and mem1 and mem1[0] >= mem0[0] - 512,

@@ -90,7 +90,7 @@ void setup_usb_plugged(void)
         switch_to_full_on_usb();
 }
 
-static void cmd_switch_to_full(int argc, char **argv)
+static void cmd_lp_switch(int argc, char **argv)
 {
     if (argc > 1 && !strcmp(argv[1], "on"))
         switch_on = true;
@@ -98,9 +98,9 @@ static void cmd_switch_to_full(int argc, char **argv)
         switch_on = false;
     else if (argc > 1 && !strcmp(argv[1], "usb"))
         switch_to_full_on_usb();                  /* as on a plug: the stored network's check, then the switch */
-    printf("switch_to_full: %s\r\n", switch_on ? "on" : "off");
+    printf("lp_switch: %s\r\n", switch_on ? "on" : "off");
 }
-SHELL_CMD_EXPORT_ALIAS(cmd_switch_to_full, switch_to_full, the switch to the full firmware [on | off | usb]);
+SHELL_CMD_EXPORT_ALIAS(cmd_lp_switch, lp_switch, the switch to the full firmware [on | off | usb] (the product command switch_to_full shows its state));
 
 /* test124 steps 1-2: the brown-out detector as the SDK's startup left it (system_bl616.c System_BOD_Init: on, 2.40 V,
  * reset) and the reset record of this boot (wdg_guard.c keeps it), read only */

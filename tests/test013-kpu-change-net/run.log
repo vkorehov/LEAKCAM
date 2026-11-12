@@ -1,14 +1,14 @@
-08:51:46 test013-kpu-change-net: 0 metric rows MISSING: none
-08:51:54 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.54 msh 0.55
-08:52:00 sample idle {'board': 34.3, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 42.78, 'k_free': (7025152, 1390848), 'vbat': 4172}
-08:52:00 meter K230 at msh idle (agent running): not asked (LEAKCAM_METER=ask to be prompted)
-08:52:05 sample run 1 {'board': 34.2, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 43.987, 'k_free': (7025152, 1723200), 'vbat': 4111}
-08:52:10 sample run 2 {'board': 34.3, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 44.589, 'k_free': (7025152, 1723200), 'vbat': 4109}
-08:52:15 sample run 3 {'board': 34.4, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 45.192, 'k_free': (7025152, 1723200), 'vbat': 4136}
-08:52:20 sample run 4 {'board': 34.4, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 45.192, 'k_free': (7312064, 1723200), 'vbat': 4127}
-08:52:25 sample run 5 {'board': 34.5, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 45.192, 'k_free': (7312064, 1723200), 'vbat': 4143}
-08:52:30 sample run 6 {'board': 34.5, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 45.493, 'k_free': (7312064, 1723200), 'vbat': 4132}
-08:52:34 sample run 7 {'board': 34.7, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 45.192, 'k_free': (7312064, 1723200), 'vbat': 4111}
-08:52:39 sample run 8 {'board': 34.8, 'bl_mem': (176464, 172228, 172252, 14, 34608, 7, 0), 'die': 46.095, 'k_free': (7312064, 1723200), 'vbat': 4127}
-08:52:39 meter K230 running leakcam_kputest 50 over and over: not asked (LEAKCAM_METER=ask to be prompted)
-08:52:41 test013-kpu-change-net: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+23:19:11 test013-kpu-change-net: 0 metric rows MISSING: none
+23:19:18 boot SPL 0.16 OpenSBI 0.27 RT-Smart 0.28 mounted 0.59 msh 0.60
+23:19:25 sample idle {'board': 34.7, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 42.479, 'k_free': (7020032, 1395968), 'vbat': 4361}
+23:19:25 meter K230 at msh idle (agent running): not asked (LEAKCAM_METER=ask to be prompted)
+23:19:30 sample run 1 {'board': 34.6, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 43.082, 'k_free': (7020032, 1728320), 'vbat': 4389}
+23:19:35 sample run 2 {'board': 34.6, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 43.384, 'k_free': (7020032, 1728320), 'vbat': 4387}
+23:19:39 sample run 3 {'board': 34.7, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 43.685, 'k_free': (7020032, 1728320), 'vbat': 4384}
+23:19:44 sample run 4 {'board': 34.8, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 45.192, 'k_free': (5903552, 6477248), 'vbat': 4367}
+23:19:49 sample run 5 {'board': 34.9, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 44.891, 'k_free': (7307072, 6477248), 'vbat': 4373}
+23:19:54 sample run 6 {'board': 35.1, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 45.192, 'k_free': (7307072, 6477248), 'vbat': 3820}
+23:19:59 sample run 7 {'board': 35.2, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 45.192, 'k_free': (7307072, 6477248), 'vbat': 4405}
+23:20:04 sample run 8 {'board': 35.2, 'bl_mem': (163200, 158948, 158988, 14, 34608, 7, 0), 'die': 45.192, 'k_free': (7307072, 6477248), 'vbat': 4393}
+23:20:04 meter K230 running leakcam_kputest 50 over and over: not asked (LEAKCAM_METER=ask to be prompted)
+23:20:06 test013-kpu-change-net: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

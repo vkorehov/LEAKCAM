@@ -10,15 +10,19 @@ from harness import Run, bl   # noqa: E402,F401
 
 r = Run(__file__)
 r.boot()
+r.media_quiet()                         # the agent's boot capture hook must not share VB (2026-11-12)
 r.sample("idle")
-idle = r.meter("K230 at msh idle (agent running)", force=True)
+idle = r.meter("K230 at msh idle (agent stopped)", force=True)
 levels, fails = [], []
 for i in range(3):
     t0 = time.time()
     out = r.k("/sdcard/app/leakcam_stream -m 10", 40, r"msh />\s*$")
     secs = re.findall(r"mic\s+([\d.]+) s: rms\s+(-?[\d.]+) dBFS, peak\s+(-?[\d.]+)", out)
     if len(secs) < 8:
-        fails.append(f"run {i + 1}: {len(secs)} level lines")
+        # the reason on the console (2026-11-11: a FAIL with no reason logged; /sdcard full is one: mic.raw is written there)
+        tail = " | ".join(l.strip() for l in out.replace("\r", "").splitlines()[-4:] if l.strip())
+        fails.append(f"run {i + 1}: {len(secs)} level lines; console: {tail[-300:]}")
+        print(f"OBSTACLE {fails[-1]}", flush=True)
     levels += [(float(a), float(b)) for _, a, b in secs[2:]]          # the first ~2 s: codec input charging
     r.sample(f"run {i + 1}")
     if i == 0:

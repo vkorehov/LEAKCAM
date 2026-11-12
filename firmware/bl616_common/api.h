@@ -14,9 +14,10 @@
 #include "wifi_check.h"
 
 /* the bench server: server/ on the Pi (vhome, systemd unit leakcam-server, server/deploy.sh); the product takes the
- * address from the K230 agent later (DESIGN 5.1) */
+ * address from the K230 agent later (DESIGN 5.1). The boards' port is mTLS only (tls_link.h, server/mtls.go): the
+ * server's name in its certificate is checked (TLS_SERVER_NAME), whatever the address */
 #define API_HOST "192.168.1.159"
-#define API_PORT "8090"
+#define API_PORT "8443"
 
 /* the check-in for this device (POST /v1/poll?id=<id>, the form ssid=<ssid>&<image>=<version>&<metrics.h's>: the
  * SSID for the app, never the passphrase), 200 expected; reads the sensors now (metrics_sample()); path (>=

@@ -122,12 +122,12 @@ def main():
         finally:
             pi("sudo systemctl start leakcam-server")
             log("step 3: server started")
-        ask("provision", 2)
+        ask("presence now", 1)                  # a check-in now, not at the next interval (it waited 57 s)
         t0 = time.time()
-        while time.time() - t0 < 90 and rec() is not None:   # the next check-in: the poll interval (60 s)
+        while time.time() - t0 < 90 and rec() is not None:
             time.sleep(0.5)
         got = [c for c in crashes()[n0:]]
-        check("step 3: sent at the next check-in once the server is back, one copy", rec() is None and len(got) == 1,
+        check("step 3: sent at the check-in once the server is back, one copy", rec() is None and len(got) == 1,
               f"{time.time() - t0:.1f} s after the server was back; {len(got)} new on the server")
     if "5" in steps:
         # the server down across the crash and the switch: neither the full firmware's check-in nor the setup
@@ -142,9 +142,17 @@ def main():
             ask("switch_to_setup lost", 1)
             while time.time() - t0 < 60 and which() != "setup":
                 time.sleep(0.3)
-            log("step 5: crashed in the full firmware; in the setup firmware after", f"{time.time() - t0:.1f} s")
-            # its check fails at the API (server down): it stays - its own line, at most 15 s (no fixed 15 s)
-            ask("", 15, r"failed its check|setup stays")
+            at = time.time() - t0
+            # its check, read as state (`switch_to_full`): after `switch_to_setup lost` there is none ("no check"),
+            # so the old wait for a "failed its check" line always sat its full 15 s; waited only while one runs
+            o = "check running"
+            while time.time() - t0 < at + 15 and "check running" in o:
+                o = ask("switch_to_full", 1, r"switch_to_full: [^\n]*\n")
+                if "check running" in o:
+                    time.sleep(0.3)
+            o = (re.search(r"switch_to_full: [^\r\n]*", o) or re.search("", "")).group(0)
+            log("step 5: crashed in the full firmware; in the setup firmware after", f"{at:.1f} s;",
+                o, f"({time.time() - t0:.1f} s)")
             kept = rec() if which() == "setup" else None
             log("step 5: the setup firmware holds", kept)
         finally:
@@ -170,7 +178,7 @@ def main():
             log("step 7: two crashes, board:", rec())
         finally:
             pi("sudo systemctl start leakcam-server")
-        ask("provision", 2)
+        ask("presence now", 1)
         t0 = time.time()
         while time.time() - t0 < 90 and rec() is not None:
             time.sleep(0.5)

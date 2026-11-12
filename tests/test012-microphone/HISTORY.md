@@ -4,6 +4,21 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-11 (run.py, 85 s): pass
+
+3 x 10 s: rms -33.7..-11.6 dBFS
+
+
+### Automated run 2026-11-11 (run.py, 74 s): **FAIL**
+
+3 x 10 s: rms -33.8..-7.8 dBFS
+
+
+### Automated run 2026-11-11 (run.py, 75 s): **FAIL**
+
+3 x 10 s: rms -30.1..-8.7 dBFS
+
+
 ### Automated run 2026-10-31 (run.py, 84 s): pass
 
 3 x 10 s: rms -10.6..-4.1 dBFS
@@ -60,6 +75,13 @@ Not recorded (the test ran before the energy rule, 2026-10-21). If re-run: extra
 - Pass: **MISSING**; every Results row carries its pass / fail.
 
 ## Obstacles
+
+- **2026-11-11 23:19 / 23:23, FAIL: run 2 "VB is initialized!" / "vb init failed" (two causes, both fixed 2026-11-12).**
+  (1) leakcam_stream never destroyed its audio VB pool, so kd_mpi_vb_exit() failed and VB stayed initialized for the
+  next program: vb_teardown() destroys the pool first, as Canaan's sample_audio. (2) run 2 (~17-27 s after the boot)
+  overlapped the agent's boot capture hook (`leakcam_wake cold`, 23-28 s): run.py calls r.media_quiet() after the
+  boot. Also: a failing run now logs its console reason (the first FAIL logged none). Rerun 01:40: pass.
+  Cross-program check: tests/test030-camera-capture/vb_cases.py (208 steps, 0 failed after the fixes).
 
 - The Metrics said "48 kHz mono" from 2026-10-25: a fixed string in run.py, not a reading; the recording is 16 kHz
   (leakcam_stream AUDIO_RATE, the WAV header). Fixed 2026-10-30 (test audit).
