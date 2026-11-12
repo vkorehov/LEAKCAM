@@ -23,10 +23,10 @@ TEST_APK = os.path.join(REPO, "android/app/build/outputs/apk/androidTest/debug/a
 ARGS_FILE = "/data/local/tmp/leakcam_bleop.json"
 RUNNER = "com.leakcam.setup.test/androidx.test.runner.AndroidJUnitRunner"
 PHONE_FILE = os.path.expanduser("~/.leakcam_phone")   # "<ip>:<port>" of the phone's Wireless debugging (adb over Wi-Fi)
-SERVER = "http://192.168.1.159:8090"   # the presence server (server/, the Pi): the board's pairing PIN comes from it
+SERVER = "http://192.168.1.131:8090"   # the presence server (server/, the Windows PC since 2026-11-12, server/windows): the board's pairing PIN comes from it
 
 
-BOARD_SERVER = ("192.168.1.159", 8443)  # the boards' port: mTLS only (server/mtls.go, DESIGN.md 5.3.12)
+BOARD_SERVER = ("192.168.1.131", 8443)  # the boards' port: mTLS only (server/mtls.go, DESIGN.md 5.3.12)
 PKI = os.path.join(REPO, ".secrets", "pki")
 
 
@@ -113,6 +113,29 @@ def ack_alerts():
     than its checks need (user, 2026-11-07: "acknowledge yourself faster, it is annoying")"""
     # -f 32: also when the app was force-stopped (Android drops broadcasts to stopped apps otherwise)
     adb("shell", "am", "broadcast", "-f", "32", "-a", "com.leakcam.setup.TEST_ACK", "-p", "com.leakcam.setup", secs=15)
+
+
+def phone_clean(dev=None):
+    """the bench left as found, after every test and every bench script (user 2026-11-12, twice: "again on phone
+    unacknowledged notification"): the board's leak cleared at the server (a `changed` check or a wet probe opens one,
+    and its push rings), every alert acked, then no LEAKCAM notification may be left (a `media` push from an upload is
+    one too); one left after the ack: the app force-stopped, which drops them (11-12). Returns how many were left"""
+    try:
+        clear_leak(dev or board_id())
+    except Exception as e:                     # noqa: BLE001 - the phone part still runs
+        print(f"phone_clean: leak not cleared: {e!r}", flush=True)
+    if "device" not in adb("get-state", secs=5):
+        return 0
+    ack_alerts()
+    left = 0
+    for _ in range(10):
+        left = adb("shell", "dumpsys", "notification", "--noredact", secs=15).count("pkg=com.leakcam.setup")
+        if not left:
+            return 0
+        time.sleep(0.5)
+    adb("shell", "am", "force-stop", "com.leakcam.setup", secs=15)
+    print(f"phone_clean: {left} LEAKCAM notifications left after the ack: the app force-stopped", flush=True)
+    return left
 
 
 def board_pin():
@@ -393,7 +416,7 @@ def relay(phases, gaps=None, times=None):
 
 
 RELAY_PORT = 8765                                   # the relay app's remote port (RelayService.listen)
-RELAY_TOKEN = os.path.expanduser("~/.leakcam_relay_token")   # `adb shell run-as com.relay cat files/token`, 600
+RELAY_TOKEN = os.path.expanduser("~/.leakcam_relay_token")   # `adb shell run-as com.relay cat /data/user_de/0/com.relay/files/token`, 600
 
 
 def _relay_http(cmds, gaps):

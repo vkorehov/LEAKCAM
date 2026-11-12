@@ -80,10 +80,15 @@ for _ in range(3):
         r.k(f"rm {DIR}/{f}", 2)
     if not re.search(r"cam[01]\.hist|\bsim\b", r.k(f"ls {DIR}", 2).split("Directory", 1)[-1]):
         break
-res, ms = leak_check()
+res, ms = leak_check(20)                         # two native histories written: ~2.5 s each
 ls = r.k(f"ls {DIR}", 2)
 check("no history: DONE new,new", res == "new,new", f"{res} in {ms} ms")
-check("no history: both histories written (76800 B)", len(re.findall(r"cam[01]\.hist\s+76800", ls)) == 2)
+check("no history: both native histories written (5018112 B = 2592 x 1936)", len(re.findall(r"cam[01]\.hist\s+5018112", ls)) == 2)
+# the comparison under test, not the lighting choice: a room at the LED / room-light threshold flipped between checks
+# and each flip found no history of that lighting ("new", 2026-11-12); after step 1's check (it recreates the file)
+scene("lit=led")
+leak_check()                                     # the LED histories
+
 times = [ms] if isinstance(ms, int) else []
 
 # 2. same

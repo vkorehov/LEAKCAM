@@ -33,7 +33,9 @@ const (
 	VideoS      = 15                                    // a video's length (user, 2026-11-07; DESIGN.md 5.3.14)
 	MediaList   = 20                                    // the newest pictures and videos listed per device
 	MediaMax    = 32 << 20                              // the largest upload (a 15 s video of both cameras)
-	LeakPhotos  = 4                                     // every leak is recorded: 4 pictures and one 15 s video (user, 2026-11-07)
+	LeakPhotos  = 4                                     // every leak is recorded: 4 pictures (2 per camera) and a 15 s video per camera (user, 2026-11-07/12)
+	Cameras     = 2                                     // a photo is one picture per camera, a video one video per camera (user, 2026-11-12)
+	LeakGapMs   = 2000                                  // a leak's 2 pictures per camera this far apart: flowing water shows as a change (user, 2026-11-12)
 )
 
 // Leak: a device's open leak, until a phone's all-clear
@@ -77,6 +79,12 @@ var (
 	// per device what the person called not a leak (user 2026-11-07): a probe still wet stays quiet until it has
 	// dried; the camera inference takes a new reference picture (`rearm` in the next check-in's answer)
 	notLeak = map[string]string{}
+	// per device when the person last cleared a leak: a camera change counts only from a leak check that ran after it
+	// (the job result rides on every check-in for 60 s: the check-in right after a clear opened the same leak again,
+	// test140 2026-11-12)
+	clearedAt = map[string]time.Time{}
+	// per device and camera the focus problem the phones were told of ("unfocused", "untuned", "" none): told once
+	focusTold = map[string][Cameras]string{}
 	// what a check-in brings first (user 2026-11-07): a leak's record (the emergency), a Wi-Fi change, a photo, a video
 	Rank      = map[string]int{"leak": 0, "wifi": 1, "photo": 2, "video": 3}
 	tokenFile = Tokens
@@ -104,6 +112,9 @@ func leakIn(m map[string]any, th Thresholds) string {
 func checkInAlerts(id string, in CheckIn, ans map[string]any) (msgs []map[string]string) {
 	m := in.Metrics
 	why := leakIn(m, deviceThresholdsLocked(id))
+	if ago, ok := m["jago"].(int64); ok && why == "camera change" && !in.At.Add(-time.Duration(ago)*time.Second).After(clearedAt[id]) {
+		why = "" // the job that the person already called not a leak
+	}
 	switch notLeak[id] {
 	case "probe wet", "humidity high": // re-armed once the probe is dry / the humidity below 85 %RH
 		if why == notLeak[id] {
@@ -136,6 +147,7 @@ func checkInAlerts(id string, in CheckIn, ans map[string]any) (msgs []map[string
 				"media": strings.Join(mediaIDs(id, "leak", in.At), ",")})
 		}
 	}
+	msgs = append(msgs, focusAlerts(id, m, in.SSID)...)
 	if c := wifiChanges[id]; c != nil && !c.Delivered.IsZero() && c.Result == 0 {
 		if st, ok := m["wchg"].(int64); ok && st > 0 {
 			c.Result = int(st)
@@ -153,13 +165,14 @@ func checkInAlerts(id string, in CheckIn, ans map[string]any) (msgs []map[string
 		c.Delivered, c.PSK = time.Now(), ""
 	} else if len(q) > 0 {
 		k := q[0].Kind
-		c := map[string]any{"kind": k, "ids": mediaIDs(id, k, in.At)}
+		c := map[string]any{"kind": k, "ids": mediaIDs(id, k, in.At), "cams": Cameras} // cams: picture n from camera (n-1) % cams
 		switch k {
 		case "video":
 			c["secs"] = VideoS
 		case "leak":
-			c["photos"], c["secs"] = LeakPhotos, VideoS
+			c["photos"], c["secs"], c["gap_ms"] = LeakPhotos, VideoS, LeakGapMs
 		}
+		c["more"] = len(q) - 1 // waiting after this one: the board checks in again right after its SENT
 		ans["capture"] = c
 		if captures[id] = q[1:]; len(captures[id]) == 0 {
 			delete(captures, id)
@@ -172,6 +185,36 @@ func checkInAlerts(id string, in CheckIn, ans map[string]any) (msgs []map[string
 	} else {
 		ans["mode"] = 0
 	}
+	return msgs
+}
+
+// focusAlerts: a camera out of focus, or never tuned (DESIGN.md 5.3.17): the job's "<cam0>,<cam1>,<foc0>,<foc1>"
+// (unfocused: FOCUS_BAD_N LED-lit checks below 60 % of the camera's reference; foc -1: no reference yet) -> one "focus"
+// message per camera and reason (a normal notification, not the alarm: it opens the focus screen); again only after
+// the camera was fine in between; mu held
+func focusAlerts(id string, m map[string]any, ssid string) (msgs []map[string]string) {
+	j, _ := m["job"].(string)
+	f := strings.Split(j, ",")
+	if len(f) < 2*Cameras {
+		return nil // an older board: no focus fields
+	}
+	told := focusTold[id]
+	for cam := 0; cam < Cameras; cam++ {
+		why := ""
+		switch {
+		case f[cam] == "unfocused":
+			why = "unfocused"
+		case f[Cameras+cam] == "-1" && f[cam] != "nocam":
+			why = "untuned"
+		}
+		if why != "" && told[cam] != why {
+			log.Printf("%s: camera %d %s", id, cam+1, why)
+			msgs = append(msgs, map[string]string{"type": "focus", "id": id, "cam": strconv.Itoa(cam), "why": why,
+				"ssid": ssid})
+		}
+		told[cam] = why
+	}
+	focusTold[id] = told
 	return msgs
 }
 
@@ -247,6 +290,11 @@ func clearLeak(w http.ResponseWriter, r *http.Request) {
 	// ?not_leak=1: a false alarm (the app's Not a leak): the check is re-armed (notLeak)
 	if open && r.URL.Query().Get("not_leak") == "1" {
 		notLeak[id] = l.Why
+	}
+	if open {
+		clearedAt[id] = time.Now() // the job results before it no longer open a leak
+		// its record not taken yet is moot: the next photo is not held behind it (test143, 2026-11-12)
+		captures[id] = slices.DeleteFunc(captures[id], func(c Capture) bool { return c.Kind == "leak" })
 	}
 	mu.Unlock()
 	if open {
@@ -348,21 +396,29 @@ func capture(w http.ResponseWriter, r *http.Request) {
 	reply(w, map[string]int64{"within_s": int64(within), "at": at})
 }
 
-// mediaIDs: the IDs of the pictures (p1..) and videos (v1) one capture makes: "<device>-<unix s>-p1"; the board
-// uploads each under its ID and the app fetches it by it (DESIGN.md 5.3.13, 5.3.14)
+// mediaIDs: the IDs of the pictures (p1..) and videos (v1..) one capture makes: "<device>-<unix s>-p1"; the board
+// uploads each under its ID and the app fetches it by it (DESIGN.md 5.3.13, 5.3.14). Separate files per camera (user,
+// 2026-11-12: "two separate pictures from both cameras, two separate videos"): picture n is camera (n-1) % Cameras
+// (p1 J4, p2 J5, p3 J4, ...), video n is camera n-1. A photo: p1, p2; a video: v1, v2; a leak: p1..p4, v1, v2
 func mediaIDs(id, kind string, at time.Time) []string {
 	pre := id + "-" + strconv.FormatInt(at.Unix(), 10) + "-"
+	photos, videos := 0, 0
 	switch kind {
 	case "photo":
-		return []string{pre + "p1"}
+		photos = Cameras
 	case "video":
-		return []string{pre + "v1"}
+		videos = Cameras
+	default:
+		photos, videos = LeakPhotos, Cameras
 	}
-	ids := make([]string, 0, LeakPhotos+1)
-	for n := 1; n <= LeakPhotos; n++ {
+	ids := make([]string, 0, photos+videos)
+	for n := 1; n <= photos; n++ {
 		ids = append(ids, pre+"p"+strconv.Itoa(n))
 	}
-	return append(ids, pre+"v1")
+	for n := 1; n <= videos; n++ {
+		ids = append(ids, pre+"v"+strconv.Itoa(n))
+	}
+	return ids
 }
 
 // putMedia: POST /v1/media/{id}: the board uploads a picture (JPEG) or video (MP4) under the ID its capture gave it;
@@ -380,6 +436,10 @@ func putMedia(w http.ResponseWriter, r *http.Request) {
 		ext = ".mp4"
 	}
 	path := filepath.Join(mediaDir, id+ext)
+	if ext == ".mp4" && r.Header.Get("Content-Type") == VideoType {
+		putVideo(w, r, id, path) // the board's H.265 as it is encoded: live HLS, then the MP4 (video.go)
+		return
+	}
 	f, err := os.CreateTemp(mediaDir, ".upload-*")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -396,6 +456,12 @@ func putMedia(w http.ResponseWriter, r *http.Request) {
 		os.Remove(f.Name())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
+	}
+	// the moment it was taken (user 2026-11-12: "timestamp in picture naming, also in metadata"): the board's X-Taken
+	// (unix ms) as the file's time, handed to the app on download (media); without it the upload's time stays
+	if ms, perr := strconv.ParseInt(r.Header.Get("X-Taken"), 10, 64); perr == nil && ms > 0 {
+		t := time.UnixMilli(ms)
+		os.Chtimes(path, t, t)
 	}
 	log.Printf("media %s stored", id)
 	if strings.HasSuffix(id, "-p1") {
@@ -444,9 +510,11 @@ func media(w http.ResponseWriter, r *http.Request) {
 		ext = ".mp4"
 	}
 	path := filepath.Join(mediaDir, id+ext)
-	if _, err := os.Stat(path); err != nil {
+	st, err := os.Stat(path)
+	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
+	w.Header().Set("X-Taken", strconv.FormatInt(st.ModTime().UnixMilli(), 10)) // when it was taken (putMedia)
 	http.ServeFile(w, r, path)
 }

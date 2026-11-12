@@ -152,7 +152,8 @@ class Run:
         """one K230 console command; everything read is also kept in self.console, so a background program's lines
         that arrive while the sampler runs its own commands are not lost (test025, 2026-10-25)"""
         t1 = time.time()
-        out = cmd(self.fd, c, secs, until)
+        out = cmd(self.fd, None, 0.05) if c is not None else ""   # the lines waiting (the job's verdicts): kept,
+        out += cmd(self.fd, c, secs, until)                     # cmd() drops them before its command
         self.console += out
         self.clog_write(f"> {c!r} ({time.time() - t1:.2f} s)", out)
         return out
@@ -350,10 +351,9 @@ class Run:
         # no notification left on the bench phone by any test (user 2026-11-09: "again hanging notification on
         # phone"): the debug app's TEST_ACK clears all of its own; nothing when no phone is on adb
         try:
-            from phone import ack_alerts, adb, plug_back
+            from phone import phone_clean, plug_back
             plug_back()                 # USB-C 1 back on the bench if the test left it out (the next test's start)
-            if "device" in adb("get-state", secs=5):
-                ack_alerts()
+            phone_clean()               # the leak cleared, every alert acked, no LEAKCAM notification left
         except Exception:
             pass
         if not result.startswith("not run"):

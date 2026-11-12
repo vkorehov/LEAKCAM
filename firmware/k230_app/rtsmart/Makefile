@@ -19,6 +19,23 @@ CFLAGS   := -march=rv64imafdcv -mabi=lp64d -mcmodel=medany -Os -std=gnu11 -I$(SR
 CFLAGS   += $(LIB_CFLAGS) -I$(SDK_SRC_ROOT_DIR)/include -include "generated/autoconf.h"
 CFLAGS   += -Wall -Wextra -ffunction-sections -fdata-sections
 LDFLAGS  := -T $(SDK_RTSMART_SRC_DIR)/libs/mk/link.lds --static -Wl,--gc-sections $(LIB_LDFLAGS)
+# the raw frames packed (rawpack.c, firmware/VIDEO.txt): the ISP library's register writes through our wrappers; the
+# map for reading the program's addresses
+LDFLAGS  += -Wl,--wrap=VirtualHalWriteReg -Wl,--wrap=SwitchUpdateCommonRegister -Wl,--wrap=VsiCamDeviceGetBufferSize
+LDFLAGS  += -Wl,-Map=$(BUILD)/leakcam.map
+.DEFAULT_GOAL := all
+# ... and libisp's local VIHalWriteReg replaced (rawpack.c): a copy of libisp.a with it weak + global, found first
+ISP_LIB  := $(firstword $(wildcard $(addsuffix /libisp.a,$(lib_mpp_lib_dir))))
+PATCHED  := $(BUILD)/patched
+LDFLAGS  := -L$(PATCHED) $(LDFLAGS)
+
+$(PATCHED)/libisp.a: $(ISP_LIB) $(CURDIR)/Makefile
+	@mkdir -p $(PATCHED)/obj
+	cp $< $@
+	cd $(PATCHED)/obj && $(AR) x $< isp_mcm.o && \
+	  $(OBJCOPY) --globalize-symbol=VIHalWriteReg isp_mcm.o && \
+	  $(OBJCOPY) --weaken-symbol=VIHalWriteReg isp_mcm.o && \
+	  $(AR) r $@ isp_mcm.o
 
 .PHONY: all clean distclean
 all: $(ROM_C)
@@ -27,10 +44,10 @@ all: $(ROM_C)
 $(ROM_C): $(PROG) $(CURDIR)/rom_c.py
 	$(Q)python3 $(CURDIR)/rom_c.py $(PROG) $@
 
-$(PROG): $(OBJS)
+$(PROG): $(OBJS) $(PATCHED)/libisp.a
 	@echo "[LD] $@"
 	@mkdir -p $(dir $@)
-	$(Q)$(CC) $(CFLAGS) $^ $(LDFLAGS) -lm -o $@
+	$(Q)$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) -lm -o $@
 	$(Q)$(STRIP) $@
 
 $(BUILD)/%.o: $(SRC_ROOT)/%.c

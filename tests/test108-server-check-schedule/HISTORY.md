@@ -96,6 +96,16 @@ AP and the back-off come with the HBN sleep step (test132). The old README, whol
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 71 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-12 (run.py, 66 s): **FAIL**
+
+9/10 checks pass. Failed: the BL616's free heap kept ((169552, 140712) -> (156048, 126460)).
+
+
 ### Automated run 2026-11-12 (run.py, 66 s): pass
 
 10/10 checks pass.

@@ -1,0 +1,496 @@
+  102.584 K230 console during the rounds
+  102.584   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 12 2026 - 21:58:27 +0000)
+  102.584   00000000: PMU Major Msg: End of CA training                                            
+  102.584   00000000: PMU Major Msg: End of initialization                                         
+  102.584   00000000: PMU Major Msg: End of read enable training                                   
+  102.584   00000000: PMU Major Msg: End of fine write leveling                                    
+  102.584   00000000: PMU Major Msg: End of read dq deskew training                                
+  102.584   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+  102.584   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+  102.584   00000000: PMU Major Msg: End of write delay center optimization                        
+  102.584   00000000: PMU Major Msg: End of read delay center optimization                         
+  102.584   00000000: PMU Major Msg: End of max read latency training                              
+  102.584   00000000: PMU Major Msg: Firmware run has completed                                    
+  102.584   dbyte0 add =9a040100 value =12
+  102.584   dbyte0 add =9a040500 value =13
+  102.584   dbyte0 add =9a040900 value =14
+  102.584   dbyte0 add =9a040d00 value =13
+  102.584   dbyte0 add =9a041100 value =13
+  102.584   dbyte0 add =9a041500 value =13
+  102.584   dbyte0 add =9a041900 value =13
+  102.584   dbyte0 add =9a041d00 value =15
+  102.584   dbyte1 add =9a044100 value =14
+  102.584   dbyte1 add =9a044500 value =14
+  102.584   dbyte1 add =9a044900 value =14
+  102.584   dbyte1 add =9a044d00 value =13
+  102.584   dbyte1 add =9a045100 value =13
+  102.584   dbyte1 add =9a045500 value =14
+  102.584   dbyte1 add =9a045900 value =13
+  102.584   dbyte1 add =9a045d00 value =13
+  102.584   dbyte2 add =9a048100 value =37
+  102.584   dbyte2 add =9a048500 value =37
+  102.584   dbyte2 add =9a048900 value =37
+  102.584   dbyte2 add =9a048d00 value =37
+  102.584   dbyte2 add =9a049100 value =37
+  102.584   dbyte2 add =9a049500 value =37
+  102.584   dbyte2 add =9a049900 value =37
+  102.584   dbyte2 add =9a049d00 value =37
+  102.584   dbyte3 add =9a04c100 value =37
+  102.584   dbyte3 add =9a04c500 value =37
+  102.584   dbyte3 add =9a04c900 value =37
+  102.584   dbyte3 add =9a04cd00 value =37
+  102.584   dbyte3 add =9a04d100 value =37
+  102.584   dbyte3 add =9a04d500 value =37
+  102.584   dbyte3 add =9a04d900 value =37
+  102.584   dbyte3 add =9a04dd00 value =37
+  102.584   spi_nand spi-flash@0: Winbond SPI NAND was found.
+  102.584   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+  102.584   OpenSBI v0.9
+  102.584   heap: [0x005cf4c0 - 0x00dcf4c0], size 8192 KB
+  102.584   page: [0x00dcf4c8 - 0x033fec00], size 39101 KB
+  102.584    \ | /
+  102.584   - RT -     Thread Smart Operating System
+  102.584    / | \     5.0.0 build Nov 12 2026
+  102.584    2006 - 2020 Copyright by rt-thread team
+  102.584   rtc driver register OK
+  102.584   lwIP-2.1.2 initialized!
+  102.584   [I/I2C] I2C bus [i2c0] registered
+  102.584   [I/I2C] I2C bus [i2c4] registered
+  102.584   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+  102.584   �link_mux: console and /dev/link share uart1
+  102.584   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+  102.584   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+  102.584   os  : system memory alloc 320 bytes
+  102.584   flsh: UFFS consume spare data size 9
+  102.584   os  : system memory alloc 84480 bytes
+  102.584   os  : system memory alloc 53200 bytes
+  102.584   os  : system memory alloc 2048 bytes
+  102.584   tree: DIR 0, FILE 5, DATA 4
+  102.584   os  : system memory alloc 320 bytes
+  102.584   flsh: UFFS consume spare data size 9
+  102.584   os  : system memory alloc 84480 bytes
+  102.584   os  : system memory alloc 53200 bytes
+  102.584   os  : system memory alloc 8192 bytes
+  102.584   tree: DIR 1, FILE 5, DATA 76
+  102.584   /dev/shm file system initialization done!
+  102.584   Probe dummy af driver
+  102.584   find sensor(ov5647_csi0) on csi0
+  102.584   Probe dummy af driver
+  102.584   find sensor(ov5647_csi2) on csi2
+  102.584   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+  102.584   <gnne> gnne_device_init done.
+  102.584   #############SDK VERSION######################################
+  102.584   SDK   : unknown-20261112-220019--d3cf0377f148-4162ec7
+  102.584   nncase: 2.11.0
+  102.584   ##############################################################
+  102.584   msh />leakcam: start: t 679 ms, heap +0 B
+  102.584   leakcam: version 0.6+g3c58c78-dirty-202611122158
+  102.584   leakcam: battery 4372 mV: t 681 ms, heap +0 B
+  102.584   46*3E
+  102.584   46*3E: command not found.
+  102.584   msh />leakcam: clock: 1794521246 from the BL616 (was -58831646 s off)
+  102.584   usb disconnect
+  102.584   usb disconnect
+  102.584   leakcam: WAKE usb: t 984 ms, heap +0 B
+  102.584   leakcam: relay: USB relay on /dev/ttyGS0: t 984 ms, heap +0 B
+  102.584   leakcam: job: check: t 989 ms, heap +0 B
+  102.584   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+  102.584   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+  102.584   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
+  102.584   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
+  102.584   dump dev(0)chn(1) failed.
+  102.584   dump dev(1)chn(1) failed.
+  102.584   leakcam: focus: cam0 score 1.098, reference 0.000: -1 %, 0 low in a row
+  102.584   leakcam: job: cam0 changed (stored as is): 17794 of 19602 blocks at x 0-2592 y 0-1936, max 211.9, gain 2.00, read 561 ms, compare 170 ms: t 3451 ms, heap +909312 B
+  102.584   leakcam: focus: cam1 score 0.065, reference 0.000: -1 %, 0 low in a row
+  102.584   leakcam: job: cam1 changed (stored as is): 1601 of 19602 blocks at x 0-2592 y 0-272, max 36.2, gain 1.04, read 561 ms, compare 171 ms: t 4195 ms, heap +909312 B
+  102.584   leakcam: job: captured, mean 14 / 75 (got 1 1), LEDs, room 0 / 0, frames 2 / 3, exposures 1 / 1, 528.0 / 80.0 ms, LEDs 135 ms: t 4199 ms, heap +909312 B
+  102.584   leakcam: job: done: t 4200 ms, heap +909312 B
+  102.584   leakcam: media: leak 7C3E8262B149-1794521251, 4 pictures, 2 cameras: t 6068 ms, heap +909312 B
+  102.584   [I/bl616.sdio] BL616 SDU ready: io port 0x10000, download 1536 B, ports 0/0
+  102.584   [I/bl616.sdio] bound SDIO 424c:0606
+  102.584   leakcam: media: Wi-Fi bridge bound: t 6211 ms, heap +909312 B
+  102.584   dump dev(0)chn(1) failed.
+  102.584   [I/bl616.msg] netdev: started, credit 23
+  102.584   [I/WLAN.dev] WLAN device sta registered as phy0-sta
+  102.584   [I/WLAN.dev] wlan init success
+  102.584   [I/WLAN.lwip] eth device init ok name:wlan0
+  102.584   [I/bl616.wifi] station 7c:3e:82:62:b1:49
+  102.584   dump dev(1)chn(1) failed.
+  102.584   [I/bl616.msg] vchan: started, credit 3
+  102.584   [I/bl616.wifi] link 0 -> 1 (, channel 0, 0 dBm)
+  102.584   [I/bl616.wifi] link 1 -> 2 (VK, channel 11, 0 dBm)
+  102.584   [I/WLAN.mgnt] wifi connect success ssid:
+  102.584   [I/WLAN.lwip] Got IP address : 192.168.1.223
+  102.584   leakcam: job: colour LEDs, room 0 / 0, frames 2 / 3, exposures 1 / 1, 528.0 / 80.0 ms, LEDs 136 ms
+  102.584   leakcam: media: round 1 at 143 ms: cameras 0x3, 2 JPEGs (136668 + 107346 B) at 498 ms: t 6566 ms, heap +1159168 B
+  102.584   dump dev(0)chn(1) failed.
+  102.584   dump dev(1)chn(1) failed.
+  102.584   leakcam: job: colour LEDs, room 0 / 0, frames 2 / 3, exposures 1 / 1, 528.0 / 80.0 ms, LEDs 135 ms
+  102.584   leakcam: media: round 2 at 2001 ms: cameras 0x3, 2 JPEGs (137449 + 106460 B) at 2348 ms: t 8417 ms, heap +1409024 B
+  102.584   leakcam: media: p1 136668 B: uploaded 200 at 2577 ms: t 8646 ms, heap +1409024 B
+  102.584   leakcam: media: p2 107346 B: uploaded 200 at 2642 ms: t 8711 ms, heap +1409024 B
+  102.584   leakcam: media: p3 137449 B: uploaded 200 at 2697 ms: t 8765 ms, heap +1409024 B
+  102.584   leakcam: media: p4 106460 B: uploaded 200 at 2751 ms: t 8820 ms, heap +1409024 B
+  102.584   ch 0: 4 pictures encoded. Average FrameRate = 2 Fps
+  102.584   ch 0: total used pages 3022
+  102.584   leakcam: media: video 225 frames per camera at 15 fps, 10000 kbit/s: t 9138 ms, heap +1409024 B
+  102.584   dump dev(0)chn(1) failed.
+  102.584   dump dev(1)chn(1) failed.
+  102.584   vicap: dev 0 video: 224 frames over 14932 ms of pts = 14.9 fps, sequence 123..347
+  102.584   vicap: dev 1 video: 224 frames over 14865 ms of pts = 15.0 fps, sequence 123..346
+  102.584   leakcam: job: colour LEDs, room 0 / 0, frames 2 / 3, exposures 1 / 1, 528.0 / 80.0 ms, LEDs 134 ms
+  102.584   ch 1: 225 pictures encoded. Average FrameRate = 15 Fps
+  102.584   ch 1: total used pages 3075
+  102.584   leakcam: media: v1: 225 frames (15 IDR) in 15354 ms, 18446075 B = 9611 kbit/s, 225 sent, uploaded 200 at 18791 ms; encode 6693 ms, between frames 8317 ms, send 9488 ms, backlog max 1218729 B: t 24859 ms, heap +1921024 B
+  102.584   ch 2: 225 pictures encoded. Average FrameRate = 15 Fps
+  102.584   ch 2: total used pages 3075
+  102.584   leakcam: media: v2: 225 frames (15 IDR) in 15354 ms, 18404712 B = 9589 kbit/s, 225 sent, uploaded 200 at 19138 ms; encode 6862 ms, between frames 8139 ms, send 9168 ms, backlog max 1260638 B: t 25207 ms, heap +1921024 B
+  102.584   leakcam: media: done, 6 uploaded, 0 failed, 0 skipped: t 25208 ms, heap +1921024 B
+  102.584   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 12 2026 - 21:58:27 +0000)
+  102.584   00000000: PMU Major Msg: End of CA training                                            
+  102.584   00000000: PMU Major Msg: End of initialization                                         
+  102.584   00000000: PMU Major Msg: End of read enable training                                   
+  102.584   00000000: PMU Major Msg: End of fine write leveling                                    
+  102.584   00000000: PMU Major Msg: End of read dq deskew training                                
+  102.584   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+  102.584   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+  102.584   00000000: PMU Major Msg: End of write delay center optimization  
+  102.584   msh />
+  102.584   msh />
+  102.584   msh />
+  102.584   msh />U-Boot SPL 202 deskew training          Major Msg: Endvam memo## WAvicap: dev 0 video: 224 frames over 14932 ms of pts = 14.9 fps, sequence 71..295
+  102.584   vicap: dev 1 video: 224 frames over 14865 ms of pts = 15.0 fps, sequence 71..294
+  102.584   leakcam: job: colour LEDs, room 0 / 0, frames 2 / 3, exposures 1 / 1, 528.0 / 80.0 ms, LEDs 134 ms
+  102.584   ch 1: 225 pictures encoded. Average FrameRate = 15 Fps
+  102.584   ch 1: total used pages 3075
+  102.584   leakcam: media: v1: 225 frames (15 IDR) in 15368 ms, 18881985 B = 9829 kbit/s, 225 sent, uploaded 200 at 20349 ms; encode 6695 ms, between frames 8315 ms, send 7594 ms, backlog max 1709960 B: t 21407 ms, heap +2416640 B
+  102.584   ch 2: 225 pictures encoded. Average FrameRate = 15 Fps
+  102.584   ch 2: total used pages 3075
+  102.584   leakcam: media: v2: 225 frames (15 IDR) in 15368 ms, 17858144 B = 9296 kbit/s, 225 sent, uploaded 200 at 20679 ms; encode 6820 ms, between frames 8180 ms, send 6732 ms, backlog max 589499 B: t 21737 ms, heap +2416640 B
+  102.584   leakcam: media: done, 6 uploaded, 0 failed, 0 skipped: t 21738 ms, heap +2416640 B
+  102.584   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 12 2026 - 21:58:27 +0000)
+  102.584   00000000: PMU Major Msg: End of CA training                                            
+  102.584   00000000: PMU Major Msg: End of initialization                                         
+  102.584   00000000: PMU Major Msg: End of read enable training                                   
+  102.584   00000000: PMU Major Msg: End of fine write leveling                                    
+  102.584   00000000: PMU Major Msg: End of read dq deskew training                                
+  102.584   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+  102.584   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+  102.584   00000000: PMU Major Msg: End of write delay center optimization                        
+  102.584   00000000: PMU Major Msg: End of read delay center optimization                         
+  102.584   00000000: PMU Major Msg: End of max read latency training                              
+  102.584   00000000: PMU Major Msg: Firmware run has completed                                    
+  102.584   dbyte0 add =9a040100 value =12
+  102.584   dbyte0 add =9a040500 value =13
+  102.584   dbyte0 add =9a040900 value =13
+  102.584   dbyte0 add =9a040d00 value =13
+  102.584   dbyte0 add =9a041100 value =14
+  102.584   dbyte0 add =9a041500 value =14
+  102.584   dbyte0 add =9a041900 value =14
+  102.584   dbyte0 add =9a041d00 value =15
+  102.584   dbyte1 add =9a044100 value =13
+  102.584   dbyte1 add =9a044500 value =13
+  102.584   dbyte1 add =9a044900 value =15
+  102.584   dbyte1 add =9a044d00 value =13
+  102.584   dbyte1 add =9a045100 value =13
+  102.584   dbyte1 add =9a045500 value =14
+  102.584   dbyte1 add =9a045900 value =13
+  102.584   dbyte1 add =9a045d00 value =13
+  102.584   dbyte2 add =9a048100 value =37
+  102.584   dbyte2 add =9a048500 value =37
+  102.584   dbyte2 add =9a048900 value =37
+  102.584   dbyte2 add =9a048d00 value =37
+  102.584   dbyte2 add =9a049100 value =37
+  102.584   dbyte2 add =9a049500 value =37
+  102.584   dbyte2 add =9a049900 value =37
+  102.584   dbyte2 add =9a049d00 value =37
+  102.584   dbyte3 add =9a04c100 value =37
+  102.584   dbyte3 add =9a04c500 value =37
+  102.584   dbyte3 add =9a04c900 value =37
+  102.584   dbyte3 add =9a04cd00 value =37
+  102.584   dbyte3 add =9a04d100 value =37
+  102.584   dbyte3 add =9a04d500 value =37
+  102.584   dbyte3 add =9a04d900 value =37
+  102.584   dbyte3 add =9a04dd00 value =37
+  102.584   spi_nand spi-flash@0: Winbond SPI NAND was found.
+  102.584   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+  102.584   OpenSBI v0.9
+  102.584   heap: [0x005cf4c0 - 0x00dcf4c0], size 8192 KB
+  102.584   page: [0x00dcf4c8 - 0x033fec00], size 39101 KB
+  102.584    \ | /
+  102.584   - RT -     Thread Smart Operating System
+  102.584    / | \     5.0.0 build Nov 12 2026
+  102.584    2006 - 2020 Copyright by rt-thread team
+  102.584   rtc driver register OK
+  102.584   lwIP-2.1.2 initialized!
+  102.584   [I/I2C] I2C bus [i2c0] registered
+  102.584   [I/I2C] I2C bus [i2c4] registered
+  102.584   [I/board.sdio] boot mode 0 does not use an SD/MMC controller�link_mux: console and /dev/link share uart1
+  102.584   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+  102.584   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+  102.584   os  : system memory alloc 320 bytes
+  102.584   flsh: UFFS consume spare data size 9
+  102.584   os  : system memory alloc 84480 bytes
+  102.584   os  : system memory alloc 53200 bytes
+  102.584   os  : system memory alloc 2048 bytes
+  102.584   tree: DIR 0, FILE 5, DATA 4
+  102.584   os  : system memory alloc 320 bytes
+  102.584   flsh: UFFS consume spare data size 9
+  102.584   os  : system memory alloc 84480 bytes
+  102.584   os  : system memory alloc 53200 bytes
+  102.584   os  : system memory alloc 8192 bytes
+  102.584   tree: DIR 1, FILE 5, DATA 76
+  102.584   /dev/shm file system initialization done!
+  102.584   Probe dummy af driver
+  102.584   find sensor(ov5647_csi0) on csi0
+  102.584   Probe dummy af driver
+  102.584   find sensor(ov5647_csi2) on csi2
+  102.584   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+  102.584   <gnne> gnne_device_init done.
+  102.584   #############SDK VERSION######################################
+  102.584   SDK   : unknown-20261112-220019--d3cf0377f148-4162ec7
+  102.584   nncase: 2.11.0
+  102.584   ##############################################################
+  102.584   msh />leakcam: start: t 694 ms, heap +0 B
+  102.584   leakcam: version 0.6+g3c58c78-dirty-202611122158
+  102.584   leakcam: battery 4373 mV: t 695 ms, heap +0 B
+  102.584   5*AB
+  102.584   5*AB: command not found.
+  102.584   msh />leakcam: clock: 1794521315 from the BL616 (was -58831715 s off)
+  102.584   usb disconnect
+  102.584   usb disconnect
+  102.584   leakcam: WAKE usb: t 1004 ms, heap +0 B
+  102.584   leakcam: relay: USB relay on /dev/ttyGS0: t 1005 ms, heap +0 B
+  102.584   leakcam: job: check: t 1010 ms, heap +0 B
+  102.584   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+  102.584   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+  102.584   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
+  102.584   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
+  102.584   leakcam: media: leak 7C3E8262B149-1794521314, 4 pictures, 2 cameras: t 1021 ms, heap +4096 B
+  102.584   [I/bl616.sdio] BL616 SDU ready: io port 0x10000, download 1536 B, ports 0/0
+  102.584   [I/bl616.sdio] bound SDIO 424c:0606
+  102.584   leakcam: media: Wi-Fi bridge bound: t 1071 ms, heap +114688 B
+  102.584   [I/bl616.msg] netdev: started, credit 23
+  102.584   [I/WLAN.dev] WLAN device sta registered as phy0-sta
+  102.584   [I/WLAN.dev] wlan init success
+  102.584   [I/WLAN.lwip] eth device init ok name:wlan0
+  102.584   [I/bl616.wifi] station 7c:3e:82:62:b1:49
+  102.584   [I/bl616.msg] vchan: started, credit 3
+  102.584   [I/bl616.wifi] link 0 -> 1 (, channel 0, 0 dBm)
+  102.584   [I/bl616.wifi] link 1 -> 2 (VK, channel 11, 0 dBm)
+  102.584   [I/WLAN.mgnt] wifi connect success ssid:
+  102.584   [I/WLAN.lwip] Got IP address : 192.168.1.223
+  102.584   dump dev(0)chn(1) failed.
+  102.584   dump dev(1)chn(1) failed.
+  102.584   leakcam: focus: cam0 score 1.009, reference 0.000: -1 %, 0 low in a row
+  102.584   leakcam: job: cam0 changed (stored as is): 17464 of 19602 blocks at x 0-2592 y 0-1936, max 219.7, gain 2.00, read 561 ms, compare 170 ms: t 3472 ms, heap +909312 B
+  102.584   leakcam: focus: cam1 score 0.063, reference 0.000: -1 %, 0 low in a row
+  102.584   leakcam: job: cam1 changed (stored as is): 1319 of 19602 blocks at x 0-2592 y 0-1936, max 34.7, gain 1.03, read 561 ms, compare 171 ms: t 4216 ms, heap +909312 B
+  102.584   leakcam: job: captured, mean 15 / 76 (got 1 1), LEDs, room 0 / 0, frames 2 / 3, exposures 1 / 1, 528.0 / 80.0 ms, LEDs 136 ms: t 4220 ms, heap +909312 B
+  102.584   leakcam: job: done: t 4221 ms, heap +909312 B
+  102.584   dump dev(0)chn(1) failed.
+  102.584   dump dev(1)chn(1) failed.
+  102.584   leakcam: job: colour LEDs, room 0 / 0, frames 2 / 3, exposures 1 / 1, 528.0 / 80.0 ms, LEDs 136 ms
+  102.584   leakcam: media: round 1 at 50 ms: cameras 0x3, 2 JPEGs (135862 + 109081 B) at 3565 ms: t 4586 ms, heap +1159168 B
+  102.584   dump dev(0)chn(1) failed.
+  102.584   dump dev(1)chn(1) failed.
+  102.584   leakcam: job: colour LEDs, room 0 / 0, frames 2 / 3, exposures 1 / 1, 528.0 / 80.0 ms, LEDs 136 ms
+  102.584   leakcam: media: round 2 at 3566 ms: cameras 0x3, 2 JPEGs (136652 + 107105 B) at 3949 ms: t 4971 ms, heap +1409024 B
+  102.584   leakcam: media: p1 135862 B: uploaded 200 at 4054 ms: t 5075 ms, heap +1409024 B
+  102.584   leakcam: media: p2 109081 B: uploaded 200 at 4160 ms: t 5181 ms, heap +1409024 B
+  102.584   leakcam: media: p3 136652 B: uploaded 200 at 4235 ms: t 5256 ms, heap +1409024 B
+  102.584   leakcam: media: p4 107105 B: uploaded 200 at 4293 ms: t 5314 ms, heap +1409024 B
+  102.584   ch 0: 4 pictures encoded. Average FrameRate = 9 Fps
+  102.584   ch 0: total used pages 3022
+  102.584   leakcam: media: video 225 frames per camera at 15 fps, 10000 kbit/s: t 5637 ms, heap +1409024 B
+  102.584   dump dev(0)chn(1) failed.
+  102.584   dump dev(1)chn(1) failed.
+  102.584   vicap: dev 0 video: 224 frames over 14932 ms of pts = 14.9 fps, sequence 70..294
+  102.584   vicap: dev 1 video: 224 frames over 14865 ms of pts = 15.0 fps, sequence 70..293
+  102.584   leakcam: job: colour LEDs, room 0 / 0, frames 2 / 3, exposures 1 / 1, 528.0 / 80.0 ms, LEDs 134 ms
+  102.584   ch 1: 225 pictures encoded. Average FrameRate = 15 Fps
+  102.584   ch 1: total used pages 3075
+  102.584   leakcam: media: v1: 225 frames (15 IDR) in 15341 ms, 18531564 B = 9663 kbit/s, 225 sent, uploaded 200 at 20334 ms; encode 6689 ms, between frames 8321 ms, send 6710 ms, backlog max 1058148 B: t 21355 ms, heap +2506752 B
+  102.584   ch 2: 225 pictures encoded. Average FrameRate = 15 Fps
+  102.584   ch 2: total used pages 3075
+  102.584   leakcam: media: v2: 225 frames (15 IDR) in 15341 ms, 17917371 B = 9343 kbit/s, 225 sent, uploaded 200 at 20663 ms; encode 6820 ms, between frames 8180 ms, send 6136 ms, backlog max 1185868 B: t 21684 ms, heap +2506752 B
+  102.584   leakcam: media: done, 6 uploaded, 0 failed, 0 skipped: t 21685 ms, heap +2506752 B
+  102.584   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 12 2026 - 21:58:27 +0000)
+  102.584   00000000: PMU Major Msg: End of CA training                                            
+  102.584   00000000: PMU Major Msg: End of initialization                                         
+  102.584   00000000: PMU Major Msg: End of read enable training                                   
+  102.584   00000000: PMU Major Msg: End of fine write leveling                                    
+  102.584   00000000: PMU Major Msg: End of read dq deskew training                                
+  102.584   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+  102.584   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+  102.584   00000000: PMU Major Msg: End of write delay center optimization                        
+  102.584   00000000: PMU Major Msg: End of read delay center optimization                         
+  102.584   00000000: PMU Major Msg: End of max read latency training                              
+  102.584   00000000: PMU Major Msg: Firmware run has completed                                    
+  102.584   dbyte0 add =9a040100 value =12
+  102.584   dbyte0 add =9a040500 value =13
+  102.584   dbyte0 add =9a040900 value =14
+  102.584   dbyte0 add =9a040d00 value =13
+  102.584   dbyte0 add =9a041100 value =13
+  102.584   dbyte0 add =9a041500 value =13
+  102.584   dbyte0 add =9a041900 value =13
+  102.584   dbyte0 add =9a041d00 value =15
+  102.584   dbyte1 add =9a044100 value =14
+  102.584   dbyte1 add =9a044500 value =14
+  102.584   dbyte1 add =9a044900 value =14
+  102.584   dbyte1 add =9a044d00 value =13
+  102.584   dbyte1 add =9a045100 value =13
+  102.584   dbyte1 add =9a045500 value =14
+  102.584   dbyte1 add =9a045900 value =14
+  102.584   dbyte1 add =9a045d00 value =13
+  102.584   dbyte2 add =9a048100 value =37
+  102.584   dbyte2 add =9a048500 value =37
+  102.584   dbyte2 add =9a048900 value =37
+  102.584   dbyte2 add =9a048d00 value =37
+  102.584   dbyte2 add =9a049100 value =37
+  102.584   dbyte2 add =9a049500 value =37
+  102.584   dbyte2 add =9a049900 value =37
+  102.584   dbyte2 add =9a049d00 value =37
+  102.584   dbyte3 add =9a04c100 value =37
+  102.584   dbyte3 add =9a04c500 value =37
+  102.584   dbyte3 add =9a04c900 value =37
+  102.584   dbyte3 add =9a04cd00 value =37
+  102.584   dbyte3 add =9a04d100 value =37
+  102.584   dbyte3 add =9a04d500 value =37
+  102.584   dbyte3 add =9a04d900 value =37
+  102.584   dbyte3 add =9a04dd00 value =37
+  102.584   spi_nand spi-flash@0: Winbond SPI NAND was found.
+  102.584   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+  102.584   OpenSBI v0.9
+  102.584   heap: [0x005cf4c0 - 0x00dcf4c0], size 8192 KB
+  102.584   page: [0x00dcf4c8 - 0x033fec00], size 39101 KB
+  102.584    \ | /
+  102.584   - RT -     Thread Smart Operating System
+  102.584    / | \     5.0.0 build Nov 12 2leakcam: media: video 7C3E8262B149-1794521341, 0 pictures, 2 cameras: t 5443 ms, heap +909312 B
+  102.584   [I/bl616.sdio] BL616 SDU ready: io port 0x10000, download 1536 B, ports 0/0
+  102.584   [I/bl616.sdio] bound SDIO 424c:0606
+  102.584   leakcam: media: Wi-Fi bridge bound: t 5588 ms, heap +909312 B
+  102.584   [E/sal.skt] not find network interface device by protocol family(2).
+  102.584   [E/sal.skt] SAL socket protocol family input failed, return error -3.
+  102.584   [I/bl616.msg] netdev: started, credit 23
+  102.584   [I/WLAN.dev] WLAN device sta registered as phy0-sta
+  102.584   [I/WLAN.dev] wlan init success
+  102.584   [I/WLAN.lwip] eth device init ok name:wlan0
+  102.584   [I/bl616.wifi] station 7c:3e:82:62:b1:49
+  102.584   [I/bl616.msg] vchan: started, credit 3
+  102.584   [I/bl616.wifi] link 0 -> 1 (, chm)
+  102.584   [I/bl616.wifi] link 1 -> 2 (VK, channel 11, 0 dBm)
+  102.584   [I/WLAN.mgnt] wifi connect success ssid:
+  102.584   leakcam: media: video 225 frames per camera at 15 fps, 10000 kbit/s: t 5852 ms, heap +909312 B
+  102.584   dump dev(0)chn(1) failed.
+  102.584   [I/WLAN.lwip] Got IP address : 192.168.1.223
+  102.584   dump dev(1)chn(1) failed.
+  102.584   vicap: dev 0 video: 224 frames over 14932 ms of pts = 14.9 fps, sequence 74..298
+  102.584   vicap: dev 1 video: 224 frames over 14865 ms of pts = 15.0 fps, sequence 74..297
+  102.584   leakcam: job: colour LEDs, room 0 / 0, frames 2 / 3, exposures 1 / 1, 528.0 / 80.0 ms, LEDs 134 ms
+  102.584   ch 1: 225 pictures encoded. Average FrameRate = 15 Fps
+  102.584   ch 1: total used pages 3075
+  102.584   leakcam: media: v1: 225 frames (15 IDR) in 15395 ms, 18828264 B = 9784 kbit/s, 225 sent, uploaded 200 at 16176 ms; encode 6693 ms, between frames 8316 ms, send 7002 ms, backlog max 1197476 B: t 21620 ms, heap +2109440 B
+  102.584   ch 2: 225 pictures encoded. Average FrameRate = 15 Fps
+  102.584   ch 2: total used pages 3075
+  102.584   leakcam: media: v2: 225 frames (15 IDR) in 15395 ms, 18131039 B = 9421 kbit/s, 225 sent, uploaded 200 at 16536 ms; encode 6823 ms, between frames 8177 ms, send 6684 ms, backlog max 1205338 B: t 21980 ms, heap +2109440 B
+  102.584   leakcam: media: done, 2 uploaded, 0 failed, 0 skipped: t 21983 ms, heap +2109440 B
+  102.584   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 12 2026 - 21:58:27 +0000)
+  102.584   00000000: PMU Major Msg: End of CA training                                            
+  102.584   00000000: PMU Major Msg: End of initialization                                         
+  102.584   00000000: PMU Major Msg: End of read enable training                                   
+  102.584   00000000: PMU Major Msg: End of fine write leveling                                    
+  102.584   00000000: PMU Major Msg: End of read dq deskew training                                
+  102.584   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+  102.584   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+  102.584   00000000: PMU Major Msg: End of write delay center optimization                        
+  102.584   00000000: PMU Major Msg: End of read delay center optimization                         
+  102.584   00000000: PMU Major Msg: End of max read latency training                              
+  102.584   00000000: PMU Major Msg: Firmware run has completed                                    
+  102.584   dbyte0 add =9a040100 value =12
+  102.584   dbyte0 add =9a040500 value =14
+  102.584   dbyte0 add =9a040900 value =14
+  102.584   dbyte0 add =9a040d00 value =14
+  102.584   dbyte0 add =9a041100 value =14
+  102.584   dbyte0 add =9a041500 value =14
+  102.584   dbyte0 add =9a041900 value =14
+  102.584   dbyte0 add =9a041d00 value =15
+  102.584   dbyte1 add =9a044100 value =14
+  102.584   dbyte1 add =9a044500 value =14
+  102.584   dbyte1 add =9a044900 value =14
+  102.584   dbyte1 add =9a044d00 value =12
+  102.584   dbyte1 add =9a045100 value =13
+  102.584   dbyte1 add =9a045500 value =14
+  102.584   dbyte1 add =9a045900 value =14
+  102.584   dbyte1 add =9a045d00 value =13
+  102.584   dbyte2 add =9a048100 value =37
+  102.584   dbyte2 add =9a048500 value =37
+  102.584   dbyte2 add =9a048900 value =37
+  102.584   dbyte2 add =9a048d00 value =37
+  102.584   dbyte2 add =9a049100 value =37
+  102.584   dbyte2 add =9a049500 value =37
+  102.584   dbyte2 add =9a049900 value =37
+  102.584   dbyte2 add =9a049d00 value =37
+  102.584   dbyte3 add =9a04c100 value =37
+  102.584   dbyte3 add =9a04c500 value =37
+  102.584   dbyte3 add =9a04c900 value =37
+  102.584   dbyte3 add =9a04cd00 value =37
+  102.584   dbyte3 add =9a04d100 value =37
+  102.584   dbyte3 add =9a04d500 value =37
+  102.584   dbyte3 add =9a04d900 value =37
+  102.584   dbyte3 add =9a04dd00 value =37
+  102.584   spi_nand spi-flash@0: Winbond SPI NAND was found.
+  102.584   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+  102.584   OpenSBI v0.9
+  102.584   heap: [0x005cf4c0 - 0x00dcf4c0], size 8192 KB
+  102.584   page: [0x00dcf4c8 - 0x033fec00], size 39101 KB
+  102.584    \ | /
+  102.584   - RT -     Thread Smart Operating System
+  102.584    / | \     5.0.0 build Nov 12 2026
+  102.584    2006 - 2020 Copyright by rt-thread team
+  102.584   rtc driver register OK
+  102.584   lwIP-2.1.2 initialized!
+  102.584   [I/I2C] I2C bus [i2c0] registered
+  102.584   [I/I2C] I2C bus [i2c4] registered
+  102.584   [I/board.sdio] boot mode 0 does not use an SD/MMC controller�link_mux: console and /dev/link share uart1
+  102.584   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+  102.584   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+  102.584   os  : system memory alloc 320 bytes
+  102.584   flsh: UFFS consume spare data size 9
+  102.584   os  : system memory alloc 84480 bytes
+  102.584   os  : system memory alloc 53200 bytes
+  102.584   os  : system memory alloc 2048 bytes
+  102.584   tree: DIR 0, FILE 5, DATA 4
+  102.584   os  : system memory alloc 320 bytes
+  102.584   flsh: UFFS consume spare data size 9
+  102.584   os  : system memory alloc 84480 bytes
+  102.584   os  : system memory alloc 53200 bytes
+  102.584   os  : system memory alloc 8192 bytes
+  102.584   tree: DIR 1, FILE 5, DATA 76
+  102.584   /dev/shm file system initialization done!
+  102.584   Probe dummy af driver
+  102.584   find sensor(ov5647_csi0) on csi0
+  102.584   Probe dummy af driver
+  102.584   find sensor(ov5647_csi2) on csi2
+  102.584   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+  102.584   <gnne> gnne_device_init done.
+  102.584   #############SDK VERSION######################################
+  102.584   SDK   : unknown-20261112-220019--d3cf0377f148-4162ec7
+  102.584   nncase: 2.11.0
+  102.584   ##############################################################
+  102.584   msh />leakcam: start: t 710 ms, heap +0 B
+  102.584   leakcam: version 0.6+g3c58c78-dirty-202611122158
+  102.584   leakcam: battery 4372 mV: t 712 ms, heap +0 B
+  102.584   60*D6
+  102.584   60*D6: command not found.
+  102.584   msh />leakcam: clock: 1794521360 from the BL616 (was -58831760 s off)
+  102.584   usb disconnect
+  102.584   usb disconnect
+  102.584   leakcam: WAKE usb: t 1015 ms, heap +0 B
+  102.584   leakcam: relay: USB relay on /dev/ttyGS0: t 1016 ms, heap +0 B
+  102.584   leakcam: job: check: t 1021 ms, heap +0 B
+  102.584   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+  102.584   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+  102.584   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
+  102.584   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)

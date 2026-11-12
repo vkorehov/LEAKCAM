@@ -17,6 +17,7 @@
  *    start and sent with every frame as the attribute ;b=<mV> (k230_link.h): the BL616 keeps it for the phone and the
  *    server (DESIGN.md 5.3.9). On USB power it reads the charger's output rail, not the cell: the BL616 knows the power
  *    (PGOOD) and does not keep that one;
+ *  - the pictures for the server (media.c, its own thread): the BL616's SHOOT, the relay sends its WIFI and SENT;
  *  - the USB relay (its own thread; the only user of the link after the WAKE: it sends the job's DONE and hands it
  *    the BL616's CHECK):
  *    USB-C 1 is the K230's USB0, the CDC ACM device /dev/ttyGS0 (CherryUSB). Every line the phone
@@ -45,9 +46,11 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "focus.h"
 #include "job.h"
 #include "k230_link.h"
 #include "leakcam.h"
+#include "media.h"
 #include "leakcam_version.h"   /* written by install.sh: firmware/VERSION + the commit */
 #include "sys_stat.h"
 
@@ -375,10 +378,42 @@ static void status_tick(bool now_asked)
         logmsg("STATUS not answered");
 }
 
-/* the cable relay: every line both ways, whatever they mean (DESIGN.md 5.3.8) */
+static int usb = -1;
+static pthread_mutex_t usb_mu = PTHREAD_MUTEX_INITIALIZER;
+static bool authed;                     /* the phone gave the board's PIN (the BL616 said OK to its PIN line) */
+static bool pin_asked;                  /* a PIN line went to the BL616: its next answer decides authed */
+
+/* the cable is non-blocking: a full CDC buffer (the focus preview's burst) waits for room, up to 500 ms in all; no
+ * phone listening drops the rest */
+bool usb_line(const char *s)
+{
+    char b[LINK_MAX_LINE + 2];
+    int n = snprintf(b, sizeof(b), "%s\n", s);
+    if (n <= 0 || n >= (int)sizeof(b) || usb < 0)
+        return false;
+    pthread_mutex_lock(&usb_mu);
+    uint64_t end = now_ms() + 500;
+    int done = 0;
+    while (done < n) {
+        ssize_t k = write(usb, b + done, (size_t)(n - done));
+        if (k > 0) {
+            done += (int)k;
+            continue;
+        }
+        if ((k < 0 && errno != EAGAIN && errno != EWOULDBLOCK) || now_ms() >= end)
+            break;
+        struct pollfd p = { .fd = usb, .events = POLLOUT };
+        (void)poll(&p, 1, 20);
+    }
+    pthread_mutex_unlock(&usb_mu);
+    return done == n;
+}
+
+/* the cable relay: every line both ways, whatever they mean (DESIGN.md 5.3.8), except the focus session's FOCUS lines:
+ * the K230's own (focus.c), only after the phone gave the board's PIN (the preview is the camera's picture) */
 static void usb_relay(void)
 {
-    int usb = open(USB_DEV, O_RDWR | O_NONBLOCK);
+    usb = open(USB_DEV, O_RDWR | O_NONBLOCK);
     if (usb < 0) {
         fatal("open %s: %s", USB_DEV, strerror(errno));
     }
@@ -396,16 +431,24 @@ static void usb_relay(void)
                 status_tick(true);
             else if (!strcmp(f.cmd, "CHECK"))   /* a leak check now (a wet probe, the RTC) */
                 job_request(f.arg);
+            else if (!strcmp(f.cmd, "SHOOT"))   /* pictures for the server (media.c) */
+                media_request(f.arg);
             else if (!strcmp(f.cmd, "USB")) {
-                size_t n = strlen(f.arg);
-                f.arg[n++] = '\n';
-                if (write(usb, f.arg, n) != (ssize_t)n)
+                if (pin_asked) {                /* the PIN's answer: OK, ERR PIN, ERR LOCKED */
+                    authed = !strcmp(f.arg, "OK");
+                    pin_asked = false;
+                }
+                if (!usb_line(f.arg))
                     logmsg("relay: USB write short");   /* no phone listening: the line is dropped */
             }
         }
-        char done[32];
+        char done[48];
         if (job_result(done, sizeof(done)) && link_cmd("DONE", done) != LINK_ACKED)
             logmsg("DONE not answered");
+        if (media_wifi_wanted())                /* the pictures' upload: the BL616's Wi-Fi bridge for this session */
+            media_wifi_answer(link_cmd("WIFI", NULL) == LINK_ACKED);
+        if (media_result(done, sizeof(done)) && link_cmd("SENT", done) != LINK_ACKED)
+            logmsg("SENT not answered");
         struct pollfd p[2] = { { .fd = usb, .events = POLLIN }, { .fd = link_fd, .events = POLLIN } };
         if (poll(p, 2, 100) <= 0 || !(p[0].revents & POLLIN))
             continue;
@@ -424,9 +467,16 @@ static void usb_relay(void)
             }
             line[len] = 0;
             if (too_long)
-                (void)!write(usb, "ERR LONG\n", 9);
+                usb_line("ERR LONG");
+            else if (!strncmp(line, "FOCUS", 5)) {
+                const char *a = authed ? focus_line(line) : "ERR AUTH";
+                if (a)
+                    usb_line(a);
+            }
             else if (len && link_cmd("USB", line) != LINK_ACKED)
                 fatal("relay: the BL616 did not take a line (link down)");
+            else if (!strncmp(line, "PIN ", 4))
+                pin_asked = true;
             if (len && ++lines % 16 == 0) {
                 snprintf(what, sizeof(what), "relay: %u lines", lines);
                 step(what);
@@ -479,6 +529,7 @@ int main(void)
     pthread_t relay;
     pthread_create(&relay, NULL, relay_service, NULL);
     job_start();                                /* the leak detection, in parallel with the relay */
+    media_start();                              /* the pictures for the server, when the BL616 sends SHOOT */
     pthread_join(relay, NULL);                  /* on until the BL616 cuts the power */
     heartbeat_run = 0;                          /* the BL616 cuts the power 2 s after the last edge */
     pthread_join(hb, NULL);

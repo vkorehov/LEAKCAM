@@ -1,14 +1,14 @@
-05:12:34 test137-k230-leak-job: 0 metric rows MISSING: none
-05:12:39 CHECK pass no history: DONE new,new new,new in 2918 ms
-05:12:39 CHECK pass no history: both histories written (76800 B) 
-05:12:42 CHECK FAIL same scene: same,same changed,same in 2813 ms
-05:12:45 CHECK pass light only on cam0: same,same (no change for the light alone) same,same in 2813 ms
-05:12:48 CHECK FAIL an object on cam0: changed,same changed,changed in 2814 ms
-05:12:48 CHECK pass an object on cam0: the server has job=changed,same within 30 s (a check-in at once) 3 s
-05:12:51 CHECK pass an object on cam1: same,changed same,changed in 2817 ms
-05:12:54 CHECK FAIL cam1 same again: same,same (the history was kept on the change) changed,same in 2817 ms
-05:14:22 CHECK FAIL 8 checks: all same,same 
-05:14:22 CHECK pass every capture lit: each camera's mean brightness above 0 (the LEDs on for the shot) 3 captures, means [(47, 76), (59, 77), (46, 76)]...
-05:14:22 CHECK FAIL 8 checks: the K230 program's heap does not grow heap + [942080, 942080, 942080] B
-05:14:22 CHECK pass 8 checks: the BL616's free heap does not shrink (169804, 140916) -> (170540, 140916)
-05:14:23 test137-k230-leak-job: FAIL; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+10:42:10 test137-k230-leak-job: 0 metric rows MISSING: none
+10:42:13 CHECK pass no history: DONE new,new new,new in 312 ms
+10:42:13 CHECK pass no history: both histories written (76800 B) 
+10:42:13 CHECK pass same scene: same,same same,same in 211 ms
+10:42:13 CHECK pass light only on cam0: same,same (no change for the light alone) same,same in 217 ms
+10:42:13 CHECK pass an object on cam0: changed,same changed,same in 214 ms
+10:42:18 CHECK pass an object on cam0: the server has job=changed,same within 30 s (a check-in at once) 4 s
+10:42:18 CHECK pass an object on cam1: same,changed same,changed in 319 ms
+10:42:19 CHECK pass cam1 same again: same,same (the history was kept on the change) same,same in 211 ms
+10:42:34 CHECK pass 8 checks: all same,same 
+10:42:34 CHECK pass every capture lit: each camera's mean brightness above 0 (the LEDs on for the shot) 9 captures, means [(97, 83), (97, 83), (97, 83), (97, 83)]...
+10:42:34 CHECK pass 8 checks: the K230 program's heap does not grow heap + [909312, 909312, 909312, 909312, 909312, 909312, 909312, 909312] B
+10:42:34 CHECK pass 8 checks: the BL616's free heap does not shrink (145168, 132808) -> (156032, 126424)
+10:42:36 test137-k230-leak-job: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

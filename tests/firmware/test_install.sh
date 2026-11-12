@@ -18,6 +18,12 @@ SDK=${1:-$HOME/k230_rtos_sdk}
 L=$(cd "$(dirname "$0")/../.." && pwd)
 A=$SDK/src/applications
 "$L/firmware/k230_board/install.sh" "$SDK"
+# the test programs (cam_shot, leakcam_stream, vicap_cap.c here) run the 1280x960 binned mode: its ISP set too, beside
+# the product's native one (install.sh keeps 2592x1944 only, 2026-11-12)
+ISPMK=$SDK/src/rtsmart/mpp/userapps/src/sensor/Makefile
+grep -q 'LEAKCAM test image: ov5647 1280x960' "$ISPMK" || printf '%s\n' \
+    '# LEAKCAM test image: ov5647 1280x960 too (the test programs)' \
+    'ISP_SENSOR_CONFIG_PATTERNS += $(if $(filter y,$(CONFIG_MPP_ENABLE_SENSOR_OV5647)),ov5647-1280x960*)' >> "$ISPMK"
 # the test programs' agent is leakcam_agent, not the product's leakcam (install.sh sets that); the USB device and its
 # glue fix come with install.sh (product: DESIGN.md 5.3.8)
 sed -i 's|^CONFIG_RTT_AUTO_EXEC_CMD=.*|CONFIG_RTT_AUTO_EXEC_CMD="/sdcard/app/leakcam_agent \&"|' "$SDK/configs/k230d_rtos_leakcam_defconfig"

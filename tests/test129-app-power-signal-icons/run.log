@@ -1,15 +1,14 @@
-04:04:26 test129-app-power-signal-icons: 4 metric rows MISSING: each change -> its icon, Current idle / during (min / avg / peak), Power, energy per operation, Temperature die / board (start / peak / end)
-04:04:46 BL616 port missing: the VM's USB controller reset (xhci unbind/bind)
-04:04:51 CHECK pass no network: the setup firmware on USB 19 s
-04:04:56 CHECK pass USB power: the plug icon 1 s, row ('plug', 4, -38)
-04:04:56 CHECK pass signal as bars, matching the dB value 4 bars at -38 dBm
-04:05:02 CHECK pass long press on the bars: the dB value -29 dBm
-04:05:02 phone: relay 0.2 s (http)
-04:05:02 relay box: unplugged (unplug USB-C 1 (the cell stays in))
-04:05:15 CHECK pass on battery: the battery icon 12 s, row ('battery', 4, -30)
-04:05:15 phone: relay 0.4 s (http)
-04:05:15 relay box: plugged (plug USB-C 1 back in)
-04:05:23 sample after the checks {'board': None, 'bl_mem': (131032, 117836, 121896, 103, 76824, 18, 0)}
-04:05:35 phone: app 11.6 s
-04:05:45 CHECK pass end: the real network set again, the full firmware full
-04:05:46 test129-app-power-signal-icons: PASS; filled 0: -; still MISSING 4: each change -> its icon, Current idle / during (min / avg / peak), Power, energy per operation, Temperature die / board (start / peak / end); run in HISTORY.md - README Status/Result by hand
+10:02:11 test129-app-power-signal-icons: 4 metric rows MISSING: each change -> its icon, Current idle / during (min / avg / peak), Power, energy per operation, Temperature die / board (start / peak / end)
+10:02:21 CHECK pass no network: the setup firmware on USB 5 s
+10:02:25 CHECK pass USB power: the plug icon 1 s, row ('plug', 4, -33)
+10:02:25 CHECK pass signal as bars, matching the dB value 4 bars at -33 dBm
+10:02:31 CHECK pass long press on the bars: the dB value -32 dBm
+10:02:31 phone: relay 0.2 s (http)
+10:02:31 relay box: unplugged (unplug USB-C 1 (the cell stays in))
+10:02:34 CHECK pass on battery: the battery icon 3 s, row ('battery', 4, -36)
+10:02:35 phone: relay 0.3 s (http)
+10:02:35 relay box: plugged (plug USB-C 1 back in)
+10:02:42 sample after the checks {'board': None, 'bl_mem': (130888, 117676, 121752, 103, 76824, 18, 0)}
+10:02:57 phone: app 14.3 s
+10:03:04 CHECK pass end: the real network set again, the full firmware full
+10:03:06 test129-app-power-signal-icons: PASS; filled 0: -; still MISSING 4: each change -> its icon, Current idle / during (min / avg / peak), Power, energy per operation, Temperature die / board (start / peak / end); run in HISTORY.md - README Status/Result by hand

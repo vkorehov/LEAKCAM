@@ -12,6 +12,7 @@
 #include "shell.h"
 
 #include "board_pins.h"
+#include "capture.h"
 #include "hbn_sleep.h"
 #include "k230_session.h"
 #include "metrics.h"
@@ -34,7 +35,7 @@ static volatile uint32_t check_s = CHECK_S;
 static volatile bool busy;
 static uint64_t busy_since;                /* core timer ms: within this boot (a check never spans a sleep) */
 static unsigned checks, wet_edges;
-static char last[24];
+static char last[48];                    /* "unfocused,unfocused,100,100" and room */
 static int armed_mv;                       /* the comparator's reference as armed (`leak`, tests/test142) */
 
 bool leak_check_wet(void)
@@ -94,8 +95,10 @@ void leak_check_done(const struct link_msg *m)
     busy = false;
     if (changed || w)
         presence_now();                          /* the server sees it at once, with the job in the check-in */
-    if (!usb_present())
-        k230_session_stop("leak check done");   /* on battery the K230 only for the check (DESIGN.md 5.3.12) */
+    /* on battery the K230 only for the check (DESIGN.md 5.3.12); kept on for pictures being taken, and after a change
+     * or a wet probe for the check-in's answer, whose leak record it takes at once (capture.c ends it otherwise) */
+    if (!usb_present() && !capture_busy() && !changed && !w)
+        k230_session_stop("leak check done");
 }
 
 bool leak_check_busy(void)

@@ -24,10 +24,10 @@
 #include "rtc_clock.h"
 #include "wifi_check.h"
 
-#define MAGIC 0x4d455436u                    /* "MET6": the record is set (2: the leak check, 3: the intervals,
+#define MAGIC 0x4d455437u                    /* "MET7": the record is set (2: the leak check, 3: the intervals,
                                               * 4: the Wi-Fi change's result, 5: the room reading, 6: RTC ages and
-                                              * HBN wakes) */
-#define JOB_CAP 24                           /* "changed,changed" and room */
+                                              * HBN wakes, 7: the job's focus fields) */
+#define JOB_CAP 32                           /* "unfocused,unfocused,999,999" (28; HBN RAM is full: 4 KB) */
 #define K230_VER_CAP 40                      /* "0.6+g4ec6b02-dirty-202611061530" and room */
 
 /* at a fixed place in both firmwares: .hbn_noinit sections are sorted by name (bl616_leakcam.ld.in); lost only with

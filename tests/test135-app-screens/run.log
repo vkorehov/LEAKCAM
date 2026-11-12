@@ -1,45 +1,45 @@
-03:40:57 test135-app-screens: 0 metric rows MISSING: none
-03:41:03 phone 86379598916c768b, fake board 0263F9332023, real board 7C3E8262B149
-03:41:04 CHECK pass 1: no boards -> the setup screen at once 0.9 s
-03:41:07 CHECK pass 1: title LEAKCAM setup 
-03:41:07 CHECK pass 1: the status block's spinner line says it looks Looking for LEAKCAMs nearby…
-03:41:07 CHECK pass 1: the Wi-Fi fields blank Wi-Fi name (SSID)
-03:41:08 CHECK pass 1: Bluetooth scan and cable watch on 
-03:41:18 CHECK pass 1: the menu holds only Setup 
-03:41:20 CHECK pass 2: with a board -> LEAKCAMs 0.9 s
-03:41:24 CHECK pass 2: title LEAKCAMs 
-03:41:24 CHECK pass 2: the row shows serial · SSID 
-03:41:24 CHECK pass 2: the status text says the next check-in 0263F9332023: online, Wi-Fi "TESTNET" · next check-in about 03:42
-03:41:27 CHECK pass 2: no Bluetooth scan, no cable watch on LEAKCAMs 
-03:41:38 CHECK pass 2: the menu holds LEAKCAMs and Setup 
-03:41:50 CHECK pass 3: Setup skips a board set up from this phone (not conclusive: the board did not advertise in step 1) 
-03:42:05 CHECK pass 4: Change Wi-Fi opens its own screen 
-03:42:09 CHECK pass 4: title Change Wi-Fi 
-03:42:09 CHECK pass 4: the SSID filled in TESTNET
-03:42:09 CHECK pass 4: the password as dots ••••••••
-03:42:09 CHECK pass 4: no search on Change Wi-Fi 
-03:42:16 CHECK pass 4: the same network without its password refused The LEAKCAM keeps its password hidden (••••••••): type it to save this network again.
-03:42:31 CHECK pass 4: sent through the server, back on LEAKCAMs 4.0 s
-03:42:34 CHECK pass 4: the note names the next check-in 0263F9332023 takes "TESTNET2" at its next check-in (any moment now). A notification comes if it cannot join it.
-0263F9332023: online, Wi-Fi "TESTNET" · next check-in any moment now
-03:42:45 CHECK pass 5: the pending list in order: Wi-Fi, photo, video Waiting for the next check-in (any moment now):
-1. Change Wi-Fi to "TESTNET2", asked 03:42
-2. Take a photo, asked 03:42
-3. Take a 15 s video, asked 03:42
-03:42:45 CHECK pass 5: photo and video buttons off while they wait 
-03:42:45 CHECK pass 5: the action row did not move with the longer status [53, 405, 477, 531] -> [53, 405, 477, 531]
-03:42:45 CHECK pass 5: the server queued one of each ['wifi', 'photo', 'video']
-03:42:45 CHECK pass 5: one per check-in: Wi-Fi, then the photo, then the video ['checkin', 'humid', 'leakcheck', 'mode', 'probe_mv', 'stream', 'wifi'] / {'ids': ['0263F9332023-1794447765-p1'], 'kind': 'photo'} / {'ids': ['0263F9332023-1794447765-v1'], 'kind': 'video', 'secs': 15}
-03:42:47 CHECK pass 6: a wet probe -> the alert 0.9 s
-03:42:47 CHECK pass 6: the alert names the probe, no signal Water on the probe: its water sensor is wet.
-03:42
-LEAKCAM 0263F9332023
-03:42:48 CHECK pass 6: the first picture embedded in the alert 0.8 s
-03:42:53 CHECK pass 7: Not a leak clears it at the server 4.4 s
-03:42:56 CHECK pass 7: the note says it watches again from its next check-in Marked as not a leak: 0263F9332023 watches again from its next check-in (about 03:43).
-0263F9332023: online, Wi-Fi "TESTNET" · next check-in about 03:43
-03:42:58 CHECK pass 6: the camera inference -> Possible leak, inference 
-03:43:03 CHECK pass 8: the photos and videos listed as links 5
-03:43:04 CHECK pass 8: a link opens the file alone in the phone's viewer com.sec.android.gallery3d/.app.GalleryActivity}
-03:43:18 CHECK pass 9: the last board deleted -> the setup screen 0.2 s
-03:43:20 test135-app-screens: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+09:26:46 test135-app-screens: 0 metric rows MISSING: none
+09:27:16 phone fab2f4d6bde9a8d9, fake board 02F851D641A8, real board 7C3E8262B149
+09:27:18 CHECK pass 1: no boards -> the setup screen at once 1.8 s
+09:27:21 CHECK pass 1: title LEAKCAM setup 
+09:27:21 CHECK pass 1: the status block's spinner line says it looks Looking for LEAKCAMs nearby…
+09:27:21 CHECK pass 1: the Wi-Fi fields blank Wi-Fi name (SSID)
+09:27:21 CHECK pass 1: Bluetooth scan and cable watch on 
+09:27:31 CHECK pass 1: the menu holds only Setup 
+09:27:33 CHECK pass 2: with a board -> LEAKCAMs 0.9 s
+09:27:37 CHECK pass 2: title LEAKCAMs 
+09:27:37 CHECK pass 2: the row shows serial · SSID 
+09:27:37 CHECK pass 2: the status text says the next check-in 02F851D641A8: online, Wi-Fi "TESTNET" · next check-in about 09:28
+09:27:40 CHECK pass 2: no Bluetooth scan, no cable watch on LEAKCAMs 
+09:27:51 CHECK pass 2: the menu holds LEAKCAMs and Setup 
+09:28:03 CHECK pass 3: Setup skips a board set up from this phone (not conclusive: the board did not advertise in step 1) 
+09:28:18 CHECK pass 4: Change Wi-Fi opens its own screen 
+09:28:22 CHECK pass 4: title Change Wi-Fi 
+09:28:22 CHECK pass 4: the SSID filled in TESTNET
+09:28:22 CHECK pass 4: the password as dots ••••••••
+09:28:22 CHECK pass 4: no search on Change Wi-Fi 
+09:28:29 CHECK pass 4: the same network without its password refused The LEAKCAM keeps its password hidden (••••••••): type it to save this network again.
+09:28:42 CHECK pass 4: sent through the server, back on LEAKCAMs 3.7 s
+09:28:45 CHECK pass 4: the note names the next check-in 02F851D641A8 takes "TESTNET2" at its next check-in (any moment now). A notification comes if it cannot join it.
+02F851D641A8: online, Wi-Fi "TESTNET" · next check-in any moment now
+09:28:56 CHECK pass 5: the pending list in order: Wi-Fi, photo, video Waiting for the next check-in (any moment now):
+1. Change Wi-Fi to "TESTNET2", asked 09:28
+2. Take a photo, asked 09:28
+3. Take a 15 s video, asked 09:28
+09:28:56 CHECK pass 5: photo and video buttons off while they wait 
+09:28:56 CHECK pass 5: the action row did not move with the longer status [53, 405, 477, 531] -> [53, 405, 477, 531]
+09:28:56 CHECK pass 5: the server queued one of each ['wifi', 'photo', 'video']
+09:28:56 CHECK pass 5: one per check-in: Wi-Fi, then the photo, then the video ['checkin', 'humid', 'leakcheck', 'mode', 'probe_mv', 'stream', 'wifi'] / {'cams': 2, 'ids': ['02F851D641A8-1794468536-p1', '02F851D641A8-1794468536-p2'], 'kind': 'photo', 'more': 1} / {'cams': 2, 'ids': ['02F851D641A8-1794468536-v1', '02F851D641A8-1794468536-v2'], 'kind': 'video', 'more': 0, 'secs': 15}
+09:28:57 CHECK pass 6: a wet probe -> the alert 0.7 s
+09:28:58 CHECK pass 6: the alert names the probe, no signal Water on the probe: its water sensor is wet.
+09:28
+LEAKCAM 02F851D641A8
+09:28:59 CHECK pass 6: the first picture embedded in the alert 0.8 s
+09:29:03 CHECK pass 7: Not a leak clears it at the server 3.5 s
+09:29:06 CHECK pass 7: the note says it watches again from its next check-in Marked as not a leak: 02F851D641A8 watches again from its next check-in (about 09:29).
+02F851D641A8: online, Wi-Fi "TESTNET" · next check-in about 09:29
+09:29:08 CHECK pass 6: the camera inference -> Possible leak, inference 
+09:29:14 CHECK pass 8: the photos and videos listed as links 6
+09:29:15 CHECK pass 8: a link opens the file alone in the phone's viewer com.sec.android.gallery3d/.app.GalleryActivity}
+09:29:28 CHECK pass 9: the last board deleted -> the setup screen 0.1 s
+09:29:32 test135-app-screens: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

@@ -11,10 +11,12 @@
 The K230 console interleaves kernel log lines with shell output character by character: judge results by counters
 or exact checksums, not by long text matches (tests/test100).
 """
+import atexit
 import os
 import re
 import select
 import subprocess
+import sys
 import termios
 import time
 
@@ -172,6 +174,23 @@ def media_quiet(fd, secs=40):
     while time.time() - t < secs and "leakcam_wake" in cmd(fd, "ps", 2, prompt):
         time.sleep(0.5)
     return time.time() - t
+
+
+def _bench_clean():
+    """at the end of every process that used the board through these helpers (tests, and the ad-hoc bench scripts:
+    2026-11-12, leak checks and photo uploads from a script left a leak alert and a media notification on the phone,
+    the harness's finish() never ran): tools/test-runner/phone.py phone_clean()"""
+    if not _bl_seen[0]:
+        return                                   # the board was never used
+    try:
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "test-runner"))
+        from phone import phone_clean
+        phone_clean()
+    except Exception as e:                       # noqa: BLE001 - a cleanup never fails the run
+        print(f"bench clean: {e!r}", flush=True)
+
+
+atexit.register(_bench_clean)
 
 
 def wifi_credentials():

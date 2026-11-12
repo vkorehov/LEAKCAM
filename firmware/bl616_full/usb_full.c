@@ -13,6 +13,7 @@
 #include "device_id.h"
 #include "k230_power.h"
 #include "k230_session.h"
+#include "capture.h"
 #include "climate.h"
 #include "leak_check.h"
 #include "presence.h"
@@ -42,6 +43,7 @@
 static bool authed;
 static unsigned wrong;
 static volatile bool setup_asked;
+static volatile bool again_asked;          /* usb_full_again(): the next end is not a failure, no hold */
 
 static void answer(const char *s)
 {
@@ -64,6 +66,8 @@ void usb_full_cmd(const struct link_msg *m)
         leak_check_done(m);
         return;
     }
+    if (capture_cmd(m))                  /* WIFI, SENT: the pictures for the server */
+        return;
     if (strcmp(m->cmd, "USB"))
         return;
     char line[LINK_MAX_LINE];
@@ -117,8 +121,10 @@ static void watch_task(void *arg)
         if (usb && !was_usb)
             presence_now();                                  /* the plug: charging at the server and the app at once */
         was_usb = usb;
-        if (was_on && !on)
-            retry_at = xTaskGetTickCount() + pdMS_TO_TICKS(RETRY_MS);
+        if (was_on && !on) {
+            retry_at = again_asked ? 0 : xTaskGetTickCount() + pdMS_TO_TICKS(RETRY_MS);
+            again_asked = false;
+        }
         was_on = on;
         if (setup_asked) {
             setup_asked = false;
@@ -135,8 +141,8 @@ static void watch_task(void *arg)
             climate_heat();                                  /* the charger's heat ends: the cool window starts */
             bool got = k230_session_active() && k230_session_battery(BATTERY_MS);   /* the cell, read by the K230 up */
             printf("usb_full: USB unplugged: battery %d mV %s\r\n", battery_mv(), got ? "read now" : "not read");
-            if (leak_check_busy()) {
-                printf("usb_full: a leak check runs: the K230 off after its DONE\r\n");
+            if (leak_check_busy() || capture_busy()) {
+                printf("usb_full: a leak check or a capture runs: the K230 off after its DONE / SENT\r\n");
             } else {
                 k230_session_stop("USB unplugged");
                 while (k230_session_active())                /* the stop is the session task's: asked once */
@@ -148,6 +154,11 @@ static void watch_task(void *arg)
         }
         vTaskDelay(pdMS_TO_TICKS(POLL_MS));
     }
+}
+
+void usb_full_again(void)
+{
+    again_asked = true;
 }
 
 void usb_full_start(void)

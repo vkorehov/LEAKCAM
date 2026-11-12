@@ -1,35 +1,34 @@
-04:07:48 test113-usb-setup-from-phone: 0 metric rows MISSING: none
-04:07:54 board: network erased
-04:08:02 CHECK pass no network stored: the setup firmware runs setup
-04:08:08 phone: relay 2.3 s (http)
-04:08:08 relay box: phone (USB-C 1: take the cable off the bench, plug the phone in with a USB-C cable (detected on the phone))
-04:08:11 relay box: the bench console back 1.9 s after the plug
-04:08:15 CHECK pass the plug opens the app's setup screen on this board, no network 2.22 s after the plug
-04:08:27 phone: app 12.2 s
-04:08:27 app:  Enter the Wi-Fi network 7C3E8262B149 should use (2.4 GHz; empty passwo | The LEAKCAM is now joining "<network>" to check it (up to a minute). | The router refused the password for "<network>" (code 33). Check it and try a
-04:08:27 CHECK pass a wrong password is named over the cable The router refused the password for "<network>" (code 33). Check it
-04:08:30 CHECK pass a wrong password stores nothing: still the setup firmware setup
-04:08:30 CHECK pass a failed setup leaves the board off this phone's list (Setup lists it for the retry) 
-04:08:40 phone: app 9.9 s
-04:08:40 app:  Enter the Wi-Fi network 7C3E8262B149 should use (2.4 GHz; empty passwo | The LEAKCAM is now joining "<network>" to check it (up to a minute). | Connected to the router. Checking that the internet can be reached… | Done. 7C3E8262B149 joined "<network>". 7C3E8262B149: online, Wi-Fi "<network>" · nex
-04:08:40 CHECK pass the app used the cable (no Bluetooth pairing) 4 screens
-04:08:40 CHECK pass the app says Done Done. 7C3E8262B149 joined "<network>".
+10:04:54 test113-usb-setup-from-phone: 0 metric rows MISSING: none
+10:04:59 board: network erased
+10:05:04 CHECK pass no network stored: the setup firmware runs setup
+10:05:10 phone: relay 2.3 s (http)
+10:05:10 relay box: phone (USB-C 1: take the cable off the bench, plug the phone in with a USB-C cable (detected on the phone))
+10:05:14 relay box: the bench console back 1.9 s after the plug
+10:05:18 CHECK pass the plug opens the app's setup screen on this board, no network 2.08 s after the plug
+10:05:30 phone: app 12.7 s
+10:05:30 app:  Enter the Wi-Fi network 7C3E8262B149 should use (2.4 GHz; empty passwo | The LEAKCAM is now joining "<network>" to check it (up to a minute). | The router refused the password for "<network>" (code 33). Check it and try a
+10:05:30 CHECK pass a wrong password is named over the cable The router refused the password for "<network>" (code 33). Check it
+10:05:33 CHECK pass a wrong password stores nothing: still the setup firmware setup
+10:05:33 CHECK pass a failed setup leaves the board off this phone's list (Setup lists it for the retry) 
+10:05:42 phone: app 9.7 s
+10:05:42 app:  Enter the Wi-Fi network 7C3E8262B149 should use (2.4 GHz; empty passwo | The LEAKCAM is now joining "<network>" to check it (up to a minute). | Connected to the router. Checking that the internet can be reached… | Done. 7C3E8262B149 joined "<network>". 7C3E8262B149: online, Wi-Fi "<network>" · nex
+10:05:42 CHECK pass the app used the cable (no Bluetooth pairing) 4 screens
+10:05:42 CHECK pass the app says Done Done. 7C3E8262B149 joined "<network>".
 7C3E8262B149: online, Wi-Fi 
-04:08:47 CHECK pass the network stored on the board 
-04:08:47 CHECK pass the board back on the full firmware full
-04:08:47 CHECK pass the server sees the board online 0 s
-04:08:47 board: network erased again, the phone stays plugged
-04:08:51 CHECK pass erased with the phone in: the setup screen with the board again 2.4 s
-04:08:59 phone: app 7.6 s
-04:09:05 phone: the cable 'pulled' (port to sink/device) during the join check
-04:09:05 phone: the cable back (port to source/host)
-04:09:05 app:  Enter the Wi-Fi network 7C3E8262B149 should use (2.4 GHz; empty passwo | Enter your 2.4 GHz Wi-Fi name and password, then tap Pair, check and s
-04:09:05 CHECK pass the cable pulled during the check: the app does not claim Done error shown, no Done
-04:09:08 CHECK pass the board finished the check alone: network stored, online full, 3 s
-04:09:19 CHECK pass a set-up board on the cable: the plug opens Setup, the board answers 0.4 s
-04:09:23 CHECK pass a set-up board on the cable: Setup does not list it 
-04:09:24 phone: relay 1.3 s (http)
-04:09:24 relay box: bench (USB-C 1: take the phone off, plug the bench cable back in)
-04:09:35 BL616 port missing: the VM's USB controller reset (xhci unbind/bind)
-04:09:44 sample after the setup {'board': None, 'bl_mem': (197764, 157140, 187292, 26, 58944, 11, 0)}
-04:09:46 test113-usb-setup-from-phone: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+10:05:50 CHECK pass the network stored on the board 
+10:05:50 CHECK pass the board back on the full firmware full
+10:05:50 CHECK pass the server sees the board online 0 s
+10:05:50 board: network erased again, the phone stays plugged
+10:05:54 CHECK pass erased with the phone in: the setup screen with the board again 2.5 s
+10:06:02 phone: app 7.9 s
+10:06:07 phone: the cable 'pulled' (port to sink/device) during the join check
+10:06:07 phone: the cable back (port to source/host)
+10:06:07 app:  Enter the Wi-Fi network 7C3E8262B149 should use (2.4 GHz; empty passwo | Enter your 2.4 GHz Wi-Fi name and password, then tap Pair, check and s
+10:06:08 CHECK pass the cable pulled during the check: the app does not claim Done error shown, no Done
+10:06:11 CHECK pass the board finished the check alone: network stored, online full, 3 s
+10:06:22 CHECK pass a set-up board on the cable: the plug opens Setup, the board answers 0.3 s
+10:06:25 CHECK pass a set-up board on the cable: Setup does not list it 
+10:06:27 phone: relay 1.3 s (http)
+10:06:27 relay box: bench (USB-C 1: take the phone off, plug the bench cable back in)
+10:06:34 sample after the setup {'board': None, 'bl_mem': (197540, 156916, 187068, 26, 58944, 11, 0)}
+10:06:37 test113-usb-setup-from-phone: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

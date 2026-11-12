@@ -19,7 +19,9 @@ import java.net.URL
 
 /**
  * The leak panel's pictures and video (DESIGN.md 5.3.13): each by the ID the push announced, downloaded from the server
- * (GET /v1/media/<id>) into the phone's gallery (Pictures/LEAKCAM, Movies/LEAKCAM, the ID as its name: saved once) - the
+ * (GET /v1/media/<id>) into the phone's gallery (Pictures/LEAKCAM, Movies/LEAKCAM, saved once: the ID kept in the entry's
+ * description; a readable name with the moment it was taken, and that moment as the gallery's date taken: user
+ * 2026-11-12, "timestamp in picture naming, also in metadata", "user readable, not unix") - the
  * phone's own viewer and player show them, zoom, share and back them up (user 2026-11-07: "why not store in gallery?").
  * The leak panel shows one preview (the first file there) with "+N more": a tap on the preview opens that file alone
  * (view()), on "+N more" the gallery (open()). A file not on the server yet is asked for again every 5 s while the
@@ -52,16 +54,31 @@ class Gallery(private val context: Context) {
     private fun collection(video: Boolean): Uri =
         if (video) MediaStore.Video.Media.EXTERNAL_CONTENT_URI else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
+    /** the name before 2026-11-12: the ID itself (files saved then are still found by it) */
     private fun name(id: String, video: Boolean) = id + if (video) ".mp4" else ".jpg"
+
+    /** the readable name: LEAKCAM_<serial>_<yyyy-MM-dd_HH-mm-ss, phone time>_cam<N>_<shot>.jpg|mp4. The ID's end gives
+     *  camera and shot (server mediaIDs: picture n is camera (n-1) % 2, its shot (n-1) / 2 + 1; video n is camera n-1) */
+    private fun readableName(id: String, video: Boolean, takenMs: Long): String {
+        val n = id.substringAfterLast('-').drop(1).toIntOrNull() ?: 1
+        val cam = if (video) n - 1 else (n - 1) % CAMS
+        val shot = if (video) 1 else (n - 1) / CAMS + 1
+        val at = java.text.SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", java.util.Locale.US).format(java.util.Date(takenMs))
+        return "LEAKCAM_${id.take(12)}_${at}_cam${cam}_$shot" + if (video) ".mp4" else ".jpg"
+    }
 
     /** the gallery's copy of this ID if it was saved before, no download */
     fun saved(id: String): Uri? = saved(id, id.substringAfterLast('-').startsWith("v"))
 
-    /** the gallery's copy of this ID, if it was saved before (one copy per ID) */
-    private fun saved(id: String, video: Boolean): Uri? =
-        context.contentResolver.query(collection(video), arrayOf(MediaStore.MediaColumns._ID),
-                                       "${MediaStore.MediaColumns.DISPLAY_NAME} = ?", arrayOf(name(id, video)), null)
+    /** the gallery's copy of this ID, if it was saved before (one copy per ID): by the ID in its description, or a
+     *  file saved before 2026-11-12 by its old name, the ID */
+    private fun saved(id: String, video: Boolean): Uri? {
+        val desc = if (video) MediaStore.Video.VideoColumns.DESCRIPTION else MediaStore.Images.ImageColumns.DESCRIPTION
+        return context.contentResolver.query(collection(video), arrayOf(MediaStore.MediaColumns._ID),
+                                             "$desc = ? OR ${MediaStore.MediaColumns.DISPLAY_NAME} = ?",
+                                             arrayOf(id, name(id, video)), null)
             ?.use { c -> if (c.moveToFirst()) android.content.ContentUris.withAppendedId(collection(video), c.getLong(0)) else null }
+    }
 
     /** the file from the server straight into the gallery's LEAKCAM album; null while the server has none (404) */
     private fun download(id: String, video: Boolean): Uri? {
@@ -75,8 +92,13 @@ class Gallery(private val context: Context) {
                 c.disconnect()
                 return null
             }
+            // when it was taken: the board's capture time (the server's X-Taken), else the ID's (the request's) second
+            val taken = c.getHeaderField("X-Taken")?.toLongOrNull()
+                ?: (id.split('-').getOrNull(1)?.toLongOrNull()?.times(1000) ?: System.currentTimeMillis())
             val values = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, name(id, video))
+                put(MediaStore.MediaColumns.DISPLAY_NAME, readableName(id, video, taken))
+                put(if (video) MediaStore.Video.VideoColumns.DESCRIPTION else MediaStore.Images.ImageColumns.DESCRIPTION, id)
+                put(MediaStore.MediaColumns.DATE_TAKEN, taken)
                 put(MediaStore.MediaColumns.MIME_TYPE, if (video) "video/mp4" else "image/jpeg")
                 put(MediaStore.MediaColumns.RELATIVE_PATH,
                     (if (video) Environment.DIRECTORY_MOVIES else Environment.DIRECTORY_PICTURES) + "/LEAKCAM")
@@ -128,5 +150,6 @@ class Gallery(private val context: Context) {
     companion object {
         const val TAG = "LeakcamGallery"
         const val RETRY_MS = 5_000L     // while the panel is open only: no polling in the background
+        const val CAMS = 2              // the board's cameras (server Cameras): picture n is camera (n-1) % CAMS
     }
 }

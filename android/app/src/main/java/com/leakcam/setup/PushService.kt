@@ -12,8 +12,8 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * The server's push (Firebase Cloud Messaging, DESIGN.md 5.3.13): a leak opens the leak alert, a failed Wi-Fi change a
- * normal notification; it arrives with the app closed. The phone's FCM token goes to the server at every start and on
+ * The server's push (Firebase Cloud Messaging, DESIGN.md 5.3.13): a leak opens the leak alert, a failed Wi-Fi change and
+ * a camera out of focus (5.3.17) a normal notification; it arrives with the app closed. The phone's FCM token goes to the server at every start and on
  * every new token (PUT /v1/phones/<Android ID>/token).
  */
 class PushService : FirebaseMessagingService() {
@@ -24,6 +24,8 @@ class PushService : FirebaseMessagingService() {
             "leak" -> LeakAlert.show(this, data)
             "media" -> picture(data["id"].orEmpty(), data["media"].orEmpty())
             "wifi_failed" -> wifiFailed(this, data["id"].orEmpty(), data["ssid"].orEmpty())
+            "focus" -> focus(this, data["id"].orEmpty(), data["cam"]?.toIntOrNull() ?: 0, data["why"].orEmpty(),
+                             data["ssid"].orEmpty())
         }
     }
 
@@ -44,6 +46,7 @@ class PushService : FirebaseMessagingService() {
     companion object {
         const val TAG = "LeakcamPush"
         const val WIFI_CHANNEL = "wifi"
+        const val FOCUS_CHANNEL = "focus"
 
         fun register(context: Context) {
             FirebaseMessaging.getInstance().token.addOnSuccessListener { send(context, it) }
@@ -77,6 +80,29 @@ class PushService : FirebaseMessagingService() {
                     Log.w(TAG, "token not sent: ${e.message}")
                 }
             }.start()
+        }
+
+        /** a camera out of focus or never tuned (DESIGN.md 5.3.17): a normal notification, not the leak alarm; a tap
+         *  opens the focus screen on that board and camera */
+        fun focus(context: Context, id: String, cam: Int, why: String, ssid: String) {
+            val nm = context.getSystemService(NotificationManager::class.java)
+            nm.createNotificationChannel(NotificationChannel(FOCUS_CHANNEL, context.getString(R.string.focus_channel),
+                                                             NotificationManager.IMPORTANCE_DEFAULT))
+            val open = android.app.PendingIntent.getActivity(context, ("focus$id$cam").hashCode(),
+                android.content.Intent(context, FocusActivity::class.java)
+                    .putExtra(FocusActivity.EXTRA_ID, id).putExtra(FocusActivity.EXTRA_CAM, cam)
+                    .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+                android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
+            val where = ssid.ifEmpty { id }
+            nm.notify(("focus$id$cam").hashCode(), Notification.Builder(context, FOCUS_CHANNEL)
+                .setSmallIcon(R.drawable.ic_alert)
+                .setContentTitle(context.getString(if (why == "untuned") R.string.focus_untuned_title
+                                                   else R.string.focus_unfocused_title, cam + 1, where))
+                .setContentText(context.getString(if (why == "untuned") R.string.focus_untuned_text
+                                                  else R.string.focus_unfocused_text))
+                .setContentIntent(open)
+                .setAutoCancel(true)
+                .build())
         }
 
         /** a Wi-Fi change through the server failed: the board kept its old network (5.3.13) */

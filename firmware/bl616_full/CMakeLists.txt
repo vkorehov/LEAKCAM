@@ -30,6 +30,7 @@ target_sources(app PRIVATE
                full_boot.c
                ota_fetch.c
                presence.c
+               capture.c
                switch_to_setup.c
                wifi_link.c
                ${S}/usb_console2.c

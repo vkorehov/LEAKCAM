@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 45 s): pass
+
+5/5 checks pass (on battery).
+
+
+### Automated run 2026-11-12 (run.py, 216 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 8.8 s; repeats 8.5-8.5 s.
+
+
 ### Automated run 2026-11-12 (run.py, 48 s): pass
 
 5/5 checks pass (on battery).

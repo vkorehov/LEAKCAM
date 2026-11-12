@@ -2,6 +2,23 @@
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 112 s): pass
+
+16/16 checks pass.
+
+
+### Automated run 2026-11-12 (run.py, 123 s): **FAIL**
+
+14/16 checks pass. Failed: 84 %RH: no alarm (climate now
+bouffalolab />
+bouffalolab />climate: now: 39.9 C 84.0 %RH, cool 3 s); 90 %RH: the server's leak `humidity high` at once (leak {'since': '2026-11-12T10:40:01.66322123+02:00', 'why': 'camera change'}).
+
+
+### Automated run 2026-11-12 (run.py, 115 s): **FAIL**
+
+15/16 checks pass. Failed: the BL616's free heap kept ((170308, 140680) -> (156016, 126416)).
+
+
 ### Automated run 2026-11-12 (run.py, 156 s): **FAIL**
 
 14/16 checks pass. Failed: 84 %RH: no alarm (climate now

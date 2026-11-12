@@ -11,6 +11,21 @@ with `PUT /v1/devices/<id>/intervals` (product default 3600 s, the bench server 
 
 ## Runs
 
+### Automated run 2026-11-12 (run.py, 262 s): pass
+
+20/20 checks pass.
+
+
+### Automated run 2026-11-12 (run.py, 676 s): **FAIL**
+
+19/20 checks pass. Failed: stored: back in the full firmware (not within 60 s: None).
+
+
+### Automated run 2026-11-12 (run.py, 336 s): pass
+
+19/19 checks pass.
+
+
 ### Automated run 2026-11-12 (run.py, 252 s): pass
 
 20/20 checks pass.

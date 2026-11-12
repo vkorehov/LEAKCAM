@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -23,7 +24,7 @@ func testServer(t *testing.T) *httptest.Server {
 	intervals, seen, phones = map[string]Intervals{}, map[string]CheckIn{}, map[string][]string{}
 	thresholds, thrFile = map[string]Thresholds{}, dir+"/thresholds.json"
 	leaks, wifiChanges, tokens, tokenFile = map[string]Leak{}, map[string]*WifiChange{}, map[string]string{}, dir+"/tokens.json"
-	captures, notLeak = map[string][]Capture{}, map[string]string{}
+	captures, notLeak, clearedAt = map[string][]Capture{}, map[string]string{}, map[string]time.Time{}
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /v1/poll", poll)
 	mux.HandleFunc("GET /v1/devices/{id}", device)
@@ -33,6 +34,7 @@ func testServer(t *testing.T) *httptest.Server {
 	mux.HandleFunc("POST /v1/devices/{id}/clear", clearLeak)
 	mux.HandleFunc("PUT /v1/devices/{id}/wifi", putWifi)
 	mux.HandleFunc("POST /v1/media/{id}", putMedia)
+	mux.HandleFunc("GET /v1/live/{id}/{file}", liveVideo)
 	mux.HandleFunc("GET /v1/media/{id}", media)
 	s := httptest.NewServer(withTime(mux))
 	t.Cleanup(s.Close)
@@ -210,10 +212,24 @@ func TestCaptureAtNextCheckin(t *testing.T) {
 	if ans, _ = checkIn(t, s, url.Values{"full": {"0.6+g1234567"}}); ans["capture"].(map[string]any)["kind"] != "photo" {
 		t.Errorf("the photo next: %v", ans["capture"])
 	}
+	// the video still waits: the board checks in again right after the photo's SENT
+	if m := ans["capture"].(map[string]any)["more"]; m != float64(1) {
+		t.Errorf("the photo's more: %v, want 1", m)
+	}
+	// one picture per camera, then one video per camera (user 2026-11-12)
+	if got := idEnds(ans["capture"]); got != "p1,p2" {
+		t.Errorf("the photo's IDs: %s", got)
+	}
 	ans, _ = checkIn(t, s, url.Values{"full": {"0.6+g1234567"}})
 	c, _ := ans["capture"].(map[string]any)
-	if c["kind"] != "video" || c["secs"] != float64(VideoS) {
+	if c["kind"] != "video" || c["secs"] != float64(VideoS) || c["cams"] != float64(Cameras) {
 		t.Errorf("then the video: %v", ans["capture"])
+	}
+	if got := idEnds(ans["capture"]); got != "v1,v2" {
+		t.Errorf("the video's IDs: %s", got)
+	}
+	if c["more"] != float64(0) {
+		t.Errorf("the video's more: %v, want 0", c["more"])
 	}
 	if ans, _ = checkIn(t, s, url.Values{"full": {"0.6+g1234567"}}); ans["capture"] != nil {
 		t.Errorf("handed over twice: %v", ans["capture"])
@@ -229,11 +245,11 @@ func TestLeakAndWifiChange(t *testing.T) {
 		t.Errorf("leak: mode %v checkin %v", ans["mode"], ans["checkin"])
 	}
 	if c, _ := ans["capture"].(map[string]any); c["kind"] != "leak" || c["photos"] != float64(LeakPhotos) ||
-		c["secs"] != float64(VideoS) {
+		c["secs"] != float64(VideoS) || c["gap_ms"] != float64(LeakGapMs) {
 		t.Errorf("a leak's record: %v", ans["capture"])
 	}
-	if c, _ := ans["capture"].(map[string]any); len(c["ids"].([]any)) != LeakPhotos+1 {
-		t.Errorf("a leak's record IDs: %v", c["ids"])
+	if got := idEnds(ans["capture"]); got != "p1,p2,p3,p4,v1,v2" {
+		t.Errorf("a leak's record IDs: %s", got)
 	}
 	must(http.Post(s.URL+"/v1/devices/"+TestID+"/clear", "", nil))
 	if ans, _ = checkIn(t, s, url.Values{"full": {"0.6+g1234567"}}); ans["mode"] != float64(0) {
@@ -260,7 +276,9 @@ func TestLeakAndWifiChange(t *testing.T) {
 func TestMediaUpload(t *testing.T) {
 	s := testServer(t)
 	id := TestID + "-1794081605-p2"
-	r := must(http.Post(s.URL+"/v1/media/"+id, "image/jpeg", strings.NewReader("JPEGDATA")))
+	req, _ := http.NewRequest(http.MethodPost, s.URL+"/v1/media/"+id, strings.NewReader("JPEGDATA"))
+	req.Header.Set("X-Taken", "1794081607250") // the board's capture time, unix ms
+	r := must(http.DefaultClient.Do(req))
 	if r.StatusCode != http.StatusOK {
 		t.Fatal(r.Status)
 	}
@@ -272,6 +290,9 @@ func TestMediaUpload(t *testing.T) {
 	r.Body.Close()
 	if string(b) != "JPEGDATA" {
 		t.Errorf("served %q %s", b, r.Status)
+	}
+	if got := r.Header.Get("X-Taken"); got != "1794081607250" {
+		t.Errorf("X-Taken %q: the capture time is lost", got)
 	}
 	if r = must(http.Post(s.URL+"/v1/media/../x", "image/jpeg", strings.NewReader("x"))); r.StatusCode == http.StatusOK {
 		t.Errorf("bad ID stored")
@@ -386,5 +407,73 @@ func TestThresholds(t *testing.T) {
 	}
 	if ans, _ := checkIn(t, s, full); ans["probe_mv"] != float64(LeakProbeMV) || ans["humid"] != float64(HumidPct) {
 		t.Fatalf("back to the defaults: %v", ans)
+	}
+}
+
+// idEnds: a capture answer's IDs without the "<device>-<unix s>-" prefix, comma-joined
+func idEnds(capture any) string {
+	c, _ := capture.(map[string]any)
+	ids, _ := c["ids"].([]any)
+	ends := make([]string, 0, len(ids))
+	for _, x := range ids {
+		s, _ := x.(string)
+		ends = append(ends, s[strings.LastIndex(s, "-")+1:])
+	}
+	return strings.Join(ends, ",")
+}
+
+// a camera change opens a leak; after the all-clear the same job result (still riding on the check-ins for 60 s) does
+// not open it again (test140, 2026-11-12), a newer leak check's change does
+func TestCameraChangeAfterClear(t *testing.T) {
+	s := testServer(t)
+	form := func(jago string) url.Values {
+		return url.Values{"full": {"0.6+g1234567"}, "job": {"changed,same"}, "jago": {jago}}
+	}
+	if ans, _ := checkIn(t, s, form("2")); ans["mode"] != float64(1) {
+		t.Fatalf("a camera change: no leak: mode %v", ans["mode"])
+	}
+	time.Sleep(1100 * time.Millisecond) // the clear one second after the job
+	must(http.Post(s.URL+"/v1/devices/"+TestID+"/clear", "", nil))
+	mu.Lock()
+	q := captures[TestID]
+	mu.Unlock()
+	if slices.ContainsFunc(q, func(c Capture) bool { return c.Kind == "leak" }) {
+		t.Errorf("the cleared leak's record still waits: %+v", q)
+	}
+	if ans, _ := checkIn(t, s, form("5")); ans["mode"] != float64(0) {
+		t.Errorf("the cleared job's result opened the leak again: mode %v", ans["mode"])
+	}
+	if ans, _ := checkIn(t, s, form("0")); ans["mode"] != float64(1) {
+		t.Errorf("a new leak check's change after the clear: no leak: mode %v", ans["mode"])
+	}
+}
+
+// a camera out of focus or never tuned (DESIGN.md 5.3.17): one "focus" message per camera and reason, again only after
+// the camera was fine in between; an older board's job (no focus fields) and a missing camera say nothing
+func TestFocusAlerts(t *testing.T) {
+	testServer(t)
+	mu.Lock()
+	defer mu.Unlock()
+	send := func(job string) (got []string) {
+		for _, m := range focusAlerts(TestID, map[string]any{"job": job}, "home") {
+			got = append(got, m["cam"]+":"+m["why"])
+		}
+		return got
+	}
+	for _, c := range []struct {
+		job, want string
+	}{
+		{"same,same", ""},
+		{"same,nocam,-1,-1", "0:untuned"},
+		{"same,nocam,-1,-1", ""},
+		{"same,same,100,98", ""},
+		{"same,unfocused,95,41", "1:unfocused"},
+		{"changed,unfocused,95,40", ""},
+		{"same,same,96,100", ""},
+		{"unfocused,unfocused,50,45", "0:unfocused 1:unfocused"},
+	} {
+		if got := strings.Join(send(c.job), " "); got != c.want {
+			t.Errorf("job %s: %q, want %q", c.job, got, c.want)
+		}
 	}
 }

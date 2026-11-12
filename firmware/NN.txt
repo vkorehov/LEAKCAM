@@ -103,6 +103,14 @@ lighting false alarms, measured on LEAKCAM frames.
 
 2.3 Model
 
+  First version started 2026-11-12 (user: "start something already ... will change later to something real with
+  needed resolution"): ~/leakcam/step6-change-net/model_train_change.py, on ~/leakcam's pairs (step5's pairing
+  rules, the 640x480 Pi-camera frames at 320x240), the light changes and the degradations made per batch. Two
+  outputs: the 15x20 change map (below) and `unreliable` (DESIGN.md 5.3.17: the picture is not good enough to
+  tell: defocus, fog, smudges, a covered lens, a failed camera; from both frames' backbone features, global mean +
+  max, one sigmoid). To redo on LEAKCAM board frames at the board's resolution (2.1), then compile and measure
+  (2.5, 2.6).
+
   - Backbone: the same MobileNetV2-0.35 to stride 16, ImageNet start. Freeze the early blocks
     and fine-tune the last two.
   - Projection: 1x1 conv to 64 channels, L2-normalised per cell.

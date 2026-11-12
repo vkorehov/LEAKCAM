@@ -183,6 +183,7 @@ class MainActivity : Activity() {
     // whichever channel told last: the server (check-in), the BLE advertisement, the USB cable's ID
     private val batteryMv = HashMap<String, Int>()
     private val charging = HashMap<String, Boolean>()
+    private val focusCam = HashMap<String, Int>()     // device ID -> the camera to tune (DESIGN.md 5.3.17), none: absent
     private val rssi = HashMap<String, Int>()   // address -> the last advertisement's signal (dBm)
     private val rowLogged = HashMap<String, String>()   // address -> the power and bars last logged (test129)
     private val rowDrawn = HashMap<String, String>()    // address -> the power, bars and battery its row shows
@@ -279,6 +280,11 @@ class MainActivity : Activity() {
                 if (id.isEmpty())
                     return@setOnClickListener
                 menu.add(R.string.setup_change).setOnMenuItemClickListener { openSetup(id); true }
+                menu.add(R.string.focus_menu).setOnMenuItemClickListener {
+                    startActivity(android.content.Intent(this@MainActivity, FocusActivity::class.java)
+                        .putExtra(FocusActivity.EXTRA_ID, id).putExtra(FocusActivity.EXTRA_CAM, focusCam[id] ?: 0))
+                    true
+                }
                 menu.add(R.string.delete).setOnMenuItemClickListener { forget(id); true }
                 show()
             }
@@ -729,6 +735,10 @@ class MainActivity : Activity() {
         else if (address != null) {
             icons.add(RowIcon(getDrawable(R.drawable.ic_bluetooth)!!, getString(R.string.icon_bluetooth)))
             icons.add(RowIcon(getDrawable(bars(rssi[address] ?: -100))!!, getString(R.string.icon_signal)))
+        }
+        focusCam[id]?.let {                                  // a camera to tune: until it is (5.3.17)
+            icons.add(RowIcon(getDrawable(R.drawable.ic_alert)!!, getString(R.string.icon_focus, it + 1),
+                              getString(R.string.icon_focus, it + 1)))
         }
         val chg = onUsbPower(id, address)
         val pct = batteryMv[id]?.let { BatteryIcon.percent(it) }
@@ -1899,6 +1909,7 @@ class MainActivity : Activity() {
                         nextAt[j.getString("id")] = j.optLong("next_checkin", 0)
                         pend[j.getString("id")] = j.optJSONArray("pending") ?: org.json.JSONArray()
                         medias[j.getString("id")] = j.optJSONArray("media") ?: org.json.JSONArray()
+                        focusOf(j)?.let { focusCam[j.getString("id")] = it } ?: focusCam.remove(j.getString("id"))
                     }
                 }
                 rows = (list?.map { j -> Triple(j.getString("id"), j.getString("id"), line(j)) }
@@ -1927,6 +1938,15 @@ class MainActivity : Activity() {
         // its next check-in always said (user 2026-11-07): when a photo, a video or a Wi-Fi change reaches it
         return getString(R.string.mine_next, getString(R.string.mine_ssid, state, ssid.ifEmpty { getString(R.string.mine_ssid_unknown) }),
                          checkinAt(j.optLong("next_checkin", 0))) + room(j)
+    }
+
+    /** the camera to tune, from the last leak check's "<cam0>,<cam1>,<foc0>,<foc1>" (DESIGN.md 5.3.17): one out of
+     *  focus, else one never tuned (-1); null: both fine, or an older board */
+    private fun focusOf(j: JSONObject): Int? {
+        val f = j.optJSONObject("metrics")?.optString("job").orEmpty().split(",")
+        if (f.size < 4)
+            return null
+        return (0..1).firstOrNull { f[it] == "unfocused" } ?: (0..1).firstOrNull { f[2 + it] == "-1" && f[it] != "nocam" }
     }
 
     /** the room's temperature and humidity (DESIGN.md 5.3.15): only a reading the board took after 3 h cool, with its

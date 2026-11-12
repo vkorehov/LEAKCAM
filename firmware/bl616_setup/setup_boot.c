@@ -93,6 +93,9 @@ void setup_boot(void)
     char why[8] = { 0 };
     size_t len = 0;
     (void)ef_get_env_blob("setup_why", why, sizeof(why) - 1, &len);   /* read, not deleted: switch_to_full_start() */
+    /* why the full firmware switched here (lost / unused / ota / wake; none: no network stored): a switch nobody asked
+     * for was invisible on the console (2026-11-12, "lost" suspected during a K230 flash) */
+    printf("setup: started, %s\r\n", len ? why : "no reason stored (no network, or a first start)");
     uintptr_t adv_ms = setup_usb_present() || !strcmp(why, "wake") ? SETUP_ADV_FAST_MS : SETUP_ADV_SLEEP_MS;
     /* no PIN (a board not yet provisioned): no advertising, so no BLE at all; the chip sleeps instead of staying
      * awake on the cell (bugs/bug-006 follow-up). The PIN is stored over USB, then a reboot */

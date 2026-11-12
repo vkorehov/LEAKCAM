@@ -1,0 +1,186 @@
+LEAKCAM video: two native camera streams at 15 fps - findings and design
+=======================================================================
+
+Goal (user, 2026-11-12): "h265 with native resolution 15 frames", "7.5fps bad for user experience". Both cameras at
+the OV5647's native resolution (2592x1944, 2592x1936 encoded: whole 16-row blocks), 15 fps, H.265 on the K230's VPU,
+uploaded while recorded (live HLS on the server), for Take video and every leak's record (DESIGN.md 5.3.14).
+
+  code        k230_app/media.c (videos), h265.c (VENC), vicap_cap.c (cameras), job.c (who owns the cameras),
+              rawpack.c (the raw-format patch, experiment), server/video.go (HLS + MP4)
+  test        tests/test147-video-h265 (README = state, HISTORY.md = every run and obstacle)
+  status      2026-11-12 23:00 UTC+2: BOTH CAMERAS NATIVE AT 15 FPS (raw frames 10-bit packed, rawpack.c, now the
+              product's default): 225 frames each, sequence +1, 67.5 MB of 75 MB media memory, both MP4s decode
+              (test147 22:30 run). Open: the upload of two 15 fps streams (~3.4 Mbit/s) is at the Wi-Fi bridge's
+              limit: lwIP "Out of memory" on one run in two (section 7)
+
+
+1. What runs today
+------------------
+
+  sensor (OV5647, MIPI 2 lanes, RAW10) -> VICAP device (offline mode) -> raw frame to DDR (MCM writer)
+    -> ISP reads it back (MCM read DMA) -> channel 0 native NV12 + channel 1 320x240 (the light probe)
+    -> our loop: kd_mpi_vicap_dump_frame(chn 0) -> kd_mpi_venc_send_frame (H.265, VENC 1 + cam) -> upload
+
+  - Two sensors need VICAP offline mode (online mode takes one sensor only).
+  - Each frame carries its own time (pts) to the server: the clip plays at the cameras' real rate.
+  - Measured: 114 frames per camera over 15065 ms of pts = 7.5 fps, both cameras, every run.
+
+
+2. Why 7.5 fps (2026-11-12, all measured on the board)
+------------------------------------------------------
+
+  The sensor is not the limit
+    OV5647 registers read over I2C on both buses: PLL 0x3034-0x3037 = 1a 21 69 03, HTS 2844, VTS 2051, output
+    2592x1944: 87.5 MHz pixel clock, 14.4-15 fps (VTS grows with the exposure). The same MCLK gave 29 fps binned in
+    tests/test030.
+
+  Our loop is not the limit (offline mode)
+    The frames' sequence numbers (time_ref, logged by cap_stream since): two cameras, 114 frames, sequence 76..189:
+    +1 per frame we got. VICAP itself puts out 7.5 fps; nothing is dropped after it.
+
+  It is per camera, not shared
+    Camera 0 alone (test token cams=1), offline, 2 raw buffers: still 7.5 fps.
+
+  The cause: VICAP's raw input buffers
+    Camera 0 alone, offline, 3 raw buffers (inbuf=3): 15.0 fps, 224 frames over 14865 ms, sequence +1; 4 buffers the
+    same. With 2, the writer finds no free buffer for every other frame (the ISP still reads one, we still hold the
+    output of the one before) and drops it: exactly half.
+
+  Online mode (one camera, no raw buffers)
+    VICAP 15 fps (sequence +2 between the frames we got), but our dump loop then catches every other one: 7.5. Not
+    pursued (one sensor only).
+
+
+3. Why both cameras at 15 do not fit (yet)
+------------------------------------------
+
+  The K230D has 128 MB DDR in its package, split by the kernel config (k230_board/sdk/configs/
+  k230d_rtos_leakcam_defconfig): RT-Smart 52 MB / media memory (MMZ) 76 MB.
+
+  per camera at native (/proc/media-mem, 2026-11-12):
+    raw buffer   2592 x 1944 x 2 B (16-bit words)       9.8 MB   (2 today, 3 needed)
+    output       NV12 2592 x 1944, 2 buffers           14.7 MB
+  2 cameras, 3 raw buffers:  2 x (29.5 + 14.7) = 88.4 MB  + H.265 stream pools 3.8 MB + small = ~93 MB
+  > 75 MB media memory. Taking more from RT-Smart does not work: the two H.265 channels need ~14 MB of kernel pages
+  each during a video (mvx_mmu_alloc_page failed below 52 MB, test147).
+
+  Mixed mode (camera 0 online, camera 1 offline with 3, test token vmode=mixed): fits, opens, the leak check works,
+  but the light probe's dumps fail on both cameras, the encoder runs out of pages and camera 0 gives no frames.
+
+
+4. The design: raw frames 10-bit packed
+---------------------------------------
+
+  A raw frame is one 10-bit value per pixel (the Bayer pattern: each pixel one colour filter; the ISP makes colour
+  later). VICAP stores each value in a 16-bit word: 6 bits of every pixel wasted. Packed, 4 pixels take 5 bytes: the
+  same values (lossless), the same picture, only the layout between the sensor and the ISP changes; what the encoder
+  gets stays 8-bit NV12.
+
+  memory, packed, 3 raw buffers per camera:
+    raw buffer   2592 x 1944 x 10 / 8                   6.3 MB
+    per camera   3 x 6.3 + 14.7                        33.6 MB
+    2 cameras + H.265 stream pools 3.8 + small ~1      ~72 MB  of 75 MB media memory: fits, RT-Smart untouched
+
+  The hardware supports it. The ISP is VeriSilicon's (the register map of nxp-imx/isp-vvcam vvcam/isp/
+  mrv_all_regs.h matches the K230 one for one); the raw writer and the read DMA are its MIV2 MCM block, ISP base
+  0x90000000 (board.h ISP_BASE_ADDR):
+    0x1600 miv2_mcm_ctrl      cfg update / auto update bits (read 0x19)
+    0x1604 miv2_mcm_fmt       raw bit: read bits 0-3, writer 0 bits 4-7, writer 1 bits 8-11 (0 = 8 bit, 4 = 16 bit,
+                              1 = 10 bit); alignment: read 12-13, writer 0 14-15, writer 1 16-17 (0 = unaligned:
+                              packed). Read on the board: 0x444 (16-bit everywhere)
+    0x1614.. raw0 base, size (0x99c600 = 5184 x 1944), line length 0x1620 (0x1440 = 2592 x 2), width, height, size
+    0x1640.. raw1 the same (0x164c line length)
+    0x166c.. read DMA: start, width, line length 0x1674, size 0x1678, line-valid 0x1690
+    (the older MCM block 0x1200: mcm_ctrl 0x480 = input format code 4 for both writers, sizes 2592x1944)
+
+  Who writes them (the closed SDK libraries, disassembled 2026-11-12):
+    - user space libisp.a (VeriSilicon CamEngine, linked into our program): the ISP's registers are mapped into our
+      process (fpga_regs_mmap) and written every frame: VIHalWriteReg (local to isp_mcm.o) -> common registers of the
+      two cameras (0x1200, 0x1600-0x160c, ...) through SwitchUpdateCommonRegister (merges each camera's fields:
+      0x1604 keeps mask 0x3cff0 per camera), the rest stored directly; isp_write_reg -> VirtualHalWriteReg (the
+      read DMA: isp_ioc_cfg_mcm_dma in isp_mi_rdma.o, per frame, from isp_drv_cmd.o); VideoInSetMcmWrCfg ->
+      isp_mcm_cfg_wr (the 0x1200 formats; jump table: input format 2..7 -> code 0..5).
+    - the kernel's libvicap.a touches 0x1604 only in VICAP_WORK_ONLY_MCM_MODE (vicap_set_mcm_conf, from an ioctl):
+      not our mode.
+    So a register written from outside does not hold (console write of 0x111 read back 0x154 at once, then the
+    stream stopped and the cameras' close failed: test147 HISTORY.md).
+
+  The patch (k230_app/rawpack.c, test token rawpack=1; 2 = trace only): link-time wrappers, no change to the closed
+  code: -Wl,--wrap=VirtualHalWriteReg -Wl,--wrap=SwitchUpdateCommonRegister (k230_app/rtsmart/Makefile; both are
+  global and called from other objects, which --wrap needs). Each write to the MCM blocks is changed on its way:
+    0x1604 raw bit 4 -> 1 on every path, alignment 0 (packed)
+    line lengths 5184 -> 3240 (0x1620, 0x164c, 0x1674, 0x1690), picture sizes 5184 x 1944 -> 3240 x 1944
+  and everything else passes through. Not reachable by --wrap: VIHalWriteReg's direct stores of non-common registers
+  (local function, local calls): the trace shows whether the line lengths go that way; if so, the patch adds those
+  writes itself after the library's, through fpga_regs_mmap (a global: our process has the mapping).
+
+  Then (vicap_cap.c): the raw buffer size 2592 x 1944 x 10 / 8 (dev.buffer_size, ours), 3 raw buffers per camera
+  (IN_BUF_NUM), both cameras offline.
+
+
+5. Steps and acceptance
+-----------------------
+
+  1. Trace (rawpack=2, one camera): every MCM register write, its value, its caller (resolved with
+     build .../applications/leakcam/leakcam.map): which writes the patch must change, which path each takes.
+  2. Patch, one camera, the 16-bit buffers kept (a packed frame fits in them): the registers read back packed
+     (msh ispreg), the stream runs, the sequence +1, the picture identical to an unpatched one (same scene, same
+     exposure: a decoded frame each, compared), 7.5 fps still (2 buffers).
+  3. Packed buffers (6.3 MB), one camera, 3 buffers: 15 fps, picture as in 2.
+  4. Both cameras, 3 packed buffers each: /proc/media-mem below 75 MB, 15 fps on both (pts and sequence), test147
+     whole (live HLS, both MP4s decode, the check-ins after), the leak checks and pictures unchanged (test137,
+     test143), the K230 heap and kernel pages flat over 10 videos.
+  Acceptance: test147 passes its 15 fps check on both cameras, every other check unchanged.
+
+  Risks
+    - The ISP may assume 16-bit raw elsewhere (statistics, defect correction, the light probe channel): shows as a
+      wrong picture or a stopped stream; a stopped stream needs a board reboot (the runner does it).
+    - The library writes the registers from paths --wrap cannot reach: then the patch writes them after it.
+    - Memory: ~72 of 75 MB; the JPEG encoder's pool must stay closed during a video (media.c does).
+
+  If it fails, the other ways (user's choice):
+    - one camera at a time at native 15 (30 s for both; needs the cameras reopened without the VICAP leak);
+    - both cameras binned 1280x960 at 15 (full field of view, a quarter of the pixels; the same reopen);
+    - both native at 7.5 (works now);
+    - Canaan to support packed raw in their driver;
+    - our own ISP control on the vvcam register maps (the Lemnos K230 project drives the ISP directly): weeks, and
+      the picture tuning (3A, colour, noise) ours to redo: the last resort.
+
+
+6. Built and measured (2026-11-12)
+-----------------------------------
+
+  The patch (k230_app/rawpack.c; rtsmart/Makefile: three --wrap, the libisp.a copy with VIHalWriteReg weak):
+    - the trace (each MCM register write, value, caller) showed: writer format 0x1604 through
+      SwitchUpdateCommonRegister, the read DMA (0x1670-0x1690, 0x1604 read bits) through VirtualHalWriteReg once at
+      the start, the read start address 0x166c per frame; the writers' line lengths through a local path.
+    - three things beyond the plan were needed, each found on the board:
+        * SwitchUpdateCommonRegister ORs into a shadow: 4 | 1 = 5 (0x51 read back): the shadow is patched too;
+        * VIHalWriteReg stores the caller's value after the merge (local, not wrappable): replaced whole (weak copy);
+          it must return 0 as the original (void broke callers);
+        * the rows are padded to 16 B: 3248, not 3240 (3240: a picture sheared 8 B a row, stripes every 405 rows);
+        * kd_mpi_isp_init checks VICAP's buffer_size against VsiCamDeviceGetBufferSize(type 5): wrapped to the
+          packed size (our own pool of small blocks failed: the kernel takes blocks of buffer_size).
+    - results, camera 0 alone, the same scene: packed picture = 16-bit picture (same geometry, detail, brightness
+      within AWB drift); 3 packed buffers: 15.0 fps (224 frames, sequence +1). Both cameras, 3 packed each: 14.9 /
+      15.0 fps, sequences +1, 67544 KB media memory used (9 MB free), both 225-frame MP4s decode.
+    - "dump dev(N)chn(1) failed" lines: harmless (cap_ambient drains the probe queue with timeout 0 until empty);
+      "room 0" in the evening runs: the dark room, not a failure (bisected: the same without the patch).
+
+7. Open
+-------
+
+  - Upload: two 15 fps streams at CBR 2 Mbit/s (~1.7 real each) overrun the K230's lwIP over the BL616 bridge on
+    some runs ("http: send failed: Out of memory", backlog to 2.3 MB, upload aborted): the lwIP memory (TCP send
+    buffer / pbuf pool) or a lower H265_KBPS (h265.h), measured.
+  - test147 whole on the product default (live HLS, both MP4s, check-ins) passing 3 rounds in a row; test137 /
+    test143 (leak checks on packed raw) and test146 (focus score) again.
+  - Camera J5's lens is out of focus (score 0.05 vs 0.24, the soft picture): the focus screen's first real use.
+
+8. Experiment pieces (removed 2026-11-12 when packing became the default)
+--------------------------------------------------------------------------
+
+  Gone: the job.c test tokens cams=1, vmode=, inbuf=, rawpack= (tests ran with them through the sim file), the trace
+  mode of rawpack.c, the kernel's msh `ispreg` and the /dev/sysstat ioctl (sys_stat.c back as it was). Kept: the
+  frames' sequence in vicap_cap.c's "video: ... fps" line, the -Map file. To redo the measurements: the method in
+  skill k230-vicap-isp-patch (git history has the tokens and ispreg).

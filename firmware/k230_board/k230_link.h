@@ -30,20 +30,35 @@
  *                                     power goes off when the heartbeat stops, not on SLEEP
  *                 TIME,<unix s>       the K230 has real time (NTP): the BL616 takes it
  *                 WIFI                start Wi-Fi for this session; nothing else starts it. ACK:
- *                                     the radio is up and the BL616 joins with the stored
- *                                     credentials. NAK codes: NO_CREDENTIALS, RADIO
+ *                                     taken: the BL616 starts the NetHub bridge (SDIO device + its join with the
+ *                                     stored credentials, ~1 s; the full firmware's capture.c), the K230 then binds
+ *                                     the card (/dev/bl616 rescan) and takes its address by DHCP; the bridge stops
+ *                                     with the session. NAK codes: NO_CREDENTIALS, RADIO
+ *                 SENT,<uploaded>,<failed>,<skipped>
+ *                                     a SHOOT finished (k230_app/media.c): pictures uploaded, failed, videos skipped
+ *                                     (not built yet); the BL616 cuts the power on battery
  *                 USB,<line>          the USB relay: a line from the phone, for the BL616 (the setup firmware's
- *                                     provisioning, the full firmware's ID/PIN/SETUP)
+ *                                     provisioning, the full firmware's ID/PIN/SETUP); not the focus session's
+ *                                     FOCUS lines: the K230 answers those itself (k230_app/focus.c), after the BL616
+ *                                     said OK to the phone's PIN
  *                 STATUS,<uptime s>,<version>,<die x10>,<heap free>,<heap min free>,<pages free B>
  *                                     every 60 s (and at a job's start): the battery read again and
  *                                     carried as ;b= (DESIGN.md 5.3.9);
  *                                     the program's version, the die temperature (-1000 = none) and the kernel's
  *                                     memory (/dev/sysstat, 0 = none): the BL616 keeps them for its check-in
  *                                     (DESIGN.md 5.3.10, tests/test136)
- *                 DONE,<cam0>,<cam1>  a leak check finished (k230_app/job.c, DESIGN.md 5.3.12): each camera same, light,
- *                                     changed or new; the BL616 keeps it for the check-in, checks in at once on a
- *                                     change and cuts the power on battery
+ *                 DONE,<cam0>,<cam1>,<foc0>,<foc1>
+ *                                     a leak check finished (k230_app/job.c, DESIGN.md 5.3.12): each camera same, light,
+ *                                     changed, new, nocam or unfocused (DESIGN.md 5.3.17), then each camera's sharpness
+ *                                     in % of its focus reference (-1: none yet); the BL616 keeps it for the check-in
+ *                                     (job=), checks in at once on a change and cuts the power on battery
  * BL616 -> K230   USB,<line>          the USB relay: a line for the phone
+ * BL616 -> K230   SHOOT,<kind>,<dev>-<unix s>,<cams>,<photos>,<gap_ms>,<secs>,<host>,<port>
+ *                                     pictures / videos for the server (the check-in answer's capture, DESIGN.md
+ *                                     5.3.14; bl616_full/capture.c): kind photo / video / leak; picture n (1..photos)
+ *                                     from camera (n-1) % cams, the rounds gap_ms apart; each uploaded to
+ *                                     http://<host>:<port>/v1/media/<dev>-<unix s>-p<n> with X-Taken (unix ms);
+ *                                     answered by SENT
  * BL616 -> K230   CHECK,<reason>      a leak check now (leak = a wet probe, rtc = the daily check) while the K230 runs
  *                                     already (on USB); answered by a DONE when it is finished
  * BL616 -> K230   STATUS              send your STATUS now (the unplug: DESIGN.md 5.3.11): the K230 reads its battery

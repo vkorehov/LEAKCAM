@@ -143,6 +143,7 @@
     <string name="wifi_failed_text">It could not join "%1$s". Open the app to try again.</string>
     <string name="more">more actions</string>
     <string name="icon_wifi">present at the server over Wi-Fi</string>
+    <string name="icon_focus">camera %1$d needs focusing: ⋮ → Tune focus</string>
     <!-- the common actions (DESIGN.md 5.3.14) -->
     <string name="take_photo">Take photo</string>
     <string name="take_video">Take video</string>
@@ -163,4 +164,28 @@
     <string name="busy_opening">Opening…</string>
     <string name="err_media">That file could not be downloaded. Check the phone\'s internet and try again.</string>
     <string name="looking">Looking for LEAKCAMs nearby…</string>
+    <!-- focus tuning (FocusActivity, DESIGN.md 5.3.17); the turn directions as seen looking into the lens -->
+    <string name="focus_menu">Tune focus</string>
+    <string name="focus_title">Focus · %1$s</string>
+    <string name="focus_camera">Camera %1$d</string>
+    <string name="focus_plug">Plug this phone into the board\'s USB-C with the cable</string>
+    <string name="focus_ccw">counter-clockwise</string>
+    <string name="focus_cw">clockwise</string>
+    <string name="focus_start">Loosen the lock ring, then turn the lens slowly %1$s (looking into the lens)</string>
+    <string name="focus_keep">Getting sharper: keep turning slowly %1$s</string>
+    <string name="focus_wrong">Getting blurrier: turn the other way, %1$s</string>
+    <string name="focus_too_far">Past the sharpest point: turn back %1$s, in small steps</string>
+    <string name="focus_stop">Sharpest. Hold it, tighten the lock ring, then tap Done</string>
+    <string name="focus_no_detail">Nothing sharp in view: point the camera at something with detail, check the lens is uncovered</string>
+    <string name="focus_slower">Turn slower</string>
+    <string name="focus_done">Done</string>
+    <string name="focus_saved">Saved</string>
+    <string name="focus_channel">Camera focus</string>
+    <string name="focus_unfocused_title">Camera %1$d of LEAKCAM on %2$s is out of focus</string>
+    <string name="focus_unfocused_text">Leaks may be missed. Tap to tune it.</string>
+    <string name="focus_untuned_title">Tune camera %1$d of LEAKCAM on %2$s</string>
+    <string name="focus_untuned_text">Its focus is not set yet. Tap to tune it with the cable.</string>
+    <string name="focus_pin">Unlocking the board…</string>
+    <string name="focus_no_pin">The board did not take this phone\'s PIN: open the app\'s list and set it up again</string>
+    <string name="focus_nocam">Camera %1$d does not answer: check its cable</string>
 </resources>

@@ -21,7 +21,7 @@ from harness import Run, bl   # noqa: E402
 from board import BL_PORT, log, wifi_credentials   # noqa: E402
 from phone import board_checkin, board_id, firmware, hand, intervals, online, only_boards, op, product, ready, seen, server_up, to_firmware, usb_seen   # noqa: E402
 
-SERVER = "http://192.168.1.159:8090"
+SERVER = "http://192.168.1.131:8090"
 PI = "pi@192.168.1.159"
 MISSED = 3                       # presence lost after 3 failed check-ins in a row (presence.c MISSED_MAX)
 CHECKIN_S = 5                       # for the run (the firmware's minimum): no test step waits long; the bench default is 60

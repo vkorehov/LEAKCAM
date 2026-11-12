@@ -1,12 +1,12 @@
-03:43:25 test133-leak-alert: 0 metric rows MISSING: none
-03:43:33 CHECK pass locked: the alert posted 0.42 s after the trigger
-03:43:33 CHECK pass locked: its full screen opened over the lock screen within 15 s 1.14 s
-03:43:34 CHECK pass locked: acknowledged within 3.00 s, nothing left rang 1.12 s
-03:43:35 CHECK pass the channel: importance high, bypasses Do Not Disturb, alarm sound NotificationChannel{mId='leak_alarm_dnd', mName=Leak a..., mDescription=hasDescription , mImportance=4, mBypassDnd=true, mLockscreenVisibility=-1000, mSound=and
-03:43:38 CHECK pass silent mode: the alert posted 0.81 s after the trigger
-03:43:38 CHECK pass silent mode: its full screen opened over the lock screen within 15 s 0.87 s
-03:43:39 CHECK pass silent mode: acknowledged within 3.00 s, nothing left rang 0.89 s
-03:43:41 CHECK pass Do Not Disturb: the alert posted 0.29 s after the trigger
-03:43:41 CHECK pass Do Not Disturb: its full screen opened over the lock screen within 15 s 0.60 s
-03:43:42 CHECK pass Do Not Disturb: acknowledged within 3.00 s, nothing left rang 1.09 s
-03:43:43 test133-leak-alert: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+09:29:38 test133-leak-alert: 0 metric rows MISSING: none
+09:29:46 CHECK pass locked: the alert posted 0.47 s after the trigger
+09:29:46 CHECK pass locked: its full screen opened over the lock screen within 15 s 1.38 s
+09:29:47 CHECK pass locked: acknowledged within 3.00 s, nothing left rang 1.06 s
+09:29:48 CHECK pass the channel: importance high, bypasses Do Not Disturb, alarm sound NotificationChannel{mId='leak_alarm_dnd', mName=Leak a..., mDescription=hasDescription , mImportance=4, mBypassDnd=true, mLockscreenVisibility=-1000, mSound=and
+09:29:52 CHECK pass silent mode: the alert posted 0.38 s after the trigger
+09:29:52 CHECK pass silent mode: its full screen opened over the lock screen within 15 s 0.74 s
+09:29:53 CHECK pass silent mode: acknowledged within 3.00 s, nothing left rang 1.23 s
+09:29:56 CHECK pass Do Not Disturb: the alert posted 0.28 s after the trigger
+09:29:56 CHECK pass Do Not Disturb: its full screen opened over the lock screen within 15 s 0.64 s
+09:29:57 CHECK pass Do Not Disturb: acknowledged within 3.00 s, nothing left rang 1.02 s
+09:29:59 test133-leak-alert: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

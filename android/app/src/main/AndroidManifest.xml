@@ -47,6 +47,11 @@
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/usb_device_filter" />
         </activity>
+        <!-- focus tuning per camera over the USB cable (DESIGN.md 5.3.17) -->
+        <activity
+            android:name=".FocusActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".AlertActivity"
             android:exported="false"

@@ -78,7 +78,10 @@ class RelayService : Service() {
     private var address = ""
     private var server: ServerSocket? = null
     private val token by lazy {
-        val f = File(filesDir, "token")
+        // device-protected storage: readable before the first unlock (directBootAware); the old token copied once
+        val f = File(createDeviceProtectedStorageContext().filesDir, "token")
+        val old = File(filesDir, "token")
+        if (!f.exists() && old.exists()) old.copyTo(f)    // a copy: no rename across the two storages (EXDEV)
         if (!f.exists()) {
             val b = ByteArray(16).also { SecureRandom().nextBytes(it) }
             f.writeText(b.joinToString("") { "%02x".format(it) })
@@ -391,7 +394,7 @@ class RelayService : Service() {
 /** the service at boot and after an update: the remote port back after a phone restart, no adb needed (relay app README) */
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(c: Context, i: Intent) {
-        if (i.action == Intent.ACTION_BOOT_COMPLETED || i.action == Intent.ACTION_MY_PACKAGE_REPLACED)
+        if (i.action == Intent.ACTION_LOCKED_BOOT_COMPLETED || i.action == Intent.ACTION_MY_PACKAGE_REPLACED)
             c.startForegroundService(Intent(c, RelayService::class.java))
     }
 }

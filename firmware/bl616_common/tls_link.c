@@ -1,6 +1,7 @@
 #include "tls_link.h"
 
 #include <stdint.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -94,6 +95,8 @@ static int verify(void *ctx, mbedtls_x509_crt *c, int depth, uint32_t *flags)
 static int bio_send(void *ctx, const unsigned char *b, size_t n)
 {
     int k = lwip_send(*(int *)ctx, b, n, 0);
+    if (k < 0)
+        printf("tls: send %u B: errno %d\r\n", (unsigned)n, errno);   /* ENOMEM: the lwIP heap (lwipopts_user.h) */
     return k < 0 ? -0x4E : k;        /* MBEDTLS_ERR_NET_SEND_FAILED */
 }
 

@@ -861,6 +861,7 @@ func main() {
 	http.HandleFunc("POST /v1/devices/{id}/capture", capture)
 	http.HandleFunc("GET /v1/media/{id}", media)
 	http.HandleFunc("POST /v1/media/{id}", putMedia)
+	http.HandleFunc("GET /v1/live/{id}/{file}", liveVideo)
 	http.HandleFunc("GET /v1/images/k230_rtt", k230Image)
 	http.HandleFunc("GET /v1/devices/{id}/model", model)
 	// the boards' requests (the check-in, a crash record, the OTA image) only over mTLS (mtls.go); this plain port

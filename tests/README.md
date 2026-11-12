@@ -54,6 +54,10 @@ and after every test: no BLE core wedge (`--wedge-probe`: a sleep probe after ea
 | test140 humidity and room climate | the room's temperature/humidity only from a cool board, the 85 %RH alarm -> leak (DESIGN 5.3.15) |
 | test141 HBN sleep on battery | the full firmware asleep between events: check-ins through the sleep, wakes not boots, the USB plug wakes it |
 | test142 leak thresholds from the server | probe mV + humidity %RH as check-in answer attributes, in flash only when changed, kept through a reset and in setup |
+| test144 lighting vs real changes | the leak comparison's false alarms: real frames LED / room lit, light and real transforms, imgdiff's confusion matrix (host) |
+| test146 camera focus | bad focus detected (score vs the tuned reference, the net's `unreliable`), the app's turn guide over the cable | step 1 host pass (FocusGuide 7/7), board steps not built |
+| test147 video H.265 | Take video: two native H.265 videos streamed to the Go server (live HLS + MP4) | works, 7.5 fps (15 asked: open) |
+| test143 Take photo -> pictures at the server | the check-in's capture -> SHOOT -> the K230's lit colour shot per camera, JPEG + EXIF time, upload over the bridge -> SENT |
 | test109 secure server (BL616 part) | the check-in over mTLS: TLS 1.3, the date rule (no clock / expired / clock set), no answer without a device certificate, 10 sessions without a leak |
 
 Not in it: repeats and soaks (`--stress`: test106's 8 setups, test126's 10 round trips); tests that still need hands or
@@ -162,6 +166,10 @@ Leak tests, one per operation the product repeats:
 | [test140 temperature and humidity: the room after a cool window, the 85 %RH alarm (whole product flow, product firmware)](test140-humidity-and-room-climate/README.md) |  | **not run yet** (2026-11-10): hands-free, relay box + `climate quiet`/`climate sim` |
 | [test141 the full firmware on battery sleeps in HBN between its events (whole product flow, product firmware)](test141-battery-hbn-sleep/README.md) | 2026-11-10 04:48 UTC+2 | **pass, 7/7**: asleep 2 s after the unplug, check-ins 22 s apart through the sleep, hbnw counted, room reading at a wake, USB plug wakes it in 3.5 s, clock -3 s |
 | [test142 the leak thresholds from the server, kept in flash (whole product flow, product firmware)](test142-server-leak-thresholds/README.md) | - | **not run yet** (written 2026-11-10) |
+| [test143 Take photo: two real pictures at the server (whole product flow, product firmware)](test143-photo-upload/README.md) | - | **pass** 2026-11-12: both cameras' JPEGs 6-9 s after the check-in, time in X-Taken + EXIF, the bridge only for the capture |
+| [test144 lighting changes against real changes (host, real frames)](test144-light-vs-change/README.md) | - | **measured** 2026-11-12: imgdiff REAL 16/16, LIGHT false alarms 23/30: the flash/no-flash check next |
+| [test146 camera focus: detected and tuned by hand](test146-focus-tuning/README.md) | - | **step 1 pass (host, 2026-11-12)**; steps 2-6 wait for the K230 focus session |
+| [test147 Take video: native H.265, live and MP4 (whole product flow, product firmware)](test147-video-h265/README.md) | - | **works end to end at 7.5 fps (2026-11-12)**; 15 fps open (ISP ~80 MP/s for two native cameras) |
 
 ## Re-test audit after the two-firmware design (2026-11-02)
 

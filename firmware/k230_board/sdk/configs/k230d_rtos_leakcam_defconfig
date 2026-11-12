@@ -38,3 +38,14 @@ CONFIG_APP_ENABLE_LEAKCAM=y
 CONFIG_RTT_CONSOLE_UART1=y
 CONFIG_RTT_CONSOLE_ID=1
 CONFIG_RTT_CONSOLE_BAUD=2000000
+# memory split of the 128 MB DDR (2026-11-12, native camera frames and video): RT-Smart 52 MB, the media pool (MMZ)
+# 76 MB. MMZ: two cameras at 2592x1944, 2 raw (10.1 MB) + 2 NV12 (7.6 MB) buffers each = 69.9 MB (/proc/media-mem),
+# the JPEG encoder's 2 x 1.25 MB stream buffers, or during a video (the JPEG channel closed) the two H.265 channels'
+# 3 x 0.63 MB each. RT-Smart: one native H.265 channel takes ~14 MB of pages (list_page during a video), two need
+# ~28 MB; at 48 MB 27.8 were free (the history buffer allocated per check only). RT-Smart: the kernel heap 8 MB (the camera pipelines take ~6.8) and the page allocator, from
+# which the video encoder takes its page tables and working pages: at 32 MB it had 2.9 MB free and a native JPEG
+# failed "mvx_mmu_alloc_page: fail". The frames are read in their video buffers, no copies in RT-Smart.
+# (1280x960 before: 58 / 70 MB)
+CONFIG_MEM_RTSMART_SIZE=0x3400000
+CONFIG_MEM_MMZ_BASE=0x3400000
+CONFIG_MEM_MMZ_SIZE=0x4C00000

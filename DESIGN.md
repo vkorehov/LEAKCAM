@@ -230,7 +230,7 @@ backed off as a failed boot.
 **`leakcam_wake` (`attic/firmware/k230_capture/leakcam_wake.c`):**
 
 ```
-capture both cameras (LEDs on for the shot, AE settled), reduce to 320x240
+capture both cameras (our exposure, the room's light or the LEDs), compare the native 2592x1936 luma in place
   |
 compare each camera with what its history shows (cam<N>.hist; none yet = new):
 imgdiff, then the change net where imgdiff saw a change (below the camera's threshold = light)
@@ -980,21 +980,34 @@ person watched: 5.3.4's 15 s rule).
   and the board goes into the wake mode **checking in every minute** (user 2026-11-07: near real time; ~60 mAh a
   day), waiting for the person's requests (photo, video, Wi-Fi); back to its normal pace after 24 h or at once on Not
   a leak / all clear. All server driven (the check-in answer's `checkin` and `mode`).
-- **Every leak is recorded: 4 pictures and one 15 s video** (user, 2026-11-07: "once leak occurs, we always need to
-  record 4 pictures and one 15 second video"). The board starts them by itself right after the leak check that found
-  it (the K230 is on already), uploads them to the media server and reports them; the alert opens them in the app.
-  The server also asks for the set (`capture` kind `leak`: 4 photos, 15 s video) in its answer to the check-in that
-  reported the leak, for a board that did not start them. Built: the server's part; the board's comes with the cameras.
+  A cleared leak is not opened again by the same leak check's result (it rides on the check-ins for 60 s): only a
+  check that ran after the clear counts (server/alert.go `clearedAt`, test140 2026-11-12). Open: the board does not yet
+  act on `rearm` (a new reference picture after Not a leak).
+- **Every leak is recorded: 2 pictures per camera, spaced in time, and a 15 s video per camera** (user, 2026-11-07:
+  "4 pictures and one 15 second video"; 2026-11-12: "two separate pictures from both cameras and two separate videos",
+  "take 2 pictures per camera, spaced by time so user can see flowing water"). Each camera's two pictures are
+  `gap_ms` apart (2000 ms, the server's LeakGapMs): water that flows or spreads differs between them. Every picture
+  and video is a file of its own, one camera each (no side-by-side). The board starts them by itself right after the
+  leak check that found it (the K230 is on already), uploads them to the media server and reports them; the alert
+  opens them in the app. The server also asks for the set (`capture` kind `leak`: 4 photos, `gap_ms`, 15 s video,
+  `cams` 2) in its answer to the check-in that reported the leak, for a board that did not start them. Built: the
+  server's part; the board's comes with the real cameras (2026-11-12).
 - **After the alert, the app shows the leak** (user, 2026-11-07: "after notification, open app and point to those
   pics"): "I see it" stops the alarm and opens the app on that board with its leak panel on top: which LEAKCAM, when,
-  what found it, and its record (4 pictures, the 15 s video) to look at and play as the board uploads it; until then
+  what found it, and its record (2 pictures and a video per camera) to look at and play as the board uploads it; until then
   a spinner says it is being taken.
-- **Every picture and video has its ID** (user, 2026-11-07): `<device>-<unix s>-p1..p4` / `-v1`, made by the server
-  for each capture. The check-in answer's `capture` gives the board the IDs to upload under; the push (`media`, the
+- **Every picture and video has its ID** (user, 2026-11-07): `<device>-<unix s>-p<n>` / `-v<n>`, made by the server
+  for each capture. One file per camera (2026-11-12): picture n is camera (n-1) % 2 (p1 and p3 J4 / CSI0, p2 and p4
+  J5 / CSI2), video n is camera n-1 (v1 J4, v2 J5); a photo is p1 p2, a video v1 v2, a leak p1..p4 v1 v2. The check-in answer's `capture` gives the board the IDs to upload under; the push (`media`, the
   IDs) tells the app how many new pictures and videos there are.
 - **Stored in the phone's gallery, not an own viewer** (user, 2026-11-07): the app downloads each ID
   (`GET /v1/media/<id>`, 404 until uploaded, asked again every 5 s only while the leak panel is open) into the
-  gallery's LEAKCAM album (Pictures/LEAKCAM, Movies/LEAKCAM, the ID as the file name: saved once). The leak panel shows
+  gallery's LEAKCAM album (Pictures/LEAKCAM, Movies/LEAKCAM, saved once: the ID kept in the entry's description).
+  **The moment it was taken, readable and in the metadata** (user, 2026-11-12: "timestamp in picture naming, also in
+  metadata", "user readable, not unix"): the board sends its capture time with each upload (`X-Taken`, unix ms), writes
+  it into the file too (JPEG EXIF DateTimeOriginal, MP4 creation time); the server keeps it as the file's time and
+  returns it on download; the app names the file `LEAKCAM_<serial>_<yyyy-MM-dd_HH-mm-ss>_cam<N>_<shot>.jpg|mp4`
+  (the phone's time, as every time the app shows; cam0 = J4, cam1 = J5) and sets the gallery's date taken to it. The leak panel shows
   **one preview** (the first file there, a spinner until then) with **"+N more"**; a tap opens the phone's gallery on
   its newest pictures and videos, this leak's record at the top (no gallery opens one album by a standard intent).
   Built: IDs, push, panel, gallery download, the server's media route; the board's capture and upload with the cameras.
@@ -1020,8 +1033,9 @@ person watched: 5.3.4's 15 s rule).
 - **When it runs:** at once over BLE when the board is in range (awake), else at its next check-in (the server keeps
   the request and hands it over in the check-in answer). The app never waits for it: the request is sent, the screen
   says when it will happen, and the person gets a notification when it is ready (5.3.4's 15 s rule).
-- **A video is 15 s.** The board captures it (both cameras), uploads it to the media server (MediaMTX, memory
-  leakcam-server-mediamtx) and reports it; a photo the same way as one frame per camera.
+- **A video is 15 s, one per camera** (two separate videos, user 2026-11-12). The board captures them, uploads them
+  to the media server (MediaMTX, memory leakcam-server-mediamtx) and reports them; **a photo is one picture per
+  camera** (two separate files), uploaded the same way (`POST /v1/media/<id>`, JPEG).
 - **Played in the app** once taken: the notification opens it; the board's row lists its latest photo and video.
 - **The pending list (user, 2026-11-07), server driven:** what waits for a board's check-ins, one of each at most:
   one photo, one video, one Wi-Fi change (a new change replaces the waiting one; a photo or video asked again while
@@ -1029,8 +1043,58 @@ person watched: 5.3.4's 15 s rule).
   change, the photo, the video (the board checks in again right after a Wi-Fi change). The server lists it per
   device (`pending`: kind, asked, state waiting / sent) with its next check-in (`next_checkin`, unix s); the status
   screen shows it under the status block, the times in the phone's time zone.
-- Built so far: the app's buttons, the pending list and the server's request queue (`POST /v1/devices/{id}/capture`,
-  the answer's `capture`). Capture, upload and playback come with the real cameras.
+- **The board's path (built 2026-11-12, tests/test143):** the check-in answer's `capture` (kind, IDs, cams, the
+  leak's photos and gap_ms, `more` = how many still wait) -> the BL616 sends `SHOOT` to the K230 (a session started
+  for it when none runs, k230_link.h) -> the K230 asks `WIFI`, the BL616 starts the NetHub bridge, the K230 binds the
+  SDIO card and takes its address -> per round one lit colour frame per camera (the LEDs on until auto exposure is
+  steady), a JPEG each with the moment in EXIF (software encoder, quality 85, ~0.3 s), `POST /v1/media/<id>` with
+  X-Taken (plain HTTP on the LAN until the K230 has TLS, test109) -> `SENT,<uploaded>,<failed>,<skipped>`. A photo:
+  ~1.5 s on the K230, 6-9 s from the check-in. Then the board checks in again at once when `more` > 0.
+- **Videos (built 2026-11-12, tests/test147; user: "h265 with native resolution 15 frames", "streaming server to be
+  golang, same server", "just add lib"):** per camera 15 s at 2592x1936, H.265 Main on the VPU (h265.c: VENC 1 + cam,
+  CBR 2 Mbit/s, an IDR every 15 frames), fed the running native streams (cap_stream: no copy, no restart), the LEDs on
+  through the clip when the shot needed them. Each camera's frames go out as they are encoded: a chunked `POST
+  /v1/media/<id>-v<n>` (`video/x-leakcam-h265`: [u32 length][u64 the frame's own time, us][access unit]), one uploader
+  thread per camera. The LEAKCAM server itself (server/video.go, gohlslib + mediacommon: no MediaMTX) serves it live
+  as HLS (`/v1/live/<id>/index.m3u8`, from its 2nd segment) and writes the MP4 at the end (hvc1, the frames' real
+  times, the creation time = X-Taken). Measured: both videos uploaded, ffprobe clean, live during the recording.
+  - **The rate: 7.5 fps per camera, not 15** (the frames' own times): two native cameras pass the ISP at ~80 MP/s in
+    all, the same ceiling test030 met at 1280x960 (32.7 fps each); the ISP clock is not it (PLL0/4, 1/1 = ~400 MHz,
+    read from CMU 0x91100068). Open: 15 fps native needs ~151 MP/s from the camera library's two-camera mode.
+  - **Memory:** one native H.265 channel takes ~14 MB of RT-Smart pages (list_page): RT-Smart 52 / MMZ 76 MB, the
+    leak check's 5 MB history buffer only during a check, the JPEG channel closed for a video.
+  - **The link:** 2 x 4 Mbit/s overran the product's Wi-Fi bridge (lwIP out of memory, a 2 MB backlog); 2 x 2 Mbit/s
+    goes through (backlog < 0.13 MB). The encoder's first fetch can bring the VPS/SPS/PPS alone: the picture is in the
+    next fetch (h265.c), and the server puts them in front of every IDR for the live view.
+- **The bridge lives only for the capture:** the session ends after SENT (on USB the K230 comes back at once) and the
+  BL616's own check-in waits while a capture runs. Both on one radio and one MAC (two IP stacks, two DHCP leases) lost
+  the check-in's frames: 3-8 s handshakes and failed check-ins, 3 in a row would switch to the setup firmware
+  (test143, 2026-11-12).
+- **Exposure and light (user 2026-11-12: "minimise energy waste", "adapt to the external light"):** the ISP's auto
+  exposure is off; each shot first reads one frame with the LEDs off (the room's light at the exposure in use). Enough
+  for the target at <= 33 ms x gain 4: the shot in the room's light, no LEDs. Else the LEDs at the camera's last good
+  LED exposure (kept in /sdcard/leakcam/exposure for cold starts, with the exposure each sensor was left at: the
+  cameras open at it, so a probe after a boot reads the room as a running K230 would, 82 against 83 warm; before, 14
+  against 75, user 2026-11-12 "add persistence"), right at once in 3 frames: LEDs ~0.1 s per shot
+  (the ISP's AE: 14-40 frames, 0.5-1.7 s). One history per lighting (cam<N>.hist LED, cam<N>.amb.hist room).
+  Room-lit comparisons see daylight, lamps and shadows (tests/test144: imgdiff calls 23 of 30 lighting changes a
+  change); the plan: a room-lit `changed` is checked by flash / no-flash (two frames at one exposure, LEDs on and off:
+  the difference is the scene lit by the LEDs alone, the same day and night, compared with the LED history), then the
+  change net's `light` verdict.
+- **Native resolution (built 2026-11-12, decided 2026-10-21):** both cameras at 2592x1944 (15 fps), the pictures
+  2592x1936 (whole 16-row blocks for the JPEG encoder), JPEG on the VPU (~0.2 s per picture, zero-copy, EXIF spliced
+  in), the leak check on the native frame too (user 2026-11-12: "low resolution will not see any leak"; 16x16 blocks,
+  ~9 cm at 3 m; per camera 0.54 s history read + 0.17 s compare, the LEDs ~0.27 s); only the light probe uses the
+  ISP's second channel at 320x240.
+  Memory: RT-Smart 48 MB / media pool 80 MB. The sensor mode cannot change per shot (no stream restart, below): the
+  lighting probe and the leak check use the scaled channel of the same native stream.
+- **White LEDs only:** the lenses' IR-cut filters block the IR chain (measured: room 67, IR 68, white + IR 96 of 255
+  at one exposure); IR off, half the LED power. Back on with IR-passing lenses.
+- **The cameras stream while they are open** (vicap_cap.c): the closed VICAP/ISP library cannot restart a stream in a
+  running program (stop + start, deinit + init fail; a full close + open per shot leaks kernel threads and heap). A
+  shot takes frames from the running streams; a K230 session ends them with its power.
+- Built: the app's buttons, the pending list, the server's queue and media store, photos and the leak's pictures on
+  the board. Not yet: the videos (SENT counts them skipped), playback in the app beyond the gallery download.
 
 ### 5.3.15 Temperature and humidity: the room after a cool window, the 85 %RH alarm (user, 2026-11-10; tests/test140, test041)
 
@@ -1090,6 +1154,61 @@ and the humidity alarm.
   device's own thresholds.
 - **Bench:** `thresholds` shows the values, where they came from (the server's from flash, or the defaults) and the
   flash writes this boot; `leak` shows the comparator's reference as armed.
+
+### 5.3.17 Camera focus: detected when bad, tuned by hand with the app's guide (user, 2026-11-12; tests/test146)
+
+A camera out of focus makes the leak comparison meaningless: a puddle is a few soft pixels, the change rules
+(imgdiff's per-block pixel count, 5.3.12) and the change net see nothing. The M12 lenses are focused by turning them
+in their holders; a knock, a loose lock ring or a lens swapped for another (the IR question, 5.3.14) moves the focus.
+
+- **The sharpness score (K230):** per camera, on the native luma, the brightness-normalised gradient energy
+  (Tenengrad: sum of squared Sobel gradients / mean^2, so the exposure and the light level do not change it) over five
+  areas: the centre and four at half the image-circle radius (a fisheye's field is curved: the best compromise, not
+  the centre alone). Cheap (~10 ms on 5 x 256x256 pixels), computed on every LED-lit leak check and every frame of a
+  focus session. A number compared only with itself (the same camera, the same scene), never an absolute "sharp".
+- **Bad focus in a leak check:** each LED-lit check (the light is the board's own, the same every time) compares the
+  score with the camera's **focus reference** (the score saved when the person last tuned it, below):
+  below 60 % of it on 3 checks in a row = `unfocused` as that camera's verdict in the check-in's `job=` (5.3.10:
+  `job=<cam0>,<cam1>,<foc0>,<foc1>`, the percentages, in every check-in). Room-lit checks do not judge focus (the room's light changes the texture).
+  A camera without a reference (a new board) reads -1 as its % (`job=...,-1`): the server pushes "tune camera N" once, the row shows the focus icon.
+- **The change net's own output (KPU, DESIGN 5.3.12 / firmware/NN.txt):** beside its change / light verdict a third
+  output **`unreliable`**: it cannot tell whether anything changed because the picture is not good enough: out of
+  focus, a fogged or smudged lens, the lens covered. Trained with those augmentations (defocus blur of each strength,
+  fog, smudges, a hand over the lens) on the same pairs as the change verdict. `unreliable` from the net = the same
+  `unfocused` verdict; that camera's `changed` / `same` is not trusted (the server does not raise or clear a camera
+  leak on it). The score above works without the net and catches focus alone; the net also catches fog and smudges.
+- **What the person is told:** the server, on `unfocused` (once, not every check-in): a normal notification (not the
+  leak alarm) "Camera <N> of LEAKCAM on <SSID> is out of focus: leaks may be missed. Tap to tune it." -> opens the
+  focus screen for that board and camera. The board's row shows a small "focus" warning icon until tuned.
+- **The focus screen (FocusActivity), per camera, over the USB cable** (user: "good UX for user to adjust focus
+  asap"): the person is at the board turning the lens anyway, so the phone is plugged in (the app opens on the plug,
+  5.3.4): it starts at once (no check-in to wait for) and the K230 streams ~15 scores a second (on USB power the K230
+  is on, 5.3.11). Lines (the K230 answers them itself, not the BL616): `FOCUS,<cam>` start / switch (LEDs on, the
+  exposure locked so only the focus moves the score), `FOC,<cam>,<seq>,<score>` per frame, `FIMG,...` a centre-crop
+  preview JPEG once a second in line-sized base64 parts, `FOCUS,<cam>,DONE,<score>` save the reference
+  (/sdcard/leakcam/focus, both cameras), `FOCUS,OK,<cam>,<score>`, `FOCUS,STOP`.
+- **The turn guide (FocusGuide, user: "help user with direction where to rotate lens", "if focus gets worse swap
+  direction"):** a hill climb with the person's hand as the motor, on the median of the last 5 scores (one blurred
+  frame of a moving hand does not flip it):
+  - start: "Loosen the lock ring, then turn the lens slowly counter-clockwise (looking into the lens)";
+  - sharper by 8 %: "keep turning"; blurrier by 8 % without ever getting sharper: "wrong way, turn clockwise";
+  - sharper, then 8 % below the best: "past the sharpest point, turn back, small steps" (after that, any fall means
+    passed again; the best is the last pass's, so a noise-high best never makes the end unreachable);
+  - back within 3 % of the best after a peak: "Sharpest. Hold it, tighten the lock ring, then tap Done" (green);
+  - a jump of 30 % between updates: "Turn slower"; no rise or fall for ~10 s: "Nothing sharp in view".
+  - Felt as well as seen: a haptic tick at each new best, a long buzz at each "turn the other way".
+  - Layout (skill leakcam-app-ux): camera 1 / 2 switch, the live preview, a big arrow (↺ ↻ ✓), two fixed lines of
+    text, a bar (now, with the best as a marker), "Turn slower" (kept in place, invisible), Done (only when sharp).
+    Done on camera 1 goes on to camera 2. Target: one camera in under a minute.
+- **After tuning:** the histories of that camera are no longer comparable (every block changed): the K230 deletes
+  them when it saves the reference, so the next check reads `new` (never a leak) and stores fresh ones.
+- **Built (2026-11-12, not yet on the board):** k230_app/focus.c (score, reference, session; FOCUS lines only after
+  the phone's PIN got the BL616's OK: the preview is the camera's picture), DONE / `job=` as
+  `<cam0>,<cam1>,<foc0>,<foc1>` (the BL616's job field 32 B: the % capped at 999), server/alert.go focusAlerts
+  (one `focus` push per camera and reason, `unfocused` / `untuned`), the app's notification, row icon and PIN step.
+- **Open:** the lens must be reachable in the enclosure (today the cover has to come off: the fit, memory
+  leakcam-fit-rework-pending); the score's 60 % and the guide's 8 % / 3 % are first values, to be measured
+  (tests/test146).
 
 ### 5.4 K230-BL616 link and time
 
@@ -1182,8 +1301,8 @@ capture (LEDs at 100 %, AE settled)
 ```
 
 - **Change detection (`imgdiff.c`).**
-  - Frames are reduced to 320x240, masked to the image circle and gain-normalised.
-  - Blocks are compared on a 16x12 grid.
+  - Native frames (2592x1936 luma, read in place), masked to the image circle and gain-normalised.
+  - Blocks of 16x16 pixels (162x121), each judged by its mean |difference|.
   - One reference per camera: the history view (`cam<N>.hist`), the last keyframe with every
     stored delta applied. A slow seep is not absorbed, because nothing enters the history
     before the server has judged it.
@@ -1271,7 +1390,7 @@ back to U13's GND pad beside MICPL; 1 µF 0402 fits better than the 0805 (footpr
   on GPIO16-19 (IO16/17 = Y3), which pm_hbn_mode_enter() leaves on, and Y3 selected before it runs. Fixed in
   leak_wake.c (HBN_Hw_Pu_Pd_Cfg(DISABLE) in hbn_sleep(); rtc_use_crystal() waits for Y3, else RC32K); verified in
   the test firmware, 5 of 5 wakes. Open: Y3 -110 ppm (load caps).
-- **Full sensor resolution (decided 2026-10-21, refactor later).** The cameras are to run at the OV5647's native
+- **Full sensor resolution (decided 2026-10-21, built 2026-11-12: 5.3.14).** The cameras are to run at the OV5647's native
   2592x1944 instead of the 1280x960 binned mode the code uses now (WIDTH/HEIGHT in leakcam_wake.c and
   leakcam_stream.c; the trimmed /bin keeps the 1280x960 ISP set until then). What it touches:
   - ISP set 2592x1944 in /bin (install.sh pattern); sensor mode ~15 fps max at full resolution (2-lane MIPI).

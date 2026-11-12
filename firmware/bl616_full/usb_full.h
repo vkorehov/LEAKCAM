@@ -14,4 +14,8 @@ void usb_full_start(void);
 /* every K230 session's commands in the full firmware (usb, leak, rtc): the cable's lines and the leak check's DONE */
 void usb_full_cmd(const struct link_msg *m);
 
+/* the session ends now and comes back at once, without the RETRY_MS hold of a failed one (capture.c: the Wi-Fi bridge
+ * off after a capture) */
+void usb_full_again(void);
+
 #endif

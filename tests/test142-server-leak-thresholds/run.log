@@ -1,19 +1,19 @@
-04:13:37 test142-server-leak-thresholds: 0 metric rows MISSING: none
-04:13:40 CHECK pass PUT 0: the server back to its defaults 
-04:13:44 CHECK pass defaults: the board on 1100 mV / 85 %RH, the check-in reports them (thmv, thrh) board (1100, 85, True), metrics thmv 1100 thrh 85
-04:13:46 CHECK pass PUT 900 mV / 70 %RH accepted 
-04:13:49 CHECK pass the board on them at its next check-in (in flash: from the server) 4.9 s after the PUT
-04:13:52 CHECK pass one flash write, the probe's comparator re-armed at it flash writes 0 -> 1, reference 900 mV
-04:13:54 CHECK pass the next check-in reports them (thmv, thrh) thmv 900 thrh 70
-04:13:58 CHECK pass the same values at two more check-ins: no flash write flash writes 1 -> 1
+10:10:34 test142-server-leak-thresholds: 0 metric rows MISSING: none
+10:10:36 CHECK pass PUT 0: the server back to its defaults 
+10:10:41 CHECK pass defaults: the board on 1100 mV / 85 %RH, the check-in reports them (thmv, thrh) board (1100, 85, True), metrics thmv 1100 thrh 85
+10:10:42 CHECK pass PUT 900 mV / 70 %RH accepted 
+10:10:45 CHECK pass the board on them at its next check-in (in flash: from the server) 4.8 s after the PUT
+10:10:49 CHECK pass one flash write, the probe's comparator re-armed at it flash writes 0 -> 1, reference 900 mV
+10:10:51 CHECK pass the next check-in reports them (thmv, thrh) thmv 900 thrh 70
+10:10:54 CHECK pass the same values at two more check-ins: no flash write flash writes 1 -> 1
 Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
 Warning: Permanently added '192.168.1.159' (ED25519) to the list of known hosts.
-04:14:08 CHECK pass a reset with the server down: the stored values in use, the probe armed at them board (900, 70, True), reference 900 mV
-04:14:10 CHECK pass 75 %RH: the alarm at 70 %RH ate: now: 30.0 C 75.0 %RH, warm 0 s
+10:11:04 CHECK pass a reset with the server down: the stored values in use, the probe armed at them board (900, 70, True), reference 900 mV
+10:11:05 CHECK pass 75 %RH: the alarm at 70 %RH ate: now: 34.7 C 75.0 %RH, warm 0 s
 climate: humidity 75.0 %RH >= 70: alarm
 leak: check humid: CHECK to the running K230
-04:14:11 CHECK pass 75 %RH: the server's leak `humidity high` (judged at the device's threshold) 1.7 s
-04:14:23 CHECK pass the setup firmware: the stored values in use board (900, 70, True)
-04:14:34 CHECK pass back to the full firmware 
-04:14:41 CHECK pass PUT 0: the board back on 1100 mV / 85 %RH, the probe re-armed board (1100, 85, True), reference 1100 mV
-04:14:41 test142-server-leak-thresholds: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+10:11:07 CHECK pass 75 %RH: the server's leak `humidity high` (judged at the device's threshold) 1.7 s
+10:11:19 CHECK pass the setup firmware: the stored values in use board (900, 70, True)
+10:11:29 CHECK pass back to the full firmware 
+10:11:37 CHECK pass PUT 0: the board back on 1100 mV / 85 %RH, the probe re-armed board (1100, 85, True), reference 1100 mV
+10:11:38 test142-server-leak-thresholds: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

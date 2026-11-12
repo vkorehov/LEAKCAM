@@ -333,6 +333,17 @@ assert s.count(a) == 1, 'lwipopts.h changed, cannot drop the DHCP ARP check'
 open(p, 'w').write(s.replace(a, '#define DHCP_DOES_ARP_CHECK         0   /* LEAKCAM: no DHCP ARP check */\n'))
 PY
 grep -q 'LEAKCAM: no DHCP ARP check' "$LWOPT" || { echo "lwIP DHCP ARP check patch not applied"; exit 1; }
+# lwIP's heap: lwipopts.h leaves MEM_SIZE undefined, so lwIP's default 1600 B: TCP copies what a socket sends into it,
+# and the two cameras' video uploads (2 x 1.7 Mbit/s) failed with "Out of memory" (tests/test147, firmware/VIDEO.txt
+# 2026-11-12); the link itself carries 27.5 Mbit/s up (tests/test100, iperf, one connection)
+grep -q 'LEAKCAM: lwIP heap' "$LWOPT" || python3 - "$LWOPT" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+a = '//#define MEM_SIZE                    (1024*64)\n'
+assert s.count(a) == 1, 'lwipopts.h changed, cannot size the lwIP heap'
+open(p, 'w').write(s.replace(a, '#define MEM_SIZE                    (256 * 1024)   /* LEAKCAM: lwIP heap */\n'))
+PY
+grep -q 'LEAKCAM: lwIP heap' "$LWOPT" || { echo "lwIP heap patch not applied"; exit 1; }
 
 # 3. U-Boot/SPL: defconfig, device tree (reuses the BPI-Zero TARGET: same K230D SiP board code)
 cp "$HERE/uboot/configs/k230d_leakcam_defconfig" "$UB/configs/"
@@ -550,19 +561,24 @@ open(p, 'w').write(s.replace(c, c2).replace(a, a2).replace(d, d2))
 PY
 grep -q 'LEAKCAM: reset and irq counters' "$UARTC" || { echo "reset and irq counters patch not applied"; exit 1; }
 
-# ISP tuning files: the SDK copies every ov5647-* resolution (3.3 MB) into /bin; the product runs 1280x960 only.
+# ISP tuning files: the SDK copies every ov5647-* resolution (3.3 MB) into /bin; the product runs the native
+# 2592x1944 only (2026-11-12; 1280x960 before).
 # UFFS mount time follows the used pages, so the other four sets cost ~85 ms per boot (tests/test022, 2026-10-21).
 ISPMK=$SDK/src/rtsmart/mpp/userapps/src/sensor/Makefile
-grep -q 'LEAKCAM: ov5647 1280x960 only' "$ISPMK" || python3 - "$ISPMK" <<'PY'
-import sys
+grep -q 'LEAKCAM: ov5647 2592x1944 only' "$ISPMK" || python3 - "$ISPMK" <<'PY'
+import re, sys
 p = sys.argv[1]; s = open(p).read()
-a = 'ISP_SENSOR_CONFIG_PATTERNS += $(if $(filter y,$(CONFIG_MPP_ENABLE_SENSOR_OV5647)),ov5647-*)\n'
-b = ('# LEAKCAM: ov5647 1280x960 only (the binned mode the cameras run)\n'
-     'ISP_SENSOR_CONFIG_PATTERNS += $(if $(filter y,$(CONFIG_MPP_ENABLE_SENSOR_OV5647)),ov5647-1280x960*)\n')
-assert s.count(a) == 1, 'sensor Makefile changed, cannot apply the ISP files patch'
-open(p, 'w').write(s.replace(a, b))
+b = ('# LEAKCAM: ov5647 2592x1944 only (the native mode the cameras run)\n'
+     'ISP_SENSOR_CONFIG_PATTERNS += $(if $(filter y,$(CONFIG_MPP_ENABLE_SENSOR_OV5647)),ov5647-2592x1944*)\n')
+# the SDK's line, or the earlier LEAKCAM 1280x960 one (an SDK tree patched before 2026-11-12)
+pat = re.compile(r'(# LEAKCAM: ov5647 1280x960 only[^\n]*\n)?ISP_SENSOR_CONFIG_PATTERNS \+= \$\(if \$\(filter y,'
+                 r'\$\(CONFIG_MPP_ENABLE_SENSOR_OV5647\)\),ov5647-[^)]*\)\n')
+assert len(pat.findall(s)) == 1, 'sensor Makefile changed, cannot apply the ISP files patch'
+open(p, 'w').write(pat.sub(lambda m: b, s))
 PY
-grep -q 'LEAKCAM: ov5647 1280x960 only' "$ISPMK" || { echo "ISP files patch not applied"; exit 1; }
+grep -q 'LEAKCAM: ov5647 2592x1944 only' "$ISPMK" || { echo "ISP files patch not applied"; exit 1; }
+# a test image's extra 1280x960 set (tests/firmware/test_install.sh adds it after this script): out for the product
+sed -i '/LEAKCAM test image: ov5647 1280x960/,+1d' "$ISPMK"
 rm -f "$SDK"/output/*/images/bin/ov5647-*                  # earlier builds' sets: the rule only adds files
 
 # The product program (firmware/k230_app): src/applications/leakcam, sources in ./src (the Docker build only sees the

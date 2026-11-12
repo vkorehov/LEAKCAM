@@ -1,0 +1,27 @@
+10:42:43 test143-photo-upload: 0 metric rows MISSING: none
+10:42:54 CHECK pass round 1: SENT within 60 s of the check-in 6.3 s, 7C3E8262B149-1794472969
+10:42:54 CHECK pass round 1: the K230 uploaded 2, failed 0 2 uploaded, 0 failed
+10:42:54 CHECK pass round 1: p1 (J4) a lit 1280x960 JPEG 41657 B, 1280x960, mean 97, EXIF 2026:11:12 08:42:52
+10:42:54 CHECK pass round 1: p1 taken now (X-Taken and EXIF within 120 s, equal within 1 s) X-Taken 1794472972848, EXIF 2026:11:12 08:42:52 UTC
+10:42:54 CHECK pass round 1: p2 (J5) a lit 1280x960 JPEG 33872 B, 1280x960, mean 84, EXIF 2026:11:12 08:42:52
+10:42:54 CHECK pass round 1: p2 taken now (X-Taken and EXIF within 120 s, equal within 1 s) X-Taken 1794472972848, EXIF 2026:11:12 08:42:52 UTC
+10:42:54 CHECK pass round 1: both cameras in the same shot (X-Taken within 1 s) 0 ms apart
+10:43:04 CHECK pass round 2: SENT within 60 s of the check-in 6.3 s, 7C3E8262B149-1794472979
+10:43:04 CHECK pass round 2: the K230 uploaded 2, failed 0 2 uploaded, 0 failed
+10:43:04 CHECK pass round 2: p1 (J4) a lit 1280x960 JPEG 41804 B, 1280x960, mean 95, EXIF 2026:11:12 08:43:03
+10:43:04 CHECK pass round 2: p1 taken now (X-Taken and EXIF within 120 s, equal within 1 s) X-Taken 1794472983055, EXIF 2026:11:12 08:43:03 UTC
+10:43:04 CHECK pass round 2: p2 (J5) a lit 1280x960 JPEG 33687 B, 1280x960, mean 84, EXIF 2026:11:12 08:43:03
+10:43:04 CHECK pass round 2: p2 taken now (X-Taken and EXIF within 120 s, equal within 1 s) X-Taken 1794472983055, EXIF 2026:11:12 08:43:03 UTC
+10:43:04 CHECK pass round 2: both cameras in the same shot (X-Taken within 1 s) 0 ms apart
+10:43:12 CHECK pass round 3: SENT within 60 s of the check-in 6.3 s, 7C3E8262B149-1794472988
+10:43:12 CHECK pass round 3: the K230 uploaded 2, failed 0 2 uploaded, 0 failed
+10:43:12 CHECK pass round 3: p1 (J4) a lit 1280x960 JPEG 41804 B, 1280x960, mean 95, EXIF 2026:11:12 08:43:11
+10:43:12 CHECK pass round 3: p1 taken now (X-Taken and EXIF within 120 s, equal within 1 s) X-Taken 1794472991592, EXIF 2026:11:12 08:43:11 UTC
+10:43:12 CHECK pass round 3: p2 (J5) a lit 1280x960 JPEG 34019 B, 1280x960, mean 83, EXIF 2026:11:12 08:43:11
+10:43:12 CHECK pass round 3: p2 taken now (X-Taken and EXIF within 120 s, equal within 1 s) X-Taken 1794472991592, EXIF 2026:11:12 08:43:11 UTC
+10:43:12 CHECK pass round 3: both cameras in the same shot (X-Taken within 1 s) 0 ms apart
+10:43:20 CHECK pass 5 check-ins after the photos: all reach the server (0x03) 0x03 0x03 0x03 0x03 0x03
+10:43:21 K230 media steps: done, 2 uploaded, 0 failed, 0 skipped; Wi-Fi bridge bound; round 1 at 144 ms: cameras 0x3 in 132 ms, JPEGs at 769 ms; p1 41804 B: uploaded 200 at 880 ms; p2 34019 B: uploaded 200 at 969 ms; done, 2 uploaded, 0 failed, 0 skipped
+10:43:21 CHECK pass 3 rounds: the K230 program's heap does not grow heap + [1048576, 1048576, 1048576] B
+10:43:21 CHECK pass rounds 2-3: the BL616's free heap does not shrink (145184, 132836) -> (156020, 126396)
+10:43:23 test143-photo-upload: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

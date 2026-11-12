@@ -15,6 +15,7 @@
 #include "climate.h"
 #include "device_id.h"
 #include "hbn_sleep.h"
+#include "capture.h"
 #include "leak_check.h"
 #include "metrics.h"
 #include "ota_fetch.h"
@@ -27,6 +28,7 @@
 #define CHECKIN_MIN_S  5
 #define CHECKIN_MAX_S  3600
 #define MISSED_MAX  3                        /* presence lost after this many failed check-ins in a row */
+#define CAPTURE_WAIT_S 130   /* a capture's longest run (capture.c SENT_MAX_MS + margin) */
 
 static uint32_t checkin_s = CHECKIN_S;
 static enum wifi_check_state last = WCHK_IDLE;
@@ -160,9 +162,11 @@ static void check_in(void)
         hbn_sleep_missed_set(missed);
         if (missed >= MISSED_MAX)
             switch_to_setup("lost");      /* presence lost, for whatever reason (tests/test117) */
+        capture_answer("");               /* no answer: a K230 kept on for it goes off on battery */
         return;
     }
     hbn_sleep_missed_set(0);
+    capture_answer(body);                 /* pictures / videos the server asks for (capture.c) */
     if (wifi_change(body))
         return;                           /* the rest of this answer waits for the next check-in, on its network */
     if (ota_fetch(body, ssid, sl, psk, ps ? pl : 0)) {
@@ -189,6 +193,11 @@ static void presence_task(void *arg)
         }
         again = false;                     /* every request so far: answered by this check-in */
         busy = true;
+        /* a capture's upload has the radio (the K230's bridge): the check-in after its SENT, at most CAPTURE_WAIT_S
+         * later. Both at once lost the check-in's frames: 3-8 s handshakes and 2 of 7 check-ins failed (test143,
+         * 2026-11-12); 3 in a row would have sent the board to the setup firmware */
+        for (unsigned w = 0; capture_busy() && w < CAPTURE_WAIT_S * 10; w++)
+            vTaskDelay(pdMS_TO_TICKS(100));
         climate_read("check-in");          /* first, before the radio warms anything (DESIGN.md 5.3.15) */
         check_in();                        /* on USB and on battery; it needs a stored network */
         hbn_sleep_checkin_set(rtc_clock_s() + checkin_s);

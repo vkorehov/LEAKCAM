@@ -1,9 +1,10 @@
 # test137: the K230 leak job with simulated cameras (product pair: the K230 program's job + its link frames)
 
-Status: **pass** (2026-11-07 08:34, run.py 11/11, BL616 full 0.6+g2961d6c-dirty, K230 0.6+g2961d6c-dirty): every
-scene gives its verdict on both cameras (new / same / light = same / object = changed), the history kept on a change,
-CHECK -> DONE 111 ms (the job itself 48 ms), the change at the server 2 s after the check (a check-in at once), no
-memory growth over 8 checks.
+Status: **pass on the real cameras** (2026-11-12 07:21 UTC, run.py 12/12, BL616 full and K230 0.6+g3c58c78-dirty):
+every verdict on both cameras (new / same / light = same / object = changed), CHECK -> DONE 0.7-0.8 s (the LEDs on
+until auto exposure is steady, 14-25 frames), no memory growth over 8 checks. The first real-camera run had every second
+check `nocam` (the ISP cannot restart a stream; the streams now run while the cameras are open, vicap_cap.c). Earlier:
+simulated cameras, 11/11 on 2026-11-07 (HISTORY.md).
 
 The leak detection job of the one K230 program (DESIGN.md 5.3.8, 5.3.12; firmware/k230_app/job.c) until the cameras
 arrive: both cameras simulated (a synthetic room per camera, the scene picked by /sdcard/leakcam/sim), each frame
@@ -14,8 +15,8 @@ as the RTC's), answered by the job's DONE; the result in the next check-in (`job
 ## How it works
 
 - The K230 program starts the job thread beside the USB relay: one check at the start, one per `CHECK,<reason>`.
-- A check: per camera a 320x240 frame from the simulated camera (scene same / light / object), smoothed as a real
-  capture, compared with /sdcard/leakcam/cam<N>.hist: no history = `new` (written); imgdiff (blocks, gain-normalised)
+- A check: per camera the native 2592x1936 luma of the real camera (the stored image changed by the scene token: same /
+  light / object), compared with /sdcard/leakcam/cam<N>.hist: no history = `new` (written); imgdiff (blocks, gain-normalised)
   says `changed` or `same`. A change of the light level alone reads as `same` (gain normalisation; the change net's
   `light` verdict comes with the KPU step). The history is kept on `changed`.
 - The scene file: the last `cam<N>=<scene>` counts (the K230 console's `echo` appends, it cannot create a file; the job

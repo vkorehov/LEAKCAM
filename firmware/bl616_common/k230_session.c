@@ -53,6 +53,8 @@ static volatile bool battery_ask;          /* k230_session_battery(): a STATUS t
 static volatile uint32_t statuses;        /* STATUS frames taken: k230_session_battery() waits for the next */
 static char check_reason[16];
 static volatile bool check_ask;            /* k230_session_check(): a CHECK to send */
+static char shoot_arg[LINK_MAX_LINE - 16];
+static volatile bool shoot_ask;            /* k230_session_shoot(): a SHOOT to send */
 
 static void uart_rx_isr(int irq, void *arg)
 {
@@ -168,8 +170,14 @@ static void log_mem(const char *when)
            (unsigned)m.min_free, (unsigned long)m.blocks, m.tasks, m.deleted);
 }
 
+/* the full firmware's Wi-Fi bridge (capture.c): stopped before the rails go (wifi_link.h); none in the setup firmware */
+__attribute__((weak)) void k230_session_rails_going(void)
+{
+}
+
 static void off(const char *why)
 {
+    k230_session_rails_going();
     uart_stop();
     uint32_t fall = k230_power_off();
     state = OFF;
@@ -260,7 +268,9 @@ static void session_task(void *arg)
         if (state == RUN && battery_ask && link_send_cmd("STATUS", NULL))
             battery_ask = false;
         if (state == RUN && check_ask && link_send_cmd("CHECK", check_reason))
-            check_ask = false;                   /* answered by the job's DONE */                 /* its STATUS frame answers it; a USB line waits for the link meanwhile */
+            check_ask = false;                   /* answered by the job's DONE */
+        if (state == RUN && shoot_ask && link_send_cmd("SHOOT", shoot_arg))
+            shoot_ask = false;                   /* answered by the K230's SENT */
         if (state == RUN && !q_sending && q_count) {
             char line[LINK_MAX_LINE];
             taskENTER_CRITICAL();
@@ -313,6 +323,7 @@ void k230_session_start(const char *why, void (*fn)(const struct link_msg *m))
     q_head = q_count = 0;
     q_sending = false;
     check_ask = false;                      /* the program's job checks once at its start anyway */
+    /* shoot_ask stays: a capture asked before the session started goes out once the K230 has its WAKE */
     log_mem("session start");
     t_on = bflb_mtimer_get_time_ms();
     uint32_t ramp = k230_power_on();
@@ -345,6 +356,13 @@ void k230_session_check(const char *why)
 {
     snprintf(check_reason, sizeof(check_reason), "%s", why);
     check_ask = true;
+    xTaskNotifyGive(task);
+}
+
+void k230_session_shoot(const char *arg)
+{
+    snprintf(shoot_arg, sizeof(shoot_arg), "%s", arg);
+    shoot_ask = true;
     xTaskNotifyGive(task);
 }
 

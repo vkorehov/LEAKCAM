@@ -1,10 +1,10 @@
 /*
- * Change detection between two luminance images of the same fisheye camera.
- *
- * Both images are reduced to a small working size (default 320x240, a 4x4 box from the 1280x960
- * capture), smoothed 3x3, masked to the lens' image circle, and gain-normalised so a slightly
- * different exposure or LED level does not count as a change. The decision is made per block
- * (16x12 grid): a real object or water appearing moves a whole block, sensor noise does not.
+ * Change detection between two luminance images of the same fisheye camera, at the camera's native resolution
+ * (user 2026-11-12: "low resolution will not see any leak"; at 320x240 a 10 cm puddle 3 m away was ~2 pixels in a
+ * 20x20 block). The images are masked to the lens' image circle and gain-normalised (a slightly different exposure
+ * or light level is not a change); the decision is per block of IMGDIFF_BLOCK x IMGDIFF_BLOCK pixels (~9 cm at 3 m):
+ * changed when its mean difference is high (a large change) or when enough of its pixels changed (a small one: a 10 cm
+ * puddle at 3 m is ~17x10 pixels, its mean diluted over the blocks it straddles; test144). Noise stays under both.
  */
 #ifndef LEAKCAM_IMGDIFF_H
 #define LEAKCAM_IMGDIFF_H
@@ -12,15 +12,17 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define IMGDIFF_W        320
-#define IMGDIFF_H        240
-#define IMGDIFF_BLOCKS_X 16
-#define IMGDIFF_BLOCKS_Y 12
+#define IMGDIFF_W        2592            /* the OV5647's native width, 1936 of its 1944 rows (cap.h, job.h) */
+#define IMGDIFF_H        1936
+#define IMGDIFF_BLOCK    16
+#define IMGDIFF_BLOCKS_X (IMGDIFF_W / IMGDIFF_BLOCK)
+#define IMGDIFF_BLOCKS_Y (IMGDIFF_H / IMGDIFF_BLOCK)
 
 struct imgdiff_cfg {
-    float circle_radius;   /* image-circle radius as a fraction of the working width (0 = no mask) */
+    float circle_radius;   /* image-circle radius as a fraction of the width (0 = no mask) */
     int   pixel_thresh;    /* |difference| that counts a pixel as changed, 0..255 */
     float block_thresh;    /* mean |difference| over a block that counts the block as changed */
+    int   block_pixels;    /* changed pixels in a block that count the block as changed (a small change) */
     float frac_thresh;     /* fraction of masked pixels changed that alone flags a change */
     int   dark_floor;      /* pixels darker than this in both images are ignored (vignette) */
 };
@@ -37,12 +39,9 @@ struct imgdiff_result {
 
 void imgdiff_default_cfg(struct imgdiff_cfg *cfg);
 
-/* src: w x h luminance with row stride; dst: IMGDIFF_W x IMGDIFF_H. w and h must be integer
- * multiples of the working size. */
-int imgdiff_reduce(const uint8_t *src, int w, int h, int stride, uint8_t *dst);
-
-/* ref and cur are IMGDIFF_W x IMGDIFF_H outputs of imgdiff_reduce() */
-void imgdiff_compare(const uint8_t *ref, const uint8_t *cur, const struct imgdiff_cfg *cfg,
+/* ref: IMGDIFF_W x IMGDIFF_H packed (the history); cur: the same size with row stride cur_stride (the camera's frame,
+ * read in place) */
+void imgdiff_compare(const uint8_t *ref, const uint8_t *cur, int cur_stride, const struct imgdiff_cfg *cfg,
                      struct imgdiff_result *out);
 
 #endif
