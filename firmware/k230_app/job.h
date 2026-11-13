@@ -38,6 +38,10 @@ int job_video(unsigned more, unsigned more_ms, cap_frame_fn fn, void *ctx, struc
  * itself); waits for a check or pictures (the cameras are one user's at a time) and holds them off meanwhile; 0, -1:
  * no camera or one failed */
 int job_focus(cap_frame_fn fn, void *ctx, bool (*go)(void *ctx), int (*mapped)(void *ctx));
+/* the cameras to ignore from now on, bit n = camera n (the person's choice, DESIGN.md 5.3.18): kept in flash
+ * (/sdcard/leakcam/ignore), written only when it changes; an ignored camera reads "ignored" in a check (not compared,
+ * no history), one used again starts with "new". false: not written */
+bool job_ignore(unsigned mask);
 /* camera cam's histories deleted (its focus moved: the next check stores new ones, "new") */
 void job_forget(int cam);
 /* the last shot's moment (CLOCK_REALTIME), set before the frames go to fn: for fn itself */

@@ -143,10 +143,15 @@
     <string name="wifi_failed_text">It could not join "%1$s". Open the app to try again.</string>
     <string name="more">more actions</string>
     <string name="icon_wifi">present at the server over Wi-Fi</string>
-    <string name="icon_focus">camera %1$d needs focusing: ⋮ → Tune focus</string>
+    <string name="icon_focus">the %1$s needs focusing: ⋮ → Tune focus</string>
     <!-- the common actions (DESIGN.md 5.3.14) -->
-    <string name="take_photo">Take photo</string>
-    <string name="take_video">Take video</string>
+    <string name="take_photo">Photo</string>
+    <string name="take_video">Video</string>
+    <string name="live_video">Live</string>
+    <string name="leak_live">Live video</string>
+    <string name="focus_wipe">Hazy or streaky at every position? Wipe the lens with alcohol on a soft cloth, then try again.</string>
+    <string name="live_title">LEAKCAM Live Video</string>
+    <string name="live_now">Live: the %1$s</string>
     <string name="capture_later">%1$s takes the %2$s at its next check-in (%3$s). You get a notification when it is ready to play.</string>
     <string name="capture_failed">The request did not reach the LEAKCAM server. Check the phone\'s internet and try again.</string>
     <string name="kind_photo">photo</string>
@@ -167,27 +172,45 @@
     <string name="looking">Looking for LEAKCAMs nearby…</string>
     <!-- focus tuning (FocusActivity, DESIGN.md 5.3.17); the turn directions as seen looking into the lens -->
     <string name="focus_menu">Tune focus</string>
-    <string name="focus_offer">Tune focus: camera %1$d is out of focus</string>
+    <string name="focus_what_unfocused">%1$s is out of focus: leaks in its view may be missed</string>
+    <string name="focus_what_untuned">%1$s: its focus is not set yet</string>
+    <string name="focus_what_dark">%1$s sees nothing: its picture is dark. Tune it, or ignore it</string>
+    <string name="ignore_button">Ignore camera</string>
+    <string name="ignore_title">Ignore the %1$s?</string>
+    <string name="ignore_text">Leaks in its view will no longer be noticed. The other camera and the probe stay on watch. You can use it again from the board\'s ⋮ menu.</string>
+    <string name="ignore_yes">Ignore it</string>
+    <string name="ignore_undo">Use the %1$s again</string>
+    <string name="ignore_done">%1$s is ignored from the board\'s next check-in</string>
+    <string name="ignore_undone">%1$s is used again from the board\'s next check-in</string>
+    <string name="ignore_failed">Not saved for the %1$s: no answer from the server</string>
+    <string name="pending_ignore">Camera setting for the board</string>
+    <string name="focus_dark_title">%1$s of LEAKCAM on %2$s sees nothing</string>
+    <string name="focus_dark_text">Its picture is dark. Tap to tune it or ignore it.</string>
     <string name="focus_title">LEAKCAM Focus Adjustment</string>
-    <string name="focus_camera">Camera %1$d</string>
+    <!-- the two cameras by where they look (user 2026-11-13: "don't use camera1 and camera2 in product, use top
+         camera and bottom camera"): camera 0 = J4, the bottom one; camera 1 = J5, the top one (DESIGN.md 2) -->
+    <string name="camera_0">Bottom camera</string>
+    <string name="camera_1">Top camera</string>
+    <string name="camera_0_in">bottom camera</string>
+    <string name="camera_1_in">top camera</string>
     <string name="focus_starting">Waiting for the board: it starts %1$s</string>
-    <string name="focus_ended">The board ended the session. Tap Tune focus to start again.</string>
-    <string name="focus_failed">The server did not answer: check the phone\'s internet</string>
+    <string name="focus_ended">The board ended the session. Starting it again…</string>
+    <string name="focus_failed">No answer from the server. Trying again…</string>
     <string name="focus_ccw">counter-clockwise</string>
     <string name="focus_cw">clockwise</string>
-    <string name="focus_start">Loosen the lock ring, then turn the lens slowly %1$s (looking into the lens)</string>
+    <string name="focus_start">Loosen the lock ring, then turn the lens slowly %1$s</string>
     <string name="focus_keep">Getting sharper: keep turning slowly %1$s</string>
     <string name="focus_wrong">Getting blurrier: turn the other way, %1$s</string>
     <string name="focus_too_far">Past the sharpest point: turn back %1$s, in small steps</string>
     <string name="focus_stop">Sharpest. Hold it, tighten the lock ring, then tap Done</string>
-    <string name="focus_no_detail">Nothing sharp in view: point the camera at something with detail, check the lens is uncovered</string>
+    <string name="focus_no_detail">Nothing sharp in view: aim it at something with detail</string>
     <string name="focus_slower">Turn slower</string>
     <string name="focus_done">Done</string>
     <string name="focus_saved">Saved</string>
     <string name="focus_channel">Camera focus</string>
-    <string name="focus_unfocused_title">Camera %1$d of LEAKCAM on %2$s is out of focus</string>
+    <string name="focus_unfocused_title">%1$s of LEAKCAM on %2$s is out of focus</string>
     <string name="focus_unfocused_text">Leaks may be missed. Tap to tune it.</string>
-    <string name="focus_untuned_title">Tune camera %1$d of LEAKCAM on %2$s</string>
+    <string name="focus_untuned_title">Tune the %1$s of LEAKCAM on %2$s</string>
     <string name="focus_untuned_text">Its focus is not set yet. Tap to tune it.</string>
-    <string name="focus_nocam">Camera %1$d does not answer: check its cable</string>
+    <string name="focus_nocam">%1$s did not start. Trying again…</string>
 </resources>

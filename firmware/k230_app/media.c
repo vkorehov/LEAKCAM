@@ -386,6 +386,14 @@ static void run(const struct req *r)
     struct timespec t0;
     clock_gettime(CLOCK_MONOTONIC, &t0);
     char what[160];
+    if (!strcmp(r->kind, "ignore")) {   /* no picture: the cameras to ignore, in the <photos> field (5.3.18) */
+        bool ok = job_ignore((unsigned)r->photos);
+        pthread_mutex_lock(&mu);
+        snprintf(result, sizeof(result), "%d,%d,0", ok, !ok);
+        result_ready = true;
+        pthread_mutex_unlock(&mu);
+        return;
+    }
     snprintf(what, sizeof(what), "media: %s %s, %d pictures, %d cameras", r->kind, r->base, r->photos, r->cams);
     step(what);
     bool video = r->secs > 0 && (!strcmp(r->kind, "video") || !strcmp(r->kind, "leak"));

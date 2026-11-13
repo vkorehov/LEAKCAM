@@ -93,7 +93,9 @@ void capture_answer(const char *body)
     }
     const char *kind = strstr(c, "\"kind\":\"photo\"") ? "photo" : strstr(c, "\"kind\":\"video\"") ? "video"
                      : strstr(c, "\"kind\":\"leak\"")  ? "leak"
-                     : strstr(c, "\"kind\":\"focus\"") ? "focus" : NULL;   /* the app's focus adjustment (5.3.17) */
+                     : strstr(c, "\"kind\":\"focus\"") ? "focus"      /* the app's focus adjustment (5.3.17) */
+                     : strstr(c, "\"kind\":\"ignore\"") ? "ignore" : NULL; /* the cameras to ignore (5.3.18): no
+                                                                             * picture, their mask in "photos" */
     const char *id = strstr(c, "\"ids\":[\"");
     long cams = field(c, "cams");
     if (!kind || !id || cams < 1 || cams > 2) {
@@ -111,7 +113,7 @@ void capture_answer(const char *body)
         return;
     }
     more = field(c, "more") > 0;         /* another capture waits at the server: a check-in again after SENT */
-    long photos = !strcmp(kind, "photo") ? cams : !strcmp(kind, "leak") ? field(c, "photos") : 0;
+    long photos = !strcmp(kind, "photo") ? cams : !strcmp(kind, "leak") || !strcmp(kind, "ignore") ? field(c, "photos") : 0;
     long gap = field(c, "gap_ms"), secs = field(c, "secs");
     char arg[LINK_MAX_LINE - 16];
     snprintf(arg, sizeof(arg), "%s,%.*s,%ld,%ld,%ld,%ld,%s,%s", kind, (int)(dash - id), id, cams,

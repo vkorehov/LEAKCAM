@@ -259,6 +259,19 @@ func TestDarkAndIgnoredCamera(t *testing.T) {
 	if open() || flagged() != ([Cameras]string{}) || ans["checkin"] == float64(FocusModeS) {
 		t.Errorf("an ignored camera: leak %v, told %v, check-in %v", open(), flagged(), ans["checkin"])
 	}
+	// to the board at that check-in: the mask in "photos"; the K230 then reports the camera as ignored
+	if c, _ := ans["capture"].(map[string]any); c == nil || c["kind"] != "ignore" || c["photos"] != float64(1) {
+		t.Fatalf("the hand-over to the board: %v", ans["capture"])
+	}
+	if ans = job("ignored,same,-1,100"); ans["capture"] != nil {
+		t.Errorf("the board ignores it: asked again, %v", ans["capture"])
+	}
+	mu.Lock()
+	ignoreSent[TestID] = time.Now().Add(-time.Minute) // a leak check after the hand-over still judges the camera
+	mu.Unlock()
+	if c, _ := job("same,same,-1,100")["capture"].(map[string]any); c == nil || c["kind"] != "ignore" {
+		t.Errorf("the board did not take it: not handed over again, %v", c)
+	}
 	loadThresholds() // kept over a restart
 	if !deviceThresholds(TestID).Ignore[0] {
 		t.Error("ignore not kept in the file")
@@ -273,5 +286,80 @@ func TestDarkAndIgnoredCamera(t *testing.T) {
 	job("same,changed,100,100")
 	if !open() {
 		t.Error("the other camera's change opened no leak")
+	}
+}
+
+// an open leak's check-ins: every 30 s, slower each day without a response, fast again when the person asks the board
+// for something (LeakSteps; DESIGN.md 5.3.13)
+func TestLeakCheckinBackoff(t *testing.T) {
+	s := testServer(t)
+	pace := func(age time.Duration) any {
+		mu.Lock()
+		l := leaks[TestID]
+		l.Since = time.Now().Add(-age)
+		leaks[TestID] = l
+		mu.Unlock()
+		ans, _ := checkIn(t, s, url.Values{"full": {"0.6+g1234567"}})
+		return ans["checkin"]
+	}
+	checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "probe": {"100"}}) // a wet probe: the leak opens
+	for _, c := range []struct {
+		age  time.Duration
+		want int
+	}{{time.Minute, 30}, {23 * time.Hour, 30}, {25 * time.Hour, 60}, {49 * time.Hour, 300}} {
+		if got := pace(c.age); got != float64(c.want) {
+			t.Errorf("a leak open for %v: check-in %v, want %d s", c.age, got, c.want)
+		}
+	}
+	if got := pace(73 * time.Hour); got == float64(300) || got == float64(60) || got == float64(30) {
+		t.Errorf("a leak open for 73 h: still %v s, want the normal check-in", got)
+	}
+	// a response: live video asked two days in
+	must(http.Post(s.URL+"/v1/devices/"+TestID+"/focus", "application/json", strings.NewReader(`{"cam":0}`)))
+	if got := pace(49 * time.Hour); got != float64(30) {
+		t.Errorf("after the person's ask: check-in %v, want 30 s again", got)
+	}
+}
+
+// a camera change while the person tunes the focus or watches live is no leak; a wet probe still is
+func TestNoCameraLeakDuringFocus(t *testing.T) {
+	s := testServer(t)
+	open := func() bool {
+		mu.Lock()
+		defer mu.Unlock()
+		_, o := leaks[TestID]
+		return o
+	}
+	must(http.Post(s.URL+"/v1/devices/"+TestID+"/focus", "application/json", strings.NewReader(`{"cam":1}`)))
+	checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "job": {"changed,changed,100,100"}, "jago": {"5"}})
+	if open() {
+		t.Fatal("a camera change with a focus session asked for opened a leak")
+	}
+	checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "job": {"dark,same,-1,100"}, "jago": {"5"}})
+	mu.Lock()
+	told := focusTold[TestID]
+	mu.Unlock()
+	if told != ([Cameras]string{}) {
+		t.Errorf("a camera problem told during the session: %v", told)
+	}
+	mu.Lock()
+	delete(focusAsked, TestID)
+	focusEnded[TestID] = time.Now().Add(-time.Minute) // the session over a minute ago
+	mu.Unlock()
+	checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "job": {"changed,same,100,100"}, "jago": {"5"}})
+	if open() {
+		t.Fatal("a camera change a minute after the session opened a leak")
+	}
+	checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "probe": {"100"}})
+	if !open() {
+		t.Fatal("a wet probe during the quiet time opened no leak")
+	}
+	mu.Lock()
+	delete(leaks, TestID)
+	focusEnded[TestID] = time.Now().Add(-time.Hour)
+	mu.Unlock()
+	checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "probe": {"3000"}, "job": {"changed,same,100,100"}, "jago": {"5"}})
+	if !open() {
+		t.Fatal("a camera change an hour after the session opened no leak")
 	}
 }

@@ -102,13 +102,30 @@
                         android:visibility="gone" />
                 </FrameLayout>
 
-                <!-- a false alarm: the check re-armed (DESIGN.md 5.3.13, user 2026-11-07) -->
-                <Button
-                    android:id="@+id/leak_not"
-                    android:layout_width="wrap_content"
+                <!-- look now (user 2026-11-13: live video "should be available after leak detected": the board checks in
+                     every 30 s while the leak is open), or a false alarm: the check re-armed (DESIGN.md 5.3.13) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="@string/not_leak" />
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/leak_live"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:maxLines="1"
+                        android:text="@string/leak_live" />
+
+                    <Button
+                        android:id="@+id/leak_not"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:maxLines="1"
+                        android:text="@string/not_leak" />
+                </LinearLayout>
             </LinearLayout>
 
             <LinearLayout
@@ -146,6 +163,16 @@
                     android:maxLines="1"
                     android:text="@string/take_video" />
 
+                <!-- the cameras live (DESIGN.md 5.3.19, user 2026-11-13: "we need a live video screen in app") -->
+                <Button
+                    android:id="@+id/live_video"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="@string/live_video" />
+
                 <ImageButton
                     android:id="@+id/more"
                     android:layout_width="48dp"
@@ -158,13 +185,49 @@
             <!-- a camera of the picked board is out of focus or not tuned yet (its check-ins, kept by the server):
                  the focus adjustment offered here (user 2026-11-13: "It should offer it on status screen"; DESIGN.md
                  5.3.17); under the action row, so it never moves the buttons -->
-            <Button
-                android:id="@+id/tune_focus"
+            <LinearLayout
+                android:id="@+id/focus_row"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:visibility="gone" />
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- what is wrong with the camera (out of focus, never tuned, sees nothing: DESIGN.md 5.3.18), then
+                     the person's two answers side by side -->
+                <TextView
+                    android:id="@+id/focus_what"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:paddingTop="4dp"
+                    android:textColor="#E65100"
+                    android:textSize="15sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/tune_focus"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="@string/focus_menu" />
+
+                    <Button
+                        android:id="@+id/ignore_cam"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="@string/ignore_button" />
+                </LinearLayout>
+            </LinearLayout>
 
             <!-- the status block under the action row (status_block.xml): a longer or shorter message never moves the
                  buttons (user 2026-11-07: no jumps in the action area) -->

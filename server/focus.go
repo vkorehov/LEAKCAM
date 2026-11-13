@@ -28,11 +28,12 @@ import (
 )
 
 const (
-	FocusText  = 1 << 30 // a record's kind bit: a text line, else an access unit
-	FocusMaxS  = 600     // a session's longest (the check-in answer's secs)
-	FocusModeS = 60      // the check-in interval while a camera is flagged or a session is asked for
-	FocusAskS  = 600     // an asked-for session keeps the 60 s check-ins this long
-	FocusQueue = 64      // records waiting for a viewer before it loses pictures (~4 s of video)
+	FocusText   = 1 << 30 // a record's kind bit: a text line, else an access unit
+	FocusMaxS   = 600     // a session's longest (the check-in answer's secs)
+	FocusModeS  = 60      // the check-in interval while a camera is flagged or a session is asked for
+	FocusQuietS = 600     // after a session: camera changes are no leak (the person still at the board, the scene settling)
+	FocusAskS   = 600     // an asked-for session keeps the 60 s check-ins this long
+	FocusQueue  = 64      // records waiting for a viewer before it loses pictures (~4 s of video)
 )
 
 var (
@@ -91,6 +92,7 @@ func askFocus(w http.ResponseWriter, r *http.Request) {
 		queueCapture(id, "focus")
 	}
 	focusAsked[id] = time.Now()
+	askedAt[id] = time.Now()
 	within := deviceIntervalsLocked(id).Checkin
 	if s := wakeModeS(id); s > 0 {
 		within = s
@@ -207,6 +209,7 @@ func focusStream(w http.ResponseWriter, r *http.Request) {
 	focusMu.Unlock()
 	mu.Lock()
 	delete(focusAsked, id)
+	focusEnded[id] = time.Now()
 	mu.Unlock()
 	log.Printf("%s: focus stream ended: %d records, %v", id, n, err)
 	if err != nil {

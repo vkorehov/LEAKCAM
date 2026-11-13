@@ -303,6 +303,7 @@ int cap_grab_all(struct cap_cam *cams, int n, int small, unsigned settle, int ti
      * else the exposure corrected and measured again. dump_frame blocks until that device's next frame. */
     int done = 0;
     unsigned wait[CAP_MAX_CAMS];
+    unsigned limit[CAP_MAX_CAMS] = { 0 };            /* times a camera was found at its exposure limit, off the band */
     for (int i = 0; i < n; i++) {
         /* the exposure as set (the stream keeps the last one): only the LEDs change, and the frame after the one
          * exposing at the switch is fully lit (2026-11-12 native: 78, then 95 95 95...); a new exposure lands
@@ -342,7 +343,8 @@ int cap_grab_all(struct cap_cam *cams, int n, int small, unsigned settle, int ti
             /* exposed at least 1.5 frame periods after the probe (LEDs off): the frame overlapping the switch, and any
              * older one still queued (channel 1 queues 3), is not the lit scene (a part-lit one passed the brightness
              * band: "changed" against the history, test137 2026-11-12) */
-            if (probe_pts[i] && period[i] && f.v_frame.pts < probe_pts[i] + period[i] * 3 / 2) {
+            if (probe_pts[i] && period[i] &&
+                f.v_frame.pts < probe_pts[i] + period[i] * 3 / 2 + (k_u64)period[i] * cap_light_frames) {
                 kd_mpi_sys_munmap((void *)y, ysize);
                 kd_mpi_vicap_dump_release((k_vicap_dev)c->node, ch, &f);
                 continue;
@@ -359,9 +361,15 @@ int cap_grab_all(struct cap_cam *cams, int n, int small, unsigned settle, int ti
                 r = r > 8.0f ? 8.0f : r < 0.125f ? 0.125f : r;
                 float before = c->exp;
                 set_exposure(c, c->exp * r);
-                if (c->exp == before)
-                    keep = true;                         /* at the limit: the best this light gives */
-                else {
+                if (c->exp == before && limit[i]++) {
+                    keep = true;                         /* at the limit, twice: the best this light gives */
+                } else if (c->exp == before) {
+                    /* at the limit and still off the band: measured once more CAP_APPLY frames on. The LEDs' light
+                     * may not be in this frame yet (2026-11-13, a dark room, the stored exposure at its end: the
+                     * frame kept at once read 15, the same scene 105 with the LEDs on longer; every later shot
+                     * started at the limit and kept its first frame: dark pictures, "dark" checks) */
+                    wait[i] = CAP_APPLY;
+                } else {
                     c->tries++;
                     wait[i] = CAP_APPLY;
                 }
@@ -441,8 +449,10 @@ int cap_stream(struct cap_cam *cams, int n, unsigned frames, unsigned max_ms, un
             k_u32 ysize = stride * f.v_frame.height;
             bool mapped = (map >> i) & 1u;
             k_u8 *y = mapped ? kd_mpi_sys_mmap_cached(f.v_frame.phys_addr[0], ysize) : NULL;
-            if (y)                                 /* the luma cached and fresh, as cap_release_all's */
+            if (y) {                               /* the luma cached and fresh, as cap_release_all's */
                 kd_mpi_sys_mmz_invalidate_cache(f.v_frame.phys_addr[0], y, ysize);
+                c->mean = frame_mean(&f, y, stride);   /* for cap_follow(): the sparse sample, ~10 k pixels */
+            }
             if (!mapped || y)
                 fn(c, y, NULL, stride, &f, ctx);
             else
@@ -456,6 +466,20 @@ int cap_stream(struct cap_cam *cams, int n, unsigned frames, unsigned max_ms, un
                 cams[i].node, k, (unsigned long long)(last[i] - first[i]) / 1000,
                 last[i] > first[i] ? (k - 1) * 1e6 / (double)(last[i] - first[i]) : 0.0, ref0[i], ref1[i]);
     return 0;
+}
+
+unsigned cap_light_frames;
+
+bool cap_follow(struct cap_cam *c)
+{
+    unsigned m = c->mean;
+    if (m >= CAP_TARGET * CAP_LOW && m <= CAP_TARGET * CAP_HIGH)
+        return false;
+    /* half the grab's step (the ratio, not its square; at most x2 / 1/2): a stream is corrected again a few frames
+     * on, a full step each time would swing around the target */
+    float r = m < CAP_BLACK ? 2.0f : (float)CAP_TARGET / (float)m;
+    r = r > 2.0f ? 2.0f : r < 0.5f ? 0.5f : r;
+    return set_exposure(c, c->exp * r);
 }
 
 void cap_close_all(struct cap_cam *cams, int n)

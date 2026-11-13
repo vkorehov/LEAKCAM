@@ -25,6 +25,7 @@
  *   object  a puddle painted into it (brightness inverted there): the real frame reads "changed"
  *   light   it 40 % darker: imgdiff's gain normalisation must still read "same"
  *   store   the real frame replaces the stored image (a new baseline, written to the file)
+ *   dark    the camera reads "dark" whatever it sees (tests/test149: DESIGN.md 5.3.18)
  *   curve   (any camera) every grab takes all SETTLE + 1 frames and logs each one's brightness: the exposure curve
  *   mix=white / mix=ir / mix=both / mix=none   (any camera) which LED chains a lit shot uses (tests/test145: what
  *           the IR chain adds through the lenses' IR-cut filters)
@@ -49,6 +50,7 @@
 #include "audio.h"
 #include "cap.h"
 #include "focus.h"
+#include "wb.h"
 #include "imgdiff.h"
 #include "leakcam.h"
 #include "led.h"
@@ -60,6 +62,8 @@
 
 #define CAP_W    JOB_W                  /* the OV5647 binned mode (vicap_cap.c) */
 #define CAP_H    JOB_H
+#define WB_FIRST_FRAMES 14              /* a lit shot's frames before the kept one while a camera has no kept LED white
+                                         * balance yet (wb.c learns after 12) */
 #define SETTLE   20                     /* the most frames before the kept one (1.3 s at 15 fps): our exposure is
                                          * right in 3 (cap.h), each correction 3 more; the ISP's own AE took 14-40 */
 
@@ -140,9 +144,16 @@ static int grab_lit(struct cap_cam *cams, int n, cap_frame_fn fn, void *ctx, uns
     const unsigned *pct = sim_mix ? sim_pct : led_percent;
     if (leds && led_set(true, pct, 0) < 0)
         logmsg("job: LEDs not on: the shot without full illumination");
-    int rc = cap_grab_all(cams, n, 0, SETTLE, 1000);
-    if (leds && !more)
+    /* the white balance under the LEDs: each camera's kept gains from the first frame (wb.c); a camera without them
+     * yet: frames for the automatic to follow, enough for it to settle and be learnt this once */
+    wb_light(leds);
+    cap_light_frames = !leds ? 0 : wb_known() ? 0 : WB_FIRST_FRAMES;
+    int rc = cap_grab_all(cams, n, 0, SETTLE + cap_light_frames, 1000);
+    cap_light_frames = 0;
+    if (leds && !more) {
         led_set(false, pct, 0);                 /* before the frames are worked on (a native JPEG: ~1 s) */
+        wb_light(false);
+    }
     clock_gettime(CLOCK_MONOTONIC, &t1);
     clock_gettime(CLOCK_REALTIME, &shot_at);    /* the moment, for the pictures' X-Taken and EXIF */
     led_ms = leds ? (unsigned)((t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_nsec - t0.tv_nsec) / 1000000) : 0;
@@ -163,18 +174,23 @@ static int grab_lit(struct cap_cam *cams, int n, cap_frame_fn fn, void *ctx, uns
             logmsg("job: curve cam%u: %s", cams[i].slot, t);
         }
     }
-    if (rc == 0)
+    if (rc == 0) {
         exposure_keep();
+        wb_keep();
+    }
     if (cap_release_all(cams, n, rc == 0 ? fn : NULL, ctx) != 0)
         rc = -1;
     if (more && rc == 0)                        /* a video: the frames after the first, lit the same way */
         rc = cap_stream(cams, n, more, more_ms, 0, fn, ctx, 1000);
-    if (leds && more)
+    if (leds && more) {
         led_set(false, pct, 0);
+        wb_light(false);
+        wb_keep();                              /* a video's frames taught the LED white balance */
+    }
     return rc;
 }
 
-enum scene { SCENE_SAME, SCENE_LIGHT, SCENE_OBJECT, SCENE_STORE };
+enum scene { SCENE_SAME, SCENE_LIGHT, SCENE_OBJECT, SCENE_STORE, SCENE_DARK };
 
 static pthread_mutex_t mu = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cv = PTHREAD_COND_INITIALIZER;
@@ -187,6 +203,7 @@ static uint8_t *hist;                   /* a camera's history, loaded for its co
                                          * capture, not a leak (user 2026-11-13; DESIGN.md 5.3.18); the exposure aims
                                          * at CAP_TARGET 90, a black frame is below CAP_BLACK 4 */
 static const char *state[CAMS];         /* this check's verdict per camera (check_frame), NULL: no frame */
+static unsigned ignored(void);          /* the mask of the cameras the person ignores (below) */
 
 /* the test token `curve` in the scene file: every grab takes all SETTLE + 1 frames and logs each frame's brightness
  * (the brightness after the LEDs went on, at the stored exposure: for tuning cap.h's CAP_*); off without it */
@@ -236,7 +253,7 @@ static enum scene sim_scene(int cam)
         return SCENE_SAME;
     p += strlen(key);
     return !strncmp(p, "light", 5) ? SCENE_LIGHT : !strncmp(p, "object", 6) ? SCENE_OBJECT :
-           !strncmp(p, "store", 5) ? SCENE_STORE : SCENE_SAME;
+           !strncmp(p, "store", 5) ? SCENE_STORE : !strncmp(p, "dark", 4) ? SCENE_DARK : SCENE_SAME;
 }
 
 /* the test override on the stored image (the file header above): the puddle or the darker room, in memory */
@@ -268,6 +285,7 @@ static int open_cams(void)
     static bool loaded;
     if (!loaded) {
         exposure_load();
+        wb_load();
         loaded = true;
     }
     memset(cams, 0, sizeof(cams));
@@ -417,18 +435,25 @@ static void check_frame(const struct cap_cam *c, const uint8_t *y, const uint8_t
     char path[48], what[200];
     if (c->fw != IMGDIFF_W || c->fh != IMGDIFF_H)
         return;                                 /* not the native frame: "nocam" */
-    if (c->mean < JOB_DARK_MEAN) {
+    if (ignored() >> cam & 1u) {                /* the person's choice: not judged, nothing stored */
+        state[cam] = "ignored";
+        snprintf(what, sizeof(what), "job: cam%d ignored", cam);
+        step(what);
+        return;
+    }
+    enum scene sc = sim_scene(cam);
+    if (c->mean < JOB_DARK_MEAN || sc == SCENE_DARK) {   /* SCENE_DARK: the test token `cam<N>=dark` (tests/test149) */
         /* nothing to see, the exposure at its end (the LEDs on in a dark room): covered, nothing in the LEDs' reach, far
          * out of focus. Its noise against the history would read "changed" at every check (2026-11-13: mean 7,
          * 17929 of 19602 blocks, a leak alarm per check): no comparison, the history kept, the focus not judged */
         state[cam] = "dark";
-        snprintf(what, sizeof(what), "job: cam%d dark: mean %u, below %u", cam, c->mean, JOB_DARK_MEAN);
+        snprintf(what, sizeof(what), "job: cam%d dark: mean %u, below %u%s", cam, c->mean, JOB_DARK_MEAN,
+                 sc == SCENE_DARK ? " (simulated)" : "");
         step(what);
         return;
     }
     if (shot_lit[cam])                          /* the LEDs' light, the same every time: the focus judged */
         focus_judge(cam, focus_score(y, stride, c->fw, c->fh));
-    enum scene sc = sim_scene(cam);
     hist_path(cam, path, sizeof(path));
     struct timespec t0, t1, t2;
     clock_gettime(CLOCK_MONOTONIC, &t0);
@@ -507,7 +532,8 @@ static void *job_thread(void *arg)
         const char *v[CAMS];
         for (int i = 0; i < CAMS; i++) {
             v[i] = check_cam(i);
-            if (focus_bad(i) && strcmp(v[i], "nocam") && strcmp(v[i], "new") && strcmp(v[i], "dark"))
+            if (focus_bad(i) && strcmp(v[i], "nocam") && strcmp(v[i], "new") && strcmp(v[i], "dark") &&
+                strcmp(v[i], "ignored"))
                 v[i] = "unfocused";
         }
         char r[48];
@@ -548,7 +574,8 @@ bool job_result(char *buf, size_t len)
     return got;
 }
 
-#define SCORE_EVERY 15                  /* the hidden camera's score once a second (FOCB) */
+
+#define FOLLOW_EVERY 5                  /* frames between two exposure steps of a session (a step shows CAP_APPLY = 2 on) */
 
 int job_focus(cap_frame_fn fn, void *ctx, bool (*go)(void *ctx), int (*mapped)(void *ctx))
 {
@@ -559,8 +586,9 @@ int job_focus(cap_frame_fn fn, void *ctx, bool (*go)(void *ctx), int (*mapped)(v
         pthread_mutex_unlock(&cam_mu);
         return -1;
     }
-    /* the LEDs as for a lit check, the exposures settled on the first frames, then locked: only the focus moves the
-     * score */
+    /* the LEDs as for a lit check, the exposures settled on the first frames; then the shown camera's follows the
+     * light (cap_follow below; the score is normalised by the brightness) */
+    wb_light(true);
     if (led_set(true, led_percent, 0) < 0)
         logmsg("focus: LEDs not on");
     for (int i = 0; i < ncams; i++)
@@ -573,17 +601,23 @@ int job_focus(cap_frame_fn fn, void *ctx, bool (*go)(void *ctx), int (*mapped)(v
     }
     unsigned frames = 0;
     while (rc == 0 && go(ctx)) {
-        /* which frames are mapped (scored): every frame of the shown camera (focus.c: a few tiles each, the whole
-         * frame's score once a second), the hidden one's once a second (the app switches to a lens being turned) */
-        unsigned map = 0;
+        unsigned map = 0;               /* the shown camera's luma mapped (focus.c scores a few tiles of every frame) */
         int want = mapped(ctx);
         for (int i = 0; i < ncams; i++)
-            if ((int)cams[i].slot == want || frames % SCORE_EVERY == 0)
+            if ((int)cams[i].slot == want)
                 map |= 1u << i;
         rc = cap_stream(cams, ncams, 1, 1000, map, fn, ctx, 1000);
         frames++;
+        /* the shown camera's exposure follows the light all through the session (a lamp switched on, a hand at the
+         * lens): a step every FOLLOW_EVERY frames, when its picture left the brightness band */
+        if (rc == 0 && frames % FOLLOW_EVERY == 0)
+            for (int i = 0; i < ncams; i++)
+                if ((int)cams[i].slot == want && cap_follow(&cams[i]))
+                    exposure[cams[i].slot] = cams[i].exp;
     }
     led_set(false, led_percent, 0);
+    wb_light(false);
+    wb_keep();                              /* a session's frames taught the LED white balance */
     if (rc != 0) {
         audio_close();
         cap_close_all(cams, ncams);
@@ -592,6 +626,45 @@ int job_focus(cap_frame_fn fn, void *ctx, bool (*go)(void *ctx), int (*mapped)(v
     pthread_mutex_unlock(&cam_mu);
     logmsg("focus: %u frame pairs, %s", frames, rc ? "camera failed" : "ended");
     return rc;
+}
+
+/* the cameras the person ignores (DESIGN.md 5.3.18): a mask kept in the K230's flash, read once */
+#define IGNORE_PATH DIR "/ignore"
+static int ignore_mask = -1;            /* -1: not read yet */
+
+static unsigned ignored(void)
+{
+    if (ignore_mask < 0) {
+        unsigned m = 0;
+        FILE *f = fopen(IGNORE_PATH, "r");
+        if (f) {
+            if (fscanf(f, "%u", &m) != 1)
+                m = 0;
+            fclose(f);
+        }
+        ignore_mask = (int)(m & ((1u << CAMS) - 1));
+    }
+    return (unsigned)ignore_mask;
+}
+
+bool job_ignore(unsigned mask)
+{
+    mask &= (1u << CAMS) - 1;
+    if (mask == ignored())
+        return true;                    /* the flash written only when it changes */
+    mkdir(DIR, 0755);
+    FILE *f = fopen(IGNORE_PATH, "w");
+    bool ok = f && fprintf(f, "%u\n", mask) > 0;
+    if (f && fclose(f) != 0)
+        ok = false;
+    if (ok) {
+        for (int cam = 0; cam < CAMS; cam++)    /* used again: its old history is of another time, "new" first */
+            if ((ignored() >> cam & 1u) && !(mask >> cam & 1u))
+                job_forget(cam);
+        ignore_mask = (int)mask;
+    }
+    logmsg("job: ignored cameras 0x%x%s", mask, ok ? "" : ": NOT written");
+    return ok;
 }
 
 void job_forget(int cam)

@@ -170,6 +170,9 @@ class MainActivity : Activity() {
     private lateinit var takePhoto: Button
     private lateinit var takeVideo: Button
     private lateinit var tuneFocus: Button                  // a flagged camera of the picked board (DESIGN.md 5.3.17)
+    private lateinit var focusRow: View                     // its row: what is wrong, Tune focus, Ignore camera (5.3.18)
+    private lateinit var focusWhat: TextView
+    private lateinit var ignoreCam: Button
 
     private val main = Handler(Looper.getMainLooper())
     private val adapter: BluetoothAdapter? by lazy {
@@ -185,6 +188,8 @@ class MainActivity : Activity() {
     private val batteryMv = HashMap<String, Int>()
     private val charging = HashMap<String, Boolean>()
     private val focusCam = HashMap<String, Int>()     // device ID -> the camera to tune (DESIGN.md 5.3.17), none: absent
+    private val focusWhy = HashMap<String, String>()  // ... and why: "dark" (sees nothing, 5.3.18), "unfocused", "untuned"
+    private val ignoredCams = HashMap<String, List<Int>>()   // device ID -> the cameras the person ignores (5.3.18)
     private val rssi = HashMap<String, Int>()   // address -> the last advertisement's signal (dBm)
     private val rowLogged = HashMap<String, String>()   // address -> the power and bars last logged (test129)
     private val rowDrawn = HashMap<String, String>()    // address -> the power, bars and battery its row shows
@@ -273,8 +278,22 @@ class MainActivity : Activity() {
         takeVideo = findViewById(R.id.take_video)
         takePhoto.setOnClickListener { capture(selected, "photo") }
         takeVideo.setOnClickListener { capture(selected, "video") }
+        findViewById<Button>(R.id.live_video).setOnClickListener { openLive(selected) }
         tuneFocus = findViewById(R.id.tune_focus)
         tuneFocus.setOnClickListener { openFocus(selected) }
+        focusRow = findViewById(R.id.focus_row)
+        focusWhat = findViewById(R.id.focus_what)
+        ignoreCam = findViewById(R.id.ignore_cam)
+        ignoreCam.setOnClickListener {                       // asked first: leaks in its view are no longer seen
+            val id = selected
+            val cam = focusCam[id] ?: return@setOnClickListener
+            android.app.AlertDialog.Builder(this)
+                .setTitle(getString(R.string.ignore_title, Cams.inText(this, cam)))
+                .setMessage(R.string.ignore_text)
+                .setPositiveButton(R.string.ignore_yes) { _, _ -> setIgnore(id, cam, true) }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+        }
         // the rare actions, one menu next to the action buttons (user 2026-11-07: no button or menu in the rows;
         // Change Wi-Fi is rare too, photo and video are the common actions); a new board: the app menu's Setup
         more.setOnClickListener { v ->
@@ -284,6 +303,8 @@ class MainActivity : Activity() {
                     return@setOnClickListener
                 menu.add(R.string.setup_change).setOnMenuItemClickListener { openSetup(id); true }
                 menu.add(R.string.focus_menu).setOnMenuItemClickListener { openFocus(id); true }
+                for (cam in ignoredCams[id].orEmpty())           // an ignored camera: back in use from here
+                    menu.add(getString(R.string.ignore_undo, Cams.inText(this@MainActivity, cam))).setOnMenuItemClickListener { setIgnore(id, cam, false); true }
                 menu.add(R.string.delete).setOnMenuItemClickListener { forget(id); true }
                 show()
             }
@@ -370,6 +391,7 @@ class MainActivity : Activity() {
         findViewById<TextView>(R.id.leak_title).text = i.getStringExtra(LeakAlert.EXTRA_TITLE) ?: getString(R.string.alert_title, id)
         findViewById<TextView>(R.id.leak_text).text = i.getCharSequenceExtra(LeakAlert.EXTRA_TEXT) ?: ""
         findViewById<View>(R.id.leak_not).setOnClickListener { notLeak(id) }
+        findViewById<View>(R.id.leak_live).setOnClickListener { openLive(id) }
         // one tile per picture and video ID the push announced (pictures in a row, the video under them), a spinner each
         // until the gallery has downloaded it by its ID (DESIGN.md 5.3.13)
         val ids = i.getStringExtra(LeakAlert.EXTRA_MEDIA).orEmpty().split(",").filter { it.isNotBlank() }
@@ -517,6 +539,13 @@ class MainActivity : Activity() {
     private var note: Triple<String, String, Long>? = null   // the last action's answer for a board, until its time
 
     /** LEAKCAM Focus Adjustment for the board (DESIGN.md 5.3.17): the flagged camera first */
+    /** Live video (DESIGN.md 5.3.19): the board's cameras live, from its next check-in (30 s while a leak is open) */
+    private fun openLive(id: String) {
+        if (id.isNotEmpty())
+            startActivity(Intent(this, FocusActivity::class.java)
+                .putExtra(FocusActivity.EXTRA_ID, id).putExtra(FocusActivity.EXTRA_LIVE, true))
+    }
+
     private fun openFocus(id: String) {
         if (id.isNotEmpty())
             startActivity(Intent(this, FocusActivity::class.java)
@@ -743,8 +772,8 @@ class MainActivity : Activity() {
             icons.add(RowIcon(getDrawable(bars(rssi[address] ?: -100))!!, getString(R.string.icon_signal)))
         }
         focusCam[id]?.let {                                  // a camera to tune: until it is (5.3.17)
-            icons.add(RowIcon(getDrawable(R.drawable.ic_alert)!!, getString(R.string.icon_focus, it + 1),
-                              getString(R.string.icon_focus, it + 1)))
+            icons.add(RowIcon(getDrawable(R.drawable.ic_alert)!!, getString(R.string.icon_focus, Cams.inText(this, it)),
+                              getString(R.string.icon_focus, Cams.inText(this, it))))
         }
         val chg = onUsbPower(id, address)
         val pct = batteryMv[id]?.let { BatteryIcon.percent(it) }
@@ -998,9 +1027,13 @@ class MainActivity : Activity() {
         takePhoto.isEnabled = selected.isNotEmpty() && "photo" !in kinds
         takeVideo.isEnabled = selected.isNotEmpty() && "video" !in kinds
         val toTune = focusCam[selected]                                   // offered while a camera is flagged
-        tuneFocus.visibility = if (selected.isNotEmpty() && toTune != null) View.VISIBLE else View.GONE
+        focusRow.visibility = if (selected.isNotEmpty() && toTune != null) View.VISIBLE else View.GONE
         if (toTune != null)
-            tuneFocus.text = getString(R.string.focus_offer, toTune + 1)
+            focusWhat.text = getString(when (focusWhy[selected]) {
+                "dark" -> R.string.focus_what_dark
+                "untuned" -> R.string.focus_what_untuned
+                else -> R.string.focus_what_unfocused
+            }, Cams.name(this, toTune))
         pendingList.visibility = if (kinds.isEmpty()) View.GONE else View.VISIBLE
         pendingList.text = (listOf(getString(R.string.pending_title, checkinAt(nextAt[selected] ?: 0))) +
             (0 until waits.length()).map { n ->
@@ -1011,6 +1044,7 @@ class MainActivity : Activity() {
                     "photo" -> getString(R.string.pending_photo)
                     "video" -> getString(R.string.pending_video)
                     "focus" -> getString(R.string.pending_focus)
+                    "ignore" -> getString(R.string.pending_ignore)
                     else -> getString(R.string.pending_leak)
                 }
                 getString(R.string.pending_item, n + 1, what, android.text.format.DateUtils.formatDateTime(this,
@@ -1920,7 +1954,16 @@ class MainActivity : Activity() {
                         nextAt[j.getString("id")] = j.optLong("next_checkin", 0)
                         pend[j.getString("id")] = j.optJSONArray("pending") ?: org.json.JSONArray()
                         medias[j.getString("id")] = j.optJSONArray("media") ?: org.json.JSONArray()
-                        focusOf(j)?.let { focusCam[j.getString("id")] = it } ?: focusCam.remove(j.getString("id"))
+                        val ign = j.optJSONObject("thresholds")?.optJSONArray("ignore")
+                        ignoredCams[j.getString("id")] = (0 until (ign?.length() ?: 0)).filter { ign!!.optBoolean(it) }
+                        val flag = focusOf(j, ignoredCams[j.getString("id")].orEmpty())
+                        if (flag != null) {
+                            focusCam[j.getString("id")] = flag.first
+                            focusWhy[j.getString("id")] = flag.second
+                        } else {
+                            focusCam.remove(j.getString("id"))
+                            focusWhy.remove(j.getString("id"))
+                        }
                     }
                 }
                 rows = (list?.map { j -> Triple(j.getString("id"), j.getString("id"), line(j)) }
@@ -1951,13 +1994,49 @@ class MainActivity : Activity() {
                          checkinAt(j.optLong("next_checkin", 0))) + room(j)
     }
 
-    /** the camera to tune, from the last leak check's "<cam0>,<cam1>,<foc0>,<foc1>" (DESIGN.md 5.3.17): one out of
-     *  focus, else one never tuned (-1); null: both fine, or an older board */
-    private fun focusOf(j: JSONObject): Int? {
+    /** the camera that needs the person, and why, from the last leak check's "<cam0>,<cam1>,<foc0>,<foc1>" (DESIGN.md
+     *  5.3.17, 5.3.18): one that sees nothing ("dark"), else one out of focus, else one never tuned (-1); ignored
+     *  cameras never; null: all fine, or an older board */
+    private fun focusOf(j: JSONObject, ignored: List<Int>): Pair<Int, String>? {
         val f = j.optJSONObject("metrics")?.optString("job").orEmpty().split(",")
         if (f.size < 4)
             return null
-        return (0..1).firstOrNull { f[it] == "unfocused" } ?: (0..1).firstOrNull { f[2 + it] == "-1" && f[it] != "nocam" }
+        val cams = (0..1).filter { it !in ignored && f[it] != "ignored" }
+        return cams.firstOrNull { f[it] == "dark" }?.let { it to "dark" }
+            ?: cams.firstOrNull { f[it] == "unfocused" }?.let { it to "unfocused" }
+            ?: cams.firstOrNull { f[2 + it] == "-1" && f[it] != "nocam" }?.let { it to "untuned" }
+    }
+
+    /** a camera ignored or used again: to the server (PUT /v1/devices/<id>/cameras/<cam>), which stops flagging it at
+     *  once and hands it to the board at its next check-in (the K230 keeps it); the list reloads */
+    private fun setIgnore(id: String, cam: Int, ignore: Boolean) {
+        Thread {
+            val ok = try {
+                val c = URL("${BuildConfig.SERVER}/v1/devices/$id/cameras/$cam").openConnection() as HttpURLConnection
+                c.requestMethod = "PUT"
+                c.doOutput = true
+                c.connectTimeout = 5000
+                c.readTimeout = 5000
+                c.setRequestProperty("Content-Type", "application/json")
+                c.outputStream.use { it.write("{\"ignore\":$ignore}".toByteArray()) }
+                (c.responseCode == 200).also { c.disconnect() }
+            } catch (e: Exception) {
+                false
+            }
+            runOnUiThread {
+                if (ok) {
+                    ignoredCams[id] = if (ignore) ignoredCams[id].orEmpty() + cam else ignoredCams[id].orEmpty() - cam
+                    if (ignore && focusCam[id] == cam) {
+                        focusCam.remove(id)
+                        focusWhy.remove(id)
+                    }
+                    showStatus()
+                }
+                android.widget.Toast.makeText(this, getString(if (!ok) R.string.ignore_failed else if (ignore)
+                    R.string.ignore_done else R.string.ignore_undone,
+                    if (ok) Cams.name(this, cam) else Cams.inText(this, cam)), android.widget.Toast.LENGTH_LONG).show()
+            }
+        }.start()
     }
 
     /** the room's temperature and humidity (DESIGN.md 5.3.15): only a reading the board took after 3 h cool, with its

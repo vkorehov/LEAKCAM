@@ -20,6 +20,14 @@ class PushService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         val data = message.data
         Log.i(TAG, "push ${data["type"]} ${data["id"]}")
+        // the person is tuning the focus or watching live: nothing about the cameras now (a hand at the lens, the
+        // room's light are no news; the server holds these back too, this covers a push already on its way). Water at
+        // the probe or the humidity alarm still ring
+        if (FocusActivity.open && (data["type"] == "focus" || data["type"] == "media" ||
+                                   data["type"] == "leak" && data["why"] == "camera change")) {
+            Log.i(TAG, "push ${data["type"]} held back: the focus / live screen is open")
+            return
+        }
         when (data["type"]) {
             "leak" -> LeakAlert.show(this, data)
             "media" -> picture(data["id"].orEmpty(), data["media"].orEmpty())
@@ -96,10 +104,16 @@ class PushService : FirebaseMessagingService() {
             val where = ssid.ifEmpty { id }
             nm.notify(("focus$id$cam").hashCode(), Notification.Builder(context, FOCUS_CHANNEL)
                 .setSmallIcon(R.drawable.ic_alert)
-                .setContentTitle(context.getString(if (why == "untuned") R.string.focus_untuned_title
-                                                   else R.string.focus_unfocused_title, cam + 1, where))
-                .setContentText(context.getString(if (why == "untuned") R.string.focus_untuned_text
-                                                  else R.string.focus_unfocused_text))
+                .setContentTitle(context.getString(when (why) {
+                    "untuned" -> R.string.focus_untuned_title
+                    "dark" -> R.string.focus_dark_title
+                    else -> R.string.focus_unfocused_title
+                }, if (why == "untuned") Cams.inText(context, cam) else Cams.name(context, cam), where))
+                .setContentText(context.getString(when (why) {
+                    "untuned" -> R.string.focus_untuned_text
+                    "dark" -> R.string.focus_dark_text
+                    else -> R.string.focus_unfocused_text
+                }))
                 .setContentIntent(open)
                 .setAutoCancel(true)
                 .build())

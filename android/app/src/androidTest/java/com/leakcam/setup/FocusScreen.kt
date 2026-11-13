@@ -37,10 +37,10 @@ class FocusScreen {
         for ((at, camera) in taps) {
             val wait = t0 + at * 1000L - System.currentTimeMillis()
             if (wait > 0) Thread.sleep(wait)
-            val label = ctx.getString(R.string.focus_camera, camera)
+            val label = Cams.name(ctx, camera - 1)              // camera 1 = the bottom one, 2 = the top one
             val b = ui.findObject(By.textContains(label.uppercase())) ?: ui.findObject(By.textContains(label))
             requireNotNull(b) { "no button $label" }.click()
-            android.util.Log.i("LeakcamFocusTest", "tapped $label at ${System.currentTimeMillis() - t0} ms")
+            android.util.Log.i("LeakcamFocusTest", "tapped Camera $camera ($label) at ${System.currentTimeMillis() - t0} ms")
         }
         val left = t0 + secs * 1000L - System.currentTimeMillis()
         if (left > 0) Thread.sleep(left)

@@ -5,9 +5,7 @@ camera's access unit, CAM,<cam> before a camera's first, its score FOC,<cam>,<se
 ({"cam":n}: the other camera from its next IDR, as the K230 sends it; {"done":s}: FOCUS,OK,<cam>,<s>; {"stop":true}:
 the end). The frames: tests/test146-focus-tuning/cam<N>.fv ([u32 BE length][u8 IDR][access unit] each, made from the
 board's recording of 2026-11-13; the first carries the parameter sets).
-    mock_board_focus.py <server> <device> <cam0.fv> <cam1.fv> [max s] [turn s]
-Once a second the hidden camera's score alone (FOCB,<cam>,<score>); from [turn s] on (after the start) the
-hidden camera's lens is "turned": its score 40 % up (the app switches to it by itself).
+    mock_board_focus.py <server> <device> <cam0.fv> <cam1.fv> [max s]
 Prints one line per event (start, each command with its time, the end) for the test runner.
 """
 import http.client
@@ -21,8 +19,6 @@ import urllib.request
 
 server, dev, f0, f1 = sys.argv[1:5]
 max_s = float(sys.argv[5]) if len(sys.argv) > 5 else 120
-turn_s = float(sys.argv[6]) if len(sys.argv) > 6 else None
-turned = None                                       # the camera whose lens was turned
 FPS = 15
 TEXT = 1 << 30
 
@@ -113,12 +109,7 @@ while time.time() - start < max_s:
         send(f"FOCUS,OK,{cam},{done:.3f}".encode(), us, True)
     s = streams[cam]
     idr, au = s[at[cam]]
-    if turn_s is not None and turned is None and time.time() - start >= turn_s:
-        turned = 1 - cam
-        log(f"lens of camera {turned} turned")
-    score = lambda c: (1.0 + 0.3 * c + 0.01 * (seq % 7)) * (1.4 if c == turned else 1)   # a steady scene
-    if seq % FPS == 0:                              # once a second, as the K230 (focus.c: 70 tiles over 14 frames)
-        send(f"FOCB,{1 - cam},{score(1 - cam):.3f}".encode(), us, True)
+    score = lambda c: 1.0 + 0.3 * c + 0.01 * (seq % 7)   # a steady scene
     if seq % FPS == FPS - 1:
         send(f"FOC,{cam},{seq},{score(cam):.3f}".encode(), us, True)
     if first:

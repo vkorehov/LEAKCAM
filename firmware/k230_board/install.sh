@@ -577,6 +577,19 @@ assert len(pat.findall(s)) == 1, 'sensor Makefile changed, cannot apply the ISP 
 open(p, 'w').write(pat.sub(lambda m: b, s))
 PY
 grep -q 'LEAKCAM: ov5647 2592x1944 only' "$ISPMK" || { echo "ISP files patch not applied"; exit 1; }
+# The white balance without damping (2026-11-13): a photo or a leak check keeps the 2nd or 3rd frame after the LEDs
+# go on; with the SDK's damping the ISP's AWB needed ~2 s of frames to settle, and the camera on J5, whose AWB starts
+# further off, came out blue (red 0.41 x blue against 1.07 on J4, the same ceiling; neutral from frame 30 of a stream).
+AWBJSON=$SDK/src/rtsmart/mpp/userapps/src/sensor/config/ov5647-2592x1944_auto.json
+python3 - "$AWBJSON" <<'PY'
+import re, sys
+p = sys.argv[1]; s = open(p).read()
+m = re.search(r'"classname": "Awbv2",.*?"useDamping": (true|false)', s, re.S)
+assert m, 'ov5647-2592x1944_auto.json changed: no Awbv2 useDamping'
+if m.group(1) == 'true':
+    open(p, 'w').write(s[:m.start(1)] + 'false' + s[m.end(1):])
+PY
+grep -A6 '"classname": "Awbv2"' "$AWBJSON" | grep -q '"useDamping": false' || { echo "AWB damping patch not applied"; exit 1; }
 # a test image's extra 1280x960 set (tests/firmware/test_install.sh adds it after this script): out for the product
 sed -i '/LEAKCAM test image: ov5647 1280x960/,+1d' "$ISPMK"
 rm -f "$SDK"/output/*/images/bin/ov5647-*                  # earlier builds' sets: the rule only adds files

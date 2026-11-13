@@ -42,6 +42,7 @@ func testServer(t *testing.T) *httptest.Server {
 	mux.HandleFunc("GET /v1/focus/{id}/live", focusLive)
 	mux.HandleFunc("POST /v1/focus/{id}/cmd", focusCmd)
 	mux.HandleFunc("GET /v1/focus/{id}/cmd", focusPoll)
+	ignoreSent, askedAt, focusEnded = map[string]time.Time{}, map[string]time.Time{}, map[string]time.Time{}
 	focuses, focusAsked, focusTold, focusSince = map[string]*focusSession{}, map[string]time.Time{},
 		map[string][Cameras]string{}, map[string]time.Time{}
 	s := httptest.NewServer(withTime(mux))

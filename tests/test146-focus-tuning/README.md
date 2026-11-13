@@ -3,9 +3,9 @@
 Status: **the focus adjustment through the server built and passing without the board (2026-11-13)**: the app's
 "LEAKCAM Focus Adjustment" against a local server with the board mocked from its recorded frames: 15/15 (app_mock.py:
 live picture per camera, switches at the board in 5-56 ms, Stop on leaving, no decoder error). Since then (user
-2026-11-13): the lens picture with a green (turn) and red (not) arrow, the first way random, and the automatic switch
-to a hidden camera whose lens is turned (K230 `FOCB` scores, the app's LensWatch): unit tests pass, app_mock.py
-extended for both (lens arrows in each shot, the switch within 2 s), **not yet run: the phone was off USB**. Server: `go test`
+2026-11-13): the lens picture with a green (turn) and red (not) arrow, the first way random (unit tests pass; app_mock.py checks
+the arrows in each shot, **not yet run**). An automatic switch to a hidden camera whose lens is turned was built and
+removed the same day (it jumped between the cameras with hands at the board). Server: `go test`
 (TestFocusCheckin, TestFocusRelay, TestFocusCmd) pass. Board side (K230 focus_run, BL616 `focus` capture) built, not
 run on the board yet: the bench was away from the home LAN. Open on the board: the encoder ignored the IDR request at
 a switch (2026-11-13 09:22, frames until the GOP's IDR); `kd_mpi_venc_enable_idr` at the channel's create built, not
@@ -55,8 +55,7 @@ sharp (tests/test144), a soft smear when not.
    of the command; Stop ends the board's upload, SENT, the bridge off; 3 check-ins after; the K230's page pool and the
    BL616's lwIP back (no leaked TCP: skill leakcam-test-metrics 5b).
 3. **The screen:** a) without the board, `app_mock.py` (the mock board, a local server): the waiting state, the live
-   picture per camera with the lens picture's green and red arrows, each tap's switch at the board, the automatic
-   switch to camera 2 when the mock turns its lens (hidden), Stop when the screen is left, no decoder error; b) with the
+   picture per camera with the lens picture's green and red arrows, each tap's switch at the board, Stop when the screen is left, no decoder error; b) with the
    board and a hand: from 90 degrees off, the person follows the screen: the first hint's direction, a wrong way told
    within 1 s, STOP within 5 % of the score at the marked tuned point, Done -> `FOCUS,OK`; under 60 s per camera.
 4. **Bad focus in a leak check:** the reference saved, the lens turned 90 degrees off: the 3rd LED-lit check reports

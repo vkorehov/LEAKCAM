@@ -31,7 +31,7 @@ CFLAGS   += -Wall -Wextra -ffunction-sections -fdata-sections
 LDFLAGS  := -T $(SDK_RTSMART_SRC_DIR)/libs/mk/link.lds --static -Wl,--gc-sections $(LIB_LDFLAGS)
 # the raw frames packed (rawpack.c, firmware/VIDEO.txt): the ISP library's register writes through our wrappers; the
 # map for reading the program's addresses
-LDFLAGS  += -Wl,--wrap=VirtualHalWriteReg -Wl,--wrap=SwitchUpdateCommonRegister -Wl,--wrap=VsiCamDeviceGetBufferSize
+LDFLAGS  += -Wl,--wrap=CamerIcIspWbSetGains -Wl,--wrap=CamerIcIspSetCrossTalkCoefficients -Wl,--wrap=CamerIcIspSetCrossTalkOffset -Wl,--wrap=VirtualHalWriteReg -Wl,--wrap=SwitchUpdateCommonRegister -Wl,--wrap=VsiCamDeviceGetBufferSize
 LDFLAGS  += -Wl,-Map=$(BUILD)/leakcam.map
 .DEFAULT_GOAL := all
 # ... and libisp's local VIHalWriteReg replaced (rawpack.c): a copy of libisp.a with it weak + global, found first

@@ -112,39 +112,3 @@ class FocusGuide(first: Turn = if (kotlin.random.Random.nextBoolean()) Turn.CCW 
         return why
     }
 }
-
-/**
- * The hidden camera's lens being turned (user 2026-11-13: "if focus changes on non-visible camera switch camera
- * automatically"): fed that camera's FOCB scores (once a second), true once the smoothed score moved CHANGE from where
- * it was when watching began. Light alone barely moves it (the score is normalised by brightness); a person walking
- * past moves it for a moment, which the median of SMOOTH mostly rides out.
- */
-class LensWatch {
-    companion object {
-        const val SMOOTH = 3            // two of three scores moved: ~2 s
-        const val CHANGE = 0.20
-    }
-
-    private val window = ArrayDeque<Double>()
-    private var base = 0.0
-
-    fun add(raw: Double): Boolean {
-        window.addLast(raw)
-        if (window.size > SMOOTH)
-            window.removeFirst()
-        if (window.size < SMOOTH)
-            return false
-        val s = window.sorted()[SMOOTH / 2]
-        if (base == 0.0) {
-            base = s
-            return false
-        }
-        return kotlin.math.abs(s - base) > CHANGE * base
-    }
-
-    /** watching again from the next scores (the camera just left the screen) */
-    fun reset() {
-        window.clear()
-        base = 0.0
-    }
-}

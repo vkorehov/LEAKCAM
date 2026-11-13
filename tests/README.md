@@ -172,6 +172,7 @@ Leak tests, one per operation the product repeats:
 | [test146 camera focus: detected and tuned by hand](test146-focus-tuning/README.md) | - | **step 1 pass (host, 2026-11-12)**; steps 2-6 wait for the K230 focus session |
 | [test147 Take video: native H.265, live and MP4 (whole product flow, product firmware)](test147-video-h265/README.md) | - | **works end to end, both cameras 15 fps at 10 Mbit/s (2026-11-12, raw 10-bit packed)** |
 | [test148 video worst cases: light flicker, steps, memory (whole product flow, product firmware)](test148-video-worst-case/README.md) | - | **pass (2026-11-13)**: fixed the BL616 check-ins after a video (stuck TCP in the 6 KB lwIP heap), the K230 memory split (55 / 73 MB, 9 MB kernel heap), frames dropped to the next IDR on a full upload queue |
+| [test149 a dark camera reads dark; ignored or tuned from the status screen](test149-dark-and-ignored-camera/README.md) | 2026-11-13 20:30, run.py, ~140 s; product firmware, the bench phone | **pass, 22/22**: `dark` is no leak; Ignore camera / Use again from the app reach the K230's flash at the next check-in; an ignored camera is not judged |
 
 ## Re-test audit after the two-firmware design (2026-11-02)
 

@@ -134,7 +134,8 @@ type Thresholds struct {
 	ProbeMV int `json:"probe_mv"`
 	Humid   int `json:"humid"`
 	// cameras the person told us to ignore (PUT /v1/devices/{id}/cameras/{cam}; DESIGN.md 5.3.18): their "changed" is
-	// no leak, their focus is not flagged. The board is not told: it goes on taking and judging their pictures
+	// no leak, their focus is not flagged. The board gets them at its next check-in (a capture of kind "ignore"), the
+	// K230 keeps them in its flash and no longer judges those cameras ("ignored" in its job)
 	Ignore [Cameras]bool `json:"ignore"`
 }
 
@@ -648,6 +649,7 @@ func setIgnore(w http.ResponseWriter, r *http.Request) {
 	if told == ([Cameras]string{}) {
 		delete(focusSince, id)
 	}
+	queueCapture(id, "ignore") // to the board at its next check-in: the K230 keeps it and skips the camera
 	err = saveJSON(thrFile, thresholds)
 	mu.Unlock()
 	if err != nil {

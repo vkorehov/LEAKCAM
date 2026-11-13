@@ -82,6 +82,7 @@ These apply to every part of the project.
 |---|---|---|
 | View | Two OV5647 Pi-v1.3-format boards with 222° M12 fisheye lenses, back to back (CAM1 J5 top, CAM2 J4 bottom), folded over the board | Spherical coverage is a hard requirement: a leak can be anywhere in the room. Sensors are judged by pixels across the image circle. |
 | Camera orientation | The enclosure takes each camera in **both** orientations (rotated 180° about the lens axis): pilots for both hole patterns, a pocket and a flex channel for the connector at either short edge | Rev 1 J4/J5 (bottom contact) need the cameras rotated with the standard 15-to-22 cable, rev 2 reverses the pinout (bugs/bug-005, bugs/v2.txt 10); one enclosure serves both boards and either cable |
+| Camera names | In the product (app, notifications, help): the **top camera** and the **bottom camera**, never camera 1 / camera 2 (user 2026-11-13) | Camera 0 = J4 = bottom, camera 1 = J5 = top; the numbers stay in the protocol (`cam` 0 / 1), file names and logs. App: `Cams.kt`; skill leakcam-app-ux 2f |
 | Camera placement | Camera boards (and LED strips) stay at y ≤ 43 mm | 12 mm from the antenna element, about λ/10 at 2.45 GHz |
 | Camera clock | No MCLK from the K230; the modules' own 25 MHz oscillator | As on the Raspberry Pi; K230 MCLK pins stay free |
 | Camera pin 18 | IO62/IO63, driven low at boot | It is the red status LED on Pi-style boards; it must not light the lenses |
@@ -977,9 +978,22 @@ person watched: 5.3.4's 15 s rule).
 - **A failed change:** the board tells the server (on the old network) and the phone is notified. The board leaves the
   HBN cycle for the **5-min wake mode**.
 - **A leak** (a wet probe, 85 %RH or more (5.3.15), or a camera change confirmed by the leak job): the phone gets the **leak alert** at once
-  and the board goes into the wake mode **checking in every minute** (user 2026-11-07: near real time; ~60 mAh a
-  day), waiting for the person's requests (photo, video, Wi-Fi); back to its normal pace after 24 h or at once on Not
-  a leak / all clear. All server driven (the check-in answer's `checkin` and `mode`).
+  and the board goes into the wake mode **checking in every 30 s** (user 2026-11-13: "board sleeps only 30 seconds, I
+  think it is best user experience"; was every minute since 2026-11-07), waiting for the person's requests (live
+  video, photo, video, Wi-Fi): any of them starts within half a minute. Without a response it slows down (user: "if no
+  response in 1 day then start sleeping one minute then 5 minutes in one more day, i.e. exponential"):
+
+  | Since the leak opened, or the person last asked the board for something | Check-in | Battery, about |
+  |---|---|---|
+  | the first day | every 30 s | 120 mAh a day |
+  | the second day | every minute | 60 mAh a day |
+  | the third day | every 5 min | 13 mAh a day |
+  | after it | the board's normal check-in | - |
+
+  A request from the app (live video, photo, video, focus) counts as a response: 30 s again from then. At once back to
+  the normal pace on Not a leak / all clear. All server driven (the check-in answer's `checkin` and `mode`;
+  server/alert.go `LeakSteps`, TestLeakCheckinBackoff). The battery figures scale the 60 mAh a day measured for one
+  check-in a minute; not measured at 30 s.
   A cleared leak is not opened again by the same leak check's result (it rides on the check-ins for 60 s): only a
   check that ran after the clear counts (server/alert.go `clearedAt`, test140 2026-11-12). Open: the board does not yet
   act on `rearm` (a new reference picture after Not a leak).
@@ -1011,7 +1025,7 @@ person watched: 5.3.4's 15 s rule).
   **one preview** (the first file there, a spinner until then) with **"+N more"**; a tap opens the phone's gallery on
   its newest pictures and videos, this leak's record at the top (no gallery opens one album by a standard intent).
   Built: IDs, push, panel, gallery download, the server's media route; the board's capture and upload with the cameras.
-- **The wake mode** (every minute during a leak, every 5 min after a failed Wi-Fi change): BLE sleep (the setup firmware's low-power advertising, ~0.5 mA) instead of HBN, a check-in
+- **The wake mode** (every 30 s during a leak, slower by the day as above; every 5 min after a failed Wi-Fi change): BLE sleep (the setup firmware's low-power advertising, ~0.5 mA) instead of HBN, a check-in
   at the mode's interval (a request from the server arrives within it). It ends on success / the
   person's all-clear, or after a time limit, whichever comes first (~13 mAh a day: the limit protects the battery).
 - **To the phone: Firebase push** (FCM, high priority) from our server, at once, with the app closed too; one path for
@@ -1228,10 +1242,22 @@ in their holders; a knock, a loose lock ring or a lens swapped for another (the 
     to turn, red the other (ic_lens_cw / ic_lens_ccw: the two images swap when it gets blurrier; ic_lens_hold green
     ring and tick when sharp; ic_lens alone while waiting), two fixed lines of text, a bar (now, with the best as a marker), "Turn slower" (kept in place, invisible), Done (only when sharp).
     Done on camera 1 goes on to camera 2. Target: one camera in under a minute.
-- **The hidden camera's lens turned** (user 2026-11-13: "if focus changes on non-visible camera switch camera
-  automatically"): the K230 also scores the camera not shown, once a second (5 tiles spread over one frame, no
-  picture), sent as `FOCB,<cam>,<score>`; the app (LensWatch: median of 3, so 2 of 3 seconds) switches to it when its
-  score moved 20 % from where it was when that camera left the screen. Light alone barely moves the score (normalised by brightness).
+- **A dirty lens** (user 2026-11-13: "offer to wipe camera with alcohol on screen"): the screen always shows, small and
+  grey under the guide, "Hazy or streaky at every position? Wipe the lens with alcohol on a soft cloth, then try
+  again." (2026-11-13: the bench's J5 camera gave a hazy picture with flare that no software fault explained.)
+- **The camera choice is two radio buttons** (Bottom camera / Top camera), as the device list's (user 2026-11-13:
+  "change those buttons to be radio buttons ... same approach as device selection. same UX").
+- **No automatic camera switch** (tried and removed 2026-11-13, user: "cameras are switching, this is useless, dont do
+  this and remove from design"): the screen switched to the hidden camera when its score moved 20 %. With hands at the
+  board and the room's light changing that score moved several-fold and the screen jumped between the cameras four
+  times in 30 s. The camera shown is the one the person picked, always.
+- **No notifications meanwhile** (user 2026-11-13: "i dont want to be notified while tuning focus, nor ... viewing live
+  video"): while a focus adjustment or live video is asked for, running, or over for less than 10 min (`FocusQuietS`),
+  a camera change is no leak (no alarm, no leak pictures holding the cameras) and no camera problem is told
+  (server/alert.go; TestNoCameraLeakDuringFocus); the app holds back camera pushes already on their way while that
+  screen is open (PushService). Water at the probe and the humidity alarm still ring.
+- **The screen recovers by itself** (5.3.20): an ended or failed session, a camera that did not start, the server
+  away: asked for again 3 s later; a live picture without a record for 8 s: the stream reconnected.
 - **After tuning:** the histories of that camera are no longer comparable (every block changed): the K230 deletes
   them when it saves the reference, so the next check reads `new` (never a leak) and stores fresh ones.
 - **Built (2026-11-12, not yet on the board):** k230_app/focus.c (score, reference, session; FOCUS lines only after
@@ -1260,11 +1286,101 @@ or tune its focus in focus screen."
   `PUT /v1/devices/<id>/cameras/<0|1> {"ignore":true}`. An ignored camera's `changed` opens no leak and its problems
   are not told or flagged; `{"ignore":false}` uses it again (a problem it still has is told again). Kept with the
   thresholds (`thresholds.json`, `ignore` in the device's `thresholds`).
-- **Not done (the minimal form):** the board is not told. It goes on taking and judging the ignored camera's pictures,
-  and a `changed` of it still costs one early check-in; photos and videos still show both cameras.
-- **Built 2026-11-13:** the K230's `dark`, the server's reason, API and tests (TestDarkAndIgnoredCamera). **Open:** the
-  app's two buttons and "Use camera again" in the board's menu; a run on the board.
+- **On the board (user 2026-11-13: "store ignored camera somewhere and skip it. store in flash of k230"):** the
+  server hands the mask of ignored cameras to the board at its next check-in as a capture of kind `ignore` (no
+  picture, the mask in `photos`; the BL616 passes it in SHOOT). The K230 keeps it in its flash
+  (`/sdcard/leakcam/ignore`, written only when it changes) and no longer judges those cameras: they read `ignored` in
+  the job, nothing compared or stored. A camera used again starts with `new` (its old history deleted).
+  - **State, not events:** the server compares the job's `ignored` with the person's choice at every check-in whose
+    leak check ran after the last hand-over, and hands the mask over again when they differ (the K230 was off, the
+    write failed).
+  - **Still both cameras:** photos, videos and the focus session show an ignored camera too (so it can be looked at
+    and tuned before it is used again).
+- **The app:** the status screen's flag row says what is wrong ("Camera N sees nothing: its picture is dark", out of
+  focus, not tuned yet) with two buttons side by side, Tune focus and Ignore camera (asked first: "leaks in its view
+  will no longer be noticed"); "Use camera N again" in the board's ⋮ menu; the `focus` push says "sees nothing".
+- **Measured on the board (2026-11-13):** camera 1 in the dark: `dark` (was `changed` at every check); camera 2
+  ignored from the app's API: handed over at the next check-in, the next check `dark,ignored` in 0.4 s (1.2 s
+  before), no leak; used again: `dark,new`. Server: TestDarkAndIgnoredCamera.
 
+### 5.3.19 Live video (user, 2026-11-13)
+
+User: "we need a live video screen in app", "should be available after leak detected", "in addition of scheduled work,
+if no leak", "then still should be available but user have to wait longer".
+
+- **What:** the board's cameras live on the phone, one at a time, with the camera switch (Top / Bottom): the focus
+  session's stream (5.3.17: the shown camera's native H.265 at 15 fps through the server, a switch on a keyframe)
+  without the lens guide, the bar and Done. The same screen (FocusActivity, `EXTRA_LIVE`), the same server routes and
+  the same capture kind (`focus`) on the board: nothing new there.
+- **Where:** the status screen's third action, Live (next to Photo and Video), for any board at any time; and Live
+  video on the leak panel next to Not a leak.
+- **When it starts:** at the board's next check-in, and the screen says when: within 30 s while a leak is open
+  (5.3.13), else at the board's scheduled check-in (up to its interval: the person waits longer). The session ends
+  when the screen is left, 20 s without a viewer, or after 10 min.
+- **Open:** sound (the stream carries none yet; the recorded videos do); the exposure follows the light only at the
+  session's start (set for focus tuning: a steady score); measured only on USB power (the battery cost of a session
+  not taken).
+- **Tested:** on the bench phone with the real board 2026-11-13 (the waiting state with its time, the bottom camera
+  live, the top one after a tap); no automated test yet.
+
+### 5.3.20 Every screen recovers by itself (user, 2026-11-13)
+
+User: "why screen never recovers? this is ridiculous, it should be examined so we are eventually consistent, and self
+recovering on all screens."
+
+- **The rule:** a screen shows the state of the board and the server, read again and again, never the memory of an
+  event. Whatever went wrong (a request lost, the server restarted, the board busy with something else, the network
+  away, a session ended by the other side), the screen comes back to the true state by itself: it retries, re-reads
+  and says what it is waiting for. No state needs the person to leave the screen and open it again.
+- **What that means for a screen:**
+  - every wait names what is waited for and until when (the board's next check-in, its time);
+  - every failure text ends in what happens next ("Trying again…"), and it does happen, on a timer;
+  - a stream or a long request has a stall limit: nothing for that long, and it is started again;
+  - a tap that did not reach the server is not shown as done; the screen re-reads the server and shows what is so;
+  - nothing a screen shows may be covered or changed by a notification about the same thing.
+- **Found the hard way (2026-11-13):** the focus screen stayed on "the board ended the session", on "camera does not
+  answer" and on a black picture until it was left and opened again, while the board was busy with a leak's pictures
+  that the person's own hands at the lens had triggered.
+- **Done:** the focus / live screen (FocusActivity: the ask-and-read loop, RETRY_MS 3 s, STALL_MS 8 s). **To examine,
+  screen by screen:** the status screen (it polls: what if a tap's request fails?), setup over BLE and the cable, the
+  leak panel and alert, Change Wi-Fi. Each gets a test that cuts the server or the board mid-way and expects the
+  screen back without a hand.
+
+### 5.3.21 The cameras' exposure and white balance: right at the first frame kept (user, 2026-11-13)
+
+User: "tune exposure better, it was much better yesterday", "white balance is heavily off", "one is warmer another is
+colder", "if environment changes? we should adapt exposure continuously", "can you persist settings so it find faster
+next time?"
+
+- **The rule: every setting a camera finds by itself is kept for the next time**, so the next shot starts right
+  instead of searching again: a search costs frames, and every frame of a lit shot costs LED time.
+  - **Exposure: kept** (per camera, the LED shots' and the sensor's last: `/sdcard/leakcam/exposure`, since
+    2026-11-12).
+  - **White balance: kept, built 2026-11-13, not verified yet** (k230_app/wb.c). The SDK has no call for it, so the
+    closed library's three setters the AWB uses are wrapped at link time (found by disassembly:
+    `CamerIcIspWbSetGains` 4 gains, `CamerIcIspSetCrossTalkCoefficients` the 9 matrix values,
+    `CamerIcIspSetCrossTalkOffset` 3 offsets, each per camera handle). Under the LEDs the settled set is learnt per
+    camera and kept in `/sdcard/leakcam/wb`; when the LEDs go on for a shot it is set at once (the AWB runs only every
+    3rd-4th frame: a 3-frame shot is over before its first round), and the room's set is put back after.
+    - Measured on the way: the gains alone fixed J5 in a 136 ms shot (red 0.95-1.06 x blue, 0.38 before) but turned
+      J4 warm (1.40): the matrix belongs to the state. The version with the matrix and offsets was built and flashed
+      at the day's end; **its photos were not taken** (the run was stopped). Until it is proven, a camera without a
+      kept set waits 14 frames once (it is learnt then).
+- **A frame kept too early (found 2026-11-13, two faults of the same kind):**
+  - **Dark:** with the stored exposure already at its limit, the grab kept the first frame at once, one exposed
+    before the LEDs' light: mean 15 where the scene gives 105 (and green: blue clipped at that level). Now it measures
+    once more at the limit (vicap_cap.c): 105-111 in 5 checks, 120 ms more LED time when at the limit.
+  - **Blue:** the LEDs switched on for a shot, the white balance still the room's (warm lamps): the J5 camera's LED
+    shots blue (red 0.38-0.75 x blue), its room-light shots and its streams neutral. Now `CAP_LIGHT_FRAMES` 3 frames
+    passed after the light changed before a frame was kept (the step before wb.c, replaced by it): both cameras red
+    0.99-1.01 x blue, brightness 88 / 94; LEDs
+    on 336 ms per lit shot (135 before). The AWB's damping is off too (install.sh patches the SDK's
+    ov5647-2592x1944_auto.json); that alone changed nothing.
+- **In a session (focus, live video) the exposure follows the light**: every 5 frames one gentle step (the ratio, at
+  most x2 / 1/2) when the shown camera's picture left the brightness band (`cap_follow`). Built 2026-11-13, not
+  measured yet (a lamp switched during a session).
+- **The two cameras are set separately** (each its own exposure and white balance, on its own view): small differences
+  remain (brightness within the band 67-117 around 90).
 
 ### 5.4 K230-BL616 link and time
 

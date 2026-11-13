@@ -6,6 +6,7 @@
 #define LEAKCAM_CAP_H
 
 #include <stddef.h>
+#include <stdbool.h>
 #include <stdint.h>
 
 #define CAP_MAX_CAMS 3
@@ -58,6 +59,11 @@ struct cap_cam {
 /* open + format every camera (sorted by node), then map and queue buffers; each sensor starts at its cams[i].exp
  * (0: CAP_EXP_DEFAULT): the caller's persisted one, so a cold start probes the room as the running program would */
 int cap_open_all(struct cap_cam *cams, int n, unsigned width, unsigned height);
+/* frames to pass after the light changed (the LEDs switched on for a shot) before one is kept: the ISP's white balance
+ * is still the room's and needs them to follow (2026-11-13: the J5 camera's LED shots blue, red 0.38-0.75 x blue,
+ * its room-light shots and its streams neutral). Set by the caller per grab, 0: none */
+#define CAP_LIGHT_FRAMES  3
+extern unsigned cap_light_frames;
 extern unsigned cap_curve;         /* 1: no frame is kept before settle + 1, every mean traced (job.c's `curve` token) */
 void rawpack_writers(void);        /* rawpack.c: the raw writers' line lengths packed, after the start */
 /* the room's light now: a 320x240 frame per camera (the LEDs off: the caller's; the frame in flight skipped), its mean
@@ -78,6 +84,10 @@ int cap_release_all(struct cap_cam *cams, int n, cap_frame_fn fn, void *ctx);
  * the first camera's frames span max_ms of their own time (pts), each to fn as it comes, then released; map: a bit per
  * camera (cams[i]: bit i) whose luma is mapped (the focus session's score; uv NULL), the others' y and uv NULL (the
  * encoder takes the frame itself); 0, -1: a camera gave none */
+/* a streaming camera's exposure follows the light (user 2026-11-13: "if environment changes? we should adapt exposure
+ * continuously"): from the mean of its last mapped frame (cap_stream), one gentle step towards CAP_TARGET when it is
+ * outside the band; true when the exposure changed (the change shows CAP_APPLY frames on) */
+bool cap_follow(struct cap_cam *c);
 int cap_stream(struct cap_cam *cams, int n, unsigned frames, unsigned max_ms, unsigned map, cap_frame_fn fn, void *ctx,
                int timeout_ms);
 void cap_close_all(struct cap_cam *cams, int n);

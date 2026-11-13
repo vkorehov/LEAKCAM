@@ -26,8 +26,8 @@ const (
 	LeakProbeMV = 1100                                  // a probe below this is wet: the default probe threshold (thresholds.h THR_PROBE_MV)
 	HumidPct    = 85                                    // %RH or more at any reading: a humid room, the default (DESIGN.md 5.3.15; thresholds.h THR_HUMID)
 	WakeModeS   = 300                                   // the check-in interval in the wake mode after a failed Wi-Fi change
-	LeakModeS   = 60                                    // during a leak: near real time (user 2026-11-07), ~60 mAh a day
-	WakeModeMax = 24 * time.Hour                        // the mode ends after this at the latest: it costs the battery ~13 mAh a day
+	LeakModeS   = 30                                    // during a leak: a request (live video, a photo) starts within half a minute (user 2026-11-13), ~120 mAh a day
+	WakeModeMax = 24 * time.Hour                        // the 5-min wake and the focus modes end after this at the latest: ~13 mAh a day
 	Tokens      = "/home/pi/leakcam-server/tokens.json" // LEAKCAM_TOKENS: per phone its FCM token
 	WifiSaved   = 0x04                                  // wifi_check's state for a network joined, checked and stored
 	VideoS      = 15                                    // a video's length (user, 2026-11-07; DESIGN.md 5.3.14)
@@ -89,8 +89,15 @@ var (
 	// WakeModeMax from here
 	focusSince = map[string]time.Time{}
 	// what a check-in brings first (user 2026-11-07): a leak's record (the emergency), a Wi-Fi change, a photo, a video
-	Rank      = map[string]int{"leak": 0, "wifi": 1, "photo": 2, "video": 3, "focus": 4}
-	tokenFile = Tokens
+	Rank = map[string]int{"leak": 0, "wifi": 1, "photo": 2, "video": 3, "focus": 4, "ignore": 5}
+	// per device when the person last asked the board for something from the app (a photo, a video, live video, focus):
+	// an open leak's fast check-ins count from it (LeakSteps)
+	askedAt = map[string]time.Time{}
+	// per device when its last focus / live session ended: camera changes are no leak for FocusQuietS after it
+	focusEnded = map[string]time.Time{}
+	// per device when its cameras-to-ignore were last handed to the board (reconcileIgnore)
+	ignoreSent = map[string]time.Time{}
+	tokenFile  = Tokens
 )
 
 // leakIn: why this check-in shows a leak ("" none): a wet probe, 85 %RH or more (a warm board only reads lower: any
@@ -108,6 +115,24 @@ func leakIn(m map[string]any, th Thresholds) string {
 		}
 	}
 	return ""
+}
+
+// reconcileIgnore: the board's ignored cameras made the same as the person's (DESIGN.md 5.3.18): the K230 reports each
+// ignored camera as "ignored" in its job; a leak check taken after the last hand-over that still differs gets the mask
+// again (the K230 was off, the write failed); mu held
+func reconcileIgnore(id string, m map[string]any) {
+	j, _ := m["job"].(string)
+	f := strings.Split(j, ",")
+	ago, ok := m["jago"].(int64)
+	if len(f) < Cameras || !ok || ago < 0 || time.Since(ignoreSent[id]) < time.Duration(ago)*time.Second {
+		return // no job, or one from before the hand-over
+	}
+	for cam, want := range thresholds[id].Ignore {
+		if (f[cam] == "ignored") != want {
+			queueCapture(id, "ignore")
+			return
+		}
+	}
 }
 
 // cameraChanged: a camera the person did not ignore reads "changed" in the job "<cam0>,<cam1>,..." (a camera that
@@ -128,6 +153,14 @@ func checkInAlerts(id string, in CheckIn, ans map[string]any) (msgs []map[string
 	why := leakIn(m, deviceThresholdsLocked(id))
 	if ago, ok := m["jago"].(int64); ok && why == "camera change" && !in.At.Add(-time.Duration(ago)*time.Second).After(clearedAt[id]) {
 		why = "" // the job that the person already called not a leak
+	}
+	if why == "camera change" && (time.Since(focusAsked[id]) < FocusAskS*time.Second || time.Since(focusEnded[id]) < FocusQuietS*time.Second) {
+		// the person is at the board (focus adjustment or live video asked for, running or just over): hands, a wiped
+		// lens, the room's light on are no leak (user 2026-11-13: "no leak detection while focusing and board in live
+		// mode"; that evening every such change rang the alarm and held the cameras with the leak's pictures and videos
+		// while the person waited for the focus screen). A wet probe or the humidity still alarm
+		log.Printf("%s: camera change during a focus / live session: no leak", id)
+		why = ""
 	}
 	switch notLeak[id] {
 	case "probe wet", "humidity high": // re-armed once the probe is dry / the humidity below 85 %RH
@@ -161,7 +194,12 @@ func checkInAlerts(id string, in CheckIn, ans map[string]any) (msgs []map[string
 				"media": strings.Join(mediaIDs(id, "leak", in.At), ",")})
 		}
 	}
-	msgs = append(msgs, focusAlerts(id, m, in.SSID)...)
+	if time.Since(focusAsked[id]) >= FocusAskS*time.Second && time.Since(focusEnded[id]) >= FocusQuietS*time.Second {
+		// not while the person tunes the focus or watches live (nor FocusQuietS after): told at the first check-in
+		// after it, should a camera still need them
+		msgs = append(msgs, focusAlerts(id, m, in.SSID)...)
+	}
+	reconcileIgnore(id, m)
 	if c := wifiChanges[id]; c != nil && !c.Delivered.IsZero() && c.Result == 0 {
 		if st, ok := m["wchg"].(int64); ok && st > 0 {
 			c.Result = int(st)
@@ -187,6 +225,15 @@ func checkInAlerts(id string, in CheckIn, ans map[string]any) (msgs []map[string
 			c["photos"], c["secs"], c["gap_ms"] = LeakPhotos, VideoS, LeakGapMs
 		case "focus":
 			c["secs"] = FocusMaxS // the session's longest: the board ends it earlier on Stop or no viewer (focus.go)
+		case "ignore": // no picture: the mask of the cameras to ignore, which the K230 keeps in its flash (5.3.18)
+			mask := 0
+			for cam, on := range thresholds[id].Ignore {
+				if on {
+					mask |= 1 << cam
+				}
+			}
+			c["photos"] = mask
+			ignoreSent[id] = time.Now()
 		}
 		c["more"] = len(q) - 1 // waiting after this one: the board checks in again right after its SENT
 		ans["capture"] = c
@@ -246,12 +293,29 @@ func focusAlerts(id string, m map[string]any, ssid string) (msgs []map[string]st
 	return msgs
 }
 
+// LeakSteps: an open leak's check-in interval by the time since the leak opened or the person last asked the board
+// for something (user 2026-11-13: "board sleeps only 30 seconds ... if no response in 1 day then start sleeping one
+// minute then 5 minutes in one more day, i.e. exponential"): every 30 s the first day, every minute the second, every
+// 5 min the third, then the board's normal check-in
+var LeakSteps = []struct {
+	Until time.Duration
+	S     int
+}{{24 * time.Hour, LeakModeS}, {48 * time.Hour, 60}, {72 * time.Hour, 300}}
+
 // wakeModeS: the check-in interval while the device stays reachable (BLE sleep between check-ins), 0 when it is not:
-// an open leak every minute (a request reaches it within a minute, user 2026-11-07), a failed Wi-Fi change every 5
-// min; for at most WakeModeMax, a leak until the person's Not a leak or all clear too; mu held
+// an open leak by LeakSteps (until the person's Not a leak or all clear), a failed Wi-Fi change every 5 min for at
+// most WakeModeMax; mu held
 func wakeModeS(id string) int {
-	if l, open := leaks[id]; open && time.Since(l.Since) < WakeModeMax {
-		return LeakModeS
+	if l, open := leaks[id]; open {
+		from := l.Since
+		if t := askedAt[id]; t.After(from) {
+			from = t // a response: the fast pace again
+		}
+		for _, st := range LeakSteps {
+			if time.Since(from) < st.Until {
+				return st.S
+			}
+		}
 	}
 	if c := wifiChanges[id]; c != nil && c.Result != 0 && c.Result != WifiSaved && time.Since(c.Delivered) < WakeModeMax {
 		return WakeModeS
@@ -427,6 +491,7 @@ func capture(w http.ResponseWriter, r *http.Request) {
 	}
 	mu.Lock()
 	queueCapture(id, b.Kind)
+	askedAt[id] = time.Now()
 	within := deviceIntervalsLocked(id).Checkin
 	if s := wakeModeS(id); s > 0 {
 		within = s
@@ -447,8 +512,8 @@ func mediaIDs(id, kind string, at time.Time) []string {
 	pre := id + "-" + strconv.FormatInt(at.Unix(), 10) + "-"
 	photos, videos := 0, 0
 	switch kind {
-	case "focus":
-		return []string{pre + "f"} // no file: the session's stream (focus.go); the ID gives the board its device and time
+	case "focus", "ignore":
+		return []string{pre + kind[:1]} // no file (focus: the session's stream, focus.go; ignore: a setting); the ID gives the board its device and time
 	case "photo":
 		photos = Cameras
 	case "video":

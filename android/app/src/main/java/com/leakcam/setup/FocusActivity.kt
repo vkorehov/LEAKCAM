@@ -7,6 +7,8 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.media.MediaCodec
 import android.widget.ProgressBar
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.media.MediaFormat
 import android.os.Bundle
 import android.util.Log
@@ -32,8 +34,7 @@ import android.widget.TextView
  *     the moment it starts;
  *   - GET /v1/focus/<id>/live: the board's records as they come ([u32 BE length | 1 << 30 text][u64 BE us][payload]):
  *     CAM,<cam> before a camera's first picture, FOC,<cam>,<seq>,<score> once a second (FocusGuide: which way), FOCUS,OK,<cam>,<score> after Done,
- *     FOCUS,ERR,<cam>; FOCB,<cam>,<score>, the hidden camera's score (once a second): LensWatch sees its lens turned
- *     and the screen switches to it; an access unit of the shown camera's native H.265, decoded in hardware straight
+ *     FOCUS,ERR,<cam>; an access unit of the shown camera's native H.265, decoded in hardware straight
  *     onto the screen;
  *   - POST /v1/focus/<id>/cmd: {"cam":n} (the camera buttons: the board switches at the next frame), {"done":<score>}
  *     (FocusGuide's best kept as the camera's reference), {"stop":true} (the screen left).
@@ -46,7 +47,15 @@ class FocusActivity : Activity() {
     companion object {
         const val EXTRA_ID = "id"
         const val EXTRA_CAM = "cam"
+
+        /** the focus adjustment or live video is on the screen: no notification about the cameras meanwhile
+         *  (PushService; user 2026-11-13: "i dont want to be notified while tuning focus, nor ... viewing live video") */
+        @Volatile var open = false
+        const val EXTRA_LIVE = "live"                      // Live video (DESIGN.md 5.3.19): the same stream and camera
+                                                           // switch, no lens guide, bar or Done
         private const val TAG = "LeakcamFocus"
+        private const val RETRY_MS = 3000L                 // an ended or failed session: asked for again after this
+        private const val STALL_MS = 8000L                 // live, and no record this long: the stream reconnected
         private const val TEXT = 1 shl 30                  // a record's kind bit (server/focus.go FocusText)
     }
 
@@ -55,13 +64,12 @@ class FocusActivity : Activity() {
     private var guide = FocusGuide()
     private var cam = 0
     private var board = ""                      // the board's ID (not `id`: inside a View's apply {} that is the view's id, -1)
-    private val camButtons = arrayOfNulls<Button>(2)
+    private val camButtons = arrayOfNulls<RadioButton>(2)
     private lateinit var video: SurfaceView
     @Volatile private var decoder: MediaCodec? = null
     @Volatile private var shownCam = 0                      // the reader thread's copy: frames of the other camera skipped
     private val outInfo = MediaCodec.BufferInfo()
     private lateinit var lens: ImageView
-    private val watch = Array(2) { LensWatch() }     // the hidden camera's lens being turned (FOCB)
     private lateinit var spinner: ProgressBar
     private lateinit var say: TextView
     private lateinit var slower: TextView
@@ -69,6 +77,10 @@ class FocusActivity : Activity() {
     private lateinit var done: Button
     private var lastBest = 0.0
     private var camFailed = false
+    @Volatile private var session: Any? = null             // the running begin() loop's token
+    @Volatile private var lastRecord = 0L                  // when the stream's last record came (elapsedRealtime)
+    private val stall = android.os.Handler(android.os.Looper.getMainLooper())
+    private var liveOnly = false                            // opened as Live video (EXTRA_LIVE)
     private var state = State.STARTING
     private var startsAt = ""
     @Volatile private var live: HttpURLConnection? = null
@@ -78,6 +90,7 @@ class FocusActivity : Activity() {
         super.onCreate(savedInstanceState)
         board = intent.getStringExtra(EXTRA_ID).orEmpty()
         cam = intent.getIntExtra(EXTRA_CAM, 0)
+        liveOnly = intent.getBooleanExtra(EXTRA_LIVE, false)
         shownCam = cam
         val d = resources.displayMetrics.density
         val pad = (16 * d).toInt()
@@ -86,18 +99,22 @@ class FocusActivity : Activity() {
             setPadding(pad, pad, pad, pad)
             setBackgroundColor(Color.WHITE)
             addView(TextView(context).apply {
-                setText(R.string.focus_title)
+                setText(if (liveOnly) R.string.live_title else R.string.focus_title)
                 textSize = 20f
             })
-            addView(LinearLayout(context).apply {                       // the camera switch
-                orientation = LinearLayout.HORIZONTAL
+            // the camera choice: radio buttons, as the device list's (user 2026-11-13: "change those buttons to be radio
+            // buttons ... same approach as device selection. same UX"; skill leakcam-app-ux 2f)
+            addView(RadioGroup(context).apply {
+                orientation = RadioGroup.HORIZONTAL
                 for (c in 0..1)
-                    addView(Button(context).apply {
-                        text = getString(R.string.focus_camera, c + 1)
+                    addView(RadioButton(context).apply {
+                        id = View.generateViewId()
+                        text = Cams.name(context, c)
+                        textSize = 16f
                         maxLines = 1
                         setOnClickListener { pick(c) }
                         camButtons[c] = this
-                    }, LinearLayout.LayoutParams(0, -2, 1f))
+                    }, RadioGroup.LayoutParams(0, -2, 1f))
             })
             video = SurfaceView(context).apply {                       // the camera's 4:3, the full width
                 holder.addCallback(object : SurfaceHolder.Callback {
@@ -113,7 +130,10 @@ class FocusActivity : Activity() {
                 gravity = Gravity.CENTER
                 spinner = ProgressBar(context).apply { visibility = View.INVISIBLE }
                 addView(spinner, LinearLayout.LayoutParams((32 * d).toInt(), (32 * d).toInt()))
-                lens = ImageView(context).apply { setImageResource(R.drawable.ic_lens) }
+                lens = ImageView(context).apply {
+                    setImageResource(R.drawable.ic_lens)
+                    visibility = if (liveOnly) View.GONE else View.VISIBLE
+                }
                 addView(lens, LinearLayout.LayoutParams((130 * d).toInt(), (130 * d).toInt()))
                 addView(View(context), LinearLayout.LayoutParams((32 * d).toInt(), 1))   // the spinner's balance
             }, LinearLayout.LayoutParams(-1, -2))
@@ -134,6 +154,13 @@ class FocusActivity : Activity() {
                 visibility = View.INVISIBLE
             }
             addView(slower, LinearLayout.LayoutParams(-1, -2))
+            if (!liveOnly)                                             // a dirty lens looks like a blurred one (user
+                addView(TextView(context).apply {                      // 2026-11-13: "offer to wipe camera with alcohol")
+                    setText(R.string.focus_wipe)
+                    textSize = 14f
+                    gravity = Gravity.CENTER
+                    setTextColor(Color.GRAY)
+                }, LinearLayout.LayoutParams(-1, -2).apply { topMargin = pad / 2 })
             addView(View(context), LinearLayout.LayoutParams(-1, 0, 1f))
             done = Button(context).apply {
                 setText(R.string.focus_done)
@@ -141,28 +168,64 @@ class FocusActivity : Activity() {
                 setOnClickListener { command("{\"done\":%.3f}".format(java.util.Locale.ROOT, guide.best)) }
             }
             addView(done, LinearLayout.LayoutParams(-1, -2))
+            if (liveOnly)
+                for (v in listOf(bar, slower, done))
+                    v.visibility = View.GONE
         })
         show()
     }
 
     override fun onStart() {
         super.onStart()
+        open = true
         begin()
     }
 
     override fun onStop() {
         running = false
+        session = null
+        stall.removeCallbacksAndMessages(null)
+        open = false
         command("{\"stop\":true}")
         Thread { live?.disconnect() }.start()
         super.onStop()
     }
 
-    /** the session asked for, then the live stream read until the board ends it */
+    /** the session asked for and the live stream read, again and again while the screen is open: whatever ends it (the
+     *  board's Stop or its time, a camera that failed, the server or the network away, a picture that stalls), the
+     *  screen asks again RETRY_MS later and waits for the board: no state here needs the person to leave and come back
+     *  (user 2026-11-13: "why screen never recovers ... self recovering on all screens"; skill leakcam-app-ux 8) */
     private fun begin() {
         state = State.STARTING
         running = true
         show()
+        val mine = Any()
+        session = mine                                      // one loop per start: a stopped screen's loop ends
         Thread {
+            while (running && session === mine) {
+                once()
+                if (!running || session !== mine)
+                    break
+                Thread.sleep(RETRY_MS)                          // the end or the failure shown meanwhile
+                if (running && session === mine)
+                    runOnUiThread { state = State.STARTING; camFailed = false; guide = FocusGuide(); lastBest = 0.0; show() }
+            }
+        }.start()
+        stall.removeCallbacksAndMessages(null)
+        stall.postDelayed(object : Runnable {                   // a live picture that stopped coming: the stream cut,
+            override fun run() {                                // so the loop above starts it again
+                if (!running)
+                    return
+                if (state == State.LIVE && android.os.SystemClock.elapsedRealtime() - lastRecord > STALL_MS) {
+                    Log.w(TAG, "no record for $STALL_MS ms: reconnecting")
+                    Thread { live?.disconnect() }.start()
+                }
+                stall.postDelayed(this, 2000)
+            }
+        }, 2000)
+    }
+
+    private fun once() {
             try {
                 val c = URL("${BuildConfig.SERVER}/v1/devices/$board/focus").openConnection() as HttpURLConnection
                 c.requestMethod = "POST"
@@ -183,7 +246,6 @@ class FocusActivity : Activity() {
                 Log.w(TAG, "focus session: $e")
                 if (running) runOnUiThread { state = State.FAILED; show() }
             }
-        }.start()
     }
 
     /** the board's records (blocking, its own thread): text lines to the guide, access units to the decoder */
@@ -196,6 +258,7 @@ class FocusActivity : Activity() {
             var from = -1                                  // the camera of the next picture: CAM,<cam> before its first
             while (running) {
                 val l = din.readInt()
+                lastRecord = android.os.SystemClock.elapsedRealtime()
                 val us = din.readLong()
                 val p = ByteArray(l and TEXT.inv())
                 din.readFully(p)
@@ -231,7 +294,6 @@ class FocusActivity : Activity() {
     }.start()
 
     private fun pick(c: Int) {
-        watch[cam].reset()                                      // the camera left: watched from its next scores
         cam = c
         shownCam = c
         guide = FocusGuide()
@@ -244,6 +306,7 @@ class FocusActivity : Activity() {
     private fun onLine(l: String) {
         val f = l.split(",")
         when {
+            liveOnly -> if (f[0] == "FOC" && state != State.LIVE) { state = State.LIVE; show() }   // no guide
             f.size == 4 && f[0] == "FOC" && f[1].toIntOrNull() == cam -> {
                 if (state != State.LIVE) state = State.LIVE
                 val changed = guide.add(f[3].toDoubleOrNull() ?: return)
@@ -253,14 +316,6 @@ class FocusActivity : Activity() {
                 if (changed && guide.say in setOf(FocusGuide.Say.WRONG_WAY, FocusGuide.Say.TOO_FAR))
                     say.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)   // turn the other way
                 show()
-            }
-            f.size == 3 && f[0] == "FOCB" && state == State.LIVE -> {   // the hidden camera's score (once a second)
-                val c = f[1].toIntOrNull() ?: return
-                if (c in 0..1 && c != cam && watch[c].add(f[2].toDoubleOrNull() ?: return)) {
-                    Log.i(TAG, "camera ${c + 1}: its lens turned, shown")
-                    say.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-                    pick(c)
-                }
             }
             f.size == 3 && f[0] == "FOCUS" && f[1] == "ERR" && f[2].toIntOrNull() == cam -> {
                 camFailed = true
@@ -331,15 +386,12 @@ class FocusActivity : Activity() {
 
     private fun show() {
         for (c in 0..1)
-            camButtons[c]?.apply {                                     // the camera shown: full, the other faded
-                isSelected = c == cam
-                alpha = if (c == cam) 1f else 0.45f
-            }
+            camButtons[c]?.isChecked = c == cam                        // the camera shown
         if (state != State.LIVE || camFailed) {                        // starting, ended, failed
             lensImage(R.drawable.ic_lens)                  // no direction yet / any more
             lens.alpha = if (state == State.STARTING && !camFailed) 1f else 0.4f
             say.text = when {
-                camFailed -> getString(R.string.focus_nocam, cam + 1)
+                camFailed -> getString(R.string.focus_nocam, Cams.name(this, cam))
                 state == State.STARTING -> getString(R.string.focus_starting, startsAt)
                 state == State.ENDED -> getString(R.string.focus_ended)
                 else -> getString(R.string.focus_failed)
@@ -351,6 +403,10 @@ class FocusActivity : Activity() {
             return
         }
         spinner.visibility = View.INVISIBLE
+        if (liveOnly) {
+            say.text = getString(R.string.live_now, Cams.inText(this, cam))
+            return
+        }
         val way = getString(if (guide.turn == FocusGuide.Turn.CW) R.string.focus_cw else R.string.focus_ccw)
         lens.alpha = 1f
         lensImage(when (guide.turn) {                     // green the way to turn, red the other

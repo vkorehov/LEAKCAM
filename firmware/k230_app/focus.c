@@ -7,8 +7,7 @@
  *   - uploads, chunked, POST /v1/focus/<dev>/stream: records [u32 BE length | 1 << 30 text][u64 BE us][payload]: per
  *     frame of the shown camera its H.265 access unit (the native 2592x1936 at 15 fps, H265_KBPS; the parameter sets
  *     with the session's first frame), CAM,<cam> before a camera's first one; once a second its whole-frame score
- *     FOC,<cam>,<seq>,<score> (5 of the 70 tiles scored per frame), and the other camera's FOCB,<cam>,<score> (5 tiles
- *     of one frame: the app switches to a lens being turned); FOCUS,OK,<cam>,<score> after a Done;
+ *     FOC,<cam>,<seq>,<score> (5 of the 70 tiles scored per frame); FOCUS,OK,<cam>,<score> after a Done;
  *   - polls GET /v1/focus/<dev>/cmd (the server's long poll): {"cam":n} switches at the next frame (one encoder, fed
  *     only the shown camera, an IDR asked for: nothing restarts), {"done":s} keeps s as the camera's reference,
  *     {"stop":true} ends (the app left, nobody watching, or the session's time);
@@ -353,17 +352,8 @@ static void frame(const struct cap_cam *c, const uint8_t *y, const uint8_t *uv, 
     (void)ctx;
     int cam = (int)c->slot;
     uint64_t us = ((const k_video_frame_info *)fr)->v_frame.pts;
-    if (cam != shown_cam(NULL)) {       /* the other camera streams on unshown: once a second (job_focus maps that
-                                         * frame) 5 tiles spread over it, FOCB: the app switches to a lens turned */
-        if (y && shown_cam(NULL) >= 0) {
-            unsigned n = 0, all = focus_ntiles(c->fw, c->fh);
-            double s = focus_tiles(y, stride, c->fw, c->fh, 0, 5, all / 5, &n);
-            char l[64];
-            snprintf(l, sizeof(l), "FOCB,%d,%.3f", cam, n ? s / n * 100 : 0);
-            put_line(us, l);
-        }
-        return;
-    }
+    if (cam != shown_cam(NULL))
+        return;                         /* the other camera streams on, unshown: a switch is at the next frame */
     if (cam != shown) {                 /* the switch: this camera's first frame an IDR, CAM before it (the app
                                          * gives the pictures after it to this camera); its score from here */
         char l[16];

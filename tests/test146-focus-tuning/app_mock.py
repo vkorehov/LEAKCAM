@@ -6,10 +6,9 @@ frames (mock_cam0.fv, mock_cam1.fv). The app built for it:
     cd android && ./gradlew assembleDebug assembleDebugAndroidTest -PleakcamServer=http://127.0.0.1:8090 \
         -Pandroid.aapt2FromMavenOverride=$HOME/.local/opt/aapt2-x86/aapt2
 The screen (androidTest FocusScreen) opens as Tune focus does, the mock board joins 3 s later (its check-in), Camera 2
-is tapped at 8 s, Camera 1 at 14 s; at 16 s after the board's start camera 2's lens is "turned" (its hidden score 40 %
-up: the app switches to it by itself), the screen left at 24 s. Checks: the live picture on each camera (a
+is tapped at 8 s, Camera 1 at 14 s, the screen left at 20 s. Checks: the live picture on each camera (a
 screenshot's video area: detail, and the two cameras differ), the lens picture with the way to turn (green and red
-arrows), each tap's command at the board and how fast, the automatic switch, Stop when the screen is left, no decoder
+arrows), each tap's command at the board and how fast, Stop when the screen is left, no decoder
 error in the phone's log.
     tests/test146-focus-tuning/app_mock.py
 """
@@ -77,14 +76,14 @@ try:
     adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")
     t0 = time.time()
     inst = subprocess.Popen(["adb", "shell", "am", "instrument", "-w", "-e", "class", "com.leakcam.setup.FocusScreen",
-                             "-e", "id", DEV, "-e", "taps", "8:2,14:1", "-e", "secs", "24",
+                             "-e", "id", DEV, "-e", "taps", "8:2,14:1", "-e", "secs", "20",
                              "com.leakcam.setup.test/androidx.test.runner.AndroidJUnitRunner"],
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     time.sleep(3)                                   # the screen up, the session asked for: waiting for the board
     wait_mean, wait_sd, _ = shot(os.path.join(HERE, "app_mock_waiting.png"))
     board = subprocess.Popen([sys.executable, os.path.join(ROOT, "tools/test-runner/mock_board_focus.py"),
                               "http://127.0.0.1:8090", DEV, os.path.join(HERE, "mock_cam0.fv"),
-                              os.path.join(HERE, "mock_cam1.fv"), "40", "16"], stdout=subprocess.PIPE,
+                              os.path.join(HERE, "mock_cam1.fv"), "40"], stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT, text=True, bufsize=1)
     shots, board_lines, n = {}, [], 0
     for line in board.stdout:                       # a screenshot 1.5 s after each camera the board shows
@@ -102,8 +101,8 @@ try:
     print(board_out)
     check("before the board: the waiting state (a dark video area)", wait_mean < 20, f"mean {wait_mean:.0f}")
     names = sorted(shots)
-    check("4 camera stretches shot (camera 1, 2, 1, then 2 by itself)", [x.split("_")[1] for x in names] ==
-          ["camera1", "camera2", "camera1", "camera2"], str(names))
+    check("3 camera stretches shot (camera 1, 2, 1)", [x.split("_")[1] for x in names] ==
+          ["camera1", "camera2", "camera1"], str(names))
     for name in names:
         mean, sd, _ = shots[name]
         check(f"{name}: a live picture in the video area", mean > 20 and sd > 12, f"mean {mean:.0f}, spread {sd:.0f}")
@@ -124,14 +123,8 @@ try:
     cmds = [(float(t), int(c)) for t, c in re.findall(r"^\s*([\d.]+) cmd cam (\d)", board_out, re.M)]
     shows = [float(ms) for ms in re.findall(r"showing camera \d \((\d+) ms after the command\)", board_out)]
     check("2 taps made", len(taps) == 2, str(taps))
-    check("the board got the start camera, both switches and the automatic one (cam 0, 1, 0, 1)",
-          [c for _, c in cmds] == [0, 1, 0, 1], str(cmds))
-    turn = re.search(r"^\s*([\d.]+) lens of camera 1 turned", board_out, re.M)
-    auto = [t for t, c in cmds if turn and t > float(turn.group(1))]
-    check("the automatic switch within 3.5 s of the hidden lens turned (FOCB once a second, 2 of 3 moved)",
-          auto and auto[0] - float(turn.group(1)) < 3.5,
-          f"{auto[0] - float(turn.group(1)):.2f} s" if auto else "none")
-    check("the app logged it", "its lens turned, shown" in log, "")
+    check("the board got the start camera and both switches (cam 0, 1, 0)", [c for _, c in cmds] == [0, 1, 0],
+          str(cmds))
     check("each switch shown by the board within 100 ms of its command", shows and max(shows) <= 100, str(shows))
     check("Stop at the board when the screen was left", "cmd stop" in board_out, "")
     check("no decoder error on the phone", "decoder" not in log and "no H.265 decoder" not in log,

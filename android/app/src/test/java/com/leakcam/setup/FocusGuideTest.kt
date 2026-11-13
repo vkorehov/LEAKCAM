@@ -98,16 +98,4 @@ class FocusGuideTest {
         val firsts = List(64) { FocusGuide().turn }.toSet()
         assertEquals(setOf(Turn.CCW, Turn.CW), firsts)
     }
-
-    @Test fun hiddenLensTurnedIsSeen() {
-        val w = LensWatch()
-        val rnd = Random(3)
-        repeat(30) { assertTrue("still", !w.add(50.0 * (1 + 0.03 * (rnd.nextDouble() * 2 - 1)))) }
-        assertTrue("one odd score is ridden out", !w.add(90.0))
-        var seen = false
-        repeat(5) { seen = w.add(70.0) || seen }       // turned: 40 % sharper
-        assertTrue(seen)
-        w.reset()
-        repeat(5) { assertTrue("a new base after reset", !w.add(70.0)) }
-    }
 }
