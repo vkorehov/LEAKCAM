@@ -40,6 +40,17 @@ void mem_stat(struct mem_stat *m)
 
 #ifdef CONFIG_SHELL
 #include "shell.h"
+#include "lwip/stats.h"
+#include "lwip/tcpip.h"
+#include "lwip/priv/tcp_priv.h"
+
+static unsigned segs(const struct tcp_seg *s)
+{
+    unsigned n = 0;
+    for (; s; s = s->next)
+        n++;
+    return n;
+}
 
 /* one line for test runners: `mem: free 61234 largest 40960 min 52000 blocks 312 used 98765 tasks 18 deleted 0` */
 static int cmd_mem(int argc, char **argv)
@@ -52,6 +63,28 @@ static int cmd_mem(int argc, char **argv)
     printf("mem: free %u largest %u min %u blocks %lu used %u tasks %u deleted %u\r\n", (unsigned)m.free_bytes,
            (unsigned)m.largest, (unsigned)m.min_free, (unsigned long)m.blocks, (unsigned)m.used_bytes, m.tasks,
            m.deleted);
+#if MEM_STATS && MEMP_STATS
+    /* the BL616's own lwIP heap (MEM_SIZE, lwipopts_user.h) and TCP segments: after the K230's video through the bridge
+     * a check-in's 225 B send timed out (tests/test148 2026-11-13) */
+    printf("lwip: heap used %u max %u avail %u err %u, tcp seg used %u max %u err %u, pbuf used %u err %u\r\n",
+           (unsigned)lwip_stats.mem.used, (unsigned)lwip_stats.mem.max, (unsigned)lwip_stats.mem.avail,
+           (unsigned)lwip_stats.mem.err, (unsigned)lwip_stats.memp[MEMP_TCP_SEG]->used,
+           (unsigned)lwip_stats.memp[MEMP_TCP_SEG]->max, (unsigned)lwip_stats.memp[MEMP_TCP_SEG]->err,
+           (unsigned)lwip_stats.memp[MEMP_PBUF]->used, (unsigned)lwip_stats.memp[MEMP_PBUF]->err);
+    LOCK_TCPIP_CORE();
+    for (struct tcp_pcb *p = tcp_active_pcbs; p; p = p->next)
+        printf("lwip: tcp %s %u -> %u, unsent %u unacked %u ooseq %u, retries %u, idle %lu ms\r\n",
+               tcp_debug_state_str(p->state), p->local_port, p->remote_port, segs(p->unsent), segs(p->unacked),
+#if TCP_QUEUE_OOSEQ
+               segs(p->ooseq),
+#else
+               0u,
+#endif
+               p->nrtx, (unsigned long)((tcp_ticks - p->tmr) * TCP_SLOW_INTERVAL));
+    for (struct tcp_pcb *p = tcp_tw_pcbs; p; p = p->next)
+        printf("lwip: tcp TIME_WAIT %u -> %u\r\n", p->local_port, p->remote_port);
+    UNLOCK_TCPIP_CORE();
+#endif
     return 0;
 }
 SHELL_CMD_EXPORT_ALIAS(cmd_mem, mem, memory metrics for tests and leak detection);

@@ -2,14 +2,21 @@ package com.leakcam.setup
 
 import android.app.Activity
 import android.content.Context
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.media.MediaCodec
+import android.widget.ProgressBar
+import android.media.MediaFormat
 import android.os.Bundle
-import android.util.Base64
+import android.util.Log
 import android.view.Gravity
+import java.io.DataInputStream
+import java.net.HttpURLConnection
+import java.net.URL
 import android.view.HapticFeedbackConstants
+import android.view.SurfaceHolder
+import android.view.SurfaceView
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
@@ -17,54 +24,61 @@ import android.widget.LinearLayout
 import android.widget.TextView
 
 /**
- * Focus tuning, one camera at a time (DESIGN.md 5.3.17, user 2026-11-12: "separate screen for focus tuning per camera",
- * "good UX for user to adjust focus asap"). Over the USB cable (the person is at the board turning the lens: no
- * check-in to wait for, ~15 scores a second): the K230 streams the camera's sharpness and a centre preview, FocusGuide
- * says which way to turn, Done saves the reached sharpness as the camera's reference (its later bad-focus check).
- *
- * The cable's lines (k230_link.h, answered by the K230 itself, not relayed to the BL616, after the board's PIN: the
- * preview is the camera's picture):
- *   phone -> board  PIN <6 digits>             the board's PIN (from the server, as the setup's) -> OK (the BL616's)
- *                   FOCUS,<cam>                start (or switch) streaming camera <cam> (0, 1): LEDs on, exposure locked
- *                   FOCUS,<cam>,DONE,<score>   keep <score> as the camera's focus reference
- *                   FOCUS,STOP                 end: LEDs off, the leak job's own exposure again
- *   board -> phone  FOC,<cam>,<seq>,<score>    one frame's sharpness (brightness-normalised, any unit: compared only
- *                                              with itself)
- *                   FIMG,<cam>,<seq>,<part>,<parts>,<base64>   the preview JPEG (the centre crop), in line-sized parts
- *                   FOCUS,OK,<cam>,<score>     the reference saved
- *                   FOCUS,ERR,<cam>            the camera gave no frame
- *                   ERR AUTH                   a FOCUS line before the PIN
- * Layout (skill leakcam-app-ux): nothing moves: the camera switch, the preview, the arrow, two fixed lines of text,
- * the bar, the slower hint (kept INVISIBLE), Done.
+ * "LEAKCAM Focus Adjustment" (DESIGN.md 5.3.17; user 2026-11-12: "separate screen for focus tuning per camera", "good UX
+ * for user to adjust focus asap"; 2026-11-13: "focus tuning is done on already setup phone", "live stream video",
+ * "toggle between two cameras", "quickly switch camera and see instantly video changing"). Opened from the status
+ * screen's Tune focus (a flagged camera) or the board's ⋮ menu, over the phone's internet through the server, no cable:
+ *   - POST /v1/devices/<id>/focus {"cam":n}: the board joins at its next check-in (60 s while flagged): a spinner and
+ *     the moment it starts;
+ *   - GET /v1/focus/<id>/live: the board's records as they come ([u32 BE length | 1 << 30 text][u64 BE us][payload]):
+ *     CAM,<cam> before a camera's first picture, FOC,<cam>,<seq>,<score> once a second (FocusGuide: which way), FOCUS,OK,<cam>,<score> after Done,
+ *     FOCUS,ERR,<cam>; FOCB,<cam>,<score>, the hidden camera's score (once a second): LensWatch sees its lens turned
+ *     and the screen switches to it; an access unit of the shown camera's native H.265, decoded in hardware straight
+ *     onto the screen;
+ *   - POST /v1/focus/<id>/cmd: {"cam":n} (the camera buttons: the board switches at the next frame), {"done":<score>}
+ *     (FocusGuide's best kept as the camera's reference), {"stop":true} (the screen left).
+ * Layout (skill leakcam-app-ux): nothing moves: the camera switch, the video, the lens picture with the way to turn
+ * (green, the other way red: ic_lens_cw / ic_lens_ccw, swapped when it gets blurrier; the first way random), two fixed
+ * lines of text, the
+ * bar, the slower hint (kept INVISIBLE), Done.
  */
 class FocusActivity : Activity() {
     companion object {
         const val EXTRA_ID = "id"
         const val EXTRA_CAM = "cam"
+        private const val TAG = "LeakcamFocus"
+        private const val TEXT = 1 shl 30                  // a record's kind bit (server/focus.go FocusText)
     }
 
-    private lateinit var link: UsbLink
+    private enum class State { STARTING, LIVE, ENDED, FAILED }
+
     private var guide = FocusGuide()
     private var cam = 0
-    private var id = ""
+    private var board = ""                      // the board's ID (not `id`: inside a View's apply {} that is the view's id, -1)
     private val camButtons = arrayOfNulls<Button>(2)
-    private lateinit var preview: ImageView
-    private lateinit var arrow: TextView
+    private lateinit var video: SurfaceView
+    @Volatile private var decoder: MediaCodec? = null
+    @Volatile private var shownCam = 0                      // the reader thread's copy: frames of the other camera skipped
+    private val outInfo = MediaCodec.BufferInfo()
+    private lateinit var lens: ImageView
+    private val watch = Array(2) { LensWatch() }     // the hidden camera's lens being turned (FOCB)
+    private lateinit var spinner: ProgressBar
     private lateinit var say: TextView
     private lateinit var slower: TextView
     private lateinit var bar: Bar
     private lateinit var done: Button
-    private var parts = arrayOfNulls<String>(0)
-    private var partsSeq = -1L
     private var lastBest = 0.0
-    private var authed = false                  // the board said OK to the PIN: FOCUS lines are answered
-    private var pinFailed = false
     private var camFailed = false
+    private var state = State.STARTING
+    private var startsAt = ""
+    @Volatile private var live: HttpURLConnection? = null
+    @Volatile private var running = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        id = intent.getStringExtra(EXTRA_ID).orEmpty()
+        board = intent.getStringExtra(EXTRA_ID).orEmpty()
         cam = intent.getIntExtra(EXTRA_CAM, 0)
+        shownCam = cam
         val d = resources.displayMetrics.density
         val pad = (16 * d).toInt()
         setContentView(LinearLayout(this).apply {
@@ -72,7 +86,7 @@ class FocusActivity : Activity() {
             setPadding(pad, pad, pad, pad)
             setBackgroundColor(Color.WHITE)
             addView(TextView(context).apply {
-                text = getString(R.string.focus_title, id)
+                setText(R.string.focus_title)
                 textSize = 20f
             })
             addView(LinearLayout(context).apply {                       // the camera switch
@@ -85,16 +99,24 @@ class FocusActivity : Activity() {
                         camButtons[c] = this
                     }, LinearLayout.LayoutParams(0, -2, 1f))
             })
-            preview = ImageView(context).apply {
-                scaleType = ImageView.ScaleType.CENTER_CROP
-                setBackgroundColor(Color.rgb(0xF5, 0xF5, 0xF5))
+            video = SurfaceView(context).apply {                       // the camera's 4:3, the full width
+                holder.addCallback(object : SurfaceHolder.Callback {
+                    override fun surfaceCreated(h: SurfaceHolder) = startDecoder(h)
+                    override fun surfaceChanged(h: SurfaceHolder, f: Int, w: Int, ht: Int) {}
+                    override fun surfaceDestroyed(h: SurfaceHolder) = stopDecoder()
+                })
             }
-            addView(preview, LinearLayout.LayoutParams(-1, (220 * d).toInt()))
-            arrow = TextView(context).apply {
-                textSize = 72f
+            val w = resources.displayMetrics.widthPixels - 2 * pad
+            addView(video, LinearLayout.LayoutParams(-1, w * 3 / 4))
+            addView(LinearLayout(context).apply {                      // the lens and which way, a spinner while waiting
+                orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER
-            }
-            addView(arrow, LinearLayout.LayoutParams(-1, -2))
+                spinner = ProgressBar(context).apply { visibility = View.INVISIBLE }
+                addView(spinner, LinearLayout.LayoutParams((32 * d).toInt(), (32 * d).toInt()))
+                lens = ImageView(context).apply { setImageResource(R.drawable.ic_lens) }
+                addView(lens, LinearLayout.LayoutParams((130 * d).toInt(), (130 * d).toInt()))
+                addView(View(context), LinearLayout.LayoutParams((32 * d).toInt(), 1))   // the spinner's balance
+            }, LinearLayout.LayoutParams(-1, -2))
             say = TextView(context).apply {
                 textSize = 18f
                 gravity = Gravity.CENTER
@@ -116,83 +138,114 @@ class FocusActivity : Activity() {
             done = Button(context).apply {
                 setText(R.string.focus_done)
                 isEnabled = false
-                setOnClickListener { link.write("FOCUS,$cam,DONE,%.3f".format(java.util.Locale.ROOT, guide.best)) }
+                setOnClickListener { command("{\"done\":%.3f}".format(java.util.Locale.ROOT, guide.best)) }
             }
             addView(done, LinearLayout.LayoutParams(-1, -2))
         })
-        link = UsbLink(this, ::onLine, ::onUp)
         show()
     }
 
     override fun onStart() {
         super.onStart()
-        link.start()
+        begin()
     }
 
     override fun onStop() {
-        link.write("FOCUS,STOP")
-        link.stop()
+        running = false
+        command("{\"stop\":true}")
+        Thread { live?.disconnect() }.start()
         super.onStop()
     }
 
-    private fun onUp(up: Boolean) {
-        authed = false
-        pinFailed = false
-        if (up)
-            unlock()
+    /** the session asked for, then the live stream read until the board ends it */
+    private fun begin() {
+        state = State.STARTING
+        running = true
         show()
-    }
-
-    /** the board's PIN from the server (as the setup gets it), then PIN <pin> on the cable: its OK starts the session */
-    private fun unlock() {
-        val phone = PushService.phoneId(this)
         Thread {
-            val pin = try {
-                val c = java.net.URL("${BuildConfig.SERVER}/v1/devices/$id/pin?phone=$phone").openConnection()
-                    as java.net.HttpURLConnection
-                c.connectTimeout = 3000
-                c.readTimeout = 3000
-                val j = org.json.JSONObject(c.inputStream.bufferedReader().use { it.readText() })
+            try {
+                val c = URL("${BuildConfig.SERVER}/v1/devices/$board/focus").openConnection() as HttpURLConnection
+                c.requestMethod = "POST"
+                c.doOutput = true
+                c.connectTimeout = 5000
+                c.readTimeout = 5000
+                c.setRequestProperty("Content-Type", "application/json")
+                c.outputStream.use { it.write("{\"cam\":$cam}".toByteArray()) }
+                val j = org.json.JSONObject(c.inputStream.bufferedReader().readText())
                 c.disconnect()
-                j.getString("pin").takeIf { it.length == 6 && it.all(Char::isDigit) } ?: ""
+                val at = j.optLong("at", 0)
+                val within = j.optInt("within_s", 60)
+                val when_ = if (at > 0) java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT).format(at * 1000)
+                            else "within ${if (within >= 120) "${within / 60} min" else "$within s"}"
+                runOnUiThread { startsAt = when_; show() }
+                read()
             } catch (e: Exception) {
-                ""
-            }
-            runOnUiThread {
-                if (pin.isEmpty() || !link.write("PIN $pin")) {
-                    pinFailed = true
-                    show()
-                }
+                Log.w(TAG, "focus session: $e")
+                if (running) runOnUiThread { state = State.FAILED; show() }
             }
         }.start()
     }
 
+    /** the board's records (blocking, its own thread): text lines to the guide, access units to the decoder */
+    private fun read() {
+        val c = URL("${BuildConfig.SERVER}/v1/focus/$board/live").openConnection() as HttpURLConnection
+        c.connectTimeout = 5000
+        c.readTimeout = 0                                  // waits for the board's check-in, then for its frames
+        live = c
+        DataInputStream(c.inputStream.buffered(65536)).use { din ->
+            var from = -1                                  // the camera of the next picture: CAM,<cam> before its first
+            while (running) {
+                val l = din.readInt()
+                val us = din.readLong()
+                val p = ByteArray(l and TEXT.inv())
+                din.readFully(p)
+                if (l and TEXT != 0) {
+                    val line = String(p, Charsets.US_ASCII)
+                    if (line.startsWith("CAM,"))
+                        from = line.split(",")[1].toIntOrNull() ?: -1
+                    runOnUiThread { onLine(line) }
+                } else {
+                    if (state != State.LIVE) runOnUiThread { state = State.LIVE; show() }
+                    onFrame(if (from < 0) shownCam else from, us, p)   // the parameter sets: before any CAM
+                }
+            }
+        }
+        if (running) runOnUiThread { state = State.ENDED; show() }   // the board ended it (EOF ends readInt too)
+    }
+
+    /** a command for the board (the server keeps it for the board's next poll) */
+    private fun command(json: String) = Thread {
+        try {
+            val c = URL("${BuildConfig.SERVER}/v1/focus/$board/cmd").openConnection() as HttpURLConnection
+            c.requestMethod = "POST"
+            c.doOutput = true
+            c.connectTimeout = 5000
+            c.readTimeout = 5000
+            c.setRequestProperty("Content-Type", "application/json")
+            c.outputStream.use { it.write(json.toByteArray()) }
+            c.responseCode
+            c.disconnect()
+        } catch (e: Exception) {
+            Log.w(TAG, "focus command: $e")
+        }
+    }.start()
+
     private fun pick(c: Int) {
+        watch[cam].reset()                                      // the camera left: watched from its next scores
         cam = c
+        shownCam = c
         guide = FocusGuide()
         lastBest = 0.0
         camFailed = false
-        preview.setImageDrawable(null)
-        if (authed)
-            link.write("FOCUS,$cam")
+        command("{\"cam\":$c}")
         show()
     }
 
     private fun onLine(l: String) {
-        if (!authed) {                                              // the PIN's answer (the BL616's words)
-            when (l) {
-                "OK" -> {
-                    authed = true
-                    link.write("FOCUS,$cam")
-                }
-                "ERR PIN", "ERR LOCKED", "ERR AUTH" -> pinFailed = true
-                else -> return
-            }
-            return show()
-        }
         val f = l.split(",")
         when {
             f.size == 4 && f[0] == "FOC" && f[1].toIntOrNull() == cam -> {
+                if (state != State.LIVE) state = State.LIVE
                 val changed = guide.add(f[3].toDoubleOrNull() ?: return)
                 if (guide.best > lastBest * 1.02 && lastBest > 0)
                     say.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)   // a new best: felt, not looked at
@@ -201,7 +254,14 @@ class FocusActivity : Activity() {
                     say.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)   // turn the other way
                 show()
             }
-            f.size == 6 && f[0] == "FIMG" && f[1].toIntOrNull() == cam -> image(f)
+            f.size == 3 && f[0] == "FOCB" && state == State.LIVE -> {   // the hidden camera's score (once a second)
+                val c = f[1].toIntOrNull() ?: return
+                if (c in 0..1 && c != cam && watch[c].add(f[2].toDoubleOrNull() ?: return)) {
+                    Log.i(TAG, "camera ${c + 1}: its lens turned, shown")
+                    say.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                    pick(c)
+                }
+            }
             f.size == 3 && f[0] == "FOCUS" && f[1] == "ERR" && f[2].toIntOrNull() == cam -> {
                 camFailed = true
                 show()
@@ -214,59 +274,89 @@ class FocusActivity : Activity() {
         }
     }
 
-    /** a preview part; the whole JPEG shown when its last part came */
-    private fun image(f: List<String>) {
-        val seq = f[2].toLongOrNull() ?: return
-        val part = f[3].toIntOrNull() ?: return
-        val n = f[4].toIntOrNull() ?: return
-        if (seq != partsSeq || parts.size != n) {
-            partsSeq = seq
-            parts = arrayOfNulls(n)
+    /** the video's decoder on the screen's surface: H.265 at the cameras' native size; the parameter sets come with
+     * every IDR (the first frame, each second, each switch) */
+    private fun startDecoder(h: SurfaceHolder) {
+        try {
+            val c = MediaCodec.createDecoderByType(MediaFormat.MIMETYPE_VIDEO_HEVC)
+            c.configure(MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_HEVC, 2592, 1936), h.surface, null, 0)
+            c.start()
+            decoder = c
+        } catch (e: Exception) {
+            Log.w("LeakcamFocus", "no H.265 decoder: $e")
         }
-        if (part !in 0 until n)
+    }
+
+    private fun stopDecoder() {
+        val c = decoder ?: return
+        decoder = null
+        synchronized(outInfo) {                                     // not while onFrame feeds it
+            try { c.stop() } catch (e: Exception) { }
+            c.release()
+        }
+    }
+
+    /** one access unit from the stream (the reader thread): in, and every decoded picture out to the screen */
+    private fun onFrame(camOf: Int, us: Long, au: ByteArray) {
+        if (camOf != shownCam)
             return
-        parts[part] = f[5]
-        if (parts.any { it == null })
-            return
-        val jpeg = Base64.decode(parts.joinToString(""), Base64.DEFAULT)
-        BitmapFactory.decodeByteArray(jpeg, 0, jpeg.size)?.let { preview.setImageBitmap(it) }
+        synchronized(outInfo) {
+            val c = decoder ?: return
+            try {
+                val i = c.dequeueInputBuffer(50_000)
+                if (i >= 0) {
+                    c.getInputBuffer(i)?.apply { clear(); put(au) }
+                    c.queueInputBuffer(i, 0, au.size, us, 0)
+                }
+                while (true) {
+                    val o = c.dequeueOutputBuffer(outInfo, 0)
+                    if (o < 0) break
+                    c.releaseOutputBuffer(o, true)                  // shown now: live, no clock to wait for
+                }
+            } catch (e: IllegalStateException) {
+                Log.w("LeakcamFocus", "decoder: $e")
+            }
+        }
+    }
+
+    private var lensShown = R.drawable.ic_lens
+
+    /** the lens picture: changed only when it changes (memory leakcam-redraw-only-on-change) */
+    private fun lensImage(id: Int) {
+        if (id != lensShown) {
+            lens.setImageResource(id)
+            lensShown = id
+        }
     }
 
     private fun show() {
         for (c in 0..1)
-            camButtons[c]?.isSelected = c == cam
-        if (!link.up) {
-            arrow.text = "⏚"                                       // a plug-like sign: waiting for the cable
-            arrow.setTextColor(Color.GRAY)
-            say.setText(R.string.focus_plug)
-            bar.set(0.0, 0.0, false)
-            slower.visibility = View.INVISIBLE
-            done.isEnabled = false
-            return
-        }
-        if (!authed || camFailed) {                                    // unlocking, or what stops it
-            arrow.text = if (pinFailed || camFailed) "!" else "…"
-            arrow.setTextColor(if (pinFailed || camFailed) Color.rgb(0xE6, 0x51, 0x00) else Color.GRAY)
+            camButtons[c]?.apply {                                     // the camera shown: full, the other faded
+                isSelected = c == cam
+                alpha = if (c == cam) 1f else 0.45f
+            }
+        if (state != State.LIVE || camFailed) {                        // starting, ended, failed
+            lensImage(R.drawable.ic_lens)                  // no direction yet / any more
+            lens.alpha = if (state == State.STARTING && !camFailed) 1f else 0.4f
             say.text = when {
                 camFailed -> getString(R.string.focus_nocam, cam + 1)
-                pinFailed -> getString(R.string.focus_no_pin)
-                else -> getString(R.string.focus_pin)
+                state == State.STARTING -> getString(R.string.focus_starting, startsAt)
+                state == State.ENDED -> getString(R.string.focus_ended)
+                else -> getString(R.string.focus_failed)
             }
+            spinner.visibility = if (state == State.STARTING && !camFailed) View.VISIBLE else View.INVISIBLE
             bar.set(0.0, 0.0, false)
             slower.visibility = View.INVISIBLE
             done.isEnabled = false
             return
         }
+        spinner.visibility = View.INVISIBLE
         val way = getString(if (guide.turn == FocusGuide.Turn.CW) R.string.focus_cw else R.string.focus_ccw)
-        arrow.text = when (guide.turn) {
-            FocusGuide.Turn.CCW -> "↺"
-            FocusGuide.Turn.CW -> "↻"
-            FocusGuide.Turn.HOLD -> "✓"
-        }
-        arrow.setTextColor(when (guide.say) {
-            FocusGuide.Say.STOP -> Color.rgb(0x2E, 0x7D, 0x32)
-            FocusGuide.Say.WRONG_WAY, FocusGuide.Say.TOO_FAR -> Color.rgb(0xE6, 0x51, 0x00)
-            else -> Color.rgb(0x15, 0x65, 0xC0)
+        lens.alpha = 1f
+        lensImage(when (guide.turn) {                     // green the way to turn, red the other
+            FocusGuide.Turn.CCW -> R.drawable.ic_lens_ccw
+            FocusGuide.Turn.CW -> R.drawable.ic_lens_cw
+            FocusGuide.Turn.HOLD -> R.drawable.ic_lens_hold
         })
         say.text = when (guide.say) {
             FocusGuide.Say.START -> getString(R.string.focus_start, way)

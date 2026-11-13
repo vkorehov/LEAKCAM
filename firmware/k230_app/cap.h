@@ -75,10 +75,10 @@ typedef void (*cap_frame_fn)(const struct cap_cam *c, const uint8_t *y, const ui
 /* every held frame to fn (NULL: none), then released to the stream; 0, -1 when a frame could not be mapped */
 int cap_release_all(struct cap_cam *cams, int n, cap_frame_fn fn, void *ctx);
 /* a video: up to `frames` more frames per camera from the native streams (round-robin, at the rate they come), until
- * the first camera's frames span max_ms of their own time (pts), each to fn as it comes, then released; map 0: y and
- * uv NULL (the encoder takes the frame itself), 1: the luma mapped (the focus session's score), uv NULL; 0, -1: a
- * camera gave none */
-int cap_stream(struct cap_cam *cams, int n, unsigned frames, unsigned max_ms, int map, cap_frame_fn fn, void *ctx,
+ * the first camera's frames span max_ms of their own time (pts), each to fn as it comes, then released; map: a bit per
+ * camera (cams[i]: bit i) whose luma is mapped (the focus session's score; uv NULL), the others' y and uv NULL (the
+ * encoder takes the frame itself); 0, -1: a camera gave none */
+int cap_stream(struct cap_cam *cams, int n, unsigned frames, unsigned max_ms, unsigned map, cap_frame_fn fn, void *ctx,
                int timeout_ms);
 void cap_close_all(struct cap_cam *cams, int n);
 

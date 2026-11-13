@@ -167,15 +167,42 @@ uploaded while recorded (live HLS on the server), for Take video and every leak'
     - "dump dev(N)chn(1) failed" lines: harmless (cap_ambient drains the probe queue with timeout 0 until empty);
       "room 0" in the evening runs: the dark room, not a failure (bisected: the same without the patch).
 
+6b. Worst cases and memory (2026-11-13, tests/test148)
+-----------------------------------------------------
+
+  LED chains switched by the host during the video (every frame, every 2 s, random): every frame decodes; the largest
+  frame 888 KB (under the 1.25 MB stream buffer); CBR keeps the average (9.2-10.5 Mbit/s) but a second peaks to 15.7.
+  Memory, both cameras streaming, is the limit (128 MB DDR):
+    - MMZ 73 MB: the cameras 67.5 MB (3 packed raw + 2 NV12 each), the two H.265 stream pools 4.9 MB.
+    - RT-Smart 55 MB: kernel heap 9 MB (peak 7.9-8.0 MB during a video), the page pool ~41 MB: the program and kernel
+      7.5 MB, each H.265 channel 3075 pages (12 MB; up to ~3430 seen at light changes), the upload queues.
+    - Was 52 / 76 MB with an 8 MB heap: 3.4 MB of pages free at the lowest, once exhausted ("Memory exhaustion!",
+      both videos lost). Now 4.7-6.8 MB of pages and 1.4 MB of kernel heap free at the lowest.
+  Upload queue (media.c VIDEO_QUEUE) 2.5 MB a camera, what the pool holds; full = that camera's frames dropped up to
+  the next IDR (<= 1 s gap, the MP4 keeps the real time from each frame's camera time), not the video lost.
+  The library has no run-time rate control (mpi_venc_api.h: no set_rc / bit rate after create): a lower rate on a slow
+  link would need a channel restart.
+
+6c. Audio (2026-11-13, user: "we need to stream also audio")
+---------------------------------------------------------
+
+  The microphone in every video (k230_app/audio.c): the setup proven in tests/test012 (16 kHz mono from the codec's
+  left input, PGA 30 + ALC 24 dB, the AI's own VB pool, frames through a flushed cached view), Opus 24 kbit/s, 40 ms
+  packets, complexity 3, no DTX (bundled libopus 1.5.2, now firmware/k230_app/third_party/opus). Opened with the
+  cameras (job.c open_cams: their VB first; the codec's ~2 s power-up beside their start), closed before their VB
+  exit. Each packet goes into both cameras' uploads (media.c vaudio) from their first picture: [u32 length | 1 << 31]
+  [u64 us][Opus], the same clock as the pictures (CLOCK_MONOTONIC us), header X-Audio: opus/16000/1. The server
+  (video.go) adds an Opus track (48 kHz timescale) to the live HLS and to the MP4, its start as an edit-list pause.
+  12 blocks x 8 KB of MMZ for the AI. Measured: 375 packets per 15 s video, none lost; the user: "audio is good".
+
 7. Open
 -------
 
-  - Upload: two 15 fps streams at CBR 2 Mbit/s (~1.7 real each) overrun the K230's lwIP over the BL616 bridge on
-    some runs ("http: send failed: Out of memory", backlog to 2.3 MB, upload aborted): the lwIP memory (TCP send
-    buffer / pbuf pool) or a lower H265_KBPS (h265.h), measured.
-  - test147 whole on the product default (live HLS, both MP4s, check-ins) passing 3 rounds in a row; test137 /
-    test143 (leak checks on packed raw) and test146 (focus score) again.
+  - The two streams need ~20 Mbit/s up of the bridge's ~27.5 (test100): a Wi-Fi dip drops frames (by design now).
+  - test147 3 rounds in a row; test137 / test143 (leak checks on packed raw) and test146 (focus score) again.
   - Camera J5's lens is out of focus (score 0.05 vs 0.24, the soft picture): the focus screen's first real use.
+  - A separate K230 image for video (user, 2026-11-13): worth it once the change net's model needs memory beside
+    the encoders; today video needs the cameras' and encoders' memory anyway.
 
 8. Experiment pieces (removed 2026-11-12 when packing became the default)
 --------------------------------------------------------------------------

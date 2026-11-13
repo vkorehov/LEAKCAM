@@ -9,16 +9,17 @@ import kotlin.random.Random
 
 /**
  * The lens guide against a simulated lens (DESIGN.md 5.3.17, tests/test146 step 1): sharpness peaks at `peak` (the
- * lens position in degrees of rotation), the person turns `step` degrees per score the way the guide says and stops
+ * lens position in degrees of rotation), the person turns `step` degrees per score (one a second: degrees a second)
+ * the way the guide says and stops
  * when it says STOP; the board's score has `noise` relative noise per frame.
  */
 class FocusGuideTest {
     private fun lens(pos: Double, peak: Double) = 100.0 / (1 + ((pos - peak) / 30.0).let { it * it }) + 10.0
 
     /** runs until STOP held for 10 scores or `limit` scores; the lens position at the end and what was said */
-    private fun run(peak: Double, noise: Double, step: Double = 2.0, limit: Int = 3000, seed: Int = 1,
-                    scene: (Double) -> Double = { lens(it, peak) }): Pair<Double, List<Say>> {
-        val g = FocusGuide()
+    private fun run(peak: Double, noise: Double, step: Double = 10.0, limit: Int = 3000, seed: Int = 1,
+                    first: Turn = Turn.CCW, scene: (Double) -> Double = { lens(it, peak) }): Pair<Double, List<Say>> {
+        val g = FocusGuide(first)
         val rnd = Random(seed)
         var pos = 0.0
         val said = mutableListOf(g.say)
@@ -59,8 +60,8 @@ class FocusGuideTest {
         }
     }
 
-    @Test fun anyHandSpeedAndNoise() {               // a slow or quick hand (1-4 deg per score), noise up to 5 %
-        for (step in listOf(1.0, 2.0, 4.0)) for (noise in listOf(0.0, 0.03, 0.05)) for (peak in listOf(-100.0, 70.0)) {
+    @Test fun anyHandSpeedAndNoise() {               // a slow or quick hand (5-30 deg a second), noise up to 5 %
+        for (step in listOf(5.0, 10.0, 20.0, 30.0)) for (noise in listOf(0.0, 0.03, 0.05)) for (peak in listOf(-100.0, 70.0)) {
             val (pos, said) = run(peak = peak, noise = noise, step = step, seed = (step * 100 + noise * 1000).toInt())
             assertEquals("step $step noise $noise peak $peak: $said", Say.STOP, said.last())
             assertTrue("step $step noise $noise peak $peak at $pos", kotlin.math.abs(pos - peak) < 15)
@@ -81,7 +82,32 @@ class FocusGuideTest {
     @Test fun tooFastIsTold() {
         val g = FocusGuide()
         repeat(5) { g.add(50.0) }
-        repeat(3) { g.add(100.0) }            // the median jumps 50 -> 100 in one update
+        g.add(100.0)                          // the score doubles from one second to the next
         assertTrue(g.slower)
+    }
+
+    @Test fun eitherFirstWayConverges() {             // the first direction is random: both must find the peak
+        for (first in listOf(Turn.CCW, Turn.CW)) for (peak in listOf(-110.0, 80.0)) {
+            val (pos, said) = run(peak = peak, noise = 0.02, first = first, seed = peak.toInt())
+            assertEquals("$first peak $peak: $said", Say.STOP, said.last())
+            assertTrue("$first peak $peak at $pos", kotlin.math.abs(pos - peak) < 15)
+        }
+    }
+
+    @Test fun firstWayIsRandom() {
+        val firsts = List(64) { FocusGuide().turn }.toSet()
+        assertEquals(setOf(Turn.CCW, Turn.CW), firsts)
+    }
+
+    @Test fun hiddenLensTurnedIsSeen() {
+        val w = LensWatch()
+        val rnd = Random(3)
+        repeat(30) { assertTrue("still", !w.add(50.0 * (1 + 0.03 * (rnd.nextDouble() * 2 - 1)))) }
+        assertTrue("one odd score is ridden out", !w.add(90.0))
+        var seen = false
+        repeat(5) { seen = w.add(70.0) || seen }       // turned: 40 % sharper
+        assertTrue(seen)
+        w.reset()
+        repeat(5) { assertTrue("a new base after reset", !w.add(70.0)) }
     }
 }

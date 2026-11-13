@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- plain HTTP only to the bench presence server on the LAN (BuildConfig.SERVER); TLS with the real server (test109) -->
+<!-- plain HTTP only to the bench presence server on the LAN (BuildConfig.SERVER); TLS with the real server (test109).
+     192.168.1.131: the server on the wired Windows PC since 2026-11-12 (the Pi's .159 kept the app off it: every request
+     refused as cleartext, found 2026-11-13); 127.0.0.1: a test build's local server through adb reverse (over USB) -->
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="false">192.168.1.159</domain>
+        <domain includeSubdomains="false">192.168.1.131</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
     </domain-config>
 </network-security-config>

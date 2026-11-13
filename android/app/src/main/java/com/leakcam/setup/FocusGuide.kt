@@ -3,10 +3,12 @@ package com.leakcam.setup
 /**
  * Which way to turn a camera's lens (DESIGN.md 5.3.17, user 2026-11-12: "help user with direction where to rotate
  * lens", "if focus gets worse swap direction"): a hill climb on the board's sharpness score, the person's hand the
- * motor. Pure logic (no Android), fed the K230's scores in order (FOC lines, ~15 a second); FocusActivity shows what
+ * motor. Pure logic (no Android), fed the K230's scores in order (FOC lines, once a second:
+ * user 2026-11-13 "once per second no need 15 times"; the live video shows the rest); FocusActivity shows what
  * it says. Unit tests: src/test/.../FocusGuideTest.kt.
  *
- *   START      turn one way (counter-clockwise, looking into the lens)
+ *   START      turn one way, picked at random (user 2026-11-13: "rotation direction randomly initially"): no way is
+ *              likelier right than the other
  *   KEEP_GOING this way makes it sharper
  *   WRONG_WAY  the score fell from where this direction began and never rose: turn the other way
  *   TOO_FAR    it rose, then fell past the best: the peak is behind, turn back slowly
@@ -17,22 +19,23 @@ package com.leakcam.setup
  * last pass's: a noise-high best from an earlier pass would make STOP unreachable.
  * `slower`: the score jumped between two updates, the hand turns too fast for the camera to follow.
  *
- * The score is smoothed (median of SMOOTH): one blurred frame of a moving hand does not flip the direction.
+ * Each score is one frame's (no smoothing: at one a second a median would lag seconds behind the hand); DROP and RISE
+ * stay well above the board's noise (2-3 %).
  */
-class FocusGuide {
+class FocusGuide(first: Turn = if (kotlin.random.Random.nextBoolean()) Turn.CCW else Turn.CW) {
     enum class Turn { CCW, CW, HOLD }
     enum class Say { START, KEEP_GOING, WRONG_WAY, TOO_FAR, STOP, NO_DETAIL }
 
     companion object {
-        const val SMOOTH = 5            // frames in the median (~0.33 s at 15 fps)
+        const val SMOOTH = 1            // scores in the median (one a second: none)
         const val DROP = 0.08           // a fall this far below the reference counts (noise of the median ~2-3 %)
         const val RISE = 0.08           // a rise this far above the start counts as "getting sharper"
         const val GOOD = 0.97           // within 3 % of the best seen: sharp
-        const val JUMP = 0.30           // the smoothed score moved this much in one update: turning too fast
-        const val FLAT = 150            // updates (~10 s) without a rise or a fall: nothing to focus on
+        const val JUMP = 0.30           // the score moved this much in one second: turning too fast
+        const val FLAT = 10             // updates (~10 s) without a rise or a fall: nothing to focus on
     }
 
-    var turn = Turn.CCW; private set
+    var turn = first; private set
     var say = Say.START; private set
     var slower = false; private set
     var best = 0.0; private set         // the best smoothed score so far (the bar's marker; Done keeps it)
@@ -46,7 +49,7 @@ class FocusGuide {
     private var passBest = 0.0          // the best of this direction (the next pass's reference once the peak is known)
     private var quiet = 0               // updates since the score last rose or fell
     private var hint = Say.START        // the current direction's own message (shown while nothing else applies)
-    private var last = Turn.CCW         // the direction before STOP
+    private var last = first            // the direction before STOP
 
     /** one score from the board; true when what to show changed */
     fun add(raw: Double): Boolean {
@@ -107,5 +110,41 @@ class FocusGuide {
         rose = false
         hint = why
         return why
+    }
+}
+
+/**
+ * The hidden camera's lens being turned (user 2026-11-13: "if focus changes on non-visible camera switch camera
+ * automatically"): fed that camera's FOCB scores (once a second), true once the smoothed score moved CHANGE from where
+ * it was when watching began. Light alone barely moves it (the score is normalised by brightness); a person walking
+ * past moves it for a moment, which the median of SMOOTH mostly rides out.
+ */
+class LensWatch {
+    companion object {
+        const val SMOOTH = 3            // two of three scores moved: ~2 s
+        const val CHANGE = 0.20
+    }
+
+    private val window = ArrayDeque<Double>()
+    private var base = 0.0
+
+    fun add(raw: Double): Boolean {
+        window.addLast(raw)
+        if (window.size > SMOOTH)
+            window.removeFirst()
+        if (window.size < SMOOTH)
+            return false
+        val s = window.sorted()[SMOOTH / 2]
+        if (base == 0.0) {
+            base = s
+            return false
+        }
+        return kotlin.math.abs(s - base) > CHANGE * base
+    }
+
+    /** watching again from the next scores (the camera just left the screen) */
+    fun reset() {
+        window.clear()
+        base = 0.0
     }
 }

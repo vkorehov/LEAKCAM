@@ -157,6 +157,7 @@
     <string name="pending_photo">Take a photo</string>
     <string name="pending_video">Take a 15 s video</string>
     <string name="pending_leak">The leak\'s 4 pictures and video</string>
+    <string name="pending_focus">Focus adjustment: live video</string>
     <string name="kind_video">15 s video</string>
     <!-- the leak panel, opened from the alert -->
     <string name="leak_more">+%1$d more</string>
@@ -166,9 +167,12 @@
     <string name="looking">Looking for LEAKCAMs nearby…</string>
     <!-- focus tuning (FocusActivity, DESIGN.md 5.3.17); the turn directions as seen looking into the lens -->
     <string name="focus_menu">Tune focus</string>
-    <string name="focus_title">Focus · %1$s</string>
+    <string name="focus_offer">Tune focus: camera %1$d is out of focus</string>
+    <string name="focus_title">LEAKCAM Focus Adjustment</string>
     <string name="focus_camera">Camera %1$d</string>
-    <string name="focus_plug">Plug this phone into the board\'s USB-C with the cable</string>
+    <string name="focus_starting">Waiting for the board: it starts %1$s</string>
+    <string name="focus_ended">The board ended the session. Tap Tune focus to start again.</string>
+    <string name="focus_failed">The server did not answer: check the phone\'s internet</string>
     <string name="focus_ccw">counter-clockwise</string>
     <string name="focus_cw">clockwise</string>
     <string name="focus_start">Loosen the lock ring, then turn the lens slowly %1$s (looking into the lens)</string>
@@ -184,8 +188,6 @@
     <string name="focus_unfocused_title">Camera %1$d of LEAKCAM on %2$s is out of focus</string>
     <string name="focus_unfocused_text">Leaks may be missed. Tap to tune it.</string>
     <string name="focus_untuned_title">Tune camera %1$d of LEAKCAM on %2$s</string>
-    <string name="focus_untuned_text">Its focus is not set yet. Tap to tune it with the cable.</string>
-    <string name="focus_pin">Unlocking the board…</string>
-    <string name="focus_no_pin">The board did not take this phone\'s PIN: open the app\'s list and set it up again</string>
+    <string name="focus_untuned_text">Its focus is not set yet. Tap to tune it.</string>
     <string name="focus_nocam">Camera %1$d does not answer: check its cable</string>
 </resources>

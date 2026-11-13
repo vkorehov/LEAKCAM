@@ -43,8 +43,8 @@ A level reported for every second and rms above the -60 dBFS dead floor in every
 - Gain stays 54 dB for now (PGA 20 dB would give 10 dB headroom).
 
 Open:
-- Audio inside a stream (Opus 24 kbit/s over RTMP, `leakcam_stream -p`): not run; test100 step 5, needs the
-  cameras.
+- Audio inside a stream: done in the product instead (k230_app/audio.c, Opus 24 kbit/s in each video's upload, the
+  server's MP4 and HLS): tests/test148, 2026-11-13; the RTMP path (`leakcam_stream -p`) stays unrun.
 
 ## Metrics (**MISSING** on a re-run: skill leakcam-test-metrics, every value at its maximum)
 

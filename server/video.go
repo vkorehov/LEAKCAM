@@ -36,6 +36,9 @@ const (
 	VideoType     = "video/x-leakcam-h265" // the board's framing: [u32 BE length][u64 BE pts us][access unit, Annex-B] ...
 	VideoClock    = 90000                  // the timescale (the usual one for video)
 	VideoFrameMax = 4 << 20                // one access unit at most (a native IDR is ~0.1-0.3 MB at 2 Mbit/s)
+	AudioFlag     = 0x80000000             // in the length: an Opus packet
+	AudioClock    = 48000                  // Opus's timescale in MP4 and HLS, whatever the input rate
+	AudioPacketUs = 40000                  // the board's packets (k230_app/audio.h AUDIO_MS)
 )
 
 var (
@@ -50,7 +53,7 @@ func putVideo(w http.ResponseWriter, r *http.Request, id, path string) {
 	if ms, err := strconv.ParseInt(r.Header.Get("X-Taken"), 10, 64); err == nil && ms > 0 {
 		taken = time.UnixMilli(ms)
 	}
-	v := &videoIn{id: id, taken: taken}
+	v := &videoIn{id: id, taken: taken, audio: r.Header.Get("X-Audio") != ""}
 	defer v.endLive()
 	err := v.read(http.MaxBytesReader(w, r.Body, MediaMax))
 	if err == nil && len(v.samples) == 0 {
@@ -66,9 +69,9 @@ func putVideo(w http.ResponseWriter, r *http.Request, id, path string) {
 	}
 	os.Chtimes(path, taken, taken)
 	span := float64(v.pts[len(v.pts)-1]-v.pts[0]) / 1e6
-	log.Printf("media %s stored: %d frames over %.1f s (%.1f fps)", id, len(v.samples), span,
-		float64(len(v.samples)-1)/max(span, 1e-3))
-	reply(w, map[string]any{"stored": true, "frames": len(v.samples)})
+	log.Printf("media %s stored: %d frames over %.1f s (%.1f fps), %d audio packets", id, len(v.samples), span,
+		float64(len(v.samples)-1)/max(span, 1e-3), len(v.asamples))
+	reply(w, map[string]any{"stored": true, "frames": len(v.samples), "audio": len(v.asamples)})
 }
 
 type videoIn struct {
@@ -80,6 +83,10 @@ type videoIn struct {
 	sync          []bool
 	hls           *gohlslib.Muxer
 	track         *gohlslib.Track
+	audio         bool     // the board sends the microphone (X-Audio)
+	apts          []int64  // each Opus packet's time, us (the same clock as pts)
+	asamples      [][]byte // the Opus packets from the first picture on
+	atrack        *gohlslib.Track
 }
 
 // read: frame after frame until the body ends; each frame into the clip and to the live viewers
@@ -94,12 +101,20 @@ func (v *videoIn) read(body io.Reader) error {
 		}
 		n := binary.BigEndian.Uint32(hdr[:4])
 		pts := int64(binary.BigEndian.Uint64(hdr[4:]))
+		isAudio := n&AudioFlag != 0
+		n &^= AudioFlag
 		if n == 0 || n > VideoFrameMax {
 			return fmt.Errorf("frame %d: length %d", len(v.samples), n)
 		}
 		buf := make([]byte, n)
 		if _, err := io.ReadFull(body, buf); err != nil {
 			return fmt.Errorf("frame %d: %w", len(v.samples), err)
+		}
+		if isAudio {
+			if err := v.audioPacket(buf, pts); err != nil {
+				return fmt.Errorf("audio packet %d: %w", len(v.asamples), err)
+			}
+			continue
 		}
 		if err := v.frame(buf, pts); err != nil {
 			return fmt.Errorf("frame %d: %w", len(v.samples), err)
@@ -153,6 +168,30 @@ func (v *videoIn) frame(annexb []byte, pts int64) error {
 	return nil
 }
 
+// audioPacket: one Opus packet, kept from the first picture on (the board sends them from there; one from before is
+// dropped, never shifted); live as soon as the HLS muxer runs
+func (v *videoIn) audioPacket(pkt []byte, pts int64) error {
+	if !v.audio {
+		return errors.New("audio without X-Audio")
+	}
+	if len(v.pts) == 0 || pts < v.pts[0] {
+		return nil
+	}
+	if len(v.apts) > 0 && pts <= v.apts[len(v.apts)-1] {
+		return fmt.Errorf("time %d us not after %d", pts, v.apts[len(v.apts)-1])
+	}
+	v.apts = append(v.apts, pts)
+	v.asamples = append(v.asamples, pkt)
+	if v.hls != nil && v.atrack != nil {
+		us := pts - v.pts[0]
+		if err := v.hls.WriteOpus(v.atrack, v.taken.Add(time.Duration(us)*time.Microsecond), us*AudioClock/1e6,
+			[][]byte{pkt}); err != nil {
+			log.Printf("media %s: live audio: %v", v.id, err)
+		}
+	}
+	return nil
+}
+
 // toLive: the frame to the HLS muxer (started at the first IDR, when the parameter sets are known); a failure there
 // only ends the live view, never the clip
 func (v *videoIn) toLive(au [][]byte) {
@@ -161,8 +200,13 @@ func (v *videoIn) toLive(au [][]byte) {
 			return
 		}
 		v.track = &gohlslib.Track{Codec: &hlscodecs.H265{VPS: v.vps, SPS: v.sps, PPS: v.pps}, ClockRate: VideoClock}
+		tracks := []*gohlslib.Track{v.track}
+		if v.audio {
+			v.atrack = &gohlslib.Track{Codec: &hlscodecs.Opus{ChannelCount: 1}, ClockRate: AudioClock}
+			tracks = append(tracks, v.atrack)
+		}
 		m := &gohlslib.Muxer{
-			Tracks:             []*gohlslib.Track{v.track},
+			Tracks:             tracks,
 			Variant:            gohlslib.MuxerVariantFMP4,
 			SegmentCount:       7,
 			SegmentMinDuration: time.Second,
@@ -220,8 +264,12 @@ func (v *videoIn) writeMP4(path string) error {
 			GetPayload:      func() ([]byte, error) { return s, nil },
 		})
 	}
+	tracks := []*pmp4.Track{track}
+	if len(v.asamples) > 0 {
+		tracks = append(tracks, v.audioTrack())
+	}
 	var b bytes.Buffer
-	if err := (&pmp4.Presentation{Tracks: []*pmp4.Track{track}}).Marshal(&b); err != nil {
+	if err := (&pmp4.Presentation{Tracks: tracks}).Marshal(&b); err != nil {
 		return err
 	}
 	out := b.Bytes()
@@ -267,4 +315,28 @@ func liveVideo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	m.Handle(w, r)
+}
+
+// audioTrack: the Opus packets as the MP4's second track, from the first picture's time: a later first packet (the
+// sound starts at the first picture, the board's queue) as the track's initial pause (TimeOffset: an edit list)
+func (v *videoIn) audioTrack() *pmp4.Track {
+	t := &pmp4.Track{
+		ID:         2,
+		TimeScale:  AudioClock,
+		TimeOffset: int32((v.apts[0] - v.pts[0]) * AudioClock / 1e6),
+		Codec:      &mp4codecs.Opus{ChannelCount: 1},
+	}
+	for i, p := range v.asamples {
+		p := p
+		d := uint32(AudioPacketUs * AudioClock / 1e6)
+		if i+1 < len(v.apts) { // a lost packet: the next one's time
+			d = uint32((v.apts[i+1]-v.pts[0])*AudioClock/1e6 - (v.apts[i]-v.pts[0])*AudioClock/1e6)
+		}
+		t.Samples = append(t.Samples, &pmp4.Sample{
+			Duration:    d,
+			PayloadSize: uint32(len(p)),
+			GetPayload:  func() ([]byte, error) { return p, nil },
+		})
+	}
+	return t
 }

@@ -46,7 +46,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "focus.h"
 #include "job.h"
 #include "k230_link.h"
 #include "leakcam.h"
@@ -380,24 +379,16 @@ static void status_tick(bool now_asked)
 
 static int usb = -1;
 static pthread_mutex_t usb_mu = PTHREAD_MUTEX_INITIALIZER;
-static bool authed;                     /* the phone gave the board's PIN (the BL616 said OK to its PIN line) */
-static bool pin_asked;                  /* a PIN line went to the BL616: its next answer decides authed */
 
-/* the cable is non-blocking: a full CDC buffer (the focus preview's burst) waits for room, up to 500 ms in all; no
- * phone listening drops the rest */
-bool usb_line(const char *s)
+/* the cable is non-blocking: a full CDC buffer waits for room, up to 500 ms in all; no phone listening drops the rest */
+/* n bytes to the cable by the deadline (usb_mu held); false: the phone does not read (or no cable) */
+static bool usb_write(const uint8_t *b, size_t n, uint64_t end)
 {
-    char b[LINK_MAX_LINE + 2];
-    int n = snprintf(b, sizeof(b), "%s\n", s);
-    if (n <= 0 || n >= (int)sizeof(b) || usb < 0)
-        return false;
-    pthread_mutex_lock(&usb_mu);
-    uint64_t end = now_ms() + 500;
-    int done = 0;
+    size_t done = 0;
     while (done < n) {
-        ssize_t k = write(usb, b + done, (size_t)(n - done));
+        ssize_t k = write(usb, b + done, n - done);
         if (k > 0) {
-            done += (int)k;
+            done += (size_t)k;
             continue;
         }
         if ((k < 0 && errno != EAGAIN && errno != EWOULDBLOCK) || now_ms() >= end)
@@ -405,12 +396,22 @@ bool usb_line(const char *s)
         struct pollfd p = { .fd = usb, .events = POLLOUT };
         (void)poll(&p, 1, 20);
     }
-    pthread_mutex_unlock(&usb_mu);
     return done == n;
 }
 
-/* the cable relay: every line both ways, whatever they mean (DESIGN.md 5.3.8), except the focus session's FOCUS lines:
- * the K230's own (focus.c), only after the phone gave the board's PIN (the preview is the camera's picture) */
+bool usb_line(const char *s)
+{
+    char b[LINK_MAX_LINE + 2];
+    int n = snprintf(b, sizeof(b), "%s\n", s);
+    if (n <= 0 || n >= (int)sizeof(b) || usb < 0)
+        return false;
+    pthread_mutex_lock(&usb_mu);
+    bool ok = usb_write((const uint8_t *)b, (size_t)n, now_ms() + 500);
+    pthread_mutex_unlock(&usb_mu);
+    return ok;
+}
+
+/* the cable relay: every line both ways, whatever they mean (DESIGN.md 5.3.8) */
 static void usb_relay(void)
 {
     usb = open(USB_DEV, O_RDWR | O_NONBLOCK);
@@ -433,14 +434,8 @@ static void usb_relay(void)
                 job_request(f.arg);
             else if (!strcmp(f.cmd, "SHOOT"))   /* pictures for the server (media.c) */
                 media_request(f.arg);
-            else if (!strcmp(f.cmd, "USB")) {
-                if (pin_asked) {                /* the PIN's answer: OK, ERR PIN, ERR LOCKED */
-                    authed = !strcmp(f.arg, "OK");
-                    pin_asked = false;
-                }
-                if (!usb_line(f.arg))
-                    logmsg("relay: USB write short");   /* no phone listening: the line is dropped */
-            }
+            else if (!strcmp(f.cmd, "USB") && !usb_line(f.arg))
+                logmsg("relay: USB write short");   /* no phone listening: the line is dropped */
         }
         char done[48];
         if (job_result(done, sizeof(done)) && link_cmd("DONE", done) != LINK_ACKED)
@@ -468,15 +463,8 @@ static void usb_relay(void)
             line[len] = 0;
             if (too_long)
                 usb_line("ERR LONG");
-            else if (!strncmp(line, "FOCUS", 5)) {
-                const char *a = authed ? focus_line(line) : "ERR AUTH";
-                if (a)
-                    usb_line(a);
-            }
             else if (len && link_cmd("USB", line) != LINK_ACKED)
                 fatal("relay: the BL616 did not take a line (link down)");
-            else if (!strncmp(line, "PIN ", 4))
-                pin_asked = true;
             if (len && ++lines % 16 == 0) {
                 snprintf(what, sizeof(what), "relay: %u lines", lines);
                 step(what);

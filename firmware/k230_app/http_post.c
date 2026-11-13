@@ -141,3 +141,32 @@ int http_post(const char *host, const char *port, const char *path, const char *
     close(fd);
     return status;
 }
+
+int http_get(const char *host, const char *port, const char *path, char *body, size_t size, int connect_s)
+{
+    int fd = connect_until(host, port, connect_s);
+    if (fd < 0)
+        return -1;
+    char head[256];
+    int n = snprintf(head, sizeof(head), "GET %s HTTP/1.1\r\nHost: %s:%s\r\nConnection: close\r\n\r\n", path, host,
+                     port);
+    if (n <= 0 || n >= (int)sizeof(head) || send_all(fd, head, (size_t)n)) {
+        close(fd);
+        return -2;
+    }
+    char r[1024];                                   /* the headers and a small body (a focus command's JSON) */
+    size_t got = 0;
+    for (;;) {                                      /* Connection: close: the answer ends with the connection */
+        ssize_t k = recv(fd, r + got, sizeof(r) - 1 - got, 0);
+        if (k <= 0 || (got += (size_t)k) >= sizeof(r) - 1)
+            break;
+    }
+    close(fd);
+    r[got] = 0;
+    if (got < 12 || strncmp(r, "HTTP/1.", 7))
+        return -2;
+    const char *b = strstr(r, "\r\n\r\n");
+    snprintf(body, size, "%s", b ? b + 4 : "");
+    return atoi(r + 9);
+}
+

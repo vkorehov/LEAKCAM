@@ -22,6 +22,9 @@ int h265_open(int cam, unsigned w, unsigned h, unsigned fps);
  * length, 0 when none came */
 size_t h265_frame(int cam, const void *frame, uint8_t **out, int *idr);
 
+/* the next frame an IDR (the focus session's camera switch: the other camera's first frame decodes on its own) */
+void h265_idr(int cam);
+
 void h265_close(int cam);
 
 #endif

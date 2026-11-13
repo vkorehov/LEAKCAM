@@ -56,7 +56,8 @@ and after every test: no BLE core wedge (`--wedge-probe`: a sleep probe after ea
 | test142 leak thresholds from the server | probe mV + humidity %RH as check-in answer attributes, in flash only when changed, kept through a reset and in setup |
 | test144 lighting vs real changes | the leak comparison's false alarms: real frames LED / room lit, light and real transforms, imgdiff's confusion matrix (host) |
 | test146 camera focus | bad focus detected (score vs the tuned reference, the net's `unreliable`), the app's turn guide over the cable | step 1 host pass (FocusGuide 7/7), board steps not built |
-| test147 video H.265 | Take video: two native H.265 videos streamed to the Go server (live HLS + MP4) | works, 7.5 fps (15 asked: open) |
+| test147 video H.265 | Take video: two native H.265 videos streamed to the Go server (live HLS + MP4) | works, both cameras 15 fps, 10 Mbit/s each (packed raw) |
+| test148 video worst cases | Take video under LED flicker / steps: encoder, upload, memory, check-ins after | pass: 4 light patterns, 2 cameras 15 fps 10 Mbit/s; new memory split 55/73 MB; full queue drops to the next IDR; audio (Opus) in every video |
 | test143 Take photo -> pictures at the server | the check-in's capture -> SHOOT -> the K230's lit colour shot per camera, JPEG + EXIF time, upload over the bridge -> SENT |
 | test109 secure server (BL616 part) | the check-in over mTLS: TLS 1.3, the date rule (no clock / expired / clock set), no answer without a device certificate, 10 sessions without a leak |
 
@@ -169,7 +170,8 @@ Leak tests, one per operation the product repeats:
 | [test143 Take photo: two real pictures at the server (whole product flow, product firmware)](test143-photo-upload/README.md) | - | **pass** 2026-11-12: both cameras' JPEGs 6-9 s after the check-in, time in X-Taken + EXIF, the bridge only for the capture |
 | [test144 lighting changes against real changes (host, real frames)](test144-light-vs-change/README.md) | - | **measured** 2026-11-12: imgdiff REAL 16/16, LIGHT false alarms 23/30: the flash/no-flash check next |
 | [test146 camera focus: detected and tuned by hand](test146-focus-tuning/README.md) | - | **step 1 pass (host, 2026-11-12)**; steps 2-6 wait for the K230 focus session |
-| [test147 Take video: native H.265, live and MP4 (whole product flow, product firmware)](test147-video-h265/README.md) | - | **works end to end at 7.5 fps (2026-11-12)**; 15 fps open (ISP ~80 MP/s for two native cameras) |
+| [test147 Take video: native H.265, live and MP4 (whole product flow, product firmware)](test147-video-h265/README.md) | - | **works end to end, both cameras 15 fps at 10 Mbit/s (2026-11-12, raw 10-bit packed)** |
+| [test148 video worst cases: light flicker, steps, memory (whole product flow, product firmware)](test148-video-worst-case/README.md) | - | **pass (2026-11-13)**: fixed the BL616 check-ins after a video (stuck TCP in the 6 KB lwIP heap), the K230 memory split (55 / 73 MB, 9 MB kernel heap), frames dropped to the next IDR on a full upload queue |
 
 ## Re-test audit after the two-firmware design (2026-11-02)
 

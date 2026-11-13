@@ -45,7 +45,10 @@ int h265_open(int cam, unsigned w, unsigned h, unsigned fps)
     a.rc_attr.cbr.src_frame_rate = fps;
     a.rc_attr.cbr.dst_frame_rate = fps;
     a.rc_attr.cbr.bit_rate = H265_KBPS;
-    if (kd_mpi_venc_attach_vb_pool(chn, pool[cam]) || kd_mpi_venc_create_chn(chn, &a) || kd_mpi_venc_start_chn(chn)) {
+    /* IDR frames enabled as every SDK sample does after the create (sample_webrtc mpp_pipeline.c): without it
+     * kd_mpi_venc_request_idr was ignored, the IDRs came only with the GOP (the focus switch, test146 2026-11-13) */
+    if (kd_mpi_venc_attach_vb_pool(chn, pool[cam]) || kd_mpi_venc_create_chn(chn, &a) ||
+        kd_mpi_venc_enable_idr(chn, K_TRUE) || kd_mpi_venc_start_chn(chn)) {
         fprintf(stderr, "h265: cam %d channel %ux%u@%u failed\n", cam, w, h, fps);
         kd_mpi_venc_detach_vb_pool(chn);
         kd_mpi_vb_destory_pool(pool[cam]);
@@ -120,6 +123,12 @@ static bool fetch(int cam, uint8_t **bufp, size_t *np, int *idr)
         free(*bufp);
     *bufp = buf;
     return picture;
+}
+
+void h265_idr(int cam)
+{
+    if (cam >= 0 && cam < CAMS && open_[cam] && kd_mpi_venc_request_idr(1 + cam))
+        fprintf(stderr, "h265: cam %d IDR request failed\n", cam);
 }
 
 void h265_close(int cam)

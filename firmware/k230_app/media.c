@@ -11,6 +11,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "audio.h"
+#include "focus.h"
 #include "h265.h"
 #include "http_post.h"
 #include "jpeg_hw.h"
@@ -28,7 +30,11 @@
 #define VIDEO_FPS     15                /* the sensors' native mode (vicap_cap.c) */
 #define VIDEO_TYPE    "video/x-leakcam-h265"   /* the server's framing (server/video.go): [u32 BE length]
                                                  * [u64 BE the frame's time, us][AU] ...: the real rate, any drop */
-#define VIDEO_QUEUE   (12u << 20)       /* encoded, not yet sent, per camera: past it the upload has failed */
+#define VIDEO_QUEUE   (2560u << 10)     /* encoded, not yet sent, per camera: past it frames are dropped up to the next
+                                         * IDR (vencode). ~2 s at 10 Mbit/s; normal backlog peaks 1.2-1.9 MB
+                                         * (tests/test148). It comes from the page pool beside the two H.265 channels
+                                         * (k230d_rtos_leakcam_defconfig): 12 MB a camera ran the pool out first
+                                         * ("Memory exhaustion!", both videos lost, 2026-11-13) */
 
 struct req {
     char kind[8], base[40], host[48], port[8];
@@ -131,7 +137,8 @@ static void encode(const struct cap_cam *c, const uint8_t *y, const uint8_t *uv,
 
 struct vframe {
     struct vframe *next;
-    size_t len;                         /* data: [u32 BE length][u64 BE pts us][the access unit] */
+    size_t len;                         /* data: [u32 BE length][u64 BE pts us][the access unit]; the length's top
+                                         * bit set: an Opus packet (audio.c), the same clock */
     uint8_t data[];
 };
 
@@ -141,10 +148,11 @@ struct vcam {
     pthread_cond_t cv;
     struct vframe *head, *tail;
     size_t queued, bytes, queued_max;
-    int fd, frames, sent, idrs, status;
+    int fd, frames, sent, idrs, status, dropped, drops;   /* dropped frames, in how many gaps */
+    int audio, audio_lost;              /* Opus packets queued, lost (the queue full) */
     long long enc_us, wait_us, send_us;   /* time in the encoder, waiting for the camera, in send() */
     struct timespec last;
-    bool end, failed, running;
+    bool end, failed, running, skipping;   /* skipping: the backlog was full, frames dropped up to the next IDR */
 };
 
 /* a camera's uploader: frame after frame to its chunked POST until the end, then the server's answer */
@@ -171,10 +179,10 @@ static void *vsend(void *arg)
         v->send_us += (b.tv_sec - a.tv_sec) * 1000000LL + (b.tv_nsec - a.tv_nsec) / 1000;
         pthread_mutex_lock(&v->mu);
         v->queued -= f->len;
-        if (ok)
-            v->sent++;
-        else
+        if (!ok)
             v->failed = true;
+        else if (!(f->data[0] & 0x80))  /* a picture, not an Opus packet */
+            v->sent++;
         pthread_mutex_unlock(&v->mu);
         free(f);
     }
@@ -215,6 +223,9 @@ static void vencode(const struct cap_cam *c, const uint8_t *y, const uint8_t *uv
     struct vframe *f = malloc(sizeof(*f) + 12 + n);
     if (f) {
         uint64_t pts = ((const k_video_frame_info *)frame)->v_frame.pts;   /* the camera's own clock, us */
+        if (!v->frames)                 /* against the microphone's (audio.c "first packet"): one clock for both */
+            logmsg("media: v%d: first picture time %llu us, monotonic %lld us", c->slot + 1,
+                   (unsigned long long)pts, (long long)b.tv_sec * 1000000LL + b.tv_nsec / 1000);
         f->next = NULL;
         f->len = 12 + n;
         for (int i = 0; i < 4; i++)
@@ -225,7 +236,23 @@ static void vencode(const struct cap_cam *c, const uint8_t *y, const uint8_t *uv
     }
     free(au);
     pthread_mutex_lock(&v->mu);
-    if (f && !v->failed && v->queued + f->len <= VIDEO_QUEUE) {
+    /* the link slower than the encoder for a while (the backlog at VIDEO_QUEUE: two cameras' 20 Mbit/s against a Wi-Fi
+     * dip, test148 2026-11-13, a leak's videos): its frames dropped up to the next IDR (an IDR every second, h265.c),
+     * which the queue has room for - a gap in the video, not the video lost. Each frame carries its camera time, the
+     * server times the samples by it (server/video.go) */
+    if (f && v->queued + f->len > VIDEO_QUEUE && !v->skipping) {
+        v->skipping = true;
+        v->drops++;
+    }
+    if (f && v->skipping && idr)
+        v->skipping = v->queued + f->len > VIDEO_QUEUE;
+    if (f && v->skipping) {
+        v->dropped++;
+        pthread_mutex_unlock(&v->mu);
+        free(f);
+        return;
+    }
+    if (f && !v->failed) {
         if (v->tail)
             v->tail->next = f;
         else
@@ -240,10 +267,46 @@ static void vencode(const struct cap_cam *c, const uint8_t *y, const uint8_t *uv
         f = NULL;
         pthread_cond_signal(&v->cv);
     } else {
-        v->failed = true;               /* the link does not keep up: this camera's video is lost */
+        v->failed = true;               /* no memory for the frame: this camera's video is lost */
     }
     pthread_mutex_unlock(&v->mu);
     free(f);
+}
+
+/* the microphone's packets (audio.c, its thread) into every camera's upload: each video carries the sound */
+static void vaudio(const uint8_t *pkt, size_t n, uint64_t us, void *ctx)
+{
+    (void)ctx;
+    for (int c = 0; c < JOB_CAMS; c++) {
+        struct vcam *v = &vc[c];
+        if (!v->running)
+            continue;
+        struct vframe *f = malloc(sizeof(*f) + 12 + n);
+        pthread_mutex_lock(&v->mu);
+        if (f && !v->failed && !v->end && v->frames && v->queued + 12 + n <= VIDEO_QUEUE) {   /* from the first picture */
+            f->next = NULL;
+            f->len = 12 + n;
+            uint32_t len = (uint32_t)n | 0x80000000u;
+            for (int i = 0; i < 4; i++)
+                f->data[i] = (uint8_t)(len >> (24 - 8 * i));
+            for (int i = 0; i < 8; i++)
+                f->data[4 + i] = (uint8_t)(us >> (56 - 8 * i));
+            memcpy(f->data + 12, pkt, n);
+            if (v->tail)
+                v->tail->next = f;
+            else
+                v->head = f;
+            v->tail = f;
+            v->queued += f->len;
+            v->audio++;
+            f = NULL;
+            pthread_cond_signal(&v->cv);
+        } else if (v->frames && !v->end) {
+            v->audio_lost++;
+        }
+        pthread_mutex_unlock(&v->mu);
+        free(f);
+    }
 }
 
 /* the request's videos (one per camera, secs long): the counts of uploaded and failed */
@@ -264,9 +327,9 @@ static void videos(const struct req *r, bool net, const struct timespec *t0, int
         char path[80], hdr[96];
         snprintf(path, sizeof(path), "/v1/media/%s-v%d", r->base, c + 1);
         if (taken)                      /* the clip's moment: the server's MP4 creation time and X-Taken */
-            snprintf(hdr, sizeof(hdr), "X-Fps: %d\r\nX-Taken: %lld", VIDEO_FPS, taken);
+            snprintf(hdr, sizeof(hdr), "X-Fps: %d\r\nX-Audio: opus/%d/1\r\nX-Taken: %lld", VIDEO_FPS, AUDIO_RATE, taken);
         else
-            snprintf(hdr, sizeof(hdr), "X-Fps: %d", VIDEO_FPS);
+            snprintf(hdr, sizeof(hdr), "X-Fps: %d\r\nX-Audio: opus/%d/1", VIDEO_FPS, AUDIO_RATE);
         v->fd = net ? http_open(r->host, r->port, path, VIDEO_TYPE, hdr, CONNECT_S) : -1;
         if (v->fd < 0 || h265_open(c, JOB_W, JOB_H, VIDEO_FPS) != 0) {
             logmsg("media: v%d: %s", c + 1, v->fd < 0 ? "no connection" : "no H.265 channel");
@@ -285,7 +348,9 @@ static void videos(const struct req *r, bool net, const struct timespec *t0, int
     step(what);
     struct timespec taken_at;
     long long ts = ms_since(t0);
+    audio_sink(vaudio, NULL);           /* the sound from each video's first picture (vaudio) */
     int mask = frames ? job_video(frames - 1, (unsigned)r->secs * 1000, vencode, NULL, &taken_at) : 0;
+    audio_sink(NULL, NULL);
     long long te = ms_since(t0);
     for (int c = 0; c < cams; c++) {
         struct vcam *v = &vc[c];
@@ -300,9 +365,10 @@ static void videos(const struct req *r, bool net, const struct timespec *t0, int
         pthread_join(v->t, NULL);
         h265_close(c);
         bool ok = !v->failed && v->status == 200 && (mask & 1 << c) && v->frames > 0;
-        snprintf(what, sizeof(what), "media: v%d: %d frames (%d IDR) in %lld ms, %zu B = %lld kbit/s, %d sent, %s %d "
+        snprintf(what, sizeof(what), "media: v%d: %d frames (%d IDR), %d dropped in %d gaps, audio %d packets (%d lost), in %lld ms, %zu B = "
+                 "%lld kbit/s, %d sent, %s %d "
                  "at %lld ms; encode %lld ms, between frames %lld ms, send %lld ms, backlog max %zu B", c + 1,
-                 v->frames, v->idrs, te - ts, v->bytes, te > ts ? (long long)v->bytes * 8 / (te - ts) : 0, v->sent,
+                 v->frames, v->idrs, v->dropped, v->drops, v->audio, v->audio_lost, te - ts, v->bytes, te > ts ? (long long)v->bytes * 8 / (te - ts) : 0, v->sent,
                  ok ? "uploaded" : "upload failed", v->status, ms_since(t0), v->enc_us / 1000, v->wait_us / 1000,
                  v->send_us / 1000, v->queued_max);
         step(what);
@@ -323,9 +389,24 @@ static void run(const struct req *r)
     snprintf(what, sizeof(what), "media: %s %s, %d pictures, %d cameras", r->kind, r->base, r->photos, r->cams);
     step(what);
     bool video = r->secs > 0 && (!strcmp(r->kind, "video") || !strcmp(r->kind, "leak"));
-    bool net = (r->photos > 0 || video) && bridge_up();   /* first: the join and DHCP run while the pictures are taken */
+    bool focus = r->secs > 0 && !strcmp(r->kind, "focus");
+    bool net = (r->photos > 0 || video || focus) && bridge_up();   /* first: the join and DHCP run while the pictures
+                                                                    * are taken */
     snprintf(what, sizeof(what), "media: Wi-Fi bridge %s", net ? "bound" : "not up");
     step(what);
+    if (focus) {                        /* the app's focus adjustment (focus.c, DESIGN.md 5.3.17): its session, then SENT */
+        char dev[16];
+        snprintf(dev, sizeof(dev), "%.*s", (int)strcspn(r->base, "-"), r->base);
+        unsigned frames = 0;
+        int rc = net ? focus_run(r->host, r->port, dev, r->secs, &frames) : -1;
+        pthread_mutex_lock(&mu);
+        snprintf(result, sizeof(result), "%d,%d,0", rc == 0, rc != 0);
+        result_ready = true;
+        pthread_mutex_unlock(&mu);
+        snprintf(what, sizeof(what), "media: focus session %s, %u frames", rc == 0 ? "done" : "failed", frames);
+        step(what);
+        return;
+    }
 
     static struct photo ph[MAX_PHOTOS];
     struct shot sh = { .r = r, .ph = ph, .n = 0, .failed = 0 };

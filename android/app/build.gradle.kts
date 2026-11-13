@@ -15,8 +15,9 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"   // BleOp: tests/test040, test106
-        // the presence server (server/, the Pi's systemd unit leakcam-server)
-        buildConfigField("String", "SERVER", "\"http://192.168.1.131:8090\"")
+        // the server (the wired PC since 2026-11-12); -PleakcamServer=http://127.0.0.1:8090 for a test build against a
+        // local server through adb reverse (tools/test-runner/mock_board_video.py, tests/test146)
+        buildConfigField("String", "SERVER", "\"${findProperty("leakcamServer") ?: "http://192.168.1.131:8090"}\"")
     }
     buildFeatures {
         buildConfig = true

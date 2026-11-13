@@ -3,6 +3,8 @@
 #define LEAKCAM_H
 
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 /* "leakcam: <text>" on the console */
 void logmsg(const char *fmt, ...);

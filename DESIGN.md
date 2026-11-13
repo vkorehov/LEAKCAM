@@ -1180,26 +1180,58 @@ in their holders; a knock, a loose lock ring or a lens swapped for another (the 
 - **What the person is told:** the server, on `unfocused` (once, not every check-in): a normal notification (not the
   leak alarm) "Camera <N> of LEAKCAM on <SSID> is out of focus: leaks may be missed. Tap to tune it." -> opens the
   focus screen for that board and camera. The board's row shows a small "focus" warning icon until tuned.
-- **The focus screen (FocusActivity), per camera, over the USB cable** (user: "good UX for user to adjust focus
-  asap"): the person is at the board turning the lens anyway, so the phone is plugged in (the app opens on the plug,
-  5.3.4): it starts at once (no check-in to wait for) and the K230 streams ~15 scores a second (on USB power the K230
-  is on, 5.3.11). Lines (the K230 answers them itself, not the BL616): `FOCUS,<cam>` start / switch (LEDs on, the
-  exposure locked so only the focus moves the score), `FOC,<cam>,<seq>,<score>` per frame, `FIMG,...` a centre-crop
-  preview JPEG once a second in line-sized base64 parts, `FOCUS,<cam>,DONE,<score>` save the reference
-  (/sdcard/leakcam/focus, both cameras), `FOCUS,OK,<cam>,<score>`, `FOCUS,STOP`.
+- **The focus screen ("LEAKCAM Focus Adjustment", FocusActivity) over Wi-Fi through the server** (user 2026-11-13:
+  "focus tuning is done on already setup phone", "when out of focus detected ... current state stored on server and
+  then you can go to focus adjustment screen on selected device. It should offer it on status screen"; the cable
+  version of 2026-11-12 is gone): the status screen offers **Tune focus** for a board whose camera is flagged
+  (`unfocused` / `untuned` from its check-ins, kept by the server), and in the board's ⋮ menu always.
+  - **Start, under a minute** (user: "faster check-ins"): Tune focus -> `POST /v1/devices/<id>/focus {"cam":n}`; while
+    a camera is flagged or a session is asked for, the server gives that board a 60 s check-in interval (as the
+    5-min wake mode, 5.3.13). The board's next check-in answers `"capture":{"kind":"focus",...}`: the BL616 starts the
+    K230 with the Wi-Fi bridge as for a video (5.3.14). The app shows a spinner with the moment it starts. A board not
+    flagged (Tune focus from ⋮) is still on its normal interval: its next check-in brings the session (the app says
+    when), the 60 s ones follow. The BL616's own check-ins wait while the session has the radio.
+  - **The stream:** the K230 holds both cameras streaming (exposures held, LEDs on) and sends the shown camera's
+    native H.265 (2592x1936, 15 fps, 10 Mbit/s, as the videos) and each frame's score in one chunked upload
+    `POST /v1/focus/<id>/stream`: records of [u32 BE length | kind][u64 BE us][payload], kind 0 an access unit,
+    1 << 30 a score line `FOC,<cam>,<seq>,<score>`. The server relays the records as they come to the app's
+    `GET /v1/focus/<id>/live` (no HLS, no segments: the picture ~0.3 s behind the lens, HLS would trail 2-4 s), the
+    parameter sets kept for a viewer that joins later (it starts at the next IDR).
+  - **Commands:** the app's `POST /v1/focus/<id>/cmd` (`{"cam":n}` switch, `{"done":<score>}` keep the reference,
+    `{"stop":true}`); the K230 fetches them with a long poll (`GET /v1/focus/<id>/cmd`, answered at once when one is
+    waiting, else after 5 s with `{}`). A switch shows at the next frame: one encoder fed only the shown camera, an IDR
+    asked for. Done -> the reference saved on the board (/sdcard/leakcam/focus), the server's flag cleared at the next
+    check-in's `foc` above 90 %.
+  - **End:** Stop, no viewer for 20 s, or 10 min: the K230 ends the upload, SENT to the BL616, the bridge off.
+- **The score, once a second over the whole picture** (user 2026-11-13: "feedback speed of 1 second to user is
+  adequate", "score on average whole frame"): the K230 scores a grid of 70 tiles of 256x256 (the whole image circle
+  but the frame's very corners; Sobel gradient energy / mean brightness^2), 5 tiles per frame of the shown camera, so
+  the whole frame once in 14 frames: `FOC,<cam>,<seq>,<score>` once a second at the cost of one frame's 5 areas. The
+  tiles in a fixed order, not random: every second the same tiles, so only the focus moves the number. The leak
+  check's focus judgement scores all 70 tiles of its one frame (the same score, so Done's reference fits it; the
+  reference file is new, `/sdcard/leakcam/focus_ref`: a reference of the earlier 5-area score is not used). The
+  video stays live at 15 fps: the person sees the picture sharpen at once, the arrows follow each second. `CAM,<cam>`
+  comes before a camera's first picture (the app gives the pictures after it to that camera).
 - **The turn guide (FocusGuide, user: "help user with direction where to rotate lens", "if focus gets worse swap
-  direction"):** a hill climb with the person's hand as the motor, on the median of the last 5 scores (one blurred
-  frame of a moving hand does not flip it):
-  - start: "Loosen the lock ring, then turn the lens slowly counter-clockwise (looking into the lens)";
+  direction"):** a hill climb with the person's hand as the motor, on each second's score (no median: it would lag
+  seconds; simulated: a hand at 5-30 degrees a second reaches the sharpest point within 15 degrees, 8-25 s):
+  - start: "Loosen the lock ring, then turn the lens slowly <way> (looking into the lens)", the first way picked at
+    random (user 2026-11-13: "rotation direction randomly initially": neither way is likelier right);
   - sharper by 8 %: "keep turning"; blurrier by 8 % without ever getting sharper: "wrong way, turn clockwise";
   - sharper, then 8 % below the best: "past the sharpest point, turn back, small steps" (after that, any fall means
     passed again; the best is the last pass's, so a noise-high best never makes the end unreachable);
   - back within 3 % of the best after a peak: "Sharpest. Hold it, tighten the lock ring, then tap Done" (green);
   - a jump of 30 % between updates: "Turn slower"; no rise or fall for ~10 s: "Nothing sharp in view".
   - Felt as well as seen: a haptic tick at each new best, a long buzz at each "turn the other way".
-  - Layout (skill leakcam-app-ux): camera 1 / 2 switch, the live preview, a big arrow (↺ ↻ ✓), two fixed lines of
-    text, a bar (now, with the best as a marker), "Turn slower" (kept in place, invisible), Done (only when sharp).
+  - Layout (skill leakcam-app-ux): camera 1 / 2 switch, the live preview, a picture of the lens (an M12 fisheye in 3/4
+    view, user 2026-11-13: "static picture of lens and rotation direction") with two arrows around it: green the way
+    to turn, red the other (ic_lens_cw / ic_lens_ccw: the two images swap when it gets blurrier; ic_lens_hold green
+    ring and tick when sharp; ic_lens alone while waiting), two fixed lines of text, a bar (now, with the best as a marker), "Turn slower" (kept in place, invisible), Done (only when sharp).
     Done on camera 1 goes on to camera 2. Target: one camera in under a minute.
+- **The hidden camera's lens turned** (user 2026-11-13: "if focus changes on non-visible camera switch camera
+  automatically"): the K230 also scores the camera not shown, once a second (5 tiles spread over one frame, no
+  picture), sent as `FOCB,<cam>,<score>`; the app (LensWatch: median of 3, so 2 of 3 seconds) switches to it when its
+  score moved 20 % from where it was when that camera left the screen. Light alone barely moves the score (normalised by brightness).
 - **After tuning:** the histories of that camera are no longer comparable (every block changed): the K230 deletes
   them when it saves the reference, so the next check reads `new` (never a leak) and stores fresh ones.
 - **Built (2026-11-12, not yet on the board):** k230_app/focus.c (score, reference, session; FOCUS lines only after
@@ -1209,6 +1241,30 @@ in their holders; a knock, a loose lock ring or a lens swapped for another (the 
 - **Open:** the lens must be reachable in the enclosure (today the cover has to come off: the fit, memory
   leakcam-fit-rework-pending); the score's 60 % and the guide's 8 % / 3 % are first values, to be measured
   (tests/test146).
+
+### 5.3.18 A camera that sees nothing: an unreliable capture, ignored or tuned (user, 2026-11-13)
+
+User: "dark frame should also be triggering unreliable capture and give user option either to ignore camera completely
+or tune its focus in focus screen."
+
+- **Why:** 2026-11-13 the bench's camera 1 looked into a dark room past the LEDs' reach: its kept frame's mean
+  brightness was 7 of 255 with the exposure at its end. Sensor noise against the stored history read "changed" in
+  17929 of 19602 blocks at every check: a leak alarm, 4 pictures and a video per check.
+- **The K230 (job.c):** a kept frame below `JOB_DARK_MEAN` (16; the exposure aims at 90, black is below 4) reads
+  `dark`: no comparison, the history kept, the focus not judged. `dark` in the job field
+  (`<cam0>,<cam1>,<foc0>,<foc1>`) is not `changed`, so the BL616 and the server open no leak.
+- **The server (alert.go focusAlerts):** `dark` is told once per camera like `unfocused` / `untuned` (a `focus` push,
+  `why` = `dark`), the camera flagged (60 s check-ins as for a focus problem) until a check reads it fine again.
+- **The person's two answers (the status screen, next to the flag):** Tune focus (5.3.17: far out of focus looks the
+  same as dark, and the live picture shows what the camera sees), or Ignore camera:
+  `PUT /v1/devices/<id>/cameras/<0|1> {"ignore":true}`. An ignored camera's `changed` opens no leak and its problems
+  are not told or flagged; `{"ignore":false}` uses it again (a problem it still has is told again). Kept with the
+  thresholds (`thresholds.json`, `ignore` in the device's `thresholds`).
+- **Not done (the minimal form):** the board is not told. It goes on taking and judging the ignored camera's pictures,
+  and a `changed` of it still costs one early check-in; photos and videos still show both cameras.
+- **Built 2026-11-13:** the K230's `dark`, the server's reason, API and tests (TestDarkAndIgnoredCamera). **Open:** the
+  app's two buttons and "Use camera again" in the board's menu; a run on the board.
+
 
 ### 5.4 K230-BL616 link and time
 
@@ -1331,6 +1387,10 @@ capture (LEDs at 100 %, AE settled)
 - **Encoders.** H.265 (Main) only, one VENC channel per camera.
 
 ### 5.7 Streaming and audio (built, not run)
+
+**Superseded for the product's videos (2026-11-13):** the videos go as chunked HTTP uploads to the Go server
+(5.3.14, firmware/VIDEO.txt), each with the microphone as Opus 24 kbit/s (k230_app/audio.c, the settings below);
+measured in tests/test148. The RTMP path below stays the test program's (leakcam_stream).
 
 - **Streaming (`leakcam_stream`).**
   - Push mode (`-p host:port -t seconds`), used by `leakcam_wake` when the server's answer asks

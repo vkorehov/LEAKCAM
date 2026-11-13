@@ -36,7 +36,8 @@ rm -rf "$A/leakcam"; mkdir -p "$A/leakcam/src"
 cp "$K/rtsmart/Makefile" "$A/leakcam/Makefile"
 cp "$K/rtsmart/Kconfig.app" "$A/leakcam/Kconfig"
 ( cd "$K" && cp -r --parents *.c *.cc *.h leakcam_change.kmodel third_party/miniz/miniz.c third_party/miniz/miniz.h \
-      third_party/miniz/LICENSE third_party/opus "$A/leakcam/src/" )
+      third_party/miniz/LICENSE "$A/leakcam/src/" )
+cp -r "$L/firmware/k230_app/third_party/opus" "$A/leakcam/src/third_party/"   # libopus: the product's copy
 cp "$L/firmware/k230_board/k230_link.h" "$A/leakcam/src/"      # the link protocol shared with the BL616
 cp "$L/tests/test008-minimal-image/leakcam_cpubench.c" "$L/tests/test013-kpu-change-net/leakcam_kputest.c" \
    "$L/tests/test030-camera-capture/cam_shot.c" "$L/tests/test030-camera-capture/fdump.c" "$A/leakcam/src/"

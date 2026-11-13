@@ -155,6 +155,17 @@
                     android:src="@drawable/ic_more" />
             </LinearLayout>
 
+            <!-- a camera of the picked board is out of focus or not tuned yet (its check-ins, kept by the server):
+                 the focus adjustment offered here (user 2026-11-13: "It should offer it on status screen"; DESIGN.md
+                 5.3.17); under the action row, so it never moves the buttons -->
+            <Button
+                android:id="@+id/tune_focus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:visibility="gone" />
+
             <!-- the status block under the action row (status_block.xml): a longer or shorter message never moves the
                  buttons (user 2026-11-07: no jumps in the action area) -->
             <include

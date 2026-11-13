@@ -169,6 +169,7 @@ class MainActivity : Activity() {
     private lateinit var more: android.widget.ImageButton
     private lateinit var takePhoto: Button
     private lateinit var takeVideo: Button
+    private lateinit var tuneFocus: Button                  // a flagged camera of the picked board (DESIGN.md 5.3.17)
 
     private val main = Handler(Looper.getMainLooper())
     private val adapter: BluetoothAdapter? by lazy {
@@ -272,6 +273,8 @@ class MainActivity : Activity() {
         takeVideo = findViewById(R.id.take_video)
         takePhoto.setOnClickListener { capture(selected, "photo") }
         takeVideo.setOnClickListener { capture(selected, "video") }
+        tuneFocus = findViewById(R.id.tune_focus)
+        tuneFocus.setOnClickListener { openFocus(selected) }
         // the rare actions, one menu next to the action buttons (user 2026-11-07: no button or menu in the rows;
         // Change Wi-Fi is rare too, photo and video are the common actions); a new board: the app menu's Setup
         more.setOnClickListener { v ->
@@ -280,11 +283,7 @@ class MainActivity : Activity() {
                 if (id.isEmpty())
                     return@setOnClickListener
                 menu.add(R.string.setup_change).setOnMenuItemClickListener { openSetup(id); true }
-                menu.add(R.string.focus_menu).setOnMenuItemClickListener {
-                    startActivity(android.content.Intent(this@MainActivity, FocusActivity::class.java)
-                        .putExtra(FocusActivity.EXTRA_ID, id).putExtra(FocusActivity.EXTRA_CAM, focusCam[id] ?: 0))
-                    true
-                }
+                menu.add(R.string.focus_menu).setOnMenuItemClickListener { openFocus(id); true }
                 menu.add(R.string.delete).setOnMenuItemClickListener { forget(id); true }
                 show()
             }
@@ -516,6 +515,13 @@ class MainActivity : Activity() {
     private val gallery by lazy { Gallery(this) }
 
     private var note: Triple<String, String, Long>? = null   // the last action's answer for a board, until its time
+
+    /** LEAKCAM Focus Adjustment for the board (DESIGN.md 5.3.17): the flagged camera first */
+    private fun openFocus(id: String) {
+        if (id.isNotEmpty())
+            startActivity(Intent(this, FocusActivity::class.java)
+                .putExtra(FocusActivity.EXTRA_ID, id).putExtra(FocusActivity.EXTRA_CAM, focusCam[id] ?: 0))
+    }
 
     /** Take photo / Take video (DESIGN.md 5.3.14): the request to the server, handed over at the board's next check-in;
      *  the app is done at once and says when it happens (the 15 s rule); a push comes when it is ready to play */
@@ -991,6 +997,10 @@ class MainActivity : Activity() {
         val kinds = (0 until waits.length()).map { waits.getJSONObject(it).getString("kind") }
         takePhoto.isEnabled = selected.isNotEmpty() && "photo" !in kinds
         takeVideo.isEnabled = selected.isNotEmpty() && "video" !in kinds
+        val toTune = focusCam[selected]                                   // offered while a camera is flagged
+        tuneFocus.visibility = if (selected.isNotEmpty() && toTune != null) View.VISIBLE else View.GONE
+        if (toTune != null)
+            tuneFocus.text = getString(R.string.focus_offer, toTune + 1)
         pendingList.visibility = if (kinds.isEmpty()) View.GONE else View.VISIBLE
         pendingList.text = (listOf(getString(R.string.pending_title, checkinAt(nextAt[selected] ?: 0))) +
             (0 until waits.length()).map { n ->
@@ -1000,6 +1010,7 @@ class MainActivity : Activity() {
                                         w.optString("ssid"))
                     "photo" -> getString(R.string.pending_photo)
                     "video" -> getString(R.string.pending_video)
+                    "focus" -> getString(R.string.pending_focus)
                     else -> getString(R.string.pending_leak)
                 }
                 getString(R.string.pending_item, n + 1, what, android.text.format.DateUtils.formatDateTime(this,

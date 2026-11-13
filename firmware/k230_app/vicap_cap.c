@@ -413,7 +413,7 @@ int cap_release_all(struct cap_cam *cams, int n, cap_frame_fn fn, void *ctx)
     return rc;
 }
 
-int cap_stream(struct cap_cam *cams, int n, unsigned frames, unsigned max_ms, int map, cap_frame_fn fn, void *ctx,
+int cap_stream(struct cap_cam *cams, int n, unsigned frames, unsigned max_ms, unsigned map, cap_frame_fn fn, void *ctx,
                int timeout_ms)
 {
     k_u64 first[CAP_MAX_CAMS] = { 0 }, last[CAP_MAX_CAMS] = { 0 };
@@ -439,10 +439,11 @@ int cap_stream(struct cap_cam *cams, int n, unsigned frames, unsigned max_ms, in
             ref1[i] = f.v_frame.time_ref;
             unsigned stride = f.v_frame.stride[0] ? f.v_frame.stride[0] : f.v_frame.width;
             k_u32 ysize = stride * f.v_frame.height;
-            k_u8 *y = map ? kd_mpi_sys_mmap_cached(f.v_frame.phys_addr[0], ysize) : NULL;
+            bool mapped = (map >> i) & 1u;
+            k_u8 *y = mapped ? kd_mpi_sys_mmap_cached(f.v_frame.phys_addr[0], ysize) : NULL;
             if (y)                                 /* the luma cached and fresh, as cap_release_all's */
                 kd_mpi_sys_mmz_invalidate_cache(f.v_frame.phys_addr[0], y, ysize);
-            if (!map || y)
+            if (!mapped || y)
                 fn(c, y, NULL, stride, &f, ctx);
             else
                 fprintf(stderr, "vicap: dev %u mmap of a video frame failed\n", c->node);

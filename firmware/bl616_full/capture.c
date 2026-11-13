@@ -76,7 +76,7 @@ static void guard_fired(TimerHandle_t t)
     (void)t;
     if (!busy)
         return;
-    printf("capture: no SENT %u s after SHOOT: failed\r\n", SENT_MAX_MS / 1000);
+    printf("capture: no SENT in time after SHOOT: failed\r\n");
     busy = false;
     sent_fail++;
     end_session("capture: no SENT");
@@ -92,7 +92,8 @@ void capture_answer(const char *body)
         return;
     }
     const char *kind = strstr(c, "\"kind\":\"photo\"") ? "photo" : strstr(c, "\"kind\":\"video\"") ? "video"
-                     : strstr(c, "\"kind\":\"leak\"")  ? "leak"  : NULL;
+                     : strstr(c, "\"kind\":\"leak\"")  ? "leak"
+                     : strstr(c, "\"kind\":\"focus\"") ? "focus" : NULL;   /* the app's focus adjustment (5.3.17) */
     const char *id = strstr(c, "\"ids\":[\"");
     long cams = field(c, "cams");
     if (!kind || !id || cams < 1 || cams > 2) {
@@ -121,8 +122,9 @@ void capture_answer(const char *body)
     busy_since = bflb_mtimer_get_time_ms();
     if (!guard)
         guard = xTimerCreate("cap", pdMS_TO_TICKS(SENT_MAX_MS), pdFALSE, NULL, guard_fired);
-    if (guard)
-        xTimerReset(guard, 0);
+    if (guard)                           /* a focus session runs up to its secs (10 min): its SENT comes after them */
+        xTimerChangePeriod(guard, pdMS_TO_TICKS(!strcmp(kind, "focus") && secs > 0 ? (uint32_t)secs * 1000u + 60000u
+                                                                                      : SENT_MAX_MS), 0);
     printf("capture: %s for the server (%ld pictures, %ld cameras)%s\r\n", last, photos, cams,
            k230_session_active() ? ": SHOOT to the running K230" : ": K230 session");
     k230_session_shoot(arg);             /* sent once the K230 has its WAKE */

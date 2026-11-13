@@ -11,6 +11,16 @@ BUILD    := $(SDK_APPS_BUILD_DIR)/leakcam
 PROG     := $(BUILD)/leakcam
 ROM_C    := $(SDK_RTSMART_SRC_DIR)/rtsmart/kernel/bsp/maix3/app_canmv/leakcam_rom.c
 OBJS     := $(patsubst $(SRC_ROOT)/%.c,$(BUILD)/%.o,$(wildcard $(SRC_ROOT)/*.c))
+# the microphone's Opus (audio.c): libopus 1.5.2 (third_party/opus, BSD), float build, from its own source lists, as
+# tests/firmware/k230_apps/rtsmart/Makefile (leakcam_stream, tests/test012)
+OPUS_DIR := third_party/opus
+include $(SRC_ROOT)/$(OPUS_DIR)/celt_sources.mk $(SRC_ROOT)/$(OPUS_DIR)/silk_sources.mk \
+        $(SRC_ROOT)/$(OPUS_DIR)/opus_sources.mk
+OPUS_SRC := $(addprefix $(OPUS_DIR)/,$(CELT_SOURCES) $(SILK_SOURCES) $(SILK_SOURCES_FLOAT) \
+            $(OPUS_SOURCES) $(OPUS_SOURCES_FLOAT))
+OPUS     := -DOPUS_BUILD -DUSE_ALLOCA -DHAVE_LRINTF -DHAVE_LRINT \
+            $(addprefix -I$(SRC_ROOT)/$(OPUS_DIR)/,include celt silk silk/float)
+OBJS     += $(addprefix $(BUILD)/,$(OPUS_SRC:.c=.o))
 
 # the cameras (vicap_cap.c, 2026-11-12): MPP's headers and libraries, as tests/firmware/k230_apps/rtsmart/Makefile
 include $(SDK_RTSMART_SRC_DIR)/libs/mk/libmpp.mk
@@ -50,9 +60,13 @@ $(PROG): $(OBJS) $(PATCHED)/libisp.a
 	$(Q)$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) -lm -o $@
 	$(Q)$(STRIP) $@
 
+$(BUILD)/$(OPUS_DIR)/%.o: $(SRC_ROOT)/$(OPUS_DIR)/%.c
+	@mkdir -p $(dir $@)
+	$(Q)$(CC) $(CFLAGS) $(OPUS) -w -c $< -o $@
+
 $(BUILD)/%.o: $(SRC_ROOT)/%.c
 	@mkdir -p $(dir $@)
-	$(Q)$(CC) $(CFLAGS) -c $< -o $@
+	$(Q)$(CC) $(CFLAGS) -I$(SRC_ROOT)/$(OPUS_DIR)/include -c $< -o $@
 
 clean:
 	$(Q)rm -rf $(BUILD)

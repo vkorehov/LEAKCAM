@@ -30,12 +30,20 @@ func testServer(t *testing.T) *httptest.Server {
 	mux.HandleFunc("GET /v1/devices/{id}", device)
 	mux.HandleFunc("PUT /v1/devices/{id}/intervals", setIntervals)
 	mux.HandleFunc("PUT /v1/devices/{id}/thresholds", setThresholds)
+	mux.HandleFunc("PUT /v1/devices/{id}/cameras/{cam}", setIgnore)
 	mux.HandleFunc("POST /v1/devices/{id}/capture", capture)
 	mux.HandleFunc("POST /v1/devices/{id}/clear", clearLeak)
 	mux.HandleFunc("PUT /v1/devices/{id}/wifi", putWifi)
 	mux.HandleFunc("POST /v1/media/{id}", putMedia)
 	mux.HandleFunc("GET /v1/live/{id}/{file}", liveVideo)
 	mux.HandleFunc("GET /v1/media/{id}", media)
+	mux.HandleFunc("POST /v1/devices/{id}/focus", askFocus)
+	mux.HandleFunc("POST /v1/focus/{id}/stream", focusStream)
+	mux.HandleFunc("GET /v1/focus/{id}/live", focusLive)
+	mux.HandleFunc("POST /v1/focus/{id}/cmd", focusCmd)
+	mux.HandleFunc("GET /v1/focus/{id}/cmd", focusPoll)
+	focuses, focusAsked, focusTold, focusSince = map[string]*focusSession{}, map[string]time.Time{},
+		map[string][Cameras]string{}, map[string]time.Time{}
 	s := httptest.NewServer(withTime(mux))
 	t.Cleanup(s.Close)
 	return s
@@ -386,7 +394,7 @@ func TestThresholds(t *testing.T) {
 	thresholds = map[string]Thresholds{} // a restart: read back from the file
 	mu.Unlock()
 	loadThresholds()
-	if got := deviceThresholds(TestID); got != (Thresholds{900, 70}) {
+	if got := deviceThresholds(TestID); got != (Thresholds{ProbeMV: 900, Humid: 70}) {
 		t.Fatalf("after a restart: %+v", got)
 	}
 	// judged with the device's values: 72 %RH is humid at 70, a probe at 1000 mV is dry at 900

@@ -20,7 +20,9 @@
 #include <task.h>
 
 #include <lwip/netdb.h>
+#include <lwip/priv/tcp_priv.h>
 #include <lwip/sockets.h>
+#include <lwip/tcpip.h>
 
 #include "net_al.h"
 #include "net_al_ext.h"
@@ -288,9 +290,23 @@ static void send_crash(void)
         crash_rec_sent(count);
 }
 
+/* the BL616's own TCP connections end with the network: the server closes first (Connection: close), so our close
+ * leaves the connection in LAST_ACK with its FIN (and TLS close_notify) waiting for an ACK that never comes once the
+ * station leaves; each held ~2.4 KB of the 6 KB lwIP heap (lwipopts_user.h) for a minute or more, and the next
+ * check-in's TLS hello found no memory ("tls: send 225 B: errno 11", state 0x15; 3 in a row = the setup firmware:
+ * tests/test148 2026-11-13). Aborted here, while still joined: a RST tells the server, the memory is free at once */
+static void drop_tcp(void)
+{
+    LOCK_TCPIP_CORE();
+    while (tcp_active_pcbs)
+        tcp_abort(tcp_active_pcbs);
+    UNLOCK_TCPIP_CORE();
+}
+
 /* false if the station stayed busy (wifi_link_sta_leave()): no connect then, it would never return */
 static bool leave(void)
 {
+    drop_tcp();
     net_al_ext_dhcp_disconnect();          /* the lease must not outlive the check: the K230 uses the same MAC */
     return wifi_link_sta_leave();          /* for its own DHCP later */
 }

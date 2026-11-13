@@ -590,6 +590,7 @@ cp "$HERE/../k230_app/rtsmart/Makefile" "$HERE/../k230_app/rtsmart/rom_c.py" "$A
 cp "$HERE/../k230_app/rtsmart/Kconfig.app" "$A/leakcam/Kconfig"
 cp "$HERE"/../k230_app/*.c "$HERE"/../k230_app/*.h "$HERE/k230_link.h" "$HERE/rtsmart/drivers/sys_stat/sys_stat.h" \
    "$A/leakcam/src/"
+mkdir -p "$A/leakcam/src/third_party" && cp -r "$HERE/../k230_app/third_party/opus" "$A/leakcam/src/third_party/"
 # the program's version, as the BL616's (version_gen.cmake): firmware/VERSION + the commit (+ -dirty-<UTC> with
 # uncommitted changes); in its STATUS frame for the server (DESIGN.md 5.3.10)
 V=$(tr -d '[:space:]' < "$HERE/../VERSION")+g$(git -C "$HERE" rev-parse --short=7 HEAD)

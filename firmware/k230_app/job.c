@@ -15,7 +15,8 @@
  * Capture: both cameras at once (offline VICAP, the native 2592x1944; the streams run while the cameras are open,
  * vicap_cap.c), the room's light when it is enough, else the LEDs; the exposure ours (cap.h: each camera's last good
  * one, corrected when the frame is off), right in 2-3 frames (at most SETTLE; the ISP's AE took 14-40); only the light
- * probe reads the ISP's 320x240 channel. A camera that gives no frame reads "nocam".
+ * probe reads the ISP's 320x240 channel. A camera that gives no frame reads "nocam", one whose picture is nearly
+ * black "dark" (JOB_DARK_MEAN).
  *
  * The test override (user 2026-11-12: "update the stored one through a special command"; the new image still comes
  * from the camera and so differs): /sdcard/leakcam/sim, the last `cam<N>=<token>` per camera counts, so the K230
@@ -45,6 +46,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "audio.h"
 #include "cap.h"
 #include "focus.h"
 #include "imgdiff.h"
@@ -181,6 +183,9 @@ static char result[48];
 static bool result_ready;
 static uint8_t *hist;                   /* a camera's history, loaded for its compare: 5 MB only during a check
                                          * (the VPU's pages come from the same allocator: a video needs them) */
+#define JOB_DARK_MEAN 16                /* a kept frame's mean brightness (0-255) below it: "dark", an unreliable
+                                         * capture, not a leak (user 2026-11-13; DESIGN.md 5.3.18); the exposure aims
+                                         * at CAP_TARGET 90, a black frame is below CAP_BLACK 4 */
 static const char *state[CAMS];         /* this check's verdict per camera (check_frame), NULL: no frame */
 
 /* the test token `curve` in the scene file: every grab takes all SETTLE + 1 frames and logs each frame's brightness
@@ -270,8 +275,13 @@ static int open_cams(void)
         cams[i].node = (unsigned)i;
         cams[i].exp = exposure[SENSOR(i)];
     }
-    if (cap_open_all(cams, CAMS, CAP_W, CAP_H) == 0)
+    if (cap_open_all(cams, CAMS, CAP_W, CAP_H) == 0) {
+        /* the microphone with the cameras (their VB is up now): the codec's ~2 s power-up runs beside the cameras'
+         * start and the check, so a video's sound starts with its pictures (a "video" request streams 0.4 s after it
+         * comes, test148) */
+        audio_open();
         return CAMS;
+    }
     cap_close_all(cams, CAMS);
     /* one camera missing or broken stops the shared open: find the ones that answer, then open those together */
     unsigned ok[CAMS];
@@ -294,6 +304,8 @@ static int open_cams(void)
         return 0;
     }
     logmsg("job: %d of %d cameras answer", n, CAMS);
+    if (n)
+        audio_open();
     return n;
 }
 
@@ -309,6 +321,7 @@ static bool grab_open(cap_frame_fn fn, void *ctx, unsigned more, unsigned more_m
     if (ncams <= 0)
         return false;
     if (grab_lit(cams, ncams, fn, ctx, more, more_ms) != 0) {
+        audio_close();                  /* before the cameras' VB exit */
         cap_close_all(cams, ncams);
         ncams = -1;                     /* opened again at the next check */
         return false;
@@ -404,6 +417,15 @@ static void check_frame(const struct cap_cam *c, const uint8_t *y, const uint8_t
     char path[48], what[200];
     if (c->fw != IMGDIFF_W || c->fh != IMGDIFF_H)
         return;                                 /* not the native frame: "nocam" */
+    if (c->mean < JOB_DARK_MEAN) {
+        /* nothing to see, the exposure at its end (the LEDs on in a dark room): covered, nothing in the LEDs' reach, far
+         * out of focus. Its noise against the history would read "changed" at every check (2026-11-13: mean 7,
+         * 17929 of 19602 blocks, a leak alarm per check): no comparison, the history kept, the focus not judged */
+        state[cam] = "dark";
+        snprintf(what, sizeof(what), "job: cam%d dark: mean %u, below %u", cam, c->mean, JOB_DARK_MEAN);
+        step(what);
+        return;
+    }
     if (shot_lit[cam])                          /* the LEDs' light, the same every time: the focus judged */
         focus_judge(cam, focus_score(y, stride, c->fw, c->fh));
     enum scene sc = sim_scene(cam);
@@ -485,7 +507,7 @@ static void *job_thread(void *arg)
         const char *v[CAMS];
         for (int i = 0; i < CAMS; i++) {
             v[i] = check_cam(i);
-            if (focus_bad(i) && strcmp(v[i], "nocam") && strcmp(v[i], "new"))
+            if (focus_bad(i) && strcmp(v[i], "nocam") && strcmp(v[i], "new") && strcmp(v[i], "dark"))
                 v[i] = "unfocused";
         }
         char r[48];
@@ -526,41 +548,49 @@ bool job_result(char *buf, size_t len)
     return got;
 }
 
-int job_focus(int cam, cap_frame_fn fn, void *ctx, bool (*go)(void *ctx))
+#define SCORE_EVERY 15                  /* the hidden camera's score once a second (FOCB) */
+
+int job_focus(cap_frame_fn fn, void *ctx, bool (*go)(void *ctx), int (*mapped)(void *ctx))
 {
     pthread_mutex_lock(&cam_mu);
     if (ncams < 0)
         ncams = open_cams();
-    struct cap_cam *c = NULL;
-    for (int i = 0; i < ncams; i++)
-        if ((int)cams[i].slot == cam)
-            c = &cams[i];
-    if (!c) {
+    if (ncams <= 0) {
         pthread_mutex_unlock(&cam_mu);
         return -1;
     }
-    /* the LEDs as for a lit check, the exposure settled on the first frame, then locked: only the focus moves the
+    /* the LEDs as for a lit check, the exposures settled on the first frames, then locked: only the focus moves the
      * score */
     if (led_set(true, led_percent, 0) < 0)
         logmsg("focus: LEDs not on");
-    c->exp = exposure[cam];
-    int rc = cap_grab_all(c, 1, 0, SETTLE, 1000);
+    for (int i = 0; i < ncams; i++)
+        cams[i].exp = exposure[cams[i].slot];
+    int rc = cap_grab_all(cams, ncams, 0, SETTLE, 1000);
     if (rc == 0) {
-        exposure[cam] = c->exp;
-        rc = cap_release_all(c, 1, fn, ctx);
+        for (int i = 0; i < ncams; i++)
+            exposure[cams[i].slot] = cams[i].exp;
+        rc = cap_release_all(cams, ncams, NULL, NULL);
     }
-    unsigned frames = 1;
+    unsigned frames = 0;
     while (rc == 0 && go(ctx)) {
-        rc = cap_stream(c, 1, 8, 1000, 1, fn, ctx, 1000);
-        frames += 8;
+        /* which frames are mapped (scored): every frame of the shown camera (focus.c: a few tiles each, the whole
+         * frame's score once a second), the hidden one's once a second (the app switches to a lens being turned) */
+        unsigned map = 0;
+        int want = mapped(ctx);
+        for (int i = 0; i < ncams; i++)
+            if ((int)cams[i].slot == want || frames % SCORE_EVERY == 0)
+                map |= 1u << i;
+        rc = cap_stream(cams, ncams, 1, 1000, map, fn, ctx, 1000);
+        frames++;
     }
     led_set(false, led_percent, 0);
     if (rc != 0) {
+        audio_close();
         cap_close_all(cams, ncams);
         ncams = -1;
     }
     pthread_mutex_unlock(&cam_mu);
-    logmsg("focus: cam%d: %u frames, %s", cam, frames, rc ? "camera failed" : "ended");
+    logmsg("focus: %u frame pairs, %s", frames, rc ? "camera failed" : "ended");
     return rc;
 }
 

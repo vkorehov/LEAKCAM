@@ -1,0 +1,399 @@
+21:34:23 list_page
+21:34:23 level 0 [0x0327e000][0x02b2e000]
+21:34:23 level 1 [0x0312a000][0x0327c000][0x035f4000][0x02b2c000]
+21:34:23 level 2 [0x0312c000][0x03278000][0x035f0000][0x02b28000]
+21:34:23 level 3 [0x03270000][0x02b20000]
+21:34:23 level 4 [0x03130000][0x03260000][0x035e0000]
+21:34:23 level 5 [0x03240000][0x035c0000][0x02b00000]
+21:34:23 level 6 [0x03140000][0x03200000][0x03580000]
+21:34:23 level 7 [0x03180000][0x03280000][0x03500000]
+21:34:23 level 8 [0x03400000][0x03300000][0x02a00000]
+21:34:23 level 9 [0x02800000]
+21:34:23 level 10
+21:34:23 level 11 [0x02000000]
+21:34:23 level 12 [0x01000000]
+21:34:23 level 13
+21:34:23 level 14
+21:34:23 level 15
+21:34:23 level 16
+21:34:23 level 17
+21:34:23 level 18
+21:34:23 level 19
+21:34:23 level 20
+21:34:23 level 21
+21:34:23 level 22
+21:34:23 level 23
+21:34:23 level 24
+21:34:23 level 25
+21:34:23 level 26
+21:34:23 level 27
+21:34:23 level 28
+21:34:23 level 29
+21:34:23 level 30
+21:34:23 level 31
+21:34:23 level 32
+21:34:23 level 33
+21:34:23 level 34
+21:34:23 level 35
+21:34:23 level 36
+21:34:23 level 37
+21:34:23 level 38
+21:34:23 level 39
+21:34:23 level 40
+21:34:23 level 41
+21:34:23 level 42
+21:34:23 level 43
+21:34:23 level 44
+21:34:23 level 45
+21:34:23 level 46
+21:34:23 level 47
+21:34:23 level 48
+21:34:23 level 49
+21:34:23 level 50
+21:34:23 level 51
+21:34:23 free pages is 00001ffa
+21:34:23 used pages is 000007cd
+21:34:23 max used pages is 00000c9c
+21:34:23 max used pages memory is 13221888 bytes
+21:34:23 -------------------------------
+21:34:23 msh />
+21:34:26 msh />leakcam: media: leak 7C3E8262B149-1794598466, 4 pictures, 2 cameras: t 55969 ms, heap +954368 B
+21:34:27 [I/bl616.sdio] BL616 SDU ready: io port 0x10000, download 1536 B, ports 0/0
+21:34:27 [I/bl616.sdio] bound SDIO 424c:0606
+21:34:27 leakcam: media: Wi-Fi bridge bound: t 56113 ms, heap +954368 B
+21:34:27 dump dev(0)chn(1) failed.
+21:34:27 [I/bl616.msg] netdev: started, credit 23
+21:34:27 [I/WLAN.dev] WLAN device sta registered as phy0-sta
+21:34:27 [I/WLAN.dev] wlan init success
+21:34:27 [I/WLAN.lwip] eth device init ok name:wlan0
+21:34:27 [I/bl616.wifi] station 7c:3e:82:62:b1:49
+21:34:27 dump dev(1)chn(1) failed.
+21:34:27 [I/bl616.msg] vchan: started, credit 3
+21:34:27 [I/bl616.wifi] link 0 -> 1 (, channel 0, 0 dBm)
+21:34:27 [I/bl616.wifi] link 1 -> 2 (VK, channel 11, 0 dBm)
+21:34:27 [I/WLAN.mgnt] wifi connect success ssid:
+21:34:27 [I/WLAN.lwip] Got IP address : 192.168.1.223
+21:34:27 leakcam: job: colour LEDs, room 0 / 1, frames 2 / 3, exposures 1 / 1, 528.0 / 214.2 ms, LEDs 136 ms
+21:34:27 leakcam: media: round 1 at 145 ms: cameras 0x3, 2 JPEGs (110796 + 124627 B) at 526 ms: t 56494 ms, heap +1196032 B
+21:34:28 dump dev(0)chn(1) failed.
+21:34:28 dump dev(1)chn(1) failed.
+21:34:29 leakcam: job: colour LEDs, room 0 / 0, frames 2 / 3, exposures 1 / 1, 528.0 / 214.2 ms, LEDs 136 ms
+21:34:29 leakcam: media: round 2 at 2000 ms: cameras 0x3, 2 JPEGs (110768 + 124872 B) at 2376 ms: t 58345 ms, heap +1437696 B
+21:34:29 leakcam: media: p1 110796 B: uploaded 200 at 2431 ms: t 58400 ms, heap +1437696 B
+21:34:29 leakcam: media: p2 124627 B: uploaded 200 at 2484 ms: t 58452 ms, heap +1437696 B
+21:34:29 leakcam: media: p3 110768 B: uploaded 200 at 2525 ms: t 58493 ms, heap +1437696 B
+21:34:29 leakcam: media: p4 124872 B: uploaded 200 at 2572 ms: t 58541 ms, heap +1437696 B
+21:34:29 ch 0: 4 pictures encoded. Average FrameRate = 2 Fps
+21:34:29 ch 0: total used pages 3022
+21:34:29 leakcam: media: video 225 frames per camera at 15 fps, 10000 kbit/s: t 58858 ms, heap +1437696 B
+21:34:29 dump dev(0)chn(1) failed.
+21:34:29 dump dev(1)chn(1) failed.
+21:34:30 leakcam: media: v1: first picture time 59086198 us, monotonic 59210829 us
+21:34:30 leakcam: media: v2: first picture time 59167961 us, monotonic 59253421 us
+21:34:31 [I/ntp] Get local time from NTP server: Fri Nov 13 19:34:31 2026
+21:34:45 vicap: dev 0 video: 224 frames over 14932 ms of pts = 14.9 fps, sequence 869..1093
+21:34:45 vicap: dev 1 video: 224 frames over 14865 ms of pts = 15.0 fps, sequence 869..1092
+21:34:45 leakcam: job: colour LEDs, room 0 / 0, frames 2 / 3, exposures 1 / 1, 528.0 / 214.2 ms, LEDs 135 ms
+21:34:45 ch 1: 225 pictures encoded. Average FrameRate = 15 Fps
+21:34:45 ch 1: total used pages 3075
+21:34:45 leakcam: media: v1: 225 frames (15 IDR), 0 dropped in 0 gaps, audio 375 packets (0 lost), in 15359 ms, 18502823 B = 9637 kbit/s, 225 sent, uploaded 200 at 18606 ms; encode 6767 ms, between frames 8241 ms, send 4386 ms, backlog max 1012547 B: t 74575 ms, heap +1724416 B
+21:34:45 ch 2: 225 pictures encoded. Average FrameRate = 15 Fps
+21:34:45 ch 2: total used pages 3075
+21:34:45 leakcam: media: v2: 225 frames (15 IDR), 0 dropped in 0 gaps, audio 374 packets (0 lost), in 15359 ms, 18723298 B = 9752 kbit/s, 225 sent, uploaded 200 at 18940 ms; encode 6810 ms, between frames 8189 ms, send 4632 ms, backlog max 1172959 B: t 74908 ms, heap +1724416 B
+21:34:46 leakcam: media: done, 6 uploaded, 0
+21:34:46 U-Boot SPL 2022.10-gc096dae6-dirty (Nov 13 2026 - 19:29:57 +0000)
+21:34:46 00000000: PMU Major Msg: End of CA training
+21:34:46 00000000: PMU Major Msg: End of initialization
+21:34:46 00000000: PMU Major Msg: End of read enable training
+21:34:46 00000000: PMU Major Msg: End of fine write leveling
+21:34:46 00000000: PMU Major Msg: End of read dq deskew training
+21:34:46 00000000: PMU Major Msg: End of MPR read delay center optimization
+21:34:46 00000000: PMU Major Msg: End of Write leveling coarse delay
+21:34:46 00000000: PMU Major Msg: End of write delay center optimization
+21:34:46 00000000: PMU Major Msg: End of read delay center optimization
+21:34:46 00000000: PMU Major Msg: End of max read latency training
+21:34:46 00000000: PMU Major Msg: Firmware run has completed
+21:34:46 dbyte0 add =9a040100 value =12
+21:34:46 dbyte0 add =9a040500 value =13
+21:34:46 dbyte0 add =9a040900 value =14
+21:34:46 dbyte0 add =9a040d00 value =13
+21:34:46 dbyte0 add =9a041100 value =14
+21:34:46 dbyte0 add =9a041500 value =13
+21:34:46 dbyte0 add =9a041900 value =13
+21:34:46 dbyte0 add =9a041d00 value =15
+21:34:46 dbyte1 add =9a044100 value =13
+21:34:46 dbyte1 add =9a044500 value =13
+21:34:46 dbyte1 add =9a044900 value =15
+21:34:46 dbyte1 add =9a044d00 value =13
+21:34:46 dbyte1 add =9a045100 value =13
+21:34:46 dbyte1 add =9a045500 value =13
+21:34:46 dbyte1 add =9a045900 value =14
+21:34:46 dbyte1 add =9a045d00 value =13
+21:34:46 dbyte2 add =9a048100 value =37
+21:34:46 dbyte2 add =9a048500 value =37
+21:34:46 dbyte2 add =9a048900 value =37
+21:34:46 dbyte2 add =9a048d00 value =37
+21:34:46 dbyte2 add =9a049100 value =37
+21:34:46 dbyte2 add =9a049500 value =37
+21:34:46 dbyte2 add =9a049900 value =37
+21:34:46 dbyte2 add =9a049d00 value =37
+21:34:46 dbyte3 add =9a04c100 value =37
+21:34:46 dbyte3 add =9a04c500 value =37
+21:34:46 dbyte3 add =9a04c900 value =37
+21:34:46 dbyte3 add =9a04cd00 value =37
+21:34:46 dbyte3 add =9a04d100 value =37
+21:34:46 dbyte3 add =9a04d500 value =37
+21:34:46 dbyte3 add =9a04d900 value =37
+21:34:46 dbyte3 add =9a04dd00 value =37
+21:34:46 spi_nand spi-flash@0: Winbond SPI NAND was found.
+21:34:46 spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+21:34:46 OpenSBI v0.9
+21:34:46 heap: [0x005fa4c0 - 0x00efa4c0], size 9216 KB
+21:34:46 page: [0x00efa4c8 - 0x036fec00], size 40977 KB
+21:34:46  \ | /
+21:34:46 - RT -     Thread Smart Operating System
+21:34:46  / | \     5.0.0 build Nov 13 2026
+21:34:46  2006 - 2020 Copyright by rt-thread team
+21:34:46 rtc driver register OK
+21:34:46 lwIP-2.1.2 initialized!
+21:34:46 [I/I2C] I2C bus [i2c0] registered
+21:34:46 [I/I2C] I2C bus [i2c4] registered
+21:34:46 [I/board.sdio] boot mode 0 does not use an SD/MMC controller�link_mux: console and /dev/link share uart1
+21:34:46 Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+21:34:46 [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+21:34:46 os  : system memory alloc 320 bytes
+21:34:46 flsh: UFFS consume spare data size 9
+21:34:46 os  : system memory alloc 84480 bytes
+21:34:46 os  : system memory alloc 53200 bytes
+21:34:46 os  : system memory alloc 2048 bytes
+21:34:46 tree: DIR 0, FILE 5, DATA 4
+21:34:46 os  : system memory alloc 320 bytes
+21:34:46 flsh: UFFS consume spare data size 9
+21:34:46 os  : system memory alloc 84480 bytes
+21:34:46 os  : system memory alloc 53200 bytes
+21:34:46 os  : system memory alloc 8192 bytes
+21:34:47 tree: DIR 1, FILE 5, DATA 76
+21:34:47 /dev/shm file system initialization done!
+21:34:47 Probe dummy af driver
+21:34:47 find sensor(ov5647_csi0) on csi0
+21:34:47 Probe dummy af driver
+21:34:47 find sensor(ov5647_csi2) on csi2
+21:34:47 <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+21:34:47 <gnne> gnne_device_init done.
+21:34:47 #############SDK VERSION######################################
+21:34:47 SDK   : unknown-20261113-193050--80c4b8579873-4162ec7
+21:34:47 nncase: 2.11.0
+21:34:47 ##############################################################
+21:34:47 msh />leakcam: start: t 679 ms, heap +0 B
+21:34:47 leakcam: version 0.6+g9885a9d-dirty-202611131929
+21:34:47 leakcam: battery 4367 mV: t 680 ms, heap +0 B
+21:34:47 leakcam: clock: 1794598488 from the BL616 (was -58908888 s off)
+21:34:47 leakcam: WAKE usb: t 693 ms, heap +0 B
+21:34:47 leakcam: relay: USB relay on /dev/ttyGS0: t 693 ms, heap +0 B
+21:34:47 leakcam: job: check: t 698 ms, heap +0 B
+21:34:47 vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+21:34:47 vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+21:34:47 kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
+21:34:47 kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
+21:34:47 leakcam: media: focus 7C3E8262B149-1794598487, 0 pictures, 2 cameras: t 857 ms, heap +909312 B
+21:34:47 usb disconnect
+21:34:47 [I/bl616.sdio] BL616 SDU ready: io port 0x10000, download 1536 B, ports 0/0
+21:34:47 [I/bl616.sdio] bound SDIO 424c:0606
+21:34:47 leakcam: media: Wi-Fi bridge bound: t 926 ms, heap +909312 B
+21:34:47 [I/bl616.msg] netdev: started, credit 23
+21:34:47 [I/WLAN.dev] WLAN device sta registered as phy0-sta
+21:34:47 [I/WLAN.dev] wlan init success
+21:34:47 [I/WLAN.lwip] eth device init ok name:wlan0
+21:34:47 [I/bl616.wifi] station 7c:3e:82:62:b1:49
+21:34:47 usb disconnect
+21:34:47 [I/bl616.msg] vchan: started, credit 3
+21:34:47 [I/bl616.wifi] link 0 -> 1 (, channel 0, 0 dBm)
+21:34:47 [I/bl616.wifi] link 1 -> 2 (VK, channel 11, 0 dBm)
+21:34:47 [I/WLAN.mgnt] wifi connect success ssid:
+21:34:47 [I/WLAN.lwip] Got IP address : 192.168.1.223
+21:34:48 audio i2s set clk freq is 1024000(1024000),ret:1
+21:34:48 audio codec adc clk freq is 4096000(4096000)
+21:34:50 dump dev(0)chn(1) failed.
+21:34:50 dump dev(1)chn(1) failed.
+21:34:51 leakcam: focus: cam0 score 3.426, reference 0.000: -1 %, 0 low in a row
+21:34:51 leakcam: job: cam0 changed (stored as is): 17999 of 19602 blocks at x 0-2592 y 0-1936, max 77.8, gain 2.00, read 564 ms, compare 167 ms: t 5594 ms, heap +954368 B
+21:34:52 leakcam: focus: cam1 score 0.100, reference 0.000: -1 %, 0 low in a row
+21:34:52 leakcam: job: cam1 changed (stored as is): 1002 of 19602 blocks at x 0-2592 y 0-176, max 22.3, gain 1.03, read 566 ms, compare 171 ms: t 6445 ms, heap +954368 B
+21:34:52 leakcam: job: captured, mean 6 / 102 (got 1 1), LEDs, room 1 / 0, frames 2 / 3, exposures 1 / 1, 528.0 / 214.2 ms, LEDs 136 ms: t 6449 ms, heap +954368 B
+21:34:52 leakcam: job: done: t 6450 ms, heap +954368 B
+21:34:52 leakcam: audio: first packet 119 B, frame time 6450163 us, monotonic 6451194 us
+21:34:53 leakcam: focus: cam0 shown 5743 ms after its command, 0 B of the other camera's pictures dropped
+21:34:59 leakcam: focus: cam1 shown 18 ms after its command, 0 B of the other camera's pictures dropped
+21:35:05 leakcam: focus: cam0 shown 43 ms after its command, 0 B of the other camera's pictures dropped
+21:35:12 leakcam: focus: stopped (the app left, nobody watching, or the time is up)
+21:35:12 leakcam: focus: 287 frame pairs, ended
+21:35:12 ch 1: 288 pictures encoded. Average FrameRate = 15 Fps
+21:35:12 ch 1: total used pages 3303
+21:35:12 leakcam: focus: session end, 288 frames sent, 0 dropped, the server said 200
+21:35:12 leakcam: media: focus session done, 288 frames: t 26365 ms, heap +1421312 B
+21:35:13 U-Boot SPL 2022.10-gc096dae6-dirty (Nov 13 2026 - 19:29:57 +0000)
+21:35:13 00000000: PMU Major Msg: End of CA training
+21:35:13 00000000: PMU Major Msg: End of initialization
+21:35:13 00000000: PMU Major Msg: End of read enable training
+21:35:13 00000000: PMU Major Msg: End of fine write leveling
+21:35:13 00000000: PMU Major Msg: End of read dq deskew training
+21:35:13 00000000: PMU Major Msg: End of MPR read delay center optimization
+21:35:13 00000000: PMU Major Msg: End of Write leveling coarse delay
+21:35:13 00000000: PMU Major Msg: End of write delay center optimization
+21:35:13 00000000: PMU Major Msg: End of read delay center optimization
+21:35:13 00000000: PMU Major Msg: End of max read latency training
+21:35:13 00000000: PMU Major Msg: Firmware run has completed
+21:35:13 dbyte0 add =9a040100 value =12
+21:35:13 dbyte0 add =9a040500 value =13
+21:35:13 dbyte0 add =9a040900 value =14
+21:35:13 dbyte0 add =9a040d00 value =13
+21:35:13 dbyte0 add =9a041100 value =13
+21:35:13 dbyte0 add =9a041500 value =13
+21:35:13 dbyte0 add =9a041900 value =13
+21:35:13 dbyte0 add =9a041d00 value =14
+21:35:13 dbyte1 add =9a044100 value =13
+21:35:13 dbyte1 add =9a044500 value =14
+21:35:13 dbyte1 add =9a044900 value =14
+21:35:13 dbyte1 add =9a044d00 value =13
+21:35:13 dbyte1 add =9a045100 value =13
+21:35:13 dbyte1 add =9a045500 value =14
+21:35:13 dbyte1 add =9a045900 value =14
+21:35:13 dbyte1 add =9a045d00 value =13
+21:35:13 dbyte2 add =9a048100 value =37
+21:35:13 dbyte2 add =9a048500 value =37
+21:35:13 dbyte2 add =9a048900 value =37
+21:35:13 dbyte2 add =9a048d00 value =37
+21:35:13 dbyte2 add =9a049100 value =37
+21:35:13 dbyte2 add =9a049500 value =37
+21:35:13 dbyte2 add =9a049900 value =37
+21:35:13 dbyte2 add =9a049d00 value =37
+21:35:13 dbyte3 add =9a04c100 value =37
+21:35:13 dbyte3 add =9a04c500 value =37
+21:35:13 dbyte3 add =9a04c900 value =37
+21:35:13 dbyte3 add =9a04cd00 value =37
+21:35:13 dbyte3 add =9a04d100 value =37
+21:35:13 dbyte3 add =9a04d500 value =37
+21:35:13 dbyte3 add =9a04d900 value =37
+21:35:13 dbyte3 add =9a04dd00 value =37
+21:35:13 spi_nand spi-flash@0: Winbond SPI NAND was found.
+21:35:13 spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+21:35:13 OpenSBI v0.9
+21:35:13 heap: [0x005fa4c0 - 0x00efa4c0], size 9216 KB
+21:35:13 page: [0x00efa4c8 - 0x036fec00], size 40977 KB
+21:35:13  \ | /
+21:35:13 - RT -     Thread Smart Operating System
+21:35:13  / | \     5.0.0 build Nov 13 2026
+21:35:13  2006 - 2020 Copyright by rt-thread team
+21:35:13 rtc driver register OK
+21:35:13 lwIP-2.1.2 initialized!
+21:35:13 [I/I2C] I2C bus [i2c0] registered
+21:35:13 [I/I2C] I2C bus [i2c4] registered
+21:35:13 [I/board.sdio] boot mode 0 does not use an SD/MMC controller�link_mux: console and /dev/link share uart1
+21:35:13 Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+21:35:13 [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+21:35:13 os  : system memory alloc 320 bytes
+21:35:13 flsh: UFFS consume spare data size 9
+21:35:13 os  : system memory alloc 84480 bytes
+21:35:13 os  : system memory alloc 53200 bytes
+21:35:13 os  : system memory alloc 2048 bytes
+21:35:13 tree: DIR 0, FILE 5, DATA 4
+21:35:13 os  : system memory alloc 320 bytes
+21:35:13 flsh: UFFS consume spare data size 9
+21:35:13 os  : system memory alloc 84480 bytes
+21:35:13 os  : system memory alloc 53200 bytes
+21:35:13 os  : system memory alloc 8192 bytes
+21:35:14 tree: DIR 1, FILE 5, DATA 76
+21:35:14 /dev/shm file system initialization done!
+21:35:14 Probe dummy af driver
+21:35:14 find sensor(ov5647_csi0) on csi0
+21:35:14 Probe dummy af driver
+21:35:14 find sensor(ov5647_csi2) on csi2
+21:35:14 <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+21:35:14 <gnne> gnne_device_init done.
+21:35:14 #############SDK VERSION######################################
+21:35:14 SDK   : unknown-20261113-193050--80c4b8579873-4162ec7
+21:35:14 nncase: 2.11.0
+21:35:14 ##############################################################
+21:35:14 msh />leakcam: start: t 684 ms, heap +0 B
+21:35:14 leakcam: version 0.6+g9885a9d-dirty-202611131929
+21:35:14 leakcam: battery 4369 mV: t 686 ms, heap +0 B
+21:35:14 leakcam: clock: 1794598515 from the BL616 (was -58908915 s off)
+21:35:14 leakcam: WAKE usb: t 698 ms, heap +0 B
+21:35:14 leakcam: relay: USB relay on /dev/ttyGS0: t 699 ms, heap +0 B
+21:35:14 leakcam: job: check: t 704 ms, heap +0 B
+21:35:14 vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+21:35:14 vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+21:35:14 kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
+21:35:14 kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
+21:35:14 usb disconnect
+21:35:14 usb disconnect
+21:35:15 audio i2s set clk freq is 1024000(1024000),ret:1
+21:35:15 audio codec adc clk freq is 4096000(4096000)
+21:35:17 dump dev(0)chn(1) failed.
+21:35:17 dump dev(1)chn(1) failed.
+21:35:18 leakcam: focus: cam0 score 3.265, reference 0.000: -1 %, 0 low in a row
+21:35:18 leakcam: job: cam0 changed (stored as is): 17929 of 19602 blocks at x 0-2592 y 0-1936, max 77.6, gain 2.00, read 565 ms, compare 167 ms: t 5601 ms, heap +954368 B
+21:35:19 leakcam: focus: cam1 score 0.101, reference 0.000: -1 %, 0 low in a row
+21:35:19 leakcam: job: cam1 changed (stored as is): 1030 of 19602 blocks at x 0-2592 y 0-176, max 23.1, gain 1.03, read 564 ms, compare 170 ms: t 6449 ms, heap +954368 B
+21:35:19 leakcam: job: captured, mean 6 / 101 (got 1 1), LEDs, room 1 / 0, frames 2 / 3, exposures 1 / 1, 528.0 / 214.2 ms, LEDs 136 ms: t 6453 ms, heap +954368 B
+21:35:19 leakcam: job: done: t 6454 ms, heap +954368 B
+21:35:19 leakcam: audio: first packet 119 B, frame time 6455626 us, monotonic 6456276 us
+21:35:33 list_page
+21:35:33 level 0 [0x0327e000][0x02b2e000]
+21:35:33 level 1 [0x0312a000][0x0327c000][0x035f4000][0x02b2c000]
+21:35:33 level 2 [0x0312c000][0x03278000][0x035f0000][0x02b28000]
+21:35:33 level 3 [0x03270000][0x02b20000]
+21:35:33 level 4 [0x03130000][0x03260000][0x035e0000]
+21:35:33 level 5 [0x03240000][0x035c0000][0x02b00000]
+21:35:33 level 6 [0x03140000][0x03200000][0x03580000]
+21:35:33 level 7 [0x03180000][0x03280000][0x03500000]
+21:35:33 level 8 [0x03400000][0x03300000][0x02a00000]
+21:35:33 level 9 [0x02800000]
+21:35:33 level 10
+21:35:33 level 11 [0x02000000]
+21:35:33 level 12 [0x01000000]
+21:35:33 level 13
+21:35:33 level 14
+21:35:33 level 15
+21:35:33 level 16
+21:35:33 level 17
+21:35:33 level 18
+21:35:33 level 19
+21:35:33 level 20
+21:35:33 level 21
+21:35:33 level 22
+21:35:33 level 23
+21:35:33 level 24
+21:35:33 level 25
+21:35:33 level 26
+21:35:33 level 27
+21:35:33 level 28
+21:35:33 level 29
+21:35:33 level 30
+21:35:33 level 31
+21:35:33 level 32
+21:35:33 level 33
+21:35:33 level 34
+21:35:33 level 35
+21:35:33 level 36
+21:35:33 level 37
+21:35:33 level 38
+21:35:33 level 39
+21:35:33 level 40
+21:35:33 level 41
+21:35:33 level 42
+21:35:33 level 43
+21:35:33 level 44
+21:35:33 level 45
+21:35:33 level 46
+21:35:33 level 47
+21:35:33 level 48
+21:35:33 level 49
+21:35:33 level 50
+21:35:33 level 51
+21:35:33 free pages is 00001ffa
+21:35:33 used pages is 000007cd
+21:35:33 max used pages is 00000c9c
+21:35:33 max used pages memory is 13221888 bytes
+21:35:33 -------------------------------
+21:35:33 msh />

@@ -32,10 +32,12 @@ int job_shoot(cap_frame_fn fn, void *ctx, struct timespec *taken);
 /* job_shoot's shot, then up to `more` frames per camera as they come, until they span more_ms (a video: the LEDs on to
  * the last when lit), each to fn (y, uv NULL after the first) */
 int job_video(unsigned more, unsigned more_ms, cap_frame_fn fn, void *ctx, struct timespec *taken);
-/* the focus session (focus.c, DESIGN.md 5.3.17): camera cam alone, the LEDs on, its exposure settled once then held,
- * every frame to fn (y mapped, uv NULL) while go(ctx); waits for a check or pictures (the cameras are one user's at a
- * time) and holds them off meanwhile; 0, -1: no such camera or it failed */
-int job_focus(int cam, cap_frame_fn fn, void *ctx, bool (*go)(void *ctx));
+/* the focus session (focus.c, DESIGN.md 5.3.17): both cameras streaming at once (a switch on the phone is instant: no
+ * camera restarts), the LEDs on, their exposures settled once then held, every frame to fn while go(ctx); the luma
+ * mapped only for the camera (slot) mapped(ctx) names, -1 none (the others' y NULL: the encoder takes the frame
+ * itself); waits for a check or pictures (the cameras are one user's at a time) and holds them off meanwhile; 0, -1:
+ * no camera or one failed */
+int job_focus(cap_frame_fn fn, void *ctx, bool (*go)(void *ctx), int (*mapped)(void *ctx));
 /* camera cam's histories deleted (its focus moved: the next check stores new ones, "new") */
 void job_forget(int cam);
 /* the last shot's moment (CLOCK_REALTIME), set before the frames go to fn: for fn itself */

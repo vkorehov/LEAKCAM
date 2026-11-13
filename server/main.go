@@ -133,6 +133,9 @@ type Intervals struct {
 type Thresholds struct {
 	ProbeMV int `json:"probe_mv"`
 	Humid   int `json:"humid"`
+	// cameras the person told us to ignore (PUT /v1/devices/{id}/cameras/{cam}; DESIGN.md 5.3.18): their "changed" is
+	// no leak, their focus is not flagged. The board is not told: it goes on taking and judging their pictures
+	Ignore [Cameras]bool `json:"ignore"`
 }
 
 // Image is an upgrade on offer: its version read from its own build tag, so the file is all there is to update
@@ -601,6 +604,7 @@ func setThresholds(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mu.Lock()
+	th.Ignore = thresholds[id].Ignore // the cameras' own setting (setIgnore)
 	if th == (Thresholds{}) {
 		delete(thresholds, id)
 	} else {
@@ -615,6 +619,43 @@ func setThresholds(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("%s: thresholds probe %d mV, humidity %d %%RH", id, got.ProbeMV, got.Humid)
 	reply(w, got)
+}
+
+// setIgnore: PUT /v1/devices/{id}/cameras/{cam} {"ignore":true|false} (cam 0 or 1): the camera ignored from now on, or
+// used again (DESIGN.md 5.3.18: the person's answer to a camera that sees nothing or cannot be tuned); kept in thrFile
+func setIgnore(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	cam, err := strconv.Atoi(r.PathValue("cam"))
+	var b struct {
+		Ignore *bool `json:"ignore"`
+	}
+	if !idRe.MatchString(id) || err != nil || cam < 0 || cam >= Cameras ||
+		json.NewDecoder(http.MaxBytesReader(w, r.Body, 64)).Decode(&b) != nil || b.Ignore == nil {
+		http.Error(w, `PUT /v1/devices/<id>/cameras/<0|1> {"ignore":true|false}`, http.StatusBadRequest)
+		return
+	}
+	mu.Lock()
+	th := thresholds[id]
+	th.Ignore[cam] = *b.Ignore
+	if th == (Thresholds{}) {
+		delete(thresholds, id)
+	} else {
+		thresholds[id] = th
+	}
+	told := focusTold[id] // used again: a problem it still has is told again; ignored: no flag left
+	told[cam] = ""
+	focusTold[id] = told
+	if told == ([Cameras]string{}) {
+		delete(focusSince, id)
+	}
+	err = saveJSON(thrFile, thresholds)
+	mu.Unlock()
+	if err != nil {
+		http.Error(w, "cameras: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	log.Printf("%s: camera %d ignored: %v", id, cam+1, *b.Ignore)
+	reply(w, map[string]any{"ignore": th.Ignore})
 }
 
 func deviceThresholds(id string) Thresholds {
@@ -851,6 +892,7 @@ func main() {
 	http.HandleFunc("GET /v1/devices/{id}", device)
 	http.HandleFunc("PUT /v1/devices/{id}/intervals", setIntervals)
 	http.HandleFunc("PUT /v1/devices/{id}/thresholds", setThresholds)
+	http.HandleFunc("PUT /v1/devices/{id}/cameras/{cam}", setIgnore)
 	http.HandleFunc("GET /v1/devices/{id}/pin", pin)
 	http.HandleFunc("GET /v1/devices/{id}/crashes", deviceCrashes)
 	http.HandleFunc("DELETE /v1/devices/{id}/phones/{phone}", unregister)
@@ -859,6 +901,11 @@ func main() {
 	http.HandleFunc("POST /v1/devices/{id}/clear", clearLeak)
 	http.HandleFunc("PUT /v1/devices/{id}/wifi", putWifi)
 	http.HandleFunc("POST /v1/devices/{id}/capture", capture)
+	http.HandleFunc("POST /v1/devices/{id}/focus", askFocus) // the focus session (focus.go, DESIGN.md 5.3.17)
+	http.HandleFunc("POST /v1/focus/{id}/stream", focusStream)
+	http.HandleFunc("GET /v1/focus/{id}/live", focusLive)
+	http.HandleFunc("POST /v1/focus/{id}/cmd", focusCmd)
+	http.HandleFunc("GET /v1/focus/{id}/cmd", focusPoll)
 	http.HandleFunc("GET /v1/media/{id}", media)
 	http.HandleFunc("POST /v1/media/{id}", putMedia)
 	http.HandleFunc("GET /v1/live/{id}/{file}", liveVideo)

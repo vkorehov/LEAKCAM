@@ -1,0 +1,2900 @@
+   92.758 K230 console during the rounds
+   92.758   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 13 2026 - 06:45:17 +0000)
+   92.758   00000000: PMU Major Msg: End of CA training                                            
+   92.758   00000000: PMU Major Msg: End of initialization                                         
+   92.758   00000000: PMU Major Msg: End of read enable training                                   
+   92.758   00000000: PMU Major Msg: End of fine write leveling                                    
+   92.758   00000000: PMU Major Msg: End of read dq deskew training                                
+   92.758   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+   92.758   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+   92.758   00000000: PMU Major Msg: End of write delay center optimization                        
+   92.758   00000000: PMU Major Msg: End of read delay center optimization                         
+   92.758   00000000: PMU Major Msg: End of max read latency training                              
+   92.758   00000000: PMU Major Msg: Firmware run has completed                                    
+   92.758   dbyte0 add =9a040100 value =12
+   92.758   dbyte0 add =9a040500 value =13
+   92.758   dbyte0 add =9a040900 value =14
+   92.758   dbyte0 add =9a040d00 value =13
+   92.758   dbyte0 add =9a041100 value =14
+   92.758   dbyte0 add =9a041500 value =14
+   92.758   dbyte0 add =9a041900 value =14
+   92.758   dbyte0 add =9a041d00 value =15
+   92.758   dbyte1 add =9a044100 value =13
+   92.758   dbyte1 add =9a044500 value =13
+   92.758   dbyte1 add =9a044900 value =15
+   92.758   dbyte1 add =9a044d00 value =13
+   92.758   dbyte1 add =9a045100 value =13
+   92.758   dbyte1 add =9a045500 value =13
+   92.758   dbyte1 add =9a045900 value =14
+   92.758   dbyte1 add =9a045d00 value =13
+   92.758   dbyte2 add =9a048100 value =37
+   92.758   dbyte2 add =9a048500 value =37
+   92.758   dbyte2 add =9a048900 value =37
+   92.758   dbyte2 add =9a048d00 value =37
+   92.758   dbyte2 add =9a049100 value =37
+   92.758   dbyte2 add =9a049500 value =37
+   92.758   dbyte2 add =9a049900 value =37
+   92.758   dbyte2 add =9a049d00 value =37
+   92.758   dbyte3 add =9a04c100 value =37
+   92.758   dbyte3 add =9a04c500 value =37
+   92.758   dbyte3 add =9a04c900 value =37
+   92.758   dbyte3 add =9a04cd00 value =37
+   92.758   dbyte3 add =9a04d100 value =37
+   92.758   dbyte3 add =9a04d500 value =37
+   92.758   dbyte3 add =9a04d900 value =37
+   92.758   dbyte3 add =9a04dd00 value =37
+   92.758   spi_nand spi-flash@0: Winbond SPI NAND was found.
+   92.758   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+   92.758   OpenSBI v0.9
+   92.758   heap: [0x005f94c0 - 0x00ef94c0], size 9216 KB
+   92.758   page: [0x00ef94c8 - 0x036fec00], size 40981 KB
+   92.758    \ | /
+   92.758   - RT -     Thread Smart Operating System
+   92.758    / | \     5.0.0 build Nov 13 2026
+   92.758    2006 - 2020 Copyright by rt-thread team
+   92.758   rtc driver register OK
+   92.758   lwIP-2.1.2 initialized!
+   92.758   [I/I2C] I2C bus [i2c0] registered
+   92.758   [I/I2C] I2C bus [i2c4] registered
+   92.758   [I/board.sdio] boot mode 0 does not use an SD/MMC controller
+   92.758   �link_mux: console and /dev/link share uart1
+   92.758   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+   92.758   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+   92.758   os  : system memory alloc 320 bytes
+   92.758   flsh: UFFS consume spare data size 9
+   92.758   os  : system memory alloc 84480 bytes
+   92.758   os  : system memory alloc 53200 bytes
+   92.758   os  : system memory alloc 2048 bytes
+   92.758   tree: DIR 0, FILE 5, DATA 4
+   92.758   os  : system memory alloc 320 bytes
+   92.758   flsh: UFFS consume spare data size 9
+   92.758   os  : system memory alloc 84480 bytes
+   92.758   os  : system memory alloc 53200 bytes
+   92.758   os  : system memory alloc 8192 bytes
+   92.758   tree: DIR 1, FILE 5, DATA 76
+   92.758   /dev/shm file system initialization done!
+   92.758   Probe dummy af driver
+   92.758   find sensor(ov5647_csi0) on csi0
+   92.758   Probe dummy af driver
+   92.758   find sensor(ov5647_csi2) on csi2
+   92.758   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+   92.758   <gnne> gnne_device_init done.
+   92.758   #############SDK VERSION######################################
+   92.758   SDK   : unknown-20261113-064603--a94ac0b8718b-4162ec7
+   92.758   nncase: 2.11.0
+   92.758   ##############################################################
+   92.758   msh />leakcam: start: t 682 ms, heap +0 B
+   92.758   leakcam: version 0.6+g9885a9d-dirty-202611130645
+   92.758   leakcam: battery 4367 mV: t 683 ms, heap +0 B
+   92.758   9*08
+   92.758   9*08: command not found.
+   92.758   msh />leakcam: clock: 1794552949 from the BL616 (was -58863349 s off)
+   92.758   usb disconnect
+   92.758   usb disconnect
+   92.758   leakcam: WAKE usb: t 985 ms, heap +0 B
+   92.758   leakcam: relay: USB relay on /dev/ttyGS0: t 986 ms, heap +0 B
+   92.758   leakcam: job: check: t 991 ms, heap +0 B
+   92.758   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+   92.758   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+   92.758   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
+   92.758   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
+   92.758   audio i2s set clk freq is 1024000(1024000),ret:1
+   92.758   audio codec adc clk freq is 4096000(4096000)
+   92.758   dump dev(0)chn(1) failed.
+   92.758   dump dev(1)chn(1) failed.
+   92.758   leakcam: focus: cam0 score 0.201, reference 0.000: -1 %, 0 low in a row
+   92.758   leakcam: job: cam0 changed (stored as is): 5952 of 19602 blocks at x 0-2592 y 0-1936, max 201.9, gain 0.75, read 563 ms, compare 179 ms: t 5797 ms, heap +954368 B
+   92.758   leakcam: focus: cam1 score 0.033, reference 0.000: -1 %, 0 low in a row
+   92.758   leakcam: job: cam1 changed (stored as is): 8673 of 19602 blocks at x 0-2592 y 0-1936, max 144.7, gain 0.61, read 568 ms, compare 175 ms: t 6552 ms, heap +954368 B
+   92.758   leakcam: job: captured, mean 93 / 114 (got 1 1), LEDs, room 76 / 11, frames 2 / 3, exposures 1 / 1, 127.6 / 25.8 ms, LEDs 137 ms: t 6556 ms, heap +954368 B
+   92.758   leakcam: job: done: t 6557 ms, heap +954368 B
+   92.758   leakcam: audio: first packet 119 B, frame time 6741438 us, monotonic 6742075 us
+   92.758   leakcam: media: leak 7C3E8262B149-1794552956, 4 pictures, 2 cameras: t 8227 ms, heap +954368 B
+   92.758   [I/bl616.sdio] BL616 SDU ready: io port 0x10000, download 1536 B, ports 0/0
+   92.758   [I/bl616.sdio] bound SDIO 424c:0606
+   92.758   leakcam: media: Wi-Fi bridge bound: t 8370 ms, heap +954368 B
+   92.758   dump dev(0)chn(1) failed.
+   92.758   [I/bl616.msg] netdev: started, credit 23
+   92.758   [I/WLAN.dev] WLAN device sta registered as phy0-sta
+   92.758   [I/WLAN.dev] wlan init success
+   92.758   [I/WLAN.lwip] eth device init ok name:wlan0
+   92.758   [I/bl616.wifi] station 7c:3e:82:62:b1:49
+   92.758   [I/bl616.msg] vchan: started, credit 3
+   92.758   [I/bl616.wifi] link 0 -> 1 (, channel 0, 0 dBm)
+   92.758   dump dev(1)chn(1) failed.
+   92.758   [I/bl616.wifi] link 1 -> 2 (VK, channel 11, 0 dBm)
+   92.758   [I/WLAN.mgnt] wifi connect success ssid:
+   92.758   [I/WLAN.lwip] Got IP address : 192.168.1.223
+   92.758   leakcam: job: colour LEDs, room 73 / 11, frames 2 / 3, exposures 1 / 1, 127.6 / 25.8 ms, LEDs 135 ms
+   92.758   leakcam: media: round 1 at 144 ms: cameras 0x3, 2 JPEGs (147046 + 119536 B) at 538 ms: t 8765 ms, heap +1224704 B
+   92.758   dump dev(0)chn(1) failed.
+   92.758   dump dev(1)chn(1) failed.
+   92.758   leakcam: job: colour LEDs, room 79 / 11, frames 2 / 3, exposures 1 / 1, 127.6 / 25.8 ms, LEDs 135 ms
+   92.758   leakcam: media: round 2 at 2000 ms: cameras 0x3, 2 JPEGs (134475 + 119056 B) at 2389 ms: t 10616 ms, heap +1482752 B
+   92.758   leakcam: media: p1 147046 B: uploaded 200 at 2680 ms: t 10907 ms, heap +1482752 B
+   92.758   leakcam: media: p2 119536 B: uploaded 200 at 2735 ms: t 10962 ms, heap +1482752 B
+   92.758   leakcam: media: p3 134475 B: uploaded 200 at 2844 ms: t 11070 ms, heap +1482752 B
+   92.758   leakcam: media: p4 119056 B: uploaded 200 at 2928 ms: t 11154 ms, heap +1482752 B
+   92.758   ch 0: 4 pictures encoded. Average FrameRate = 2 Fps
+   92.758   ch 0: total used pages 3022
+   92.758   leakcam: media: video 225 frames per camera at 15 fps, 10000 kbit/s: t 11481 ms, heap +1482752 B
+   92.758   dump dev(0)chn(1) failed.
+   92.758   dump dev(1)chn(1) failed.
+   92.758   leakcam: media: v1: first picture time 11691793 us, monotonic 11814566 us
+   92.758   leakcam: media: v2: first picture time 11772237 us, monotonic 11858442 us
+   92.758   msh />
+   92.758   msh />
+   92.758   msh />
+   92.758   msh />U-Boot SPL 2022.00ay 9
+   92.758   U-Boot: command not found.
+   92.758   msh />
+   92.758   msh />Layer initialize success, lwIP 2.1.2.
+   92.758   Layer: command not found.
+   92.758   msh />
+   92.758   msh />os  : system memory alloc 320 bytes
+   92.758   os: command not found.
+   92.758   msh />
+   92.758   msh />flsh: UFFS consume spare data size 9
+   92.758   flsh:: command not found.
+   92.758   msh />
+   92.758   msh />os  : system memory alloc 84480 bytes
+   92.758   os: command not found.
+   92.758   msh />
+   92.758   msh />os  : system memory alloc 53200 bytes
+   92.758   os: command not found.
+   92.758   msh />
+   92.758   msh />os  : system memory alloc 2048 bytes
+   92.758   os: command not found.
+   92.758   msh />
+   92.758   msh />tree: DIR 0, FILE 5, DATA 4
+   92.758   tree:: command not found.
+   92.758   msh />
+   92.758   msh />os  : system memory alloc 320 bytes
+   92.758   os: command not found.
+   92.758   msh />
+   92.758   msh />flsh: UFFS consume spare data size 9
+   92.758   flsh:: command not found.
+   92.758   msh />
+   92.758   msh />os  : system memory alloc 84480 bytes
+   92.758   os: command not found.
+   92.758   msh />
+   92.758   msh />os  : system memory alloc 53200 bytes
+   92.758   os: command not found.
+   92.758   msh />
+   92.758   msh />os  : system memory alloc 8192 bytes
+   92.758   os: command not found.
+   92.758   msh />
+   92.758   msh />tree: DIR 1, FILE 5, DATA 76
+   92.758   tree:: command not found.
+   92.758   msh />
+   92.758   msh />/dev/shm file system initialization done!
+   92.758   /dev/shm: command not found.
+   92.758   msh />
+   92.758   msh />Probe dummy af driver
+   92.758   Probe: command not found.
+   92.758   msh />
+   92.758   msh />find sensor(ov5647_csi0) on csi0
+   92.758   find: command not found.
+   92.758   msh />
+   92.758   msh />Probe dummy af driver
+   92.758   Probe: command not found.
+   92.758   msh />
+   92.758   msh />find sensor(ov5647_csi2) on csi2
+   92.758   find: command not found.
+   92.758   msh />
+   92.758   msh /><3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+   92.758   <3>[11]: command not found.
+   92.758   msh />
+   92.758   msh /><gnne> gnne_device_init done.
+   92.758   <gnne>: command not found.
+   92.758   msh />
+   92.758   msh />
+   92.758   msh />
+   92.758   msh />
+   92.758   msh />
+   92.758   msh />
+   92.758   msh />#############SDK VERSION######################################
+   92.758   #############SDK: command not found.
+   92.758   msh />
+   92.758   msh />SDK   : unknown-20261113-064603--a94ac0b8718b-4162ec7
+   92.758   SDK: command not found.
+   92.758   msh />
+   92.758   msh />nncase: 2.11.0
+   92.758   nncase:: command not found.
+   92.758   msh />
+   92.758   msh />##############################################################
+   92.758   ##############################################################: command not found.
+   92.758   msh />
+   92.758   msh />msh />leakcam: start: t 682 ms, heap +0 B
+   92.758   msh: command not found.
+   92.758   msh />
+   92.758   msh />leakcam: version 0.6+g9885a9d-dirty-202611130645
+   92.758   leakcam:: command not found.
+   92.758   msh />
+   92.758   msh />leakcam: battery 4367 mV: t 683 ms, heap +0 B
+   92.758   leakcam:: command not found.
+   92.758   msh />
+   92.758   msh />9*08
+   92.758   9*08: command not found.
+   92.758   msh />
+   92.758   msh />9*08: command not found.
+   92.758   9*08:: command not found.
+   92.758   msh />
+   92.758   msh />msh />leakcam: clock: 1794552949 from the BL616 (was -58863349 s off)
+   92.758   msh: command not found.
+   92.758   msh />
+   92.758   msh />usb disconnect
+   92.758   usb: command not found.
+   92.758   msh />
+   92.758   msh />usb disconnect
+   92.758   usb: command not found.
+   92.758   msh />
+   92.758   msh />leakcam: WAKE usb: t 985 ms, heap +0 B
+   92.758   leakcam:: command not found.
+   92.758   msh />
+   92.758   msh />leakcam: relay: USB relay on /dev/ttyGS0: t 986 ms, hvicap: dev 0 video: 224 frames over 14932 ms of pts = 14.9 fps, sequence 158..382
+   92.758   vicap: dev 1 video: 224 frames over 14865 ms of pts = 15.0 fps, sequence 158..381
+   92.758   leakcam: job: colour LEDs, room 79 / 10, frames 2 / 3, exposures 1 / 1, 127.6 / 25.8 ms, LEDs 134 ms
+   92.758   ch 1: 225 pictures encoded. Average FrameRate = 15 Fps
+   92.758   ch 1: total used pages 3075
+   92.758   leakcam: media: v1: 225 frames (15 IDR), 0 dropped in 0 gaps, audio 376 packets (0 lost), in 15341 ms, 18049549 B = 9412 kbit/s, 225 sent, uploaded 200 at 20600 ms; encode 6753 ms, between frames 8257 ms, send 14598 ms, backlog max 1138825 B: t 28827 ms, heap +3289088 B
+   92.758   ch 2: 225 pictures encoded. Average FrameRate = 15 Fps
+   92.758   ch 2: total used pages 3075
+   92.758   leakcam: media: v2: 225 frames (15 IDR), 0 dropped in 0 gaps, audio 375 packets (0 lost), in 15341 ms, 18343631 B = 9565 kbit/s, 225 sent, uploaded 200 at 20949 ms; encode 6867 ms, between frames 8133 ms, send 14907 ms, backlog max 1141619 B: t 29175 ms, heap +3289088 B
+   92.758   leakcam: media: done, 6 uploaded, 0 failed, 0 skipped: t 29177 ms, heap +3289088 B
+   92.758   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 13 2026 - 06:45:17 +0000)
+   92.758   00000000: PMU Major Msg: End of CA training                                            
+   92.758   00000000: PMU Major Msg: End of initialization                                         
+   92.758   00000000: PMU Major Msg: End of read enable training                                   
+   92.758   00000000: PMU Major Msg: End of fine write leveling                                    
+   92.758   00000000: PMU Major Msg: End of read dq deskew training                                
+   92.758   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+   92.758   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+   92.758   00000000: PMU Major Msg: End of write delay center optimization                        
+   92.758   00000000: PMU Major Msg: End of read delay center optimization                         
+   92.758   00000000: PMU Major Msg: End of max read latency training                              
+   92.758   00000000: PMU Major Msg: Firmware run has completed                                    
+   92.758   dbyte0 add =9a040100 value =12
+   92.758   dbyte0 add =9a040500 value =13
+   92.758   dbyte0 add =9a040900 value =14
+   92.758   dbyte0 add =9a040d00 value =13
+   92.758   dbyte0 add =9a041100 value =13
+   92.758   dbyte0 add =9a041500 value =13
+   92.758   dbyte0 add =9a041900 value =13
+   92.758   dbyte0 add =9a041d00 value =14
+   92.758   dbyte1 add =9a044100 value =14
+   92.758   dbyte1 add =9a044500 value =13
+   92.758   dbyte1 add =9a044900 value =15
+   92.758   dbyte1 add =9a044d00 value =13
+   92.758   dbyte1 add =9a045100 value =13
+   92.758   dbyte1 add =9a045500 value =14
+   92.758   dbyte1 add =9a045900 value =13
+   92.758   dbyte1 add =9a045d00 value =13
+   92.758   dbyte2 add =9a048100 value =37
+   92.758   dbyte2 add =9a048500 value =37
+   92.758   dbyte2 add =9a048900 value =37
+   92.758   dbyte2 add =9a048d00 value =37
+   92.758   dbyte2 add =9a049100 value =37
+   92.758   dbyte2 add =9a049500 value =37
+   92.758   dbyte2 add =9a049900 value =37
+   92.758   dbyte2 add =9a049d00 value =37
+   92.758   dbyte3 add =9a04c100 value =37
+   92.758   dbyte3 add =9a04c500 value =37
+   92.758   dbyte3 add =9a04c900 value =37
+   92.758   dbyte3 add =9a04cd00 value =37
+   92.758   dbyte3 add =9a04d100 value =37
+   92.758   dbyte3 add =9a04d500 value =37
+   92.758   dbyte3 add =9a04d900 value =37
+   92.758   dbyte3 add =9a04dd00 value =37
+   92.758   spi_nand spi-flash@0: Winbond SPI NAND was found.
+   92.758   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+   92.758   OpenSBI v0.9
+   92.758   heap: [0x005f94c0 - 0x00ef94c0], size 9216 KB
+   92.758   page: [0x00ef94c8 - 0x036fec00], size 40981 KB
+   92.758    \ | /
+   92.758   - RT -     Thread Smart Operating System
+   92.758    / | \     5.0.0 build Nov 13 2026
+   92.758    2006 - 2020 Copyright by rt-thread team
+   92.758   rtc driver register OK
+   92.758   lwIP-2.1.2 initialized!
+   92.758   [I/I2C] I2C bus [i2c0] registered
+   92.758   [I/I2C] I2C bus [i2c4] registered
+   92.758   [I/board.sdio] boot mode 0 does not use an SD/MMC controller�link_mux: console and /dev/link share uart1
+   92.758   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+   92.758   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+   92.758   os  : system memory alloc 320 bytes
+   92.758   flsh: UFFS consume spare data size 9
+   92.758   os  : system memory alloc 84480 bytes
+   92.758   os  : system memory alloc 53200 bytes
+   92.758   os  : system memory alloc 2048 bytes
+   92.758   tree: DIR 0, FILE 5, DATA 4
+   92.758   os  : system memory alloc 320 bytes
+   92.758   flsh: UFFS consume spare data size 9
+   92.758   os  : system memory alloc 84480 bytes
+   92.758   os  : system memory alloc 53200 bytes
+   92.758   os  : system memory alloc 8192 bytes
+   92.758   tree: DIR 1, FILE 5, DATA 76
+   92.758   /dev/shm file system initialization done!
+   92.758   Probe dummy af driver
+   92.758   find sensor(ov5647_csi0) on csi0
+   92.758   Probe dummy af driver
+   92.758   find sensor(ov5647_csi2) on csi2
+   92.758   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+   92.758   <gnne> gnne_device_init done.
+   92.758   #############SDK VERSION######################################
+   92.758   SDK   : unknown-20261113-064603--a94ac0b8718b-4162ec7
+   92.758   nncase: 2.11.0
+   92.758   ##############################################################
+   92.758   msh />leakcam: start: t 687 ms, heap +0 B
+   92.758   leakcam: version 0.6+g9885a9d-dirty-202611130645
+   92.758   leakcam: battery 4366 mV: t 688 ms, heap +0 B
+   92.758   40
+   92.758   40: command not found.
+   92.758   msh />leakcam: clock: 1794552979 from the BL616 (was -58863379 s off)
+   92.758   usb disconnect
+   92.758   usb disconnect
+   92.758   leakcam: WAKE usb: t 991 ms, heap +0 B
+   92.758   leakcam: relay: USB relay on /dev/ttyGS0: t 991 ms, heap +0 B
+   92.758   leakcam: job: check: t 996 ms, heap +0 B
+   92.758   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+   92.758   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+   92.758   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
+   92.758   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
+   92.758   audio i2s set clk freq is 1024000(1024000),ret:1
+   92.758   audio codec adc clk freq is 4096000(4096000)
+   92.758   dump dev(0)chn(1) failed.
+   92.758   dump dev(1)chn(1) failed.
+   92.758   leakcam: focus: cam0 score 0.367, reference 0.000: -1 %, 0 low in a row
+   92.758   leakcam: job: cam0 changed (stored as is): 5177 of 19602 blocks at x 0-2592 y 0-1936, max 198.4, gain 0.88, read 562 ms, compare 179 ms: t 5801 ms, heap +954368 B
+   92.758   leakcam: focus: cam1 score 0.038, reference 0.000: -1 %, 0 low in a row
+   92.758   leakcam: job: cam1 changed (stored as is): 8794 of 19602 blocks at x 0-2592 y 0-1936, max 141.4, gain 0.63, read 569 ms, compare 175 ms: t 6557 ms, heap +954368 B
+   92.758   leakcam: job: captured, mean 79 / 109 (got 1 1), LEDs, room 74 / 10, frames 2 / 3, exposures 1 / 1, 127.6 / 25.8 ms, LEDs 137 ms: t 6561 ms, heap +954368 B
+   92.758   leakcam: job: done: t 6562 ms, heap +954368 B
+   92.758   leakcam: audio: first packet 119 B, frame time 6746244 us, monotonic 6746884 us
+   92.758   list_page
+   92.758   level 0 [0x03280000][0x02b30000]
+   92.758   level 1 [0x03282000]
+   92.758   level 2 [0x0312c000][0x03284000]
+   92.758   level 3 [0x03288000][0x035f0000]
+   92.758   level 4 [0x03130000][0x03290000][0x035e0000][0x02b20000]
+   92.758   level 5 [0x032a0000][0x035c0000][0x02b00000]
+   92.758   level 6 [0x03140000][0x032c0000][0x03580000]
+   92.758   level 7 [0x03180000][0x03200000][0x03500000]
+   92.758   level 8 [0x03400000][0x03300000][0x02a00000]
+   92.758   level 9 [0x02800000]
+   92.758   level 10 
+   92.758   level 11 [0x02000000]
+   92.758   level 12 [0x01000000]
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 00001ffc
+   92.758   used pages is 000007cc
+   92.758   max used pages is 00000c9b
+   92.758   max used pages memory is 13217792 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8426880       1535104
+   92.758   msh />
+   92.758   msh />leakcam: media: leak 7C3E8262B149-1794552985, 4 pictures, 2 cameras: t 7370 ms, heap +954368 B
+   92.758   [I/bl616.sdio] BL616 SDU ready: io port 0x10000, download 1536 B, ports 0/0
+   92.758   [I/bl616.sdio] bound SDIO 424c:0606
+   92.758   leakcam: media: Wi-Fi bridge bound: t 7515 ms, heap +954368 B
+   92.758   dump dev(0)chn(1) failed.
+   92.758   [I/bl616.msg] netdev: started, credit 23
+   92.758   [I/WLAN.dev] WLAN device sta registered as phy0-sta
+   92.758   [I/WLAN.dev] wlan init success
+   92.758   [I/WLAN.lwip] eth device init ok name:wlan0
+   92.758   [I/bl616.wifi] station 7c:3e:82:62:b1:49
+   92.758   dump dev(1)chn(1) failed.
+   92.758   [I/bl616.msg] vchan: started, credit 3
+   92.758   [I/bl616.wifi] link 0 -> 1 (, channel 0, 0 dBm)
+   92.758   [I/bl616.wifi] link 1 -> 2 (VK, channel 11, 0 dBm)
+   92.758   [I/WLAN.mgnt] wifi connect success ssid:
+   92.758   [I/WLAN.lwip] Got IP address : 192.168.1.223
+   92.758   leakcam: job: colour LEDs, room 74 / 10, frames 2 / 3, exposures 1 / 1, 127.6 / 25.8 ms, LEDs 134 ms
+   92.758   leakcam: media: round 1 at 145 ms: cameras 0x3, 2 JPEGs (135644 + 118633 B) at 532 ms: t 7903 ms, heap +1212416 B
+   92.758   list_page
+   92.758   level 0 [0x03280000][0x02b30000]
+   92.758   level 1 [0x023ec000]
+   92.758   level 2 [0x023e8000]
+   92.758   level 3 [0x023e0000]
+   92.758   level 4 
+   92.758   level 5 [0x023c0000]
+   92.758   level 6 [0x02380000]
+   92.758   level 7 [0x02300000]
+   92.758   level 8 [0x02200000]
+   92.758   level 9 [0x02000000]
+   92.758   level 10 
+   92.758   level 11 
+   92.758   level 12 [0x01000000]
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 000013f0
+   92.758   used pages is 000013d8
+   92.758   max used pages is 000013da
+   92.758   max used pages memory is 20815872 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8426880       1255680
+   92.758   msh />
+   92.758   msh />dump dev(0)chn(1) failed.
+   92.758   dump dev(1)chn(1) failed.
+   92.758   leakcam: job: colour LEDs, room 74 / 9, frames 2 / 3, exposures 1 / 1, 127.6 / 25.8 ms, LEDs 135 ms
+   92.758   leakcam: media: round 2 at 2003 ms: cameras 0x3, 2 JPEGs (135897 + 118539 B) at 2384 ms: t 9755 ms, heap +1470464 B
+   92.758   leakcam: media: p1 135644 B: uploaded 200 at 2643 ms: t 10012 ms, heap +1470464 B
+   92.758   leakcam: media: p2 118633 B: uploaded 200 at 2744 ms: t 10113 ms, heap +1470464 B
+   92.758   list_page
+   92.758   level 0 [0x03280000][0x02b30000][0x023ac000]
+   92.758   level 1 
+   92.758   level 2 [0x023a8000]
+   92.758   level 3 [0x023a0000]
+   92.758   level 4 
+   92.758   level 5 [0x02380000]
+   92.758   level 6 
+   92.758   level 7 [0x02300000]
+   92.758   level 8 [0x02200000]
+   92.758   level 9 [0x02000000]
+   92.758   level 10 
+   92.758   level 11 
+   92.758   level 12 [0x01000000]
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 000013af
+   92.758   used pages is 00001419
+   92.758   max used pages is 0000141b
+   92.758   max used pages memory is 21082112 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8426880       1238400
+   92.758   msh />
+   92.758   msh />leakcam: media: p3 135897 B: uploaded 200 at 2843 ms: t 10213 ms, heap +1470464 B
+   92.758   leakcam: media: p4 118539 B: uploaded 200 at 2922 ms: t 10292 ms, heap +1470464 B
+   92.758   ch 0: 4 pictures encoded. Average FrameRate = 2 Fps
+   92.758   ch 0: total used pages 3022
+   92.758   leakcam: media: video 225 frames per camera at 15 fps, 10000 kbit/s: t 10633 ms, heap +1470464 B
+   92.758   dump dev(0)chn(1) failed.
+   92.758   dump dev(1)chn(1) failed.
+   92.758   leakcam: media: v1: first picture time 10896651 us, monotonic 11019289 us
+   92.758   leakcam: media: v2: first picture time 10977088 us, monotonic 11063236 us
+   92.758   list_page
+   92.758   level 0 
+   92.758   level 1 
+   92.758   level 2 
+   92.758   level 3 
+   92.758   level 4 [0x01720000]
+   92.758   level 5 [0x01700000]
+   92.758   level 6 
+   92.758   level 7 
+   92.758   level 8 [0x01600000]
+   92.758   level 9 [0x01400000]
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 00000730
+   92.758   used pages is 00002098
+   92.758   max used pages is 00002098
+   92.758   max used pages memory is 34177024 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8582144       873344
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 
+   92.758   level 1 [0x016a8000]
+   92.758   level 2 
+   92.758   level 3 [0x016a0000]
+   92.758   level 4 
+   92.758   level 5 [0x016c0000][0x01700000]
+   92.758   level 6 
+   92.758   level 7 [0x01600000]
+   92.758   level 8 
+   92.758   level 9 [0x01400000]
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 000006ca
+   92.758   used pages is 000020fe
+   92.758   max used pages is 0000212e
+   92.758   max used pages memory is 34791424 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8740672       706368
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 [0x0163d000][0x015ea000]
+   92.758   level 1 [0x0163e000][0x016a8000][0x015e8000]
+   92.758   level 2 
+   92.758   level 3 [0x016a0000][0x015e0000]
+   92.758   level 4 
+   92.758   level 5 [0x016c0000][0x01700000][0x015c0000]
+   92.758   level 6 [0x01640000][0x01580000]
+   92.758   level 7 [0x01500000]
+   92.758   level 8 [0x01400000]
+   92.758   level 9 
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 00000678
+   92.758   used pages is 00002150
+   92.758   max used pages is 000021dd
+   92.758   max used pages memory is 35508224 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8741568       695936
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 
+   92.758   level 1 [0x016a8000]
+   92.758   level 2 
+   92.758   level 3 [0x016a0000]
+   92.758   level 4 
+   92.758   level 5 [0x016c0000][0x01700000]
+   92.758   level 6 
+   92.758   level 7 [0x01600000]
+   92.758   level 8 
+   92.758   level 9 [0x01400000]
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 000006ca
+   92.758   used pages is 000020fe
+   92.758   max used pages is 000021dd
+   92.758   max used pages memory is 35508224 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8741568       746112
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 
+   92.758   level 1 [0x016a8000]
+   92.758   level 2 
+   92.758   level 3 [0x016a0000]
+   92.758   level 4 
+   92.758   level 5 [0x016c0000][0x01700000]
+   92.758   level 6 
+   92.758   level 7 [0x01600000]
+   92.758   level 8 
+   92.758   level 9 [0x01400000]
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 000006ca
+   92.758   used pages is 000020fe
+   92.758   max used pages is 000021dd
+   92.758   max used pages memory is 35508224 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8742144       698048
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 
+   92.758   level 1 [0x016a8000]
+   92.758   level 2 
+   92.758   level 3 [0x016a0000]
+   92.758   level 4 
+   92.758   level 5 [0x016c0000][0x01700000]
+   92.758   level 6 
+   92.758   level 7 [0x01600000]
+   92.758   level 8 
+   92.758   level 9 [0x01400000]
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 000006ca
+   92.758   used pages is 000020fe
+   92.758   max used pages is 000021dd
+   92.758   max used pages memory is 35508224 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8742144       779392
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 
+   92.758   level 1 [0x01618000]
+   92.758   level 2 
+   92.758   level 3 [0x01610000]
+   92.758   level 4 [0x01660000]
+   92.758   level 5 [0x01620000]
+   92.758   level 6 
+   92.758   level 7 [0x01500000]
+   92.758   level 8 [0x01400000]
+   92.758   level 9 
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 000005ba
+   92.758   used pages is 0000220e
+   92.758   max used pages is 00002240
+   92.758   max used pages memory is 35913728 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8744576       693824
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 [0x014b0000][0x01524000][0x014eb000][0x0146c000]
+   92.758   level 1 
+   92.758   level 2 [0x0150c000][0x01520000][0x014ec000][0x01468000]
+   92.758   level 3 [0x01460000]
+   92.758   level 4 [0x01510000][0x014a0000][0x014f0000]
+   92.758   level 5 [0x01440000]
+   92.758   level 6 [0x01400000]
+   92.758   level 7 
+   92.758   level 8 
+   92.758   level 9 
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 000004ac
+   92.758   used pages is 0000231c
+   92.758   max used pages is 0000235b
+   92.758   max used pages memory is 37072896 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8748544       720640
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 
+   92.758   level 1 [0x01218000]
+   92.758   level 2 
+   92.758   level 3 [0x01210000]
+   92.758   level 4 [0x01200000]
+   92.758   level 5 
+   92.758   level 6 
+   92.758   level 7 
+   92.758   level 8 
+   92.758   level 9 [0x01000000]
+   92.758   level 10 
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 0000021a
+   92.758   used pages is 000025ae
+   92.758   max used pages is 0000262c
+   92.758   max used pages memory is 40026112 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8756288       681600
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 
+   92.758   level 1 [0x01218000]
+   92.758   level 2 
+   92.758   level 3 [0x01210000]
+   92.758   level 4 [0x01200000]
+   92.758   level 5 
+   92.758   level 6 
+   92.758   level 7 
+   92.758   level 8 
+   92.758   level 9 [0x01000000]
+   92.758   level 10 
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 0000021a
+   92.758   used pages is 000025ae
+   92.758   max used pages is 0000262c
+   92.758   max used pages memory is 40026112 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8756288       693312
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 [0x01421000][0x01478000][0x01431000][0x0142e000][0x014fe000][0x0146d000][0x011da000]
+   92.758   level 1 [0x01422000][0x0142c000][0x01432000][0x014fc000][0x0149a000][0x01218000][0x0146e000][0x011d8000][0x01458000]
+   92.758   level 2 [0x01424000][0x01428000][0x01434000][0x014f8000][0x0149c000][0x01508000]
+   92.758   level 3 [0x01438000][0x014f0000][0x01450000]
+   92.758   level 4 [0x01440000]
+   92.758   level 5 
+   92.758   level 6 [0x01180000]
+   92.758   level 7 [0x01100000]
+   92.758   level 8 [0x01000000]
+   92.758   level 9 
+   92.758   level 10 
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 00000219
+   92.758   used pages is 000025af
+   92.758   max used pages is 0000262c
+   92.758   max used pages memory is 40026112 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8756288       743936
+   92.758   msh />
+   92.758   msh />vicap: dev 0 video: 224 frames over 14932 ms of pts = 14.9 fps, sequence 146..370
+   92.758   vicap: dev 1 video: 224 frames over 14865 ms of pts = 15.0 fps, sequence 146..369
+   92.758   leakcam: job: colour LEDs, room 74 / 9, frames 2 / 3, exposures 1 / 1, 127.6 / 25.8 ms, LEDs 134 ms
+   92.758   list_page
+   92.758   level 0 [0x01421000][0x01478000][0x01431000][0x0142e000][0x014fe000][0x0146d000]
+   92.758   level 1 [0x01422000][0x0142c000][0x01432000][0x014fc000][0x01218000][0x0146e000][0x01458000]
+   92.758   level 2 [0x01424000][0x01428000][0x01434000][0x014f8000][0x01508000]
+   92.758   level 3 [0x011d8000][0x01438000][0x014f0000][0x01450000]
+   92.758   level 4 [0x01440000]
+   92.758   level 5 [0x011e0000][0x01480000]
+   92.758   level 6 [0x01180000]
+   92.758   level 7 [0x01100000]
+   92.758   level 8 [0x01000000]
+   92.758   level 9 
+   92.758   level 10 
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 00000258
+   92.758   used pages is 00002570
+   92.758   max used pages is 0000262c
+   92.758   max used pages memory is 40026112 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8756288       683008
+   92.758   msh />
+   92.758   msh />ch 1: 225 pictures encoded. Average FrameRate = 15 Fps
+   92.758   ch 1: total used pages 3075
+   92.758   leakcam: media: v1: 197 frames (14 IDR), 28 dropped in 1 gaps, audio 375 packets (0 lost), in 15399 ms, 16192607 B = 8412 kbit/s, 197 sent, uploaded 200 at 20223 ms; encode 6740 ms, between frames 8271 ms, send 14274 ms, backlog max 2588359 B: t 27594 ms, heap +6025216 B
+   92.758   ch 2: 225 pictures encoded. Average FrameRate = 15 Fps
+   92.758   list_page
+   92.758   level 0 [0x023a6000][0x03282000][0x02433000][0x02430000][0x03289000][0x023ac000][0x02b30000][0x03280000][0x0242f000][0x0240c000][0x0240b000][0x01431000][0x0142e000][0x014fe000][0x0146d000]
+   92.758   level 1 [0x023a4000][0x0328a000][0x023ca000][0x0142c000][0x01432000][0x014fc000][0x01218000][0x0146e000]
+   92.758   level 2 [0x02434000][0x023a0000][0x0328c000][0x023a8000][0x0312c000][0x03284000][0x01428000][0x01434000][0x014f8000][0x01508000]
+   92.758   level 3 [0x02438000][0x035f0000][0x01500000][0x01210000][0x01420000][0x01438000][0x014f0000]
+   92.758   level 4 [0x02b20000][0x02930000][0x03130000][0x03290000][0x035e0000][0x01470000][0x01200000][0x013f0000]
+   92.758   level 5 [0x035c0000][0x02380000][0x02b00000][0x032a0000][0x01440000][0x01400000][0x01480000]
+   92.758   level 6 [0x03140000][0x032c0000][0x03580000][0x02440000][0x02940000]
+   92.758   level 7 [0x02980000][0x02300000][0x03180000][0x03200000][0x03500000][0x02480000]
+   92.758   level 8 [0x02200000][0x03400000][0x03300000][0x02a00000][0x02500000]
+   92.758   level 9 [0x02600000][0x01000000]
+   92.758   level 10 
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 00000f1f
+   92.758   used pages is 000018a9
+   92.758   max used pages is 0000262c
+   92.758   max used pages memory is 40026112 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8756288       1280704
+   92.758   msh />
+   92.758   msh />ch 2: total used pages 3075
+   92.758   leakcam: media: v2: 194 frames (13 IDR), 31 dropped in 1 gaps, audio 374 packets (0 lost), in 15399 ms, 15801251 B = 8208 kbit/s, 194 sent, uploaded 200 at 20560 ms; encode 6870 ms, between frames 8131 ms, send 14059 ms, backlog max 2581144 B: t 27930 ms, heap +6025216 B
+   92.758   leakcam: media: done, 6 uploaded, 0 failed, 0 skipped: t 27932 ms, heap +6025216 B
+   92.758   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 13 2026 - 06:45:17 +0000)
+   92.758   00000000: PMU Major Msg: End of CA training                                            
+   92.758   00000000: PMU Major Msg: End of initialization                                         
+   92.758   00000000: PMU Major Msg: End of read enable training                                   
+   92.758   00000000: PMU Major Msg: End of fine write leveling                                    
+   92.758   00000000: PMU Major Msg: End of read dq deskew training                                
+   92.758   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+   92.758   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+   92.758   00000000: PMU Major Msg: End of write delay center optimization                        
+   92.758   00000000: PMU Major Msg: End of read delay center optimization                         
+   92.758   00000000: PMU Major Msg: End of max read latency training                              
+   92.758   00000000: PMU Major Msg: Firmware run has completed                                    
+   92.758   dbyte0 add =9a040100 value =12
+   92.758   dbyte0 add =9a040500 value =13
+   92.758   dbyte0 add =9a040900 value =14
+   92.758   dbyte0 add =9a040d00 value =13
+   92.758   dbyte0 add =9a041100 value =14
+   92.758   dbyte0 add =9a041500 value =14
+   92.758   dbyte0 add =9a041900 value =14
+   92.758   dbyte0 add =9a041d00 value =15
+   92.758   dbyte1 add =9a044100 value =14
+   92.758   dbyte1 add =9a044500 value =14
+   92.758   dbyte1 add =9a044900 value =14
+   92.758   dbyte1 add =9a044d00 value =13
+   92.758   dbyte1 add =9a045100 value =13
+   92.758   dbyte1 add =9a045500 value =14
+   92.758   dbyte1 add =9a045900 value =14
+   92.758   dbyte1 add =9a045d00 value =13
+   92.758   dbyte2 add =9a048100 value =37
+   92.758   dbyte2 add =9a048500 value =37
+   92.758   dbyte2 add =9a048900 value =37
+   92.758   dbyte2 add =9a048d00 value =37
+   92.758   dbyte2 add =9a049100 value =37
+   92.758   dbyte2 add =9a049500 value =37
+   92.758   dbyte2 add =9a049900 value =37
+   92.758   dbyte2 add =9a049d00 value =37
+   92.758   dbyte3 add =9a04c100 value =37
+   92.758   dbyte3 add =9a04c500 value =37
+   92.758   dbyte3 add =9a04c900 value =37
+   92.758   dbyte3 add =9a04cd00 value =37
+   92.758   dbyte3 add =9a04d100 value =37
+   92.758   dbyte3 add =9a04d500 value =37
+   92.758   dbyte3 add =9a04d900 value =37
+   92.758   dbyte3 add =9a04dd00 value =37
+   92.758   spi_nand spi-flash@0: Winbond SPI NAND was found.
+   92.758   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+   92.758   OpenSBI v0.9
+   92.758   heap: [0x005f94c0 - 0x00ef94c0], size 9216 KB
+   92.758   page: [0x00ef94c8 - 0x036fec00], size 40981 KB
+   92.758    \ | /
+   92.758   - RT -     Thread Smart Operating System
+   92.758    / | \     5.0.0 build Nov 13 2026
+   92.758    2006 - 2020 Copyright by rt-thread team
+   92.758   rtc driver register OK
+   92.758   lwIP-2.1.2 initialized!
+   92.758   [I/I2C] I2C bus [i2c0] registered
+   92.758   [I/I2C] I2C bus [i2c4] registered
+   92.758   [I/board.sdio] boot mode 0 does not use an SD/MMC controller�link_mux: console and /dev/link share uart1
+   92.758   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+   92.758   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+   92.758   os  : system memory alloc 320 bytes
+   92.758   flsh: UFFS consume spare data size 9
+   92.758   os  : system memory alloc 84480 bytes
+   92.758   os  : system memory alloc 53200 bytes
+   92.758   os  : system memory alloc 2048 bytes
+   92.758   tree: DIR 0, FILE 5, DATA 4
+   92.758   os  : system memory alloc 320 bytes
+   92.758   flsh: UFFS consume spare data size 9
+   92.758   os  : system memory alloc 84480 bytes
+   92.758   os  : system memory alloc 53200 bytes
+   92.758   os  : system memory alloc 8192 bytes
+   92.758   tree: DIR 1, FILE 5, DATA 76
+   92.758   /dev/shm file system initialization done!
+   92.758   Probe dummy af driver
+   92.758   find sensor(ov5647_csi0) on csi0
+   92.758   Probe dummy af driver
+   92.758   find sensor(ov5647_csi2) on csi2
+   92.758   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+   92.758   <gnne> gnne_device_init done.
+   92.758   #############SDK VERSION######################################
+   92.758   SDK   : unknown-20261113-064603--a94ac0b8718b-4162ec7
+   92.758   nncase: 2.11.0
+   92.758   ##############################################################
+   92.758   msh />list_page
+   92.758   level 0 
+   92.758   level 1 [0x00f36000]
+   92.758   level 2 [0x036f8000]
+   92.758   level 3 [0x036f0000][0x00f38000]
+   92.758   level 4 [0x036e0000]
+   92.758   level 5 [0x036c0000]
+   92.758   level 6 [0x03680000][0x00f40000]
+   92.758   level 7 [0x03600000][0x00f80000]
+   92.758   level 8 
+   92.758   level 9 [0x03400000]
+   92.758   level 10 [0x03000000]
+   92.758   level 11 
+   92.758   level 12 [0x02000000][0x01000000]
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 000027c6
+   92.758   used pages is 00000002
+   92.758   max used pages is 00000002
+   92.758   max used pages memory is 8192 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    2218496       8185344
+   92.758   msh />
+   92.758   msh />leakcam: start: t 702 ms, heap +0 B
+   92.758   leakcam: version 0.6+g9885a9d-dirty-202611130645
+   92.758   leakcam: battery 4370 mV: t 703 ms, heap +0 B
+   92.758   08*BF
+   92.758   08*BF: command not found.
+   92.758   msh />leakcam: clock: 1794553008 from the BL616 (was -58863408 s off)
+   92.758   usb disconnect
+   92.758   usb disconnect
+   92.758   leakcam: WAKE usb: t 1006 ms, heap +0 B
+   92.758   leakcam: relay: USB relay on /dev/ttyGS0: t 1006 ms, heap +0 B
+   92.758   leakcam: job: check: t 1011 ms, heap +0 B
+   92.758   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+   92.758   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+   92.758   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
+   92.758   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
+   92.758   leakcam: media: video 7C3E8262B149-1794553007, 0 pictures, 2 cameras: t 1022 ms, heap +4096 B
+   92.758   [I/bl616.sdio] BL616 SDU ready: io port 0x10000, download 1536 B, ports 0/0
+   92.758   [I/bl616.sdio] bound SDIO 424c:0606
+   92.758   leakcam: media: Wi-Fi bridge bound: t 1079 ms, heap +114688 B
+   92.758   [E/sal.skt] not find network interface device by protocol family(2).
+   92.758   [E/sal.skt] SAL socket protocol family input failed, return error -3.
+   92.758   [I/bl616.msg] netdev: started, credit 23
+   92.758   [I/WLAN.dev] WLAN device sta registered as phy0-sta
+   92.758   [I/WLAN.dev] wlan init success
+   92.758   [I/WLAN.lwip] eth device init ok name:wlan0
+   92.758   [I/bl616.wifi] station 7c:3e:82:62:b1:49
+   92.758   [I/bl616.msg] vchan: started, credit 3
+   92.758   [I/bl616.wifi] link 0 -> 1 (, channel 0, 0 dBm)
+   92.758   [I/bl616.wifi] link 1 -> 2 (VK, channel 11, -61 dBm)
+   92.758   [I/WLAN.mgnt] wifi connect success ssid:
+   92.758   leakcam: media: video 225 frames per camera at 15 fps, 10000 kbit/s: t 1351 ms, heap +909312 B
+   92.758   [I/WLAN.lwip] Got IP address : 192.168.1.223
+   92.758   list_page
+   92.758   level 0 [0x02b14000]
+   92.758   level 1 
+   92.758   level 2 [0x02b10000]
+   92.758   level 3 
+   92.758   level 4 [0x02b00000]
+   92.758   level 5 
+   92.758   level 6 
+   92.758   level 7 
+   92.758   level 8 [0x02a00000]
+   92.758   level 9 [0x02800000]
+   92.758   level 10 
+   92.758   level 11 [0x02000000]
+   92.758   level 12 [0x01000000]
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 00001b15
+   92.758   used pages is 00000cb3
+   92.758   max used pages is 00000cb3
+   92.758   max used pages memory is 13316096 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    7485376       1952832
+   92.758   msh />
+   92.758   msh />audio i2s set clk freq is 1024000(1024000),ret:1
+   92.758   audio codec adc clk freq is 4096000(4096000)
+   92.758   list_page
+   92.758   level 0 [0x02b14000]
+   92.758   level 1 
+   92.758   level 2 [0x02b10000]
+   92.758   level 3 
+   92.758   level 4 [0x02b00000]
+   92.758   level 5 
+   92.758   level 6 
+   92.758   level 7 
+   92.758   level 8 [0x02a00000]
+   92.758   level 9 [0x02800000]
+   92.758   level 10 
+   92.758   level 11 [0x02000000]
+   92.758   level 12 [0x01000000]
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 00001b15
+   92.758   used pages is 00000cb3
+   92.758   max used pages is 00000cb3
+   92.758   max used pages memory is 13316096 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    7489536       1948864
+   92.758   msh />
+   92.758   msh />dump dev(0)chn(1) failed.
+   92.758   dump dev(1)chn(1) failed.
+   92.758   list_page
+   92.758   level 0 [0x02ae6000]
+   92.758   level 1 [0x02ae4000]
+   92.758   level 2 [0x02ae0000]
+   92.758   level 3 
+   92.758   level 4 
+   92.758   level 5 [0x02ac0000]
+   92.758   level 6 [0x02a80000]
+   92.758   level 7 [0x02a00000]
+   92.758   level 8 
+   92.758   level 9 [0x02800000]
+   92.758   level 10 
+   92.758   level 11 [0x02000000]
+   92.758   level 12 [0x01000000]
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 00001ae7
+   92.758   used pages is 00000ce1
+   92.758   max used pages is 00000ce3
+   92.758   max used pages memory is 13512704 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8316224       1121408
+   92.758   msh />
+   92.758   msh />leakcam: focus: cam0 score 0.412, reference 0.000: -1 %, 0 low in a row
+   92.758   leakcam: job: cam0 changed (stored as is): 4340 of 19602 blocks at x 0-2592 y 0-1936, max 192.3, gain 0.89, read 561 ms, compare 179 ms: t 5817 ms, heap +954368 B
+   92.758   leakcam: focus: cam1 score 0.039, reference 0.000: -1 %, 0 low in a row
+   92.758   list_page
+   92.758   level 0 [0x02ae2000]
+   92.758   level 1 [0x02ae0000]
+   92.758   level 2 
+   92.758   level 3 
+   92.758   level 4 
+   92.758   level 5 [0x02ac0000]
+   92.758   level 6 [0x02a80000]
+   92.758   level 7 [0x02a00000]
+   92.758   level 8 
+   92.758   level 9 [0x02800000]
+   92.758   level 10 
+   92.758   level 11 [0x02000000]
+   92.758   level 12 [0x01000000]
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 00001ae3
+   92.758   used pages is 00000ce5
+   92.758   max used pages is 00000ce5
+   92.758   max used pages memory is 13520896 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8842496       594944
+   92.758   msh />
+   92.758   msh />leakcam: job: cam1 changed (stored as is): 8527 of 19602 blocks at x 0-2592 y 0-1936, max 141.5, gain 0.64, read 573 ms, compare 175 ms: t 6577 ms, heap +954368 B
+   92.758   leakcam: job: captured, mean 77 / 108 (got 1 1), LEDs, room 70 / 8, frames 2 / 3, exposures 1 / 1, 127.6 / 25.8 ms, LEDs 137 ms: t 6584 ms, heap +954368 B
+   92.758   leakcam: job: done: t 6585 ms, heap +954368 B
+   92.758   dump dev(0)chn(1) failed.
+   92.758   dump dev(1)chn(1) failed.
+   92.758   leakcam: audio: first packet 119 B, frame time 6766034 us, monotonic 6766699 us
+   92.758   leakcam: media: v1: first picture time 6845693 us, monotonic 6969986 us
+   92.758   leakcam: media: v2: first picture time 6927031 us, monotonic 7013115 us
+   92.758   list_page
+   92.758   level 0 
+   92.758   level 1 [0x017a4000]
+   92.758   level 2 [0x017a0000]
+   92.758   level 3 
+   92.758   level 4 
+   92.758   level 5 [0x01780000]
+   92.758   level 6 
+   92.758   level 7 [0x01700000]
+   92.758   level 8 [0x01600000]
+   92.758   level 9 [0x01400000]
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 000007a6
+   92.758   used pages is 00002022
+   92.758   max used pages is 00002022
+   92.758   max used pages memory is 33693696 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8842496       874368
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 
+   92.758   level 1 [0x016e4000]
+   92.758   level 2 [0x016e0000]
+   92.758   level 3 
+   92.758   level 4 
+   92.758   level 5 [0x015c0000]
+   92.758   level 6 [0x01580000]
+   92.758   level 7 [0x01500000]
+   92.758   level 8 [0x01400000]
+   92.758   level 9 
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 000005e6
+   92.758   used pages is 000021e2
+   92.758   max used pages is 000021e2
+   92.758   max used pages memory is 35528704 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8842496       817088
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 
+   92.758   level 1 
+   92.758   level 2 [0x01620000]
+   92.758   level 3 
+   92.758   level 4 
+   92.758   level 5 [0x01700000][0x01600000][0x016e0000]
+   92.758   level 6 
+   92.758   level 7 
+   92.758   level 8 
+   92.758   level 9 [0x01400000]
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 00000664
+   92.758   used pages is 00002164
+   92.758   max used pages is 00002222
+   92.758   max used pages memory is 35790848 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8842496       827776
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 
+   92.758   level 1 
+   92.758   level 2 [0x01620000]
+   92.758   level 3 
+   92.758   level 4 
+   92.758   level 5 [0x01700000][0x016e0000][0x01600000]
+   92.758   level 6 
+   92.758   level 7 
+   92.758   level 8 
+   92.758   level 9 [0x01400000]
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 00000664
+   92.758   used pages is 00002164
+   92.758   max used pages is 00002223
+   92.758   max used pages memory is 35794944 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8842496       874240
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 
+   92.758   level 1 
+   92.758   level 2 [0x01604000][0x01620000][0x015e0000]
+   92.758   level 3 [0x01608000]
+   92.758   level 4 [0x01610000]
+   92.758   level 5 [0x01700000][0x015c0000]
+   92.758   level 6 [0x01580000]
+   92.758   level 7 [0x01500000]
+   92.758   level 8 [0x01400000]
+   92.758   level 9 
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 00000624
+   92.758   used pages is 000021a4
+   92.758   max used pages is 00002223
+   92.758   max used pages memory is 35794944 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8842496       696000
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 
+   92.758   level 1 
+   92.758   level 2 [0x01620000]
+   92.758   level 3 
+   92.758   level 4 
+   92.758   level 5 [0x016e0000][0x01700000][0x01600000]
+   92.758   level 6 
+   92.758   level 7 
+   92.758   level 8 
+   92.758   level 9 [0x01400000]
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 00000664
+   92.758   used pages is 00002164
+   92.758   max used pages is 00002224
+   92.758   max used pages memory is 35799040 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8842496       762240
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 [0x014eb000][0x0158a000]
+   92.758   level 1 [0x01588000]
+   92.758   level 2 [0x014ec000]
+   92.758   level 3 [0x01580000][0x01550000]
+   92.758   level 4 [0x014f0000][0x01540000]
+   92.758   level 5 [0x01500000][0x014c0000]
+   92.758   level 6 [0x01480000]
+   92.758   level 7 [0x01400000]
+   92.758   level 8 
+   92.758   level 9 
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 00000538
+   92.758   used pages is 00002290
+   92.758   max used pages is 000022dd
+   92.758   max used pages memory is 36556800 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8842496       698176
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 [0x01544000]
+   92.758   level 1 [0x014c6000][0x01444000]
+   92.758   level 2 [0x0154000[0x01440000]
+   92.758   level 3 [0x014c8000]
+   92.758   level 4 [0x014d0000]
+   92.758   level 5 [0x01500000]
+   92.758   level 6 [0x01480000][0x01400000]
+   92.758   level 7 
+   92.758   level 8 
+   92.758   level 9 
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 000004c5
+   92.758   used pages is 00002303
+   92.758   max used pages is 00002382
+   92.758   max used pages memory is 37232640 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8842496       691136
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 [0x01544000]
+   92.758   level 1 
+   92.758   level 2 [0x01540000]
+   92.758   level 3 
+   92.758   level 4 
+   92.758   level 5 [0x014c0000][0x01500000]
+   92.758   level 6 [0x01480000]
+   92.758   level 7 [0x01400000]
+   92.758   level 8 
+   92.758   level 9 
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 00000505
+   92.758   used pages is 000022c3
+   92.758   max used pages is 00002382
+   92.758   max used pages memory is 37232640 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8842496       772864
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 [0x01544000]
+   92.758   level 1 
+   92.758   level 2 [0x01540000]
+   92.758   level 3 
+   92.758   level 4 
+   92.758   level 5 [0x014c0000][0x01500000]
+   92.758   level 6 [0x01480000]
+   92.758   level 7 [0x01400000]
+   92.758   level 8 
+   92.758   level 9 
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 00000505
+   92.758   used pages is 000022c3
+   92.758   max used pages is 00002382
+   92.758   max used pages memory is 37232640 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8842496       869056
+   92.758   msh />
+   92.758   msh />list_page
+   92.758   level 0 [0x01544000]
+   92.758   level 1 
+   92.758   level 2 [0x01540000]
+   92.758   level 3 
+   92.758   level 4 
+   92.758   level 5 [0x01500000][0x014c0000]
+   92.758   level 6 [0x01480000]
+   92.758   level 7 [0x01400000]
+   92.758   level 8 
+   92.758   level 9 
+   92.758   level 10 [0x01000000]
+   92.758   level 11 
+   92.758   level 12 
+   92.758   level 13 
+   92.758   level 14 
+   92.758   level 15 
+   92.758   level 16 
+   92.758   level 17 
+   92.758   level 18 
+   92.758   level 19 
+   92.758   level 20 
+   92.758   level 21 
+   92.758   level 22 
+   92.758   level 23 
+   92.758   level 24 
+   92.758   level 25 
+   92.758   level 26 
+   92.758   level 27 
+   92.758   level 28 
+   92.758   level 29 
+   92.758   level 30 
+   92.758   level 31 
+   92.758   level 32 
+   92.758   level 33 
+   92.758   level 34 
+   92.758   level 35 
+   92.758   level 36 
+   92.758   level 37 
+   92.758   level 38 
+   92.758   level 39 
+   92.758   level 40 
+   92.758   level 41 
+   92.758   level 42 
+   92.758   level 43 
+   92.758   level 44 
+   92.758   level 45 
+   92.758   level 46 
+   92.758   level 47 
+   92.758   level 48 
+   92.758   level 49 
+   92.758   level 50 
+   92.758   level 51 
+   92.758   free pages is 00000505
+   92.758   used pages is 000022c3
+   92.758   max used pages is 00002384
+   92.758   max used pages memory is 37240832 bytes
+   92.758   -------------------------------
+   92.758   msh />
+   92.758   msh />list_memheap
+   92.758   memheap               pool size  max used size available size
+   92.758   -------------------- ---------- ------------- --------------
+   92.758   heap                 9437184    8842496       691200
+   92.758   msh />
+   92.758   msh />vicap: dev 0 video: 224 frames over 14932 ms of pts = 14.9 fps, sequence 85..309
+   92.758   vicap: dev 1 video: 224 frames over 14865 ms of pts = 15.0 fps, sequence 85..308
+   92.758   leakcam: job: colour LEDs, room 69 / 8, frames 2 / 3, exposures 1 / 1, 127.6 / 25.8 ms, LEDs 134 ms
+   92.758   ch 1: 225 pictures encoded. Average FrameRate = 15 Fps
+   92.758   ch 1: total used pages 3075
+   92.758   leakcam: media: v1: 225 frames (15 IDR), 0 dropped in 0 gaps, audio 375 packets (0 lost), in 20628 ms, 17756354 B = 6886 kbit/s, 225 sent, uploaded 200 at 21316 ms; encode 6786 ms, between frames 8223 ms, send 10636 ms, backlog max 900260 B: t 22339 ms, heap +3739648 B
+   92.758   ch 2: 225 pictures encoded. Average FrameRate = 15 Fps
+   92.758   ch 2: total used pages 3075
+   92.758   leakcam: media: v2: 225 frames (15 IDR), 0 dropped in 0 gaps, audio 374 packets (0 lost), in 20628 ms, 18761303 B = 7276 kbit/s, 225 sent, uploaded 200 at 21664 ms; encode 6890 ms, between frames 8110 ms, send 11207 ms, backlog max 1024781 B: t 22687 ms, heap +3739648 B
+   92.758   leakcam: media: done, 2 uploaded, 0 failed, 0 skipped: t 22688 ms, heap +3739648 B
+   92.758   --- BL616 check-in 1 after the videos ---
+   92.758   presence now
+   92.758   presence: check-in now
+   92.758   bouffalolab />
+   92.758   bouffalolab />climate: check-in: 48.1 C 18.8 %RH, warm 0 s
+   92.758   Disable Auto Reconnect
+   92.758   Not connected
+   92.758   start connecting ... 
+   92.758   ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   �[WPA] CTRL-EVENT-NETWORK-ADDED 0
+   92.758   WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c 
+   92.758   �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
+   92.758   �[WPA] CTRL-EVENT-SCAN-RESULTS 
+   92.758   �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   sm_connect_req_handler sm_env.auth_retry_gap = 0
+   92.758   --- OPT rxu_mgmt_ind is detected
+   92.758   [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
+   92.758   rc_init: station_id=2 format_mod=2 pre_type=0 short_gi=1 max_bw=0
+   92.758   rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
+   92.758   ��No handler found for msg:1d from tsk:0 to tsk:6
+   92.758   [FU]Set timer,state is 5,ongoing++, timeout:512000
+   92.758   [FU]Tx cfm ongoing--, value is 0
+   92.758   [FL]RECV AUTH,sn:3589
+   92.758   [FU]RECV AUTH,sn:3589
+   92.758   [FU]Rx handler,state:5,fctl:0xb0
+   92.758   [FU]Clear timer in auth handler
+   92.758   [FU]Set timer,state is 8,ongoing++, timeout:1024000
+   92.758   [FU]Tx cfm ongoing--, value is 0
+   92.758   [FL]RECV ASSOCRSP,sn:3590
+   92.758   [FU]RECV ASSOCRSP,sn:3590
+   92.758   [FU]Rx handler,state:8,fctl:0x10
+   92.758   [FU]Clear timer in assoc rsp handler
+   92.758   sm_connect_ind sm_env.auth_retry_gap = 0
+   92.758   [lwip] default netif: wl1
+   92.758   [lwip] netif status callback
+   92.758   [FH]fhost_tx_req_do relese this buf(Line:882)!
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   �[WPA] Associated with 84:D8:1B:24:0A:3C
+   92.758   �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
+   92.758   �[WPA] STA-RX-EAPOL1
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   �[WPA] STA-TX-EAPOL2
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   �[WPA] STA-RX-EAPOL3
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   �[WPA] STA-TX-EAPOL4
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
+   92.758   �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   =================================================================
+   92.758   [AT][RX] Connection Status
+   92.758   [AT][RX]   status_code 0
+   92.758   [AT][RX]   reason_code 0
+   92.758   [AT][RX]   status detail: sm connect ind ok
+   92.758   [AT][RX]   MAC 84:D8:1B:24:0A:3C
+   92.758   [AT][RX]   vif_idx 1
+   92.758   [AT][RX]   ap_idx 2
+   92.758   [AT][RX]   ch_idx 1
+   92.758   [AT][RX]   qos 1
+   92.758   [AT][RX]   aid 3
+   92.758   [AT][RX]   band 2.4G
+   92.758   [AT][RX]   channel 11
+   92.758   =================================================================
+   92.758   start dhcping on vif 0 ... 
+   92.758   LwIP DHCP ack (wl 1): 
+   92.758     IP:192.168.1.223
+   92.758     MASK: 255.255.255.0
+   92.758     Gateway: 192.168.1.1
+   92.758   [quick_connect] dhcp bind ip callback
+   92.758     IP: 192.168.1.223
+   92.758     MK: 255.255.255.0
+   92.758     GW: 192.168.1.1
+   92.758   {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.223/24 UP,CONNECTED
+   92.758   tls: TLSv1.3 TLS1-3-AES-128-GCM-SHA256 in 300 ms, session heap 15908 B
+   92.758   [I][WCHK] check of "VK": state 0x03 detail 0
+   92.758   Disable Auto Reconnect
+   92.758   ��==========================  Keyram Config ========================
+   92.758   ��  start 08 -->> end 11; nVAP 02; max 31
+   92.758   ==========================  Keyram Dump =========================
+   92.758   [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
+   92.758   ==========================  MAC Address =========================
+   92.758       MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
+   92.758     BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
+   92.758   --- BL616 check-in 2 after the videos ---
+   92.758   presence now
+   92.758   presence: check-in now
+   92.758   bouffalolab />
+   92.758   bouffalolab />climate: check-in: 48.0 C 18.8 %RH, warm 0 s
+   92.758   Disable Auto Reconnect
+   92.758   Not connected
+   92.758   start connecting ... 
+   92.758   ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   �[WPA] CTRL-EVENT-NETWORK-ADDED 0
+   92.758   WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c 
+   92.758   �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
+   92.758   �[WPA] CTRL-EVENT-SCAN-RESULTS 
+   92.758   �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   sm_connect_req_handler sm_env.auth_retry_gap = 0
+   92.758   --- OPT rxu_mgmt_ind is detected
+   92.758   [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
+   92.758   rc_init: station_id=3 format_mod=2 pre_type=0 short_gi=1 max_bw=0
+   92.758   rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
+   92.758   ��No handler found for msg:1d from tsk:0 to tsk:6
+   92.758   [FU]Set timer,state is 5,ongoing++, timeout:512000
+   92.758   [FU]Tx cfm ongoing--, value is 0
+   92.758   [FL]RECV AUTH,sn:3633
+   92.758   [FU]RECV AUTH,sn:3633
+   92.758   [FU]Rx handler,state:5,fctl:0xb0
+   92.758   [FU]Clear timer in auth handler
+   92.758   [FU]Set timer,state is 8,ongoing++, timeout:1024000
+   92.758   [FU]Tx cfm ongoing--, value is 0
+   92.758   [FL]RECV ASSOCRSP,sn:3634
+   92.758   [FU]RECV ASSOCRSP,sn:3634
+   92.758   [FU]Rx handler,state:8,fctl:0x10
+   92.758   [FU]Clear timer in assoc rsp handler
+   92.758   sm_connect_ind sm_env.auth_retry_gap = 0
+   92.758   [lwip] default netif: wl1
+   92.758   [lwip] netif status callback
+   92.758   [FH]fhost_tx_req_do relese this buf(Line:882)!
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   �[WPA] Associated with 84:D8:1B:24:0A:3C
+   92.758   �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
+   92.758   �[WPA] STA-RX-EAPOL1
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   �[WPA] STA-TX-EAPOL2
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   �[WPA] STA-RX-EAPOL3
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   �[WPA] STA-TX-EAPOL4
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
+   92.758   �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   =================================================================
+   92.758   [AT][RX] Connection Status
+   92.758   [AT][RX]   status_code 0
+   92.758   [AT][RX]   reason_code 0
+   92.758   [AT][RX]   status detail: sm connect ind ok
+   92.758   [AT][RX]   MAC 84:D8:1B:24:0A:3C
+   92.758   [AT][RX]   vif_idx 0
+   92.758   [AT][RX]   ap_idx 3
+   92.758   [AT][RX]   ch_idx 2
+   92.758   [AT][RX]   qos 1
+   92.758   [AT][RX]   aid 3
+   92.758   [AT][RX]   band 2.4G
+   92.758   [AT][RX]   channel 11
+   92.758   =================================================================
+   92.758   start dhcping on vif 0 ... 
+   92.758   LwIP DHCP ack (wl 1): 
+   92.758     IP:192.168.1.223
+   92.758     MASK: 255.255.255.0
+   92.758     Gateway: 192.168.1.1
+   92.758   [quick_connect] dhcp bind ip callback
+   92.758     IP: 192.168.1.223
+   92.758     MK: 255.255.255.0
+   92.758     GW: 192.168.1.1
+   92.758   {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.223/24 UP,CONNECTED
+   92.758   tls: TLSv1.3 TLS1-3-AES-128-GCM-SHA256 in 295 ms, session heap 15904 B
+   92.758   [I][WCHK] check of "VK": state 0x03 detail 0
+   92.758   Disable Auto Reconnect
+   92.758   ��==========================  Keyram Config ========================
+   92.758   ��  start 08 -->> end 11; nVAP 02; max 31
+   92.758   ==========================  Keyram Dump =========================
+   92.758   [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
+   92.758   ==========================  MAC Address =========================
+   92.758       MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
+   92.758     BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
+   92.758   [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 346
+   92.758   =================================================================
+   92.758   [AT][RX] Connection Status
+   92.758   [AT][RX]   status_code 19
+   92.758   [AT][RX]   reason_code 0
+   92.758   [AT][RX]   status detail: user disconnect and send deauth
+   92.758   [AT][RX]   state detail: 0x0
+   92.758   [AT][RX]   vif_idx 0
+   92.758   =================================================================
+   92.758   [lwip] default netif cleared
+   92.758   [lwip] netif status callback
+   92.758   �[WPA] CTRL-EVENT-DISCONNECTED bssid=84:D8:
+   92.758   --- BL616 check-in 3 after the videos ---
+   92.758   presence now
+   92.758   presence: check-in now
+   92.758   bouffalolab />
+   92.758   bouffalolab />climate: check-in: 47.9 C 18.8 %RH, warm 0 s
+   92.758   Disable Auto Reconnect
+   92.758   Not connected
+   92.758   start connecting ... 
+   92.758   ----------------> ldpc_rx:1, ht40:0, vht80:0, he_mcs:1
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   �[WPA] CTRL-EVENT-NETWORK-ADDED 0
+   92.758   WPA network 0: created and configuredwpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   Starting AP scan for specific SSID: VK, ssid_len:2, BSSID: 84:d8:1b:24:0a:3c 
+   92.758   �[WPA] CTRL-EVENT-BSS-ADDED 0 84:D8:1B:24:0A:3C
+   92.758   �[WPA] CTRL-EVENT-SCAN-RESULTS 
+   92.758   �[WPA] Trying to associate with 84:D8:1B:24:0A:3C (SSID='VK' freq=2462 MHz)
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   sm_connect_req_handler sm_env.auth_retry_gap = 0
+   92.758   --- OPT rxu_mgmt_ind is detected
+   92.758   [802.11_MODE] Configured 802.11n @ 2.4GHz (mode: 3)
+   92.758   rc_init: station_id=0 format_mod=2 pre_type=0 short_gi=1 max_bw=0
+   92.758   rc_init: nss_max=0 mcs_max=7 r_idx_min=0 r_idx_max=3 no_samples=10
+   92.758   ��No handler found for msg:1d from tsk:0 to tsk:6
+   92.758   [FU]Set timer,state is 5,ongoing++, timeout:512000
+   92.758   [FU]Tx cfm ongoing--, value is 0
+   92.758   [FL]RECV AUTH,sn:3679
+   92.758   [FU]RECV AUTH,sn:3679
+   92.758   [FU]Rx handler,state:5,fctl:0xb0
+   92.758   [FU]Clear timer in auth handler
+   92.758   [FU]Set timer,state is 8,ongoing++, timeout:1024000
+   92.758   [FU]Tx cfm ongoing--, value is 0
+   92.758   [FL]RECV ASSOCRSP,sn:3680
+   92.758   [FU]RECV ASSOCRSP,sn:3680
+   92.758   [FU]Rx handler,state:8,fctl:0x10
+   92.758   [FU]Clear timer in assoc rsp handler
+   92.758   sm_connect_ind sm_env.auth_retry_gap = 0
+   92.758   [lwip] default netif: wl1
+   92.758   [lwip] netif status callback
+   92.758   [FH]fhost_tx_req_do relese this buf(Line:882)!
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   �[WPA] Associated with 84:D8:1B:24:0A:3C
+   92.758   �[WPA] CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
+   92.758   �[WPA] STA-RX-EAPOL1
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   �[WPA] STA-TX-EAPOL2
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   �[WPA] STA-RX-EAPOL3
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   �[WPA] STA-TX-EAPOL4
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   �[WPA] WPA: Key negotiation completed with 84:D8:1B:24:0A:3C [PTK=CCMP GTK=CCMP]
+   92.758   �[WPA] CTRL-EVENT-CONNECTED - Connection to 84:D8:1B:24:0A:3C completed [id=0 id_str=]
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   wpa_supplicant_ctrl_iface_msg_cb: status event sent
+   92.758   =================================================================
+   92.758   [AT][RX] Connection Status
+   92.758   [AT][RX]   status_code 0
+   92.758   [AT][RX]   reason_code 0
+   92.758   [AT][RX]   status detail: sm connect ind ok
+   92.758   [AT][RX]   MAC 84:D8:1B:24:0A:3C
+   92.758   [AT][RX]   vif_idx 1
+   92.758   [AT][RX]   ap_idx 0
+   92.758   [AT][RX]   ch_idx 0
+   92.758   [AT][RX]   qos 1
+   92.758   [AT][RX]   aid 3
+   92.758   [AT][RX]   band 2.4G
+   92.758   [AT][RX]   channel 11
+   92.758   =================================================================
+   92.758   start dhcping on vif 0 ... 
+   92.758   LwIP DHCP ack (wl 1): 
+   92.758     IP:192.168.1.223
+   92.758     MASK: 255.255.255.0
+   92.758     Gateway: 192.168.1.1
+   92.758   [quick_connect] dhcp bind ip callback
+   92.758     IP: 192.168.1.223
+   92.758     MK: 255.255.255.0
+   92.758     GW: 192.168.1.1
+   92.758   {FVIF-0} ip=I4 gw=I4[0] wl1: MAC=7c:3e:82:62:b1:49 ip=192.168.1.223/24 UP,CONNECTED
+   92.758   tls: TLSv1.3 TLS1-3-AES-128-GCM-SHA256 in 300 ms, session heap 15896 B
+   92.758   [I][WCHK] check of "VK": state 0x03 detail 0
+   92.758   Disable Auto Reconnect
+   92.758   ��==========================  Keyram Config ========================
+   92.758   ��  start 08 -->> end 11; nVAP 02; max 31
+   92.758   ==========================  Keyram Dump =========================
+   92.758   [id]   MAC Address     Key Len  VLan ID  Default      	Key Hexdump
+   92.758   ==========================  MAC Address =========================
+   92.758       MAC 7C:3E:82:62:B1:49 Mask 00:00:00:00:00:00
+   92.758     BSSID 84:D8:1B:24:0A:3C Mask 00:00:00:00:00:00
+   92.758   [FU]SEND DEAUTH DA: 84:D8:1B:24:0A:3C SA: 7C:3E:82:62:B1:49 BSSID: 84:D8:1B:24:0A:3C rea_code: 3 sn: 379
+   92.758   =================================================================
+   92.758   [AT][RX] Connection Status
+   92.758   [AT][RX]   status_code 19
+   92.758   [AT][RX]   reason_code 0
+   92.758   [AT][RX]   status detail: user disconnect and send deauth
+   92.758   [AT][RX]   state detail: 0x0
+   92.758   [AT][RX]   vif_idx 0
+   92.758   =================================================================
+   92.758   [lwip] default netif cleared
+   92.758   [lwip] netif status callback

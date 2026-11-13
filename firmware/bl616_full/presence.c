@@ -28,7 +28,6 @@
 #define CHECKIN_MIN_S  5
 #define CHECKIN_MAX_S  3600
 #define MISSED_MAX  3                        /* presence lost after this many failed check-ins in a row */
-#define CAPTURE_WAIT_S 130   /* a capture's longest run (capture.c SENT_MAX_MS + margin) */
 
 static uint32_t checkin_s = CHECKIN_S;
 static enum wifi_check_state last = WCHK_IDLE;
@@ -193,10 +192,11 @@ static void presence_task(void *arg)
         }
         again = false;                     /* every request so far: answered by this check-in */
         busy = true;
-        /* a capture's upload has the radio (the K230's bridge): the check-in after its SENT, at most CAPTURE_WAIT_S
-         * later. Both at once lost the check-in's frames: 3-8 s handshakes and 2 of 7 check-ins failed (test143,
-         * 2026-11-12); 3 in a row would have sent the board to the setup firmware */
-        for (unsigned w = 0; capture_busy() && w < CAPTURE_WAIT_S * 10; w++)
+        /* a capture's upload has the radio (the K230's bridge): the check-in after its SENT. Both at once lost the
+         * check-in's frames: 3-8 s handshakes and 2 of 7 check-ins failed (test143, 2026-11-12); 3 in a row would have
+         * sent the board to the setup firmware. No limit of its own: capture.c's guard ends busy at the latest (120 s,
+         * a focus session's secs + 60 s: a 10-min live session is not cut by the 60 s check-ins, DESIGN.md 5.3.17) */
+        while (capture_busy())
             vTaskDelay(pdMS_TO_TICKS(100));
         climate_read("check-in");          /* first, before the radio warms anything (DESIGN.md 5.3.15) */
         check_in();                        /* on USB and on battery; it needs a stored network */

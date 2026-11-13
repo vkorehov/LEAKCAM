@@ -83,10 +83,13 @@ var (
 	// (the job result rides on every check-in for 60 s: the check-in right after a clear opened the same leak again,
 	// test140 2026-11-12)
 	clearedAt = map[string]time.Time{}
-	// per device and camera the focus problem the phones were told of ("unfocused", "untuned", "" none): told once
+	// per device and camera the problem the phones were told of ("dark", "unfocused", "untuned", "" none): told once
 	focusTold = map[string][Cameras]string{}
+	// since when a camera of the device is flagged (unfocused / untuned): its 60 s check-ins (focusModeS) for at most
+	// WakeModeMax from here
+	focusSince = map[string]time.Time{}
 	// what a check-in brings first (user 2026-11-07): a leak's record (the emergency), a Wi-Fi change, a photo, a video
-	Rank      = map[string]int{"leak": 0, "wifi": 1, "photo": 2, "video": 3}
+	Rank      = map[string]int{"leak": 0, "wifi": 1, "photo": 2, "video": 3, "focus": 4}
 	tokenFile = Tokens
 )
 
@@ -99,12 +102,23 @@ func leakIn(m map[string]any, th Thresholds) string {
 	if h, ok := m["rh"].(int64); ok && h >= int64(th.Humid)*10 {
 		return "humidity high"
 	}
-	if j, ok := m["job"].(string); ok && strings.Contains(j, "changed") {
+	if j, ok := m["job"].(string); ok && cameraChanged(j, th.Ignore) {
 		if ago, ok := m["jago"].(int64); ok && ago >= 0 && ago <= 60 {
 			return "camera change"
 		}
 	}
 	return ""
+}
+
+// cameraChanged: a camera the person did not ignore reads "changed" in the job "<cam0>,<cam1>,..." (a camera that
+// sees nothing reads "dark", out of focus "unfocused": neither is a leak, DESIGN.md 5.3.18)
+func cameraChanged(job string, ignore [Cameras]bool) bool {
+	for cam, v := range strings.Split(job, ",") {
+		if v == "changed" && (cam >= Cameras || !ignore[cam]) {
+			return true
+		}
+	}
+	return false
 }
 
 // checkInAlerts: a check-in's leak and Wi-Fi change result, and its answer's part (mode, a pending network); the
@@ -171,6 +185,8 @@ func checkInAlerts(id string, in CheckIn, ans map[string]any) (msgs []map[string
 			c["secs"] = VideoS
 		case "leak":
 			c["photos"], c["secs"], c["gap_ms"] = LeakPhotos, VideoS, LeakGapMs
+		case "focus":
+			c["secs"] = FocusMaxS // the session's longest: the board ends it earlier on Stop or no viewer (focus.go)
 		}
 		c["more"] = len(q) - 1 // waiting after this one: the board checks in again right after its SENT
 		ans["capture"] = c
@@ -182,14 +198,17 @@ func checkInAlerts(id string, in CheckIn, ans map[string]any) (msgs []map[string
 	if s := wakeModeS(id); s > 0 {
 		ans["checkin"] = s
 		ans["mode"] = 1
+	} else if s := focusModeS(id); s > 0 { // a camera to tune: sooner check-ins, not the wake mode's BLE (5.3.17)
+		ans["checkin"] = s
+		ans["mode"] = 0
 	} else {
 		ans["mode"] = 0
 	}
 	return msgs
 }
 
-// focusAlerts: a camera out of focus, or never tuned (DESIGN.md 5.3.17): the job's "<cam0>,<cam1>,<foc0>,<foc1>"
-// (unfocused: FOCUS_BAD_N LED-lit checks below 60 % of the camera's reference; foc -1: no reference yet) -> one "focus"
+// focusAlerts: a camera that sees nothing ("dark", DESIGN.md 5.3.18), out of focus, or never tuned (DESIGN.md 5.3.17):
+// the job's "<cam0>,<cam1>,<foc0>,<foc1>" (dark: its LED-lit picture below the K230's JOB_DARK_MEAN; unfocused: FOCUS_BAD_N LED-lit checks below 60 % of the camera's reference; foc -1: no reference yet) -> one "focus"
 // message per camera and reason (a normal notification, not the alarm: it opens the focus screen); again only after
 // the camera was fine in between; mu held
 func focusAlerts(id string, m map[string]any, ssid string) (msgs []map[string]string) {
@@ -199,9 +218,13 @@ func focusAlerts(id string, m map[string]any, ssid string) (msgs []map[string]st
 		return nil // an older board: no focus fields
 	}
 	told := focusTold[id]
+	ignore := thresholds[id].Ignore
 	for cam := 0; cam < Cameras; cam++ {
 		why := ""
 		switch {
+		case ignore[cam]: // the person's choice: nothing told about it
+		case f[cam] == "dark": // sees nothing, the LEDs on: covered, facing nothing in reach, far out of focus
+			why = "dark"
 		case f[cam] == "unfocused":
 			why = "unfocused"
 		case f[Cameras+cam] == "-1" && f[cam] != "nocam":
@@ -215,6 +238,11 @@ func focusAlerts(id string, m map[string]any, ssid string) (msgs []map[string]st
 		told[cam] = why
 	}
 	focusTold[id] = told
+	if told == ([Cameras]string{}) {
+		delete(focusSince, id)
+	} else if _, ok := focusSince[id]; !ok {
+		focusSince[id] = time.Now()
+	}
 	return msgs
 }
 
@@ -227,6 +255,19 @@ func wakeModeS(id string) int {
 	}
 	if c := wifiChanges[id]; c != nil && c.Result != 0 && c.Result != WifiSaved && time.Since(c.Delivered) < WakeModeMax {
 		return WakeModeS
+	}
+	return 0
+}
+
+// focusModeS: FocusModeS while a camera is flagged (for at most WakeModeMax) or a focus session was asked for in the
+// last FocusAskS: the person tuning the lens waits under a minute for it (user 2026-11-13: "faster check-ins"; DESIGN.md
+// 5.3.17), 0 otherwise; mu held
+func focusModeS(id string) int {
+	if t, ok := focusSince[id]; ok && time.Since(t) < WakeModeMax {
+		return FocusModeS
+	}
+	if t, ok := focusAsked[id]; ok && time.Since(t) < FocusAskS*time.Second {
+		return FocusModeS
 	}
 	return 0
 }
@@ -389,6 +430,8 @@ func capture(w http.ResponseWriter, r *http.Request) {
 	within := deviceIntervalsLocked(id).Checkin
 	if s := wakeModeS(id); s > 0 {
 		within = s
+	} else if s := focusModeS(id); s > 0 {
+		within = s
 	}
 	at := nextCheckin(id)
 	mu.Unlock()
@@ -404,6 +447,8 @@ func mediaIDs(id, kind string, at time.Time) []string {
 	pre := id + "-" + strconv.FormatInt(at.Unix(), 10) + "-"
 	photos, videos := 0, 0
 	switch kind {
+	case "focus":
+		return []string{pre + "f"} // no file: the session's stream (focus.go); the ID gives the board its device and time
 	case "photo":
 		photos = Cameras
 	case "video":
