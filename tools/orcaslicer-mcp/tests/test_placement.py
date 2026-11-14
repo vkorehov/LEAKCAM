@@ -70,3 +70,15 @@ def test_multi_instance_flagged_unsupported():
     o = out["objects"][0]
     assert o.get("supported") is False
     assert "note" in o
+
+
+def test_exclude_areas_block_a_part_in_the_clip_band():
+    cfg = {"printable_area": "0x0,300x0,300x300,0x300",
+           "bed_exclude_area": "0x0,66x0,66x300,0x300,253x0,300x0,300x300,253x300"}
+    inside = placement.check_placement(_objs([44, 180, 19], [150, 150, 9.5]), cfg)
+    assert inside["all_fit"] is True and len(inside["exclude_areas"]) == 2
+    left = placement.check_placement(_objs([44, 180, 19], [80, 150, 9.5]), cfg)
+    assert left["all_fit"] is False
+    assert left["objects"][0]["in_exclude_area"] == [{"min": [0.0, 0.0], "max": [66.0, 300.0]}]
+    assert placement.check_placement(_objs([44, 180, 19], [150, 150, 9.5]),
+                                     cfg | {"bed_exclude_area": "0x0"})["exclude_areas"] == []

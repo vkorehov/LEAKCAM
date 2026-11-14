@@ -5,7 +5,9 @@ already baked with rotation/scale by the fork) plus the active skirt/brim settin
 estimates whether each object *and its skirt/brim ring* stays inside the printable area.
 
 Accuracy floor: this works from the object footprint, NOT the sliced toolpath. It excludes
-skirt arc rounding, half-line-width, travel/wipe excursions, and exclusion zones. At small
+skirt arc rounding, half-line-width and travel/wipe excursions. The printer's bed_exclude_area
+(rectangles, 4 points each: on the CR-10 the bed clips widened by the probe's and the fan duct's
+reach) counts: an object whose ring overlaps one does not fit. At small
 margins (a few mm) it can report "fits" when OrcaSlicer's own boundary check errors - so it
 is a fast first-pass, and the fork's real slice warnings (get_slice_warnings) are the arbiter.
 """
@@ -13,7 +15,7 @@ from __future__ import annotations
 import re
 
 # Config keys the check needs; server fetches these and passes cfg through.
-CFG_KEYS = ["printable_area", "brim_type", "brim_width", "brim_object_gap",
+CFG_KEYS = ["printable_area", "bed_exclude_area", "brim_type", "brim_width", "brim_object_gap",
             "skirt_loops", "skirt_distance", "skirt_line_width",
             "initial_layer_line_width", "line_width", "nozzle_diameter"]
 
@@ -56,6 +58,29 @@ def _parse_bed(s):
     return ([min(xs), min(ys)], [max(xs), max(ys)])
 
 
+def _parse_exclude(s):
+    """bed_exclude_area ('x0xy0,x1xy1,...', OrcaSlicer reads it as rectangles of 4 points each)
+    to a list of (min_xy, max_xy). The empty value '0x0' gives none."""
+    if not s or not isinstance(s, str):
+        return []
+    pts = []
+    for tok in re.split(r"[;,]", s):
+        parts = tok.strip().split("x")
+        if len(parts) != 2:
+            continue
+        try:
+            pts.append((float(parts[0]), float(parts[1])))
+        except ValueError:
+            return []
+    rects = []
+    for i in range(0, len(pts) - 3, 4):
+        xs = [p[0] for p in pts[i:i + 4]]
+        ys = [p[1] for p in pts[i:i + 4]]
+        if max(xs) > min(xs) and max(ys) > min(ys):
+            rects.append(([min(xs), min(ys)], [max(xs), max(ys)]))
+    return rects
+
+
 def _ring(cfg: dict) -> float:
     """Isotropic outward margin = brim reach + skirt reach (skirt stacks outside brim)."""
     brim_out = 0.0
@@ -88,6 +113,7 @@ def check_placement(objects: dict, cfg: dict) -> dict:
         return {"bed": None, "ring_mm": m, "objects": [],
                 "all_fit": None, "note": "printable_area missing/unparseable"}
     bmin, bmax = bed
+    exclude = _parse_exclude(cfg.get("bed_exclude_area"))
     results = []
     all_fit = True
     for o in objects.get("objects", []):
@@ -104,7 +130,10 @@ def check_placement(objects: dict, cfg: dict) -> dict:
         hx, hy = float(size[0]) / 2.0, float(size[1]) / 2.0
         cl = _clearances(cx, cy, hx, hy, m, bmin, bmax)
         obj_only = _clearances(cx, cy, hx, hy, 0.0, bmin, bmax)
-        fits = all(v >= 0 for v in cl.values())
+        lo, hi = [cx - hx - m, cy - hy - m], [cx + hx + m, cy + hy + m]
+        hit = [{"min": r[0], "max": r[1]} for r in exclude
+               if lo[0] < r[1][0] and hi[0] > r[0][0] and lo[1] < r[1][1] and hi[1] > r[0][1]]
+        fits = all(v >= 0 for v in cl.values()) and not hit
         overflow = max(0.0, -min(cl.values()))
         entry.update({
             "fits": fits,
@@ -113,9 +142,11 @@ def check_placement(objects: dict, cfg: dict) -> dict:
             "clearances": cl,
             "object_only_clearances": obj_only,
             "overflow_mm": overflow,
+            "in_exclude_area": hit,
         })
         results.append(entry)
         if not fits:
             all_fit = False
     return {"bed": {"min": bmin, "max": bmax}, "ring_mm": m,
+            "exclude_areas": [{"min": r[0], "max": r[1]} for r in exclude],
             "objects": results, "all_fit": all_fit}
