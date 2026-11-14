@@ -1356,16 +1356,21 @@ next time?"
   instead of searching again: a search costs frames, and every frame of a lit shot costs LED time.
   - **Exposure: kept** (per camera, the LED shots' and the sensor's last: `/sdcard/leakcam/exposure`, since
     2026-11-12).
-  - **White balance: kept, built 2026-11-13, not verified yet** (k230_app/wb.c). The SDK has no call for it, so the
+  - **White balance: kept** (k230_app/wb.c, verified on the board 2026-11-14). The SDK has no call for it, so the
     closed library's three setters the AWB uses are wrapped at link time (found by disassembly:
     `CamerIcIspWbSetGains` 4 gains, `CamerIcIspSetCrossTalkCoefficients` the 9 matrix values,
-    `CamerIcIspSetCrossTalkOffset` 3 offsets, each per camera handle). Under the LEDs the settled set is learnt per
+    `CamerIcIspSetCrossTalkOffset` 3 offsets, each per camera handle). With the LEDs on, the settled set is learnt per
     camera and kept in `/sdcard/leakcam/wb`; when the LEDs go on for a shot it is set at once (the AWB runs only every
-    3rd-4th frame: a 3-frame shot is over before its first round), and the room's set is put back after.
-    - Measured on the way: the gains alone fixed J5 in a 136 ms shot (red 0.95-1.06 x blue, 0.38 before) but turned
-      J4 warm (1.40): the matrix belongs to the state. The version with the matrix and offsets was built and flashed
-      at the day's end; **its photos were not taken** (the run was stopped). Until it is proven, a camera without a
-      kept set waits 14 frames once (it is learnt then).
+    3rd-4th frame: a short shot is over before its first round), and the room's set is put back after.
+    - **The kept frame must be lit:** `LIT_FRAMES` 2 frames pass after the LEDs go on. A camera on a long exposure
+      kept its 2nd frame, exposed mostly before the light: with the LED white balance its white wall came out yellow
+      (J4, red 1.92 x blue over the picture), with the room's it had been right.
+    - **Measured 2026-11-14** (daylight in the room, 3 photos, the K230 restarted between them): J4's white wall red
+      1.08-1.11 x blue from the stored set at the first frame, LEDs on 270 ms (136 ms before, with frames that were
+      not lit; 336 ms when waiting for the AWB instead). J5 0.77-0.82 on its brightest pixels, but its picture was
+      hazy with a blue flare that day: no clean white to judge.
+    - **First time:** a camera without a kept set waits 14 frames once; it is learnt then. A NAND flash erases the
+      file (an OTA does not).
 - **A frame kept too early (found 2026-11-13, two faults of the same kind):**
   - **Dark:** with the stored exposure already at its limit, the grab kept the first frame at once, one exposed
     before the LEDs' light: mean 15 where the scene gives 105 (and green: blue clipped at that level). Now it measures

@@ -62,6 +62,9 @@
 
 #define CAP_W    JOB_W                  /* the OV5647 binned mode (vicap_cap.c) */
 #define CAP_H    JOB_H
+#define LIT_FRAMES 2                    /* frames to pass after the LEDs went on before one is kept: a camera on a long
+                                         * exposure kept its 2nd frame, exposed mostly before the light (2026-11-14:
+                                         * J4's wall yellow with the LED white balance, right with the room's) */
 #define WB_FIRST_FRAMES 14              /* a lit shot's frames before the kept one while a camera has no kept LED white
                                          * balance yet (wb.c learns after 12) */
 #define SETTLE   20                     /* the most frames before the kept one (1.3 s at 15 fps): our exposure is
@@ -147,7 +150,7 @@ static int grab_lit(struct cap_cam *cams, int n, cap_frame_fn fn, void *ctx, uns
     /* the white balance under the LEDs: each camera's kept gains from the first frame (wb.c); a camera without them
      * yet: frames for the automatic to follow, enough for it to settle and be learnt this once */
     wb_light(leds);
-    cap_light_frames = !leds ? 0 : wb_known() ? 0 : WB_FIRST_FRAMES;
+    cap_light_frames = !leds ? 0 : wb_known() ? LIT_FRAMES : WB_FIRST_FRAMES;
     int rc = cap_grab_all(cams, n, 0, SETTLE + cap_light_frames, 1000);
     cap_light_frames = 0;
     if (leds && !more) {
