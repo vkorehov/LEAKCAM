@@ -202,10 +202,12 @@
     <string name="focus_keep">Getting sharper: keep turning slowly %1$s</string>
     <string name="focus_wrong">Getting blurrier: turn the other way, %1$s</string>
     <string name="focus_too_far">Past the sharpest point: turn back %1$s, in small steps</string>
-    <string name="focus_stop">Sharpest. Hold it, tighten the lock ring, then tap Done</string>
+    <string name="focus_stop">Sharpest. Hold it, tighten the lock ring, then tap Apply</string>
     <string name="focus_no_detail">Nothing sharp in view: aim it at something with detail</string>
     <string name="focus_slower">Turn slower</string>
-    <string name="focus_done">Done</string>
+    <string name="focus_done">Apply</string>
+    <string name="focus_resume">Resume</string>
+    <string name="focus_paused">Paused. Tap Resume to see the camera again</string>
     <string name="focus_saved">Saved</string>
     <string name="focus_channel">Camera focus</string>
     <string name="focus_unfocused_title">%1$s of LEAKCAM on %2$s is out of focus</string>

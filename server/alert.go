@@ -245,7 +245,10 @@ func checkInAlerts(id string, in CheckIn, ans map[string]any) (msgs []map[string
 	if s := wakeModeS(id); s > 0 {
 		ans["checkin"] = s
 		ans["mode"] = 1
-	} else if s := focusModeS(id); s > 0 { // a camera to tune: sooner check-ins, not the wake mode's BLE (5.3.17)
+	} else if s := focusModeS(id); s > 0 && s < deviceIntervalsLocked(id).Checkin {
+		// a camera to tune: sooner check-ins, not the wake mode's BLE (5.3.17); only ever sooner: a board on a
+		// shorter interval of its own keeps it (2026-11-14: the tests' 5 s became 60 s on a board whose cameras were
+		// never tuned, test134 / test108 / test117 failed)
 		ans["checkin"] = s
 		ans["mode"] = 0
 	} else {
@@ -495,7 +498,7 @@ func capture(w http.ResponseWriter, r *http.Request) {
 	within := deviceIntervalsLocked(id).Checkin
 	if s := wakeModeS(id); s > 0 {
 		within = s
-	} else if s := focusModeS(id); s > 0 {
+	} else if s := focusModeS(id); s > 0 && s < within {
 		within = s
 	}
 	at := nextCheckin(id)

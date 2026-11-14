@@ -1,15 +1,14 @@
-10:11:45 test109-secure-server: 0 metric rows MISSING: none
-10:11:46 CHECK pass provisioned: tls_ca, tls_crt, tls_key in flash match .secrets/pki (length + CRC only) {'ca': (441, '20f00fcb'), 'crt': (458, 'aba5a9c4'), 'key': (121, '6d896327')}
-10:11:47 CHECK pass a check-in over TLS 1.3, ECDHE + AES-GCM tls: TLSv1.3 TLS1-3-AES-128-GCM-SHA256 in 325 ms, session heap 14160 B
-10:11:47 CHECK pass the boards' port: a client without a device certificate gets nothing 
-10:11:47 CHECK pass another device's certificate cannot report for this board (403) 403
-10:11:50 CHECK pass no clock: the check-in taken (dates not checked) and its X-Time sets the clock tls: TLSv1.3 TLS1-3-AES-128-GCM-SHA256 in 374 ms, no clock: dates not checked, session heap 15924 B; clock 1794471109 vs 1794471110
-10:11:52 CHECK pass a clock in 2049 (past the 20 years): the server's certificate refused, nothing sent and send deauth
-[AT][RX]   state detail: 0x0
-[AT][RX]   vif_idx 0
-=================================================================
-[lwip] default netif cleared
-10:11:54 CHECK pass the refused session did not move the clock 2500000003
-10:11:58 CHECK pass no clock again: taken, the clock set from the verified answer clock 1794471117
-10:12:35 CHECK pass 10 sessions: every one up, the heap kept (after the 1st vs after the last) 10/10 up, free (170300, 140652) -> (170296, 140652)
-10:12:37 test109-secure-server: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+10:49:03 test109-secure-server: 0 metric rows MISSING: none
+10:49:05 CHECK pass provisioned: tls_ca, tls_crt, tls_key in flash match .secrets/pki (length + CRC only) {'ca': (441, '20f00fcb'), 'crt': (458, 'aba5a9c4'), 'key': (121, '6d896327')}
+10:49:05 CHECK pass a check-in over TLS 1.3, ECDHE + AES-GCM tls: TLSv1.3 TLS1-3-AES-128-GCM-SHA256 in 323 ms, session heap 16356 B
+10:49:05 CHECK pass the boards' port: a client without a device certificate gets nothing 
+10:49:05 CHECK pass another device's certificate cannot report for this board (403) 403
+10:49:08 CHECK pass no clock: the check-in taken (dates not checked) and its X-Time sets the clock tls: TLSv1.3 TLS1-3-AES-128-GCM-SHA256 in 299 ms, no clock: dates not checked, session heap 15952 B; clock 1794646146 vs 1794646148
+10:49:27 CHECK pass a clock in 2049 (past the 20 years): the server's certificate refused, nothing sent 2:62:b1:49 ip=192.168.1.223/24 UP,CONNECTED
+tls: the server's certificate refused, flags 0x1
+tls: handshake -0x2700
+[I][WCHK] check of "VK": state 0x15 detail 0
+10:49:28 CHECK pass the refused session did not move the clock 2500000020
+10:49:32 CHECK pass no clock again: taken, the clock set from the verified answer clock 1794646171
+10:50:02 CHECK pass 10 sessions: every one up, the heap kept (after the 1st vs after the last) 10/10 up, free (155492, 125840) -> (155492, 125836)
+10:50:02 test109-secure-server: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

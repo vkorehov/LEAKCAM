@@ -96,7 +96,7 @@ func askFocus(w http.ResponseWriter, r *http.Request) {
 	within := deviceIntervalsLocked(id).Checkin
 	if s := wakeModeS(id); s > 0 {
 		within = s
-	} else if _, flagged := focusSince[id]; flagged {
+	} else if _, flagged := focusSince[id]; flagged && FocusModeS < within {
 		within = FocusModeS // a flagged camera: the board was told 60 s at its last check-in
 	}
 	at := nextCheckin(id)

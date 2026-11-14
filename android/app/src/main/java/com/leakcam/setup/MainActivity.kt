@@ -366,6 +366,7 @@ class MainActivity : Activity() {
             registerReceiver(plugReceiver, plug)
         when {
             intent.hasExtra(LeakAlert.EXTRA_ID) -> showLeak(intent)   // started by a leak alert: its leak panel
+            intent.hasExtra(PushService.EXTRA_BOARD) -> showBoard(intent)   // a camera notification: that board picked
             intent.action == UsbManager.ACTION_USB_DEVICE_ATTACHED -> openSetup(null)
             else -> showStatus()
         }
@@ -375,6 +376,7 @@ class MainActivity : Activity() {
         super.onNewIntent(intent)
         when {
             intent.hasExtra(LeakAlert.EXTRA_ID) -> showLeak(intent)
+            intent.hasExtra(PushService.EXTRA_BOARD) -> showBoard(intent)
             intent.action != UsbManager.ACTION_USB_DEVICE_ATTACHED -> {}
             onStatus -> openSetup(null)      // opened again by a LEAKCAM plugged in (singleTop): set it up
             else -> usbLink.find()
@@ -383,6 +385,12 @@ class MainActivity : Activity() {
 
     /** opened from a leak alert ("I see it"): that board picked on the status screen with its leak panel on top:
      *  which board, when, what found it, and its record (4 pictures, a 15 s video) as the board uploads it */
+    /** opened from a camera notification: the status screen with that board picked (its Tune focus / Ignore camera) */
+    private fun showBoard(i: Intent) {
+        selected = i.getStringExtra(PushService.EXTRA_BOARD) ?: return
+        showStatus()
+    }
+
     private fun showLeak(i: Intent) {
         val id = i.getStringExtra(LeakAlert.EXTRA_ID) ?: return
         selected = id

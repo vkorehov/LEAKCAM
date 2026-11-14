@@ -17,6 +17,41 @@ lines:
 
 ## Runs
 
+### Automated run 2026-11-14 (run.py, 128 s): pass
+
+27/27 checks pass.
+
+
+### Automated run 2026-11-14 (run.py, 207 s): **FAIL**
+
+26/27 checks pass. Failed: app: the board still listed after the delete (7C3E8262B149: offline, last seen 22 s ago, Wi-Fi "<network>" · next check-in any moment now · room 21,2 °C, 50 % (13 h ago)).
+
+
+### Automated run 2026-11-14 (run.py, 207 s): **FAIL**
+
+25/27 checks pass. Failed: app: the board listed and online (7C3E8262B149: offline, last seen 17 s ago, Wi-Fi "<network>" · next check-in any moment now · room 21,2 °C, 50 % (13 h ago)); app: the board still listed after the delete (7C3E8262B149: offline, last seen 17 s ago, Wi-Fi "<network>" · next check-in any moment now · room 21,2 °C, 50 % (13 h ago)).
+
+
+### Automated run 2026-11-14 (run.py, 190 s): **FAIL**
+
+26/27 checks pass. Failed: app: the board still listed after the delete (7C3E8262B149: offline, last seen 17 s ago, Wi-Fi "<network>" · next check-in any moment now · room 21,2 °C, 50 % (13 h ago)).
+
+
+### Automated run 2026-11-14 (run.py, 188 s): **FAIL**
+
+26/27 checks pass. Failed: app: the board still listed after the delete (7C3E8262B149: offline, last seen 22 s ago, Wi-Fi "<network>" · next check-in any moment now · room 21,2 °C, 50 % (13 h ago)).
+
+
+### Automated run 2026-11-14 (run.py, 204 s): **FAIL**
+
+26/27 checks pass. Failed: app: the board still listed after the delete (7C3E8262B149: offline, last seen 22 s ago, Wi-Fi "<network>" · next check-in any moment now · room 21,2 °C, 50 % (12 h ago)).
+
+
+### Automated run 2026-11-14 (run.py, 209 s): **FAIL**
+
+26/27 checks pass. Failed: app: the board still listed after the delete (7C3E8262B149: offline, last seen 22 s ago, Wi-Fi "<network>" · next check-in any moment now · room 21,2 °C, 50 % (12 h ago)).
+
+
 ### Automated run 2026-11-12 (run.py, 255 s): pass
 
 27/27 checks pass.

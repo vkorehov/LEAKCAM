@@ -4,6 +4,21 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-14 (run.py, 46 s): **FAIL**
+
+10/11 checks pass. Failed: the K230 follows back (about +30 s off before) (clock: 1794645047 from the BL616 (was -58955447 s off)).
+
+
+### Automated run 2026-11-14 (run.py, 42 s): pass
+
+11/11 checks pass.
+
+
+### Automated run 2026-11-14 (run.py, 54 s): **FAIL**
+
+9/11 checks pass. Failed: the BL616 30 s ahead: the K230 steps to its next frame (logged about -30 s off) (no clock line); the K230 follows back (about +30 s off before) (clock: 1794638871 from the BL616 (was -58949271 s off)).
+
+
 ### Automated run 2026-11-12 (run.py, 37 s): pass
 
 11/11 checks pass.

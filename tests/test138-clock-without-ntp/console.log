@@ -1,10 +1,32 @@
-    0.306 > 'date' (0.06 s)
-    0.306   date
-    0.306   Thu Nov 12 07:34:26 2026
-    0.306   msh />
-    0.306   msh />
-    4.449 > 'date' (0.06 s)
-    4.449   date
-    4.449   Thu Nov 12 07:34:30 2026
-    4.449   msh />
-    4.449   msh />
+    0.351 > 'date' (0.11 s)
+    0.351   dump dev(0)chn(1) failed.
+    0.351   dump dev(1)chn(1) failed.
+    0.351   date
+    0.351   Sat Nov 14 08:29:56 2026
+    0.351   msh />
+    0.351   msh />
+    3.882 > 'date' (0.13 s)
+    3.882   leakcam: job: cam0 changed (stored as is): 825 of 19602 blocks at x 0-1728 y 0-1936, max 49.9, gain 1.00, read 567 ms, compare 177 ms: t 5972 ms, heap +954368 B
+    3.882   leakcam: job: cam1 changed (stored as is): 8859 of 19602 blocks at x 0-2592 y 0-1936, max 110.0, gain 1.01, read 566 ms, compare 178 ms: t 6721 ms, heap +954368 B
+    3.882   leakcam: job: captured, mean 89 / 89 (got 1 1), room light, room 95 / 93, frames 4 / 5, exposures 1 / 1, 49.5 / 103.6 ms, LEDs 0 ms: t 6727 ms, heap +954368 B
+    3.882   leakcam: job: done: t 6728 ms, heap +954368 B
+    3.882   leakcam: audio: first packet 119 B, frame time 6772880 us, monotonic 6773516 us
+    3.882   leakcam: media: leak 7C3E8262B149-1794644996, 4 pictures, 2 cameras: t 8202 ms, heap +954368 B
+    3.882   [I/bl616.sdio] BL616 SDU ready: io port 0x10000, download 1536 B, ports 0/0
+    3.882   [I/bl616.sdio] bound SDIO 424c:0606
+    3.882   leakcam: media: Wi-Fi bridge bound: t 8346 ms, heap +954368 B
+    3.882   dump dev(0)chn(1) failed.
+    3.882   [I/bl616.msg] netdev: started, credit 23
+    3.882   [I/WLAN.dev] WLAN device sta registered as phy0-sta
+    3.882   [I/WLAN.dev] wlan init success
+    3.882   [I/WLAN.lwip] eth device init ok name:wlan0
+    3.882   [I/bl616.wifi] station 7c:3e:82:62:b1:49
+    3.882   dump dev(1)chn(1) failed.
+    3.882   [I/bl616.msg] vchan: started, credit 3
+    3.882   [I/bl616.wifi] link 0 -> 1 (, channel 0, 0 dBm)
+    3.882   leakcam: job: colour room light, room 90 / 90, frames 2 / 3, exposures 1 / 1, 49.5 / 103.6 ms, LEDs 0 ms
+    3.882   leakcam: media: round 1 at 144 ms: cameras 0x3, 2 JPEGs (116647 + 186248 B) at 528 ms: t 8730 ms, heap +1261568 B
+    3.882   date
+    3.882   Sat Nov 14 08:30:00 2026
+    3.882   msh />
+    3.882   msh />

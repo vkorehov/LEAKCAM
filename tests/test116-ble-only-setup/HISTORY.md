@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-14 (run.py, 0 s): **FAIL**
+
+not run: no Android phone on adb: neither /home/vkorehovs/.leakcam_phone nor the relay app's /adb answered.
+
+
+### Automated run 2026-11-14 (run.py, 38 s): **FAIL**
+
+2/2 checks pass. Stopped at: no hand step: unplug USB-C 1 (the cell stays in).
+
+
 ### Automated run 2026-11-12 (run.py, 96 s): pass
 
 16/16 checks pass.
@@ -142,6 +152,8 @@ not run: the phone is locked: unlock it.
 
 
 ## Obstacles
+
+- no Android phone on adb: neither /home/vkorehovs/.leakcam_phone nor the relay app's /adb answered (phone off Wi-Fi?) (2026-11-14, automated run)
 
 - 2026-11-03 20:21 UTC, the third run (the sleep veto fixed): step 4 spun again (crash #15, watchdog hang in
   ble_start at 6.0 s); an EN tap with USB out -> the setup firmware started on the cell and was found at once: the

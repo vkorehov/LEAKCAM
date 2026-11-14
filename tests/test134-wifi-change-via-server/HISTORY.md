@@ -4,6 +4,21 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-14 (run.py, 16 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-14 (run.py, 16 s): pass
+
+8/8 checks pass.
+
+
+### Automated run 2026-11-14 (run.py, 33 s): **FAIL**
+
+7/8 checks pass. Failed: back on the run's 5 s check-in (check-in every 60 s).
+
+
 ### Automated run 2026-11-12 (run.py, 19 s): pass
 
 8/8 checks pass.

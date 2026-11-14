@@ -59,7 +59,7 @@ class FocusActivity : Activity() {
         private const val TEXT = 1 shl 30                  // a record's kind bit (server/focus.go FocusText)
     }
 
-    private enum class State { STARTING, LIVE, ENDED, FAILED }
+    private enum class State { STARTING, LIVE, ENDED, FAILED, PAUSED }
 
     private var guide = FocusGuide()
     private var cam = 0
@@ -82,6 +82,7 @@ class FocusActivity : Activity() {
     private val stall = android.os.Handler(android.os.Looper.getMainLooper())
     private var liveOnly = false                            // opened as Live video (EXTRA_LIVE)
     private var state = State.STARTING
+    private var wasLeft = false             // (not `left`: inside a View's apply {} that is the view's own) the screen was left once (Home, another app, the screen off): PAUSED on return
     private var startsAt = ""
     @Volatile private var live: HttpURLConnection? = null
     @Volatile private var running = false
@@ -91,6 +92,8 @@ class FocusActivity : Activity() {
         board = intent.getStringExtra(EXTRA_ID).orEmpty()
         cam = intent.getIntExtra(EXTRA_CAM, 0)
         liveOnly = intent.getBooleanExtra(EXTRA_LIVE, false)
+        // who opened it: a session switches the LEDs on and holds the board, so an opening nobody meant must be found
+        Log.i(TAG, "opened for $board cam $cam live $liveOnly by $referrer flags 0x${Integer.toHexString(intent.flags)}")
         shownCam = cam
         val d = resources.displayMetrics.density
         val pad = (16 * d).toInt()
@@ -165,11 +168,18 @@ class FocusActivity : Activity() {
             done = Button(context).apply {
                 setText(R.string.focus_done)
                 isEnabled = false
-                setOnClickListener { command("{\"done\":%.3f}".format(java.util.Locale.ROOT, guide.best)) }
+                setOnClickListener {
+                    if (state == State.PAUSED) {                       // Resume: the session asked for again
+                        wasLeft = false
+                        begin()
+                    } else {
+                        command("{\"done\":%.3f}".format(java.util.Locale.ROOT, guide.best))
+                    }
+                }
             }
             addView(done, LinearLayout.LayoutParams(-1, -2))
-            if (liveOnly)
-                for (v in listOf(bar, slower, done))
+            if (liveOnly)                                              // the bottom button: only Resume there (show())
+                for (v in listOf(bar, slower))
                     v.visibility = View.GONE
         })
         show()
@@ -178,7 +188,12 @@ class FocusActivity : Activity() {
     override fun onStart() {
         super.onStart()
         open = true
-        begin()
+        if (wasLeft) {
+            state = State.PAUSED
+            show()
+        } else {
+            begin()
+        }
     }
 
     override fun onStop() {
@@ -189,6 +204,10 @@ class FocusActivity : Activity() {
         command("{\"stop\":true}")
         Thread { live?.disconnect() }.start()
         super.onStop()
+        // left (Home, another app, the screen off): the session is over; the screen stays (user 2026-11-14: "dont self
+        // close focus screen") and comes back PAUSED: a new session only on Resume. Starting one by itself at every
+        // return held the board with the LEDs on each time the app was opened again (found by test111)
+        wasLeft = true
     }
 
     /** the session asked for and the live stream read, again and again while the screen is open: whatever ends it (the
@@ -384,6 +403,15 @@ class FocusActivity : Activity() {
         }
     }
 
+    /** the bottom button: Apply (the sharpest point found: its score kept as the camera's reference), or Resume after
+     *  the screen was left; Live video has only Resume */
+    private fun bottom() {
+        val paused = state == State.PAUSED
+        done.setText(if (paused) R.string.focus_resume else R.string.focus_done)
+        done.isEnabled = paused || (state == State.LIVE && !camFailed && !liveOnly && guide.sharp)
+        done.visibility = if (liveOnly && !paused) View.INVISIBLE else View.VISIBLE
+    }
+
     private fun show() {
         for (c in 0..1)
             camButtons[c]?.isChecked = c == cam                        // the camera shown
@@ -393,13 +421,14 @@ class FocusActivity : Activity() {
             say.text = when {
                 camFailed -> getString(R.string.focus_nocam, Cams.name(this, cam))
                 state == State.STARTING -> getString(R.string.focus_starting, startsAt)
+                state == State.PAUSED -> getString(R.string.focus_paused)
                 state == State.ENDED -> getString(R.string.focus_ended)
                 else -> getString(R.string.focus_failed)
             }
             spinner.visibility = if (state == State.STARTING && !camFailed) View.VISIBLE else View.INVISIBLE
             bar.set(0.0, 0.0, false)
             slower.visibility = View.INVISIBLE
-            done.isEnabled = false
+            bottom()
             return
         }
         spinner.visibility = View.INVISIBLE
@@ -424,7 +453,7 @@ class FocusActivity : Activity() {
         }
         slower.visibility = if (guide.slower) View.VISIBLE else View.INVISIBLE
         bar.set(guide.score, guide.best, guide.sharp)
-        done.isEnabled = guide.sharp
+        bottom()
     }
 
     /** the sharpness now (filled) against the best so far (a marker): full width = the best + 15 % */

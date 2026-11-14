@@ -1,572 +1,438 @@
-   61.100 > 'cat /sdcard/leakcam/ignore' (0.11 s)
-   61.100   leakcam: media: focus 7C3E8262B149-1794601613, 0 pictures, 2 cameras: t 47492 ms, heap +954368 B
-   61.100   [I/bl616.sdio] BL616 SDU ready: io port 0x10000, download 1536 B, ports 0/0
-   61.100   [I/bl616.sdio] bound SDIO 424c:0606
-   61.100   leakcam: media: Wi-Fi bridge bound: t 47636 ms, heap +954368 B
-   61.100   [E/sal.skt] not find network interface device by protocol family(2).
-   61.100   [E/sal.skt] SAL socket protocol family input failed, return error -3.
-   61.100   [I/bl616.msg] netdev: started, credit 23
-   61.100   [I/WLAN.dev] WLAN device sta registered as phy0-sta
-   61.100   [I/WLAN.dev] wlan init success
-   61.100   [I/WLAN.lwip] eth device init ok name:wlan0
-   61.100   [I/bl616.wifi] station 7c:3e:82:62:b1:49
-   61.100   [I/bl616.msg] vchan: started, credit 3
-   61.100   [I/bl616.wifi] link 0 -> 1 (, channel 0, 0 dBm)
-   61.100   [I/bl616.wifi] link 1 -> 2 (VK, channel 11, 0 dBm)
-   61.100   [I/WLAN.mgnt] wifi connect success ssid:
-   61.100   [I/WLAN.lwip] Got IP address : 192.168.1.223
-   61.100   leakcam: focus: cam0 shown 431 ms after its command, 0 B of the other camera's pictures dropped
-   61.100   [I/ntp] Get local time from NTP server: Fri Nov 13 20:26:56 2026
-   61.100   leakcam: focus: cam1 shown 27 ms after its command, 0 B of the other camera's pictures dropped
-   61.100   leakcam: focus: stopped (the app left, nobody watching, or the time is up)
-   61.100   leakcam: focus: 382 frame pairs, ended
-   61.100   ch 1: 382 pictures encoded. Average FrameRate = 15 Fps
-   61.100   ch 1: total used pages 3079
-   61.100   leakcam: focus: session end, 382 frames sent, 0 dropped, the server said 200
-   61.100   leakcam: media: focus session done, 382 frames: t 74115 ms, heap +1581056 B
-   61.100   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 13 2026 - 20:22:38 +0000)
-   61.100   00000000: PMU Major Msg: End of CA training                                            
-   61.100   00000000: PMU Major Msg: End of initialization                                         
-   61.100   00000000: PMU Major Msg: End of read enable training                                   
-   61.100   00000000: PMU Major Msg: End of fine write leveling                                    
-   61.100   00000000: PMU Major Msg: End of read dq deskew training                                
-   61.100   00000000: PMU Major Msg: End of MPR read delay center optimization                     
-   61.100   00000000: PMU Major Msg: End of Write leveling coarse delay                            
-   61.100   00000000: PMU Major Msg: End of write delay center optimization                        
-   61.100   00000000: PMU Major Msg: End of read delay center optimization                         
-   61.100   00000000: PMU Major Msg: End of max read latency training                              
-   61.100   00000000: PMU Major Msg: Firmware run has completed                                    
-   61.100   dbyte0 add =9a040100 value =12
-   61.100   dbyte0 add =9a040500 value =13
-   61.100   dbyte0 add =9a040900 value =14
-   61.100   dbyte0 add =9a040d00 value =13
-   61.100   dbyte0 add =9a041100 value =13
-   61.100   dbyte0 add =9a041500 value =13
-   61.100   dbyte0 add =9a041900 value =13
-   61.100   dbyte0 add =9a041d00 value =14
-   61.100   dbyte1 add =9a044100 value =14
-   61.100   dbyte1 add =9a044500 value =13
-   61.100   dbyte1 add =9a044900 value =15
-   61.100   dbyte1 add =9a044d00 value =13
-   61.100   dbyte1 add =9a045100 value =13
-   61.100   dbyte1 add =9a045500 value =14
-   61.100   dbyte1 add =9a045900 value =14
-   61.100   dbyte1 add =9a045d00 value =14
-   61.100   dbyte2 add =9a048100 value =37
-   61.100   dbyte2 add =9a048500 value =37
-   61.100   dbyte2 add =9a048900 value =37
-   61.100   dbyte2 add =9a048d00 value =37
-   61.100   dbyte2 add =9a049100 value =37
-   61.100   dbyte2 add =9a049500 value =37
-   61.100   dbyte2 add =9a049900 value =37
-   61.100   dbyte2 add =9a049d00 value =37
-   61.100   dbyte3 add =9a04c100 value =37
-   61.100   dbyte3 add =9a04c500 value =37
-   61.100   dbyte3 add =9a04c900 value =37
-   61.100   dbyte3 add =9a04cd00 value =37
-   61.100   dbyte3 add =9a04d100 value =37
-   61.100   dbyte3 add =9a04d500 value =37
-   61.100   dbyte3 add =9a04d900 value =37
-   61.100   dbyte3 add =9a04dd00 value =37
-   61.100   spi_nand spi-flash@0: Winbond SPI NAND was found.
-   61.100   spi_nand spi-flash@0: u MiB, block size: u KiBpage size: u, OOB size: 256
-   61.100   OpenSBI v0.9
-   61.100   heap: [0x005fa4c0 - 0x00efa4c0], size 9216 KB
-   61.100   page: [0x00efa4c8 - 0x036fec00], size 40977 KB
-   61.100    \ | /
-   61.100   - RT -     Thread Smart Operating System
-   61.100    / | \     5.0.0 build Nov 13 2026
-   61.100    2006 - 2020 Copyright by rt-thread team
-   61.100   rtc driver register OK
-   61.100   lwIP-2.1.2 initialized!
-   61.100   [I/I2C] I2C bus [i2c0] registered
-   61.100   [I/I2C] I2C bus [i2c4] registered
-   61.100   [I/board.sdio] boot mode 0 does not use an SD/MMC controller�link_mux: console and /dev/link share uart1
-   61.100   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
-   61.100   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
-   61.100   os  : system memory alloc 320 bytes
-   61.100   flsh: UFFS consume spare data size 9
-   61.100   os  : system memory alloc 84480 bytes
-   61.100   os  : system memory alloc 53200 bytes
-   61.100   os  : system memory alloc 2048 bytes
-   61.100   tree: DIR 0, FILE 5, DATA 4
-   61.100   os  : system memory alloc 320 bytes
-   61.100   flsh: UFFS consume spare data size 9
-   61.100   os  : system memory alloc 84480 bytes
-   61.100   os  : system memory alloc 53200 bytes
-   61.100   os  : system memory alloc 8192 bytes
-   61.100   tree: DIR 1, FILE 5, DATA 76
-   61.100   /dev/shm file system initialization done!
-   61.100   Probe dummy af driver
-   61.100   find sensor(ov5647_csi0) on csi0
-   61.100   Probe dummy af driver
-   61.100   find sensor(ov5647_csi2) on csi2
-   61.100   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
-   61.100   <gnne> gnne_device_init done.
-   61.100   #############SDK VERSION######################################
-   61.100   SDK   : unknown-20261113-202345--4a9b373dd0a7-4162ec7
-   61.100   nncase: 2.11.0
-   61.100   ##############################################################
-   61.100   msh />leakcam: start: t 664 ms, heap +0 B
-   61.100   leakcam: version 0.6+gfcb2d5b-dirty-202611132022
-   61.100   leakcam: battery 4369 mV: t 665 ms, heap +0 B
-   61.100   leakcam: clock: 1794601644 from the BL616 (was -58912044 s off)
-   61.100   leakcam: WAKE usb: t 678 ms, heap +0 B
-   61.100   leakcam: relay: USB relay on /dev/ttyGS0: t 678 ms, heap +0 B
-   61.100   leakcam: job: check: t 683 ms, heap +0 B
-   61.100   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
-   61.100   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
-   61.100   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
-   61.100   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
-   61.100   usb disconnect
-   61.100   usb disconnect
-   61.100   audio i2s set clk freq is 1024000(1024000),ret:1
-   61.100   audio codec adc clk freq is 4096000(4096000)
-   61.100   dump dev(0)chn(1) failed.
-   61.100   dump dev(1)chn(1) failed.
-   61.100   leakcam: focus: cam0 score 0.633, reference 0.000: -1 %, 0 low in a row
-   61.100   leakcam: job: cam0 same (stored as is): 0 of 19602 blocks at x 0-0 y 0-0, max 4.2, gain 1.01, read 563 ms, compare 180 ms: t 5711 ms, heap +954368 B
-   61.100   leakcam: focus: cam1 score 0.076, reference 0.000: -1 %, 0 low in a row
-   61.100   leakcam: audio: first packet 119 B, frame time 6435259 us, monotonic 6436573 us
-   61.100   leakcam: job: cam1 changed (stored as is): 1156 of 19602 blocks at x 0-2592 y 0-192, max 21.5, gain 1.03, read 564 ms, compare 176 ms: t 6566 ms, heap +954368 B
-   61.100   leakcam: job: captured, mean 104 / 96 (got 1 1), LEDs, room 0 / 0, frames 5 / 3, exposures 1 / 1, 528.0 / 158.2 ms, LEDs 254 ms: t 6569 ms, heap +954368 B
-   61.100   leakcam: job: done: t 6570 ms, heap +954368 B
-   61.100   leakcam: media: leak 7C3E8262B149-1794601648, 4 pictures, 2 cameras: t 7939 ms, heap +954368 B
-   61.100   [I/bl616.sdio] BL616 SDU ready: io port 0x10000, download 1536 B, ports 0/0
-   61.100   [I/bl616.sdio] bound SDIO 424c:0606
-   61.100   leakcam: media: Wi-Fi bridge bound: t 8082 ms, heap +954368 B
-   61.100   dump dev(0)chn(1) failed.
-   61.100   [I/bl616.msg] netdev: started, credit 23
-   61.100   [I/WLAN.dev] WLAN device sta registered as phy0-sta
-   61.100   [I/WLAN.dev] wlan init success
-   61.100   [I/WLAN.lwip] eth device init ok name:wlan0
-   61.100   [I/bl616.wifi] station 7c:3e:82:62:b1:49
-   61.100   dump dev(1)chn(1) failed.
-   61.100   [I/bl616.msg] vchan: started, credit 3
-   61.100   [I/bl616.wifi] link 0 -> 1 (, channel 0, 0 dBm)
-   61.100   [I/bl616.wifi] link 1 -> 2 (VK, channel 11, -45 dBm)
-   61.100   [I/WLAN.mgnt] wifi connect success ssid:
-   61.100   [I/WLAN.lwip] Got IP address : 192.168.1.223
-   61.100   leakcam: job: colour LEDs, room 0 / 0, frames 5 / 3, exposures 1 / 1, 528.0 / 158.2 ms, LEDs 254 ms
-   61.100   leakcam: media: round 1 at 143 ms: cameras 0x3, 2 JPEGs (237080 + 117742 B) at 642 ms: t 8581 ms, heap +1073152 B
-   61.100   dump dev(0)chn(1) failed.
-   61.100   dump dev(1)chn(1) failed.
-   61.100   leakcam: job: colour LEDs, room 0 / 0, frames 5 / 3, exposures 1 / 1, 528.0 / 158.2 ms, LEDs 254 ms
-   61.100   leakcam: media: round 2 at 2000 ms: cameras 0x3, 2 JPEGs (238087 + 117475 B) at 2492 ms: t 10431 ms, heap +1191936 B
-   61.100   leakcam: media: p1 237080 B: uploaded 200 at 2595 ms: t 10534 ms, heap +1191936 B
-   61.100   [I/ntp] Get local time from NTP server: Fri Nov 13 20:27:51 2026
-   61.100   leakcam: media: p2 117742 B: upload failed -1 at 41804 ms: t 49743 ms, heap +1191936 B
-   61.100   leakcam: media: p3 238087 B: uploaded 200 at 41874 ms: t 49813 ms, heap +1191936 B
-   61.100   leakcam: media: p4 117475 B: uploaded 200 at 41914 ms: t 49853 ms, heap +1191936 B
-   61.100   ch 0: 4 pictures encoded. Average FrameRate = 2 Fps
-   61.100   ch 0: total used pages 3024
-   61.100   leakcam: media: video 225 frames per camera at 15 fps, 10000 kbit/s: t 50172 ms, heap +1191936 B
-   61.100   dump dev(0)chn(1) failed.
-   61.100   dump dev(1)chn(1) failed.
-   61.100   leakcam: media: v1: first picture time 50582889 us, monotonic 50627964 us
-   61.100   leakcam: media: v2: first picture time 50464791 us, monotonic 50668926 us
-   61.100   vicap: dev 0 video: 224 frames over 14932 ms of pts = 14.9 fps, sequence 745..969
-   61.100   vicap: dev 1 video: 224 frames over 14866 ms of pts = 15.0 fps, sequence 745..968
-   61.100   leakcam: job: colour LEDs, room 0 / 0, frames 5 / 3, exposures 1 / 1, 528.0 / 158.2 ms, LEDs 253 ms
-   61.100   ch 1: 225 pictures encoded. Average FrameRate = 15 Fps
-   61.100   ch 1: total used pages 3075
-   61.100   leakcam: media: v1: 225 frames (15 IDR), 0 dropped in 0 gaps, audio 376 packets (0 lost), in 15479 ms, 18679193 B = 9653 kbit/s, 225 sent, uploaded 200 at 58087 ms; encode 6811 ms, between frames 8213 ms, send 4355 ms, backlog max 1186459 B: t 66026 ms, heap +1892352 B
-   61.100   ch 2: 225 pictures encoded. Average FrameRate = 15 Fps
-   61.100   ch 2: total used pages 3075
-   61.100   leakcam: media: v2: 225 frames (15 IDR), 0 dropped in 0 gaps, audio 375 packets (0 lost), in 15479 ms, 18663400 B = 9645 kbit/s, 225 sent, uploaded 200 at 58421 ms; encode 6814 ms, between frames 8198 ms, send 4364 ms, backlog max 712693 B: t 66360 ms, heap +1892352 B
-   61.100   leakcam: media: done, 5 uploaded, 1 failed, 0 skipped: t 66362 ms, heap +1892352 B
-   61.100   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 13 2026 - 20:22:38 +0000)
-   61.100   00000000: PMU Major Msg: End of CA training                                            
-   61.100   00000000: PMU Major Msg: End of initialization                                         
-   61.100   00000000: PMU Major Msg: End of read enable training                                   
-   61.100   00000000: PMU Major Msg: End of fine write leveling                                    
-   61.100   00000000: PMU Major Msg: End of read dq deskew training                                
-   61.100   00000000: PMU Major Msg: End of MPR read delay center optimization                     
-   61.100   00000000: PMU Major Msg: End of Write leveling coarse delay                            
-   61.100   00000000: PMU Major Msg: End of write delay center optimization                        
-   61.100   00000000: PMU Major Msg: End of read delay center optimization                         
-   61.100   00000000: PMU Major Msg: End of max read latency training                              
-   61.100   00000000: PMU Major Msg: Firmware run has completed                                    
-   61.100   dbyte0 add =9a040100 value =12
-   61.100   dbyte0 add =9a040500 value =13
-   61.100   dbyte0 add =9a040900 value =14
-   61.100   dbyte0 add =9a040d00 value =13
-   61.100   dbyte0 add =9a041100 value =14
-   61.100   dbyte0 add =9a041500 value =14
-   61.100   dbyte0 add =9a041900 value =14
-   61.100   dbyte0 add =9a041d00 value =15
-   61.100   dbyte1 add =9a044100 value =14
-   61.100   dbyte1 add =9a044500 value =13
-   61.100   dbyte1 add =9a044900 value =15
-   61.100   dbyte1 add =9a044d00 value =13
-   61.100   dbyte1 add =9a045100 value =13
-   61.100   dbyte1 add =9a045500 value =14
-   61.100   dbyte1 add =9a045900 value =14
-   61.100   dbyte1 add =9a045d00 value =13
-   61.100   dbyte2 add =9a048100 value =37
-   61.100   dbyte2 add =9a048500 value =37
-   61.100   dbyte2 add =9a048900 value =37
-   61.100   dbyte2 add =9a048d00 value =37
-   61.100   dbyte2 add =9a049100 value =37
-   61.100   dbyte2 add =9a049500 value =37
-   61.100   dbyte2 add =9a049900 value =37
-   61.100   dbyte2 add =9a049d00 value =37
-   61.100   dbyte3 add =9a04c100 value =37
-   61.100   dbyte3 add =9a04c500 value =37
-   61.100   dbyte3 add =9a04c900 value =37
-   61.100   dbyte3 add =9a04cd00 value =37
-   61.100   dbyte3 add =9a04d100 value =37
-   61.100   dbyte3 add =9a04d500 value =37
-   61.100   dbyte3 add =9a04d900 value =37
-   61.100   dbyte3 add =9a04dd00 value =37
-   61.100   spi_nand spi-flash@0: Winbond SPI NAND was found.
-   61.100   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
-   61.100   OpenSBI v0.9
-   61.100   heap: [0x005fa4c0 - 0x00efa4c0], size 9216 KB
-   61.100   page: [0x00efa4c8 - 0x036fec00], size 40977 KB
-   61.100    \ | /
-   61.100   - RT -     Thread Smart Operating System
-   61.100    / | \     5.0.0 build Nov 13 2026
-   61.100    2006 - 2020 Copyright by rt-thread team
-   61.100   rtc driver register OK
-   61.100   lwIP-2.1.2 initialized!
-   61.100   [I/I2C] I2C bus [i2c0] registered
-   61.100   [I/I2C] I2C bus [i2c4] registered
-   61.100   [I/board.sdio] boot mode 0 does not use an SD/MMC controller�link_mux: console and /dev/link share uart1
-   61.100   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
-   61.100   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
-   61.100   os  : system memory alloc 320 bytes
-   61.100   flsh: UFFS consume spare data size 9
-   61.100   os  : system memory alloc 84480 bytes
-   61.100   os  : system memory alloc 53200 bytes
-   61.100   os  : system memory alloc 2048 bytes
-   61.100   tree: DIR 0, FILE 5, DATA 4
-   61.100   os  : system memory alloc 320 bytes
-   61.100   flsh: UFFS consume spare data size 9
-   61.100   os  : system memory alloc 84480 bytes
-   61.100   os  : system memory alloc 53200 bytes
-   61.100   os  : system memory alloc 8192 bytes
-   61.100   tree: DIR 1, FILE 5, DATA 76
-   61.100   /dev/shm file system initialization done!
-   61.100   Probe dummy af driver
-   61.100   find sensor(ov5647_csi0) on csi0
-   61.100   Probe dummy af driver
-   61.100   find sensor(ov5647_csi2) on csi2
-   61.100   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
-   61.100   <gnne> gnne_device_init done.
-   61.100   #############SDK VERSION######################################
-   61.100   SDK   : unknown-20261113-202345--4a9b373dd0a7-4162ec7
-   61.100   nncase: 2.11.0
-   61.100   ##############################################################
-   61.100   msh />leakcam: start: t 670 ms, heap +0 B
-   61.100   leakcam: version 0.6+gfcb2d5b-dirty-202611132022
-   61.100   [31m[E/drv_adc] Wait adc done timeout 2, -110[0m
-   61.100   leakcam: battery: ADC channel 1: No error information
-   61.100   leakcam: battery -1 mV: t 672 ms, heap +0 B
-   61.100   C
-   61.100   C: command not found.
-   61.100   msh />leakcam: clock: 1794601712 from the BL616 (was -58912112 s off)
-   61.100   usb disconnect
-   61.100   usb disconnect
-   61.100   leakcam: WAKE usb: t 974 ms, heap +0 B
-   61.100   leakcam: relay: USB relay on /dev/ttyGS0: t 975 ms, heap +0 B
-   61.100   leakcam: job: check: t 980 ms, heap +0 B
-   61.100   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
-   61.100   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
-   61.100   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
-   61.100   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
-   61.100   audio i2s set clk freq is 1024000(1024000),ret:1
-   61.100   audio codec adc clk freq is 4096000(4096000)
-   61.100   dump dev(0)chn(1) failed.
-   61.100   dump dev(1)chn(1) failed.
-   61.100   leakcam: focus: cam0 score 0.645, reference 0.000: -1 %, 0 low in a row
-   61.100   leakcam: job: cam0 same (stored as is): 0 of 19602 blocks at x 0-0 y 0-0, max 4.9, gain 1.01, read 564 ms, compare 182 ms: t 6011 ms, heap +954368 B
-   61.100   leakcam: focus: cam1 score 0.076, reference 0.000: -1 %, 0 low in a row
-   61.100   leakcam: audio: first packet 119 B, frame time 6691821 us, monotonic 6693844 us
-   61.100   leakcam: job: cam1 changed (stored as is): 1211 of 19602 blocks at x 0-2592 y 0-240, max 21.8, gain 1.03, read 564 ms, compare 177 ms: t 6867 ms, heap +954368 B
-   61.100   leakcam: job: captured, mean 104 / 95 (got 1 1), LEDs, room 0 / 0, frames 5 / 3, exposures 1 / 1, 528.0 / 158.2 ms, LEDs 256 ms: t 6871 ms, heap +954368 B
-   61.100   leakcam: job: done: t 6872 ms, heap +954368 B
-   61.100   cat /sdcard/leakcam/ignore
-   61.100   Open /sdcard/leakcam/ignore failed
-   61.100   msh />
-   61.100   msh />
-   61.206 > 'cat /sdcard/leakcam/ignore' (0.11 s)
-   61.206   cat /sdcard/leakcam/ignore
-   61.206   Open /sdcard/leakcam/ignore failed
-   61.206   msh />
-   61.206   msh />
-   61.322 > 'rm /sdcard/leakcam/sim' (0.11 s)
-   61.322   rm /sdcard/leakcam/sim
-   61.322   msh />
-   61.322   msh />
-   61.427 > 'echo lit=led /sdcard/leakcam/sim' (0.11 s)
-   61.427   echo lit=led /sdcard/leakcam/sim
-   61.427   open file:/sdcard/leakcam/sim failed!
-   61.427   msh />
-   61.427   msh />
-   74.036 > 'ls /sdcard/leakcam' (0.11 s)
-   74.036   leakcam: job: CHECK rtc
-   74.036   leakcam: job: check: t 12502 ms, heap +954368 B
-   74.036   dump dev(0)chn(1) failed.
-   74.036   dump dev(1)chn(1) failed.
-   74.036   leakcam: focus: cam0 score 0.651, reference 0.000: -1 %, 0 low in a row
-   74.036   leakcam: job: cam0 same (stored as is): 0 of 19602 blocks at x 0-0 y 0-0, max 4.6, gain 1.00, read 569 ms, compare 184 ms: t 13843 ms, heap +954368 B
-   74.036   leakcam: focus: cam1 score 0.075, reference 0.000: -1 %, 0 low in a row
-   74.036   leakcam: job: cam1 changed (stored as is): 915 of 19602 blocks at x 0-2592 y 0-192, max 20.9, gain 1.02, read 569 ms, compare 180 ms: t 14707 ms, heap +954368 B
-   74.036   leakcam: job: captured, mean 105 / 96 (got 1 1), LEDs, room 0 / 0, frames 5 / 3, exposures 1 / 1, 528.0 / 158.2 ms, LEDs 255 ms: t 14710 ms, heap +954368 B
-   74.036   leakcam: job: done: t 14711 ms, heap +954368 B
-   74.036   leakcam: media: leak 7C3E8262B149-1794601723, 4 pictures, 2 cameras: t 16053 ms, heap +954368 B
-   74.036   [I/bl616.sdio] BL616 SDU ready: io port 0x10000, download 1536 B, ports 0/0
-   74.036   [I/bl616.sdio] bound SDIO 424c:0606
-   74.036   leakcam: media: Wi-Fi bridge bound: t 16195 ms, heap +954368 B
-   74.036   dump dev(0)chn(1) failed.
-   74.036   [I/bl616.msg] netdev: started, credit 23
-   74.036   [I/WLAN.dev] WLAN device sta registered as phy0-sta
-   74.036   [I/WLAN.dev] wlan init success
-   74.036   [I/WLAN.lwip] eth device init ok name:wlan0
-   74.036   [I/bl616.wifi] station 7c:3e:82:62:b1:49
-   74.036   dump dev(1)chn(1) failed.
-   74.036   [I/bl616.msg] vchan: started, credit 3
-   74.036   [I/bl616.wifi] link 0 -> 1 (, channel 0, 0 dBm)
-   74.036   [I/bl616.wifi] link 1 -> 2 (VK, channel 11, 0 dBm)
-   74.036   [I/WLAN.mgnt] wifi connect success ssid:
-   74.036   [I/WLAN.lwip] Got IP address : 192.168.1.223
-   74.036   leakcam: job: colour LEDs, room 0 / 0, frames 5 / 3, exposures 1 / 1, 528.0 / 158.2 ms, LEDs 255 ms
-   74.036   leakcam: media: round 1 at 142 ms: cameras 0x3, 2 JPEGs (239293 + 117805 B) at 624 ms: t 16677 ms, heap +1073152 B
-   74.036   dump dev(0)chn(1) failed.
-   74.036   dump dev(1)chn(1) failed.
-   74.036   leakcam: job: colour LEDs, room 0 / 0, frames 5 / 3, exposures 1 / 1, 528.0 / 158.2 ms, LEDs 255 ms
-   74.036   leakcam: media: round 2 at 2000 ms: cameras 0x3, 2 JPEGs (238543 + 117544 B) at 2474 ms: t 18527 ms, heap +1191936 B
-   74.036   leakcam: media: p1 239293 B: uploaded 200 at 2596 ms: t 18650 ms, heap +1191936 B
-   74.036   ls /sdcard/leakcam
-   74.036   Directory /sdcard/leakcam:
-   74.036   exposure                                36                       
-   74.036   sim                                     0                        
-   74.036   cam0.hist                               5018112                  
-   74.036   cam1.hist                               5018112                  
-   74.036   msh />
-   74.036   msh />
-   74.142 > 'echo cam0=dark /sdcard/leakcam/sim' (0.11 s)
-   74.142   echo cam0=dark /sdcard/leakcam/sim
-   74.142   msh />
-   74.142   msh />
-   74.248 > 'echo cam1=dark /sdcard/leakcam/sim' (0.11 s)
-   74.248   echo cam1=dark /sdcard/leakcam/sim
-   74.248   msh />
-   74.248   msh />
-  110.055 > 'ls /sdcard/leakcam' (0.14 s)
-  110.055   leakcam: media: p2 117805 B: uploaded 200 at 11295 ms: t 27349 ms, heap +1191936 B
-  110.055   [I/ntp] Get local time from NTP server: Fri Nov 13 20:28:58 2026
-  110.055   leakcam: media: p3 238543 B: uploaded 200 at 17337 ms: t 33390 ms, heap +1191936 B
-  110.055   leakcam: media: p4 117544 B: uploaded 200 at 20304 ms: t 36357 ms, heap +1191936 B
-  110.055   ch 0: 4 pictures encoded. Average FrameRate = 2 Fps
-  110.055   ch 0: total used pages 3024
-  110.055   leakcam: media: video 225 frames per camera at 15 fps, 10000 kbit/s: t 36675 ms, heap +1191936 B
-  110.055   dump dev(0)chn(1) failed.
-  110.055   dump dev(1)chn(1) failed.
-  110.055   leakcam: media: v1: first picture time 37080222 us, monotonic 37125390 us
-  110.055   leakcam: media: v2: first picture time 36962120 us, monotonic 37166453 us
-  110.055   vicap: dev 0 video: 224 frames over 14932 ms of pts = 14.9 fps, sequence 538..762
-  110.055   vicap: dev 1 video: 224 frames over 14866 ms of pts = 15.0 fps, sequence 538..761
-  110.055   leakcam: job: colour LEDs, room 0 / 0, frames 5 / 3, exposures 1 / 1, 528.0 / 158.2 ms, LEDs 254 ms
-  110.055   ch 1: 225 pictures encoded. Average FrameRate = 15 Fps
-  110.055   ch 1: total used pages 3299
-  110.055   leakcam: media: v1: 225 frames (15 IDR), 0 dropped in 0 gaps, audio 376 packets (0 lost), in 15472 ms, 18651008 B = 9643 kbit/s, 225 sent, uploaded 200 at 36474 ms; encode 6806 ms, between frames 8218 ms, send 4764 ms, backlog max 1209820 B: t 52527 ms, heap +1888256 B
-  110.055   ch 2: 225 pictures encoded. Average FrameRate = 15 Fps
-  110.055   ch 2: total used pages 3075
-  110.055   leakcam: media: v2: 225 frames (15 IDR), 0 dropped in 0 gaps, audio 375 packets (0 lost), in 15472 ms, 18571753 B = 9602 kbit/s, 225 sent, uploaded 200 at 36803 ms; encode 6822 ms, between frames 8191 ms, send 4750 ms, backlog max 698076 B: t 52856 ms, heap +1888256 B
-  110.055   leakcam: media: done, 6 uploaded, 0 failed, 0 skipped: t 52857 ms, heap +1888256 B
-  110.055   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 13 2026 - 20:22:38 +0000)
-  110.055   00000000: PMU Major Msg: End of CA training                                            
-  110.055   00000000: PMU Major Msg: End of initialization                                         
-  110.055   00000000: PMU Major Msg: End of read enable training                                   
-  110.055   00000000: PMU Major Msg: End of fine write leveling                                    
-  110.055   00000000: PMU Major Msg: End of read dq deskew training                                
-  110.055   00000000: PMU Major Msg: End of MPR read delay center optimization                     
-  110.055   00000000: PMU Major Msg: End of Write leveling coarse delay                            
-  110.055   00000000: PMU Major Msg: End of write delay center optimization                        
-  110.055   00000000: PMU Major Msg: End of read delay center optimization                         
-  110.055   00000000: PMU Major Msg: End of max read latency training                              
-  110.055   00000000: PMU Major Msg: Firmware run has completed                                    
-  110.055   dbyte0 add =9a040100 value =12
-  110.055   dbyte0 add =9a040500 value =13
-  110.055   dbyte0 add =9a040900 value =14
-  110.055   dbyte0 add =9a040d00 value =13
-  110.055   dbyte0 add =9a041100 value =13
-  110.055   dbyte0 add =9a041500 value =13
-  110.055   dbyte0 add =9a041900 value =13
-  110.055   dbyte0 add =9a041d00 value =14
-  110.055   dbyte1 add =9a044100 value =13
-  110.055   dbyte1 add =9a044500 value =13
-  110.055   dbyte1 add =9a044900 value =15
-  110.055   dbyte1 add =9a044d00 value =13
-  110.055   dbyte1 add =9a045100 value =14
-  110.055   dbyte1 add =9a045500 value =13
-  110.055   dbyte1 add =9a045900 value =13
-  110.055   dbyte1 add =9a045d00 value =13
-  110.055   dbyte2 add =9a048100 value =37
-  110.055   dbyte2 add =9a048500 value =37
-  110.055   dbyte2 add =9a048900 value =37
-  110.055   dbyte2 add =9a048d00 value =37
-  110.055   dbyte2 add =9a049100 value =37
-  110.055   dbyte2 add =9a049500 value =37
-  110.055   dbyte2 add =9a049900 value =37
-  110.055   dbyte2 add =9a049d00 value =37
-  110.055   dbyte3 add =9a04c100 value =37
-  110.055   dbyte3 add =9a04c500 value =37
-  110.055   dbyte3 add =9a04c900 value =37
-  110.055   dbyte3 add =9a04cd00 value =37
-  110.055   dbyte3 add =9a04d100 value =37
-  110.055   dbyte3 add =9a04d500 value =37
-  110.055   dbyte3 add =9a04d900 value =37
-  110.055   dbyte3 add =9a04dd00 value =37
-  110.055   spi_nand spi-flash@0: Winbond SPI NAND was found.
-  110.055   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
-  110.055   OpenSBI v0.9
-  110.055   heap: [0x005fa4c0 - 0x00efa4c0], size 9216 KB
-  110.055   page: [0x00efa4c8 - 0x036fec00], size 40977 KB
-  110.055    \ | /
-  110.055   - RT -     Thread Smart Operating System
-  110.055    / | \     5.0.0 build Nov 13 2026
-  110.055    2006 - 2020 Copyright by rt-thread team
-  110.055   rtc driver register OK
-  110.055   lwIP-2.1.2 initialized!
-  110.055   [I/I2C] I2C bus [i2c0] registered
-  110.055   [I/I2C] I2C bus [i2c4] registered
-  110.055   [I/board.sdio] boot mode 0 does not use an SD/MMC controller�link_mux: console and /dev/link share uart1
-  110.055   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
-  110.055   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
-  110.055   os  : system memory alloc 320 bytes
-  110.055   flsh: UFFS consume spare data size 9
-  110.055   os  : system memory alloc 84480 bytes
-  110.055   os  : system memory alloc 53200 bytes
-  110.055   os  : system memory alloc 2048 bytes
-  110.055   tree: DIR 0, FILE 5, DATA 4
-  110.055   os  : system memory alloc 320 bytes
-  110.055   flsh: UFFS consume spare data size 9
-  110.055   os  : system memory alloc 84480 bytes
-  110.055   os  : system memory alloc 53200 bytes
-  110.055   os  : system memory alloc 8192 bytes
-  110.055   tree: DIR 1, FILE 5, DATA 76
-  110.055   /dev/shm file system initialization done!
-  110.055   Probe dummy af driver
-  110.055   find sensor(ov5647_csi0) on csi0
-  110.055   Probe dummy af driver
-  110.055   find sensor(ov5647_csi2) on csi2
-  110.055   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
-  110.055   <gnne> gnne_device_init done.
-  110.055   #############SDK VERSION######################################
-  110.055   SDK   : unknown-20261113-202345--4a9b373dd0a7-4162ec7
-  110.055   nncase: 2.11.0
-  110.055   ##############################################################
-  110.055   msh />leakcam: start: t 680 ms, heap +0 B
-  110.055   leakcam: version 0.6+gfcb2d5b-dirty-202611132022
-  110.055   leakcam: battery 4369 mV: t 681 ms, heap +0 B
-  110.055   65*1C
-  110.055   65*1C: command not found.
-  110.055   msh />leakcam: clock: 1794601765 from the BL616 (was -58912165 s off)
-  110.055   usb disconnect
-  110.055   usb disconnect
-  110.055   leakcam: WAKE usb: t 985 ms, heap +0 B
-  110.055   leakcam: relay: USB relay on /dev/ttyGS0: t 986 ms, heap +0 B
-  110.055   leakcam: job: check: t 991 ms, heap +0 B
-  110.055   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
-  110.055   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
-  110.055   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
-  110.055   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
-  110.055   audio i2s set clk freq is 1024000(1024000),ret:1
-  110.055   audio codec adc clk freq is 4096000(4096000)
-  110.055   leakcam: job: CHECK rtc
-  110.055   dump dev(0)chn(1) failed.
-  110.055   dump dev(1)chn(1) failed.
-  110.055   leakcam: job: cam0 dark: mean 54, below 16 (simulated): t 5261 ms, heap +954368 B
-  110.055   leakcam: job: cam1 dark: mean 98, below 16 (simulated): t 5265 ms, heap +954368 B
-  110.055   leakcam: job: captured, mean 54 / 98 (got 1 1), LEDs, room 0 / 0, frames 5 / 6, exposures 1 / 2, 528.0 / 84.7 ms, LEDs 337 ms: t 5268 ms, heap +954368 B
-  110.055   leakcam: job: done: t 5269 ms, heap +954368 B
-  110.055   leakcam: job: check: t 5269 ms, heap +954368 B
-  110.055   dump dev(0)chn(1) failed.
-  110.055   dump dev(1)chn(1) failed.
-  110.055   ls /sdcard/leakcam
-  110.055   Directory /sdcard/leakcam:
-  110.055   exposure                                36                       
-  110.055   sim                                     18                       
-  110.055   cam0.hist                               5018112                  
-  110.055   cam1.hist                               5018112                  
-  110.055   msh />
-  110.055   msh />
-  144.720 > 'cat /sdcard/leakcam/ignore' (0.11 s)
-  144.720   leakcam: job: cam0 dark: mean 87, below 16 (simulated): t 5700 ms, heap +954368 B
-  144.720   leakcam: job: cam1 dark: mean 94, below 16 (simulated): t 5704 ms, heap +954368 B
-  144.720   leakcam: job: captured, mean 87 / 94 (got 1 1), LEDs, room 8 / 0, frames 5 / 3, exposures 1 / 1, 528.0 / 84.7 ms, LEDs 255 ms: t 5708 ms, heap +954368 B
-  144.720   leakcam: job: done: t 5709 ms, heap +954368 B
-  144.720   leakcam: audio: first packet 119 B, frame time 6742383 us, monotonic 6743022 us
-  144.720   leakcam: job: ignored cameras 0x1
-  144.720   cat /sdcard/leakcam/ignore
-  144.720   1
-  144.720                                                                                  msh />
-  144.720   msh />
-  150.040 > 'cat /sdcard/leakcam/ignore' (0.11 s)
-  150.040   leakcam: job: ignored cameras 0x3
-  150.040   cat /sdcard/leakcam/ignore
-  150.040   3
-  150.040                                                                                  msh />
-  150.040   msh />
-  150.146 > 'cat /sdcard/leakcam/ignore' (0.11 s)
-  150.146   cat /sdcard/leakcam/ignore
-  150.146   3
-  150.146                                                                                  msh />
-  150.146   msh />
-  150.252 > 'echo cam0=object /sdcard/leakcam/sim' (0.11 s)
-  150.252   echo cam0=object /sdcard/leakcam/sim
-  150.252   msh />
-  150.252   msh />
-  150.358 > 'echo cam1=object /sdcard/leakcam/sim' (0.11 s)
-  150.358   echo cam1=object /sdcard/leakcam/sim
-  150.358   msh />
-  150.358   msh />
-  171.589 > 'cat /sdcard/leakcam/ignore' (0.11 s)
-  171.589   leakcam: job: CHECK rtc
-  171.589   leakcam: job: check: t 47900 ms, heap +954368 B
-  171.589   dump dev(0)chn(1) failed.
-  171.589   dump dev(1)chn(1) failed.
-  171.589   leakcam: job: cam0 ignored: t 48459 ms, heap +954368 B
-  171.589   leakcam: job: cam1 ignored: t 48462 ms, heap +954368 B
-  171.589   leakcam: job: captured, mean 106 / 99 (got 1 1), LEDs, room 0 / 0, frames 5 / 6, exposures 1 / 2, 528.0 / 167.5 ms, LEDs 336 ms: t 48465 ms, heap +954368 B
-  171.589   leakcam: job: done: t 48467 ms, heap +954368 B
-  171.589   leakcam: job: ignored cameras 0x0
-  171.589   cat /sdcard/leakcam/ignore
-  171.589   0
-  171.589                                                                                  msh />
-  171.589   msh />
-  171.694 > 'cat /sdcard/leakcam/ignore' (0.11 s)
-  171.694   cat /sdcard/leakcam/ignore
-  171.694   0
-  171.694                                                                                  msh />
-  171.694   msh />
-  171.801 > 'echo cam0=same /sdcard/leakcam/sim' (0.11 s)
-  171.801   echo cam0=same /sdcard/leakcam/sim
-  171.801   msh />
-  171.801   msh />
-  171.906 > 'echo cam1=same /sdcard/leakcam/sim' (0.11 s)
-  171.906   echo cam1=same /sdcard/leakcam/sim
-  171.906   msh />
-  171.906   msh />
-  185.715 > 'rm /sdcard/leakcam/sim' (0.12 s)
-  185.715   leakcam: job: CHECK rtc
-  185.715   leakcam: job: check: t 69453 ms, heap +954368 B
-  185.715   dump dev(0)chn(1) failed.
-  185.715   dump dev(1)chn(1) failed.
-  185.715   leakcam: focus: cam0 score 1.567, reference 0.000: -1 %, 0 low in a row
-  185.715   leakcam: job: cam0 new: history written: t 73020 ms, heap +954368 B
-  185.715   leakcam: focus: cam1 score 0.084, reference 0.000: -1 %, 0 low in a row
-  185.715   leakcam: job: cam1 new: history written: t 76085 ms, heap +954368 B
-  185.715   leakcam: job: captured, mean 108 / 97 (got 1 1), LEDs, room 0 / 0, frames 5 / 3, exposures 1 / 1, 528.0 / 167.5 ms, LEDs 255 ms: t 76088 ms, heap +954368 B
-  185.715   leakcam: job: done: t 76091 ms, heap +954368 B
-  185.715   rm /sdcard/leakcam/sim
-  185.715   msh />
-  185.715   msh />
-  185.835 > 'cat /sdcard/leakcam/ignore' (0.11 s)
-  185.835   cat /sdcard/leakcam/ignore
-  185.835   0
-  185.835                                                                                  msh />
-  185.835   msh />
+   16.252 > 'cat /sdcard/leakcam/ignore' (0.11 s)
+   16.252   leakcam: job: cam0 changed (stored as is): 3 of 19602 blocks at x 576-976 y 1232-1312, max 16.1, gain 0.99, read 567 ms, compare 187 ms: t 5743 ms, heap +954368 B
+   16.252   leakcam: focus: cam1 score 0.099, reference 0.000: -1 %, 0 low in a row
+   16.252   leakcam: audio: first packet 119 B, frame time 6442039 us, monotonic 6445260 us
+   16.252   leakcam: job: cam1 changed (stored as is): 2503 of 19602 blocks at x 0-1648 y 0-1936, max 48.9, gain 0.97, read 566 ms, compare 179 ms: t 6600 ms, heap +954368 B
+   16.252   leakcam: job: captured, mean 106 / 81 (got 1 1), LEDs, room 80 / 13, frames 4 / 5, exposures 1 / 1, 269.9 / 80.0 ms, LEDs 270 ms: t 6604 ms, heap +954368 B
+   16.252   leakcam: job: done: t 6605 ms, heap +954368 B
+   16.252   leakcam: media: leak 7C3E8262B149-1794637916, 4 pictures, 2 cameras: t 7995 ms, heap +954368 B
+   16.252   [I/bl616.sdio] BL616 SDU ready: io port 0x10000, download 1536 B, ports 0/0
+   16.252   [I/bl616.sdio] bound SDIO 424c:0606
+   16.252   leakcam: media: Wi-Fi bridge bound: t 8141 ms, heap +954368 B
+   16.252   dump dev(0)chn(1) failed.
+   16.252   [I/bl616.msg] netdev: started, credit 23
+   16.252   [I/WLAN.dev] WLAN device sta registered as phy0-sta
+   16.252   [I/WLAN.dev] wlan init success
+   16.252   [I/WLAN.lwip] eth device init ok name:wlan0
+   16.252   [I/bl616.wifi] station 7c:3e:82:62:b1:49
+   16.252   dump dev(1)chn(1) failed.
+   16.252   [I/bl616.msg] vchan: started, credit 3
+   16.252   [I/bl616.wifi] link 0 -> 1 (, channel 0, 0 dBm)
+   16.252   [I/bl616.wifi] link 1 -> 2 (VK, channel 11, -42 dBm)
+   16.252   [I/WLAN.mgnt] wifi connect success ssid:
+   16.252   [I/WLAN.lwip] Got IP address : 192.168.1.223
+   16.252   leakcam: wb: LEDs off: cam0 1 rounds (1 held) LED gains r 1207 b 2269, cam1 1 rounds (1 held) r 1501 b 1578; the AWB's last r/b 1049/2408 1495/1586
+   16.252   leakcam: job: colour LEDs, room 79 / 13, frames 4 / 5, exposures 1 / 1, 269.9 / 80.0 ms, LEDs 270 ms
+   16.252   leakcam: media: round 1 at 147 ms: cameras 0x3, 2 JPEGs (171633 + 122563 B) at 673 ms: t 8667 ms, heap +1249280 B
+   16.252   dump dev(0)chn(1) failed.
+   16.252   dump dev(1)chn(1) failed.
+   16.252   leakcam: wb: LEDs off: cam0 1 rounds (1 held) LED gains r 1207 b 2269, cam1 1 rounds (1 held) r 1501 b 1578; the AWB's last r/b 1047/2408 1492/1588
+   16.252   leakcam: job: colour LEDs, room 80 / 13, frames 4 / 5, exposures 1 / 1, 269.9 / 80.0 ms, LEDs 270 ms
+   16.252   leakcam: media: round 2 at 2000 ms: cameras 0x3, 2 JPEGs (171275 + 122842 B) at 2525 ms: t 10519 ms, heap +1548288 B
+   16.252   leakcam: media: p1 171633 B: uploaded 200 at 2625 ms: t 10619 ms, heap +1548288 B
+   16.252   leakcam: media: p2 122563 B: uploaded 200 at 2671 ms: t 10665 ms, heap +1548288 B
+   16.252   leakcam: media: p3 171275 B: uploaded 200 at 2752 ms: t 10746 ms, heap +1548288 B
+   16.252   leakcam: media: p4 122842 B: uploaded 200 at 2813 ms: t 10807 ms, heap +1548288 B
+   16.252   ch 0: 4 pictures encoded. Average FrameRate = 2 Fps
+   16.252   ch 0: total used pages 3022
+   16.252   leakcam: media: video 225 frames per camera at 15 fps, 10000 kbit/s: t 11128 ms, heap +1548288 B
+   16.252   dump dev(0)chn(1) failed.
+   16.252   dump dev(1)chn(1) failed.
+   16.252   leakcam: media: v1: first picture time 11525769 us, monotonic 11648196 us
+   16.252   leakcam: media: v2: first picture time 11606218 us, monotonic 11691905 us
+   16.252   vicap: dev 0 video: 224 frames over 14932 ms of pts = 14.9 fps, sequence 160..384
+   16.252   vicap: dev 1 video: 224 frames over 14865 ms of pts = 15.0 fps, sequence 160..383
+   16.252   leakcam: wb: LEDs off: cam0 57 rounds (2 held) LED gains r 1172 b 2260, cam1 58 rounds (2 held) r 1491 b 1586; the AWB's last r/b 1172/2260 1491/1586
+   16.252   leakcam: job: colour LEDs, room 80 / 13, frames 4 / 5, exposures 1 / 1, 269.9 / 80.0 ms, LEDs 268 ms
+   16.252   ch 1: 225 pictures encoded. Average FrameRate = 15 Fps
+   16.252   ch 1: total used pages 3075
+   16.252   leakcam: media: v1: 225 frames (15 IDR), 0 dropped in 0 gaps, audio 375 packets (0 lost), in 15531 ms, 18769277 B = 9668 kbit/s, 225 sent, uploaded 200 at 19042 ms; encode 6733 ms, between frames 8277 ms, send 6767 ms, backlog max 1086417 B: t 27036 ms, heap +1691648 B
+   16.252   ch 2: 225 pictures encoded. Average FrameRate = 15 Fps
+   16.252   ch 2: total used pages 3075
+   16.252   leakcam: media: v2: 225 frames (15 IDR), 0 dropped in 0 gaps, audio 374 packets (0 lost), in 15531 ms, 17883756 B = 9211 kbit/s, 225 sent, uploaded 200 at 19406 ms; encode 6822 ms, between frames 8178 ms, send 5898 ms, backlog max 384967 B: t 27400 ms, heap +1691648 B
+   16.252   leakcam: media: done, 6 uploaded, 0 failed, 0 skipped: t 27402 ms, heap +1691648 B
+   16.252   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 14 2026 - 06:28:08 +0000)
+   16.252   00000000: PMU Major Msg: End of CA training                                            
+   16.252   00000000: PMU Major Msg: End of initialization                                         
+   16.252   00000000: PMU Major Msg: End of read enable training                                   
+   16.252   00000000: PMU Major Msg: End of fine write leveling                                    
+   16.252   00000000: PMU Major Msg: End of read dq deskew training                                
+   16.252   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+   16.252   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+   16.252   00000000: PMU Major Msg: End of write delay center optimization                        
+   16.252   00000000: PMU Major Msg: End of read delay center optimization                         
+   16.252   00000000: PMU Major Msg: End of max read latency training                              
+   16.252   00000000: PMU Major Msg: Firmware run has completed                                    
+   16.252   dbyte0 add =9a040100 value =12
+   16.252   dbyte0 add =9a040500 value =13
+   16.252   dbyte0 add =9a040900 value =14
+   16.252   dbyte0 add =9a040d00 value =13
+   16.252   dbyte0 add =9a041100 value =13
+   16.252   dbyte0 add =9a041500 value =13
+   16.252   dbyte0 add =9a041900 value =13
+   16.252   dbyte0 add =9a041d00 value =15
+   16.252   dbyte1 add =9a044100 value =14
+   16.252   dbyte1 add =9a044500 value =13
+   16.252   dbyte1 add =9a044900 value =15
+   16.252   dbyte1 add =9a044d00 value =13
+   16.252   dbyte1 add =9a045100 value =13
+   16.252   dbyte1 add =9a045500 value =14
+   16.252   dbyte1 add =9a045900 value =13
+   16.252   dbyte1 add =9a045d00 value =13
+   16.252   dbyte2 add =9a048100 value =37
+   16.252   dbyte2 add =9a048500 value =37
+   16.252   dbyte2 add =9a048900 value =37
+   16.252   dbyte2 add =9a048d00 value =37
+   16.252   dbyte2 add =9a049100 value =37
+   16.252   dbyte2 add =9a049500 value =37
+   16.252   dbyte2 add =9a049900 value =37
+   16.252   dbyte2 add =9a049d00 value =37
+   16.252   dbyte3 add =9a04c100 value =37
+   16.252   dbyte3 add =9a04c500 value =37
+   16.252   dbyte3 add =9a04c900 value =37
+   16.252   dbyte3 add =9a04cd00 value =37
+   16.252   dbyte3 add =9a04d100 value =37
+   16.252   dbyte3 add =9a04d500 value =37
+   16.252   dbyte3 add =9a04d900 value =37
+   16.252   dbyte3 add =9a04dd00 value =37
+   16.252   spi_nand spi-flash@0: Winbond SPI NAND was found.
+   16.252   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+   16.252   OpenSBI v0.9
+   16.252   heap: [0x005fb4c0 - 0x00efb4c0], size 9216 KB
+   16.252   page: [0x00efb4c8 - 0x036fec00], size 40973 KB
+   16.252    \ | /
+   16.252   - RT -     Thread Smart Operating System
+   16.252    / | \     5.0.0 build Nov 13 2026
+   16.252    2006 - 2020 Copyright by rt-thread team
+   16.252   rtc driver register OK
+   16.252   lwIP-2.1.2 initialized!
+   16.252   [I/I2C] I2C bus [i2c0] registered
+   16.252   [I/I2C] I2C bus [i2c4] registered
+   16.252   [I/board.sdio] boot mode 0 does not use an SD/MMC controller�link_mux: console and /dev/link share uart1
+   16.252   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+   16.252   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+   16.252   os  : system memory alloc 320 bytes
+   16.252   flsh: UFFS consume spare data size 9
+   16.252   os  : system memory alloc 84480 bytes
+   16.252   os  : system memory alloc 53200 bytes
+   16.252   os  : system memory alloc 2048 bytes
+   16.252   tree: DIR 0, FILE 5, DATA 4
+   16.252   os  : system memory alloc 320 bytes
+   16.252   flsh: UFFS consume spare data size 9
+   16.252   os  : system memory alloc 84480 bytes
+   16.252   os  : system memory alloc 53200 bytes
+   16.252   os  : system memory alloc 8192 bytes
+   16.252   tree: DIR 1, FILE 6, DATA 76
+   16.252   /dev/shm file system initialization done!
+   16.252   Probe dummy af driver
+   16.252   find sensor(ov5647_csi0) on csi0
+   16.252   Probe dummy af driver
+   16.252   find sensor(ov5647_csi2) on csi2
+   16.252   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+   16.252   <gnne> gnne_device_init done.
+   16.252   #############SDK VERSION######################################
+   16.252   SDK   : unknown-20261114-062857--cf167cdd6ab2-4162ec7
+   16.252   nncase: 2.11.0
+   16.252   ##############################################################
+   16.252   msh />leakcam: start: t 677 ms, heap +0 B
+   16.252   leakcam: version 0.6+g96d4d8d-dirty-202611140627
+   16.252   leakcam: battery 4368 mV: t 678 ms, heap +0 B
+   16.252   leakcam: clock: 1794637937 from the BL616 (was -58948337 s off)
+   16.252   leakcam: WAKE usb: t 690 ms, heap +0 B
+   16.252   leakcam: relay: USB relay on /dev/ttyGS0: t 691 ms, heap +0 B
+   16.252   leakcam: job: check: t 696 ms, heap +0 B
+   16.252   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+   16.252   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+   16.252   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: cat /sdcard/leakcam/ignore
+   16.252   Open /sdcard/leakcam/ignore failed
+   16.252   msh />
+   16.252   msh />
+   16.358 > 'cat /sdcard/leakcam/ignore' (0.11 s)
+   16.358   cat /sdcard/leakcam/ignore
+   16.358   Open /sdcard/leakcam/ignore failed
+   16.358   msh />
+   16.358   msh />
+   16.480 > 'rm /sdcard/leakcam/sim' (0.11 s)
+   16.480   rm /sdcard/leakcam/sim
+   16.480   msh />
+   16.480   msh />
+   16.586 > 'echo lit=led /sdcard/leakcam/sim' (0.11 s)
+   16.586   echo lit=led /sdcard/leakcam/sim
+   16.586   open file:/sdcard/leakcam/sim failed!
+   16.586   msh />
+   16.586   msh />
+   29.346 > 'ls /sdcard/leakcam' (0.12 s)
+   29.346   leakcam: job: CHECK rtc
+   29.346   leakcam: job: check: t 38698 ms, heap +954368 B
+   29.346   dump dev(0)chn(1) failed.
+   29.346   dump dev(1)chn(1) failed.
+   29.346   leakcam: wb: LEDs off: cam0 1 rounds (1 held) LED gains r 1207 b 2269, cam1 1 rounds (1 held) r 1501 b 1578; the AWB's last r/b 1183/2264 1489/1589
+   29.346   leakcam: focus: cam0 score 0.613, reference 0.000: -1 %, 0 low in a row
+   29.346   leakcam: job: cam0 changed (stored as is): 5 of 19602 blocks at x 464-976 y 1232-1392, max 17.9, gain 0.99, read 570 ms, compare 189 ms: t 40048 ms, heap +954368 B
+   29.346   leakcam: focus: cam1 score 0.098, reference 0.000: -1 %, 0 low in a row
+   29.346   leakcam: job: cam1 changed (stored as is): 2203 of 19602 blocks at x 0-1792 y 0-1936, max 47.6, gain 0.97, read 572 ms, compare 177 ms: t 40916 ms, heap +954368 B
+   29.346   leakcam: job: captured, mean 106 / 81 (got 1 1), LEDs, room 79 / 14, frames 4 / 5, exposures 1 / 1, 269.9 / 80.0 ms, LEDs 271 ms: t 40920 ms, heap +954368 B
+   29.346   leakcam: job: done: t 40921 ms, heap +954368 B
+   29.346   leakcam: media: leak 7C3E8262B149-1794637978, 4 pictures, 2 cameras: t 42422 ms, heap +954368 B
+   29.346   [I/bl616.sdio] BL616 SDU ready: io port 0x10000, download 1536 B, ports 0/0
+   29.346   [I/bl616.sdio] bound SDIO 424c:0606
+   29.346   leakcam: media: Wi-Fi bridge bound: t 42564 ms, heap +954368 B
+   29.346   dump dev(0)chn(1) failed.
+   29.346   [I/bl616.msg] netdev: started, credit 23
+   29.346   [I/WLAN.dev] WLAN device sta registered as phy0-sta
+   29.346   [I/WLAN.dev] wlan init success
+   29.346   [I/WLAN.lwip] eth device init ok name:wlan0
+   29.346   [I/bl616.wifi] station 7c:3e:82:62:b1:49
+   29.346   dump dev(1)chn(1) failed.
+   29.346   [I/bl616.msg] vchan: started, credit 3
+   29.346   [I/bl616.wifi] link 0 -> 1 (, channel 0, 0 dBm)
+   29.346   [I/bl616.wifi] link 1 -> 2 (VK, channel 11, -48 dBm)
+   29.346   [I/WLAN.mgnt] wifi connect success ssid:
+   29.346   [I/WLAN.lwip] Got IP address : 192.168.1.223
+   29.346   leakcam: wb: LEDs off: cam0 1 rounds (1 held) LED gains r 1207 b 2269, cam1 1 rounds (1 held) r 1501 b 1578; the AWB's last r/b 1054/2408 1488/1592
+   29.346   leakcam: job: colour LEDs, room 79 / 14, frames 4 / 5, exposures 1 / 1, 269.9 / 80.0 ms, LEDs 271 ms
+   29.346   leakcam: media: round 1 at 143 ms: cameras 0x3, 2 JPEGs (171054 + 122492 B) at 656 ms: t 43077 ms, heap +1249280 B
+   29.346   dump dev(0)chn(1) failed.
+   29.346   dump dev(1)chn(1) failed.
+   29.346   leakcam: wb: LEDs off: cam0 1 rounds (1 held) LED gains r 1207 b 2269, cam1 1 rounds (1 held) r 1501 b 1578; the AWB's last r/b 1054/2408 1490/1591
+   29.346   leakcam: job: colour LEDs, room 79 / 13, frames 4 / 5, exposures 1 / 1, 269.9 / 80.0 ms, LEDs 270 ms
+   29.346   leakcam: media: round 2 at 2000 ms: cameras 0x3, 2 JPEGs (170505 + 122609 B) at 2505 ms: t 44927 ms, heap +1544192 B
+   29.346   leakcam: media: p1 171054 B: uploaded 200 at 2599 ms: t 45021 ms, heap +1544192 B
+   29.346   leakcam: media: p2 122492 B: uploaded 200 at 2648 ms: t 45069 ms, heap +1544192 B
+   29.346   leakcam: media: p3 170505 B: uploaded 200 at 2708 ms: t 45130 ms, heap +1544192 B
+   29.346   leakcam: media: p4 122609 B: uploaded 200 at 2758 ms: t 45180 ms, heap +1544192 B
+   29.346   ch 0: 4 pictures encoded. Average FrameRate = 2 Fps
+   29.346   ch 0: total used pages 3022
+   29.346   leakcam: media: video 225 frames per camera at 15 fps, 10000 kbit/s: t 45498 ms, heap +1544192 B
+   29.346   dump dev(0)chn(1) failed.
+   29.346   dump dev(1)chn(1) failed.
+   29.346   [I/ntp] Get local time from NTP server: Sat Nov 14 06:33:01 2026
+   29.346   leakcam: media: v1: first picture time 45868177 us, monotonic 45990537 us
+   29.346   leakcam: media: v2: first picture time 45948631 us, monotonic 46035233 us
+   29.346   ls /sdcard/leakcam
+   29.346   Directory /sdcard/leakcam:
+   29.346   exposure                                36                       
+   29.346   wb                                      130                      
+   29.346   sim                                     0                        
+   29.346   cam0.hist                               5018112                  
+   29.346   cam1.hist                               5018112                  
+   29.346   msh />
+   29.346   msh />
+   29.453 > 'echo cam0=dark /sdcard/leakcam/sim' (0.11 s)
+   29.453   echo cam0=dark /sdcard/leakcam/sim
+   29.453   msh />
+   29.453   msh />
+   29.569 > 'echo cam1=dark /sdcard/leakcam/sim' (0.12 s)
+   29.569   echo cam1=dark /sdcard/leakcam/sim
+   29.569   msh />
+   29.569   msh />
+   47.687 > 'ls /sdcard/leakcam' (0.12 s)
+   47.687   vicap: dev 0 video: 224 frames over 14932 ms of pts = 14.9 fps, sequence 675..899
+   47.687   vicap: dev 1 video: 224 frames over 14865 ms of pts = 15.0 fps, sequence 675..898
+   47.687   leakcam: wb: LEDs off: cam0 58 rounds (2 held) LED gains r 1182 b 2258, cam1 57 rounds (2 held) r 1486 b 1588; the AWB's last r/b 1182/2258 1486/1588
+   47.687   leakcam: job: colour LEDs, room 79 / 13, frames 4 / 5, exposures 1 / 1, 269.9 / 80.0 ms, LEDs 268 ms
+   47.687   ch 1: 225 pictures encoded. Average FrameRate = 15 Fps
+   47.687   ch 1: total used pages 3075
+   47.687   leakcam: media: v1: 225 frames (15 IDR), 0 dropped in 0 gaps, audio 375 packets (0 lost), in 15507 ms, 18942824 B = 9772 kbit/s, 225 sent, uploaded 200 at 18959 ms; encode 6744 ms, between frames 8268 ms, send 7085 ms, backlog max 1139030 B: t 61380 ms, heap +2314240 B
+   47.687   ch 2: 225 pictures encoded. Average FrameRate = 15 Fps
+   47.687   ch 2: total used pages 3075
+   47.687   leakcam: media: v2: 225 frames (15 IDR), 0 dropped in 0 gaps, audio 374 packets (0 lost), in 15507 ms, 18311103 B = 9446 kbit/s, 225 sent, uploaded 200 at 19295 ms; encode 6863 ms, between frames 8139 ms, send 6620 ms, backlog max 1194045 B: t 61717 ms, heap +2314240 B
+   47.687   leakcam: media: done, 6 uploaded, 0 failed, 0 skipped: t 61718 ms, heap +2314240 B
+   47.687   U-Boot SPL 2022.10-gc096dae6-dirty (Nov 14 2026 - 06:28:08 +0000)
+   47.687   00000000: PMU Major Msg: End of CA training                                            
+   47.687   00000000: PMU Major Msg: End of initialization                                         
+   47.687   00000000: PMU Major Msg: End of read enable training                                   
+   47.687   00000000: PMU Major Msg: End of fine write leveling                                    
+   47.687   00000000: PMU Major Msg: End of read dq deskew training                                
+   47.687   00000000: PMU Major Msg: End of MPR read delay center optimization                     
+   47.687   00000000: PMU Major Msg: End of Write leveling coarse delay                            
+   47.687   00000000: PMU Major Msg: End of write delay center optimization                        
+   47.687   00000000: PMU Major Msg: End of read delay center optimization                         
+   47.687   00000000: PMU Major Msg: End of max read latency training                              
+   47.687   00000000: PMU Major Msg: Firmware run has completed                                    
+   47.687   dbyte0 add =9a040100 value =12
+   47.687   dbyte0 add =9a040500 value =13
+   47.687   dbyte0 add =9a040900 value =14
+   47.687   dbyte0 add =9a040d00 value =13
+   47.687   dbyte0 add =9a041100 value =14
+   47.687   dbyte0 add =9a041500 value =13
+   47.687   dbyte0 add =9a041900 value =13
+   47.687   dbyte0 add =9a041d00 value =15
+   47.687   dbyte1 add =9a044100 value =13
+   47.687   dbyte1 add =9a044500 value =13
+   47.687   dbyte1 add =9a044900 value =15
+   47.687   dbyte1 add =9a044d00 value =13
+   47.687   dbyte1 add =9a045100 value =13
+   47.687   dbyte1 add =9a045500 value =14
+   47.687   dbyte1 add =9a045900 value =13
+   47.687   dbyte1 add =9a045d00 value =13
+   47.687   dbyte2 add =9a048100 value =37
+   47.687   dbyte2 add =9a048500 value =37
+   47.687   dbyte2 add =9a048900 value =37
+   47.687   dbyte2 add =9a048d00 value =37
+   47.687   dbyte2 add =9a049100 value =37
+   47.687   dbyte2 add =9a049500 value =37
+   47.687   dbyte2 add =9a049900 value =37
+   47.687   dbyte2 add =9a049d00 value =37
+   47.687   dbyte3 add =9a04c100 value =37
+   47.687   dbyte3 add =9a04c500 value =37
+   47.687   dbyte3 add =9a04c900 value =37
+   47.687   dbyte3 add =9a04cd00 value =37
+   47.687   dbyte3 add =9a04d100 value =37
+   47.687   dbyte3 add =9a04d500 value =37
+   47.687   dbyte3 add =9a04d900 value =37
+   47.687   dbyte3 add =9a04dd00 value =37
+   47.687   spi_nand spi-flash@0: Winbond SPI NAND was found.
+   47.687   spi_nand spi-flash@0: u MiB, block size: u KiB, page size: u, OOB size: 256
+   47.687   OpenSBI v0.9
+   47.687   heap: [0x005fb4c0 - 0x00efb4c0], size 9216 KB
+   47.687   page: [0x00efb4c8 - 0x036fec00], size 40973 KB
+   47.687    \ | /
+   47.687   - RT -     Thread Smart Operating System
+   47.687    / | \     5.0.0 build Nov 13 2026
+   47.687    2006 - 2020 Copyright by rt-thread team
+   47.687   rtc driver register OK
+   47.687   lwIP-2.1.2 initialized!
+   47.687   [I/I2C] I2C bus [i2c0] registered
+   47.687   [I/I2C] I2C bus [i2c4] registered
+   47.687   [I/board.sdio] boot mode 0 does not use an SD/MMC controller�link_mux: console and /dev/link share uart1
+   47.687   Found spi nand flash W25N02KVxxIR/U Winbond 256MB: 2048+128@64@2048
+   47.687   [I/sal.skt] Socket Abstraction Layer initialize success, lwIP 2.1.2.
+   47.687   os  : system memory alloc 320 bytes
+   47.687   flsh: UFFS consume spare data size 9
+   47.687   os  : system memory alloc 84480 bytes
+   47.687   os  : system memory alloc 53200 bytes
+   47.687   os  : system memory alloc 2048 bytes
+   47.687   tree: DIR 0, FILE 5, DATA 4
+   47.687   os  : system memory alloc 320 bytes
+   47.687   flsh: UFFS consume spare data size 9
+   47.687   os  : system memory alloc 84480 bytes
+   47.687   os  : system memory alloc 53200 bytes
+   47.687   os  : system memory alloc 8192 bytes
+   47.687   tree: DIR 1, FILE 6, DATA 76
+   47.687   /dev/shm file system initialization done!
+   47.687   Probe dummy af driver
+   47.687   find sensor(ov5647_csi0) on csi0
+   47.687   Probe dummy af driver
+   47.687   find sensor(ov5647_csi2) on csi2
+   47.687   <3>[11] [Func]:vo_delay_timer_init [Line]:474 [Info]:vo delay timer hwtimer5 not found
+   47.687   <gnne> gnne_device_init done.
+   47.687   #############SDK VERSION######################################
+   47.687   SDK   : unknown-20261114-062857--cf167cdd6ab2-4162ec7
+   47.687   nncase: 2.11.0
+   47.687   ##############################################################
+   47.687   msh />leakcam: start: t 677 ms, heap +0 B
+   47.687   leakcam: version 0.6+g96d4d8d-dirty-202611140627
+   47.687   leakcam: battery 4368 mV: t 678 ms, heap +0 B
+   47.687   08
+   47.687   08: command not found.
+   47.687   msh />leakcam: clock: 1794638000 from the BL616 (was -58948400 s off)
+   47.687   usb disconnect
+   47.687   usb disconnect
+   47.687   leakcam: WAKE usb: t 984 ms, heap +0 B
+   47.687   leakcam: relay: USB relay on /dev/ttyGS0: t 985 ms, heap +0 B
+   47.687   leakcam: job: check: t 990 ms, heap +0 B
+   47.687   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+   47.687   vicap: 2592x1936 requested, the sensor mode gives 2592x1944
+   47.687   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
+   47.687   kd_mpi_vicap_set_chn_attr: chn0 adjusted buffer_size: old=0x735800, new=0x72f000 (width=2592, height=1936, format=31)
+   47.687   leakcam: job: CHECK rtc
+   47.687   audio i2s set clk freq is 1024000(1024000),ret:1
+   47.687   audio codec adc clk freq is 4096000(4096000)
+   47.687   dump dev(0)chn(1) failed.
+   47.687   dump dev(1)chn(1) failed.
+   47.687   leakcam: wb: LEDs off: cam0 1 rounds (1 held) LED gains r 1207 b 2269, cam1 1 rounds (1 held) r 1501 b 1578; the AWB's last r/b 1069/2408 1486/1594
+   47.687   leakcam: job: cam0 dark: mean 106, below 16 (simulated): t 5185 ms, heap +954368 B
+   47.687   leakcam: job: cam1 dark: mean 77, below 16 (simulated): t 5188 ms, heap +954368 B
+   47.687   leakcam: job: captured, mean 106 / 77 (got 1 1), LEDs, room 80 / 13, frames 4 / 5, exposures 1 / 1, 269.9 / 80.0 ms, LEDs 271 ms: t 5192 ms, heap +954368 B
+   47.687   leakcam: job: done: t 5192 ms, heap +954368 B
+   47.687   leakcam: job: check: t 5193 ms, heap +954368 B
+   47.687   dump dev(0)chn(1) failed.
+   47.687   ls /sdcard/leakcam
+   47.687   Directory /sdcard/leakcam:
+   47.687   exposure                                36                       
+   47.687   wb                                      130                      
+   47.687   sim                                     18                       
+   47.687   cam0.hist                               5018112                  
+   47.687   cam1.hist                               5018112                  
+   47.687   msh />
+   47.687   msh />
+   83.985 > 'cat /sdcard/leakcam/ignore' (0.11 s)
+   83.985   leakcam: wb: LEDs off: cam0 1 rounds (1 held) LED gains r 1207 b 2269, cam1 1 rounds (1 held) r 1501 b 1578; the AWB's last r/b 1157/2354 1486/1591
+   83.985   leakcam: job: cam0 dark: mean 106, below 16 (simulated): t 5651 ms, heap +954368 B
+   83.985   leakcam: job: cam1 dark: mean 77, below 16 (simulated): t 5655 ms, heap +954368 B
+   83.985   leakcam: job: captured, mean 106 / 77 (got 1 1), LEDs, room 83 / 13, frames 4 / 5, exposures 1 / 1, 269.9 / 80.0 ms, LEDs 270 ms: t 5658 ms, heap +954368 B
+   83.985   leakcam: job: done: t 5659 ms, heap +954368 B
+   83.985   leakcam: audio: first packet 119 B, frame time 6746248 us, monotonic 6746891 us
+   83.985   leakcam: job: ignored cameras 0x1
+   83.985   cat /sdcard/leakcam/ignore
+   83.985   1
+   83.985                                                                                  msh />
+   83.985   msh />
+   89.320 > 'cat /sdcard/leakcam/ignore' (0.11 s)
+   89.320   leakcam: job: ignored cameras 0x3
+   89.320   cat /sdcard/leakcam/ignore
+   89.320   3
+   89.320                                                                                  msh />
+   89.320   msh />
+   89.427 > 'cat /sdcard/leakcam/ignore' (0.11 s)
+   89.427   cat /sdcard/leakcam/ignore
+   89.427   3
+   89.427                                                                                  msh />
+   89.427   msh />
+   89.533 > 'echo cam0=object /sdcard/leakcam/sim' (0.11 s)
+   89.533   echo cam0=object /sdcard/leakcam/sim
+   89.533   msh />
+   89.533   msh />
+   89.640 > 'echo cam1=object /sdcard/leakcam/sim' (0.11 s)
+   89.640   echo cam1=object /sdcard/leakcam/sim
+   89.640   msh />
+   89.640   msh />
+  110.807 > 'cat /sdcard/leakcam/ignore' (0.11 s)
+  110.807   leakcam: job: CHECK rtc
+  110.807   leakcam: job: check: t 49446 ms, heap +954368 B
+  110.807   dump dev(0)chn(1) failed.
+  110.807   dump dev(1)chn(1) failed.
+  110.807   leakcam: wb: LEDs off: cam0 1 rounds (1 held) LED gains r 1207 b 2269, cam1 1 rounds (1 held) r 1501 b 1578; the AWB's last r/b 1161/2348 1487/1594
+  110.807   leakcam: job: cam0 ignored: t 49916 ms, heap +954368 B
+  110.807   leakcam: job: cam1 ignored: t 49919 ms, heap +954368 B
+  110.807   leakcam: job: captured, mean 107 / 76 (got 1 1), LEDs, room 81 / 14, frames 4 / 5, exposures 1 / 1, 269.9 / 80.0 ms, LEDs 270 ms: t 49922 ms, heap +954368 B
+  110.807   leakcam: job: done: t 49923 ms, heap +954368 B
+  110.807   leakcam: job: ignored cameras 0x0
+  110.807   cat /sdcard/leakcam/ignore
+  110.807   0
+  110.807                                                                                  msh />
+  110.807   msh />
+  110.914 > 'cat /sdcard/leakcam/ignore' (0.11 s)
+  110.914   cat /sdcard/leakcam/ignore
+  110.914   0
+  110.914                                                                                  msh />
+  110.914   msh />
+  111.020 > 'echo cam0=same /sdcard/leakcam/sim' (0.11 s)
+  111.020   echo cam0=same /sdcard/leakcam/sim
+  111.020   msh />
+  111.020   msh />
+  111.126 > 'echo cam1=same /sdcard/leakcam/sim' (0.11 s)
+  111.126   echo cam1=same /sdcard/leakcam/sim
+  111.126   msh />
+  111.126   msh />
+  124.623 > 'rm /sdcard/leakcam/sim' (0.12 s)
+  124.623   leakcam: job: CHECK rtc
+  124.623   leakcam: job: check: t 70932 ms, heap +954368 B
+  124.623   dump dev(0)chn(1) failed.
+  124.623   dump dev(1)chn(1) failed.
+  124.623   leakcam: wb: LEDs off: cam0 1 rounds (1 held) LED gains r 1207 b 2269, cam1 1 rounds (1 held) r 1501 b 1578; the AWB's last r/b 1179/2284 1195/1980
+  124.623   leakcam: focus: cam0 score 0.733, reference 0.000: -1 %, 0 low in a row
+  124.623   leakcam: job: cam0 new: history written: t 74517 ms, heap +954368 B
+  124.623   leakcam: focus: cam1 score 0.118, reference 0.000: -1 %, 0 low in a row
+  124.623   leakcam: job: cam1 new: history written: t 77612 ms, heap +954368 B
+  124.623   leakcam: job: captured, mean 113 / 76 (got 1 1), LEDs, room 88 / 15, frames 4 / 5, exposures 1 / 1, 269.9 / 80.0 ms, LEDs 270 ms: t 77616 ms, heap +954368 B
+  124.623   leakcam: job: done: t 77617 ms, heap +954368 B
+  124.623   rm /sdcard/leakcam/sim
+  124.623   msh />
+  124.623   msh />
+  124.772 > 'cat /sdcard/leakcam/ignore' (0.11 s)
+  124.772   cat /sdcard/leakcam/ignore
+  124.772   0
+  124.772                                                                                  msh />
+  124.772   msh />

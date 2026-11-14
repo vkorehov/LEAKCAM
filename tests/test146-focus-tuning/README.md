@@ -1,15 +1,20 @@
 # test146: camera focus - bad focus detected, tuned by hand with the app's turn guide
 
-Status: **the focus adjustment through the server built and passing without the board (2026-11-13)**: the app's
-"LEAKCAM Focus Adjustment" against a local server with the board mocked from its recorded frames: 15/15 (app_mock.py:
-live picture per camera, switches at the board in 5-56 ms, Stop on leaving, no decoder error). Since then (user
-2026-11-13): the lens picture with a green (turn) and red (not) arrow, the first way random (unit tests pass; app_mock.py checks
-the arrows in each shot, **not yet run**). An automatic switch to a hidden camera whose lens is turned was built and
-removed the same day (it jumped between the cameras with hands at the board). Server: `go test`
-(TestFocusCheckin, TestFocusRelay, TestFocusCmd) pass. Board side (K230 focus_run, BL616 `focus` capture) built, not
-run on the board yet: the bench was away from the home LAN. Open on the board: the encoder ignored the IDR request at
-a switch (2026-11-13 09:22, frames until the GOP's IDR); `kd_mpi_venc_enable_idr` at the channel's create built, not
-yet measured.
+Status: **works on the board and the phone; one speed check open (2026-11-14)**.
+- **Phone, mock board (app_mock.py): 18/18** (2026-11-14 06:37 UTC): the waiting state, the live picture per camera
+  with the lens picture's green and red arrows, the cameras as radio buttons (Bottom / Top), each tap's switch shown
+  by the board in 4-58 ms, Stop on leaving, no decoder error.
+- **Board, through the PC's server (run.py): 15/16** (2026-11-14 06:35 UTC): both cameras 2592x1936 at 15-16 fps,
+  every picture decodes, a whole-frame score once a second, every switch starts on an IDR (`kd_mpi_venc_enable_idr`
+  works), Stop in 0.1 s, the page pool back, 3 check-ins after, no TCP connection left.
+  **Open: the switch back to J4 took 872 ms (limit 400)**: the Wi-Fi link was slower than the 10 Mbit/s stream that
+  morning: 2.07 MB of the other camera's pictures (1.6 s) waited in the K230's queue at the switch (dropped), and J4's
+  IDRs are 306 KB at the median, up to 676 KB. The K230 itself shows the camera 37-42 ms after its command. A lower
+  bit rate for focus / live sessions would end both the lag and the slow switch: the user's call (picture detail).
+- **Phone with the real board, by hand (2026-11-13):** the focus screen and Live video ran; no automated test yet.
+- Server: `go test` (TestFocusCheckin, TestFocusRelay, TestFocusCmd, TestNoCameraLeakDuringFocus) pass.
+- An automatic switch to a hidden camera whose lens is turned was built and removed 2026-11-13 (it jumped between
+  the cameras with hands at the board).
 
 Why (user 2026-11-12): "we need to determine bad focus ... the KPU can have a separate output saying it cannot
 reliably calculate differences because no focus, in that case ask the user to start the focus tuning procedure",

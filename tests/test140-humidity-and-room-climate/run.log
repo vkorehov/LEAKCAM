@@ -1,30 +1,33 @@
-10:49:45 test140-humidity-and-room-climate: 0 metric rows MISSING: none
-10:49:59 CHECK pass USB: a reading, the board warm, not the room climate now
+10:45:44 test140-humidity-and-room-climate: 0 metric rows MISSING: none
+10:45:58 CHECK pass USB: a reading, the board warm, not the room climate now
 bouffalolab />
-bouffalolab />climate: now: 38.1 C 25.4 %RH, warm 0 s
-10:50:01 CHECK pass USB: the check-in carries t/rh and quiet ~0 t 382, rh 254, quiet 0
-10:50:03 phone: relay 0.2 s (http)
-10:50:03 relay box: battery (USB-C 1 out (the board on its battery))
-10:50:07 CHECK pass battery: cool once the K230 is off 4 s after the unplug
-10:50:17 CHECK pass battery, cool >= 10 s: the reading is the room's climate now
-bouffalolab />
-bouffalolab />climate: now: 38.0 C 24.9 %RH, cool 13 s: the roo
-10:50:19 CHECK pass battery: the check-in carries troom/rhroom (that reading), roomago, quiet >= window troom 379, rhroom 249, roomago 1, quiet 15 (reading (380, 249))
-10:50:23 CHECK pass battery: the leak check's K230 session ran and ended leak: DONE new,new 2062 ms after the ask, probe dry
-10:50:24 CHECK pass right after the K230 session: cool < window, no room reading climate now
-bouffalolab />
-bouffalolab />climate: now: 37.4 C 25.1 %RH, cool 0 s
-10:50:26 CHECK pass 84 %RH: no alarm climate now
-bouffalolab />
-bouffalolab />climate: now: 37.2 C 84.0 %RH, cool 3 s
-10:50:32 CHECK pass 90 %RH: the alarm and a K230 leak check `humid` seen
-10:50:32 CHECK pass 90 %RH: the server's leak `humidity high` at once 6.2 s after the reading
-10:50:35 phone: relay 0.2 s (http)
-10:50:35 relay box: usb (USB-C 1 back (the bench))
-10:50:37 CHECK pass USB back: warm again 
-10:51:05 CHECK pass USB back: the K230 up, its start check done 26 s
-10:51:08 CHECK pass USB, 90 %RH: CHECK humid to the running K230 seen
-10:51:25 CHECK pass switch_to_setup lost: in the setup firmware 
-10:51:36 CHECK pass setup, 90 %RH: the alarm switches back to the full firmware full after 8 s
-10:51:36 CHECK pass the BL616's free heap kept (156028, 126452) -> (155992, 126400)
-10:51:37 test140-humidity-and-room-climate: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+bouffalolab />climate: now: 45.2 C 25.3 %RH, warm 0 s
+10:46:08 CHECK pass USB: the check-in carries t/rh and quiet ~0 t 457, rh 252, quiet 0
+10:46:44 phone: adb logcat timed out: reconnecting
+Traceback (most recent call last):
+  File "/home/vkorehovs/k230d-hw/LEAKCAM/tests/test140-humidity-and-room-climate/run.py", line 117, in <module>
+    if hand("USB-C 1 out (the board on its battery)", "battery") is None:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vkorehovs/k230d-hw/LEAKCAM/tools/test-runner/phone.py", line 473, in hand
+    if relay(RELAY_STEPS[word], RELAY_GAPS.get(word)):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vkorehovs/k230d-hw/LEAKCAM/tools/test-runner/phone.py", line 409, in relay
+    res = _relay_once(cmds, gaps)     # dropped by the app: the second request connects anew; the end state is
+          ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vkorehovs/k230d-hw/LEAKCAM/tools/test-runner/phone.py", line 453, in _relay_once
+    m = re.search(rf"RESULT {re.escape(rid)} (\{{.*\}})", adb("logcat", "-d", "-s", "LeakcamRelay:I", secs=15))
+                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vkorehovs/k230d-hw/LEAKCAM/tools/test-runner/phone.py", line 157, in adb
+    return subprocess.run(["adb", *a], capture_output=True, text=True, timeout=secs).stdout
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 1209, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 2116, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+  File "/usr/lib/python3.12/subprocess.py", line 1253, in _check_timeout
+    raise TimeoutExpired(
+subprocess.TimeoutExpired: Command '['adb', 'logcat', '-d', '-s', 'LeakcamRelay:I']' timed out after 15 seconds

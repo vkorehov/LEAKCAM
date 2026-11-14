@@ -4,7 +4,8 @@ server's certificate and every device's; all EC P-256 / ECDSA-SHA256 (the BL616'
 never renews by its own idea of the date). Everything under .secrets/pki (outside git, mode 600); the CA key never
 leaves it.
     tools/pki/leakcam_pki.py ca                     the CA (once; refuses to replace one)
-    tools/pki/leakcam_pki.py server                 the server's key + certificate (CN/SAN leakcam-server + its IP)
+    tools/pki/leakcam_pki.py server                 the server's certificate (CN/SAN leakcam-server + its addresses); its
+                                                    key made once and kept
     tools/pki/leakcam_pki.py device <12 hex ID>     a device's key + certificate (CN = the ID, clientAuth); kept
     tools/pki/leakcam_pki.py der <12 hex ID>        prints the paths of the DER files for provisioning
 """
@@ -16,7 +17,7 @@ import sys
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".secrets", "pki"))
 DAYS = str(20 * 365 + 5)                 # 20 years with the leap days
 SERVER_NAME = "leakcam-server"           # the name the firmware checks (wifi_check.c TLS_HOST), whatever the address
-SERVER_IP = "192.168.1.159"              # the bench server (the Pi)
+SERVER_IPS = ["192.168.1.131", "192.168.1.159"]   # the bench server: the wired PC (since 2026-11-12), the Pi before
 CURVE = ["-newkey", "ec", "-pkeyopt", "ec_paramgen_curve:prime256v1"]
 
 
@@ -49,9 +50,12 @@ def ca():
     print(f"leakcam_pki: CA in {ROOT}")
 
 
-def issue(name, subj, ext, out_dir):
+def issue(name, subj, ext, out_dir, keep_key=False):
     key, csr, crt = (os.path.join(out_dir, name + s) for s in (".key", ".csr", ".crt"))
-    run("req", "-new", *CURVE, "-nodes", "-keyout", key, "-out", csr, "-subj", subj, "-sha256")
+    if keep_key and os.path.exists(key):   # a new certificate for the key in use (the server's address changed)
+        run("req", "-new", "-key", key, "-out", csr, "-subj", subj, "-sha256")
+    else:
+        run("req", "-new", *CURVE, "-nodes", "-keyout", key, "-out", csr, "-subj", subj, "-sha256")
     run("x509", "-req", "-in", csr, "-CA", path("ca.crt"), "-CAkey", path("ca.key"), "-CAcreateserial",
         "-out", crt, "-days", DAYS, "-sha256", "-extfile", ext_file("ext.cnf", ext))
     os.remove(csr)
@@ -65,9 +69,12 @@ def issue(name, subj, ext, out_dir):
 
 
 def server():
+    # the key kept when there is one: only the certificate changes with the server's address (2026-11-14: the server
+    # had moved to the PC, the certificate still named the Pi alone, every HTTPS test failed on the address)
+    san = ",".join([f"DNS:{SERVER_NAME}"] + [f"IP:{ip}" for ip in SERVER_IPS])
     k, c = issue("server", f"/O=LEAKCAM/CN={SERVER_NAME}",
                  "basicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature\n"
-                 f"extendedKeyUsage=serverAuth\nsubjectAltName=DNS:{SERVER_NAME},IP:{SERVER_IP}\n", ROOT)
+                 f"extendedKeyUsage=serverAuth\nsubjectAltName={san}\n", ROOT, keep_key=True)
     print(f"leakcam_pki: server {c}")
 
 

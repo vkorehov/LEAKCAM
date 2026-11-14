@@ -11,6 +11,31 @@ with `PUT /v1/devices/<id>/intervals` (product default 3600 s, the bench server 
 
 ## Runs
 
+### Automated run 2026-11-14 (run.py, 11 s): **FAIL**
+
+not run: no Android phone on adb: neither /home/vkorehovs/.leakcam_phone nor the relay app's /adb answered.
+
+
+### Automated run 2026-11-14 (run.py, 11 s): **FAIL**
+
+not run: no Android phone on adb: neither /home/vkorehovs/.leakcam_phone nor the relay app's /adb answered.
+
+
+### Automated run 2026-11-14 (run.py, 562 s): **FAIL**
+
+15/18 checks pass. Failed: server down: the setup firmware (presence lost) (not within 195 s: full); server back: the setup firmware stays (only a setup or its 6 h retry ends it); stored: back in the full firmware (not within 60 s: setup).
+
+
+### Automated run 2026-11-14 (run.py, 755 s): **FAIL**
+
+12/19 checks pass. Failed: the board checks in every 5 s (check-in every 60 s after 75 s); USB-C 1 out (hand); server down: the setup firmware (presence lost) (not found within 195 s); server back: the setup firmware stays (only a setup or its 6 h retry ends it); server back: the phone sets the network (18.7 s); server back: present at the server (45 s after the setup started); USB-C 1 back in (hand).
+
+
+### Automated run 2026-11-14 (run.py, 651 s): **FAIL**
+
+13/17 checks pass. Failed: the board checks in every 5 s (check-in every 60 s after 75 s); server down: the setup firmware (presence lost) (not within 195 s: full); server back: the setup firmware stays (only a setup or its 6 h retry ends it); server back: the phone sets the network (18.6 s).
+
+
 ### Automated run 2026-11-12 (run.py, 262 s): pass
 
 20/20 checks pass.
@@ -240,6 +265,10 @@ silent again 2 s later, present at the server 14 s after that setup started.
 
 
 ## Obstacles
+
+- no Android phone on adb: neither /home/vkorehovs/.leakcam_phone nor the relay app's /adb answered (phone off Wi-Fi?) (2026-11-14, automated run)
+
+- no Android phone on adb: neither /home/vkorehovs/.leakcam_phone nor the relay app's /adb answered (phone off Wi-Fi?) (2026-11-14, automated run)
 
 - **2026-11-10 23:33 UTC, Wi-Fi adb gone for ~20 s (bench, --battery in the essential suite).** The "network gone" setup
   op got no result after 19 s, the wakefulness poll no answer, and ~60 scans after it failed at once; adb answered

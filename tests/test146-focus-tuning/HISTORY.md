@@ -35,3 +35,12 @@
   board's "showing camera" events, the waiting state checked on its own.
 - A focus session would have been cut by the BL616's 60 s check-in after 130 s (presence.c waited at most 130 s for
   a capture): it now waits for capture_busy() alone, bounded by capture.c's guard (secs + 60 s for a focus session).
+- 2026-11-14 06:35 UTC, run.py on the board: 15/16; the switch to J4 872 ms with 2 MB waiting in the queue (the link
+  below the stream's rate). 2026-11-13 evening runs: 15/16 (419-615 ms, nothing waiting).
+- 2026-11-14 06:37 UTC, app_mock.py: 17/18, then 18/18: the test looked for "tapped Camera N at" after the tap log
+  got the camera's name ("tapped Camera 2 (Top camera) at"): its own pattern, the taps worked.
+- 2026-11-13: run.py's Stop never reached the board: json.dumps wrote {"stop": true} with a space, the K230 looks for
+  the text "stop":true; the server now sends every command in one fixed form (TestFocusCmd).
+- 2026-11-13: right after a NAND flash the K230's console is not forwarded until its next boot: a run's
+  k230_console.log held boot text only.
+

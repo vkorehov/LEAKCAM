@@ -1,15 +1,15 @@
-07:31:59 step 1: `crash test`, console back in 14.3 s
-07:32:00 PASS step 1: exception at the server, cleared on the board 0.8 s after the console was back; full 0.6+g3c58c78-dirty-202611120707 #1; decoded mepc: cmd_crash
-07:32:15 step 2: `crash hang`, console back in 14.2 s
-07:32:16 PASS step 2: watchdog hang at the server, cleared on the board 0.3 s after the console was back; full 0.6+g3c58c78-dirty-202611120707 #1; decoded mepc: cmd_crash
-07:32:18 step 3: server stopped
-07:32:33 PASS step 3: kept on the board while the server is down crash #1 (full 0.6+g3c58c78-dirty-202611120707): exception in task 'shell_task' at 10274 ms; mcause 0x38000002 mepc 0xa00f1fe2 mtval 0x00000000 ra 0xa00f1fe2 sp 0x62fddb04
-07:32:35 step 3: server started
-07:32:37 PASS step 3: sent at the check-in once the server is back, one copy 1.3 s after the server was back; 1 new on the server
-07:33:00 step 5: crashed in the full firmware; in the setup firmware after 7.8 s; switch_to_full: no check (7.9 s)
-07:33:00 step 5: the setup firmware holds crash #1 (full 0.6+g3c58c78-dirty-202611120707): exception in task 'shell_task' at 12173 ms; mcause 0x38000002 mepc 0xa00f1fe2 mtval 0x00000000 ra 0xa00f1fe2 sp 0x62fddb04
-07:33:10 PASS step 5: the setup firmware's check sent the full firmware's record 0.2 s; full 0.6+g3c58c78-dirty-202611120707 #1, decoded mepc: cmd_crash
-07:33:10 PASS step 5: then the hand-over to the full firmware 0 s
-07:33:41 step 7: two crashes, board: crash #2 (full 0.6+g3c58c78-dirty-202611120707): exception in task 'shell_task' at 7180 ms; mcause 0x38000002 mepc 0xa00f1fe2 mtval 0x00000000 ra 0xa00f1fe2 sp 0x62fddb04
-07:33:45 PASS step 7: one record with count 2 [('full 0.6+g3c58c78-dirty-202611120707', 2)]
-07:33:45 PASS
+08:26:48 step 1: `crash test`, console back in 11.0 s
+08:26:52 PASS step 1: exception at the server, cleared on the board 4.0 s after the console was back; full 0.6+gfcb2d5b-dirty-202611131953 #1; decoded mepc: cmd_crash
+08:27:07 step 2: `crash hang`, console back in 14.7 s
+08:27:08 PASS step 2: watchdog hang at the server, cleared on the board 0.6 s after the console was back; full 0.6+gfcb2d5b-dirty-202611131953 #1; decoded mepc: cmd_crash
+08:27:10 step 3: server stopped
+08:28:02 FAIL step 3: kept on the board while the server is down 
+08:28:03 step 3: server started
+08:28:05 PASS step 3: sent at the check-in once the server is back, one copy 0.2 s after the server was back; 1 new on the server
+08:28:28 step 5: crashed in the full firmware; in the setup firmware after 7.9 s; switch_to_full: no check (7.9 s)
+08:28:28 step 5: the setup firmware holds None
+08:28:37 FAIL step 5: the setup firmware's check sent the full firmware's record 0.1 s; full 0.6+gfcb2d5b-dirty-202611131953 #1, decoded mepc: cmd_crash
+08:28:37 PASS step 5: then the hand-over to the full firmware 0 s
+08:29:04 step 7: two crashes, board: crash #2 (full 0.6+gfcb2d5b-dirty-202611131953): exception in task 'shell_task' at 7216 ms; mcause 0x38000002 mepc 0xa00f2076 mtval 0x00000000 ra 0xa00f2076 sp 0x62fddb24
+08:29:08 PASS step 7: one record with count 2 [('full 0.6+gfcb2d5b-dirty-202611131953', 2)]
+08:29:08 FAIL (2): ['step 3: kept on the board while the server is down', "step 5: the setup firmware's check sent the full firmware's record"]

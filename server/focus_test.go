@@ -34,6 +34,13 @@ func TestFocusCheckin(t *testing.T) {
 	if c == nil || c["kind"] != "focus" || c["secs"] != float64(FocusMaxS) || idEnds(ans["capture"]) != "f" {
 		t.Fatalf("the session at the check-in: %v", ans["capture"])
 	}
+	// a board on a shorter interval of its own keeps it: the focus mode only ever shortens
+	must(doReq("PUT", s.URL+"/v1/devices/"+TestID+"/intervals", `{"checkin":5}`))
+	ans, _ = checkIn(t, s, url.Values{"full": {"0.6+g1234567"}, "job": {"same,unfocused,100,30"}})
+	if ans["checkin"] != float64(5) {
+		t.Errorf("a flagged camera on a 5 s board: check-in %v, want its own 5 s", ans["checkin"])
+	}
+	must(doReq("PUT", s.URL+"/v1/devices/"+TestID+"/intervals", `{"checkin":0}`))
 	// tuned: no flag, no session asked any more -> the normal interval
 	mu.Lock()
 	delete(focusAsked, TestID)
@@ -362,4 +369,13 @@ func TestNoCameraLeakDuringFocus(t *testing.T) {
 	if !open() {
 		t.Fatal("a camera change an hour after the session opened no leak")
 	}
+}
+
+func doReq(method, u, body string) (*http.Response, error) {
+	req, err := http.NewRequest(method, u, strings.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	return http.DefaultClient.Do(req)
 }

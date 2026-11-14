@@ -4,6 +4,26 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-14 (run.py, 3 s): **FAIL**
+
+not run: no Android phone on adb: neither /home/vkorehovs/.leakcam_phone nor the relay app's /adb answered.
+
+
+### Automated run 2026-11-14 (run.py, 242 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 10.9 s; repeats 8.0-8.0 s.
+
+
+### Automated run 2026-11-14 (run.py, 103 s): **FAIL**
+
+3/5 checks pass (on battery). Failed: USB-C 1 out (hand); USB-C 1 back in (hand).
+
+
+### Automated run 2026-11-14 (run.py, 351 s): pass
+
+22/22 checks pass. First setup (app opened -> Done) 9.4 s; repeats 8.4-8.4 s.
+
+
 ### Automated run 2026-11-12 (run.py, 45 s): pass
 
 5/5 checks pass (on battery).
@@ -372,6 +392,8 @@ idempotent handler, the timeout counts from a state change). First setup (app op
 No run yet. Status before the step 6 rewrite: **planned** (2026-10-27).
 
 ## Obstacles
+
+- no Android phone on adb: neither /home/vkorehovs/.leakcam_phone nor the relay app's /adb answered (phone off Wi-Fi?) (2026-11-14, automated run)
 
 - 2026-11-10 05:09 UTC+2, --battery in the essential suite: "no setup screen" (an empty screen dump, the phone dozing): the bench phone at 2 % on no charger (adb over Wi-Fi; it started the night at 14 %). Not the board: the run stopped, the board left in the setup firmware with no network (only the phone can store one). The rest queued until the phone is charged (>= 40 %).
 

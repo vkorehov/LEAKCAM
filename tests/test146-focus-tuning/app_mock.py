@@ -119,7 +119,7 @@ try:
         check("Camera 2 shows another picture than Camera 1, Camera 1 the same again",
               abs(a[0] - b[0]) > 8 and abs(a[0] - c[0]) < 25, f"means {a[0]:.0f}, {b[0]:.0f}, {c[0]:.0f}")
     log = adb("logcat", "-d", "-s", "LeakcamFocus:*", "LeakcamFocusTest:*")
-    taps = [int(m) for m in re.findall(r"tapped Camera \d at (\d+) ms", log)]
+    taps = [int(m) for m in re.findall(r"tapped Camera \d[^\n]*? at (\d+) ms", log)]
     cmds = [(float(t), int(c)) for t, c in re.findall(r"^\s*([\d.]+) cmd cam (\d)", board_out, re.M)]
     shows = [float(ms) for ms in re.findall(r"showing camera \d \((\d+) ms after the command\)", board_out)]
     check("2 taps made", len(taps) == 2, str(taps))

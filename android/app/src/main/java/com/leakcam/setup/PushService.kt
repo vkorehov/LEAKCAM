@@ -54,7 +54,9 @@ class PushService : FirebaseMessagingService() {
     companion object {
         const val TAG = "LeakcamPush"
         const val WIFI_CHANNEL = "wifi"
-        const val FOCUS_CHANNEL = "focus"
+        const val FOCUS_CHANNEL = "camera"      // was "focus" (IMPORTANCE_DEFAULT: a pop-up on the bench phone); a
+                                                // channel's importance is fixed when it is made, so a new one
+        const val EXTRA_BOARD = "board"         // MainActivity: this board picked on the status screen
 
         fun register(context: Context) {
             FirebaseMessaging.getInstance().token.addOnSuccessListener { send(context, it) }
@@ -90,16 +92,21 @@ class PushService : FirebaseMessagingService() {
             }.start()
         }
 
-        /** a camera out of focus or never tuned (DESIGN.md 5.3.17): a normal notification, not the leak alarm; a tap
-         *  opens the focus screen on that board and camera */
+        /** a camera that sees nothing, is out of focus or was never tuned (DESIGN.md 5.3.17, 5.3.18): a quiet
+         *  notification, not the leak alarm; a tap opens the status screen with that board picked */
         fun focus(context: Context, id: String, cam: Int, why: String, ssid: String) {
             val nm = context.getSystemService(NotificationManager::class.java)
+            // quiet: no sound, no pop-up over what the person is doing (2026-11-14: its banner took a tap meant for
+            // the list under it). The tap opens the status screen with that board picked, where Tune focus and Ignore
+            // camera are offered (DESIGN.md 5.3.18), never the focus session itself: that switches the LEDs on and
+            // holds the board, a slip of the finger must not start it
+            nm.deleteNotificationChannel("focus")
             nm.createNotificationChannel(NotificationChannel(FOCUS_CHANNEL, context.getString(R.string.focus_channel),
-                                                             NotificationManager.IMPORTANCE_DEFAULT))
+                                                             NotificationManager.IMPORTANCE_LOW))
             val open = android.app.PendingIntent.getActivity(context, ("focus$id$cam").hashCode(),
-                android.content.Intent(context, FocusActivity::class.java)
-                    .putExtra(FocusActivity.EXTRA_ID, id).putExtra(FocusActivity.EXTRA_CAM, cam)
-                    .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+                android.content.Intent(context, MainActivity::class.java).putExtra(EXTRA_BOARD, id)
+                    .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
+                              android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP),
                 android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
             val where = ssid.ifEmpty { id }
             nm.notify(("focus$id$cam").hashCode(), Notification.Builder(context, FOCUS_CHANNEL)

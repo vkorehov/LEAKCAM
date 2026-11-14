@@ -96,6 +96,21 @@ AP and the back-off come with the HBN sleep step (test132). The old README, whol
 
 ## Runs
 
+### Automated run 2026-11-14 (run.py, 69 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-14 (run.py, 71 s): pass
+
+10/10 checks pass.
+
+
+### Automated run 2026-11-14 (run.py, 109 s): **FAIL**
+
+7/10 checks pass. Failed: PUT checkin 5: the board on it at its next check-in (triggered) (not in 15 s); PUT checkin 5: check-ins 5 s + the check-in apart (gaps [] s); a reset with the server down: the board keeps the server's 5 s (not the 3600 s default) (check-in every 60 s after the reset).
+
+
 ### Automated run 2026-11-12 (run.py, 71 s): pass
 
 10/10 checks pass.

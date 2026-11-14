@@ -4,6 +4,26 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-14 (run.py, 1 s): **FAIL**
+
+not run: no Android phone on adb: neither /home/vkorehovs/.leakcam_phone nor the relay app's /adb answered.
+
+
+### Automated run 2026-11-14 (run.py, 0 s): **FAIL**
+
+not run: no Android phone on adb: neither /home/vkorehovs/.leakcam_phone nor the relay app's /adb answered.
+
+
+### Automated run 2026-11-14 (run.py, 94 s): pass
+
+5/5 checks pass.
+
+
+### Automated run 2026-11-14 (run.py, 70 s): pass
+
+5/5 checks pass.
+
+
 ### Automated run 2026-11-12 (run.py, 55 s): pass
 
 6/6 checks pass.
@@ -234,3 +254,7 @@ the full firmware 9 s after). phone.awake() now collapses the shade after unlock
 
 
 ## Obstacles
+
+- no Android phone on adb: neither /home/vkorehovs/.leakcam_phone nor the relay app's /adb answered (phone off Wi-Fi?) (2026-11-14, automated run)
+
+- no Android phone on adb: neither /home/vkorehovs/.leakcam_phone nor the relay app's /adb answered (phone off Wi-Fi?) (2026-11-14, automated run)

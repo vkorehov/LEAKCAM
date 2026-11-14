@@ -4,6 +4,21 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-14 (run.py, 144 s): pass
+
+35/35 checks pass.
+
+
+### Automated run 2026-11-14 (run.py, 142 s): pass
+
+35/35 checks pass.
+
+
+### Automated run 2026-11-14 (run.py, 159 s): **FAIL**
+
+34/35 checks pass. Failed: 6: the camera inference -> Possible leak, inference.
+
+
 ### Automated run 2026-11-12 (run.py, 165 s): pass
 
 35/35 checks pass.

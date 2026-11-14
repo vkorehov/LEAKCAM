@@ -297,7 +297,9 @@ try:
     check("7: the note says it watches again from its next check-in", re.search(r"watches again from its next check-in \(", st), st)
     checkin(FAKE, probe="3000")                           # dried: re-armed
     adb("logcat", "-c")
-    checkin(FAKE, probe="3000", job="changed", jago="10")
+    # jago 0: a leak check taken now. One taken before the Not a leak above is the job the person already answered and
+    # opens nothing (server/alert.go clearedAt, since 2026-11-12): with jago 10 this step failed (2026-11-14)
+    checkin(FAKE, probe="3000", job="changed", jago="0")
     t = wait_log(rf"alert {FAKE} shown")
     nt = adb("shell", "dumpsys", "notification", "--noredact", secs=30)
     ack_alerts()

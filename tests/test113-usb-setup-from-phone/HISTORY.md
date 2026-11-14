@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-14 (run.py, 13 s): **FAIL**
+
+not run: no Android phone on adb: neither /home/vkorehovs/.leakcam_phone nor the relay app's /adb answered (phone off Wi-Fi?)
+
+
+### Automated run 2026-11-14 (run.py, 44 s): **FAIL**
+
+not run: the relay box did not move USB-C 1 to the phone
+
+
 ### Automated run 2026-11-12 (run.py, 103 s): pass
 
 15/15 checks pass.

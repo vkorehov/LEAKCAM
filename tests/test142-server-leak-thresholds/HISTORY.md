@@ -4,6 +4,16 @@ Earlier runs, superseded findings and obstacles, newest first. Current state: RE
 
 ## Runs
 
+### Automated run 2026-11-14 (run.py, 89 s): **FAIL**
+
+12/13 checks pass. Failed: 75 %RH: the server's leak `humidity high` (judged at the device's threshold) (leak {'since': '2026-11-14T10:47:32.1832547+02:00', 'why': 'camera change'}).
+
+
+### Automated run 2026-11-14 (run.py, 71 s): pass
+
+13/13 checks pass.
+
+
 ### Automated run 2026-11-12 (run.py, 64 s): pass
 
 13/13 checks pass.

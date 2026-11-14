@@ -23,7 +23,10 @@ class FocusScreen {
     fun run() {
         val inst = InstrumentationRegistry.getInstrumentation()
         val args = InstrumentationRegistry.getArguments()
-        val id = args.getString("id") ?: "7C3E8262B149"
+        // only when asked for by its board: the bench's operations run the test APK without a class filter (phone.py
+        // op()), so this ran with every one of them and opened a real focus session on the board each time: the LEDs
+        // on, the board held, its check-ins missed (2026-11-13/14: test111 and others failed on it)
+        val id = args.getString("id") ?: return
         val secs = args.getString("secs")?.toIntOrNull() ?: 20
         val taps = (args.getString("taps") ?: "8:2,14:1").split(",").mapNotNull {
             val p = it.split(":")

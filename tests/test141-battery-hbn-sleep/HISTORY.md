@@ -2,6 +2,11 @@
 
 ## Runs
 
+### Automated run 2026-11-14 (run.py, 43 s): **FAIL**
+
+not run: the relay box did not unplug USB-C 1
+
+
 ### Automated run 2026-11-12 (run.py, 101 s): pass
 
 7/7 checks pass.

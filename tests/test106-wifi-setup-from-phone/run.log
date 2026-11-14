@@ -1,15 +1,4 @@
-09:49:56 test106-wifi-setup-from-phone: 0 metric rows MISSING: none
-09:49:56 BL616 firmware: product (firmware/bl616_common)
-09:50:03 phone: relay 0.3 s (http)
-09:50:03 relay box: unplugged (unplug USB-C 1 (the cell stays in))
-09:50:03 CHECK pass USB-C 1 out (hand) 
-09:50:08 phone: scan 3.8 s
-09:50:32 phone: app 20.2 s
-09:50:32 setup <network> 16.9 s {'pairing': '', 'save_anyway': False, 'ms_found': 4529} help at 1.5,4.5,6.0,13.3,15.9,16.8 Your phone now asks to pair with 7C3E8262B149: tap Pair. No PIN to typ | Connected to the router. Checking that the internet can be reached… | Done. 7C3E8262B149 joined "<network>". 7C3E8262B149: online, Wi-Fi "<network>" · nex
-09:50:39 CHECK pass stored: back in the full firmware 6.2 s
-09:50:39 CHECK pass 1 setups on battery: every one found and Done 1/1, found after 4 s
-09:50:39 CHECK pass on battery: the network stored 
-09:50:40 phone: relay 0.5 s (http)
-09:50:40 relay box: plugged (plug USB-C 1 back in)
-09:50:40 CHECK pass USB-C 1 back in (hand) 
-09:50:41 test106-wifi-setup-from-phone: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+10:44:48 test106-wifi-setup-from-phone: 0 metric rows MISSING: none
+10:44:49 BL616 firmware: product (firmware/bl616_common)
+10:44:49 OBSTACLE no Android phone on adb: neither /home/vkorehovs/.leakcam_phone nor the relay app's /adb answered (phone off Wi-Fi?)
+10:44:51 test106-wifi-setup-from-phone: FAIL; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand

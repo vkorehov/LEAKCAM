@@ -1256,6 +1256,12 @@ in their holders; a knock, a loose lock ring or a lens swapped for another (the 
   a camera change is no leak (no alarm, no leak pictures holding the cameras) and no camera problem is told
   (server/alert.go; TestNoCameraLeakDuringFocus); the app holds back camera pushes already on their way while that
   screen is open (PushService). Water at the probe and the humidity alarm still ring.
+- **The screen never closes by itself and never starts a session by itself after the first** (user 2026-11-14:
+  "dont self close focus screen, allow user to press button Apply"): opening it starts the session; left (Home,
+  another app, the screen off) the session ends and the screen stays, PAUSED, with Resume on its bottom button; a
+  session again only on Resume. The bottom button otherwise: Apply (was Done), enabled at the sharpest point: its
+  score kept as the camera's reference. Found the hard way: kept on the app's stack and starting by itself at every
+  return, the screen held the board with the LEDs on each time the app was opened (test111, 2026-11-14).
 - **The screen recovers by itself** (5.3.20): an ended or failed session, a camera that did not start, the server
   away: asked for again 3 s later; a live picture without a record for 8 s: the stream reconnected.
 - **After tuning:** the histories of that camera are no longer comparable (every block changed): the K230 deletes
@@ -1341,7 +1347,8 @@ recovering on all screens."
 - **Found the hard way (2026-11-13):** the focus screen stayed on "the board ended the session", on "camera does not
   answer" and on a black picture until it was left and opened again, while the board was busy with a leak's pictures
   that the person's own hands at the lens had triggered.
-- **Done:** the focus / live screen (FocusActivity: the ask-and-read loop, RETRY_MS 3 s, STALL_MS 8 s). **To examine,
+- **Done:** the focus / live screen (FocusActivity: the ask-and-read loop, RETRY_MS 3 s, STALL_MS 8 s). Retrying is for a
+  session the person asked for and still watches: a screen that was left does not ask again until Resume. **To examine,
   screen by screen:** the status screen (it polls: what if a tap's request fails?), setup over BLE and the cable, the
   leak panel and alert, Change Wi-Fi. Each gets a test that cuts the server or the board mid-way and expects the
   screen back without a hand.

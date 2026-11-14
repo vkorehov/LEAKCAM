@@ -1,15 +1,29 @@
-10:08:46 test141-battery-hbn-sleep: 0 metric rows MISSING: none
-10:08:52 phone: relay 0.3 s (http)
-10:08:52 relay box: battery (USB-C 1 out (the board on its battery, HBN on))
-10:08:54 CHECK pass battery: asleep (the console gone) once nothing runs 2 s after the unplug
-10:10:18 CHECK pass asleep: check-ins every ~20 s (the RTC wakes it) gaps [22, 22, 21] s
-10:10:18 CHECK pass asleep: HBN wakes counted (hbnw), boots unchanged hbnw 1, boots 331 -> 331
-10:10:18 CHECK pass asleep: a check-in wake after 30 s cool reads the room (troom fresh) troom 314, rhroom 300, quiet 83
-10:10:19 phone: relay 0.2 s (http)
-10:10:19 relay box: usb (USB-C 1 back (the bench))
-10:10:24 CHECK pass USB plug: the console back (ACOMP0 wakes it) 4.7 s after the plug
-10:10:24 CHECK pass USB plug: this boot a wake from HBN hbn
-hbn: on, USB power; next: check-in in 14 s, leak check in 86298 s, reading in 498 s; this boot a wake from HBN, last asked 0 s
-bouffalol
-10:10:24 CHECK pass the wall clock kept through the sleeps (within 5 s) 1 s off
-10:10:27 test141-battery-hbn-sleep: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+10:46:50 test141-battery-hbn-sleep: 0 metric rows MISSING: none
+10:47:11 phone: adb logcat timed out: reconnecting
+Traceback (most recent call last):
+  File "/home/vkorehovs/k230d-hw/LEAKCAM/tests/test141-battery-hbn-sleep/run.py", line 80, in <module>
+    if hand("USB-C 1 out (the board on its battery, HBN on)", "battery") is None:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vkorehovs/k230d-hw/LEAKCAM/tools/test-runner/phone.py", line 473, in hand
+    if relay(RELAY_STEPS[word], RELAY_GAPS.get(word)):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vkorehovs/k230d-hw/LEAKCAM/tools/test-runner/phone.py", line 409, in relay
+    res = _relay_once(cmds, gaps)     # dropped by the app: the second request connects anew; the end state is
+          ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vkorehovs/k230d-hw/LEAKCAM/tools/test-runner/phone.py", line 453, in _relay_once
+    m = re.search(rf"RESULT {re.escape(rid)} (\{{.*\}})", adb("logcat", "-d", "-s", "LeakcamRelay:I", secs=15))
+                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vkorehovs/k230d-hw/LEAKCAM/tools/test-runner/phone.py", line 157, in adb
+    return subprocess.run(["adb", *a], capture_output=True, text=True, timeout=secs).stdout
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 1209, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 2116, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+  File "/usr/lib/python3.12/subprocess.py", line 1253, in _check_timeout
+    raise TimeoutExpired(
+subprocess.TimeoutExpired: Command '['adb', 'logcat', '-d', '-s', 'LeakcamRelay:I']' timed out after 15 seconds

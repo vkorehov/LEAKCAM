@@ -1,36 +1,48 @@
-09:38:53 test111-multi-device: 0 metric rows MISSING: none
-09:40:17 CHECK pass USB serial number = the device ID USB 7C3E8262B149
-09:40:17 CHECK pass the board has a device ID 7C3E8262B149
-09:41:23 phone: app 12.1 s
-09:41:23 CHECK pass setup Done 7.7 s
-09:41:24 CHECK pass pairing: the app entered the PIN, no PIN prompt on the phone dialog started 0x
-09:41:24 CHECK pass BLE advertisement = the device ID ['7C3E8262B149']
-09:41:24 CHECK pass no boards: the app opened on the setup screen None
-09:41:24 CHECK pass advertisement: a stored network flagged 1
-09:41:24 CHECK pass the app stores no list (the server's) FirebaseHeartBeatW0RFRkFVTFRd+MTo5NTg5NTc3OTQ4MTM6YW5kcm9pZDo0MzYyYmEyMGYzOTIyYWFmNmM5NTk0.xml
-com.google.android.gms.appid.xml
-com.google.firebase.messaging.xml
-09:41:24 CHECK pass the server lists the board for this phone, by its serial ['7C3E8262B149']
-09:41:24 CHECK pass server: the board online after the setup 0 s
-09:41:30 CHECK pass board: last check-in reached the server (0x03) state 0x03
-09:41:32 CHECK pass app: the board listed and online 7C3E8262B149: online, Wi-Fi "<network>" · next check-in about 09:42 · room 43,3 °C, 20 % (4 h ago)
-09:41:32 CHECK pass app: the board's network shown (the SSID from its check-in) 7C3E8262B149: online, Wi-Fi "<network>" · next check-in about 09:42 · room 43,3 °C, 20 % (4 h ago)
-09:41:34 CHECK pass app: second LEAKCAM listed, not seen yet 0264E5330D9B: not seen yet, Wi-Fi "not reported yet" · next check-in not known yet
-09:41:36 CHECK pass app: second LEAKCAM online after its check-in 0264E5330D9B: online, Wi-Fi "t111-second" · next check-in any moment now
-09:41:36 CHECK pass app: second LEAKCAM's network shown 0264E5330D9B: online, Wi-Fi "t111-second" · next check-in any moment now
-09:41:36 CHECK pass app: the board still online next to it 7C3E8262B149: online, Wi-Fi "<network>" · next check-in about 09:42 · room 43,3 °C, 20 % (4 h ago)
-09:41:52 CHECK pass app: second LEAKCAM offline when it stopped 0264E5330D9B: offline, last seen 16 s ago, Wi-Fi "t111-second" · next check-in any moment now
-09:41:52 CHECK pass app: the board online throughout 7C3E8262B149: online, Wi-Fi "<network>" · next check-in about 09:42 · room 43,3 °C, 20 % (4 h ago)
-09:42:02 phone: delete 9.9 s
-09:42:04 CHECK pass app: second LEAKCAM deleted ['7C3E8262B149']
-09:42:04 CHECK pass app: the board still listed after the delete 7C3E8262B149: online, Wi-Fi "<network>" · next check-in any moment now · room 43,3 °C, 20 % (4 h ago)
-09:42:04 CHECK pass server: this phone registered as a user (when it was issued the PIN) 1
-09:42:12 phone: delete 8.7 s
-09:42:13 CHECK pass server: the delete reached it first, no user left 0
-09:42:13 CHECK pass app: the board deleted {'found': True, 'more': True, 'menu': True, 'confirmed': True, 'ms_total': 5181, 't0_epoch_ms': 1794469326210}
-09:42:13 CHECK pass app: a deleted board stays out, also after a reopen []
-09:42:39 CHECK pass no user left: the board back in the setup firmware by itself 25 s after the delete
-09:42:54 phone: app 15.4 s
-09:43:01 CHECK pass set up again after it: the full firmware full
-09:43:04 sample after the checks {'board': None, 'bl_mem': (170332, 132824, 140732, 72, 85948, 16, 0)}
-09:43:07 test111-multi-device: PASS; filled 0: -; still MISSING 0: -; run in HISTORY.md - README Status/Result by hand
+10:34:51 test111-multi-device: 0 metric rows MISSING: none
+10:35:58 phone: Dozing: woken
+10:36:15 CHECK pass USB serial number = the device ID USB 7C3E8262B149
+10:36:15 CHECK pass the board has a device ID 7C3E8262B149
+10:37:18 phone: adb shell timed out: reconnecting
+10:37:33 phone: no answer (wakefulness)
+10:38:08 phone: adb shell timed out: reconnecting
+10:38:23 phone: no answer (wakefulness)
+10:38:58 phone: adb shell timed out: reconnecting
+10:39:06 phone: app no answer in 150 s
+10:39:13 phone: no answer (wakefulness)
+10:39:36 phone: adb shell timed out: reconnecting
+10:39:48 phone: no answer: woken
+10:39:48 phone: adb lost during app: reconnecting, app again
+10:39:58 phone: adb connect timed out: reconnecting
+10:39:58 phone: app 203.3 s, error no result from the phone
+10:39:58 CHECK FAIL setup Done 0.0 s
+10:40:08 phone: no answer: woken
+10:40:28 phone: no answer: woken
+10:40:48 phone: no answer: woken
+10:41:08 phone: no answer: woken
+10:41:28 phone: no answer: woken
+10:41:48 phone: no answer: woken
+10:42:08 phone: no answer: woken
+10:42:28 phone: no answer: woken
+10:42:48 phone: no answer: woken
+10:43:08 phone: no answer: woken
+10:43:28 phone: no answer: woken
+10:43:48 phone: no answer: woken
+10:44:08 phone: no answer: woken
+Traceback (most recent call last):
+  File "/home/vkorehovs/k230d-hw/LEAKCAM/tests/test111-multi-device/run.py", line 118, in <module>
+    logcat = adb("logcat", "-d", "-s", "LeakcamSetup:I")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vkorehovs/k230d-hw/LEAKCAM/tools/test-runner/phone.py", line 157, in adb
+    return subprocess.run(["adb", *a], capture_output=True, text=True, timeout=secs).stdout
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 1209, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 2116, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+  File "/usr/lib/python3.12/subprocess.py", line 1253, in _check_timeout
+    raise TimeoutExpired(
+subprocess.TimeoutExpired: Command '['adb', 'logcat', '-d', '-s', 'LeakcamSetup:I']' timed out after 180 seconds
